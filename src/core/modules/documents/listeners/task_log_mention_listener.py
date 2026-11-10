@@ -1,5 +1,5 @@
-from core.base.change.created import Created
-from core.base.change.updated import Updated
+from engine.change.created import Created
+from engine.change.updated import Updated
 from core.modules.documents.listeners.text_mention_listener import TextMentionListener
 from core.modules.tasks.models.task_log import TaskLog
 

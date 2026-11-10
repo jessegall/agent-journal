@@ -1,6 +1,6 @@
 import json
 
-from core.base.change.event_log import EventLog
+from engine.change.event_log import EventLog
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_value

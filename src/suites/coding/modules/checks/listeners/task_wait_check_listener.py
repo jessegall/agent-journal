@@ -5,7 +5,7 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.tasks.models.task_wait import TaskWait
 from suites.coding.modules.checks.models.check import Check
-from core.base.change.changed import Changed
+from engine.change.changed import Changed
 from engine.command.context import Context
 
 

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.change.domain_event import DomainEvent
+from engine.change.domain_event import DomainEvent
 from core.base.model.model import END_CHANGE
 from core.modules.processes.models.output import Output
 

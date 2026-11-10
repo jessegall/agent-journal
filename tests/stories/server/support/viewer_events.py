@@ -2,7 +2,7 @@ import json
 from dataclasses import dataclass
 
 from tests.stories.server.support.server_client import ServerStory
-from core.base.change.event_log import EventLog
+from engine.change.event_log import EventLog
 
 
 @dataclass(frozen=True)

@@ -61,8 +61,8 @@ ALLOWED_READ_REPEATS = {
     ("core/base/database/kept_rows.py", "kept_value"): "A write changes the database mark; cached rows must check their table signature again.",
     ("core/base/database/listener_cursor_table.py", "has_unhandled_events"): "Each listener round checks whether earlier listeners created more events.",
     ("core/base/database/listener_cursor_table.py", "has_pending_events"): "Startup completion must be checked as listener cursors advance.",
-    ("core/base/change/event_log.py", "newest_id"): "Urgent listeners must notice events written by the previous listener.",
-    ("core/base/change/event_log.py", "events_after"): "Listener rounds read new events written by earlier listeners.",
+    ("engine/change/event_log.py", "newest_id"): "Urgent listeners must notice events written by the previous listener.",
+    ("engine/change/event_log.py", "events_after"): "Listener rounds read new events written by earlier listeners.",
     ("core/base/listener/event_rows.py", "prepare"): "Cached rows are checked by version only after a write, from a listener or another process, changed the database mark.",
 }
 BULK_SEEDS = "engine/seed/demo.py"

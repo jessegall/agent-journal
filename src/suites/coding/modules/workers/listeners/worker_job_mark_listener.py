@@ -1,4 +1,4 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.chat.listeners.mark_listener import MarkListener
@@ -8,7 +8,7 @@ from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMa
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.support.merger_nudges import MERGER_FINDINGS_PREFIX
 from suites.coding.modules.workers.support.worker_recipient import WorkerRecipient
-from core.base.change.created import Created
+from engine.change.created import Created
 
 
 class WorkerJobMarkListener(MarkListener[Created[Message]]):

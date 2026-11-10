@@ -1,4 +1,4 @@
-from core.base.change.updated import Updated
+from engine.change.updated import Updated
 from engine.command.context import Context
 from core.base.listener.save_listener import SaveListener
 from engine.query.queries import Queries

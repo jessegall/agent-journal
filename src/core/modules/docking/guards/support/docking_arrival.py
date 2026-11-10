@@ -1,5 +1,5 @@
-from core.base.change.changed import Changed
-from core.base.change.deleted import Deleted
+from engine.change.changed import Changed
+from engine.change.deleted import Deleted
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 

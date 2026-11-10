@@ -8,7 +8,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
-from core.base.change.created import Created
+from engine.change.created import Created
 from engine.command.context import Context
 
 SKILL_TEXT_COMMAND = ["journal", "skill", "show"]

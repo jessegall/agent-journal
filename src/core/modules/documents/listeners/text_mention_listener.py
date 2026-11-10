@@ -1,8 +1,8 @@
 from typing import ClassVar
 
-from core.base.change.changed import RowChange
-from core.base.change.logged_event import LoggedEvent
-from core.base.change.deleted import Deleted
+from engine.change.changed import RowChange
+from engine.change.logged_event import LoggedEvent
+from engine.change.deleted import Deleted
 from engine.command.bus import Bus
 from core.base.library.library_lookup import LibraryLookup
 from core.base.listener.commit_listener import CommitListener

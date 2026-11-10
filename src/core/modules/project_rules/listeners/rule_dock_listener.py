@@ -1,5 +1,5 @@
-from core.base.change.logged_event import LoggedEvent
-from core.base.change.registry_synced import RegistrySynced
+from engine.change.logged_event import LoggedEvent
+from engine.change.registry_synced import RegistrySynced
 from engine.command.bus import Bus
 from engine.command.request_user_approval import RequestUserApproval
 from engine.command.close_user_approval import CloseUserApproval
@@ -17,7 +17,7 @@ from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.project_rules.models.enums.rule_dock_type import RuleDockType
 from core.modules.project_rules.models.enums.rule_state import RuleState
 from core.modules.project_rules.models.project_rule import ProjectRule
-from core.base.change.changed import Changed
+from engine.change.changed import Changed
 
 MODULE_NAME = "journal.core.project-rules"
 

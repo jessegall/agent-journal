@@ -1,8 +1,8 @@
 from collections.abc import Mapping
 
-from core.base.change.change import Change
-from core.base.change.event_log import EventLog
-from core.base.change.logged_event import LoggedEvent
+from engine.change.change import Change
+from engine.change.event_log import EventLog
+from engine.change.logged_event import LoggedEvent
 from engine.command.context import Context
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.event_form import EventForm

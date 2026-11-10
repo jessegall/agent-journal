@@ -1,12 +1,12 @@
 from engine.actor.actor import Actor
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from engine.query.queries import Queries
 from core.modules.drivers.commands.release_agent_line.release_agent_line import ReleaseAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from core.base.change.journal_booting import JournalBooting
+from engine.change.journal_booting import JournalBooting
 
 
 class ClaimedLineReleaseListener(CommitListener[JournalBooting]):

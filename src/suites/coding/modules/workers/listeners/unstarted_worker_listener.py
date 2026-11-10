@@ -1,5 +1,5 @@
-from core.base.change.logged_event import LoggedEvent
-from core.base.change.moved import Moved
+from engine.change.logged_event import LoggedEvent
+from engine.change.moved import Moved
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.event_rows import EventRows
 from engine.scope.actor_scope import ActorScope

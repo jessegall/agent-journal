@@ -1,11 +1,11 @@
 from engine.actor.actor import Actor
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from engine.errors.refusal import Refusal
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from suites.coding.modules.workers.commands.remove_orphan_worktrees.remove_orphan_worktrees import RemoveOrphanWorktrees
-from core.base.change.journal_booting import JournalBooting
+from engine.change.journal_booting import JournalBooting
 
 
 class BootOrphanWorktreesListener(CommitListener[JournalBooting]):

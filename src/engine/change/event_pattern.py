@@ -1,6 +1,6 @@
 from functools import cache
 from dataclasses import dataclass
-from core.base.change.event_pattern_error import EventPatternError
+from engine.change.event_pattern_error import EventPatternError
 
 
 ANY = "*"

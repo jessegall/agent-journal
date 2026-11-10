@@ -1,6 +1,6 @@
 import json
 
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
@@ -14,7 +14,7 @@ from core.modules.search.models.enums.search_mark_variant import SearchMarkVaria
 from core.modules.search.support.row_search import RowSearch
 from core.modules.search.support.search_line import SearchLine
 from core.modules.search.support.search_outcomes import SearchOutcomes
-from core.base.change.created import Created
+from engine.change.created import Created
 
 SHOWN_HITS = 10
 

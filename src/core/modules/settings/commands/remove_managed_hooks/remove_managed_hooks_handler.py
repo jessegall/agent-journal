@@ -1,4 +1,4 @@
-from core.base.change.event_log import EventLog
+from engine.change.event_log import EventLog
 from engine.command.context import Context
 from engine.command.handler import Handler
 from core.base.provider.managed_hook import ManagedHook

@@ -4,7 +4,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.change.change import Change
+from engine.change.change import Change
 from engine.command.context import Context
 from engine.guard.lifecycle_guard import LifecycleGuard
 from core.base.model.state_book import StateBook

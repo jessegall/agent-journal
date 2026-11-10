@@ -1,4 +1,4 @@
-from core.base.change.event_pattern import ALTERNATIVE, ANY
+from engine.change.event_pattern import ALTERNATIVE, ANY
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming

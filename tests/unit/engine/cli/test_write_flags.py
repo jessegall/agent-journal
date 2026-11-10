@@ -5,7 +5,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.change.event_pattern import EventPattern
+from engine.change.event_pattern import EventPattern
 from engine.cli.write_flags import WriteFlags
 from engine.command.bus import Bus
 from engine.command.handlers.make_handler import MakeHandler
@@ -24,10 +24,10 @@ from engine.errors.refusal import Refusal
 from tests.unit.core.base.sample_container import sample_container
 from tests.unit.core.base.samples.listener_sample import ShelfCounter
 from tests.unit.engine.command.test_commands import MakeItem
-from core.base.change.created import Created
+from engine.change.created import Created
 from engine.command.context import Context
 from tests.unit.core.base.model.test_model import Item
-from core.base.change.changed import Changed
+from engine.change.changed import Changed
 
 AGENT = Actor(7, ActorType.AGENT)
 

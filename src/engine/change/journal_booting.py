@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from core.base.change.event_log import JOURNAL_BOOTING_EVENT
-from core.base.change.system_event import SystemEvent
+from engine.change.event_log import JOURNAL_BOOTING_EVENT
+from engine.change.system_event import SystemEvent
 
 
 @dataclass(frozen=True)

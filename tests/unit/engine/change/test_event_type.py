@@ -2,18 +2,18 @@ from typing import Generic, TypeVar
 
 import pytest
 
-from core.base.change.changed import Changed
-from core.base.change.created import Created
-from core.base.change.event_pattern import EventPattern
-from core.base.change.event_pattern_error import EventPatternError
-from core.base.change.event_subscriber import E, EventSubscriber
-from core.base.change.event_type import EventType
-from core.base.change.journal_booting import JournalBooting
-from core.base.change.moved import Moved
-from core.base.change.registry_synced import RegistrySynced
-from core.base.change.touched import Touched
-from core.base.change.updated import Updated
-from core.base.change.upgrade_finished import UpgradeFinished
+from engine.change.changed import Changed
+from engine.change.created import Created
+from engine.change.event_pattern import EventPattern
+from engine.change.event_pattern_error import EventPatternError
+from engine.change.event_subscriber import E, EventSubscriber
+from engine.change.event_type import EventType
+from engine.change.journal_booting import JournalBooting
+from engine.change.moved import Moved
+from engine.change.registry_synced import RegistrySynced
+from engine.change.touched import Touched
+from engine.change.updated import Updated
+from engine.change.upgrade_finished import UpgradeFinished
 from core.base.model.model import Model
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 from tests.unit.core.base.model.test_model import Item

@@ -1,5 +1,5 @@
-from core.base.change.changed import Changed
-from core.base.change.logged_event import LoggedEvent
+from engine.change.changed import Changed
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.command.close_user_approval import CloseUserApproval
 from engine.command.request_user_approval import RequestUserApproval

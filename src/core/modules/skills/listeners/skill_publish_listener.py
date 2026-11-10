@@ -1,9 +1,9 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.base.registry.registry import Registry
 from core.modules.skills.support.skill_files import SkillFiles
-from core.base.change.file_publishing import FilePublishing
-from core.base.change.upgrade_finished import UpgradeFinished
+from engine.change.file_publishing import FilePublishing
+from engine.change.upgrade_finished import UpgradeFinished
 
 
 

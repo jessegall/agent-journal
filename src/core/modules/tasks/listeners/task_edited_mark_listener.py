@@ -1,9 +1,9 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.tasks.models.enums.task_mark_type import TaskMarkType
 from core.modules.tasks.models.enums.task_mark_variant import TaskMarkVariant
 from core.modules.tasks.models.task import Task
-from core.base.change.updated import Updated
+from engine.change.updated import Updated
 
 EDIT_COMMAND = f"Edit{Task.__name__}"
 

@@ -2,8 +2,8 @@ from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.chat.models.chat_mark import ChatMark
-from core.base.change.changed import Changed
-from core.base.change.deleted import Deleted
+from engine.change.changed import Changed
+from engine.change.deleted import Deleted
 from engine.command.context import Context
 
 

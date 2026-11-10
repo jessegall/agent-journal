@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.base.change.deleted import Deleted
+from engine.change.deleted import Deleted
 from engine.command.context import Context
 from core.base.listener.deletion_listener import DeletionListener
 from engine.query.queries import Queries

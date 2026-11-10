@@ -1,4 +1,4 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
@@ -13,7 +13,7 @@ from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMarkType
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.models.worktree import Worktree
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from core.base.model.move import Move
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 

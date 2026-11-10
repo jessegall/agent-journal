@@ -1,4 +1,4 @@
-from core.base.change.changed import Changed
+from engine.change.changed import Changed
 from engine.command.context import Context
 from core.base.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope

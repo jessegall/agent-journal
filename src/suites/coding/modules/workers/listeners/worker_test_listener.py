@@ -2,10 +2,10 @@ from core.base.driver.command_category import CommandCategory
 from suites.coding.modules.workers.commands.record_own_test_failure.record_own_test_failure import RecordOwnTestFailure
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from engine.actor.actor import Actor
-from core.base.change.logged_event import LoggedEvent
-from core.base.change.created import Created
-from core.base.change.moved import Moved
-from core.base.change.updated import Updated
+from engine.change.logged_event import LoggedEvent
+from engine.change.created import Created
+from engine.change.moved import Moved
+from engine.change.updated import Updated
 from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.event_rows import EventRows

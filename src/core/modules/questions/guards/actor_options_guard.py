@@ -3,7 +3,7 @@ import re
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.questions.models.question import Question
-from core.base.change.created import Created
+from engine.change.created import Created
 from engine.command.context import Context
 
 PERSONAL = re.compile(r"\b(I|I'll|I'm|I've|me|my|we|us|our|you|your)\b", re.IGNORECASE)

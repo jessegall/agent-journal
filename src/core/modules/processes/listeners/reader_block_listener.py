@@ -12,7 +12,7 @@ from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.support.block_conditions.reader_request_completed import ReaderRequestCompleted
 from core.modules.processes.support.process_nudges import READER_BLOCK
-from core.base.change.created import Created
+from engine.change.created import Created
 from engine.command.context import Context
 
 

@@ -1,8 +1,8 @@
 from typing import ClassVar
 
 from engine.enums.actor_type import ActorType
-from core.base.change.deleted import Deleted
-from core.base.change.event_subscriber import E
+from engine.change.deleted import Deleted
+from engine.change.event_subscriber import E
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal

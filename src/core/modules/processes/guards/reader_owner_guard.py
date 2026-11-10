@@ -4,7 +4,7 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.processes.models.reader import Reader
-from core.base.change.deleted import Deleted
+from engine.change.deleted import Deleted
 from engine.command.context import Context
 
 

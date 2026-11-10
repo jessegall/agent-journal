@@ -1,4 +1,4 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
@@ -12,7 +12,7 @@ from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.questions.models.enums.question_dock_type import QuestionDockType
 from core.modules.questions.queries.question_query import QuestionQuery
-from core.base.change.touched import Touched
+from engine.change.touched import Touched
 from core.modules.questions.models.question import Question
 
 QUESTIONS_MODULE = "journal.core.questions"

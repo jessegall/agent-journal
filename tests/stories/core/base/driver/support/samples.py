@@ -34,7 +34,7 @@ from core.base.setting.setting_value import SettingValue
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from core.base.change.created import Created
+from engine.change.created import Created
 
 SAMPLES = "tests.stories.core.base.driver.support.samples:SamplesModule"
 LEAD = "samples.lead"

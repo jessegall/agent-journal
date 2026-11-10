@@ -13,7 +13,7 @@ from core.base.viewer.toggle_option import ToggleOption
 from core.base.viewer.window_size import WindowSize
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.skeleton_part import SkeletonPart
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task

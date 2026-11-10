@@ -1,5 +1,5 @@
 from engine.actor.actor import CORE_ACTOR_ID
-from core.base.change.event_log import EventLog
+from engine.change.event_log import EventLog
 from engine.time.clock import Clock
 from engine.container.container import Container
 from core.base.database.database import Database

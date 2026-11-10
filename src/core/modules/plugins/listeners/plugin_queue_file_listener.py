@@ -1,11 +1,11 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from engine.query.queries import Queries
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_queue_file import PluginQueueFile
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_queue import PluginQueue
-from core.base.change.created import Created
+from engine.change.created import Created
 
 
 class PluginQueueFileListener(CommitListener[Created[PluginQueueFile]]):

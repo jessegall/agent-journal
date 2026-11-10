@@ -1,4 +1,4 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType

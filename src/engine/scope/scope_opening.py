@@ -1,8 +1,8 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from core.base.change.change import Change
-from core.base.change.logged_event import LoggedEvent
+from engine.change.change import Change
+from engine.change.logged_event import LoggedEvent
 from core.base.model.model import Model
 
 

@@ -1,5 +1,5 @@
-from core.base.change.changed import Changed
-from core.base.change.logged_event import LoggedEvent
+from engine.change.changed import Changed
+from engine.change.logged_event import LoggedEvent
 from engine.journal.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound

@@ -7,7 +7,7 @@ from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.worktree import Worktree
-from core.base.change.changed import Changed
+from engine.change.changed import Changed
 from engine.command.context import Context
 from core.modules.agents.support.agent_rows import AgentRows
 

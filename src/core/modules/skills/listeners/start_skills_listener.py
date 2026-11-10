@@ -1,6 +1,6 @@
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from engine.enums.agent_role import AgentRole
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries

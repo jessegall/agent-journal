@@ -4,8 +4,8 @@ from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.chat.models.chat_mark import ChatMark
-from core.base.change.changed import Changed
-from core.base.change.deleted import Deleted
+from engine.change.changed import Changed
+from engine.change.deleted import Deleted
 from engine.command.context import Context
 
 

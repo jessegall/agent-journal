@@ -1,4 +1,4 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.command.move_row import MoveRow
 from core.base.listener.commit_listener import CommitListener
@@ -12,7 +12,7 @@ from core.modules.documents.models.report import Report
 from core.modules.plans.models.plan import Plan
 from core.modules.skills.commands.request_skill.request_skill import RequestSkill
 from core.modules.plan_reviews.support.review_state import REVIEWED_MOVE, REVIEWING
-from core.base.change.created import Created
+from engine.change.created import Created
 
 MODULE_NAME = "journal.core.plan_reviews"
 REVIEW_APPLYING_SKILL = "journal-plan-review-applying"

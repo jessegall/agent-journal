@@ -1,10 +1,10 @@
 from enum import StrEnum
 
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.memories.models.enums.memory_mark_type import MemoryMarkType
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
-from core.base.change.event_subscriber import E
+from engine.change.event_subscriber import E
 
 MEMORIES_MODULE = "journal.core.memories"
 

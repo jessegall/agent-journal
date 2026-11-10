@@ -2,7 +2,7 @@ from collections.abc import Callable
 from dataclasses import replace
 
 from engine.actor.actor import CORE_ACTOR_ID
-from core.base.change.event_log import EventLog
+from engine.change.event_log import EventLog
 from engine.command.context import Context
 from engine.command.handler import Handler
 from core.base.database.kept_rows import KeptRows

@@ -1,7 +1,7 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from core.modules.memories.listeners.memory_mark_listener import MemoryMarkListener
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
-from core.base.change.created import Created
+from engine.change.created import Created
 from core.modules.memories.models.memory import Memory
 
 

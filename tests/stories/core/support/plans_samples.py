@@ -1,11 +1,11 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.guard.guard import Guard
 from core.base.listener.commit_listener import CommitListener
 from core.base.model.model import Model
 from core.base.module.module import Module
 from engine.errors.refusal import Refusal
 from core.modules.tasks.models.task import Task
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 

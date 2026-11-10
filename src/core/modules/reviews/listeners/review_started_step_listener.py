@@ -1,4 +1,4 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
@@ -6,7 +6,7 @@ from engine.query.queries import Queries
 from core.modules.reviews.commands.make_review_step.make_review_step import MakeReviewStep
 from core.modules.reviews.listeners.reviewer_ended_listener import MODULE_NAME
 from core.modules.reviews.models.review import Review
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from core.modules.reviews.models.lifecycles.review_lifecycle import ReviewLifecycle
 
 

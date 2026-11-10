@@ -1,4 +1,4 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
@@ -10,7 +10,7 @@ from core.modules.docking.listeners.environment_dock_listener import MODULE_NAME
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.support.pending_dock_items import PendingDockItems
 from core.modules.docking.support.leave_time import LeaveTime
-from core.base.change.touched import Touched
+from engine.change.touched import Touched
 from core.base.model.model import Model
 
 

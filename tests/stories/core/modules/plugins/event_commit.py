@@ -3,7 +3,7 @@ from datetime import timedelta
 from server.booting_work import BootingWork
 import json
 
-from core.base.change.event_log import HIDDEN
+from engine.change.event_log import HIDDEN
 from engine.command.bus import Bus
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from core.base.database.database import Database

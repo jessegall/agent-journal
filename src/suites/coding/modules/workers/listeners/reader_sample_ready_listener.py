@@ -9,7 +9,7 @@ from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.reader_request import ReaderRequest
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import READER_SAMPLE_READY
-from core.base.change.updated import Updated
+from engine.change.updated import Updated
 from engine.command.context import Context
 
 

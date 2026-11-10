@@ -1,7 +1,7 @@
 import pytest
 
-from core.base.change.event_log import EventLog
-from core.base.change.touched import Touched
+from engine.change.event_log import EventLog
+from engine.change.touched import Touched
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from core.modules.sequences.listeners.sequence_end_listener import SequenceEndListener

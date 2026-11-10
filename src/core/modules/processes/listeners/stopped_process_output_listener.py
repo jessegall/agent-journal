@@ -1,5 +1,5 @@
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from dataclasses import replace
 
 from core.base.listener.save_listener import SaveListener

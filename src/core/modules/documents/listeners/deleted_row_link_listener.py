@@ -1,4 +1,4 @@
-from core.base.change.changed import Changed
+from engine.change.changed import Changed
 from engine.command.context import Context
 from core.base.listener.deletion_listener import DeletionListener
 from core.base.model.model import Model

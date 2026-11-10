@@ -3,7 +3,7 @@ import os
 from dataclasses import fields
 from pathlib import Path
 
-from core.base.change.change import BOOKKEEPING_FIELDS
+from engine.change.change import BOOKKEEPING_FIELDS
 from engine.journal.journal_home import JournalHome
 from core.base.module.module import Module
 from core.base.module.module_check import ModuleCheck

@@ -1,8 +1,8 @@
 from collections.abc import Sequence
-from core.base.change.change import METADATA
+from engine.change.change import METADATA
 from core.base.model.event_form import EventForm
-from core.base.change.event_log import JOURNAL_BOOTING_EVENT, REGISTRY_SYNC_EVENT, UPGRADE_FINISHED_EVENT, UPGRADE_MOVED_EVENT
-from core.base.change.event_pattern import EventPattern
+from engine.change.event_log import JOURNAL_BOOTING_EVENT, REGISTRY_SYNC_EVENT, UPGRADE_FINISHED_EVENT, UPGRADE_MOVED_EVENT
+from engine.change.event_pattern import EventPattern
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables

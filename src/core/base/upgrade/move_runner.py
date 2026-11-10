@@ -3,7 +3,7 @@ from contextlib import AbstractContextManager
 from pathlib import Path
 
 from engine.actor.actor import CORE_ACTOR_ID
-from core.base.change.event_log import EventLog
+from engine.change.event_log import EventLog
 from engine.time.clock import Clock
 from core.base.database.database import Database
 from engine.journal.journal_home import JournalHome

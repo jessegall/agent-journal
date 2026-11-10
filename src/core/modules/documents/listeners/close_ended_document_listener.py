@@ -1,4 +1,4 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from engine.query.queries import Queries
 from core.modules.agents.events.agent_ended import AgentEnded

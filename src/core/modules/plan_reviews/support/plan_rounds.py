@@ -1,8 +1,8 @@
 from collections.abc import Iterator, Mapping, Sequence, Set
 import re
 
-from core.base.change.event_log import EventLog
-from core.base.change.logged_event import LoggedEvent
+from engine.change.event_log import EventLog
+from engine.change.logged_event import LoggedEvent
 from core.base.model.model import Model
 from core.base.model.tables import Tables
 from engine.query.conditions.minimum import Minimum

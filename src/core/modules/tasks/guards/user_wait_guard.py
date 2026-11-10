@@ -5,7 +5,7 @@ from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.tasks.support.task_opener import USER_TARGET
 from core.modules.tasks.support.task_waits import TaskWaits
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task

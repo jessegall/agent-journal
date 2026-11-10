@@ -1,5 +1,5 @@
-from core.base.change.file_publishing import FilePublishing
-from core.base.change.logged_event import LoggedEvent
+from engine.change.file_publishing import FilePublishing
+from engine.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.modules.profiles.support.profile_folder_move import ProfileFolderMove
 

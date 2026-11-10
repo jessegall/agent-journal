@@ -5,7 +5,7 @@ from engine.errors.refusal import Refusal
 from core.modules.docking.guards.support.docking_arrival import DockingArrival
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.docking.support.dock_limits import MOST_ITEMS_SETTING, DockLimits
-from core.base.change.changed import Changed
+from engine.change.changed import Changed
 from engine.command.context import Context
 from core.modules.docking.models.dock_item import DockItem
 

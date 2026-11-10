@@ -1,11 +1,11 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.questions.models.enums.question_mark_type import QuestionMarkType
 from core.modules.questions.models.enums.question_mark_variant import QuestionMarkVariant
 from core.modules.questions.models.question import Question
 from typing import TypeVar
 
-from core.base.change.changed import Changed
+from engine.change.changed import Changed
 
 
 QuestionEvent = TypeVar("QuestionEvent", bound=Changed[Question])

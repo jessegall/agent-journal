@@ -3,7 +3,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 from engine.agent.agent_checkouts import AgentCheckouts
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.checkout.checkout import Checkout
 from engine.checkout.checkout_file import CheckoutFile
 from engine.time.clock import Clock
@@ -29,7 +29,7 @@ from core.modules.plugins.support.plugin_run import PluginRun
 from core.modules.plugins.support.plugin_run_request import PluginRunRequest
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
-from core.base.change.created import Created
+from engine.change.created import Created
 
 FILE_FIELD = "file"
 COMMIT_SUFFIX = " (commit)"

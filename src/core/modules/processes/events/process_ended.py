@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 from core.modules.processes.models.process import Process
 

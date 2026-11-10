@@ -1,5 +1,5 @@
-from core.base.change.changed import Changed
-from core.base.change.deleted import Deleted
+from engine.change.changed import Changed
+from engine.change.deleted import Deleted
 from engine.command.context import Context
 from core.base.listener.save_listener import SaveListener
 from core.modules.settings.models.setting import Setting

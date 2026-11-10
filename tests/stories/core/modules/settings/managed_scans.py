@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.change.event_log import EventLog
+from engine.change.event_log import EventLog
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.program_hooks import ProgramHooks
 from tests.stories.core.support.fixtures import MainEnvironment

@@ -1,10 +1,10 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.scope.actor_scope import ActorScope
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.triggers.models.enums.trigger_mark_type import TriggerMarkType
 from core.modules.triggers.models.enums.trigger_mark_variant import TriggerMarkVariant
 from core.modules.triggers.models.trigger import Trigger
-from core.base.change.changed import Changed
+from engine.change.changed import Changed
 
 
 class TriggerWaitingMarkListener(MarkListener[Changed[Trigger]]):

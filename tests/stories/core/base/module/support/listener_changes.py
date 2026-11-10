@@ -1,5 +1,5 @@
-from core.base.change.journal_booting import JournalBooting
-from core.base.change.logged_event import LoggedEvent
+from engine.change.journal_booting import JournalBooting
+from engine.change.logged_event import LoggedEvent
 from engine.command.context import Context
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.save_listener import SaveListener

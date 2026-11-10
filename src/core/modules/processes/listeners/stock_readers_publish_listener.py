@@ -1,9 +1,9 @@
 from engine.actor.actor import Actor
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.modules.processes.commands.update_stock_readers.update_stock_readers import UpdateStockReaders
-from core.base.change.file_publishing import FilePublishing
+from engine.change.file_publishing import FilePublishing
 
 
 class StockReadersPublishListener(CommitListener[FilePublishing]):

@@ -1,7 +1,7 @@
 from engine.errors.refusal import Refusal
 from core.modules.viewer.guards.person_row_guard import PersonRowGuard
 from core.modules.viewer.models.viewer_layout import ViewerLayout
-from core.base.change.changed import Changed
+from engine.change.changed import Changed
 
 
 class LayoutOwnerGuard(PersonRowGuard[Changed[ViewerLayout]]):

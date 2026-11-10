@@ -1,10 +1,10 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.scope.actor_scope import ActorScope
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.reviews.models.enums.review_mark_type import ReviewMarkType
 from core.modules.reviews.models.enums.review_mark_variant import ReviewMarkVariant
 from core.modules.reviews.models.review import Review
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from core.modules.reviews.models.lifecycles.review_lifecycle import ReviewLifecycle
 
 

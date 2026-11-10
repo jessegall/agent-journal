@@ -2,16 +2,16 @@ from dataclasses import dataclass, fields
 from typing import Generic, TypeVar
 
 from engine.actor.actor import Actor
-from core.base.change.changed import Changed, is_changed_class
-from core.base.change.created import Created
-from core.base.change.deleted import Deleted
-from core.base.change.event_subscriber import EventSubscriber
-from core.base.change.moved import Moved
-from core.base.change.updated import Updated
+from engine.change.changed import Changed, is_changed_class
+from engine.change.created import Created
+from engine.change.deleted import Deleted
+from engine.change.event_subscriber import EventSubscriber
+from engine.change.moved import Moved
+from engine.change.updated import Updated
 from engine.command.context import Context
 from core.base.model.model import Model
 from core.base.model.move import Move
-from core.base.change.missing_row_error import MissingRowError
+from engine.change.missing_row_error import MissingRowError
 
 
 M = TypeVar("M", bound=Model, covariant=True)

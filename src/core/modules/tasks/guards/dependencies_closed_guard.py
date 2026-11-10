@@ -2,7 +2,7 @@ from engine.guard.guard import Guard
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.tasks.models.open_dependency import OpenDependency
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task

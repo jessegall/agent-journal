@@ -1,10 +1,10 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.memories.listeners.memory_mark_listener import MEMORIES_MODULE
 from core.modules.memories.models.enums.memory_mark_type import MemoryMarkType
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
 from core.modules.reminders.models.reminder import Reminder
-from core.base.change.created import Created
+from engine.change.created import Created
 
 MINUTE = 60
 

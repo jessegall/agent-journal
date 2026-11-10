@@ -1,5 +1,5 @@
 from core.modules.processes.events.output_ended import OutputEnded
-from core.base.change.updated import Updated
+from engine.change.updated import Updated
 from dataclasses import replace
 
 from core.base.listener.save_listener import SaveListener

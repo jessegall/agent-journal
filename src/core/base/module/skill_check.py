@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.change.event_pattern import EventPattern
+from engine.change.event_pattern import EventPattern
 from core.base.module.module import Module
 from core.base.module.name_groups import NameGroups
 from engine.skill.skill_declaration import SKILLS_FOLDER

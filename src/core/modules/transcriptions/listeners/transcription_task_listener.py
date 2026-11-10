@@ -14,8 +14,8 @@ from core.modules.transcriptions.models.transcription import Transcription
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from core.modules.transcriptions.support.transcription_nudges import LINE_SOURCE
 from core.modules.transcriptions.support.transcription_nudges import TRANSCRIPTION_CHANGED
-from core.base.change.changed import Changed
-from core.base.change.deleted import Deleted
+from engine.change.changed import Changed
+from engine.change.deleted import Deleted
 from engine.command.context import Context
 
 TITLE_CHARACTERS = 80

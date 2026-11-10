@@ -35,7 +35,7 @@ from core.base.model.event_form import EventForm
 from core.base.registry.event_key_entry import EventKeyEntry
 from tests.unit.core.base.model.test_lifecycle import ItemState
 from tests.unit.core.base.model.test_model import Item
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from engine.command.context import Context
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 

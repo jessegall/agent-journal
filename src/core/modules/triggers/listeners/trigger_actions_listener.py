@@ -1,9 +1,9 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from engine.query.queries import Queries
 from core.modules.triggers.models.trigger import Trigger
 from core.modules.triggers.support.trigger_action_process import TriggerActionProcess
-from core.base.change.updated import Updated
+from engine.change.updated import Updated
 
 FIRED_FIELD = "fired_count"
 

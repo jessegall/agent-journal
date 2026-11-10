@@ -1,11 +1,11 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import AGENTS_TABLE
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.drivers.models.enums.dispatch_mark_type import DispatchMarkType
 from core.modules.drivers.models.enums.dispatch_mark_variant import DispatchMarkVariant
 from core.modules.drivers.models.helper_job import HelperJob
-from core.base.change.changed import Changed
+from engine.change.changed import Changed
 
 
 class HelperJobMarkListener(MarkListener[Changed[HelperJob]]):

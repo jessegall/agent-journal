@@ -1,7 +1,7 @@
 from engine.errors.refusal import Refusal
 from core.modules.viewer.guards.person_row_guard import PersonRowGuard
 from core.modules.viewer.models.window_permission import WindowPermission
-from core.base.change.changed import Changed
+from engine.change.changed import Changed
 
 
 class PermissionOwnerGuard(PersonRowGuard[Changed[WindowPermission]]):

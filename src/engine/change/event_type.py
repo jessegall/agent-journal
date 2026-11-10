@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from types import UnionType
 from typing import TypeIs, TypeVar, Union, get_args, get_origin
 
-from core.base.change.changed import Changed
-from core.base.change.system_event import SystemEvent
-from core.base.change.touched import Touched
+from engine.change.changed import Changed
+from engine.change.system_event import SystemEvent
+from engine.change.touched import Touched
 from core.base.model.model import Model
 from core.base.model.move import Move
 

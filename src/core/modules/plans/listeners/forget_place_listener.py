@@ -3,7 +3,7 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.plans.models.phase_task import PhaseTask
 from core.modules.plans.support.positions import Positions
-from core.base.change.deleted import Deleted
+from engine.change.deleted import Deleted
 from engine.command.context import Context
 from core.modules.tasks.models.task import Task
 

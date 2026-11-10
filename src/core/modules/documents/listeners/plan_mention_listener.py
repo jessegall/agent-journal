@@ -1,7 +1,7 @@
 from core.modules.documents.listeners.text_mention_listener import TextMentionListener
 from core.modules.plans.models.plan import Plan
-from core.base.change.created import Created
-from core.base.change.updated import Updated
+from engine.change.created import Created
+from engine.change.updated import Updated
 
 
 class PlanMentionListener(TextMentionListener[Created[Plan] | Updated[Plan]]):

@@ -1,7 +1,7 @@
 
 from engine.enums.actor_type import ActorType
-from core.base.change.changed import Changed
-from core.base.change.deleted import Deleted
+from engine.change.changed import Changed
+from engine.change.deleted import Deleted
 from engine.command.context import Context
 from engine.command.completed_command_error import CompletedCommandError
 from engine.guard.guard import Guard

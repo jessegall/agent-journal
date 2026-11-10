@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from core.base.change.event_pattern import EventPattern
+from engine.change.event_pattern import EventPattern
 from engine.command.delete_command import DeleteCommand
 from engine.command.edit_command import EditCommand
 from engine.command.handlers.delete_handler import DeleteHandler

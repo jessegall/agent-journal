@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from engine.query.conditions.is_null import IsNull
@@ -8,7 +8,7 @@ from engine.query.conditions.among import Among
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run import END, MoveSequenceRun
 from core.modules.sequences.support.sequence_events import SequenceEvents
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.base.change.touched import Touched
+from engine.change.touched import Touched
 from core.base.model.model import Model
 
 

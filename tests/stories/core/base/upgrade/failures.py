@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from core.base.change.event_log import EventLog
+from engine.change.event_log import EventLog
 from core.base.database.database import Database
 from install.restore_version_four import RestoreVersionFour
 from install.upgrade_journal import UpgradeJournal

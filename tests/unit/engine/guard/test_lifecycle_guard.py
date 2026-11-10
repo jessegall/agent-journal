@@ -5,8 +5,8 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.change.change import Change
-from core.base.change.event_pattern import EventPattern
+from engine.change.change import Change
+from engine.change.event_pattern import EventPattern
 from engine.command.context import Context
 from engine.container.container import Container
 from engine.guard.change_filter import ChangeFilter

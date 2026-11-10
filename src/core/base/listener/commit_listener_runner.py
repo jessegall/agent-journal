@@ -2,10 +2,10 @@ from time import perf_counter
 from functools import cached_property
 
 from engine.command.server_stopping_error import ServerStoppingError
-from core.base.change.event_log import EventLog
-from core.base.change.changed import Changed
-from core.base.change.event_type import EventType
-from core.base.change.logged_event import LoggedEvent
+from engine.change.event_log import EventLog
+from engine.change.changed import Changed
+from engine.change.event_type import EventType
+from engine.change.logged_event import LoggedEvent
 from engine.container.container import Container
 from engine.log.error_log import ErrorLog
 from engine.enums.log_level import LogLevel

@@ -13,7 +13,7 @@ from dataclasses import asdict, dataclass, field, replace
 from functools import cached_property, lru_cache
 from core.base.registry.parsed_registries import ParsedRegistries
 
-from core.base.change.event_pattern import EventPattern
+from engine.change.event_pattern import EventPattern
 from core.base.database.database import Database
 from engine.container.container import Container
 from core.base.database.registry_table import RegistryTable

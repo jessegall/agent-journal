@@ -1,9 +1,9 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.schedules.models.enums.schedule_mark_type import ScheduleMarkType
 from core.modules.schedules.models.enums.schedule_mark_variant import ScheduleMarkVariant
 from core.modules.schedules.models.scheduled_job import ScheduledJob
-from core.base.change.updated import Updated
+from engine.change.updated import Updated
 
 SCHEDULES_MODULE = "journal.core.schedules"
 JOB_RUN_FIELD = "last_run_at"

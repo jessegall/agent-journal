@@ -1,7 +1,7 @@
 from core.modules.documents.listeners.new_text_dock_listener import NewTextDockListener
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.enums.text_dock_type import TextDockType
-from core.base.change.created import Created
+from engine.change.created import Created
 
 
 class NewDocDockListener(NewTextDockListener[Created[Doc]]):

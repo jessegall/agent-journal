@@ -1,11 +1,11 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from core.modules.triggers.commands.deliver_trigger_output.deliver_trigger_output import DeliverTriggerOutput
 from core.modules.triggers.models.trigger_action_run import TriggerActionRun
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 

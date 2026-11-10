@@ -1,4 +1,4 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.base.database.kept_rows import KeptRows
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
@@ -6,7 +6,7 @@ from core.modules.messages.models.message import Message
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
-from core.base.change.created import Created
+from engine.change.created import Created
 from core.modules.messages.support.message_targets import MessageTargets
 
 

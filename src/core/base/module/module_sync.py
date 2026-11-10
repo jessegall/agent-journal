@@ -16,7 +16,7 @@ from engine.command.make_command import MakeCommand
 from engine.command.move_command import MoveCommand
 from core.base.database.core_tables_migration import CORE_MIGRATIONS
 from engine.actor.actor import CORE_ACTOR_ID
-from core.base.change.event_log import EventLog
+from engine.change.event_log import EventLog
 from core.base.database.database import Database
 from core.base.database.migration import Migration
 from core.base.database.schema import Schema
@@ -36,7 +36,7 @@ from core.base.listener.save_listener import SaveListener
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.window_extensions import WindowExtensions
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.change.event_pattern import EventPattern
+from engine.change.event_pattern import EventPattern
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming

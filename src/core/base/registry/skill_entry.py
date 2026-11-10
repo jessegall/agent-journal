@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import Any
 
-from core.base.change.event_pattern import EventPattern
+from engine.change.event_pattern import EventPattern
 
 
 @dataclass(frozen=True)

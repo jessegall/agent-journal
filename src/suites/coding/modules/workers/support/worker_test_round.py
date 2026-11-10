@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from operator import attrgetter
 
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 
 

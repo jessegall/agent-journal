@@ -1,4 +1,4 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
@@ -12,8 +12,8 @@ from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.dumps.models.dump import Dump
 from core.modules.dumps.models.enums.dump_dock_type import DumpDockType
-from core.base.change.changed import Changed
-from core.base.change.created import Created
+from engine.change.changed import Changed
+from engine.change.created import Created
 
 DUMPS_MODULE = "journal.core.dumps"
 

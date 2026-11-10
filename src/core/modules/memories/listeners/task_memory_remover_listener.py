@@ -2,9 +2,9 @@ from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from collections.abc import Sequence
 from core.base.database.kept_rows import KeptRows
 from engine.query.conditions.among import Among
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from engine.actor.actor import Actor
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from engine.query.queries import Queries

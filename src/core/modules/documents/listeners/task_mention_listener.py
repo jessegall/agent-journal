@@ -1,6 +1,6 @@
 from core.modules.documents.listeners.text_mention_listener import TextMentionListener
 from core.modules.tasks.models.task import Task
-from core.base.change.changed import Changed
+from engine.change.changed import Changed
 
 
 class TaskMentionListener(TextMentionListener[Changed[Task]]):

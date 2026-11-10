@@ -4,7 +4,7 @@ from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.modules.tasks.queries.task_query import TaskQuery
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task

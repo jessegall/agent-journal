@@ -1,5 +1,5 @@
-from core.base.change.created import Created
-from core.base.change.logged_event import LoggedEvent
+from engine.change.created import Created
+from engine.change.logged_event import LoggedEvent
 from engine.scope.actor_scope import ActorScope
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.helpers.models.provider_outage import ProviderOutage

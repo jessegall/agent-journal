@@ -6,8 +6,8 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.change.change import Change
-from core.base.change.event_log import EventLog
+from engine.change.change import Change
+from engine.change.event_log import EventLog
 from engine.command.context import Context
 from core.base.database.core_tables_migration import CORE_MIGRATIONS
 from core.base.database.database import Database

@@ -12,7 +12,7 @@ from core.modules.processes.models.process import Process
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.support.test_run_nudges import TESTING_TASKS_FAILED_RUN, TESTING_TASKS_FULL_RUN
-from core.base.change.created import Created
+from engine.change.created import Created
 from core.modules.processes.events.process_ended import ProcessEnded
 
 SOURCE = "tasks.full-test-run"

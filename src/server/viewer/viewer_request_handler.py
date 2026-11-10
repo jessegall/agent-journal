@@ -18,7 +18,7 @@ from server.viewer.event_stream import EventStream
 from server.viewer.file_route import LIMIT_BYTES
 from server.viewer.events_request import EventsRequest
 from core.base.database.repeated_lines import RepeatedLines
-from core.base.change.event_pattern_error import EventPatternError
+from engine.change.event_pattern_error import EventPatternError
 from engine.types.type_guards import is_list
 from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.line_answer import LineAnswer

@@ -1,8 +1,8 @@
 from pathlib import Path
 from unittest.mock import patch
 
-from core.base.change.event_log import EventLog
-from core.base.change.touched import Touched
+from engine.change.event_log import EventLog
+from engine.change.touched import Touched
 from core.base.database.database import Database
 from core.modules.skills.listeners.skill_event_listener import SkillEventListener
 from tests.stories.core.modules.skills.due import DUE

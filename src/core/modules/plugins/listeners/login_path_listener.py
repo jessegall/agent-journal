@@ -1,7 +1,7 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.modules.plugins.support.login_path import LoginPath
-from core.base.change.file_publishing import FilePublishing
+from engine.change.file_publishing import FilePublishing
 
 
 class LoginPathListener(CommitListener[FilePublishing]):

@@ -1,4 +1,4 @@
-from core.base.change.change import Change
+from engine.change.change import Change
 from engine.container.container import Container
 from engine.guard.change_filter import ChangeFilter
 from engine.listener.event_listeners import EventListeners

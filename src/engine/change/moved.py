@@ -2,9 +2,9 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import ClassVar
 
-from core.base.change.changed import M
-from core.base.change.missing_move_error import MissingMoveError
-from core.base.change.updated import Updated
+from engine.change.changed import M
+from engine.change.missing_move_error import MissingMoveError
+from engine.change.updated import Updated
 from core.base.model.model import Model
 from core.base.model.move import Move
 

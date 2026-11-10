@@ -1,7 +1,7 @@
 import pytest
 
-from core.base.change.event_log import EventLog
-from core.base.change.event_pattern import EventPattern
+from engine.change.event_log import EventLog
+from engine.change.event_pattern import EventPattern
 from engine.container.container import Container
 from core.base.database.database import Database
 from core.base.database.statement import Statement
@@ -16,7 +16,7 @@ from engine.repository.repository import Repository
 from tests.unit.core.base.sample_container import context, empty_registry, sample_container
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_model import Item
-from core.base.change.deleted import Deleted
+from engine.change.deleted import Deleted
 from engine.command.context import Context
 
 NOTES = "CREATE TABLE item_notes (id INTEGER PRIMARY KEY, item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE RESTRICT) STRICT"

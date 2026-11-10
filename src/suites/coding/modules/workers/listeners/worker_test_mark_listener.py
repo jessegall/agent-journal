@@ -1,5 +1,5 @@
-from core.base.change.logged_event import LoggedEvent
-from core.base.change.event_log import EventLog
+from engine.change.logged_event import LoggedEvent
+from engine.change.event_log import EventLog
 from engine.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
@@ -9,7 +9,7 @@ from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMa
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.support.worker_test_round import WorkerTestRound
 

@@ -1,10 +1,10 @@
 import json
 
-from core.base.change.journal_booting import JournalBooting
-from core.base.change.logged_event import LoggedEvent
-from core.base.change.registry_synced import RegistrySynced
-from core.base.change.upgrade_finished import UpgradeFinished
-from core.base.change.upgrade_moved import UpgradeMoved
+from engine.change.journal_booting import JournalBooting
+from engine.change.logged_event import LoggedEvent
+from engine.change.registry_synced import RegistrySynced
+from engine.change.upgrade_finished import UpgradeFinished
+from engine.change.upgrade_moved import UpgradeMoved
 from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.model.event_form import EventForm

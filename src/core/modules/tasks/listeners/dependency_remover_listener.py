@@ -3,7 +3,7 @@ from engine.query.queries import Queries
 from engine.query.conditions.equal import Equal
 from engine.repository.repository import Repository
 from core.modules.tasks.models.task_dependency import TaskDependency
-from core.base.change.deleted import Deleted
+from engine.change.deleted import Deleted
 from engine.command.context import Context
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_waits import TaskWaits

@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.event_rows import EventRows
@@ -11,7 +11,7 @@ from core.modules.drivers.support.line_typing import LineTyping
 from core.modules.messages.commands.record_message_delivery.record_message_delivery import RecordMessageDelivery
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.waiting_message_lines import WAITING_MESSAGE_SOURCE, WaitingMessageLines
-from core.base.change.created import Created
+from engine.change.created import Created
 
 
 class WaitingMessageTypingListener(CommitListener[Created[AgentLine]]):

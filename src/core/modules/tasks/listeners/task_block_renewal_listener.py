@@ -1,4 +1,4 @@
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from engine.command.context import Context
 from core.base.listener.save_listener import SaveListener
 from engine.repository.repository import Repository

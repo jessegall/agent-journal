@@ -1,4 +1,4 @@
-from core.base.change.changed import Changed
+from engine.change.changed import Changed
 from core.base.listener.commit_listener import CommitListener
 from core.base.model.model import Model
 

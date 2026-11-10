@@ -2,9 +2,9 @@ import json
 from dataclasses import replace
 
 from engine.enums.actor_type import ActorType
-from core.base.change.change import Change
-from core.base.change.changed import Changed
-from core.base.change.event_log import EventLog
+from engine.change.change import Change
+from engine.change.changed import Changed
+from engine.change.event_log import EventLog
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.enums.log_level import LogLevel

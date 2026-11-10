@@ -1,12 +1,12 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module import Module
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.queries.task_query import TaskQuery
-from core.base.change.moved import Moved
+from engine.change.moved import Moved
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 

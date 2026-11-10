@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.base.change.event_pattern import EventPattern
+from engine.change.event_pattern import EventPattern
 
 
 @dataclass(frozen=True)

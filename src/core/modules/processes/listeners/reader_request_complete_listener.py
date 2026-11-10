@@ -16,8 +16,8 @@ from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.run_title import RunTitle
-from core.base.change.changed import Changed
-from core.base.change.deleted import Deleted
+from engine.change.changed import Changed
+from engine.change.deleted import Deleted
 from engine.command.context import Context
 
 

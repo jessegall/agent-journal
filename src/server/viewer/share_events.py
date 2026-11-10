@@ -1,4 +1,4 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.container.container import Container
 from core.base.model.model import Model
 from core.base.model.tables import Tables

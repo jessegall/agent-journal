@@ -3,8 +3,8 @@ from collections.abc import Callable, Sequence
 from dataclasses import fields, replace
 from typing import TypeVar
 
-from core.base.change.change import BOOKKEEPING_FIELDS, Change
-from core.base.change.event_log import EventLog
+from engine.change.change import BOOKKEEPING_FIELDS, Change
+from engine.change.event_log import EventLog
 from engine.command.context import Context
 from core.base.database.constraint_refusals import ConstraintRefusals
 from core.base.database.database import Database

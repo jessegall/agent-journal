@@ -3,15 +3,15 @@ from core.base.database.kept_rows import KeptRows
 import json
 import shlex
 
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.journal.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.models.alias import ARGS_MARK, Alias
 from core.modules.aliases.support.alias_names import AliasNames
 from core.modules.aliases.support.alias_shell_aliases import AliasShellAliases
-from core.base.change.file_publishing import FilePublishing
-from core.base.change.touched import Touched
+from engine.change.file_publishing import FilePublishing
+from engine.change.touched import Touched
 from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.models.command_type import CommandType
 from engine.query.queries import Queries

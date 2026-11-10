@@ -1,4 +1,4 @@
-from core.base.change.changed import Changed
+from engine.change.changed import Changed
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from core.modules.helpers.models.provider_outage import ProviderOutage

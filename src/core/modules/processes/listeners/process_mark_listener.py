@@ -1,12 +1,12 @@
 import re
 
 from engine.enums.actor_type import ActorType
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.chat.mark_outcome import MarkOutcome
 from engine.command.bus import Bus
 from core.base.driver.project_paths import ProjectPaths
 from core.base.driver.command_category import CommandCategory
-from core.base.change.event_subscriber import E
+from engine.change.event_subscriber import E
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.event_rows import EventRows
 from core.base.module.module_actors import ModuleActors

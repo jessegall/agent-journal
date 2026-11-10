@@ -1,4 +1,4 @@
-from core.base.change.updated import Updated
+from engine.change.updated import Updated
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal

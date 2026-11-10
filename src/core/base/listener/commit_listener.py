@@ -1,8 +1,8 @@
 from typing import ClassVar, TypeIs
 from collections.abc import Sequence
 
-from core.base.change.event_subscriber import E, EventSubscriber
-from core.base.change.logged_event import LoggedEvent
+from engine.change.event_subscriber import E, EventSubscriber
+from engine.change.logged_event import LoggedEvent
 from engine.scope.scopes import DisabledScopes
 
 

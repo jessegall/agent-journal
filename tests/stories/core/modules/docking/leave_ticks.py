@@ -2,8 +2,8 @@ from datetime import timedelta
 
 import pytest
 
-from core.base.change.event_log import EventLog
-from core.base.change.touched import Touched
+from engine.change.event_log import EventLog
+from engine.change.touched import Touched
 from core.base.database.database import Database
 from core.modules.docking.listeners.dock_item_leave_listener import DockItemLeaveListener
 from core.modules.docking.models.dock_item import DockItem

@@ -1,8 +1,8 @@
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 from core.modules.skills.listeners.skill_listener import SkillListener
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.base.change.touched import Touched
+from engine.change.touched import Touched
 from core.base.model.model import Model
 
 

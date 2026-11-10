@@ -1,4 +1,4 @@
-from core.base.change.event_log import EventLog
+from engine.change.event_log import EventLog
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler

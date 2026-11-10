@@ -1,6 +1,6 @@
 from core.modules.agents.events.agent_ended import AgentEnded
 from core.modules.drivers.support.suite_choice import SuiteChoice
-from core.base.change.logged_event import LoggedEvent
+from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
