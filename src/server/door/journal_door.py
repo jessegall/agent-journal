@@ -1,4 +1,4 @@
-from server.socket_peer import SocketPeer
+from server.door.socket_peer import SocketPeer
 from server.viewer.door_refusal import DoorRefusal
 
 

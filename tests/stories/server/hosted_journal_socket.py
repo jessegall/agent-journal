@@ -1,6 +1,6 @@
 import pytest
 
-from server.hosted_journal_door import OWNER_REASON
+from server.door.hosted_journal_door import OWNER_REASON
 from tests.stories.server.support.hosted_viewer import agent_server, local_server, owner_server
 from tests.stories.server.support.server_client import raw_answer, read_answer, request_answer
 from tests.stories.support.story_checks import expect_value

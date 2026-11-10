@@ -1,4 +1,4 @@
-from server.socket_peer import socket_peer
+from server.door.socket_peer import socket_peer
 from server.viewer.viewer_request_handler import ViewerRequestHandler
 
 

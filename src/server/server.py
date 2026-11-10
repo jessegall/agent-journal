@@ -35,8 +35,8 @@ from server.code_sync_work import CodeSyncWork
 from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
 from server.handover_descriptors import HandoverDescriptors
-from server.hosted_journal_door import HostedJournalDoor
-from server.local_journal_door import LocalJournalDoor
+from server.door.hosted_journal_door import HostedJournalDoor
+from server.door.local_journal_door import LocalJournalDoor
 from server.journal_server import JournalServer
 from core.base.serving.server_limits import DRAIN_LIMIT_SECONDS
 from server.server_context import ServerContext

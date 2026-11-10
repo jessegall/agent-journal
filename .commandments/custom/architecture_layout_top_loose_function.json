@@ -32,9 +32,6 @@
             },
             {
                 "file": "src/server/server_instance.py"
-            },
-            {
-                "file": "src/server/socket_peer.py"
             }
         ]
     },

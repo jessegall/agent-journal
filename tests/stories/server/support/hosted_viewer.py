@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from server.hosted_journal_door import HostedJournalDoor
+from server.door.hosted_journal_door import HostedJournalDoor
 from server.viewer.viewer_socket_listener import ViewerSocketListener
 from tests.stories.server.support.server_client import raw_answer, read_answer, server_story
 

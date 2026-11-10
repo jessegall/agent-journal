@@ -1,6 +1,6 @@
 import pytest
 
-from server.hosted_journal_door import OWNER_REASON
+from server.door.hosted_journal_door import OWNER_REASON
 from server.viewer import viewer_request_handler
 from server.viewer.viewer_request_handler import CLOSED_DOOR_REASON, EVENTS_ROUTE, SERVER_STATE_ROUTE
 from server.viewer.route_audience import RouteAudience

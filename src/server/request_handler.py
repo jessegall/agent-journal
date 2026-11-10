@@ -30,7 +30,7 @@ from engine.provider.errors.unknown_program_error import UnknownProgramError
 from server.server_instance import server_instance
 from server.journal_server import JournalServer
 from server.listener_wake import ListenerWake
-from server.socket_peer import socket_peer
+from server.door.socket_peer import socket_peer
 from server.successor_start import SuccessorStart
 
 EXIT_CODE_TRAILER = "Journal-Exit-Code"

@@ -1,4 +1,4 @@
-from server.hosted_journal_door import OWNER_ROUTES
+from server.door.hosted_journal_door import OWNER_ROUTES
 from server.viewer.route_audience import RouteAudience
 from server.viewer.viewer_request_handler import (
     BUTTONS_ROUTE, DOCKS_ROUTE, EVENTS_ROUTE, FILES_ROUTE, KIT_ROUTE, LINE_ROUTE, LINES_ROUTE, LOGIN_LINK_ROUTE, MARKS_ROUTE, MESSAGE_FILES,

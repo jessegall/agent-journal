@@ -73,9 +73,6 @@
                 "file": "src/server/handover_descriptors.py"
             },
             {
-                "file": "src/server/hosted_journal_door.py"
-            },
-            {
                 "file": "src/server/journal_round.py"
             },
             {
@@ -101,9 +98,6 @@
             },
             {
                 "file": "src/server/server_instance.py"
-            },
-            {
-                "file": "src/server/socket_peer.py"
             },
             {
                 "file": "src/server/successor_proof.py"

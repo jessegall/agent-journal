@@ -36,8 +36,8 @@ from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
 from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
-from server.journal_door import JournalDoor
-from server.local_journal_door import LocalJournalDoor
+from server.door.journal_door import JournalDoor
+from server.door.local_journal_door import LocalJournalDoor
 from server.journal_server import JournalServer
 from core.base.serving.server_limits import DRAIN_LIMIT_SECONDS
 from server.server_context import ServerContext
