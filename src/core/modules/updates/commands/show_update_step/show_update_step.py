@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.updates.models.enums.update_step import UpdateStep
 

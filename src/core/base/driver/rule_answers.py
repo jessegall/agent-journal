@@ -1,7 +1,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.base.driver.nudge import Nudge
 from core.base.driver.rule_record import RuleRecord
 from core.base.driver.stop_check import StopCheck

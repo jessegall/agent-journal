@@ -4,7 +4,7 @@ from core.modules.messages.models.message import Message
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.queries.message_query import MessageQuery
 from core.base.change.created import Created
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class OneReplyPerMessageGuard(Guard[Created[Message]]):

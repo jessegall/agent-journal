@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.container.container import Container
 from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome

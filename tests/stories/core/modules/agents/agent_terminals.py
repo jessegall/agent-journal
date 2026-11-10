@@ -2,7 +2,7 @@ import socket
 import threading
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.modules.agents.commands.bind_agent_session.bind_agent_session import BindAgentSession
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from tests.stories.core.modules.viewer.support.window_story import WindowStory

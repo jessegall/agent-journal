@@ -16,7 +16,7 @@ from core.base.change.moved import Moved
 from core.base.change.touched import Touched
 from core.base.listener.event_builder import EventBuilder
 from core.base.listener.commit_listener import CommitListener
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.model.added_state import AddedState
 from core.base.model.move import Move
 from core.base.model.state_addition import StateAddition
@@ -25,7 +25,7 @@ from core.base.model.tables import Tables
 from engine.time.timestamp import Timestamp
 from tests.unit.core.base.model.test_model import Item
 from tests.unit.core.base.model.test_lifecycle import ItemState
-from tests.unit.core.base.command.test_commands import MakeItem
+from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.core.base.change.test_event_log import log
 
 STAMP = Timestamp.parsed("2026-11-01T09:00:00+00:00")

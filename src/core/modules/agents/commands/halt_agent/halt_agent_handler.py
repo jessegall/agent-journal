@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from core.modules.agents.commands.halt_agent.halt_agent import HaltAgent
 from core.modules.agents.models.agent import Agent

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.updates.models.enums.update_step import UpdateStep
 from core.modules.updates.models.release_install import ReleaseInstall
 

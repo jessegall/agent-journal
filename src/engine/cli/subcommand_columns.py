@@ -3,7 +3,7 @@ from dataclasses import MISSING, Field, field
 from enum import StrEnum
 from types import new_class
 from typing import Any
-from core.base.command.handlers.make_handler import CREATOR_COLUMN
+from engine.command.handlers.make_handler import CREATOR_COLUMN
 from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
 from core.base.model.model import Model
 from core.base.model.table import Table

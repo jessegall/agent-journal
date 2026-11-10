@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from core.base.change.logged_event import LoggedEvent
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.modules.phone.commands.note_phone_notice.note_phone_notice import NotePhoneNotice
 from core.base.change.event_subscriber import E

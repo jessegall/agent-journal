@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.secrets.commands.support.filled_field import FilledField
 
 

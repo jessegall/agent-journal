@@ -1,5 +1,5 @@
 from core.base.change.logged_event import LoggedEvent
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries

@@ -6,7 +6,7 @@ from engine.repository.repository import Repository
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.base.change.deleted import Deleted
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class ProcessRemovalListener(DeletionListener[Deleted[Process]]):

@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from tests.stories.core.modules.chat.support.mark_samples import SAMPLE, SampleMarkType, SampleMarkVariant, StrangeVariant, mark_count, module_actor, expect_mark_count

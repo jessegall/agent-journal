@@ -1,4 +1,4 @@
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted

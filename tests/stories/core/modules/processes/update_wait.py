@@ -5,7 +5,7 @@ import subprocess
 from datetime import timedelta
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 from core.testing.hook_samples import HookSamples

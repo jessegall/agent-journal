@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.database.kept_rows import KeptRows
 from core.base.listener.event_rows import EventRows
 from engine.query.conditions.among import Among

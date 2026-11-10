@@ -10,7 +10,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from core.base.change.moved import Moved
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 

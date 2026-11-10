@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from suites.coding.modules.workers.commands.send_merged_worker_line.send_merged_worker_line import SendMergedWorkerLine
 from suites.coding.modules.workers.support.merger_nudges import WORKER_MERGED

@@ -1,9 +1,9 @@
 from dataclasses import replace
 
 from engine.enums.actor_type import ActorType
-from core.base.command.bus import Bus
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.bus import Bus
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.messages.commands.send_message.send_message import SendMessage

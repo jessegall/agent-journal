@@ -1,9 +1,9 @@
 from dataclasses import replace
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.bus import Bus
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.commands.record_agent_process.record_agent_process import RecordAgentProcess
 from suites.coding.modules.workers.commands.end_gone_worker.end_gone_worker import EndGoneWorker

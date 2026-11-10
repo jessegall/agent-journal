@@ -1,6 +1,6 @@
 import json
 
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 

@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries

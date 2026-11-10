@@ -5,7 +5,7 @@ import pytest
 from datetime import timedelta
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart

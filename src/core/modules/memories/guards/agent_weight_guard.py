@@ -3,7 +3,7 @@ from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.memories.models.memory import Memory
 from core.base.change.updated import Updated
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class AgentWeightGuard(Guard[Updated[Memory]]):

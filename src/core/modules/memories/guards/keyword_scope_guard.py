@@ -5,7 +5,7 @@ from core.modules.memories.models.memory import Memory
 from core.modules.memories.models.memory_keyword import MemoryKeyword
 from core.modules.memories.guards.support.memory_scope import MemoryScope
 from core.base.change.changed import Changed
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class KeywordScopeGuard(Guard[Changed[MemoryKeyword]]):

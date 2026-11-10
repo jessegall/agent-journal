@@ -6,7 +6,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.change.created import Created
 from core.base.change.moved import Moved
 from core.base.change.updated import Updated
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.event_rows import EventRows
 from engine.query.queries import Queries

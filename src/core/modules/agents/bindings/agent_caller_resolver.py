@@ -10,7 +10,7 @@ from engine.cli.shell_handoff import RUNNER_VARIABLE
 from engine.cli.usage_error import UsageError
 from core.base.provider.providers import Providers
 from engine.query.conditions.among import Among
-from core.base.command.script_policy import ScriptPolicy
+from engine.command.script_policy import ScriptPolicy
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from engine.caller.caller import Caller
 from core.modules.actors.queries.actor_query import ActorQuery

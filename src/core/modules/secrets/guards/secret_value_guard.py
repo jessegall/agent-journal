@@ -6,7 +6,7 @@ from engine.private.secret_values import SecretValues
 from engine.private.server_keys import ServerKeys
 from core.base.change.changed import Changed
 from core.base.change.deleted import Deleted
-from core.base.command.context import Context
+from engine.command.context import Context
 
 SHORTEST_GUARDED_CHARACTERS = 6
 

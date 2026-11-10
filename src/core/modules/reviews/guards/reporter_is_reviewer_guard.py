@@ -3,7 +3,7 @@ from engine.errors.refusal import Refusal
 from core.modules.reviews.models.lifecycles.review_lifecycle import ReviewLifecycle
 from core.modules.reviews.models.review import Review
 from core.base.change.changed import Changed
-from core.base.command.context import Context
+from engine.command.context import Context
 
 REPORTING_MOVES = (ReviewLifecycle.approve, ReviewLifecycle.reject, ReviewLifecycle.leave_undecided)
 

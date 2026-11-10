@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
 

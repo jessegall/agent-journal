@@ -31,28 +31,28 @@
                 "file": "src/engine/cli/usage_error.py"
             },
             {
-                "file": "src/core/base/command/command_error.py"
+                "file": "src/engine/command/command_error.py"
             },
             {
-                "file": "src/core/base/command/completed_command_error.py"
+                "file": "src/engine/command/completed_command_error.py"
             },
             {
-                "file": "src/core/base/command/explanation_rollback_error.py"
+                "file": "src/engine/command/explanation_rollback_error.py"
             },
             {
-                "file": "src/core/base/command/handlers/move_method_error.py"
+                "file": "src/engine/command/handlers/move_method_error.py"
             },
             {
-                "file": "src/core/base/command/missing_handler_error.py"
+                "file": "src/engine/command/missing_handler_error.py"
             },
             {
-                "file": "src/core/base/command/outside_run_rollback_error.py"
+                "file": "src/engine/command/outside_run_rollback_error.py"
             },
             {
-                "file": "src/core/base/command/server_stopping_error.py"
+                "file": "src/engine/command/server_stopping_error.py"
             },
             {
-                "file": "src/core/base/command/transaction_error.py"
+                "file": "src/engine/command/transaction_error.py"
             },
             {
                 "file": "src/core/base/database/foreign_key_error.py"

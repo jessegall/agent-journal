@@ -1,7 +1,7 @@
 from dataclasses import replace
 
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.processes.commands.title_output.title_output import TitleOutput

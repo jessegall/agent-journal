@@ -6,7 +6,7 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from engine.scope.scopes import Scopes
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.environments.support.environment_rows import EnvironmentRows

@@ -5,7 +5,7 @@ from core.modules.docking.models.dock_item import DockItem
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
 from core.base.change.changed import Changed
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class EndedProcessDockGuard(Guard[Changed[DockItem]]):

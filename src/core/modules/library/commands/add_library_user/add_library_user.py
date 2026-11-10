@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.library.models.enums.library_role import LibraryRole
 from core.modules.library.support.new_library_user import NewLibraryUser
 

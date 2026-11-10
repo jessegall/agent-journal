@@ -1,6 +1,6 @@
 import json
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.memories.listeners.memory_mark_listener import MEMORIES_MODULE

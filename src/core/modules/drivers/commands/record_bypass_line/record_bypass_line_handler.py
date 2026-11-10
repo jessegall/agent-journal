@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.drivers.commands.record_bypass_line.record_bypass_line import RecordBypassLine
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.driver_nudges import HOOKS_UNCHECKED

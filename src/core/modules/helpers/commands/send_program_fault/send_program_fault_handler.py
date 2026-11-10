@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from core.modules.helpers.commands.send_program_fault.send_program_fault import SendProgramFault
 from core.modules.helpers.support.helper_nudges import HELPER_PROGRAM_FAULT

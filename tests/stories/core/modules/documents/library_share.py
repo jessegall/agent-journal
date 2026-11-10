@@ -1,4 +1,4 @@
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.registry.registry import Registry
 from core.modules.documents.commands.edit_text.edit_text import EditText
 from core.modules.documents.models.doc import Doc

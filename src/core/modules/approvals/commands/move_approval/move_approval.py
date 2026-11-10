@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.base.model.move import Move
 from core.modules.approvals.models.approval_request import ApprovalRequest
 

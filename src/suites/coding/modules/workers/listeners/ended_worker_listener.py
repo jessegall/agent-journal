@@ -17,7 +17,7 @@ from suites.coding.modules.workers.support.worker_handoff import WorkerHandoff
 from suites.coding.modules.workers.support.worker_launch_failures import WorkerLaunchFailures
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
-from core.base.command.context import Context
+from engine.command.context import Context
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from suites.coding.modules.workers.support.worker_program_wait import WorkerProgramWait
 

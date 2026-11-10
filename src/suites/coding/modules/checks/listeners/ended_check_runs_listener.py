@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from core.base.change.logged_event import LoggedEvent
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from engine.query.queries import Queries
 from suites.coding.modules.checks.commands.record_check_progress.record_check_progress import RecordCheckProgress

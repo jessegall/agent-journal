@@ -5,7 +5,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.change.registry_synced import RegistrySynced
 from core.base.change.upgrade_finished import UpgradeFinished
 from core.base.change.upgrade_moved import UpgradeMoved
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.model.event_form import EventForm
 from core.base.module.module_actors import ModuleActors

@@ -5,7 +5,7 @@ from engine.errors.refusal import Refusal
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.processes.models.reader import Reader
 from core.base.change.deleted import Deleted
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class ReaderOwnerGuard(Guard[Deleted[Reader]]):

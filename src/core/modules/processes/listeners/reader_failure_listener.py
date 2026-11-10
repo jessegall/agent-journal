@@ -8,7 +8,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.reader_requests import ReaderRequests
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class ReaderFailureListener(SaveListener[OutputEnded]):

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from engine.time.duration import Duration
 from core.modules.processes.models.process import Process
 

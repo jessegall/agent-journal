@@ -10,8 +10,8 @@ from core.base.profile.agent_profile import AgentProfile
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from engine.chat.dock_declaration import DockDeclaration
 from engine.chat.mark_declaration import MarkDeclaration
-from core.base.command.command import Command
-from core.base.command.handler import Handler
+from engine.command.command import Command
+from engine.command.handler import Handler
 from core.base.database.migration import Migration
 from core.base.driver.driver import Driver
 from core.base.driver.driver_rule import DriverRule

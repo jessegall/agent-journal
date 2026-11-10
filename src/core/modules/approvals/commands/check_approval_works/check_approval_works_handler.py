@@ -6,12 +6,12 @@ from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.cli.console import Console
 from engine.cli.module_remove_line import MODULE_REMOVAL_ARGUMENTS
-from core.base.command.bus import Bus
-from core.base.command.check_approval_works import CheckApprovalWorks
-from core.base.command.command import Command
-from core.base.command.context import Context
-from core.base.command.dry_run import DryRunReachedEffect, dry_run
-from core.base.command.handler import Handler
+from engine.command.bus import Bus
+from engine.command.check_approval_works import CheckApprovalWorks
+from engine.command.command import Command
+from engine.command.context import Context
+from engine.command.dry_run import DryRunReachedEffect, dry_run
+from engine.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.subcommand.subcommand import Subcommand

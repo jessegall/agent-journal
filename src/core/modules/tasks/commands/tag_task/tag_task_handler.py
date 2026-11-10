@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.tasks.commands.tag_task.tag_task import TagTask
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_tags import TaskTags

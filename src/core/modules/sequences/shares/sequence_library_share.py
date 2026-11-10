@@ -1,7 +1,7 @@
 from dataclasses import asdict
 
 from engine.actor.actor import CORE_ACTOR_ID
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.library.library_share import Fields, LibraryShare
 from engine.repository.repository import Repository
 from core.modules.sequences.models.sequence import Sequence

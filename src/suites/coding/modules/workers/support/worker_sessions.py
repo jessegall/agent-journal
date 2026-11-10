@@ -4,7 +4,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 
 from engine.time.clock import Clock
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from engine.process.leftover_process import LeftoverProcess

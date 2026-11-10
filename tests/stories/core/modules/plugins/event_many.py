@@ -1,4 +1,4 @@
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.query.queries import Queries
 from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATED, NOTES, EventNote, ManyNotes
 from tests.stories.core.modules.plugins.support.event_stories import (

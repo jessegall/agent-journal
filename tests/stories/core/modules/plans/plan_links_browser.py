@@ -1,4 +1,4 @@
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions
 from core.modules.documents.references.row_ref import RowRef
 from tests.stories.core.support.fixtures import UserJoined

@@ -1,7 +1,7 @@
 from time import perf_counter
 from functools import cached_property
 
-from core.base.command.server_stopping_error import ServerStoppingError
+from engine.command.server_stopping_error import ServerStoppingError
 from core.base.change.event_log import EventLog
 from core.base.change.changed import Changed
 from core.base.change.event_type import EventType

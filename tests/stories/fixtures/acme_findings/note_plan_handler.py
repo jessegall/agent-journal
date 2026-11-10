@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.plans.queries.plan_query import PlanQuery
 
 from .note_plan import NotePlan

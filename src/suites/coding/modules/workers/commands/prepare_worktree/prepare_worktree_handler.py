@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from core.base.provider.program_hooks import ProgramHooks
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.environment.environment_names import EnvironmentNames
 from engine.journal.journal_home import JournalHome
 from core.base.provider.hook_manager import HookManager

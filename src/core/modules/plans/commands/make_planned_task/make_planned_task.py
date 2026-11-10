@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from core.base.command.command import Command
+from engine.command.command import Command
 
-from core.base.command.make_command import MakeCommand
+from engine.command.make_command import MakeCommand
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_creation import TaskCreation
 

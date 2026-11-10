@@ -7,9 +7,9 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.change.event_pattern import EventPattern
 from engine.cli.write_flags import WriteFlags
-from core.base.command.bus import Bus
-from core.base.command.handlers.make_handler import MakeHandler
-from core.base.command.make_command import MakeCommand
+from engine.command.bus import Bus
+from engine.command.handlers.make_handler import MakeHandler
+from engine.command.make_command import MakeCommand
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from engine.guard.guard import Guard
@@ -23,9 +23,9 @@ from core.base.registry.registry import Registry
 from engine.errors.refusal import Refusal
 from tests.unit.core.base.sample_container import sample_container
 from tests.unit.core.base.samples.listener_sample import ShelfCounter
-from tests.unit.core.base.command.test_commands import MakeItem
+from tests.unit.engine.command.test_commands import MakeItem
 from core.base.change.created import Created
-from core.base.command.context import Context
+from engine.command.context import Context
 from tests.unit.core.base.model.test_model import Item
 from core.base.change.changed import Changed
 

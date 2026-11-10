@@ -29,7 +29,7 @@
         ],
         "reject": [
             {
-                "fileMatches": "(^|/)src/core/base/command/handlers/move_handler\\.py$"
+                "fileMatches": "(^|/)src/engine/command/handlers/move_handler\\.py$"
             },
             {
                 "testCode": true

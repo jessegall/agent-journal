@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from engine.enums.agent_role import AgentRole
-from core.base.command.command import Command
-from core.base.command.context import Context
-from core.base.command.handler import Handler
-from core.base.command.move_command import MoveCommand
+from engine.command.command import Command
+from engine.command.context import Context
+from engine.command.handler import Handler
+from engine.command.move_command import MoveCommand
 from core.base.database.migration import Migration
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory

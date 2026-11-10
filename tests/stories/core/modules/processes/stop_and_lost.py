@@ -7,7 +7,7 @@ from datetime import timedelta
 
 from tests.stories.core.modules.processes.background import READ_NOTES
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run, start_process
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery

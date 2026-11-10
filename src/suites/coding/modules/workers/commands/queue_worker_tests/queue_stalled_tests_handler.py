@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.commands.queue_worker_tests.queue_stalled_tests import QueueStalledTests
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery

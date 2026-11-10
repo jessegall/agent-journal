@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.command.command import Command
+from engine.command.command import Command
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.memories.models.memory import Memory

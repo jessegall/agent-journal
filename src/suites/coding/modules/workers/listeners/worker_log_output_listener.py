@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from core.base.change.updated import Updated
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.repository.repository import Repository

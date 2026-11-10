@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.time.clock import Clock
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.check.periodic_checks import PeriodicChecks
 from engine.errors.refusal import Refusal
 from suites.coding.modules.checks.commands.record_check_run.record_check_run import RecordCheckRun

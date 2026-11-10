@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from engine.container.container import Container
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule

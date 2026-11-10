@@ -1,7 +1,7 @@
 from contextlib import closing
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.container.container import Container
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent

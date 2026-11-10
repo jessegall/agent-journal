@@ -3,7 +3,7 @@ from typing import ClassVar, Generic, TypeIs, TypeVar
 from engine.caller.caller import Caller
 from engine.scope.scopes import WholeScopes
 from core.base.subcommand.output import Output
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.subcommand.render_value import render_value
 

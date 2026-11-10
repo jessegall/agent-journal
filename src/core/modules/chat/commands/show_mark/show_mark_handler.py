@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.chat.queries.chat_mark_query import ChatMarkQuery
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository

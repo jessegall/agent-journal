@@ -3,9 +3,9 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from dataclasses import replace
 import json
-from core.base.command.bus import Bus
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.bus import Bus
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.modules.helpers.support.agent_admission import AgentAdmission

@@ -2,7 +2,7 @@ import json
 from datetime import timedelta
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.driver.block_until import BlockUntil
 from core.base.driver.conditions.ran_command import RanCommand
 from core.base.driver.nudge import Nudge

@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from core.modules.helpers.commands.refresh_hourly_limits.refresh_hourly_limits import RefreshHourlyLimits
 from core.modules.helpers.support.program_states import ProgramStates

@@ -2,8 +2,8 @@ from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from engine.enums.actor_type import ActorType
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.secrets.commands.fill_secret.fill_secret import FillSecret

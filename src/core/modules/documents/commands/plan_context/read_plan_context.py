@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.documents.support.work_context_request import WorkContextRequest
 from core.modules.documents.support.work_context_page import WorkContextPage
 from core.modules.documents.support.work_context_text import WorkContextText

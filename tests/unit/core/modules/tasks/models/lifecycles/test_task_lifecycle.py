@@ -5,7 +5,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.guard.lifecycle_guard import LifecycleGuard
 from core.base.model.state_book import StateBook
 from core.base.model.model import Model
@@ -14,7 +14,7 @@ from engine.time.timestamp import Timestamp
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.enums.task_state import TaskState
-from tests.unit.core.base.command.test_commands import MakeItem
+from tests.unit.engine.command.test_commands import MakeItem
 
 STARTED = Task(id=1, version=1, environment_id=1, holder_id=2, creator_id=1, title="Fix the cart", state=TaskState.STARTED)
 

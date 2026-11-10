@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 from core.modules.processes.support.run_slots import RunSlots
 

@@ -2,7 +2,7 @@ import json
 from collections.abc import Mapping
 from typing import ClassVar, Generic, TypeVar
 
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.model.model import Model
 from engine.text.text_digest import TextDigest
 

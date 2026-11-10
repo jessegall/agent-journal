@@ -30,13 +30,13 @@ from core.base.viewer.button_declaration import AgentField, ButtonCondition, But
 from engine.agent.agent_policy import AgentPolicy
 from core.base.registry.window_entry import WindowEntry
 from dataclasses import replace
-from tests.unit.core.base.command.test_commands import MakeItem
+from tests.unit.engine.command.test_commands import MakeItem
 
 SAMPLE = "tests.unit.core.base.samples.registry_sample:SampleGuard"
 ENTRIES = {
     "models": {"item": {"module": "items", "model": "tests.unit.core.base.model.test_model:Item", "commands": [], "excluded_subcommands": []}},
-    "handlers": {DottedPath.class_path(MakeItem).text: "tests.unit.core.base.command.test_commands:MakeItem"},
-    "subcommands": {"item make": "tests.unit.core.base.command.test_commands:MakeItem"},
+    "handlers": {DottedPath.class_path(MakeItem).text: "tests.unit.engine.command.test_commands:MakeItem"},
+    "subcommands": {"item make": "tests.unit.engine.command.test_commands:MakeItem"},
     "guards": [
         {"name": "items.no-second-item", "event": "item.create", "path": SAMPLE, "position": 2, "short_flag": ""},
         {"name": "core.lifecycle", "event": "*", "path": SAMPLE, "position": 1, "short_flag": ""},

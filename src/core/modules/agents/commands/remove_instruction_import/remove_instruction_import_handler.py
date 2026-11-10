@@ -1,6 +1,6 @@
 from engine.enums.actor_type import ActorType
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.file.file_access import FileAccess
 from engine.instruction.instruction_imports import INSTRUCTION_FILES, InstructionImports
 from engine.journal.journal_home import JournalHome

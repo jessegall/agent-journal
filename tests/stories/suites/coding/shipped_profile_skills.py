@@ -3,7 +3,7 @@ import json
 import pytest
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.database.database import Database
 from core.base.driver.command_category import CommandCategory
 from core.base.registry.registry import Registry

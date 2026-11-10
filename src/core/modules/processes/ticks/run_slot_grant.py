@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.container.container import Container
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 

@@ -4,7 +4,7 @@ from dataclasses import asdict
 
 from core.base.change.created import Created
 from core.base.change.updated import Updated
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal

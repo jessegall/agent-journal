@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.plugins.commands.run_plugin_command.run_plugin_command import RunPluginCommand
 from core.modules.plugins.support.plugin_command_run import PluginCommandRun
 from core.modules.plugins.support.plugin_command_runner import PluginCommandRunner

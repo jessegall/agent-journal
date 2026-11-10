@@ -3,7 +3,7 @@ from engine.errors.refusal import Refusal
 from core.modules.reviews.models.reviewer import Reviewer
 from core.modules.reviews.support.review_settings import REVIEWER_SETTING, ReviewSettings
 from core.base.change.created import Created
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class ReviewersEnabledGuard(Guard[Created[Reviewer]]):

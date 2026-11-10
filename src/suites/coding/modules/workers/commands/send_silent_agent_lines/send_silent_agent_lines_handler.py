@@ -1,8 +1,8 @@
 from collections import defaultdict
 
-from core.base.command.bus import Bus
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.bus import Bus
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.enums.connection_status import ConnectionStatus
 from engine.connection.internet_connection import InternetConnection
 from engine.journal.journal_home import JournalHome

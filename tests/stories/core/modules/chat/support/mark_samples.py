@@ -5,9 +5,9 @@ from enum import StrEnum
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
-from core.base.command.command import Command
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.command import Command
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.chat.models.chat_mark import ChatMark
 from engine.chat.mark_button import MarkButton

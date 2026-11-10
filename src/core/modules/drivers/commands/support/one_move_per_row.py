@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.base.command.command import Command
-from core.base.command.move_command import MoveCommand
+from engine.command.command import Command
+from engine.command.move_command import MoveCommand
 from core.base.model.model import Model
 
 

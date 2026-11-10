@@ -1,5 +1,5 @@
 from engine.errors.block_refusal import BlockRefusal
-from core.base.command.command import Command
+from engine.command.command import Command
 
 
 class UserApprovalRefusal(BlockRefusal):

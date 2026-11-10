@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.questions.models.question import Question
 from core.modules.questions.support.question_place import QuestionPlace
 

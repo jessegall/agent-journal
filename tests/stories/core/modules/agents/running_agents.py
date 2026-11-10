@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.enums.agent_role import AgentRole
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.database.database import Database
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.support.agent_rows import AgentRows

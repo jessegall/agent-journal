@@ -6,7 +6,7 @@ from engine.repository.repository import Repository
 from core.modules.tasks.models.task_wait import TaskWait
 from suites.coding.modules.checks.models.check import Check
 from core.base.change.changed import Changed
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class TaskWaitCheckListener(SaveListener[Changed[TaskWait]]):

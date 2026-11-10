@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.drivers.commands.type_waiting_lines.type_waiting_lines import TypeWaitingLines
 from core.modules.drivers.support.waiting_line_typing import WaitingLineTyping
 

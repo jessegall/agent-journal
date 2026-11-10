@@ -5,9 +5,9 @@ from engine.actor.actor import Actor
 from engine.caller.caller import Caller
 from engine.cli.console import Console
 from engine.cli.usage_error import UsageError
-from core.base.command.bus import Bus
-from core.base.command.context import Context
-from core.base.command.outside_runs import OutsideRuns
+from engine.command.bus import Bus
+from engine.command.context import Context
+from engine.command.outside_runs import OutsideRuns
 from core.base.module.module_actors import ModuleActors
 from engine.errors.refusal import Refusal
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault

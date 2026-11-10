@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from core.modules.memories.commands.give_memories.give_memories import GiveMemories
 from core.modules.memories.models.memory_delivery import MemoryDelivery

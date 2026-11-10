@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.phone.commands.support.phone_invitation import PhoneInvitation
 
 

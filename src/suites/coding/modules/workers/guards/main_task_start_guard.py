@@ -1,5 +1,5 @@
 from core.base.change.moved import Moved
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle

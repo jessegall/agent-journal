@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from core.modules.messages.commands.read_message.note_message_read import NoteMessageRead
 from core.modules.messages.commands.read_message.read_message_handler import ReadMessageHandler

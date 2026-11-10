@@ -1,7 +1,7 @@
 from tests.stories.core.modules.chat.support.v4_looks import SUBAGENT, expect_declared_appearance
 import pytest
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.tasks.models.enums.task_mark_type import TaskMarkType

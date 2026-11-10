@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.models.agent_skill import AgentSkill

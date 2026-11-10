@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.container.container import Container
 from core.modules.approvals.commands.recover_approvals.recover_approvals import RecoverApprovals
 

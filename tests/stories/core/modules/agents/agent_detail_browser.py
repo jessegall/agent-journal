@@ -2,7 +2,7 @@ from tests.stories.core.modules.agents.helper_transcripts import row, read_trans
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.driver.diff_count import DiffCount
 from core.modules.agents.models.agent import Agent
 from suites.coding.commands.record_file_edit.record_file_edit import RecordFileEdit

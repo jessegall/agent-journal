@@ -3,7 +3,7 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.plans.models.plan_progress import PlanProgress
 from core.base.change.moved import Moved
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 from core.modules.plans.models.plan import Plan
 

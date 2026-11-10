@@ -2,7 +2,7 @@ from core.modules.reviews.models.lifecycles.review_lifecycle import ReviewLifecy
 from core.base.change.moved import Moved
 from core.base.change.logged_event import LoggedEvent
 from engine.chat.mark_outcome import MarkOutcome
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries

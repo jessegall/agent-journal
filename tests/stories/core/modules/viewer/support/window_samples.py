@@ -14,7 +14,7 @@ from core.base.viewer.window_size import WindowSize
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.change.moved import Moved
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 

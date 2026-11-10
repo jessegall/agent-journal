@@ -5,7 +5,7 @@ from typing import TypeVar
 
 from core.base.change.change import BOOKKEEPING_FIELDS, Change
 from core.base.change.event_log import EventLog
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.database.constraint_refusals import ConstraintRefusals
 from core.base.database.database import Database
 from core.base.database.table_statements import TableStatements

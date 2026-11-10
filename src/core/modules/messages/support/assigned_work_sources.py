@@ -1,4 +1,4 @@
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.caller.caller import Caller
 from core.modules.messages.support.work_source_copy import WorkSourceCopy
 

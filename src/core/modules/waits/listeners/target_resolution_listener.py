@@ -12,7 +12,7 @@ from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.wait_target import WaitTarget
 from core.base.change.changed import Changed
 from core.base.change.deleted import Deleted
-from core.base.command.context import Context
+from engine.command.context import Context
 
 OPEN_TARGETS_REASON = "Every save of a row asks whether an open wait waits on it, so the unresolved targets are one kept load that the open waits bound."
 

@@ -1,6 +1,6 @@
 from engine.enums.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.modules.agents.commands.warn_instruction_imports.warn_instruction_imports import WarnInstructionImports

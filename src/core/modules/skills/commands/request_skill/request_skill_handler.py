@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from core.modules.skills.commands.request_skill.request_skill import RequestSkill
 from core.modules.skills.models.skill_request import SkillRequest

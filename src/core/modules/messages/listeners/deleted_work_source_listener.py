@@ -1,5 +1,5 @@
 from core.base.change.deleted import Deleted
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.listener.deletion_listener import DeletionListener
 from engine.query.queries import Queries
 from engine.repository.repository import Repository

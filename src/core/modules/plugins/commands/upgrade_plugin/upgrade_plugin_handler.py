@@ -5,8 +5,8 @@ from engine.process.plugin_script_processes import PluginScriptProcesses
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.errors.user_approval_refusal import UserApprovalRefusal
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.file.file_access import FileAccess
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.base.driver.block_condition import BlockCondition
 from core.base.driver.count_down import COUNTDOWN_LINE_LIMIT
 from core.base.driver.interval import Interval

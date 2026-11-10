@@ -1,6 +1,6 @@
 import json
 
-from core.base.command.command_json import TYPE_KEY
+from engine.command.command_json import TYPE_KEY
 from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.standing_scope import StandingScope

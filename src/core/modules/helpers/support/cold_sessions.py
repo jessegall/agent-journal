@@ -2,7 +2,7 @@ from core.modules.processes.support.output_check_schedule import MINUTE_SECONDS
 from core.modules.settings.bindings.support.context_share import ContextShare
 from engine.actor.actor import Actor
 from engine.time.clock import Clock
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.journal.journal_home import JournalHome
 from core.base.listener.event_rows import EventRows
 from core.base.provider.providers import Providers

@@ -7,7 +7,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.change.event_pattern import EventPattern
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.container.container import Container
 from engine.guard.change_filter import ChangeFilter
 from engine.guard.guard_switches import GuardSwitches
@@ -25,7 +25,7 @@ from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.registry import Registry
 from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
-from tests.unit.core.base.command.test_commands import MakeItem
+from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
 from tests.unit.core.base.model.test_model import Item
 

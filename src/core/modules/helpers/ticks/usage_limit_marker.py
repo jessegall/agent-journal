@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.container.container import Container
 from core.base.provider.providers import Providers
 from core.modules.agents.commands.set_agent_usage_limit.set_agent_usage_limit import SetAgentUsageLimit

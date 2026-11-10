@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.triggers.commands.support.trigger_details import TriggerDetails
 from core.modules.triggers.models.enums.trigger_action import TriggerAction
 from core.modules.triggers.models.trigger import Trigger

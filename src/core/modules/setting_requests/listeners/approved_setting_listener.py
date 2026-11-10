@@ -2,8 +2,8 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.change.logged_event import LoggedEvent
 from core.base.change.moved import Moved
-from core.base.command.bus import Bus
-from core.base.command.close_user_approval import CloseUserApproval
+from engine.command.bus import Bus
+from engine.command.close_user_approval import CloseUserApproval
 from core.base.module.module_actors import ModuleActors
 from core.base.listener.commit_listener import CommitListener
 from engine.query.queries import Queries

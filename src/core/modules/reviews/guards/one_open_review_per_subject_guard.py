@@ -3,7 +3,7 @@ from engine.errors.refusal import Refusal
 from core.modules.reviews.models.review import Review
 from core.modules.reviews.queries.review_query import ReviewQuery
 from core.base.change.created import Created
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class OneOpenReviewPerSubjectGuard(Guard[Created[Review]]):

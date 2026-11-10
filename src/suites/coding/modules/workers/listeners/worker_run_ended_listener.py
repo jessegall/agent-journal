@@ -20,7 +20,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RUN_ENDED
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class WorkerRunEndedListener(SaveListener[ProcessEnded]):

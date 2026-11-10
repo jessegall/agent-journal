@@ -2,7 +2,7 @@ import pytest
 from core.base.provider.context_window import ContextWindow
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.drivers.support.nudger import Nudger
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.modules.tasks.models.task import Task
 from core.testing.hook_samples import HookSamples
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
@@ -11,7 +11,7 @@ from pathlib import Path
 
 from unittest.mock import patch
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.database.database import Database
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.commands.end_inactive_worker.end_inactive_worker import EndInactiveWorker

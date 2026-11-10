@@ -7,7 +7,7 @@ import shlex
 import pytest
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.file.file_access import FileAccess
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from engine.json.json_settings import JsonSettings

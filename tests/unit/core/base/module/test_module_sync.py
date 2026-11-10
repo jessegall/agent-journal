@@ -38,7 +38,7 @@ def test_the_registry_after_a_sync_names_every_noun_handler_guard_and_listener(t
     database = container.get(Database)
     registry = Registry.read(database)
     assert (registry.models["item"].module, registry.models["item"].model.text) == ("items", "tests.unit.core.base.model.test_model:Item")
-    assert {"core.base.command.make_command:MakeCommand", "core.base.command.move_command:MoveCommand"} <= set(registry.handlers)
+    assert {"engine.command.make_command:MakeCommand", "engine.command.move_command:MoveCommand"} <= set(registry.handlers)
     assert [guard.name for guard in registry.guards][:2] == ["core.lifecycle", "items.paused-only"]
     module_actor = database.rows(Statement("SELECT id FROM actors WHERE type = 'module' AND name = 'item-count'"))[0]["id"]
     assert [(listener.name, listener.timing.value, listener.actor_id) for listener in registry.listeners if listener.name == "items.paused-count"] == [("items.paused-count", "commit", module_actor)]

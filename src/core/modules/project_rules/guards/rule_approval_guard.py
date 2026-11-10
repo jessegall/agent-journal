@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from core.base.change.changed import Changed
 from core.base.change.created import Created
 from core.base.change.moved import Moved
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from engine.errors.user_approval_refusal import UserApprovalRefusal

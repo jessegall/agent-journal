@@ -4,7 +4,7 @@ from engine.errors.refusal import Refusal
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 from core.modules.processes.models.process import Process
 from core.base.change.changed import Changed
-from core.base.command.context import Context
+from engine.command.context import Context
 
 ENDING_MOVES = (ProcessLifecycle.finish, ProcessLifecycle.fail)
 

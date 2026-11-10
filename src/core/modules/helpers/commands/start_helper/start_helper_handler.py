@@ -3,10 +3,10 @@ from dataclasses import replace
 
 from engine.actor.actor import Actor
 from engine.sandbox.shell_sandbox import ShellSandbox
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.driver.program_lockdown import ProgramLockdown
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from engine.helper_type.helper_type_book import HelperTypeBook

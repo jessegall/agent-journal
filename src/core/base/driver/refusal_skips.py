@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from engine.actor.actor import Actor
-from core.base.command.command import Command
+from engine.command.command import Command
 
 
 class RefusalSkips:

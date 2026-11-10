@@ -2,10 +2,10 @@ from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 
 from engine.caller.caller import Caller
-from core.base.command.bus import Bus
-from core.base.command.command import Command
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.bus import Bus
+from engine.command.command import Command
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.base.module.module import Module
 from engine.repository.repository import Repository
 from core.base.subcommand.subcommand import Subcommand

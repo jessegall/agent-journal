@@ -16,7 +16,7 @@ from core.modules.transcriptions.support.transcription_nudges import LINE_SOURCE
 from core.modules.transcriptions.support.transcription_nudges import TRANSCRIPTION_CHANGED
 from core.base.change.changed import Changed
 from core.base.change.deleted import Deleted
-from core.base.command.context import Context
+from engine.command.context import Context
 
 TITLE_CHARACTERS = 80
 UNFINISHED_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED)

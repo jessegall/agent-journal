@@ -9,7 +9,7 @@ import pytest
 
 from engine.caller.caller_request import CallerRequest, SESSION_VARIABLE
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.base.listener.commit_listener_runner import CommitListenerRunner

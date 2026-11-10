@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from engine.chat.mark_outcome import MarkOutcome
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.chat.models.chat_mark import ChatMark
 
 

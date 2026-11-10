@@ -4,7 +4,7 @@ from suites.coding.modules.workers.support.test_command_entry import TestCommand
 
 from core.base.profile.model_tier import ModelTier
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 
 

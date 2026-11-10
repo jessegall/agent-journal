@@ -1,6 +1,6 @@
 from core.base.change.changed import Changed
 from core.base.change.deleted import Deleted
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.listener.save_listener import SaveListener
 from suites.coding.modules.workers.models.affected_test import AffectedTest
 from suites.coding.modules.workers.support.affected_test_rows import AffectedTestRows

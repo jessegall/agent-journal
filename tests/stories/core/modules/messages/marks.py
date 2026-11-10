@@ -1,5 +1,5 @@
 from tests.stories.core.modules.chat.support.v4_looks import FILED, SUMMARY, expect_declared_appearance
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
 import pytest
 

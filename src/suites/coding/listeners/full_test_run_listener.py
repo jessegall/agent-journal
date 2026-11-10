@@ -1,5 +1,5 @@
 from engine.enums.agent_role import AgentRole
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.listener.save_listener import SaveListener
 from engine.query.queries import Queries

@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.private.secret_values import SecretValues
 from engine.query.queries import Queries
 from engine.repository.repository import Repository

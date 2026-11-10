@@ -1,4 +1,4 @@
-from core.base.command.command import Command
+from engine.command.command import Command
 
 
 # @sin architecture_layout_suite_top_folder_file

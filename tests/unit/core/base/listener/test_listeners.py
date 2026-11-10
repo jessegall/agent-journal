@@ -8,7 +8,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.change.event_pattern import EventPattern
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.container.container import Container
 from engine.guard.change_filter import ChangeFilter
 from core.base.listener.deletion_listener import DeletionListener
@@ -20,7 +20,7 @@ from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from engine.time.timestamp import Timestamp
-from tests.unit.core.base.command.test_commands import MakeItem
+from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_model import Item
 from core.base.change.changed import Changed
 from core.base.change.created import Created

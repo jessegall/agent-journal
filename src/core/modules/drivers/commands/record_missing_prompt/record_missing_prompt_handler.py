@@ -1,7 +1,7 @@
 from uuid import uuid4
 
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.base.driver.hook_event_name import HookEventName
 from engine.repository.repository import Repository
 from core.modules.drivers.commands.record_missing_prompt.record_missing_prompt import RecordMissingPrompt

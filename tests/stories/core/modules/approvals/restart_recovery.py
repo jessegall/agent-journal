@@ -3,7 +3,7 @@ from datetime import timedelta
 import pytest
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.query.queries import Queries
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture

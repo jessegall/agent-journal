@@ -4,7 +4,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.chat.models.chat_mark import ChatMark
 from core.base.change.changed import Changed
 from core.base.change.deleted import Deleted
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class AgentChatGuard(Guard[Changed[ChatMark]]):

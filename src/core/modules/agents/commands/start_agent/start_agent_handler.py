@@ -5,8 +5,8 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from engine.enums.actor_type import ActorType
 from engine.caller.process_chain import ProcessChain
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.single_main_agent import SingleMainAgent
 from engine.errors.refusal import Refusal

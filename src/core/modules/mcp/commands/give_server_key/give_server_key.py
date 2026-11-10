@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.mcp.models.mcp_server import McpServer
 
 

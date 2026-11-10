@@ -1,6 +1,6 @@
 from core.modules.tasks.models.enums.task_state import TaskState
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.environments.models.environment import Environment

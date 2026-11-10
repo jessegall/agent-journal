@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 import json
 
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from engine.repository.repository import Repository

@@ -3,7 +3,7 @@ from engine.errors.refusal import Refusal
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.base.change.created import Created
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class DispatchBranchGuard(Guard[Created[Worktree]]):

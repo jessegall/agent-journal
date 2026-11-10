@@ -12,7 +12,7 @@ from core.modules.tasks.support.task_nudges import TASK_BRIEF_FIRST
 from core.modules.tasks.support.block_conditions.task_brief_read import TaskBriefRead
 from core.base.listener.event_rows import EventRows
 from engine.time.clock import Clock
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp

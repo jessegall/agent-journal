@@ -14,7 +14,7 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_COMMENT, WORKER_COMMENT_COPY
 from core.base.change.created import Created
-from core.base.command.context import Context
+from engine.command.context import Context
 
 SOURCE = "workers.delegated-task-comment"
 

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.base.model.model import Model
 from core.modules.documents.models.enums.comment_selection_type import CommentSelectionType
 from core.modules.messages.models.message import Message

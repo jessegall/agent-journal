@@ -4,10 +4,10 @@ from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.cli.console import Console, SUCCESS_CODE
 from engine.cli.module_remove_line import MODULE_REMOVAL_ARGUMENTS, ModuleRemoveLine
-from core.base.command.bus import Bus
-from core.base.command.command_json import CommandJson
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.bus import Bus
+from engine.command.command_json import CommandJson
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from engine.scope.scopes import Scopes
 from core.modules.approvals.commands.answer_approval.answer_approval import AnswerApproval

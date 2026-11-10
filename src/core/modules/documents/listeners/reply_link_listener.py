@@ -3,7 +3,7 @@ from engine.enums.actor_type import ActorType
 
 from core.base.change.logged_event import LoggedEvent
 from core.base.change.created import Created
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from engine.query.queries import Queries
 from core.modules.documents.commands.record_subject_link.record_subject_link import RecordSubjectLink

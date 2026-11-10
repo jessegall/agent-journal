@@ -5,7 +5,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.voices.support.voice_lines import VoiceLines
 from core.modules.voices.support.voice_nudges import VOICE_LINE
 from core.modules.drivers.events.agent_compacted import AgentCompacted
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class VoiceCompactionListener(SaveListener[AgentCompacted]):

@@ -1,4 +1,4 @@
-from core.base.command.command import Command
+from engine.command.command import Command
 from suites.coding.modules.workers.support.worker_command_request import WorkerCommandRequest
 from argparse import ArgumentParser, Namespace
 

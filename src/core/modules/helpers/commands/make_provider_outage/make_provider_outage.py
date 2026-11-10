@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.make_command import MakeCommand
+from engine.command.make_command import MakeCommand
 from engine.time.timestamp import Timestamp
 from core.modules.helpers.models.provider_outage import ProviderOutage
 

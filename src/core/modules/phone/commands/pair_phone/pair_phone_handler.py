@@ -2,8 +2,8 @@ from datetime import timedelta
 
 from core.modules.agents.support.person_check import PersonCheck
 from engine.time.clock import Clock
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from engine.time.timestamp import Timestamp
 from core.modules.phone.commands.pair_phone.pair_phone import PairPhone

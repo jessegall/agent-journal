@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.suggestions.models.enums.suggestion_answer import SuggestionAnswer
 from core.modules.suggestions.models.suggestion import Suggestion
 

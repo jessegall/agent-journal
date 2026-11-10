@@ -1,4 +1,4 @@
-from core.base.command.dry_run import DRY_RUN, DryRunReachedEffect
+from engine.command.dry_run import DRY_RUN, DryRunReachedEffect
 from engine.errors.refusal import Refusal
 from engine.tunnel.tunnel_state import TunnelState
 from tunnels.tunler.support.tunler_client import TunlerClient

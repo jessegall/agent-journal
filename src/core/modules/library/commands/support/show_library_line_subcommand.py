@@ -1,4 +1,4 @@
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.library.support.line_answer import LineAnswer

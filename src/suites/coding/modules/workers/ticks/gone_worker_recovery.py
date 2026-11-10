@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.container.container import Container
 from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.commands.end_gone_worker.end_gone_worker import EndGoneWorker

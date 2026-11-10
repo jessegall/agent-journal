@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.container.container import Container
 from core.modules.plugins.commands.refresh_plugin_config.refresh_plugin_config import RefreshPluginConfig
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins

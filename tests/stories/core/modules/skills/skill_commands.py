@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.registry.registry import Registry
 from core.base.database.database import Database
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill

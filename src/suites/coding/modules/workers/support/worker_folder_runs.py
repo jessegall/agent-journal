@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.scope.environment_scope import EnvironmentScope

@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event import DeliverPluginEvent
 from core.base.model.event_form import EventForm
 from core.modules.plugins.support.plugin_manifest import PluginManifest

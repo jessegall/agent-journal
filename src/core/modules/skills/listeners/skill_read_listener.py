@@ -1,13 +1,13 @@
 from pathlib import PurePath
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.listener.save_listener import SaveListener
 from engine.skill.skill_declaration import SKILL_FILE
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.base.change.created import Created
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class SkillReadListener(SaveListener[Created[HookCall]]):

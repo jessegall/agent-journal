@@ -11,7 +11,7 @@ from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.tasks.support.task_waits import TaskWaits
 from core.base.change.changed import Changed
 from core.base.change.deleted import Deleted
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class TaskWaitListener(SaveListener[Changed[Model]]):

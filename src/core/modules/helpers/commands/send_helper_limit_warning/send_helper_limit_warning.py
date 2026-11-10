@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 
 LIMIT_WARNING_SOURCE = "helpers.limit-warning"
 

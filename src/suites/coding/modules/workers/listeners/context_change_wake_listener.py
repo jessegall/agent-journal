@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from core.base.change.logged_event import LoggedEvent
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows

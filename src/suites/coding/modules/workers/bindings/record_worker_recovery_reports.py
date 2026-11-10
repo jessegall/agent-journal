@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent

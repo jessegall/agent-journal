@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.time.clock import Clock
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.container.container import Container
 from core.modules.processes.commands.check_output.check_output import CheckOutput
 from core.modules.processes.models.enums.watch_state import WatchState

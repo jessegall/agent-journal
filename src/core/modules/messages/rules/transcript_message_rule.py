@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from engine.enums.agent_role import AgentRole
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName

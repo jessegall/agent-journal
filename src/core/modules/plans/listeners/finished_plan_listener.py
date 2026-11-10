@@ -3,7 +3,7 @@ from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.base.change.moved import Moved
 from engine.actor.actor import Actor
 from core.base.change.logged_event import LoggedEvent
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from engine.query.queries import Queries
 from core.modules.plans.commands.cancel_plan.cancel_plan import CancelPlan

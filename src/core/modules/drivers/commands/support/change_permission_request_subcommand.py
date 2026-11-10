@@ -1,6 +1,6 @@
 from typing import TypeVar
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.drivers.models.permission_request import PermissionRequest

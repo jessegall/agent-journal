@@ -1,7 +1,7 @@
 from tests.unit.core.base.driver.nudge_sample import sample_nudge
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.rule_answer import RuleAnswer
 

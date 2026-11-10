@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import StrEnum
 
-from core.base.command.move_command import MoveCommand
+from engine.command.move_command import MoveCommand
 from core.base.database.migration import Migration
 from engine.guard.guard import Guard
 from core.base.listener.deletion_listener import DeletionListener
@@ -14,7 +14,7 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.base.change.moved import Moved
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 from core.base.change.deleted import Deleted

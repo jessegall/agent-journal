@@ -2,7 +2,7 @@ from typing import ClassVar
 
 from core.base.change.logged_event import LoggedEvent
 from engine.chat.mark_outcome import MarkOutcome
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from core.base.listener.event_rows import EventRows

@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.developer.commands.record_mark_motion.record_mark_motion import RecordMarkMotion
 from core.modules.developer.support.mark_motion_file import MarkMotionFile
 

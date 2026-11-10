@@ -1,7 +1,7 @@
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.block_condition import BlockCondition
 from core.base.driver.block_until import BlockUntil

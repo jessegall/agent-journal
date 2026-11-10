@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from core.modules.chat.commands.record_journal_exception.record_journal_exception import RecordJournalException
 from core.modules.chat.models.journal_exception import JournalException

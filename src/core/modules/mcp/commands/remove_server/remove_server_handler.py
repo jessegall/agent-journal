@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from core.modules.mcp.commands.remove_server.remove_server import RemoveServer
 from core.modules.mcp.models.mcp_server import McpServer

@@ -1,5 +1,5 @@
 from suites.coding.support.coding_helper_role import CodingHelperRole
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.database.database import Database
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal

@@ -7,15 +7,15 @@ from engine.enums.actor_type import ActorType
 from core.base.change.event_log import EventLog, PAGE_SIZE_EVENTS
 from core.base.change.event_pattern import EventPattern
 from core.base.change.logged_event import LoggedEvent
-from core.base.command.bus import Bus
-from core.base.command.delete_command import DeleteCommand
-from core.base.command.edit_command import EditCommand
-from core.base.command.handlers.delete_handler import DeleteHandler
-from core.base.command.handlers.edit_handler import EditHandler
-from core.base.command.handlers.make_handler import MakeHandler
-from core.base.command.handlers.move_handler import MoveHandler
-from core.base.command.make_command import MakeCommand
-from core.base.command.move_command import MoveCommand
+from engine.command.bus import Bus
+from engine.command.delete_command import DeleteCommand
+from engine.command.edit_command import EditCommand
+from engine.command.handlers.delete_handler import DeleteHandler
+from engine.command.handlers.edit_handler import EditHandler
+from engine.command.handlers.make_handler import MakeHandler
+from engine.command.handlers.move_handler import MoveHandler
+from engine.command.make_command import MakeCommand
+from engine.command.move_command import MoveCommand
 from core.base.database.database import Database
 from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.database.statement import Statement
@@ -27,7 +27,7 @@ from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from tests.unit.core.base.sample_container import sample_container
-from tests.unit.core.base.command.test_commands import MakeItem
+from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 from tests.unit.core.base.model.test_model import Item
 from core.base.change.created import Created

@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.time.clock import Clock
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.terminal_typing import TerminalTyping

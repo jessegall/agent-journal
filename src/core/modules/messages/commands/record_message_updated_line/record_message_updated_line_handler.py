@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.query.queries import Queries
 from core.modules.drivers.listeners.typed_line_listener import IDLE_MESSAGE_SOURCE
 from core.modules.drivers.queries.hook_call_query import HookCallQuery

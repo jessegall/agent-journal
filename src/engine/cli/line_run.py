@@ -14,7 +14,7 @@ from engine.time.deadline import Deadline
 from engine.container.journal_container import opened_container, synced_container
 from engine.journal.journal_home import JournalHome
 from engine.cli.caller_stream import CallerStream
-from core.base.command.script_policy import ScriptPolicy
+from engine.command.script_policy import ScriptPolicy
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.performance_tools import PerformanceTools

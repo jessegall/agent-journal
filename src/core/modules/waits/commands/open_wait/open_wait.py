@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.waits.models.wait import Wait
 from core.modules.waits.models.enums.wait_type import WaitType
 

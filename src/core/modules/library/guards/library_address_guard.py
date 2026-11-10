@@ -4,7 +4,7 @@ from engine.guard.guard import Guard
 from core.modules.library.support.library_address import ADDRESS_SETTING
 from core.modules.settings.models.setting import Setting
 from core.base.change.changed import Changed
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class LibraryAddressGuard(Guard[Changed[Setting]]):

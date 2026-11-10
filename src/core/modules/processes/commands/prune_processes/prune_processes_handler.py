@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from core.modules.processes.commands.prune_processes.prune_processes import PruneProcesses
 from core.modules.processes.models.support.process_setting import ProcessSetting

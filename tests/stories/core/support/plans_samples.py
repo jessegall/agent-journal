@@ -6,7 +6,7 @@ from core.base.module.module import Module
 from engine.errors.refusal import Refusal
 from core.modules.tasks.models.task import Task
 from core.base.change.moved import Moved
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 
 

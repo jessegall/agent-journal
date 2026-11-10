@@ -2,7 +2,7 @@ from typing import ClassVar, TypeIs
 from collections.abc import Sequence
 
 from core.base.change.event_subscriber import E, EventSubscriber
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class DeletionListener(EventSubscriber[E]):

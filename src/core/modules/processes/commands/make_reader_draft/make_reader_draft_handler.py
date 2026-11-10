@@ -1,9 +1,9 @@
 from dataclasses import replace
 
 from core.modules.processes.commands.add_reader.add_reader import AddReader
-from core.base.command.bus import Bus
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.bus import Bus
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from core.modules.processes.commands.make_reader_draft.make_reader_draft import MakeReaderDraft
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery

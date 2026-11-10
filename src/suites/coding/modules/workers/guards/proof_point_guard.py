@@ -5,7 +5,7 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.support.brief_points import brief_point_count
 from core.base.change.created import Created
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class ProofPointGuard(Guard[Created[Proof]]):

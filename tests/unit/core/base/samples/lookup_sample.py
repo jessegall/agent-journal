@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
-from tests.unit.core.base.command.test_commands import MakeItem
+from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_model import Item
 
 

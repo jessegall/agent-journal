@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.command.command import Command
+from engine.command.command import Command
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from engine.helper_type.helper_type_book import HelperTypeBook

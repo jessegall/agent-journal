@@ -5,7 +5,7 @@ from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.tasks.support.task_waits import TaskWaits
 from suites.coding.modules.checks.models.check import Check
 from core.base.change.updated import Updated
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class TaskWaitPassListener(SaveListener[Updated[Check]]):

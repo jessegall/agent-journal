@@ -1,5 +1,5 @@
 from engine.time.clock import Clock
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.container.container import Container
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries

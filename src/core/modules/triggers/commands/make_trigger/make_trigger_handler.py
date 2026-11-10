@@ -2,8 +2,8 @@ from dataclasses import asdict
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.triggers.models.enums.trigger_action import TriggerAction
 
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.triggers.commands.make_trigger.make_trigger import MakeTrigger

@@ -2,7 +2,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal

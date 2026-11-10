@@ -4,7 +4,7 @@ from engine.repository.repository import Repository
 from core.modules.processes.models.process import Process
 from core.modules.triggers.models.trigger_action_run import TriggerActionRun
 from core.base.change.deleted import Deleted
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class TriggerProcessRemovalListener(DeletionListener[Deleted[Process]]):

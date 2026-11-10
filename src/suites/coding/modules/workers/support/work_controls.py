@@ -1,6 +1,6 @@
 import hashlib
 
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.errors.refusal import Refusal
 from core.base.registry.setting_entry import SettingEntry
 from core.base.setting.setting_scope import SettingScope

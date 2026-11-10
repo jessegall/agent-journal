@@ -5,7 +5,7 @@ from engine.query.conditions.among import Among
 from core.base.change.moved import Moved
 from engine.actor.actor import Actor
 from core.base.change.logged_event import LoggedEvent
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope

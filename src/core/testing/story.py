@@ -24,7 +24,7 @@ from core.base.database.database import Database
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
-from core.base.command.script_policy import ScriptPolicy
+from engine.command.script_policy import ScriptPolicy
 from engine.container.journal_container import synced_container
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.hosting.hosting import Hosting

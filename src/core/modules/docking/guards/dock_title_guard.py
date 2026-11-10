@@ -2,7 +2,7 @@ from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.docking.guards.support.docking_arrival import DockingArrival
 from core.base.change.changed import Changed
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.modules.docking.models.dock_item import DockItem
 
 

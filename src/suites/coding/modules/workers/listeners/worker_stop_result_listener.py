@@ -8,7 +8,7 @@ from engine.enums.hook_answer import HookAnswer
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_refusals import WorkerRefusals
 from core.modules.drivers.events.stop_allowed import StopAllowed
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class WorkerStopResultListener(SaveListener[StopAllowed | StopDenied]):

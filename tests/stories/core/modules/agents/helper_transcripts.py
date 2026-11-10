@@ -4,7 +4,7 @@ from core.testing.story_fixture import StoryFixture
 import json
 
 from engine.actor.actor import Actor
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.database.database import Database
 from engine.repository.repository import Repository
 from core.modules.drivers.models.agent_line import AgentLine

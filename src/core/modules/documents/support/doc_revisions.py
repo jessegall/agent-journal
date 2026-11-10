@@ -1,4 +1,4 @@
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries

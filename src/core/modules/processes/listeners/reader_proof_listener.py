@@ -9,7 +9,7 @@ from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.base.listener.event_rows import EventRows
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.reader_judge import ReaderJudge
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class ReaderProofListener(SaveListener[OutputEnded | Updated[Output]]):

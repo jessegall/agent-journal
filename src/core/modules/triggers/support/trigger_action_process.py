@@ -1,6 +1,6 @@
 import subprocess
 from core.base.change.logged_event import LoggedEvent
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent

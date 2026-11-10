@@ -1,9 +1,9 @@
 from engine.guard.guard import Guard
-from core.base.command.completed_command_error import CompletedCommandError
+from engine.command.completed_command_error import CompletedCommandError
 from core.modules.docking.guards.support.docking_arrival import DockingArrival
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.base.change.changed import Changed
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.modules.docking.models.dock_item import DockItem
 
 

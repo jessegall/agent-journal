@@ -3,7 +3,7 @@ from collections.abc import Callable
 import pytest
 
 from engine.actor.actor import Actor
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.repository.repository import Repository
 from core.modules.library.support.library_client import LibraryClient
 from core.modules.library.support.library_denied_error import LibraryDeniedError

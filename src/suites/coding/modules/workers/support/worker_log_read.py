@@ -1,4 +1,4 @@
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.repository.repository import Repository
 from core.modules.processes.support.output_delivery import OutputDelivery
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle

@@ -1,4 +1,4 @@
-from core.base.command.handler import Handler
+from engine.command.handler import Handler
 from core.modules.notes.commands.approve_note.approve_note import ApproveNote
 
 

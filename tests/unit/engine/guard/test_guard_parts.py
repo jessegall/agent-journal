@@ -3,13 +3,13 @@ from datetime import datetime, timezone
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.container.container import Container
 from engine.guard.change_filter import ChangeFilter
 from engine.guard.guard_switches import GuardSwitches
 from core.base.model.model import Model
 from engine.time.timestamp import Timestamp
-from tests.unit.core.base.command.test_commands import MakeItem
+from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_model import Item
 
 CHANGE = Change(None, Item(title="Dune"), Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), MakeItem(title="Dune")))

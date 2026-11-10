@@ -2,7 +2,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.driver.tool_type import ToolType
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.profiles.support.profile_files import ProfileFiles

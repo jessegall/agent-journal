@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.agents.support.agent_rows import AgentRows

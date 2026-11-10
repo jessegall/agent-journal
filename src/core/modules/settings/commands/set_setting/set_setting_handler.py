@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from core.base.registry.setting_entry import SettingEntry
 from core.base.setting.setting_scope import SettingScope

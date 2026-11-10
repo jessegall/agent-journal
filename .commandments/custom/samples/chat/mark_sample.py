@@ -1,4 +1,4 @@
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem

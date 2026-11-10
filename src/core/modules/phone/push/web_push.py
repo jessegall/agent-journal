@@ -2,7 +2,7 @@ from urllib.parse import urlsplit
 
 from engine.actor.actor import Actor
 from engine.time.clock import Clock
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.modules.phone.commands.ensure_push_keys.ensure_push_keys import EnsurePushKeys
 from core.modules.phone.support.push_keys import PushKeys
 from core.modules.phone.support.push_service import PushService

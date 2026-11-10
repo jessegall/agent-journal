@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from core.base.change.journal_booting import JournalBooting
 from core.base.change.logged_event import LoggedEvent
 from engine.version.code_versions import CodeVersions
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.journal.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
 from engine.query.conditions.among import Among

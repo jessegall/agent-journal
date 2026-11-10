@@ -3,8 +3,8 @@ from core.base.change.moved import Moved
 from core.base.listener.save_listener import SaveListener
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.run_slots import RunSlots
-from core.base.command.bus import Bus
-from core.base.command.context import Context
+from engine.command.bus import Bus
+from engine.command.context import Context
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 
 

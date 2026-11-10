@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.base.command.move_command import MoveCommand
+from engine.command.move_command import MoveCommand
 from core.base.model.model import Model
 from engine.query.query import Query
 

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.approvals.models.enums.standing_scope import StandingScope
 from core.modules.approvals.models.standing_approval import StandingApproval
 

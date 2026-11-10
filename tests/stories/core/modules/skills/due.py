@@ -2,7 +2,7 @@ from datetime import timedelta
 
 import pytest
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from core.base.driver.command_category import CommandCategory

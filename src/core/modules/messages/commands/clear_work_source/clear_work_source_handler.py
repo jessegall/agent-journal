@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.messages.commands.clear_work_source.clear_work_source import ClearWorkSource
 from core.modules.messages.support.work_sources import WorkSources
 

@@ -1,5 +1,5 @@
 from engine.enums.actor_type import ActorType
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.repository.repository import Repository
 from core.modules.memories.support.mark_tracker import MarkTracker
 

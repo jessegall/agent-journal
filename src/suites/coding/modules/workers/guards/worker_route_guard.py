@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from core.base.change.moved import Moved
 from core.base.change.updated import Updated
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.guard.guard import Guard
 from core.base.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent

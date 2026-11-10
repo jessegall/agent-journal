@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.skills.support.required_agents import RequiredAgents
 from core.modules.skills.support.skill_requirements import SkillRequirements
 

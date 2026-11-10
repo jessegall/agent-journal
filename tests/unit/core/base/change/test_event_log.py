@@ -8,7 +8,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.change.event_log import EventLog
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.database.core_tables_migration import CORE_MIGRATIONS
 from core.base.database.database import Database
 from core.base.database.schema import Schema
@@ -16,7 +16,7 @@ from engine.journal.journal_home import JournalHome
 from engine.errors.missing_rows_error import MissingRowsError
 from core.base.model.tables import Tables
 from engine.time.timestamp import Timestamp
-from tests.unit.core.base.command.test_commands import MakeItem
+from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 from tests.unit.core.base.model.test_model import Item
 

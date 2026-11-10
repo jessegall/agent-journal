@@ -1,5 +1,5 @@
 from engine.time.clock import Clock
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.database.database import Database
 from engine.log.exception_sink import CLOCK_TICK_SOURCE, ExceptionSink
 from core.base.module.module_actors import ModuleActors

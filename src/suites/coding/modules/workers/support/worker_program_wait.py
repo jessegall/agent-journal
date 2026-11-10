@@ -1,4 +1,4 @@
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine

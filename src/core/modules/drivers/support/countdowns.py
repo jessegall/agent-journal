@@ -1,6 +1,6 @@
 from collections.abc import Callable
 
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.driver.count_down import CountDown
 from engine.query.queries import Queries
 from engine.repository.repository import Repository

@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.environments.models.environment import Environment

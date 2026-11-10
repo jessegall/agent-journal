@@ -1,4 +1,4 @@
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.modules.agents.support.person_check import PersonCheck
 
 

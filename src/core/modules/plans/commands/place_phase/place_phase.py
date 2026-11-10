@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.plans.models.phase_task import PhaseTask
 
 

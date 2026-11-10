@@ -2,7 +2,7 @@ from core.modules.processes.queries.conditions.reader_sample_scope import Reader
 from core.base.module.module_actors import ModuleActors
 import pytest
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.support.reader_demands import ReaderDemands

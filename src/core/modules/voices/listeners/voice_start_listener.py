@@ -4,7 +4,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.voices.support.voice_lines import VoiceLines
 from core.modules.voices.support.voice_nudges import VOICE_LINE, VOICE_INTRODUCTION
 from core.base.change.created import Created
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class VoiceStartListener(SaveListener[Created[Agent]]):

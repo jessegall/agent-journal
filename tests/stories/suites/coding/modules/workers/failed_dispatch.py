@@ -3,7 +3,7 @@ import json
 import pytest
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
 from core.modules.agents.commands.start_agent.start_agent import StartAgent

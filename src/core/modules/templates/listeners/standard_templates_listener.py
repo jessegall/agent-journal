@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from core.base.change.logged_event import LoggedEvent
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.modules.templates.commands.save_standard_templates.save_standard_templates import SaveStandardTemplates
 from core.base.change.file_publishing import FilePublishing

@@ -3,7 +3,7 @@ from unittest.mock import patch
 from core.base.change.event_log import EventLog
 from engine.query.query import Query
 from core.base.listener.commit_listener_runner import CommitListenerRunner
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions
 from core.modules.documents.references.row_ref import RowRef

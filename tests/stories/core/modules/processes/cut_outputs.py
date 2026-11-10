@@ -3,7 +3,7 @@ import json
 import pytest
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput

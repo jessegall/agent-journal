@@ -1,4 +1,4 @@
-from core.base.command.handler import Handler
+from engine.command.handler import Handler
 
 PAGE_SIZE = 5
 # @sin naming_unitless_quantity_name

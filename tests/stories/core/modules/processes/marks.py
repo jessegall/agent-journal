@@ -5,7 +5,7 @@ from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from core.modules.docking.commands.keep_dock_item.keep_dock_item import KeepDockItem

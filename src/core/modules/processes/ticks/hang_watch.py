@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.time.clock import Clock
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.container.container import Container
 from core.base.driver.command_category import CommandCategory
 from engine.scope.scopes import Scopes

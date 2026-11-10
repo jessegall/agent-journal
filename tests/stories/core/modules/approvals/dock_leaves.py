@@ -1,5 +1,5 @@
-from core.base.command.bus import Bus
-from core.base.command.close_user_approval import CloseUserApproval
+from engine.command.bus import Bus
+from engine.command.close_user_approval import CloseUserApproval
 from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.docking.models.dock_item import DockItem

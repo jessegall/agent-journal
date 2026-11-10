@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent

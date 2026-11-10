@@ -1,7 +1,7 @@
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.reader import Reader
 

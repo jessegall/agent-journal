@@ -22,11 +22,11 @@ from engine.query.queries import Queries
 from engine.guard.guard import Guard
 from core.base.listener.save_listener import SaveListener
 from tests.unit.core.base.sample_container import context, empty_registry, sample_container
-from tests.unit.core.base.command.test_commands import MakeItem
+from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 from tests.unit.core.base.model.test_model import Item
 from core.base.change.updated import Updated
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.change.changed import Changed
 
 EVENT_COUNTS: list[str] = []

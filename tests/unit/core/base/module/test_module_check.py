@@ -12,7 +12,7 @@ from core.base.module.module_finder import ModuleFinder
 
 import pytest
 
-from core.base.command.handlers.make_handler import MakeHandler
+from engine.command.handlers.make_handler import MakeHandler
 from engine.guard.guard import Guard
 from core.base.model.lifecycle import Lifecycle
 from core.base.model.model import Model
@@ -36,7 +36,7 @@ from core.base.registry.event_key_entry import EventKeyEntry
 from tests.unit.core.base.model.test_lifecycle import ItemState
 from tests.unit.core.base.model.test_model import Item
 from core.base.change.moved import Moved
-from core.base.command.context import Context
+from engine.command.context import Context
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 
 

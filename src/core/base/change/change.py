@@ -8,7 +8,7 @@ from core.base.change.deleted import Deleted
 from core.base.change.event_subscriber import EventSubscriber
 from core.base.change.moved import Moved
 from core.base.change.updated import Updated
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.model.model import Model
 from core.base.model.move import Move
 from core.base.change.missing_row_error import MissingRowError

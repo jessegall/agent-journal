@@ -1,7 +1,7 @@
 from engine.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.change.updated import Updated
-from core.base.command.context import Context
+from engine.command.context import Context
 from tests.unit.core.base.database.test_table_statements import Shelf
 
 

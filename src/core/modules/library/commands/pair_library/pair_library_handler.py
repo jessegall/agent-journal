@@ -2,9 +2,9 @@ import ssl
 import urllib.request
 from pathlib import Path
 
-from core.base.command.bus import Bus
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.bus import Bus
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.private.secret_values import SecretValues
 from engine.errors.refusal import Refusal
 from core.modules.library.commands.pair_library.pair_library import PairLibrary

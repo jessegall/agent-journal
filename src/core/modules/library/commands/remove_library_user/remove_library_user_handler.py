@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.library.commands.remove_library_user.remove_library_user import RemoveLibraryUser
 from core.modules.library.support.library_people import LibraryPeople
 from core.modules.library.support.library_person import LibraryPerson

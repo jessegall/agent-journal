@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import end_run, moved_run, start_process

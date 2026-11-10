@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.profiles.commands.remove_profile.remove_profile import RemoveProfile
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_person import check_profile_person

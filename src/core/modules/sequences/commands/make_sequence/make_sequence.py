@@ -1,7 +1,7 @@
 from collections.abc import Sequence as Steps
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.sequences.models.sequence import Sequence
 
 

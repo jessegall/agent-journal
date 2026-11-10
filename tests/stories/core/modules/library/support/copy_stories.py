@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from engine.actor.actor import Actor
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.library.models.library_connection import LibraryConnection

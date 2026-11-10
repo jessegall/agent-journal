@@ -4,8 +4,8 @@ from pathlib import Path
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.command.command import Command
-from core.base.command.context import Context
+from engine.command.command import Command
+from engine.command.context import Context
 from engine.container.container import Container
 from core.base.database.core_tables_migration import CORE_MIGRATIONS
 from core.base.database.database import Database

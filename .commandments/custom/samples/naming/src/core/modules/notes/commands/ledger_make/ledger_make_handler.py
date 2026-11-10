@@ -1,4 +1,4 @@
-from core.base.command.handler import Handler
+from engine.command.handler import Handler
 
 
 # @sin naming_command_named_for_its_effect

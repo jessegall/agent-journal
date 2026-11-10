@@ -7,7 +7,7 @@ import pytest
 import suites.coding.modules.workers as workers_package
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from core.testing.story import Story

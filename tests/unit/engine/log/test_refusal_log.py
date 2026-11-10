@@ -2,7 +2,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from engine.dotted_path.dotted_path import DottedPath
@@ -10,7 +10,7 @@ from core.base.registry.registry import Registry
 from engine.errors.refusal import Refusal
 from engine.log.refusal_log import RefusalLog
 from tests.unit.core.base.sample_container import sample_container
-from tests.unit.core.base.command.test_bus import BlockedItem, BlockedItemHandler
+from tests.unit.engine.command.test_bus import BlockedItem, BlockedItemHandler
 
 AGENT = Actor(7, ActorType.AGENT)
 

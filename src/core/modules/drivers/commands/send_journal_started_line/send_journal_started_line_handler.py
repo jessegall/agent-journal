@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.modules.drivers.commands.send_journal_started_line.send_journal_started_line import SendJournalStartedLine
 from core.modules.drivers.support.driver_nudges import JOURNAL_STARTED
 from core.modules.drivers.support.nudger import Nudger

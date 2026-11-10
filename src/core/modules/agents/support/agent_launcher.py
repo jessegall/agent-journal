@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.driver.program_lockdown import ProgramLockdown
 from engine.errors.refusal import Refusal
 from core.base.provider.launch_command import LaunchCommand

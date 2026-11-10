@@ -2,7 +2,7 @@ from functools import partial
 from collections.abc import Callable, Sequence
 
 from engine.actor.actor import CORE_ACTOR_ID, Actor
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.database.kept_rows import KeptRows
 from core.base.model.model import Model
 from engine.query.queries import Queries

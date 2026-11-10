@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from suites.coding.modules.checks.commands.make_check.make_check import MakeCheck
 from suites.coding.modules.checks.models.check import Check

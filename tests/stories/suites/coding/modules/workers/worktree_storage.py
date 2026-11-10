@@ -3,7 +3,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.module.module_finder import ModuleFinder
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery

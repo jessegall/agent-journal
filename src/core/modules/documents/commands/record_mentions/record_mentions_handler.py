@@ -1,5 +1,5 @@
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.context import Context
+from engine.command.handler import Handler
 from engine.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions

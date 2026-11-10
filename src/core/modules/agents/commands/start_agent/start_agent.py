@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.modules.agents.models.agent import Agent
-from core.base.command.command import Command
+from engine.command.command import Command
 from engine.time.timestamp import Timestamp
 
 

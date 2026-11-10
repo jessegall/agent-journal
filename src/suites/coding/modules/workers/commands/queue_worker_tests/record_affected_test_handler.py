@@ -1,9 +1,9 @@
 import shlex
 from dataclasses import replace
 
-from core.base.command.bus import Bus
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.bus import Bus
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.base.driver.command_category import CommandCategory
 from engine.query.queries import Queries
 from engine.repository.repository import Repository

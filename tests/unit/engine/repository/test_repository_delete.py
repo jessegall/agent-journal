@@ -14,10 +14,10 @@ from core.base.registry.registry import Registry
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from tests.unit.core.base.sample_container import context, empty_registry, sample_container
-from tests.unit.core.base.command.test_commands import MakeItem
+from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_model import Item
 from core.base.change.deleted import Deleted
-from core.base.command.context import Context
+from engine.command.context import Context
 
 NOTES = "CREATE TABLE item_notes (id INTEGER PRIMARY KEY, item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE RESTRICT) STRICT"
 

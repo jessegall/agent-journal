@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from engine.time.timestamp import Timestamp
 from core.modules.reminders.models.reminder import Reminder
 

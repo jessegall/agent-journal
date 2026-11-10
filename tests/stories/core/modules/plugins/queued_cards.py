@@ -4,7 +4,7 @@ from threading import Event, Thread
 
 import pytest
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.database.database import Database
 from engine.container.journal_container import synced_container
 from engine.query.queries import Queries

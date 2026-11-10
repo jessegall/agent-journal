@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.triggers.models.trigger_action_run import TriggerActionRun
 
 

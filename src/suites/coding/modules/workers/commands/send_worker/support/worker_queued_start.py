@@ -1,5 +1,5 @@
-from core.base.command.bus import Bus
-from core.base.command.context import Context
+from engine.command.bus import Bus
+from engine.command.context import Context
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 

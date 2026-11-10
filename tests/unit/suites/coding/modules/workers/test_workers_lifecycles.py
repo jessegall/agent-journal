@@ -6,7 +6,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.guard.lifecycle_guard import LifecycleGuard
 from core.base.model.state_book import StateBook
 from core.base.model.model import Model
@@ -17,7 +17,7 @@ from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import Proo
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
-from tests.unit.core.base.command.test_commands import MakeItem
+from tests.unit.engine.command.test_commands import MakeItem
 
 WORKTREE = Worktree(id=1, version=1, session_agent_id=2, environment_id=1, task_id=1, creator_id=1, folder="/work/journal/.journal/worktrees/main/worker-2",
                     branch="journal/main/worker-2", base_branch="version-5")

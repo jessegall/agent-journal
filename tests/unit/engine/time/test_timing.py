@@ -7,14 +7,14 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.caller.caller_request import CallerRequest
 from engine.cli.line_run import LineRun
-from core.base.command.bus import Bus
-from core.base.command.handlers.make_handler import MakeHandler
-from core.base.command.make_command import MakeCommand
+from engine.command.bus import Bus
+from engine.command.handlers.make_handler import MakeHandler
+from engine.command.make_command import MakeCommand
 from engine.journal.journal_home import JournalHome
 from core.base.registry.registry import Registry
 from engine.time.timing import Timing
-from tests.unit.core.base.command.test_bus import handlers
-from tests.unit.core.base.command.test_commands import MakeItem
+from tests.unit.engine.command.test_bus import handlers
+from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.core.base.module.test_module_sync import ITEMS
 from tests.unit.core.base.sample_container import sample_container
 

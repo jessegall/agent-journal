@@ -5,7 +5,7 @@ from engine.errors.refusal import Refusal
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.base.change.changed import Changed
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class RunOwnerPartsGuard(Guard[Changed[ProcessPart]]):

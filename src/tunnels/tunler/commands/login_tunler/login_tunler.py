@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from tunnels.tunler.support.tunler_login import TunlerLogin
 
 

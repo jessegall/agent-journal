@@ -1,4 +1,4 @@
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.listener.save_listener import SaveListener
 from core.modules.aliases.commands.set_alias_silence.support.alias_silence import AliasSilence
 from core.modules.processes.events.process_ended import ProcessEnded

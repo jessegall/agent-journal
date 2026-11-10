@@ -3,8 +3,8 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from engine.cli.caller_stream import CallerStream
-from core.base.command.outside_runs import OutsideRuns
-from core.base.command.outside_turn import OutsideTurn
+from engine.command.outside_runs import OutsideRuns
+from engine.command.outside_turn import OutsideTurn
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
 from core.base.model.event_form import EventForm

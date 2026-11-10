@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from core.base.change.changed import Changed
 from core.base.change.created import Created
 from core.base.change.deleted import Deleted
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.guard.guard import Guard
 from core.modules.sharing.models.lifecycles.share_link_lifecycle import ShareLinkLifecycle
 from engine.errors.refusal import Refusal

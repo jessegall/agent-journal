@@ -1,5 +1,5 @@
 from core.modules.agents.models.agent import Agent
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.log.exception_sink import CLOCK_TICK_SOURCE, ExceptionSink
 from engine.performance.performance_tool import PerformanceTool
 from engine.query.queries import Queries

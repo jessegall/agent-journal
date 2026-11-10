@@ -6,7 +6,7 @@ from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.questions.models.question import Question
 from core.base.change.created import Created
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class MainAgentGuard(Guard[Created[Question]]):

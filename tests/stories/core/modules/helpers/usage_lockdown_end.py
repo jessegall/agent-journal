@@ -2,7 +2,7 @@ import json
 from datetime import timedelta
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.enums.agent_activity import AgentActivity
 from core.modules.drivers.commands.end_silent_helpers.end_silent_helpers import EndSilentHelpers

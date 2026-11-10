@@ -2,7 +2,7 @@ from engine.guard.guard import Guard
 from core.modules.tasks.models.task_dependency import TaskDependency
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.base.change.created import Created
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class VisibleDependencyGuard(Guard[Created[TaskDependency]]):

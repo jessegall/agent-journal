@@ -1,7 +1,7 @@
 import pytest
 
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.modules.assign_rules.commands.record_assign_decision.record_assign_decision import RecordAssignDecision

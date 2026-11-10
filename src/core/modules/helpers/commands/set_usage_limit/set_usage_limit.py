@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.helpers.models.enums.usage_limit_mode import UsageLimitMode
 from core.modules.helpers.models.enums.usage_limit_window import UsageLimitWindow
 from core.modules.helpers.models.usage_limit import UsageLimit

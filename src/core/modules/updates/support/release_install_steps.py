@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.database.database import Database
 from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome

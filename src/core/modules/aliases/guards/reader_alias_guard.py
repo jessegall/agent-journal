@@ -2,7 +2,7 @@ from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.base.change.deleted import Deleted
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.modules.processes.models.reader import Reader
 
 

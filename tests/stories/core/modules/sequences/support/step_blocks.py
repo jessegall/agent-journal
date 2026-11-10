@@ -1,4 +1,4 @@
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.database.database import Database
 from core.base.database.module_migrations import ModuleMigrations
 from core.base.database.schema import Schema

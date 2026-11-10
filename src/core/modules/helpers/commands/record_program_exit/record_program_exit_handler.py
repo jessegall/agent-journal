@@ -8,9 +8,9 @@ from engine.log.system_log_writer import SystemLogWriter
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
-from core.base.command.bus import Bus
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.bus import Bus
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.base.provider.providers import Providers
 from engine.query.queries import Queries
 from core.modules.agents.commands.end_agent.end_agent import EndAgent

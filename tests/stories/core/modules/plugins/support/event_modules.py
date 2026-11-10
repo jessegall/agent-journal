@@ -2,9 +2,9 @@ from dataclasses import dataclass
 
 from core.base.change.created import Created
 from core.base.change.logged_event import LoggedEvent
-from core.base.command.command import Command
-from core.base.command.context import Context
-from core.base.command.handler import Handler
+from engine.command.command import Command
+from engine.command.context import Context
+from engine.command.handler import Handler
 from core.base.database.migration import Migration
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.save_listener import SaveListener

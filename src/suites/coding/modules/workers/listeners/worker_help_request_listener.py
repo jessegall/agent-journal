@@ -9,7 +9,7 @@ from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_nudges import WORKER_HELP_REQUEST
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
 from core.base.change.created import Created
-from core.base.command.context import Context
+from engine.command.context import Context
 
 SOURCE = "workers.help-request"
 

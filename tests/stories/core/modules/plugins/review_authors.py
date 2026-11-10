@@ -2,7 +2,7 @@ import json
 from datetime import timedelta
 from pathlib import Path
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.model.event_form import EventForm
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveries import PrunePluginDeliveries

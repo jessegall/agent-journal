@@ -4,7 +4,7 @@ from engine.cli.default_subcommands import DefaultSubcommands
 from engine.cli.move_subcommand import MoveSubcommand
 from core.base.subcommand.subcommand import Subcommand, is_subcommand_class
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.command.command import Command
+from engine.command.command import Command
 from engine.container.container import Container
 from core.base.model.model import Model
 from core.base.registry.registry import Registry

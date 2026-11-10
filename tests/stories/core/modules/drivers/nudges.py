@@ -3,7 +3,7 @@ import sqlite3
 from unittest.mock import patch
 
 from engine.actor.actor import Actor
-from core.base.command.context import Context
+from engine.command.context import Context
 from core.base.database.database import Database
 from core.base.driver.driver_rules import DriverRules
 from engine.journal.journal_home import JournalHome

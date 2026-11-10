@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from engine.repository.repository import Repository

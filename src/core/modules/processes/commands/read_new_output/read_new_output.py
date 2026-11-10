@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.processes.models.output import Output
 from core.modules.processes.support.prepared_read import PreparedRead
 

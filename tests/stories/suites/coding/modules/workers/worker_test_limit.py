@@ -6,7 +6,7 @@ from unittest.mock import patch
 from core.base.database.database import Database
 from tests.stories.support.story_checks import expect_value
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.actor.actor import Actor
 from core.base.driver.command_category import CommandCategory
 from engine.journal.journal_home import LAUNCHER_SOCKET

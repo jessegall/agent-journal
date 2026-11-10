@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.time.timestamp import Timestamp
 from core.modules.aliases.commands.set_alias_silence.set_alias_silence import SetAliasSilence
 from core.modules.aliases.models.alias import Alias

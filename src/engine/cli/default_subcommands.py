@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 import dataclasses
 from typing import TypeIs
-from core.base.command.move_command import MoveCommand
+from engine.command.move_command import MoveCommand
 from core.base.model.model import Model
 from core.base.model.move import Move
 from core.base.model.state_book import StateBook

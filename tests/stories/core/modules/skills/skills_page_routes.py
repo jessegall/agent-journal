@@ -2,7 +2,7 @@ from tests.stories.core.modules.skills.due import drain_countdown
 import pytest
 from concurrent.futures import ThreadPoolExecutor
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.support.skill_catalogue import SkillCatalogue

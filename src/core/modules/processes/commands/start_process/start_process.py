@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.shell_line import ShellLine

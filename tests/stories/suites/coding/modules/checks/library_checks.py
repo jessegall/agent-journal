@@ -4,7 +4,7 @@ from datetime import timedelta
 import pytest
 
 from engine.actor.actor import Actor
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.check.periodic_checks import PeriodicChecks
 from engine.query.queries import Queries
 from engine.repository.repository import Repository

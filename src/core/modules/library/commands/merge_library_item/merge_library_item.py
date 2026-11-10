@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.base.library.library_item import LibraryItem
 from core.modules.library.models.library_copy import LibraryCopy
 

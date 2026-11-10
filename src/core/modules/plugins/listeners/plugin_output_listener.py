@@ -5,7 +5,7 @@ from engine.enums.agent_role import AgentRole
 from engine.caller.caller import Caller
 from core.base.change.logged_event import LoggedEvent
 from engine.cli.console import Console
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault

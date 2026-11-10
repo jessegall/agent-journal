@@ -1,4 +1,4 @@
-from core.base.command.context import Context
+from engine.command.context import Context
 from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries
 from engine.repository.repository import Repository

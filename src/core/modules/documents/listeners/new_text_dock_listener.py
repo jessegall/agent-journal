@@ -2,7 +2,7 @@ from typing import ClassVar
 
 from core.base.change.changed import RowChange
 from core.base.change.logged_event import LoggedEvent
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from engine.scope.actor_scope import ActorScope

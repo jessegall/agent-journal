@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.command.command import Command
+from engine.command.command import Command
 from core.modules.sequences.commands.support.sequence_line import SequenceLine
 
 START, END = "start", "end"

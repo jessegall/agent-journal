@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from engine.query.queries import Queries
 from core.modules.drivers.commands.resume_agent.resume_agent import ResumeAgent
 from core.modules.agents.models.agent import Agent

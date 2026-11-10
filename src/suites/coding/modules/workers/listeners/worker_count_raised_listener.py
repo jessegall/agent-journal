@@ -18,7 +18,7 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_LIMIT_RAI
 from suites.coding.modules.workers.support.worker_settings import DEFAULT_WORKER_COUNT, WORKER_RUN_LIMIT
 from core.base.change.changed import Changed
 from core.base.change.deleted import Deleted
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):

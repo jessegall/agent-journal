@@ -5,7 +5,7 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_brief_blocks import TaskBriefBlocks
 from core.base.change.changed import Changed
-from core.base.command.context import Context
+from engine.command.context import Context
 
 
 class TaskBriefAssignedListener(SaveListener[Changed[Task]]):

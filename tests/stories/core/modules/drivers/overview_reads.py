@@ -3,7 +3,7 @@ from datetime import timedelta
 
 import pytest
 
-from core.base.command.bus import Bus
+from engine.command.bus import Bus
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from core.testing.hook_samples import HookSamples

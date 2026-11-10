@@ -5,8 +5,8 @@ from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from engine.time.timestamp import Timestamp
-from core.base.command.bus import Bus
-from core.base.command.command import Command
+from engine.command.bus import Bus
+from engine.command.command import Command
 from core.base.model.event_form import EventForm
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
