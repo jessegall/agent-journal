@@ -85,7 +85,11 @@ class TaskQuery(Query[Task]):
         return self.matching(Among("id", task_ids)).matching(SubqueryMatch("delegated_to", running_main_agents)).matching(IsNull("holder_id")).matching(Among("state", [TaskState.OPEN, TaskState.BLOCKED]))
 
     def takeable(self, agent: Agent) -> Self:
-        return self.matching(TakeableTasks(agent.id, agent.role == MAIN_ROLE))
+        return self.matching(self.takeable_condition(agent))
+
+    @staticmethod
+    def takeable_condition(agent: Agent) -> Condition:
+        return TakeableTasks(agent.id, agent.role == MAIN_ROLE)
 
     def open_tasks(self) -> Self:
         return self.filter(state=TaskState.OPEN)
