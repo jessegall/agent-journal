@@ -42,9 +42,10 @@ test("the context menu shows the tokens out of the limit and a Capped badge whil
     expect(page.querySelector("[data-context-menu-cap]").textContent.replace(/\s+/g, " ").trim()).toBe("248k of 400k Capped");
 });
 
-test("the context menu shows no limit when none caps the agent", async () => {
-    const page = await menu(null, {context_tokens: 248000, context_limit_tokens: null});
-    expect(page.querySelector("[data-context-menu-cap]")).toBeNull();
+test("the context menu shows the tokens out of the model's window and no badge when no limit caps the agent", async () => {
+    const page = await menu(null, {context_tokens: 126000, context_limit_tokens: null, context_window_tokens: 200000});
+    expect(page.querySelector("[data-context-menu-cap]").textContent.replace(/\s+/g, " ").trim()).toBe("126k of 200k");
+    expect(page.querySelector("[data-context-menu-cap] .badge")).toBeNull();
     expect(page.querySelector("[data-context-menu-meter] .context-used").textContent).toBe("95%");
 });
 
