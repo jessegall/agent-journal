@@ -5,8 +5,8 @@ from unittest.mock import patch
 
 import pytest
 
-import core.base.file_access as file_module
-from core.base.file_access import FileAccess
+import engine.file.file_access as file_module
+from engine.file.file_access import FileAccess
 
 
 def test_text_reads_keep_encoding_errors_and_universal_newlines(tmp_path):

@@ -12,7 +12,7 @@ from pathlib import Path
 
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.tool_type import ToolType
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.instruction.instruction_imports import JOURNAL_FILE
 from engine.journal.journal_home import JournalHome
 from core.base.provider.helper_launch import HelperLaunch

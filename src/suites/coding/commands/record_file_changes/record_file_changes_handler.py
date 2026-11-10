@@ -3,7 +3,7 @@ from dataclasses import replace
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.scope.scopes import Scopes

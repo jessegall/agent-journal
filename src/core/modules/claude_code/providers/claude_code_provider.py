@@ -31,7 +31,7 @@ from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
 from core.base.provider.peer_note import PeerNote
 from core.base.provider.transcript_row import TranscriptRow
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.base.provider.status_file_fields import StatusFileFields
 from engine.types.type_guards import is_list, is_mapping
 from core.base.private.server_keys import ServerKeys

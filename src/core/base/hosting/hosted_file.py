@@ -5,7 +5,7 @@ from functools import cache
 from pathlib import Path
 from typing import Any
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.base.hosting.hosted_file_refusal import HostedFileRefusal
 from core.base.hosting.hosted_mode import HostedMode
 from core.base.hosting.hosting import Hosting

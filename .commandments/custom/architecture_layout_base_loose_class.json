@@ -14,39 +14,6 @@
             },
             {
                 "testCode": true
-            },
-            {
-                "file": "src/core/base/code_copy.py"
-            },
-            {
-                "file": "src/core/base/conflict_files.py"
-            },
-            {
-                "file": "src/core/base/file_access.py"
-            },
-            {
-                "file": "src/core/base/file_changes.py"
-            },
-            {
-                "file": "src/core/base/file_contents.py"
-            },
-            {
-                "file": "src/core/base/file_fingerprints.py"
-            },
-            {
-                "file": "src/core/base/file_state.py"
-            },
-            {
-                "file": "src/core/base/file_version.py"
-            },
-            {
-                "file": "src/core/base/kept_file_text.py"
-            },
-            {
-                "file": "src/core/base/project_reads.py"
-            },
-            {
-                "file": "src/core/base/rotated_file.py"
             }
         ]
     },

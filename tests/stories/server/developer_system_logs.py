@@ -4,7 +4,7 @@ import sqlite3
 import pytest
 
 from engine.log.error_log import ErrorLog
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
 from core.modules.profiles.support.profile_folder_move import ProfileFolderMove

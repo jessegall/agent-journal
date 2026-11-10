@@ -1,6 +1,6 @@
 from core.base.model.event_form import EventForm
-from core.base.file_access import FileAccess
-from core.base.file_version import FileVersion
+from engine.file.file_access import FileAccess
+from engine.file.file_version import FileVersion
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass, replace

@@ -1,11 +1,11 @@
 import os
 
 from engine.time.clock import Clock
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
-from core.base.rotated_file import RotatedFile
+from engine.file.rotated_file import RotatedFile
 
 LOG_LIMIT_BYTES = 10_000_000
 LOG_FILE_MODE = 0o600

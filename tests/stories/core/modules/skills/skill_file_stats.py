@@ -1,7 +1,7 @@
 import pytest
 
 from core.base.driver.command_category import CommandCategory
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart

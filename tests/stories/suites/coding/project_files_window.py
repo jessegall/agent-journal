@@ -2,7 +2,7 @@ from urllib.parse import urlencode
 
 import pytest
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data

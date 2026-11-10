@@ -1,4 +1,4 @@
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 import fcntl
 import json
 import re
@@ -6,11 +6,11 @@ import subprocess
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from functools import lru_cache
-from core.base.file_version import FileVersion
+from engine.file.file_version import FileVersion
 import shutil
 from pathlib import Path, PurePosixPath
 
-from core.base.conflict_files import ConflictFiles
+from engine.file.conflict_files import ConflictFiles
 from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from engine.errors.refusal import Refusal
 from suites.coding.models.enums.ask_topic import AskTopic

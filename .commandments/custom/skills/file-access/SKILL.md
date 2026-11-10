@@ -8,7 +8,7 @@ languages: [python]
 
 # File access
 
-Use `FileAccess.shared()` from `core.base.file_access`. Read text with `read(path)` and bytes with
+Use `FileAccess.shared()` from `engine.file.file_access`. Read text with `read(path)` and bytes with
 `binary(path)`. Write text with `write(path, text)` and bytes with `write_binary(path, data)`.
 Use `writer(path, mode)` for a streamed write and `update_timestamp(path)` for a file touch.
 Use `descriptor_writer(path, flags, permissions)` for atomic descriptor writes, `private_writer(path)`

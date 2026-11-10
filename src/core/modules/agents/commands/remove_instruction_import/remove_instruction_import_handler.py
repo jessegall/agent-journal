@@ -1,7 +1,7 @@
 from engine.enums.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.instruction.instruction_imports import INSTRUCTION_FILES, InstructionImports
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal

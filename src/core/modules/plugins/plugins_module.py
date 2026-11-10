@@ -5,7 +5,7 @@ from core.modules.plugins.migrations.m004_plugin_session import PluginSessionMig
 from core.modules.plugins.migrations.m003_plugin_output_index import PluginOutputIndexMigration
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.plugins.commands.deliver_file_edit.deliver_file_edit_handler import DeliverFileEditHandler
-from core.base.project_reads import ProjectReads
+from engine.file.project_reads import ProjectReads
 from core.modules.plugins.guards.plugin_event_guard import PluginEventGuard
 from core.modules.plugins.migrations.m006_plugin_output_environment import PluginOutputEnvironmentMigration
 from core.modules.plugins.migrations.m007_plugin_config import PluginConfigMigration

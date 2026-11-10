@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
-from core.base.project_reads import ProjectReads
+from engine.file.project_reads import ProjectReads
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 
 

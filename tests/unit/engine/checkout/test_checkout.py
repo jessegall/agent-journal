@@ -2,7 +2,7 @@ from engine.agent.agent_checkouts import AgentCheckouts
 from engine.checkout.checkout import Checkout
 from engine.checkout.checkout_file import CheckoutFile
 from engine.enums.checkout_type import CheckoutType
-from core.base.file_state import FileState
+from engine.file.file_state import FileState
 from engine.enums.file_status import FileStatus
 
 

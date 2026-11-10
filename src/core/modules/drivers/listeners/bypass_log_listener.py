@@ -1,4 +1,4 @@
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.enums.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent
 from core.base.chat.mark_outcome import MarkOutcome

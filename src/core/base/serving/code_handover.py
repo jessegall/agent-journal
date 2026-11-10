@@ -4,7 +4,7 @@ from pathlib import Path
 
 from engine.time.clock import Clock
 from engine.version.code_versions import CodeVersions
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from engine.connection.unix_connection import UnixConnection

@@ -1,5 +1,5 @@
 from core.base.skill.skill_contents import SkillContents
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from core.base.provider.providers import Providers

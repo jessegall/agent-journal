@@ -3,7 +3,7 @@ from collections import Counter
 from collections.abc import Iterator
 from pathlib import Path
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.instruction.instruction_import import InstructionImport
 
 INSTRUCTION_FILES = ("CLAUDE.md", "AGENTS.md")

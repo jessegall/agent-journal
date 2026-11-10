@@ -3,8 +3,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Mapping
 
-from core.base.file_access import FileAccess
-from core.base.file_version import FileVersion
+from engine.file.file_access import FileAccess
+from engine.file.file_version import FileVersion
 from engine.types.type_guards import is_text_mapping
 
 

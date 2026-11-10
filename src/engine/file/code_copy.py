@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
-from core.base.conflict_files import ConflictFiles
+from engine.file.conflict_files import ConflictFiles
 
 IGNORED = ("__pycache__", "node_modules", "*.pyc", ".venv")
 

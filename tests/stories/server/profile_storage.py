@@ -4,7 +4,7 @@ import shlex
 
 import pytest
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.errors.refusal import Refusal
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.testing.hook_samples import HookSamples

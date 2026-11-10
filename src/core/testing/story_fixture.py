@@ -4,7 +4,7 @@ import textwrap
 from pathlib import Path
 from typing import ClassVar
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.testing.story import Story
 
 

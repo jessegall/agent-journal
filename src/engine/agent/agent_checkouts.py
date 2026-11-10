@@ -2,7 +2,7 @@ from pathlib import Path
 
 from engine.checkout.checkout import Checkout
 from engine.checkout.checkout_file import CheckoutFile
-from core.base.file_state import FileState
+from engine.file.file_state import FileState
 from engine.enums.file_status import FileStatus
 from engine.errors.refusal import Refusal
 

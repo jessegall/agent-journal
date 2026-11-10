@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 

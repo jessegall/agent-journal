@@ -7,7 +7,7 @@ from pathlib import Path
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
 from core.modules.plugins.support.login_path import LoginPath

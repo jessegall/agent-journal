@@ -4,8 +4,8 @@ from dataclasses import replace
 from pathlib import Path
 
 from engine.enums.access import Access
-from core.base.file_access import FileAccess
-from core.base.kept_file_text import KeptFileText
+from engine.file.file_access import FileAccess
+from engine.file.kept_file_text import KeptFileText
 from engine.journal.journal_home import JournalHome
 from core.base.profile.agent_profile import AgentProfile
 from core.base.profile.profile_name import PROFILE_NAME

@@ -2,7 +2,7 @@ from argparse import Namespace
 from pathlib import Path
 
 from engine.errors.refusal import Refusal
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 
 
 class TextBody:

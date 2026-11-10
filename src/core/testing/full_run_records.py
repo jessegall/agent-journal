@@ -5,7 +5,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from statistics import median
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.base.module.code_fingerprint import CORE_FOLDER
 from core.testing.full_run_record import FullRunRecord
 

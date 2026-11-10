@@ -1,5 +1,5 @@
 from core.base.skill.skill_contents import SkillContents
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 import shutil
 from collections.abc import Sequence
 from pathlib import Path

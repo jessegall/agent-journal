@@ -2,7 +2,7 @@ import json
 import base64
 import pytest
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.modules.profiles.support.profile_files import ProfileFiles
 from tests.stories.core.modules.helpers.start_helper import started
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent

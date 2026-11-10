@@ -5,7 +5,7 @@ import pytest
 from core.base.database.database import Database
 from core.base.database.repeated_calls_error import RepeatedCallsError
 from core.base.database.statement import Statement
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from tests.stories.support.story_checks import expect_value
 
 ORIGIN_READ = Statement("SELECT 2")

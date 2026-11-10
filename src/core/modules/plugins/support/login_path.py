@@ -1,10 +1,10 @@
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 import os
 import subprocess
 from functools import lru_cache
 from pathlib import Path
 
-from core.base.file_version import FileVersion
+from engine.file.file_version import FileVersion
 from engine.journal.journal_home import JournalHome
 
 FALLBACK_FOLDERS = ("/usr/local/bin", "/opt/homebrew/bin", "/usr/bin", "/bin")

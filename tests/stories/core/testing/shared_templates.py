@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from core.base.code_copy import IGNORED
+from engine.file.code_copy import IGNORED
 from tests.stories.support.story_checks import expect_value
 
 CHECKOUT = Path(__file__).resolve().parents[4]

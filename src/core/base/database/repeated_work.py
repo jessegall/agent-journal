@@ -15,7 +15,7 @@ import traceback
 from core.base.database.point_tally import PointTally
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.file_access import FILE_READ_EVENT, FILE_CHANGE_EVENT
+from engine.file.file_access import FILE_READ_EVENT, FILE_CHANGE_EVENT
 from core.base.database.repeated_calls_error import RepeatedCallsError
 from core.base.database.repeated_finding import RepeatedFinding
 

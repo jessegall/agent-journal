@@ -2,7 +2,7 @@ import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 
 STAMP_NAME = "sources.sha256"
 SKIPPED_FOLDERS = frozenset({"node_modules", "dist", "__pycache__"})

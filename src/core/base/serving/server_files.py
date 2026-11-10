@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import IO
 from engine.time.clock import Clock
 from engine.journal.journal_home import SERVER_SOCKET, JournalHome
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
 from engine.log.system_log_writer import LOG_LIMIT_BYTES, SystemLogWriter

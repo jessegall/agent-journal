@@ -18,7 +18,7 @@ from core.base.hosting.host_probe import HostProbe
 from core.base.hosting.hosted_file import HOSTED_FILE_PATH, HostedFile
 from core.base.hosting.hosted_start_check import HostedStartCheck
 from engine.container.journal_container import opened_container, synced_database_container
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel
 from engine.errors.refusal import Refusal

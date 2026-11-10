@@ -1,4 +1,4 @@
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 import json
 import sqlite3
 from pathlib import Path

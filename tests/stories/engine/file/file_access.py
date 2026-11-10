@@ -7,7 +7,7 @@ import pytest
 
 from core.modules.documents.commands.support.text_body import TextBody
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.base.module.module_finder import ModuleFinder
 from core.base.database.repeated_calls_error import RepeatedCallsError
 from tests.stories.support.story_checks import expect_value

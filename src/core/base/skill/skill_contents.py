@@ -2,8 +2,8 @@ from functools import cached_property, lru_cache
 from dataclasses import dataclass
 from pathlib import Path
 
-from core.base.file_access import FileAccess
-from core.base.file_version import FileVersion
+from engine.file.file_access import FileAccess
+from engine.file.file_version import FileVersion
 from core.base.skill.skill_digest import SkillDigest
 
 FRONT_MATTER_MARK = "---"

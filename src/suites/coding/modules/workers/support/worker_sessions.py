@@ -5,7 +5,7 @@ from contextlib import contextmanager
 
 from engine.time.clock import Clock
 from core.base.command.bus import Bus
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from engine.process.leftover_process import LeftoverProcess
 from core.base.provider.providers import Providers

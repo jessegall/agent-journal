@@ -1,4 +1,4 @@
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.types.type_guards import is_mapping
 import hashlib
 import json

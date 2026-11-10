@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.base.hosting.host_probe import HostProbe
 from core.base.hosting.hosted_file import HostedFile
 from core.base.hosting.hosting import Hosting

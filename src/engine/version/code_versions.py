@@ -1,4 +1,4 @@
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 import fnmatch
 import hashlib
 import os
@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 
 from engine.time.clock import Clock
-from core.base.code_copy import IGNORED, CodeCopy
+from engine.file.code_copy import IGNORED, CodeCopy
 from engine.errors.code_version_missing_error import CodeVersionMissingError
 from engine.journal.journal_home import JournalHome
 

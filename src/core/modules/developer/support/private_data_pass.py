@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from core.base.file_access import FileAccess
-from core.base.file_fingerprints import FileFingerprints
+from engine.file.file_access import FileAccess
+from engine.file.file_fingerprints import FileFingerprints
 from core.base.git.project_files import ProjectFiles
 from core.modules.developer.support.private_data_finding import PrivateDataFinding
 from core.modules.developer.support.private_data_scan import PrivateDataScan

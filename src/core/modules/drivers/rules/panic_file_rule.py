@@ -6,7 +6,7 @@ from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.program_lockdown import ProgramLockdown
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from core.modules.drivers.support.access_nudges import PANIC_FILE
 

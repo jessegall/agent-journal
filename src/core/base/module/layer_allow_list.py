@@ -3,7 +3,7 @@ from collections import Counter
 from collections.abc import Sequence
 from pathlib import Path
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 
 ALLOW_LIST_FILE = Path(__file__).with_name("layer_allow_list.txt")
 IMPORT_LINE = re.compile(r".+ imports (?P<target>.+), which (?P<importer>.+) may not use$")

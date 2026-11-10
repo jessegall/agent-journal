@@ -1,4 +1,4 @@
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 import re
 from collections.abc import Iterable, Iterator
 from pathlib import Path

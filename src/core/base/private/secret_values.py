@@ -1,7 +1,7 @@
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 import json
 from functools import lru_cache
-from core.base.file_version import FileVersion
+from engine.file.file_version import FileVersion
 from pathlib import Path
 
 from core.base.private.private_folder import PrivateFolder

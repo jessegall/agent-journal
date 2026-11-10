@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 
 REPORT = "upgrade-report.txt"
 PREVIOUS = "upgrade-report.1.txt"

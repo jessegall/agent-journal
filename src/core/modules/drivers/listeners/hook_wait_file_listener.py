@@ -1,4 +1,4 @@
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.base.change.logged_event import LoggedEvent
 from engine.journal.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener

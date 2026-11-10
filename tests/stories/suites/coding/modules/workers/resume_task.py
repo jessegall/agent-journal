@@ -8,7 +8,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from core.base.command.bus import Bus
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from engine.json.json_settings import JsonSettings
 from core.base.query.queries import Queries

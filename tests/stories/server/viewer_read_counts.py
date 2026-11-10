@@ -15,7 +15,7 @@ import pytest
 from core.base.database.database import Database
 from core.base.database.point_tally import PointTally
 from core.base.database.points import Points
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.modules.processes.support.output_folder import OutputFolder
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import ended_run, moved_run, started_run

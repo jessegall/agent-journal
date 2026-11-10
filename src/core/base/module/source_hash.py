@@ -1,11 +1,11 @@
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 import fnmatch
 import hashlib
 import os
 from functools import cache
 from pathlib import Path
 
-from core.base.code_copy import IGNORED
+from engine.file.code_copy import IGNORED
 from engine.version.version import CORE_VERSION
 
 

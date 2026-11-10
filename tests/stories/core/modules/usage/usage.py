@@ -4,7 +4,7 @@ import json
 import pytest
 
 from core.base.command.bus import Bus
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.tool_type import ToolType
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart

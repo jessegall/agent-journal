@@ -10,7 +10,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.driver.command_category import CommandCategory
 from core.base.model.event_form import EventForm
-from core.base.project_reads import ProjectReads
+from engine.file.project_reads import ProjectReads
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.process.plugin_script_processes import PluginScriptProcesses

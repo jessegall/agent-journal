@@ -5,7 +5,7 @@
         "select": "call",
         "where": [
             {
-                "fileMatches": "(^|/)src/(core|suites|server|install)/"
+                "fileMatches": "(^|/)src/(core|engine|suites|server|install)/"
             },
             {
                 "any": [
@@ -114,7 +114,7 @@
         ],
         "reject": [
             {
-                "fileMatches": "(^|/)src/core/base/file_access\\.py$"
+                "fileMatches": "(^|/)src/engine/file/file_access\\.py$"
             },
             {
                 "fileMatches": "(^|/)samples/query_rules/"

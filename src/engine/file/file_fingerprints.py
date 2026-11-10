@@ -3,7 +3,7 @@ import json
 from collections.abc import Sequence
 from pathlib import Path
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 
 FINGERPRINT_FILE = "file-fingerprints.json"

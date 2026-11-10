@@ -13,7 +13,7 @@ from engine.enums.actor_type import ActorType
 from core.base.driver.nudge import Nudge
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.chat.models.chat_mark import ChatMark

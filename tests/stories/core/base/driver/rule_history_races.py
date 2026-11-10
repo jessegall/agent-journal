@@ -1,6 +1,6 @@
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.base.query.queries import Queries
 from core.modules.drivers.commands.support.rule_history_writer import RuleHistoryWriter
 from core.modules.drivers.models.enums.rule_due_outcome import RuleDueOutcome

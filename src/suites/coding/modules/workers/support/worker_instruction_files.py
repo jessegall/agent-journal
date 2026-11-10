@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from core.base.profile.agent_profile import AgentProfile
-from core.base.file_version import FileVersion
+from engine.file.file_version import FileVersion
 from core.base.registry.registry import Registry
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins

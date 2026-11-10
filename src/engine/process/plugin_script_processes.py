@@ -9,7 +9,7 @@ from pathlib import Path
 
 from core.base.caller.process_row import ProcessRow
 from engine.journal.journal_home import JournalHome
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.process.leftover_process import LeftoverProcess
 from core.base.model.event_form import EventForm
 from engine.process.plugin_script_process import PluginScriptProcess

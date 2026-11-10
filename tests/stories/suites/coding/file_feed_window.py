@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.server.support.server_client import server_story

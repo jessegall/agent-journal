@@ -3,7 +3,7 @@ from collections.abc import Iterator
 from datetime import datetime, timezone
 from pathlib import Path
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
 from core.modules.developer.support.log_line import LogLine

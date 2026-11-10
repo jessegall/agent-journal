@@ -1,6 +1,6 @@
 import json
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome

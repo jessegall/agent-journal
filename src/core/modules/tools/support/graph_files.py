@@ -3,7 +3,7 @@ from pathlib import Path
 
 from engine.time.clock import Clock
 from engine.process.process_ids import ProcessIds
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.modules.tools.support.graph_stamp import GraphStamp
 
 OUTPUT_FOLDER = "graphify-out"

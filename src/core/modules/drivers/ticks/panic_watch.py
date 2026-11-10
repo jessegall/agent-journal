@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from core.base.chat.mark_outcome import MarkOutcome
 from core.base.command.bus import Bus
 from engine.container.container import Container
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from core.base.module.module_actors import ModuleActors
 from engine.enums.log_level import LogLevel

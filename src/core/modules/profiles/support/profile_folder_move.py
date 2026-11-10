@@ -3,7 +3,7 @@ import tomllib
 from pathlib import Path
 
 from engine.enums.access import Access
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from engine.enums.log_level import LogLevel
 from core.base.profile.agent_profile import AgentProfile
 from engine.errors.refusal import Refusal

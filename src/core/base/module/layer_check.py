@@ -3,7 +3,7 @@ from collections import defaultdict
 from collections.abc import Collection, Iterator, Sequence
 from pathlib import Path
 
-from core.base.file_access import FileAccess
+from engine.file.file_access import FileAccess
 from core.base.module.layer import Layer
 from core.base.module.layer_rules import LayerRules
 from core.base.module.layer_table import LayerTable
