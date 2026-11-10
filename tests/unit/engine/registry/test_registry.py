@@ -1,3 +1,4 @@
+from engine.enums.occupant import Occupant
 from engine.time.clock import Clock
 import json
 import sqlite3
@@ -209,7 +210,7 @@ def test_windows_saved_with_the_old_places_read_as_a_pane_and_whose_work_they_sh
 
 def test_registered_profiles_restore(database):
     profile = AgentProfile("notes-reader", "Reads notes", "Read the notes.", agent_type="reader", model="small", codex_model="small",
-                           access=Access.READ, program="codex", independent=True, mcp_tools=tuple(["mcp__notes__read"]),
+                           access=Access.READ, program="codex", occupant=Occupant.LAUNCH_ROTATION, mcp_tools=tuple(["mcp__notes__read"]),
                            changed=tuple(["model"]), module_text_changed=True)
     policy = AgentPolicy(private_output_roles=tuple(["reader"]), queued_run_roles=tuple(["reader"]))
     suite = SuiteEntry("notes", "notes", (), {}, False, (), (), {}, {}, policy, shipped=True)

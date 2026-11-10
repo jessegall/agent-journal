@@ -1,5 +1,6 @@
 import errno
 import tomllib
+from engine.enums.occupant import INDEPENDENT_OCCUPANTS
 from pathlib import Path
 
 from engine.enums.access import Access
@@ -90,7 +91,7 @@ class ProfileFolderMove:
 
     @staticmethod
     def personal_fields(profile: AgentProfile, fields: ProfileFields) -> dict[str, object]:
-        values: dict[str, object] = {name: getattr(profile, name) for name in ("description", "body", "agent_type", "access", "program", "preferred_program", "model", "codex_model", "independent", "mcp_tools")}
+        values: dict[str, object] = {name: getattr(profile, name) for name in ("description", "body", "agent_type", "access", "program", "preferred_program", "model", "codex_model", "occupant", "mcp_tools")}
         if fields.get("legacy_writing") == "true":
             values["legacy_writing"] = "true"
         return values
@@ -102,7 +103,7 @@ class ProfileFolderMove:
             codex_model = str(native.get("model", ""))
             fields = ProfileFields(name=path.stem, description=str(native.get("description", "")), body=str(native.get("developer_instructions", "")),
                                    agent_type=str(native.get("type", native.get("kind", "helper"))), model="", codex_model="" if codex_model == "inherit" else codex_model,
-                                   independent=bool(native.get("independent", False)), mcp_tools=ProfileFormat.tools(native.get("mcp_tools", [])))
+                                   occupant=INDEPENDENT_OCCUPANTS[native.get("independent", False) is True], mcp_tools=ProfileFormat.tools(native.get("mcp_tools", [])))
             if native.get("sandbox_mode") == "workspace-write":
                 fields.update(access=Access.READ, legacy_writing="true")
             return ProfileFolderMove.complete_fields(fields)

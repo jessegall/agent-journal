@@ -31,6 +31,3 @@ tests/stories/core/modules/profiles/helper_lifetime.py::test_a_reuse_word_in_a_f
 tests/stories/core/modules/profiles/helper_lifetime.py::test_a_module_upgrade_keeps_a_persons_occupant  plan 1108 phase 'The declaration': a profile declares its occupant
 tests/stories/core/modules/profiles/helper_lifetime.py::test_a_worker_profile_that_declares_an_occupant_is_refused_naming_its_type_and_start_line  plan 1108 phase 'The declaration': a profile declares its occupant
 tests/stories/core/modules/profiles/helper_lifetime.py::test_the_reviewer_the_merger_and_the_researcher_each_show_their_own_occupant  plan 1108 phase 'The declaration': a profile declares its occupant
-tests/stories/core/modules/profiles/helper_lifetime.py::test_a_stored_row_with_only_independent_restores_as_its_occupant[True-each-launch]  plan 1108 phase 'The declaration': a profile declares its occupant
-tests/stories/core/modules/profiles/helper_lifetime.py::test_a_stored_row_with_only_independent_restores_as_its_occupant[False-when-cold]  plan 1108 phase 'The declaration': a profile declares its occupant
-tests/stories/core/modules/profiles/helper_lifetime.py::test_a_stored_row_that_holds_a_reuse_word_is_refused  plan 1108 phase 'The declaration': a profile declares its occupant

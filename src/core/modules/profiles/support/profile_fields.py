@@ -1,3 +1,4 @@
+from engine.enums.occupant import Occupant
 from typing import TypedDict
 
 from engine.enums.access import Access
@@ -18,7 +19,7 @@ class ProfileFields(TypedDict, total=False):
     tier: ModelTier | None
     codex_model: str
     program_models: dict[str, str]
-    independent: bool
+    occupant: Occupant
     uses_project_instructions: bool
     injections: dict[str, bool]
     mcp_tools: tuple[str, ...]

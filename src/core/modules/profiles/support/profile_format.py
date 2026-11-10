@@ -1,4 +1,5 @@
 import json
+from engine.enums.occupant import INDEPENDENT_OCCUPANTS, Occupant
 from collections.abc import Mapping
 
 from engine.enums.access import Access
@@ -34,7 +35,9 @@ class ProfileFormat:
         if fields.get("agent_type") == "subagent":
             fields["agent_type"] = "helper"
         if "independent" in raw:
-            fields["independent"] = ProfileFormat.switch("independent", raw["independent"])
+            fields["occupant"] = INDEPENDENT_OCCUPANTS[ProfileFormat.switch("independent", raw["independent"])]
+        if "occupant" in raw:
+            fields["occupant"] = Occupant(raw["occupant"])
         if "preferred_program" in raw:
             fields["preferred_program"] = ProfileFormat.switch("preferred_program", raw["preferred_program"])
         if "uses_project_instructions" in raw:

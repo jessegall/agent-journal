@@ -90,7 +90,7 @@ def test_an_own_profile_is_written_only_in_the_shared_folder(profile_story):
     expect_value((story.home.project_folder / ".codex/agents/critic.toml").exists(), False)
     row = profile_row(story, "critic")
     expect_value((row["program"], row["access"], row["module"]), ("codex", "read-only", ""))
-    expect_value((row["mcp_tools"], row["independent"]), (["mcp__wiki__search"], True))
+    expect_value((row["mcp_tools"], row["occupant"]), (["mcp__wiki__search"], "each-launch"))
 
 
 def test_registered_profiles_are_listed_without_shared_files(profile_story):
@@ -219,7 +219,7 @@ def test_legacy_profiles_are_copied_without_deletion_and_keep_their_fields(profi
     expect_value("moved-from:" in FileAccess.shared().read(profile_path(story)), True)
     expect_value((row["agent_type"], row["access"]), ("helper", "read-only"))
     expect_value((row["model"], row["codex_model"]), ("sonnet", "gpt-6.1-sol"))
-    expect_value((row["independent"], row["mcp_tools"]), (True, ["mcp__wiki__search"]))
+    expect_value((row["occupant"], row["mcp_tools"]), ("each-launch", ["mcp__wiki__search"]))
     if suffix == ".md":
         expect_value(row["description"], "Reads changes\nand their tests")
         expect_value("Could write before" in row["notes"], True)

@@ -1,3 +1,4 @@
+from engine.enums.occupant import INDEPENDENT_OCCUPANTS
 from argparse import ArgumentParser, BooleanOptionalAction, Namespace
 from dataclasses import replace
 
@@ -50,7 +51,9 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
                 raise Refusal(profile.problem, "fix the file or use journal profile reset")
         else:
             profile = AgentProfile(arguments.profile_name)
-        fields = {name: value for name, value in vars(arguments).items() if name in ("title", "description", "body", "program", "preferred_program", "access", "independent", "uses_project_instructions") and value is not None}
+        fields = {name: value for name, value in vars(arguments).items() if name in ("title", "description", "body", "program", "preferred_program", "access", "uses_project_instructions") and value is not None}
+        if arguments.independent is not None:
+            fields["occupant"] = INDEPENDENT_OCCUPANTS[arguments.independent]
         if arguments.tier is not None:
             fields["tier"] = ModelTier.automatic(arguments.tier) if arguments.tier else None
         if arguments.type is not None:

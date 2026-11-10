@@ -3,6 +3,9 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 from engine.enums.access import Access
 from engine.enums.model_tier import ModelTier
+from engine.enums.occupant import INDEPENDENT_OCCUPANTS, Occupant
+
+KEPT_AGENTS_TEXT = "agents are kept; a person retires them"
 
 
 @dataclass(frozen=True)
@@ -20,7 +23,7 @@ class AgentProfile:
     model: str = ""
     codex_model: str = ""
     tier: ModelTier | None = None
-    independent: bool = False
+    occupant: Occupant = Occupant.COLD_ROTATION
     mcp_tools: tuple[str, ...] = ()
     writable_folders: tuple[str, ...] = ()
     module: str = ""
@@ -53,8 +56,21 @@ class AgentProfile:
     def is_builtin(self) -> bool:
         return bool(self.module)
 
+    @property
+    def independent(self) -> bool:
+        return self.occupant is Occupant.LAUNCH_ROTATION
+
+    @staticmethod
+    def stored_occupant(fields: Mapping[str, Any]) -> Occupant:
+        if "reuse" in fields:
+            raise ValueError(KEPT_AGENTS_TEXT)
+        if "occupant" in fields:
+            return Occupant(fields["occupant"])
+        return INDEPENDENT_OCCUPANTS[fields.get("independent", False) is True]
+
     @classmethod
     def parsed(cls, fields: Mapping[str, Any]) -> "AgentProfile":
         access = Access(fields["access"]) if fields["access"] is not None else None
         tier = ModelTier.automatic(fields["tier"]) if fields.get("tier") is not None else None
-        return replace(cls(**fields), access=access, tier=tier, mcp_tools=tuple(fields["mcp_tools"]), writable_folders=tuple(fields.get("writable_folders", ())), skills=tuple(fields.get("skills", ())), required_skills=tuple(fields.get("required_skills", ())), fallback_programs=tuple(fields.get("fallback_programs", ())), changed=tuple(fields["changed"]), notes=tuple(fields.get("notes", ())))
+        current = {name: value for name, value in fields.items() if name not in ("independent", "reuse", "occupant")}
+        return replace(cls(**current), occupant=cls.stored_occupant(fields), access=access, tier=tier, mcp_tools=tuple(fields["mcp_tools"]), writable_folders=tuple(fields.get("writable_folders", ())), skills=tuple(fields.get("skills", ())), required_skills=tuple(fields.get("required_skills", ())), fallback_programs=tuple(fields.get("fallback_programs", ())), changed=tuple(fields["changed"]), notes=tuple(fields.get("notes", ())))
