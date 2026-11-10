@@ -10,7 +10,7 @@ from collections.abc import Sequence
 
 
 class DeletedRowLinkListener(DeletionListener[Changed[Model]]):
-    """Removes links at either end of any deleted row, inside its deletion transaction."""
+    """Removes links at either end of any deleted rows, inside their deletion transaction; the links go together, so their own deletion reads the links of all of them at once."""
 
     name = "documents.deleted-row-links"
 
@@ -30,5 +30,4 @@ class DeletedRowLinkListener(DeletionListener[Changed[Model]]):
             outgoing = self.queries.query(Link).filter(source_model=model).matching(Among("source_id", batch)).all_rows()
             incoming = self.queries.query(Link).filter(target_model=model).matching(Among("target_id", batch)).all_rows()
             touching = {link.id: link for link in (*outgoing, *incoming)}
-            for link in touching.values():
-                self.repository.delete_stored(link, context)
+            self.repository.delete_many_stored(list(touching.values()), context)
