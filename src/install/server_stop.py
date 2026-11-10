@@ -1,7 +1,7 @@
 import time
 
 from engine.journal.journal_home import JournalHome
-from install.server_wont_stop_error import ServerWontStopError
+from install.errors.server_wont_stop_error import ServerWontStopError
 from engine.connection.unix_connection import UnixConnection
 from core.base.serving.server_limits import DRAIN_LIMIT_SECONDS
 from core.base.serving.server_files import ServerFiles

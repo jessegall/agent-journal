@@ -22,18 +22,6 @@
                 "file": "src/core/modules/drivers/commands/skip_refusal/skip_refusal.py"
             },
             {
-                "file": "src/install/backup_mismatch_error.py"
-            },
-            {
-                "file": "src/install/backup_write_error.py"
-            },
-            {
-                "file": "src/install/server_wont_stop_error.py"
-            },
-            {
-                "file": "src/install/stray_version_four_error.py"
-            },
-            {
                 "file": "src/server/viewer/door_refusal.py"
             },
             {
