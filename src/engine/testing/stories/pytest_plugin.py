@@ -127,7 +127,7 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
         created.append(StorySteps(story, " ".join((*modules, fixture.__name__ if fixture else "")), fixture.__name__ if fixture else ""))
         return story
     yield started
-    for steps in created:
+    for steps in created if item.stash.get(CALL_PASSED, False) else []:
         overlap.add(item.nodeid, steps.start, steps.lines(), [] if StoryBody.reaches_internals(getattr(item, "function")) else steps.path(), steps.fixture)
         steps.story.close()
     created.clear()
