@@ -12,17 +12,17 @@ AGENT_WORD = "agent"
 @dataclass(frozen=True)
 class AgentLabel:
     """How a text names an agent: the word for what it is and its number in its environment, such as
-    worker 5, and main agent for the main agent. Every text that names an agent uses this."""
+    helper 5, and main agent for the main agent. Every text that names an agent uses this."""
 
     word: str
     number: int
 
     @classmethod
-    def of_agent(cls, agent: Agent) -> Self:
+    def from_agent(cls, agent: Agent) -> Self:
         return cls(agent.role, agent.number)
 
     @classmethod
-    def of_id(cls, agent_id: int, numbers: RowNumbers, word: str = AGENT_WORD) -> Self:
+    def from_row_id(cls, agent_id: int, numbers: RowNumbers, word: str = AGENT_WORD) -> Self:
         return cls(word, numbers.number(AGENT_MODEL_NAME, agent_id))
 
     @property
