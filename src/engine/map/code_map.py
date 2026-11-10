@@ -1,6 +1,7 @@
 import ast
 from pathlib import Path
 
+from engine.module.layer_check import SKIPPED_FOLDERS
 from engine.enums.area_use import AreaUse
 from engine.file.file_access import FileAccess
 from engine.map.errors.missing_summary_error import MissingSummaryError
@@ -15,8 +16,7 @@ TOP_FOLDERS = {
     "viewer": "The web code of the viewer.",
 }
 STANDARD_FOLDERS = {"errors", "enums", "__pycache__"}
-SKIPPED_FOLDERS = {"__pycache__", "node_modules"}
-INDENT = "  "
+LEVEL_INDENT = "  "
 
 
 class CodeMap:
@@ -35,7 +35,7 @@ class CodeMap:
         if unknown:
             raise MissingSummaryError(f"src/{unknown[0]}", "add its line to TOP_FOLDERS in src/engine/map/code_map.py")
         tops = [name for name in TOP_FOLDERS if (self.source / name).is_dir()]
-        return [line for name in tops for line in (f"{name}{INDENT}{TOP_FOLDERS[name]}", *self.second_level_lines(name))]
+        return [line for name in tops for line in (f"{name}{LEVEL_INDENT}{TOP_FOLDERS[name]}", *self.second_level_lines(name))]
 
     def second_level_lines(self, top: str) -> list[str]:
         builders = {"engine": self.engine_lines, "core": self.module_lines, "suites": self.suite_lines, "tunnels": self.tunnel_lines}
@@ -45,8 +45,8 @@ class CodeMap:
         areas = [(name, *self.marker_values(name)) for name in self.folder_names(self.source / "engine") if name not in STANDARD_FOLDERS]
         lines: list[str] = []
         for use in AreaUse:
-            area_lines = [f"{INDENT * 2}{name}{INDENT}{summary}" for name, summary, area_use in areas if area_use == use.value]
-            lines += [f"{INDENT}{use.value}", *area_lines] if area_lines else []
+            area_lines = [f"{LEVEL_INDENT * 2}{name}{LEVEL_INDENT}{summary}" for name, summary, area_use in areas if area_use == use.value]
+            lines += [f"{LEVEL_INDENT}{use.value}", *area_lines] if area_lines else []
         return lines
 
     def marker_values(self, area: str) -> tuple[str, str]:
@@ -79,19 +79,19 @@ class CodeMap:
 
     def module_line(self, name: str, file: Path) -> str:
         classes = self.classes(file)
-        return f"{INDENT}{name}{INDENT}{self.purpose(file, classes)}{self.needed_modules(classes)}"
+        return f"{LEVEL_INDENT}{name}{LEVEL_INDENT}{self.purpose(file, classes)}{self.needed_modules(classes)}"
 
     def suite_lines(self) -> list[str]:
         lines = []
         for name in self.folder_names(self.source / "suites"):
             modules = self.folder_names(self.source / "suites" / name / "modules")
             listed = f" Modules: {', '.join(modules)}." if modules else ""
-            lines.append(f"{INDENT}{name}{INDENT}{self.described_purpose(self.source / 'suites' / name / f'{name}_suite.py')}{listed}")
+            lines.append(f"{LEVEL_INDENT}{name}{LEVEL_INDENT}{self.described_purpose(self.source / 'suites' / name / f'{name}_suite.py')}{listed}")
         return lines
 
     def tunnel_lines(self) -> list[str]:
         folder = self.source / "tunnels"
-        return [f"{INDENT}{name}{INDENT}{self.described_purpose(folder / name / f'{name}_module.py')}" for name in self.folder_names(folder)]
+        return [f"{LEVEL_INDENT}{name}{LEVEL_INDENT}{self.described_purpose(folder / name / f'{name}_module.py')}" for name in self.folder_names(folder)]
 
     def described_purpose(self, file: Path) -> str:
         return self.purpose(file, self.classes(file))

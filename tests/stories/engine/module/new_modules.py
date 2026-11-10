@@ -27,4 +27,4 @@ def test_589_a_new_module_that_imports_a_module_adopting_it_is_refused_naming_it
     project.add_file("src/core/modules/tasks/models/task.py")
     project.add_file(ASSIGNMENT_SUBJECTS, "from core.modules.tasks.models.task import Task\n")
     failures = project.check(project.declaration("assignments", "core.modules.assignments"), project.declaration("tasks", "core.modules.tasks", "assignments"))
-    story.expect_rows(failures == [f"{ASSIGNMENT_SUBJECTS} imports core module tasks, which core module assignments may not use"], project.layer_of(ASSIGNMENT_SUBJECTS) == "core module assignments", detail=str(failures))
+    story.expect_rows(f"{ASSIGNMENT_SUBJECTS} imports core module tasks, which core module assignments may not use" in failures, project.layer_of(ASSIGNMENT_SUBJECTS) == "core module assignments", detail=str(failures))

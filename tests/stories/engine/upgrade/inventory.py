@@ -1,4 +1,7 @@
-from engine.module.module_finder import DEFAULT_MODULE_LISTS
+from pathlib import Path
+
+from engine.journal.journal_home import JournalHome
+from engine.module.module_finder import ModuleFinder
 from install.version_four.upgrade_text import BOOKKEEPING_TABLES
 from tests.stories.fixtures.version_four import table_names, version_four_fixture, with_unknown_table
 
@@ -7,7 +10,7 @@ ADDED_TABLE = "gadgets"
 
 
 def claimed_tables() -> set[str]:
-    modules = [module for path in DEFAULT_MODULE_LISTS for module in path.value()]
+    modules = ModuleFinder(JournalHome(Path(".journal"))).default_modules()
     return {table for module in modules for move in module.moves for table in (*move.reads, *move.drops)}
 
 

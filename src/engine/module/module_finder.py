@@ -70,6 +70,9 @@ class ModuleFinder:
         self.plugin_lists = {version: tuple(paths)}
         return self.plugin_lists[version]
 
+    def checked(self, path: DottedPath) -> type[Module]:
+        return self.module(self.loaded_entry(path), path.text)
+
     def loaded_entry(self, path: DottedPath) -> object:
         self.enable_imports()
         try:

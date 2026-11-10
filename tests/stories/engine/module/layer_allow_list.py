@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from engine.journal.journal_home import JournalHome
 from engine.module.layer_check import LayerCheck
 from engine.module.layer_table import LayerTable
@@ -26,6 +28,7 @@ def test_523_a_layer_written_by_hand_in_the_configuration_is_found_and_the_real_
     story.expect_rows(layers_in_configuration(copy) == [{"layer": ["core.modules.orders"]}], layers_in_configuration(CONFIG_FILE) == [], detail=str(layers_in_configuration(CONFIG_FILE)))
 
 
+@pytest.mark.story_budget(cpu_seconds=8, reason="it reads the imports of every source file of the tree once")
 def test_525_no_list_of_allowed_lines_is_left_and_the_tree_passes_the_layer_check_without_one(new_story):
     story = new_story()
     modules = ModuleFinder(JournalHome(ROOT / ".journal")).default_modules()

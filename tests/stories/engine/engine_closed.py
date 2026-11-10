@@ -10,14 +10,17 @@ PREVIOUS_NAME = re.compile(r"core[./]base\b")
 SEARCHED = ("src", "tests", "scripts", "docs", "pyrightconfig.json", ".commandments", "install.sh", "deploy")
 STORIES_OF_THE_MOVES = {
     "tests/stories/engine/areas_moved.py", "tests/stories/engine/loose_files.py", "tests/stories/engine/errors/errors_moved.py",
-    "tests/stories/engine/engine_closed.py",
+    "tests/stories/engine/engine_closed.py", "tests/stories/engine/map/tidy_rules.py",
 }
+DETECTOR_OF_THE_REMOVED_FOLDER = (
+    ".commandments/custom/architecture_layers_import_of_core_base.json", ".commandments/custom/samples/layers/src/core/modules/tasks/support/removed_folder_sample.py",
+)
 SCREEN_DESIGNS_WITH_SAMPLE_LOG_LINES = "docs/designs/"
 
 
 def tracked_files() -> list[str]:
     listed = subprocess.run(["git", "ls-files", *SEARCHED], capture_output=True, text=True, cwd=ROOT, check=True).stdout.splitlines()
-    return [name for name in listed if name not in STORIES_OF_THE_MOVES and not name.startswith(SCREEN_DESIGNS_WITH_SAMPLE_LOG_LINES)]
+    return [name for name in listed if name not in STORIES_OF_THE_MOVES and name not in DETECTOR_OF_THE_REMOVED_FOLDER and not name.startswith(SCREEN_DESIGNS_WITH_SAMPLE_LOG_LINES)]
 
 
 def files_naming_core_base() -> list[str]:

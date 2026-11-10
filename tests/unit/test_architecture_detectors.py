@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[2]
 CUSTOM_FOLDER = ROOT / ".commandments" / "custom"
 KNOWN_WITHOUT_SAMPLE = ROOT / "tests" / "snapshots" / "detectors_without_sample.txt"
 KNOWN_MISSING_FOLDERS = ROOT / "tests" / "snapshots" / "detector_folders_missing.txt"
