@@ -26,7 +26,7 @@ from server.endpoints.cli_request_error import CliRequestError
 from server.endpoints.health_endpoint import HealthEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
 from engine.driver.errors.hook_event_error import HookEventError
-from engine.provider.unknown_program_error import UnknownProgramError
+from engine.provider.errors.unknown_program_error import UnknownProgramError
 from server.server_instance import server_instance
 from server.journal_server import JournalServer
 from server.listener_wake import ListenerWake

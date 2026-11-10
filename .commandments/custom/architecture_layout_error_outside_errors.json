@@ -19,9 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/engine/provider/unknown_program_error.py"
-            },
-            {
                 "file": "src/engine/query/conditions/metadata_key_error.py"
             },
             {
