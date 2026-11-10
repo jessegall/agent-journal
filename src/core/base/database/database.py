@@ -32,6 +32,7 @@ class Database:
         self.row_owner: RowOwner | None = None
         self.kept_rows: "KeptRows | None" = None
         self.read_limit_rows: int | None = None
+        self.collected_large_reads: list[ReadLimitError] | None = None
 
     @property
     def scope_environment_id(self) -> int | None:
@@ -139,8 +140,12 @@ class Database:
     def check_read_limit(self, statement: Statement, count: int) -> None:
         if self.read_limit_rows is None or not statement.is_limited_read:
             return
-        if count > self.read_limit_rows:
-            raise ReadLimitError.loaded(count, self.read_limit_rows, statement.sql)
+        if count <= self.read_limit_rows:
+            return
+        error = ReadLimitError.loaded(count, self.read_limit_rows, statement.sql)
+        if self.collected_large_reads is None:
+            raise error
+        self.collected_large_reads.append(error)
 
     def query_plan(self, statement: Statement) -> tuple[str, ...]:
         return tuple(row[3] for row in self.connection.execute(f"EXPLAIN QUERY PLAN {statement.sql}", statement.parameters))

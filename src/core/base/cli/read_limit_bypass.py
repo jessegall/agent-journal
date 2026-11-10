@@ -8,13 +8,16 @@ ALLOW_LARGE_READ_FLAG = "--allow-large-read"
 
 
 class ReadLimitBypass:
-    """Lets one command line run with the read limit off when it carries --allow-large-read, which only a
-    person or the main agent may pass, and words the refusal of a line that loaded more rows than the limit."""
+    """Only an agent's command line is refused for a read over the read limit: any other caller's line
+    finishes and the read is reported. The main agent runs one line with the limit off by adding
+    --allow-large-read, which a helper may not pass."""
 
     def __init__(self, database: Database, scopes: Scopes) -> None:
         self.database, self.scopes = database, scopes
 
     def applied(self, argv: list[str], caller: Caller) -> list[str]:
+        if not caller.actor.is_agent() and self.database.collected_large_reads is None:
+            self.database.collected_large_reads = []
         if ALLOW_LARGE_READ_FLAG not in argv:
             return argv
         if not self.may_bypass(caller):

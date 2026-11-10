@@ -95,7 +95,7 @@ class HookEndpoint:
         self.timing.stamp("hook_synced")
         outcome = HookAnswer.REFUSED
         try:
-            with container.get(RequestWatch).watching(["hook", program]):
+            with container.get(RequestWatch).watching_without_refusal(["hook", program]):
                 reply = self.prepared_answer(data, program, headers, database, container, started_at + sender.limit_seconds, sender)
             outcome = HookAnswer.REFUSED if reply.refusal else HookAnswer.ALLOWED
             return reply

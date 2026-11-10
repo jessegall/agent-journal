@@ -128,7 +128,7 @@ class LineRoute:
             else:
                 container.get(ShareScope).check(shared, argv, environment)
             caller = Caller(person, container.get(EnvironmentNames).environment_id(environment))
-            with container.get(RequestWatch).watching(argv):
+            with container.get(RequestWatch).watching_without_refusal(argv):
                 code = container.get(Console).run(self.json_line(argv), caller, stream)
         except UsageError as error:
             return LineAnswer(USAGE_CODE, error=str(error))

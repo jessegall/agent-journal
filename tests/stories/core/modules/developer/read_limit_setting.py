@@ -2,9 +2,11 @@ from core.base.actor import Actor
 from core.base.cli.console import Console
 from core.base.cli.read_limit_bypass import ALLOW_LARGE_READ_FLAG
 from core.base.database.database import READ_LIMIT_ROWS, Database
+from core.base.database.request_watch import RequestWatch
 from core.base.database.statement import Statement
 from core.base.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
+from core.modules.developer.support.developer_settings import READ_LIMIT_SETTING, TOOLS_SETTING
 from core.testing.story_fixture import StoryFixture
 from engine.enums.actor_type import ActorType
 from tests.stories.core.support.fixtures import UserJoined
@@ -25,14 +27,14 @@ class ReadLimitWithHelper(StoryFixture):
 LINE = "task list"
 
 
+def read_large(console, argv, caller, output):
+    console.events.table.database.rows(LARGE_READ)
+    return 0
+
+
 def replace_parsed_run(story, monkeypatch):
     story.container.get(Database).read_limit_rows = READ_LIMIT_ROWS
-
-    def run_parsed(console, argv, caller, output):
-        console.events.table.database.rows(LARGE_READ)
-        return 0
-
-    monkeypatch.setattr(Console, "run_parsed", run_parsed)
+    monkeypatch.setattr(Console, "run_parsed", read_large)
 
 
 def recorded(story) -> list[str]:
@@ -70,3 +72,38 @@ def test_a_helper_that_passes_the_flag_is_refused(new_story, monkeypatch):
     story = new_story(fixture=ReadLimitWithHelper)
     replace_parsed_run(story, monkeypatch)
     story.expect_refusal(f"{LINE} {ALLOW_LARGE_READ_FLAG}", f"{ALLOW_LARGE_READ_FLAG} is for the main agent", actor=story.helper)
+
+
+class ReadLimitEnabled(StoryFixture):
+    """A person switched on the developer setting that refuses large loads."""
+
+    parent = UserJoined
+
+    def steps(self, story):
+        story.expect_success(f"setting switch {TOOLS_SETTING} on --project", actor=story.user)
+        story.expect_success(f"setting set {READ_LIMIT_SETTING} true --project", actor=story.user)
+
+
+def test_a_hook_that_loads_too_many_rows_finishes_and_the_read_is_reported_once(new_story):
+    story = new_story(fixture=ReadLimitEnabled)
+    watch, database = story.container.get(RequestWatch), story.container.get(Database)
+    for _ in range(2):
+        with watch.watching_without_refusal(["hook", "claude"]):
+            story.expect_rows(len(database.rows(LARGE_READ)) == READ_LIMIT_ROWS + 1)
+    story.expect_rows(len(recorded(story)) == 1, database.collected_large_reads is None)
+
+
+def test_a_line_of_a_caller_that_is_no_agent_finishes_and_the_read_is_reported(new_story, monkeypatch):
+    story = new_story(fixture=ReadLimitEnabled)
+    monkeypatch.setattr(Console, "run_parsed", read_large)
+    with story.container.get(RequestWatch).watching(["process", "end"]):
+        story.expect_success(LINE)
+    story.expect_rows(len(recorded(story)) == 1)
+
+
+def test_with_the_setting_off_a_large_read_passes(new_story, monkeypatch):
+    story = new_story(fixture=UserJoined)
+    monkeypatch.setattr(Console, "run_parsed", read_large)
+    with story.container.get(RequestWatch).watching(["task", "list"]):
+        story.expect_success(LINE, actor=story.agent)
+    story.expect_rows(recorded(story) == [])
