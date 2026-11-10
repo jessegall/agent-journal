@@ -16,7 +16,7 @@ from engine.time.timestamp import Timestamp
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.updates.models.support.update_setting import UpdateSetting
 from core.modules.updates.support.published_release import PublishedRelease
-from core.modules.updates.support.missing_release_download_error import MissingReleaseDownloadError
+from core.modules.updates.errors.missing_release_download_error import MissingReleaseDownloadError
 
 ARCHIVE = "agent-journal.tar.gz"
 CHECKSUMS = "checksums.txt"

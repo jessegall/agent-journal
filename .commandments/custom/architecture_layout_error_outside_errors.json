@@ -19,9 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/core/modules/updates/support/missing_release_download_error.py"
-            },
-            {
                 "file": "src/core/modules/viewer/commands/support/window_refusal.py"
             },
             {
