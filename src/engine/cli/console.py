@@ -14,6 +14,7 @@ from engine.subcommand.overview_command import OverviewCommand
 from engine.subcommand.overview_reads import OverviewReads
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.subcommand.subcommand import Subcommand
+from engine.cli.agent_number_arguments import AgentNumberArguments
 from engine.cli.line_parser import LineParser
 from engine.cli.subcommand_lookup import AnySubcommand
 from engine.cli.shell_aliases import ShellAliases
@@ -55,8 +56,8 @@ class Console:
 
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, line_parser: LineParser, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
-                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes, refusal_skips: RefusalSkips, overview_reads: OverviewReads, read_limit_bypass: ReadLimitBypass) -> None:
-        self.read_limit_bypass = read_limit_bypass
+                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes, refusal_skips: RefusalSkips, overview_reads: OverviewReads, read_limit_bypass: ReadLimitBypass, agent_numbers: AgentNumberArguments) -> None:
+        self.read_limit_bypass, self.agent_numbers = read_limit_bypass, agent_numbers
         self.registry, self.finder, self.fingerprint, self.line_parser, self.bus = registry, finder, fingerprint, line_parser, bus
         self.flags, self.refusals, self.errors, self.tables, self.commit_listeners = flags, refusals, errors, tables, commit_listeners
         self.refusal_skips, self.overview_reads = refusal_skips, overview_reads
@@ -142,6 +143,7 @@ class Console:
             return SUCCESS_CODE if exit_request.code == 0 else USAGE_CODE
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         self.scopes.check_environment(caller.actor, environment_id)
+        self.agent_numbers.replace_numbers(arguments, environment_id)
         caller = replace(caller, environment_id=environment_id)
         try:
             return self.parsed_run(argv, subcommand, arguments, caller, output)
@@ -200,6 +202,7 @@ class Console:
             raise UsageError(f"journal {' '.join(argv)} does not parse: {captured_output.getvalue().strip()}") from None
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         self.scopes.check_environment(caller.actor, environment_id)
+        self.agent_numbers.replace_numbers(arguments, environment_id)
         if not isinstance(subcommand, Subcommand):
             raise Refusal(f"journal {' '.join(argv[:2])} only reads, so it has no place in a transaction")
         command = subcommand.command(arguments, replace(caller, environment_id=environment_id))
