@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from engine.command.bus import Bus
-from core.base.tasks.clear_delegated_tasks import ClearDelegatedTasks
+from engine.tasks.clear_delegated_tasks import ClearDelegatedTasks
 from engine.actor.actor import Actor
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.modules.agents.models.agent import Agent

@@ -5,7 +5,7 @@ from engine.command.handler import Handler
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from core.base.tasks.clear_delegated_tasks import ClearDelegatedTasks
+from engine.tasks.clear_delegated_tasks import ClearDelegatedTasks
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.dependency_waits import DependencyWaits

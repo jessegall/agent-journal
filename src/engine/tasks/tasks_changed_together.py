@@ -1,4 +1,4 @@
-from core.base.tasks.task_waits_updated_together import TaskWaitsUpdatedTogether
+from engine.tasks.task_waits_updated_together import TaskWaitsUpdatedTogether
 
 
 class TasksChangedTogether(TaskWaitsUpdatedTogether):

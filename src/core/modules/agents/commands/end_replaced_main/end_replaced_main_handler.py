@@ -3,7 +3,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.listener.event_rows import EventRows
 from engine.repository.repository import Repository
-from core.base.tasks.clear_delegated_tasks import ClearDelegatedTasks
+from engine.tasks.clear_delegated_tasks import ClearDelegatedTasks
 from core.modules.agents.commands.end_replaced_main.end_replaced_main import EndReplacedMain
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy

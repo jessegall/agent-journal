@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from engine.command.command import Command
-from core.base.tasks.tasks_changed_together import TasksChangedTogether
+from engine.tasks.tasks_changed_together import TasksChangedTogether
 
 
 @dataclass(frozen=True)

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from core.base.tasks.task_waits_updated_together import TaskWaitsUpdatedTogether
+from engine.tasks.task_waits_updated_together import TaskWaitsUpdatedTogether
 from core.modules.plans.models.plan import Plan
 
 

@@ -10,7 +10,7 @@ from engine.repository.repository import Repository
 from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_program import AgentProgram
-from core.base.tasks.clear_delegated_tasks import ClearDelegatedTasks
+from engine.tasks.clear_delegated_tasks import ClearDelegatedTasks
 from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy
 
 

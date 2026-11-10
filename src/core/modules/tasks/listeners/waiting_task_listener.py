@@ -3,7 +3,7 @@ from engine.change.deleted import Deleted
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
-from core.base.tasks.task_waits_updated_together import TaskWaitsUpdatedTogether
+from engine.tasks.task_waits_updated_together import TaskWaitsUpdatedTogether
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.dependency_waits import DependencyWaits

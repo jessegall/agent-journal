@@ -6,7 +6,7 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from core.base.tasks.clear_delegated_tasks import ClearDelegatedTasks
+from engine.tasks.clear_delegated_tasks import ClearDelegatedTasks
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.drop_agent_line.remove_agent_line import RemoveAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
