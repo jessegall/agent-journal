@@ -22,7 +22,7 @@ class AgentTip:
     last_activity_at: str
 
     def line(self) -> str:
-        return f"agent {self.agent_id}: {self.title} {self.name}".rstrip()
+        return f"{self.title} {self.name}".rstrip()
 
     def json(self) -> Mapping[str, object]:
         return {"id": self.agent_id, "title": self.title, "name": self.name, "program": self.program, "model": self.model, "effort": self.effort, "role_label": self.role_label,

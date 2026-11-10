@@ -63,7 +63,7 @@ class Agent(EnvironmentScoped, Model):
 
     def ended_timestamp(self) -> Timestamp:
         if self.ended_at is None:
-            raise ModelError(f"agent {self.id} has not ended")
+            raise ModelError(f"{self.display_name} has not ended")
         return self.ended_at
 
     def ended(self, timestamp: Timestamp, policy: AgentPolicy) -> "Agent":

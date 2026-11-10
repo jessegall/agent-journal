@@ -95,4 +95,4 @@ class UsageAgentSubcommand(ReadSubcommand[AgentInspection]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentInspection):
-            output.write(f"agent {value.agent_id}, started by {value.starter_name}, {value.failed_runs} failed runs", value.json())
+            output.write(f"started by {value.starter_name}, {value.failed_runs} failed runs", value.json())

@@ -16,4 +16,4 @@ class ReporterIsReviewerGuard(Guard[Changed[Review]]):
     def check(self, event: Changed[Review], context: Context) -> None:
         review = event.row
         if event.move in REPORTING_MOVES and review.reviewer_id != context.actor.id:
-            raise Refusal(f"agent {context.actor.id} is not the reviewer of review {review.id}", "only the reviewer assigned to a review reports on it")
+            raise Refusal(f"review {review.id} has another reviewer", "only the reviewer assigned to a review reports on it")
