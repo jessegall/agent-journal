@@ -10,8 +10,9 @@ from core.modules.agents.models.enums.end_reason import EndReason
 
 
 class AgentSessions:
-    """Writes and reads the history of the sessions an agent ran under. An agent has one row for each session;
-    the newest row is its current session, and every older row has an end and the reason it ended."""
+    """Writes and reads the history of the sessions an agent ran under. An agent has one row for each time a
+    session started; the newest row is its current session, and every older row has an end and the reason it
+    ended. A session a person resumes later gets a new row."""
 
     def __init__(self, queries: Queries, repository: Repository, scopes: Scopes, clock: Clock) -> None:
         self.queries, self.repository, self.scopes, self.clock = queries, repository, scopes, clock
@@ -50,7 +51,7 @@ class AgentSessions:
 
     def has(self, session: str) -> bool:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            row = self.queries.query(AgentSession).filter(session=session).first()
+            row = self.queries.query(AgentSession).filter(session=session).descending("id").first()
         if row is None:
             return False
         current = self.current(row.session_agent_id)

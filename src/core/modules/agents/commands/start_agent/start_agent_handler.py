@@ -18,6 +18,7 @@ from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.enums.access import Access
 from engine.actor.actor import Actor
 from engine.sandbox.shell_sandbox import ShellSandbox
+from engine.enums.agent_role import AgentRole
 from core.modules.agents.support.agent_label import AgentLabel
 
 
@@ -58,6 +59,9 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
                 return self.repository.save(replace(started, ended_at=None), context)
             return self.repository.save(replace(started, ended_at=None, pid=command.pid,
                                                 process_started_at=command.process_started_at or self.chain.start_timestamp(command.pid)), context)
+        main = self.agents.numbered_main(context.environment_id) if command.role == AgentRole.MAIN else None
+        if main is not None:
+            return self.taken_over(main, command, context)
         actor = self.repository.save(ActorRecord(type=ActorType.AGENT, name=command.session, creator_id=context.actor.id), context)
         agent = Agent(id=actor.id, parent_id=command.parent_id, creator_id=context.actor.id, access=command.access,
                       session=command.session, program=command.program, role=command.role, pid=command.pid,
@@ -69,6 +73,13 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
             created = self.numbered(agent, context)
         self.sessions.started(created, context)
         return created
+
+    def taken_over(self, main: Agent, command: StartAgent, context: Context) -> Agent:
+        stopped = main if main.ended_at is not None else self.single_main.ended_session(main, context)
+        agent = self.repository.save(replace(stopped, ended_at=None, session=command.session, program=command.program, program_model=command.program_model,
+                                             pid=command.pid, process_started_at=command.process_started_at or self.chain.start_timestamp(command.pid)), context)
+        self.sessions.started(agent, context)
+        return agent
 
     def numbered(self, agent: Agent, context: Context) -> Agent:
         return self.repository.save(replace(agent, number=self.numbers.next_number(context.environment_id, agent.role)), context)

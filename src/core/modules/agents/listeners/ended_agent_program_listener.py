@@ -6,6 +6,8 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
 from core.modules.agents.events.agent_ended import AgentEnded
 from core.modules.agents.models.agent import AGENTS_TABLE, PID_FIELD, Agent
+
+SESSION_FIELD = "session"
 from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
 from core.modules.agents.support.agent_program import AgentProgram
 
@@ -15,7 +17,8 @@ class EndedAgentProgramListener(CommitListener[AgentEnded]):
     process. An agent that ended itself stops by itself, a row reopened since runs a new program, and
     StopAgent stopped its own. A resumed agent keeps its row ended until its first hook, so a process
     recorded after the end, or a launch that holds the session's lock, is a new program; the launch's
-    own prepare step has dealt with the old one."""
+    own prepare step has dealt with the old one. A row that another session took over since keeps running
+    under the new session, so only the old session's own process is stopped, never the launcher's terminal."""
 
     name = "agents.ended-agent-program"
     run_order = PROGRAM_STOP_RUN_ORDER
@@ -28,12 +31,17 @@ class EndedAgentProgramListener(CommitListener[AgentEnded]):
         if not self.needs_stop(event.row, logged):
             return
         with self.sessions.lock(event.row.session) as available:
-            if available and not self.started_after_end(event.row, logged):
+            if available and self.has_new_session(event.row, logged):
+                self.program.stop_process(event.row)
+            elif available and not self.started_after_end(event.row, logged):
                 self.program.stop(event.row)
 
     @staticmethod
     def needs_stop(agent: Agent, logged: LoggedEvent) -> bool:
         return logged.actor_id != agent.id and agent.ended_at is not None and logged.command != StopAgent.label()
+
+    def has_new_session(self, agent: Agent, logged: LoggedEvent) -> bool:
+        return any(event.id > logged.id and SESSION_FIELD in event.data for event in self.log.row_events(AGENTS_TABLE, agent.id))
 
     def started_after_end(self, agent: Agent, logged: LoggedEvent) -> bool:
         return any(event.id > logged.id and PID_FIELD in event.data for event in self.log.row_events(AGENTS_TABLE, agent.id))
