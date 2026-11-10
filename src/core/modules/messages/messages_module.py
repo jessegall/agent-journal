@@ -143,7 +143,7 @@ class MessagesModule(Module):
                                        WindowKey("voice-profile", "setting show journal.core.voices.profile", events=["setting.*"]),
                                        WindowKey("voice-avatar", "setting show journal.core.voices.avatar", events=["setting.*"]),
                                        WindowKey("voice-avatar-shown", "setting show journal.core.voices.avatar-shown", events=["setting.*"]),
-                                       WindowKey("tool", "usage tool", loading=KeyLoading.AFTER_WINDOW),
+                                       WindowKey("tool", "usage tool", reload_seconds=5, loading=KeyLoading.AFTER_WINDOW),
                                        WindowKey("main-agent", "agent main", loading=KeyLoading.REQUESTED),
                                        WindowKey("dock.*", "dock-item read {id}", answered_line=True),
                                        WindowKey("output.*", "output page {id}", arguments=["after", "before"]),
