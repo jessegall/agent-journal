@@ -12,7 +12,7 @@ def listed(story: Story, environment: str = "main") -> dict[int, dict]:
     return {row["id"]: row for row in rows}
 
 
-def numbers_by_id(story: Story, environment: str = "main") -> dict[int, int]:
+def agent_numbers(story: Story, environment: str = "main") -> dict[int, int]:
     rows = json.loads(story.run(f"agent list --environment {environment} --json").output_text)["rows"]
     return {row["id"]: row["number"] for row in rows}
 

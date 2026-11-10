@@ -1,5 +1,5 @@
 from core.modules.agents.support.agent_numbers import AgentNumbers
-from tests.stories.core.modules.agents.support.numbered_agents import listed, numbers_by_id, started_worker
+from tests.stories.core.modules.agents.support.numbered_agents import listed, agent_numbers, started_worker
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.fixtures import MainEnvironment
 
@@ -38,5 +38,5 @@ def test_a_helper_started_before_any_main_gets_two_and_the_first_main_session_is
     story = new_story(fixture=MainEnvironment)
     helper = story.new_row_id("agent start s-9 claude worker --environment main")
     main = story.new_row_id("agent start s-1 claude main --environment main")
-    rows = numbers_by_id(story)
+    rows = agent_numbers(story)
     story.expect_rows(rows[helper] == 2, rows[main] == 1, detail=str(rows))
