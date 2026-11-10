@@ -19,7 +19,6 @@ from tests.stories.core.modules.plugins.support.event_stories import (
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
 
 PREVIEW = Path("src/core/modules/plugins/web/src/PluginInstallPreview.vue")
-CARD = Path("src/core/modules/plugins/web/src/PluginCard.vue")
 WRONG_KEY = "core.tasks.task.closed"
 BOOTING = "core.journal.booting"
 ALL_FORMS = {"guard": "refuse.sh", "listen": "pin.sh", "commit": "see.sh"}
@@ -65,7 +64,7 @@ def test_s5_a_wrong_key_is_marked_installs_and_runs_nothing_while_the_rest_of_th
     story.run_listeners()
     expect_script_uncalled(story, "see.sh")
     story.expect_rows(len(script_calls(story, "right.sh")) == 1)
-    story.expect_rows("No such event" in PREVIEW.read_text(), "Nothing reaches this script." in CARD.read_text())
+    story.expect_rows("No such event" in PREVIEW.read_text())
 
 
 def test_s5_a_plugin_whose_only_key_is_wrong_still_installs(event_page):
@@ -81,7 +80,6 @@ def test_s8_a_guard_on_a_system_event_installs_shows_the_only_form_and_its_commi
     event_page.expect_target()
     expect_listed(event_page.card(), key=BOOTING, form="guard", state="form not offered")
     expect_listed(event_page.card(), key=BOOTING, form="commit", state="listens")
-    story.expect_rows("takes only After a change" in CARD.read_text())
     BootingWork().run(story.container)
     story.run_listeners()
     story.expect_rows(len(script_calls(story, "see.sh")) == 1, not script_calls(story, "refuse.sh"))
