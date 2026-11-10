@@ -5,7 +5,7 @@
         "select": "import",
         "where": [
             {
-                "textMatches": "^\\s*(from|import)\\s+(core|suites|server|install|tunnels)\\b"
+                "textMatches": "^\\s*(from|import)\\s+(core|engine|suites|server|install|tunnels)\\b"
             },
             {
                 "fileMatches": "(^|/)tests/stories/"

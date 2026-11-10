@@ -5,7 +5,7 @@
         "select": "kind:SourceFile",
         "where": [
             {
-                "fileMatches": "(^|/)(src/core|core-boundary/core)/"
+                "fileMatches": "(^|/)(src/core|src/engine|core-boundary/core)/"
             },
             {
                 "descendant": {

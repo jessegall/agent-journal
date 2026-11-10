@@ -2,6 +2,7 @@
     "$schema": "./config.schema.json",
     "paths": [
         "src/core",
+        "src/engine",
         "src/suites",
         "src/tunnels",
         "src/install",

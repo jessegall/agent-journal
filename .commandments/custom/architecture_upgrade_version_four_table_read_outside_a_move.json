@@ -14,7 +14,7 @@
                 }
             },
             {
-                "fileMatches": "(^|/)src/core/"
+                "fileMatches": "(^|/)src/(core|engine)/"
             }
         ],
         "reject": [

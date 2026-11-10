@@ -8,7 +8,7 @@
                 "textMatches": "^(float_width|float_height|unavailable_reason|window_options)$"
             },
             {
-                "fileMatches": "(^|/)src/(core|suites)/"
+                "fileMatches": "(^|/)src/(core|engine|suites)/"
             }
         ],
         "reject": [

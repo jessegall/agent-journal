@@ -5,7 +5,7 @@
         "select": "literal",
         "where": [
             {
-                "fileMatches": "(^|/)src/(core|server|suites)/"
+                "fileMatches": "(^|/)src/(core|engine|server|suites)/"
             },
             {
                 "textMatches": "(?i)\\b(tunler|ngrok|cloudflared|tailscale|localtunnel)\\b"

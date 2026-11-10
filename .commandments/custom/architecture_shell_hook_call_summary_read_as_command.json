@@ -12,7 +12,7 @@
                 "typeLike": "*HookCall"
             },
             {
-                "fileMatches": "(^|/)src/(core|suites)/"
+                "fileMatches": "(^|/)src/(core|engine|suites)/"
             }
         ],
         "reject": [

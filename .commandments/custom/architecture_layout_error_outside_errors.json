@@ -266,6 +266,9 @@
             },
             {
                 "file": "src/suites/coding/modules/workers/support/retired_worker_refusal.py"
+            },
+            {
+                "file": "src/engine/log/recorded_refusal.py"
             }
         ]
     },
