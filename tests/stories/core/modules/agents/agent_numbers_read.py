@@ -51,11 +51,11 @@ def test_an_agent_naming_another_environment_is_refused_before_any_number_is_rea
         story.expect_rows(OWN_ENVIRONMENT_REFUSAL in refused, "no agent" not in refused, detail=refused)
 
 
-@pytest.mark.parametrize("typed", ["0", "-3", "1e3", "12345678901234567890"])
-def test_a_number_that_is_no_positive_whole_number_is_a_usage_refusal(new_story, typed):
+@pytest.mark.parametrize("argument", ["0", "-3", "1e3", "12345678901234567890"])
+def test_a_number_that_is_no_positive_whole_number_is_a_usage_refusal(new_story, argument):
     story = new_story(fixture=TwoEnvironments)
-    story.expect_usage_error(f"agent show {typed}", actor=story.agent)
-    story.expect_usage_error(f'worker send {typed} "Total the till"', actor=story.agent)
+    story.expect_usage_error(f"agent show {argument}", actor=story.agent)
+    story.expect_usage_error(f'worker send {argument} "Total the till"', actor=story.agent)
 
 
 def test_a_message_to_agent_two_reaches_agent_two_of_the_senders_environment_and_agent_one_is_the_main(new_story):
