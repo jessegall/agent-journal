@@ -19,7 +19,9 @@ CALLER = Caller(Actor(1, ActorType.CORE))
 
 def console(tmp_path) -> Container:
     container = synced(JournalHome(tmp_path), ITEMS)
-    container.bind(Registry, Registry.read(container.get(Database)))
+    registry = Registry.read(container.get(Database))
+    container.bind(Registry, registry)
+    registry.bind(container)
     return container
 
 

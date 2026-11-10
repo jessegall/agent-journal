@@ -89,7 +89,11 @@ Every line is `journal <thing> <verb>`; `journal <thing> --help` lists its verbs
 
 ## Tests
 
-    sh scripts/run_tests.sh
+    .venv/bin/python3 -m pytest -n 8
+
+The installer tests each run a real install and are slow, so they are their own run, made before a release:
+
+    .venv/bin/python3 -m pytest tests/install -n 8
 
 ## Licence
 
