@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from core.base.actor import Actor
 from core.base.database.database import Database
 from core.base.database.statement import Statement
+from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
 from engine.enums.actor_type import ActorType
@@ -30,6 +31,11 @@ class LargeJournal(StoryFixture):
             story.expect_success(f"{line} --environment main", actor=story.agent)
         for line in PERSON_SEED_LINES:
             story.expect_success(f"{line.format(agent=story.agent.id)} --environment main", actor=story.user)
+        launcher = FakeLauncher.listening(story.home.socket("launcher"))
+        for profile in HELPER_PROFILES:
+            story.expect_success(f'helper start {profile} --brief "Read the cart code" --environment main', actor=story.agent)
+        launcher.drain_requests()
+        launcher.server.close()
         for number in range(COMMAND_ROWS):
             story.expect_success(f'task make "Cart part {number}" --brief "Part {number} of the cart; done when it counts" --environment main', actor=story.agent)
             story.expect_success(f"task block {number + 3} --on task:1 --environment main", actor=story.agent)
@@ -41,6 +47,8 @@ class LargeJournal(StoryFixture):
         story.run_listeners()
         TableCopies(story.container.get(Database)).grow()
 
+
+HELPER_PROFILES = ("journal-researcher", "journal-planner", "journal-plan-reviewer", "journal-debugger", "journal-code-reviewer")
 
 SEED_LINES = (
     'task make "Fix the cart total" --brief "The total is wrong; done when it is right"',

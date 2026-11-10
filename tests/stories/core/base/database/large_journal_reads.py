@@ -3,13 +3,14 @@ import pytest
 from core.base.actor import Actor
 from core.base.cli.line_parser import LineParser
 from core.base.database.database import READ_LIMIT_ROWS, Database
+from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples
 from engine.enums.actor_type import ActorType
-from tests.stories.core.base.support.large_journal import EDIT, LargeJournal, TableCopies, required_arguments
+from tests.stories.core.base.support.large_journal import EDIT, HELPER_PROFILES, LargeJournal, TableCopies, required_arguments
 
 SESSIONS = ("s-1", "s-helper", "s-worker")
 
@@ -36,6 +37,7 @@ OPEN_COMMAND_READS = (
     "FROM agents WHERE ended_at IS NULL AND retired_at IS NULL",
     "FROM hook_calls WHERE hook IN",
     "FROM viewer_layouts",
+    "FROM statistics",
 )
 
 
@@ -73,12 +75,16 @@ def large_reads(story, database, label: str, work) -> list[str]:
     return [f"{label}: {error}" for error in collected]
 
 
+@pytest.mark.story_budget(cpu_seconds=30, reason="it runs every read command of the journal as eleven actors on a journal with many rows")
 def test_no_read_command_and_no_hook_loads_more_rows_than_the_read_limit_on_a_large_journal(new_story):
     story = new_story(fixture=LargeJournal)
     database = story.container.get(Database)
     database.read_limit_rows = READ_LIMIT_ROWS
     worker = story.container.get(Queries).query(Agent).filter(session="s-worker").first()
     actors = {"main agent": story.agent, "person": story.user, "helper": story.helper, "worker": Actor(worker.id, ActorType.AGENT)}
+    profile_helpers = story.container.get(Queries).query(Agent).matching(Among("profile", HELPER_PROFILES)).limited(len(HELPER_PROFILES) * 2)
+    actors.update({f"{helper.profile} helper": Actor(helper.id, ActorType.AGENT) for helper in profile_helpers})
+    story.expect_rows(len({helper.profile for helper in profile_helpers}) == len(HELPER_PROFILES), detail=str(sorted({helper.profile for helper in profile_helpers})))
     findings: list[str] = []
     for line in command_lines(story, is_read=True):
         for role, actor in actors.items():
