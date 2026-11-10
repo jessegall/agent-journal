@@ -24,7 +24,8 @@ from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.agents.support.agent_program import AgentProgram
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.drivers.support.access_nudges import ENDED_AGENT, UNKNOWN_AGENT
+from core.modules.agents.support.agent_sessions import AgentSessions
+from core.modules.drivers.support.access_nudges import ENDED_AGENT, REPLACED_SESSION, UNKNOWN_AGENT
 from core.modules.drivers.support.hook_rule_answers import HookRuleAnswers
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
 from core.modules.drivers.commands.record_hook_timeout.record_hook_timeout import RecordHookTimeout
@@ -45,11 +46,12 @@ class AgentHookRoute(HookRoute):
     was started under, saving the real session on it when it is a main agent or runs a program that does not
     take a session from the journal, starts the main agent at its session's first hook, gives back the stored
     answer of a hook sent twice, refuses the tools of a program whose agent has ended and asks the launcher to
-    stop it, and lets through, without a record, a hook from an unknown agent when the event does not require
-    an agent check."""
+    stop it, refuses the tools of a session its agent replaced with a newer one, which never starts an agent
+    and never takes its agent back, and lets through, without a record, a hook from an unknown agent when the
+    event does not require an agent check."""
 
-    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues, clock: Clock, providers: Providers, lockdown: ProgramLockdown) -> None:
-        self.lockdown = lockdown
+    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues, clock: Clock, providers: Providers, lockdown: ProgramLockdown, sessions: AgentSessions) -> None:
+        self.lockdown, self.sessions = lockdown, sessions
         self.clock, self.providers = clock, providers
         self.rule_answers, self.request_values = rule_answers, request_values
         self.bus, self.queries, self.system_log, self.durations, self.settings = bus, queries, system_log, durations, settings
@@ -89,12 +91,20 @@ class AgentHookRoute(HookRoute):
 
     def ended_agent_reply(self, event: HookEvent) -> HookReply:
         row = self.ended_agent(event)
-        if row is None and event.is_check_required:
-            return HookReply(refusal=UNKNOWN_AGENT.nudge().text)
-        if row is None or event.event != HookEventName.PRE_TOOL_USE:
+        if row is None:
+            return self.agentless_reply(event)
+        if event.event != HookEventName.PRE_TOOL_USE:
             return HookReply.allowed()
         self.program.request_stop(row)
         return HookReply(refusal=ENDED_AGENT.nudge().text)
+
+    def agentless_reply(self, event: HookEvent) -> HookReply:
+        replaced_agent_id = self.sessions.replaced_agent_id(event.session)
+        if replaced_agent_id is not None and event.event == HookEventName.PRE_TOOL_USE:
+            return HookReply(refusal=REPLACED_SESSION.nudge(agent=self.agents.find_unscoped(replaced_agent_id).number).text)
+        if replaced_agent_id is None and event.is_check_required:
+            return HookReply(refusal=UNKNOWN_AGENT.nudge().text)
+        return HookReply.allowed()
 
     def passes_lockdown(self, event: HookEvent) -> bool:
         agent = self.open_agent(event.session)
@@ -122,7 +132,9 @@ class AgentHookRoute(HookRoute):
         ended = self.agents.session(event.session)
         if ended is not None:
             return self.started(event, ended.role, ended.parent_id)
-        return None if event.launch else self.started(event, AgentRole.MAIN, None)
+        if event.launch or (event.is_continuing and self.sessions.replaced_agent_id(event.session) is not None):
+            return None
+        return self.started(event, AgentRole.MAIN, None)
 
     def launch_name_agent(self, event: HookEvent) -> Agent | None:
         if not event.launch:

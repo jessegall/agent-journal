@@ -17,7 +17,8 @@ NEWEST_ROWS = 50
 class AgentSessions:
     """Writes and reads the history of the sessions an agent ran under. An agent has one row for each time a
     session started; the newest row is its current session, and every older row has an end and the reason it
-    ended. A session a person resumes later gets a new row."""
+    ended. A session a person resumes later gets a new row. A session that is in the history of an agent and is
+    not its current one was replaced."""
 
     def __init__(self, queries: Queries, repository: Repository, scopes: Scopes, clock: Clock) -> None:
         self.queries, self.repository, self.scopes, self.clock = queries, repository, scopes, clock
@@ -67,10 +68,10 @@ class AgentSessions:
         rows = self.queries.query(AgentSession).filter(program=program).matching(Among("session_agent_id", main_ids)).descending("id").page(1, NEWEST_ROWS).rows
         return tuple(dict.fromkeys(row.session for row in rows))
 
-    def has(self, session: str) -> bool:
+    def replaced_agent_id(self, session: str) -> int | None:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             row = self.queries.query(AgentSession).filter(session=session).descending("id").first()
         if row is None:
-            return False
+            return None
         current = self.current(row.session_agent_id)
-        return current is not None and current.id != row.id
+        return row.session_agent_id if current is not None and current.id != row.id else None

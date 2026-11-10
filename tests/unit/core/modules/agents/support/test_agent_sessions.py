@@ -106,8 +106,8 @@ def test_binding_a_placeholder_session_changes_its_row_and_adds_none():
     assert [row.session for row in store.rows] == ["s-real"]
 
 
-def test_has_is_true_for_an_older_session_and_false_for_the_current_and_an_unknown_one():
+def test_an_older_session_names_its_agent_as_replaced_and_the_current_and_an_unknown_one_name_none():
     sessions, store = sessions_with_store()
     sessions.started(agent("s-1"), CONTEXT)
     sessions.replaced(agent("s-2"), CACHE_PASSED, CONTEXT)
-    assert (sessions.has("s-1"), sessions.has("s-2"), sessions.has("s-9")) == (True, False, False)
+    assert [sessions.replaced_agent_id(session) for session in ("s-1", "s-2", "s-9")] == [agent("s-1").id, None, None]

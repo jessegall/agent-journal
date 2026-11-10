@@ -16,6 +16,7 @@ OUTWARD_JOURNAL_LINE = NudgeDeclaration("drivers.outward_journal_line", NudgeTyp
 LIMITED_TOOL = NudgeDeclaration("drivers.limited_tool", NudgeType.SAFETY_REFUSAL, "a read-only agent has no {tool}: say in your report what you need")
 UNKNOWN_AGENT = NudgeDeclaration("drivers.unknown_agent", NudgeType.SAFETY_REFUSAL, "the journal has no agent for this session, so this tool did not run: write in your report what happened")
 ENDED_AGENT = NudgeDeclaration("drivers.ended_agent", NudgeType.SAFETY_REFUSAL, "this agent has ended: stop your work, nothing more is recorded")
+REPLACED_SESSION = NudgeDeclaration("drivers.replaced_session", NudgeType.SAFETY_REFUSAL, "this session was replaced by a newer session of agent {agent}: stop your work, nothing more is recorded")
 NATIVE_SUBAGENT = NudgeDeclaration("drivers.native_subagent", NudgeType.SAFETY_REFUSAL, 'start a helper for this, with a profile and a brief')
 NATIVE_SUBAGENT_WITHOUT_LAUNCH = NudgeDeclaration("drivers.native_subagent_no_launch", NudgeType.SAFETY_REFUSAL, "keep this work yourself: a helper needs a launch, and none runs")
 
@@ -26,5 +27,5 @@ SKIP_NEEDS_APPROVAL = NudgeDeclaration("drivers.skip_waits_for_approval", NudgeT
 SKIP_APPROVED = NudgeDeclaration("drivers.skip_approved", NudgeType.STEERING, "your skip refusal-skip:{refusal} is approved: try again", turn_limited=False)
 SKIP_DECLINED = NudgeDeclaration("drivers.skip_declined", NudgeType.STEERING, "your skip refusal-skip:{refusal} is declined: do what the refusal asks", turn_limited=False)
 SKIPS_SPENT = NudgeDeclaration("drivers.skips_spent", NudgeType.STEERING, "agent:{agent} skipped {count} refusals in a row and lost the skip", turn_limited=False, wakes_agent=True)
-ACCESS_NUDGES = [PANIC_FILE, PRIVATE_CORPUS, SKIPS_SPENT, SKIP_NEEDS_APPROVAL, SKIP_APPROVED, SKIP_DECLINED, NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH, ENDED_AGENT, UNKNOWN_AGENT, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
+ACCESS_NUDGES = [PANIC_FILE, PRIVATE_CORPUS, SKIPS_SPENT, SKIP_NEEDS_APPROVAL, SKIP_APPROVED, SKIP_DECLINED, NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH, ENDED_AGENT, REPLACED_SESSION, UNKNOWN_AGENT, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
                  SHELL_RESTRICTION, PROGRAM_RESTRICTION, GIT_RESTRICTION, FULL_TEST_RESTRICTION]
