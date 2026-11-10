@@ -21,6 +21,7 @@ def test_an_agents_message_is_one_bubble_and_makes_no_mark_of_its_words(new_stor
 
 def test_a_failed_send_shows_no_mark(new_story):
     story = new_story(fixture=UnansweredMessage)
+    story.use_fixture_environment(None)
     story.expect_refusal('message send "no environment"', "a message needs an environment", actor=story.user)
     story.run_listeners()
     expect_mark_count(story, 0)

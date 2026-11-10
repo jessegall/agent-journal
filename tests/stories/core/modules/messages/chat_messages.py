@@ -39,6 +39,7 @@ def test_an_environments_chat_is_listed_in_the_order_written(new_story):
 
 def test_a_message_has_no_make_and_needs_an_environment(new_story):
     story = user_story(new_story)
+    story.use_fixture_environment(None)
     story.expect_usage_error('message make "hello"')
     story.expect_refusal('message send "hello"', "a message needs an environment", actor=story.user)
 

@@ -19,6 +19,7 @@ def test_a_recommendation_that_is_not_an_option_is_refused(new_story):
 
 def test_a_question_without_an_environment_is_refused(new_story):
     story = new_story(fixture=AgentStarted)
+    story.use_fixture_environment(None)
     story.expect_refusal('question ask "Which database?" --context "A story asks this so its card and answer can be checked."', "a question needs an environment")
 
 

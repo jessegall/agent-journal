@@ -41,5 +41,6 @@ def test_a_memory_a_person_makes_waits_for_the_first_main_agent_of_that_environm
 
 def test_a_person_sees_the_memories_of_every_environment(new_story):
     story = new_story(fixture=StagingEnvironment)
+    story.use_fixture_environment(None)
     story.run('memory make "Staging has no queue" --environment staging', actor=story.user)
     story.expect_text("memory list", "Staging has no queue", MAIN_FACT, actor=story.user)
