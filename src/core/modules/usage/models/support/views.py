@@ -1,5 +1,5 @@
 AGENT_CARDS_SELECT = (
-    "SELECT agents.id, agents.environment_id, agents.session, agents.role, agents.access, agents.program, agents.program_model, agents.profile, agents.given_name, agents.paused_at, agents.usage_limit_ends_at, agents.ended_at, agents.retired_at, agents.retirement_reason,"
+    "SELECT agents.id, agents.number, agents.environment_id, agents.session, agents.role, agents.access, agents.program, agents.program_model, agents.profile, agents.given_name, agents.paused_at, agents.usage_limit_ends_at, agents.ended_at, agents.retired_at, agents.retirement_reason,"
     " (SELECT tasks.id FROM tasks WHERE tasks.holder_id = agents.id AND tasks.state = 'started' ORDER BY tasks.id DESC LIMIT 1) AS started_task_id,"
     " coalesce((SELECT tasks.title FROM tasks WHERE tasks.holder_id = agents.id AND tasks.state = 'started' ORDER BY tasks.id DESC LIMIT 1), '') AS started_task_title,"
     " (SELECT json_group_array(json_object('id', listed.id, 'title', listed.title, 'state', listed.state,"

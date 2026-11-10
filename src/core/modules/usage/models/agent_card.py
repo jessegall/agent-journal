@@ -17,6 +17,7 @@ class AgentCard(EnvironmentScoped, ViewModel):
     select = AGENT_CARDS_SELECT
 
     id: int
+    number: int
     environment_id: int
     session: str
     role: str
