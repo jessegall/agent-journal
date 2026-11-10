@@ -34,7 +34,7 @@ from core.base.provider.transcript_author import JOURNAL_AUTHOR, TRANSCRIPT_AUTH
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.provider.transcript_tail import TranscriptTail
 from engine.types.type_guards import is_list, is_mapping
-from core.base.private.server_keys import ServerKeys
+from engine.private.server_keys import ServerKeys
 from core.modules.codex.providers.support.codex_token_count import CodexTokenCount
 from core.modules.codex.providers.support.codex_session_effort import CodexSessionEffort
 from core.modules.codex.providers.support.codex_event import CodexEvent

@@ -13,8 +13,8 @@ from core.base.upgrade.move_report import MoveReport
 from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_source import VersionFourSource
 from core.modules.mcp.models.enums.server_auth import ServerAuth
-from core.base.private.private_folder import PrivateFolder
-from core.base.private.server_keys import ServerKeys
+from engine.private.private_folder import PrivateFolder
+from engine.private.server_keys import ServerKeys
 
 TABLE = "mcp_servers"
 

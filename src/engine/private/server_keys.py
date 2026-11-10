@@ -2,8 +2,8 @@ import json
 
 from engine.file.kept_file_text import KeptFileText
 
-from core.base.private.private_folder import PrivateFolder
-from core.base.private.secret_values import SecretValues
+from engine.private.private_folder import PrivateFolder
+from engine.private.secret_values import SecretValues
 
 KEYS_SUFFIX = ".keys.json"
 

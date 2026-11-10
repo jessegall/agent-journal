@@ -4,7 +4,7 @@ from functools import lru_cache
 from engine.file.file_version import FileVersion
 from pathlib import Path
 
-from core.base.private.private_folder import PrivateFolder
+from engine.private.private_folder import PrivateFolder
 
 VALUES_SUFFIX = ".env"
 SHOWN_SUFFIX = ".shown"

@@ -5,7 +5,7 @@ from pathlib import Path
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.private.secret_values import SecretValues
+from engine.private.secret_values import SecretValues
 from engine.errors.refusal import Refusal
 from core.modules.library.commands.pair_library.pair_library import PairLibrary
 from core.modules.library.commands.save_library_connection.save_library_connection import SaveLibraryConnection

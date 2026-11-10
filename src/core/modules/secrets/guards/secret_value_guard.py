@@ -2,8 +2,8 @@ from engine.guard.guard import Guard
 from core.base.model.model import Model
 from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_tuple
-from core.base.private.secret_values import SecretValues
-from core.base.private.server_keys import ServerKeys
+from engine.private.secret_values import SecretValues
+from engine.private.server_keys import ServerKeys
 from core.base.change.changed import Changed
 from core.base.change.deleted import Deleted
 from core.base.command.context import Context

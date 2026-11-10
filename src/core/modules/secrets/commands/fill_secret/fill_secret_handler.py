@@ -9,7 +9,7 @@ from core.base.repository.repository import Repository
 from core.modules.secrets.commands.fill_secret.fill_secret import FillSecret
 from core.modules.secrets.commands.support.filled_field import FilledField
 from core.modules.secrets.queries.secret_query import SecretQuery
-from core.base.private.secret_values import SecretValues
+from engine.private.secret_values import SecretValues
 
 
 class FillSecretHandler(Handler[FillSecret, FilledField]):

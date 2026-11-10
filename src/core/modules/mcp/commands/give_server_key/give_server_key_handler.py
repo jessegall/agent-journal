@@ -5,7 +5,7 @@ from core.modules.mcp.commands.give_server_key.give_server_key import GiveServer
 from core.modules.mcp.models.enums.server_auth import ServerAuth
 from core.modules.mcp.models.mcp_server import McpServer
 from core.modules.mcp.queries.mcp_server_query import McpServerQuery
-from core.base.private.server_keys import ServerKeys
+from engine.private.server_keys import ServerKeys
 
 
 class GiveServerKeyHandler(Handler[GiveServerKey, McpServer]):

@@ -5,7 +5,7 @@ from core.modules.mcp.commands.remove_server.remove_server import RemoveServer
 from core.modules.mcp.models.mcp_server import McpServer
 from core.modules.mcp.queries.mcp_server_query import McpServerQuery
 from core.modules.mcp.support.server_configs import ServerConfigs
-from core.base.private.server_keys import ServerKeys
+from engine.private.server_keys import ServerKeys
 
 
 class RemoveServerHandler(Handler[RemoveServer, McpServer]):

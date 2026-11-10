@@ -1,4 +1,4 @@
-from core.base.private.secret_values import SecretValues
+from engine.private.secret_values import SecretValues
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry

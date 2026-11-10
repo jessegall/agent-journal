@@ -11,8 +11,8 @@ from engine.journal.journal_home import JournalHome
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.resumed_session import ResumedSession
 from core.base.provider.session_start import SessionStart
-from core.base.private.private_folder import PrivateFolder
-from core.base.private.server_keys import ServerKeys
+from engine.private.private_folder import PrivateFolder
+from engine.private.server_keys import ServerKeys
 from core.modules.claude_code.providers.claude_code_provider import CONFIG_VARIABLE, ClaudeCodeProvider
 from core.modules.claude_code.providers.support.claude_folder_name import ClaudeFolderName
 

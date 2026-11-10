@@ -1,4 +1,4 @@
-from core.base.private.secret_values import SecretValues
+from engine.private.secret_values import SecretValues
 from tests.stories.core.support.fixtures import UserJoined
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType

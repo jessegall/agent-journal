@@ -1,4 +1,4 @@
-from core.base.private.private_folder import FOLDER_VARIABLE
+from engine.private.private_folder import FOLDER_VARIABLE
 from tests.stories.core.modules.secrets.support.secret_fixtures import SecretMade
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story

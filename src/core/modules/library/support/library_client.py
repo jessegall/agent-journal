@@ -7,7 +7,7 @@ from collections.abc import Callable, Mapping
 from types import MappingProxyType
 from typing import TypeVar
 
-from core.base.private.secret_values import SecretValues
+from engine.private.secret_values import SecretValues
 from engine.errors.refusal import Refusal
 from core.modules.library.support.library_certificate import LibraryCertificate
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery

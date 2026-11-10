@@ -34,7 +34,7 @@ from core.base.provider.transcript_row import TranscriptRow
 from engine.file.file_access import FileAccess
 from core.base.provider.status_file_fields import StatusFileFields
 from engine.types.type_guards import is_list, is_mapping
-from core.base.private.server_keys import ServerKeys
+from engine.private.server_keys import ServerKeys
 from core.modules.claude_code.providers.support.claude_folder_name import ClaudeFolderName
 from core.modules.claude_code.providers.support.claude_stream_row import ClaudeStreamRow
 from core.modules.claude_code.providers.support.claude_inbox import ClaudeInbox

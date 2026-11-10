@@ -3,10 +3,10 @@ from engine.errors.refusal import Refusal
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.secrets.models.secret import Secret
 from core.modules.secrets.support.output_mask import OutputMask
-from core.base.private.private_folder import PrivateFolder
+from engine.private.private_folder import PrivateFolder
 from core.modules.secrets.support.secret_programs import SecretPrograms
 from core.modules.secrets.support.secret_run_outcome import SecretRunOutcome
-from core.base.private.secret_values import SecretValues
+from engine.private.secret_values import SecretValues
 from pathlib import Path
 import os
 import re

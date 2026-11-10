@@ -6,7 +6,7 @@ from core.modules.secrets.commands.edit_secret.edit_secret import EditSecret
 from core.modules.secrets.models.secret import Secret
 from core.modules.agents.support.person_check import PersonCheck
 from core.modules.secrets.queries.secret_query import SecretQuery
-from core.base.private.secret_values import SecretValues
+from engine.private.secret_values import SecretValues
 
 
 class EditSecretHandler(Handler[EditSecret, Secret]):

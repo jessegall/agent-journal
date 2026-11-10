@@ -3,7 +3,7 @@ import ssl
 import urllib.request
 from pathlib import Path
 
-from core.base.private.private_folder import PrivateFolder
+from engine.private.private_folder import PrivateFolder
 from core.modules.library.support.no_redirects import NoRedirects
 
 SUFFIX = ".library-certificate.pem"

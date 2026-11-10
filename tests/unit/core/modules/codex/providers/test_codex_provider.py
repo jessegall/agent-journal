@@ -11,8 +11,8 @@ from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.resumed_session import ResumedSession
 from core.base.provider.session_start import SessionStart
-from core.base.private.private_folder import PrivateFolder
-from core.base.private.server_keys import ServerKeys
+from engine.private.private_folder import PrivateFolder
+from engine.private.server_keys import ServerKeys
 from core.modules.codex.providers.codex_provider import CodexProvider
 
 
