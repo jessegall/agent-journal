@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.bookkeeping.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMANDS
+from engine.bookkeeping.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMANDS
 from core.base.subcommand.default_lines import COMMAND_SUBCOMMANDS, READ_SUBCOMMANDS
 from core.base.module.inspector_slots import InspectorSlots
 from core.base.module.module import Module

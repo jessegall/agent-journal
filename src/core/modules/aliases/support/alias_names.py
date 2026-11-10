@@ -1,4 +1,4 @@
-from core.base.bookkeeping.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMANDS
+from engine.bookkeeping.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMANDS
 from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.modules.aliases.models.alias import Alias
