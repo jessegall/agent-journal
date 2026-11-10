@@ -5,7 +5,7 @@ from core.base.sandbox_level import SandboxLevel
 from core.base.driver.command_category import CommandCategory
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
-from core.base.timestamp import Timestamp
+from core.base.timestamp import MINUTE_SECONDS, Timestamp
 from core.base.duration import Duration
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
@@ -59,6 +59,15 @@ class Process(EnvironmentScoped, Model):
         if self.expired_at is not None:
             return "timed out"
         return ENDING_PHRASES.get(self.state, f"{self.state.value} with exit code {self.exit_code}")
+
+    def duration_text(self) -> str:
+        began = self.started_at or self.created_at
+        if began is None or self.ended_at is None:
+            return ""
+        minutes, seconds = divmod(round(began.elapsed_seconds(self.ended_at)), MINUTE_SECONDS)
+        if not minutes:
+            return f"{seconds} s"
+        return f"{minutes} min {seconds} s" if seconds else f"{minutes} min"
 
     def has_expired_timeout(self, timestamp: Timestamp) -> bool:
         if self.timeout_seconds is None or self.started_at is None:

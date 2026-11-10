@@ -261,6 +261,16 @@ def test_an_ended_run_says_its_result_on_its_mark(new_story):
     story.expect_text("chat-mark list --json", "1 failed, 2 passed")
 
 
+@pytest.mark.parametrize("seconds, shown", [(20, "1 failed, 2 passed in 20 s"), (125, "1 failed, 2 passed in 2 min 5 s"), (120, "1 failed, 2 passed in 2 min")])
+def test_an_ended_run_shows_how_long_it_took_beside_its_result(new_story, seconds, shown):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "pytest tests", category=CommandCategory.TEST_RUN)
+    story.advance(timedelta(seconds=seconds))
+    end_run(story, process, "F..\n=== 1 failed, 2 passed in 1.00s ===\n", exit_code=1)
+    story.run_listeners()
+    story.expect_text("chat-mark list --json", shown)
+
+
 def test_test_marks_name_the_tests_and_count(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     python = started_run(story, "pytest tests/cart.py", category=CommandCategory.TEST_RUN)
