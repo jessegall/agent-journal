@@ -134,12 +134,12 @@ def test_a_worker_past_its_restarts_that_stops_with_a_run_going_leaves_the_main_
     story.expect_text(f"agent-line list --agent {story.agent.id}", line)
 
 
-def stopped_twice(story, worker, session, tool_use_between: bool) -> None:
+def stopped_twice(story, worker, session, uses_tool_after_first_stop: bool) -> None:
     story.advance(timedelta(minutes=1))
     story.run(f"agent end {worker.id}", actor=worker)
     story.hook(session, HookSamples.session_start())
     story.advance(timedelta(minutes=1))
-    if tool_use_between:
+    if uses_tool_after_first_stop:
         story.hook(session, HookSamples.edit("cart.py"))
         story.advance(timedelta(minutes=1))
     story.run(f"agent end {worker.id}", actor=worker)
@@ -150,7 +150,7 @@ def test_a_worker_that_used_a_tool_since_its_last_restart_is_started_again_past_
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    stopped_twice(story, worker, worker_session(story, worker), tool_use_between=True)
+    stopped_twice(story, worker, worker_session(story, worker), uses_tool_after_first_stop=True)
     expect_count_output_2(story, f"agent-line list --agent {worker.id}", "you ended with tasks left", 2)
 
 
@@ -159,7 +159,7 @@ def test_a_worker_that_did_nothing_since_its_last_restart_is_not_started_past_th
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    stopped_twice(story, worker, worker_session(story, worker), tool_use_between=False)
+    stopped_twice(story, worker, worker_session(story, worker), uses_tool_after_first_stop=False)
     expect_count_output_2(story, f"agent-line list --agent {worker.id}", "you ended with tasks left", 1)
 
 
