@@ -47,6 +47,7 @@
         "architecture_viewer_window_declared_without_icon",
         "naming_plain_viewer_text",
         "naming_plain_journal_text",
+        "architecture_drivers_text_names_two_roles",
         "naming_column_word_in_text",
         "architecture_core_log_outside_system_log_writer",
         "architecture_agents_running_agents_by_hand",

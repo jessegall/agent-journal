@@ -6,10 +6,13 @@ from engine.database.database import Database
 from engine.model.tables import Tables
 from engine.query.condition import Condition
 from engine.query.conditions.among import Among
+from engine.query.conditions.equal import Equal
 from engine.query.conditions.greater import Greater
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.query import Query
 from engine.query.select import Select
+from core.modules.docking.models.enums.dock_item_state import DockItemState
+from core.modules.processes.models.enums.process_dock_type import ProcessDockType
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from engine.query.conditions.maximum import Maximum
@@ -19,6 +22,7 @@ from core.modules.processes.queries.conditions.part_run_seconds import PartRunSe
 
 OPEN = (ProcessState.RUNNING, ProcessState.BACKGROUND)
 PROCESS_PARTS_TABLE = "process_parts"
+DOCK_ITEMS_TABLE = "dock_items"
 
 
 class ProcessQuery(Query[Process]):
@@ -55,6 +59,17 @@ class ProcessQuery(Query[Process]):
     def long_run_candidates(self, present: Timestamp, seconds: int) -> Self:
         cutoff = Timestamp(present.value - timedelta(seconds=seconds))
         return self.matching(LongRunCandidate(cutoff.text))
+
+    def docked_runs(self) -> Self:
+        return self.matching(SubqueryMatch("id", self.output_items().matching(Equal("state", DockItemState.DOCKED.value))))
+
+    def fresh_long_runs(self, present: Timestamp, seconds: int) -> Self:
+        """The runs old enough to dock that have no output dock item yet."""
+        return self.long_run_candidates(present, seconds).matching(SubqueryMatch("id", self.output_items(), negated=True))
+
+    @staticmethod
+    def output_items() -> Select:
+        return Select(DOCK_ITEMS_TABLE).matching(Equal("type", ProcessDockType.OUTPUT.value)).matching(Equal("target_model", "process")).column("target_id")
 
     def has_moved_run(self, texts: Sequence[str], seconds: int = 0) -> bool:
         conditions: list[Condition] = [Among("text", tuple(texts))]
