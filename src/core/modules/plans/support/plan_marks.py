@@ -7,6 +7,7 @@ from core.modules.plans.models.enums.plan_dock_type import PlanDockType
 from core.modules.plans.models.enums.plan_mark_type import PlanMarkType
 from core.modules.plans.models.enums.plan_mark_variant import PlanMarkVariant
 
+PLANS_MODULE = "journal.core.plans"
 PLANS_FAMILY = MarkFamily("plans.plans", "Plans", "plan", MarkGroup.WORK)
 
 PLAN_MARKS = [MarkDeclaration(PlanMarkType.PLAN, PlanMarkVariant, PLANS_FAMILY, "Plan moves", "plan", click=MarkClick.OPEN_ROW)]

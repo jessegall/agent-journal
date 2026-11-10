@@ -6,9 +6,9 @@ from core.modules.plans.support.focus.focus_overview import FocusOverview
 from core.modules.plans.support.focus.focused_plan import FocusedPlan
 from core.modules.plans.support.focus.plan_focus_report import PlanFocusReport
 from core.modules.plans.support.focus.plan_work import PlanWork
-from core.modules.plans.support.focus.unblocker import Unblocker
-from core.modules.plans.support.focus.unblockers import Unblockers
-from core.modules.plans.support.focus.waiting_line import WaitingLine
+from core.modules.plans.support.unblockers.unblocker import Unblocker
+from core.modules.plans.support.unblockers.unblockers import Unblockers
+from core.modules.plans.support.unblockers.waiting_line import WaitingLine
 
 AGENT = SimpleNamespace(id=1, role="main")
 PLANS = [SimpleNamespace(id=plan_id) for plan_id in (3, 5, 8)]

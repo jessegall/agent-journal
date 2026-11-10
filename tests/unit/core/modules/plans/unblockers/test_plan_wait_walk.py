@@ -1,9 +1,9 @@
 from types import SimpleNamespace
 
 from core.modules.plans.models.enums.waiting_reason import WaitingReason
-from core.modules.plans.support.focus.plan_wait_walk import PlanWaitWalk
-from core.modules.plans.support.focus.wait_graph import LONGEST_CHAIN, WaitGraph
-from core.modules.plans.support.focus.waiting_line import WaitingLine
+from core.modules.plans.support.unblockers.plan_wait_walk import PlanWaitWalk
+from core.modules.plans.support.unblockers.wait_graph import LONGEST_CHAIN, WaitGraph
+from core.modules.plans.support.unblockers.waiting_line import WaitingLine
 
 
 def test_two_plan_tasks_that_wait_on_one_task_and_one_that_waits_through_a_chain_are_counted_on_the_ends():

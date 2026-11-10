@@ -7,10 +7,10 @@ from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_task import PlanTask
-from core.modules.plans.support.focus.plan_wait_walk import PlanWaitWalk
-from core.modules.plans.support.focus.unblocker_facts import UnblockerFacts
-from core.modules.plans.support.focus.unblockers import Unblockers
-from core.modules.plans.support.focus.wait_graph import WaitGraph
+from core.modules.plans.support.unblockers.plan_wait_walk import PlanWaitWalk
+from core.modules.plans.support.unblockers.unblocker_facts import UnblockerFacts
+from core.modules.plans.support.unblockers.unblockers import Unblockers
+from core.modules.plans.support.unblockers.wait_graph import WaitGraph
 from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES, TaskState
 from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.models.task import Task

@@ -3,8 +3,8 @@ from types import SimpleNamespace
 import pytest
 
 from core.modules.plans.support.focus.plan_work import PlanWork
-from core.modules.plans.support.focus.unblocker import Unblocker
-from core.modules.plans.support.focus.unblockers import Unblockers
+from core.modules.plans.support.unblockers.unblocker import Unblocker
+from core.modules.plans.support.unblockers.unblockers import Unblockers
 
 NORMAL, HIGH = 100, 200
 

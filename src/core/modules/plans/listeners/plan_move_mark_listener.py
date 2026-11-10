@@ -6,8 +6,8 @@ from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.plans.models.enums.plan_mark_type import PlanMarkType
 from core.modules.plans.models.enums.plan_mark_variant import PlanMarkVariant
 from core.modules.plans.models.plan import Plan
+from core.modules.plans.support.plan_marks import PLANS_MODULE
 
-PLANS_MODULE = "journal.core.plans"
 VARIANT_LABELS = {PlanMarkVariant.MADE: "created"}
 MOVE_VARIANTS = {"create": PlanMarkVariant.MADE, "start": PlanMarkVariant.STARTED, "close": PlanMarkVariant.CLOSED, "block": PlanMarkVariant.BLOCKED, "cancel": PlanMarkVariant.CANCELLED}
 

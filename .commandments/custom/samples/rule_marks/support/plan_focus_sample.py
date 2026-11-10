@@ -1,4 +1,4 @@
-from core.modules.plans.support.focus.wait_graph import WaitGraph
+from core.modules.plans.support.unblockers.wait_graph import WaitGraph
 
 
 def focus_of(agent):

@@ -1,7 +1,7 @@
 from core.modules.plans.models.enums.waiting_reason import WaitingReason
-from core.modules.plans.support.focus.unblocker import Unblocker
-from core.modules.plans.support.focus.unblockers import Unblockers
-from core.modules.plans.support.focus.waiting_line import WaitingLine
+from core.modules.plans.support.unblockers.unblocker import Unblocker
+from core.modules.plans.support.unblockers.unblockers import Unblockers
+from core.modules.plans.support.unblockers.waiting_line import WaitingLine
 
 
 def waiting(count):

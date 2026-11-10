@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.modules.plans.support.focus.unblocker import Unblocker
-from core.modules.plans.support.focus.waiting_line import WaitingLine
+from core.modules.plans.support.unblockers.unblocker import Unblocker
+from core.modules.plans.support.unblockers.waiting_line import WaitingLine
 
 MOST_SHOWN_WAITS = 5
 

@@ -11,7 +11,7 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.commands.remove_dock_item.remove_dock_item import RemoveDockItem
 from core.modules.docking.queries.dock_item_query import DockItemQuery
-from core.modules.plans.listeners.plan_move_mark_listener import PLANS_MODULE
+from core.modules.plans.support.plan_marks import PLANS_MODULE
 from core.modules.plans.models.enums.plan_dock_type import PlanDockType
 from core.modules.plans.models.plan import Plan
 from engine.query.conditions.among import Among

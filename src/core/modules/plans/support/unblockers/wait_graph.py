@@ -1,6 +1,6 @@
 from collections.abc import Mapping, Sequence
 
-from core.modules.plans.support.focus.wait_ends import WaitEnds
+from core.modules.plans.support.unblockers.wait_ends import WaitEnds
 
 LONGEST_CHAIN = 10
 

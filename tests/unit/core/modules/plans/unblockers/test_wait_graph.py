@@ -1,4 +1,4 @@
-from core.modules.plans.support.focus.wait_graph import LONGEST_CHAIN, WaitGraph
+from core.modules.plans.support.unblockers.wait_graph import LONGEST_CHAIN, WaitGraph
 
 
 def test_a_task_that_waits_on_nothing_is_its_own_end():

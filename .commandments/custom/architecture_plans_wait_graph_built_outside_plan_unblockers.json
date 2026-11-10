@@ -13,7 +13,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(^|/)src/core/modules/plans/support/focus/plan_unblockers\\.py$"
+                "fileMatches": "(^|/)src/core/modules/plans/support/unblockers/plan_unblockers\\.py$"
             }
         ]
     },

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_task import PlanTask
-from core.modules.plans.support.focus.unblockers import Unblockers
+from core.modules.plans.support.unblockers.unblockers import Unblockers
 from core.modules.tasks.models.task import Task
 
 

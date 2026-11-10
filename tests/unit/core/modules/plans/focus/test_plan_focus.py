@@ -3,8 +3,8 @@ from types import SimpleNamespace
 from core.modules.plans.models.enums.focus_source import FocusSource
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.support.focus.plan_focus import PlanFocus
-from core.modules.plans.support.focus.unblocker import Unblocker
-from core.modules.plans.support.focus.unblockers import Unblockers
+from core.modules.plans.support.unblockers.unblocker import Unblocker
+from core.modules.plans.support.unblockers.unblockers import Unblockers
 
 PLANS_MODULE = "journal.core.plans"
 

@@ -3,8 +3,8 @@ from types import SimpleNamespace
 
 from core.modules.plans.support.focus.focused_plan_tasks import FocusedPlanTasks
 from core.modules.plans.support.focus.plan_work import PlanWork
-from core.modules.plans.support.focus.unblocker import Unblocker
-from core.modules.plans.support.focus.unblockers import Unblockers
+from core.modules.plans.support.unblockers.unblocker import Unblocker
+from core.modules.plans.support.unblockers.unblockers import Unblockers
 from engine.query.conditions.is_null import IsNull
 from engine.scope.actor_scope import ActorScope
 

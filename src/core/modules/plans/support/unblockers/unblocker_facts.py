@@ -7,7 +7,7 @@ from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.enums.waiting_reason import WaitingReason
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_task import PlanTask
-from core.modules.plans.support.focus.waiting_line import WaitingLine
+from core.modules.plans.support.unblockers.waiting_line import WaitingLine
 from core.modules.plans.support.plan_task_order import WORKING_STATES
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task

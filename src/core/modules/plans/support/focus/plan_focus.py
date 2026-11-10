@@ -9,12 +9,12 @@ from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.focus.focus_overview import FocusOverview
 from core.modules.plans.support.focus.focused_plan import FocusedPlan
-from core.modules.plans.support.focus.plan_unblockers import PlanUnblockers
+from core.modules.plans.support.unblockers.plan_unblockers import PlanUnblockers
 from core.modules.plans.support.focus.plan_work import PlanWork
 from core.modules.plans.support.focus.unused_focus import UnusedFocus
 from core.modules.plans.support.next_plan_tasks import NextPlanTasks
+from core.modules.plans.support.plan_marks import PLANS_MODULE
 
-PLANS_MODULE = "journal.core.plans"
 FOCUS_KEY = "focus_plan"
 DELETED_STATE = "gone"
 

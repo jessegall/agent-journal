@@ -4,7 +4,7 @@ import pytest
 
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.enums.waiting_reason import WaitingReason
-from core.modules.plans.support.focus.unblocker_facts import UnblockerFacts
+from core.modules.plans.support.unblockers.unblocker_facts import UnblockerFacts
 from core.modules.tasks.models.enums.task_state import TaskState
 
 MAIN = SimpleNamespace(id=1, role="main", number=1)

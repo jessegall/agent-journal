@@ -4,8 +4,8 @@ import pytest
 
 from core.modules.plans.models.enums.focus_source import FocusSource
 from core.modules.plans.rules.plan_focus_rule import PlanFocusRule
-from core.modules.plans.support.focus.unblocker import Unblocker
-from core.modules.plans.support.focus.unblockers import Unblockers
+from core.modules.plans.support.unblockers.unblocker import Unblocker
+from core.modules.plans.support.unblockers.unblockers import Unblockers
 
 AGENT_ID = 4
 PLACES = {11: 1, 12: 2, 13: 2}
