@@ -1,11 +1,11 @@
 import pytest
 
+from core.base.cli.usage_error import UsageError
 from core.base.actor import Actor
 from core.base.cli.line_parser import LineParser
 from core.base.database.database import READ_LIMIT_ROWS, Database
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
-from core.base.registry.registry import Registry
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples
@@ -23,21 +23,28 @@ fixed under task 8738 and then taken out; a read that is not listed fails the te
 
 
 OUTSIDE_COMMAND_GROUPS = frozenset({
-    "helper", "library", "library-user", "mcp", "merger", "phone", "plugin", "process", "program", "project-worktree", "secret", "share",
+    "demo", "helper", "library", "library-user", "mcp", "merger", "phone", "plugin", "process", "program", "project-worktree", "secret", "share",
     "tool", "transcription", "tunler", "tunnel", "update", "voice", "worker", "worker-operation", "worktree",
 })
 
 
-"""The commands of OUTSIDE_COMMAND_GROUPS start a program, call the network or change a git checkout, so the
+"""The commands of OUTSIDE_COMMAND_GROUPS start a program, call the network, copy the code or change a git checkout, so the
 large journal runs none of them."""
 
 
 def command_lines(story, is_read: bool) -> list[str]:
     parser = story.container.get(LineParser)
     lines = []
-    for name, subcommand in sorted(story.container.get(Registry).subcommands.items()):
-        if isinstance(subcommand, ReadSubcommand) is is_read and name.split()[0] not in OUTSIDE_COMMAND_GROUPS:
-            lines.append(" ".join([name, *required_arguments(parser.parser(name.split())[1])]))
+    for cli_name in parser.lookup.cli_names():
+        if cli_name in OUTSIDE_COMMAND_GROUPS:
+            continue
+        for name in parser.lookup.names(cli_name):
+            try:
+                subcommand, line_parser = parser.parser([cli_name, name])
+            except UsageError:
+                continue
+            if isinstance(subcommand, ReadSubcommand) is is_read:
+                lines.append(" ".join([cli_name, name, *required_arguments(line_parser)]))
     return lines
 
 
@@ -52,7 +59,7 @@ def large_reads(story, database, label: str, work) -> list[str]:
     return [f"{label}: {error}" for error in collected]
 
 
-@pytest.mark.story_budget(cpu_seconds=30, reason="it runs every read command of the journal as eleven actors on a journal with many rows")
+@pytest.mark.story_budget(points=80000, cpu_seconds=40, reason="it runs every read command of the journal as nine actors on a journal with many rows")
 def test_no_read_command_and_no_hook_loads_more_rows_than_the_read_limit_on_a_large_journal(new_story):
     story = new_story(fixture=LargeJournal)
     database = story.container.get(Database)

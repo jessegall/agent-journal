@@ -4,6 +4,7 @@ from core.modules.tasks.support.task_nudges import TASK_REOPENED
 from core.base.database.kept_rows import KeptRows
 from core.base.command.context import Context
 from core.modules.drivers.support.nudger import Nudger
+from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
@@ -18,6 +19,7 @@ WAIT_ENDED_SOURCE = "tasks.wait-ended"
 
 TASK_TARGET_PREFIX = "tasks:"
 
+ENDED_WAITS_REASON = "Every task whose wait just ended is opened; a task many others wait on ends many waits at once."
 KEPT_WAITS_REASON = "The open waits are read once and kept on the server, so a listener that ends waits for many targets reads no row per target."
 
 
@@ -31,7 +33,7 @@ class TaskWaits:
     def resolved(self, waits: Sequence[TaskWait], context: Context) -> None:
         for wait in waits:
             self.repository.update(wait, context, ended_at=context.timestamp)
-        opened = [task for task in self.queries.query(Task).find_many(list(dict.fromkeys(wait.task_id for wait in waits)))
+        opened = [task for task in self.queries.query(Task).matching(Among("id", list(dict.fromkeys(wait.task_id for wait in waits)))).oldest().full_table(ENDED_WAITS_REASON).all_rows()
                   if task.state is TaskState.BLOCKED and not self.pending_task(task.id)]
         for task in opened:
             self.repository.save_change(task, task.moved(TaskLifecycle.unblock), context)

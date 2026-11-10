@@ -1,3 +1,4 @@
+from core.modules.developer.migrations.m003_private_data_mark_environment_index import PrivateDataMarkEnvironmentIndexMigration
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.developer.commands.record_private_data_finding.record_private_data_finding_handler import RecordPrivateDataFindingHandler
 from core.modules.developer.listeners.private_data_mark_listener import PrivateDataMarkListener
@@ -46,7 +47,7 @@ class DeveloperModule(Module):
     dependencies = ["journal.core.settings", "journal.core.chat", "journal.core.environments", "journal.core.agents"]
     settings = DEVELOPER_SETTINGS
     models = [ModelDeclaration(PrivateDataMark, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [HookRequestsMigration, PrivateDataFlagsMigration]
+    migrations = [PrivateDataMarkEnvironmentIndexMigration, HookRequestsMigration, PrivateDataFlagsMigration]
     views = [HookRequest]
     tick_handlers = [TickHandler(TickInterval(seconds=60), PrivateDataTick(), "private data scan")]
     handlers = [RecordPrivateDataFindingHandler, ResetHookNumbersHandler, RecordMarkMotionHandler]

@@ -17,6 +17,8 @@ from core.modules.questions.models.question import Question
 
 QUESTIONS_MODULE = "journal.core.questions"
 
+OPEN_QUESTIONS_REASON = "The questions of the main agent that a person has not answered yet; the dock shows every one of them."
+
 
 class OpenQuestionsDockListener(CommitListener[Touched[Question]]):
     """Docks unanswered questions in the main chat until they are settled."""
@@ -31,7 +33,7 @@ class OpenQuestionsDockListener(CommitListener[Touched[Question]]):
         if logged.environment_id is None:
             return
         actor = self.actors.actor(QUESTIONS_MODULE)
-        open_ids = {question.id for question in self.questions.open_questions().matching(MainAgentRows()).oldest().all_rows()}
+        open_ids = {question.id for question in self.questions.open_questions().matching(MainAgentRows()).oldest().full_table(OPEN_QUESTIONS_REASON).all_rows()}
         docks = [dock.id for dock in self.queries.query(Dock).all_rows()]
         docked = [item for item in self.items.type_items(QuestionDockType.OPEN.value).filter(state=DockItemState.DOCKED).all_rows() if item.dock_id in docks]
         if open_ids and not docked:

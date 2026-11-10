@@ -1,3 +1,4 @@
+from core.modules.setting_requests.migrations.m003_setting_request_environment_index import SettingRequestEnvironmentIndexMigration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.setting_requests.commands.request_setting.request_setting_handler import RequestSettingHandler
@@ -20,7 +21,7 @@ class SettingRequestsModule(Module):
     seed_reason = "the demo shows no setting requests"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.questions", "journal.core.approvals"]
     models = [ModelDeclaration(SettingRequest, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [SettingRequestsTableMigration, HelperKeysMigration]
+    migrations = [SettingRequestEnvironmentIndexMigration, SettingRequestsTableMigration, HelperKeysMigration]
     handlers = [RequestSettingHandler]
     subcommands = [RequestSettingSubcommand]
     guards = [RequestQuestionGuard]
