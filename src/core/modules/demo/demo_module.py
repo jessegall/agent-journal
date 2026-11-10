@@ -4,6 +4,7 @@ from engine.ticker.tick_interval import TickInterval
 from core.modules.demo.commands.demo_seed.demo_seed_subcommand import DemoSeedSubcommand
 from core.modules.demo.commands.demo_start.demo_start_subcommand import DemoStartSubcommand
 from core.modules.demo.ticks.demo_folder_pruning import DemoFolderPruning
+from core.modules.demo.ticks.demo_owner_watch import DemoOwnerWatch
 
 
 class DemoModule(Module):
@@ -15,4 +16,5 @@ class DemoModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors"]
     subcommands = [DemoSeedSubcommand, DemoStartSubcommand]
-    tick_handlers = [TickHandler(TickInterval(seconds=15 * 60), DemoFolderPruning(), "demo folder pruning")]
+    tick_handlers = [TickHandler(TickInterval(seconds=15 * 60), DemoFolderPruning(), "demo folder pruning"),
+                     TickHandler(TickInterval(seconds=5), DemoOwnerWatch(), "demo owner watch")]
