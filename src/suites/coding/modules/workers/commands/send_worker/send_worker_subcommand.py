@@ -21,6 +21,7 @@ from suites.coding.modules.workers.support.worker_route_request import WorkerRou
 from suites.coding.modules.workers.support.test_command_entry import TEST_COMMAND_EXAMPLE, TestCommandEntry
 from suites.coding.modules.workers.support.plan_worker_tasks import PlanWorkerTasks
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
@@ -97,9 +98,9 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
 
     def answer(self, worker: Agent) -> str:
         if worker.paused_at is not None:
-            return f"worker {worker.id} is paused: the job waits until journal agent resume {worker.id}"
+            return f"{AgentLabel.from_agent(worker).text} is paused: the job waits until journal agent resume {worker.number}"
         if worker.ended_at is None:
-            return f"worker {worker.id} takes the job" if worker.pid is not None else f"worker {worker.id} takes the job at its next hook; its process is not recorded, so the journal cannot say whether it runs: journal worker status {worker.id}"
+            return f"{AgentLabel.from_agent(worker).text} takes the job" if worker.pid is not None else f"{AgentLabel.from_agent(worker).text} takes the job at its next hook; its process is not recorded, so the journal cannot say whether it runs: journal worker status {worker.number}"
         if not self.home.socket(LAUNCHER_SOCKET).exists():
-            return f"worker {worker.id} is not running and has the job waiting; an ended worker needs the launcher to start again"
-        return f"worker {worker.id} was not running: the job waits until it starts, and you are told if it does not"
+            return f"{AgentLabel.from_agent(worker).text} is not running and has the job waiting; an ended worker needs the launcher to start again"
+        return f"{AgentLabel.from_agent(worker).text} was not running: the job waits until it starts, and you are told if it does not"

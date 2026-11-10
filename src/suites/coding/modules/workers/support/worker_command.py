@@ -15,6 +15,7 @@ from core.modules.mcp.support.server_configs import ServerConfigs
 from suites.coding.modules.workers.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.models.worktree import Worktree
 from engine.errors.refusal import Refusal
+from core.modules.agents.support.agent_label import AgentLabel
 
 WORK_STEPS = "Read journal worker status first: it says where you are and what to do now. Prove each point with journal proof make, with the tests that cover your changes in its --test command; hand in with journal worker next and journal worker deliver."
 
@@ -35,7 +36,7 @@ class WorkerCommand:
         reads = "\n".join(provider.skill_instruction(name, skills / name / "SKILL.md") for name in
                           ("journal", "journal-etiquette", "journal-tasks", "journal-shell", "journal-workers"))
         profile = self.profiles.effective(worker.profile or self.types.find(worker.role).default_profile)
-        brief = (f"You are worker {worker.id}.\n{profile.body}\n\nYour task is {task.id}, {task.title}.\n{task.brief}\n{job}\n"
+        brief = (f"You are {AgentLabel.from_agent(worker).text}.\n{profile.body}\n\nYour task is {task.id}, {task.title}.\n{task.brief}\n{job}\n"
                  f"Load these skills before your first write:\n{reads}\n"
                  f"Run journal overview, then journal task overview {worktree.task_id} before changing project files. Load the architectural skills required by the files you change in {skills}.\n"
                  f"{WORKER_TEST_RULE}\n"
@@ -51,7 +52,7 @@ class WorkerCommand:
 
     def launched(self, worker: Agent, worktree: Worktree, environment: Environment, session: SessionStart, brief: str) -> LaunchCommand:
         if not worker.program_model.strip():
-            raise Refusal(f"worker {worker.id} has no recorded model", "dispatch a worker with --model <model>")
+            raise Refusal(f"{AgentLabel.from_agent(worker).text} has no recorded model", "dispatch a worker with --model <model>")
         files = self.servers.write_folder(Path(worktree.folder))
         self.libraries.exclude(worktree.folder, [str(path) for path in files])
         return self.helpers.launched(worker, session, brief)

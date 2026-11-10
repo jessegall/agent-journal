@@ -48,6 +48,7 @@ from suites.coding.modules.workers.support.worker_task_advance import WorkerTask
 from core.modules.messages.support.work_sources import WorkSources
 from suites.coding.modules.workers.bindings.worker_task_sources import WorkerTaskSources
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class SendWorkerHandler(Handler[SendWorker, Model]):
@@ -85,7 +86,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         if command.task_ids:
             self.kept_tasks.check_tasks(command.task_ids, actor.id)
         if self.worktrees.newest_worktree(worker.id) is None:
-            raise Refusal(f"worker {worker.id} has no worktree", "journal worker dispatch <task> starts a new one")
+            raise Refusal(f"{AgentLabel.from_agent(worker).text} has no worktree", "journal worker dispatch <task> starts a new one")
 
     def prepare(self, command: SendWorker, actor: Actor) -> None:
         worker = self.rows.required(Agent, command.worker_id)

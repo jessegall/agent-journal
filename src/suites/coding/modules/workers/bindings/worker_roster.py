@@ -17,6 +17,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.journal_managed_files import JournalManagedFiles
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class WorkerRoster(AgentRoster[Agent]):
@@ -33,9 +34,9 @@ class WorkerRoster(AgentRoster[Agent]):
         folder = self.queries.query(Environment).find(agent.environment_id).folder
         for worktree in self.queries.query(Worktree).filter(session_agent_id=agent.id).with_removed().all_rows():
             if self.has_own_changes(agent, worktree):
-                return f"worker {agent.id} has uncommitted files in {worktree.folder}: commit or remove them, then retire it"
+                return f"{AgentLabel.from_agent(agent).text} has uncommitted files in {worktree.folder}: commit or remove them, then retire it"
             if self.git.has_unmerged_branch(folder, worktree):
-                return f"worker {agent.id} has unmerged work on {worktree.branch}: journal worker merge {agent.id}, or merge the branch by hand"
+                return f"{AgentLabel.from_agent(agent).text} has unmerged work on {worktree.branch}: journal worker merge {agent.number}, or merge the branch by hand"
         return ""
 
     def has_own_changes(self, agent: Agent, worktree: Worktree) -> bool:

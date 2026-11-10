@@ -13,6 +13,7 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class WorkerFolderRuns:
@@ -52,4 +53,4 @@ class WorkerFolderRuns:
 
     def stop_agent(self, agent: Agent, folder: Path) -> None:
         if agent.pid is not None and not self.program.stop(agent):
-            raise Refusal(f"agent {agent.id} is still using {folder}", "stop its program before removing the worktree")
+            raise Refusal(f"{AgentLabel.from_agent(agent).text} is still using {folder}", "stop its program before removing the worktree")

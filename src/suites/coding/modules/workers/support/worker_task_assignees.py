@@ -8,6 +8,7 @@ from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class WorkerTaskAssignees(TaskAssignees):
@@ -23,7 +24,7 @@ class WorkerTaskAssignees(TaskAssignees):
             return
         worktree = self.worktrees.worker_worktree(agent.id)
         if worktree is None or worktree.state is not WorktreeState.CUT:
-            raise Refusal(f"agent {agent.id} is a {agent.role} and takes no task", "only the main agent and a worker with a cut worktree take a task")
+            raise Refusal(f"{AgentLabel.from_agent(agent).text} is a {agent.role} and takes no task", "only the main agent and a worker with a cut worktree take a task")
 
     def check_reassignment(self, task: Task) -> None:
         if task.delegated_to != task.holder_id or task.holder_id is None or self.next_task.following(task.holder_id) is not None:

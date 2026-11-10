@@ -46,6 +46,7 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.assignable_tasks import AssignableTasks
 from suites.coding.modules.workers.support.main_reserved_tasks import MainReservedTasks
 from suites.coding.modules.workers.support.started_task_release import StartedTaskRelease
+from core.modules.agents.support.agent_label import AgentLabel
 
 class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     """Starts a worker and its tasks, runs git without a write lock and removes an opening that fails."""
@@ -116,9 +117,9 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         if idle is not None:
             if command.plan_id is not None:
                 phase = f" --phase {command.phase_id}" if command.phase_id is not None else ""
-                raise Refusal(f"worker {idle.id} is idle: journal worker send {idle.id} --plan {command.plan_id}{phase}", 'or --fresh "<why>"')
+                raise Refusal(f"{AgentLabel.from_agent(idle).text} is idle: journal worker send {idle.number} --plan {command.plan_id}{phase}", 'or --fresh "<why>"')
             task_ids = " ".join(str(task.id) for task in tasks)
-            raise Refusal(f"worker {idle.id} is idle: journal worker send {idle.id} --task {task_ids}", 'or --fresh "<why>"')
+            raise Refusal(f"{AgentLabel.from_agent(idle).text} is idle: journal worker send {idle.number} --task {task_ids}", 'or --fresh "<why>"')
 
     def worker_profile(self, name: str) -> AgentProfile:
         worker_type = self.types.find(CodingHelperRole.WORKER)
