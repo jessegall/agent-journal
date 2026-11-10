@@ -2,7 +2,7 @@ import json
 
 from core.base.module.performance_tools import PerformanceTools
 from core.base.database.points import Points
-from core.base.performance.route_cost_tool import RouteCostTool
+from engine.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.hook_numbers_file import HookNumbersFile
 from core.modules.developer.support.reader_time_tool import ReaderTimeTool
 from tests.stories.core.modules.viewer.support.window_story import WindowStory

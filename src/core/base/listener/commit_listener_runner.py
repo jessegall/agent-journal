@@ -21,7 +21,7 @@ from core.base.scope.scopes import Scopes
 from core.base.listener.commit_listener_error import CommitListenerError
 from core.base.listener.event_builder import EventBuilder
 from core.base.database.performance_costs import PerformanceCosts
-from core.base.performance.performance_state import PerformanceState
+from engine.performance.performance_state import PerformanceState
 from engine.errors.refusal import Refusal
 
 

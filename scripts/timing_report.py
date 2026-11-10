@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from engine.time.timing import Timing
 from engine.journal.journal_home import JournalHome
-from core.base.performance.performance_state import PerformanceState
+from engine.performance.performance_state import PerformanceState
 
 LINE_LIMIT = 1000
 TOTAL_ROW = "whole request"

@@ -3,8 +3,8 @@ from core.base.database.performance_costs import PerformanceCosts
 from core.base.database.points import Points
 from engine.journal.journal_home import JournalHome
 from core.base.module.module_finder import ModuleFinder
-from core.base.performance.performance_tool import PerformanceTool
-from core.base.performance.performance_state import PerformanceState, TESTS_RUNNING_FILE
+from engine.performance.performance_tool import PerformanceTool
+from engine.performance.performance_state import PerformanceState, TESTS_RUNNING_FILE
 
 
 class PerformanceTools:

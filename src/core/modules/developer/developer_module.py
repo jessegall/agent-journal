@@ -8,7 +8,7 @@ from core.modules.developer.commands.request_queue.request_queue_subcommand impo
 from core.modules.developer.support.developer_nudges import DEVELOPER_NUDGES
 from core.modules.developer.listeners.exception_line_listener import ExceptionLineListener
 from core.modules.developer.support.reader_time_tool import ReaderTimeTool
-from core.base.performance.route_cost_tool import RouteCostTool
+from engine.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.developer_route_cost_tool import DeveloperRouteCostTool
 from core.modules.developer.support.slow_tick_tool import SlowTickTool
 from core.base.viewer.window_declaration import WindowDeclaration

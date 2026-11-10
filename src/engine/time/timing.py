@@ -1,6 +1,6 @@
 import time
 from collections.abc import Sequence
-from core.base.performance.performance_state import PerformanceState
+from engine.performance.performance_state import PerformanceState
 
 TIMING_HEADER = "Journal-Timing"
 

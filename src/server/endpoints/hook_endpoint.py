@@ -21,7 +21,7 @@ from core.base.registry.registry import Registry
 from core.base.registry.stale_registry_error import StaleRegistryError
 from engine.time.timing import Timing
 from core.base.module.performance_tools import PerformanceTools
-from core.base.performance.route_cost_tool import RouteCostTool
+from engine.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from engine.enums.hook_answer import HookAnswer
 from server.hook.hook_delivery_retries import HookDeliveryRetries

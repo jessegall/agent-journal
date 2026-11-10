@@ -1,7 +1,7 @@
 from core.modules.agents.models.agent import Agent
 from core.base.command.bus import Bus
 from engine.log.exception_sink import CLOCK_TICK_SOURCE, ExceptionSink
-from core.base.performance.performance_tool import PerformanceTool
+from engine.performance.performance_tool import PerformanceTool
 from engine.query.queries import Queries
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.developer.support.developer_settings import SLOW_TICKS_SETTING

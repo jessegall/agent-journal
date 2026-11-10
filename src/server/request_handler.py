@@ -19,7 +19,7 @@ from server.hook.queue_request import QueueRequest
 from engine.caller.caller_request import SESSION_VARIABLE
 from server.viewer.viewer_key_route import ViewerKeyRoute
 from server.endpoints.cli_endpoint import CliEndpoint
-from core.base.performance.performance_state import PerformanceState
+from engine.performance.performance_state import PerformanceState
 from server.endpoints.chunk_stream import ChunkStream
 from server.endpoints.cli_request import CliRequest
 from server.endpoints.cli_request_error import CliRequestError

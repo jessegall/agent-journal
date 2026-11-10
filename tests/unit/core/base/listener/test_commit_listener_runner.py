@@ -21,7 +21,7 @@ from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.database.statement import Statement
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.commit_listener_runner import PLUGIN_RUN_ORDER, CommitListenerRunner
-from core.base.performance.performance_state import PerformanceState
+from engine.performance.performance_state import PerformanceState
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming

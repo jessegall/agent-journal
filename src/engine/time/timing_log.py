@@ -4,7 +4,7 @@ from engine.file.file_access import FileAccess
 
 from engine.journal.journal_home import JournalHome
 from engine.file.rotated_file import RotatedFile
-from core.base.performance.performance_state import PerformanceState
+from engine.performance.performance_state import PerformanceState
 
 TIMING_LOG_LIMIT_BYTES = 10_000_000
 
