@@ -7,7 +7,7 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from server.work.booting_work import BootingWork
 from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.occupant_rotation import job_launch
-from tests.stories.core.modules.helpers.support.rotating_helper import SAVE_ROTATING, EndedEachLaunchHelper, StartedEachLaunchHelper, story_with_profile_file
+from tests.stories.core.modules.helpers.support.rotating_helper import SAVE_ROTATING, EndedEachLaunchHelper, StartedEachLaunchHelper, real_program_states, story_with_profile_file
 from tests.stories.core.support.agent_labels import agent_number
 
 STEERING_TEXT = "Also read src/tax.py."
@@ -83,6 +83,7 @@ def test_a_paused_main_agent_that_resumes_gets_the_same_session_of_its_helper_ba
 
 def test_a_program_that_goes_out_in_a_job_makes_the_job_wait_and_never_changes_program(working, monkeypatch):
     helper = helper_agent(working)
+    real_program_states(working)
     resumable_session(working, helper, monkeypatch)
     steered(working)
     ends_at = (working.clock.timestamp().value + timedelta(minutes=30)).isoformat()

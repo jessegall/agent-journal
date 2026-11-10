@@ -47,11 +47,11 @@ def test_a_model_the_environment_does_not_allow_makes_the_next_occupant_run_on_t
                          detail=str(launch["command"][:4]))
 
 
-def test_when_no_program_has_an_allowed_model_the_job_is_refused_naming_the_model_and_nothing_changes(rotating):
+def test_when_no_program_has_an_allowed_model_the_job_is_refused_as_a_start_is_and_nothing_changes(rotating):
     helper = helper_agent(rotating)
     rotating.expect_rows(f"claude {helper.program_model}" != UNUSED_MODEL, detail=helper.program_model)
     rotating.expect_success(f'setting set {ALLOWED_MODELS} "{UNUSED_MODEL}" --project', actor=rotating.user)
-    rotating.expect_refusal(job_line(rotating), f"claude {helper.program_model} is not among the allowed models of the environment", actor=rotating.agent)
+    rotating.expect_refusal(job_line(rotating), "claude has no allowed automatic model", actor=rotating.agent)
     current = helper_agent(rotating)
     rotating.expect_rows(current.session == helper.session, current.program == helper.program, len(read_jobs(rotating, helper)) == 1)
 

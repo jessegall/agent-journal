@@ -8,7 +8,7 @@ from core.modules.helpers.support.helper_settings import COLD_SESSION_MINUTES, C
 from engine.query.queries import Queries
 from tests.stories.core.modules.helpers.cold_sessions import with_job
 from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, resumable_session
-from tests.stories.core.modules.helpers.support.rotating_helper import EndedColdRotationHelper, EndedContinueHelper, EndedEachLaunchHelper, story_with_profile_file
+from tests.stories.core.modules.helpers.support.rotating_helper import EndedColdRotationHelper, EndedContinueHelper, EndedEachLaunchHelper, real_program_states, story_with_profile_file
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.agent_labels import agent_number
 
@@ -74,6 +74,7 @@ def test_a_when_cold_helper_that_is_cold_and_large_gets_a_new_session_on_its_pro
 
 def test_a_when_cold_helper_never_changes_program_while_its_own_is_out(cooling):
     helper = helper_agent(cooling)
+    real_program_states(cooling)
     ends_at = (cooling.clock.timestamp().value + timedelta(minutes=30)).isoformat()
     cooling.expect_success(f'provider-outage make claude "rate limit" --ends-at {ends_at}', actor=cooling.agent)
     launcher = FakeLauncher.listening(cooling.home.socket("launcher"), answer=b"started 701\n")

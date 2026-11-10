@@ -1,5 +1,12 @@
 from core.modules.agents.testing.fake_launcher import FakeLauncher
+from pathlib import Path
+
+from engine.journal.journal_home import JournalHome
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.providers import Providers
 from engine.testing.stories.story_fixture import StoryFixture
+from core.modules.helpers.support.helper_programs import HelperPrograms
+from core.modules.helpers.support.program_states import ProgramStates
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
@@ -56,6 +63,24 @@ class StartedEachLaunchHelper(StoryFixture):
         launcher.drain_requests()
         launcher.server.close()
         story.home.socket("launcher").unlink()
+
+
+def real_program_states(story) -> None:
+    """Makes the story read program outages from its rows, where a story otherwise finds every program ready."""
+    story.container.bind(ProgramStates, story.container.constructed(ProgramStates))
+
+
+class InstalledProgramChecks(HelperPrograms):
+    """Asks whether a program is installed and leaves its hooks and folder alone, since a story's folders do
+    not exist."""
+
+    def checked(self, program: str, folder: Path) -> None:
+        self.installed(program)
+
+
+def installed_program_checks(story) -> None:
+    """Makes the story ask whether a program is installed, where a story otherwise passes every program."""
+    story.container.bind(HelperPrograms, InstalledProgramChecks(story.container.get(JournalHome), story.container.get(Providers), story.container.get(ManagedHooks)))
 
 
 def story_with_profile_file(new_story, fixture: type[EndedEachLaunchHelper] | type[StartedEachLaunchHelper]):
