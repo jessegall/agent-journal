@@ -20,3 +20,16 @@ test("a helper's row shows the title its sender gave the job, with the job in th
     expect(job.textContent).toContain("Reviewing plan 1093 against its card");
     expect(job.textContent.startsWith("Job")).toBe(false);
 });
+
+test.each([["fresh", "codex, new conversation"], ["resumed", "codex, resumed"]])("a helper's row names the program of its job and whether the job began a new conversation", async (occupant_launch, text) => {
+    const row = {id: 6, role: "helper", access: "read-only", ended_at: null, session: "s-6", program: "claude"};
+    const facts = {tasks: [], helper_job: "Reviewing plan 1093", helper_job_program: "codex", occupant_launch};
+    const element = await mounted({render: () => h(AgentCard, {row, facts})}, context({}));
+    expect(element.querySelector("[data-agent-job-launch]").textContent).toBe(text);
+});
+
+test("a helper's row with a job from before programs were recorded shows no launch text", async () => {
+    const row = {id: 6, role: "helper", access: "read-only", ended_at: null, session: "s-6", program: "claude"};
+    const element = await mounted({render: () => h(AgentCard, {row, facts: {tasks: [], helper_job: "Reviewing plan 1093"}})}, context({}));
+    expect(element.querySelector("[data-agent-job-launch]")).toBeNull();
+});

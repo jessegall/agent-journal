@@ -1,9 +1,11 @@
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
+from engine.provider.launch_command import LaunchCommand
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.enums.launch_answer import LaunchAnswer
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.helpers.commands.end_helper_job.end_helper_job import EndHelperJob
+from core.modules.helpers.commands.record_job_new_session.record_job_new_session import RecordJobNewSession
 from core.modules.agents.support.agent_conversations import AgentConversations
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from core.modules.environments.support.environment_rows import EnvironmentRows
@@ -31,9 +33,15 @@ class HelperResume:
         if helper.paused_at is not None or not self.kept.program_state(helper).is_ready:
             return
         current = self.cold.replaced(helper, self.profiles.effective(helper.profile).occupant.continuation)
-        command = self.commands.resumed(current, job) if self.conversations.exists(current) else self.commands.restarted(current, self.whole_brief(current, job))
+        command = self.commands.resumed(current, job) if self.conversations.exists(current) else self.restarted(current, job)
         if self.launcher.hand(current, self.environments.find(helper.environment_id), command) is LaunchAnswer.FAILED:
             self.end_open_job(current)
+
+    def restarted(self, helper: Agent, job: str) -> LaunchCommand:
+        open_job = self.jobs.open_job(helper.id)
+        if open_job is not None and not open_job.new_session:
+            self.bus.run(RecordJobNewSession(open_job.id), Actor.core(), environment_id=helper.environment_id)
+        return self.commands.restarted(helper, self.whole_brief(helper, job))
 
     def whole_brief(self, helper: Agent, job: str) -> str:
         open_job = self.jobs.open_job(helper.id)

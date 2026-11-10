@@ -28,6 +28,8 @@ const identity = computed(() => [props.row.program, props.facts?.model, props.fa
 const context = useWindow();
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
+const LAUNCH_LABELS = {fresh: "new conversation", resumed: "resumed"};
+const jobLaunch = computed(() => [props.facts?.helper_job_program, LAUNCH_LABELS[props.facts?.occupant_launch]].filter(Boolean).join(", "));
 const pendingWork = computed(() => props.facts?.work_status);
 const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role !== "main" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));
 // an agent whose program's plan allowance is used up waits at the usage limit until it starts again
@@ -75,7 +77,7 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
             <Btn variant="ghost" small data-agent-inspector @click.stop="peekRef(`agents:${row.id}`)">Open inspector</Btn>
             <template v-if="row.role === 'helper' && !row.ended_at"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.id)])">Stop</Btn></template>
         </InformationBar></template>
-        <template v-if="!open"><AgentTaskLine :tasks="tasks" :in-hand="row.role !== 'helper' && facts?.job_enabled ? jobTask || null : null" :job="row.role === 'helper' ? job : ''" :job-title="row.role === 'helper' ? facts?.helper_job_title || '' : ''" :per-hour="rate" /></template>
+        <template v-if="!open"><AgentTaskLine :tasks="tasks" :in-hand="row.role !== 'helper' && facts?.job_enabled ? jobTask || null : null" :job="row.role === 'helper' ? job : ''" :job-title="row.role === 'helper' ? facts?.helper_job_title || '' : ''" :job-launch="row.role === 'helper' ? jobLaunch : ''" :per-hour="rate" /></template>
         <AgentStatusDot :state="dotState" :doing="statusWords" :since="statusSince" :seen="statusSeen" />
         <template v-if="open"><AgentCardDetails :row="row" :facts="facts" :progress="progress" :wait-reason="waitReason" :tasks="tasks" :stopped-with-work="stoppedWithWork" :open="open" /></template>
     </div>

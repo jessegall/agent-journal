@@ -2,6 +2,7 @@ from engine.cli.agent_number import AgentNumber
 from core.modules.agents.support.agent_rows import RUNNING_AGENTS_REASON
 from core.modules.settings.bindings.support.context_share import ContextShare
 from core.modules.agents.models.agent import Agent
+from core.modules.drivers.models.helper_job import NEW_SESSION_LAUNCH, RESUMED_SESSION_LAUNCH
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from engine.agent.agent_policy import AgentPolicy
 import json
@@ -89,7 +90,14 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp(), policy)
         return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
                           tuple(json.loads(card.tasks)), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
-                          card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), card.helper_job_title, titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.usage_limit_ends_at.text if card.usage_limit_ends_at is not None else None)
+                          card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), card.helper_job_title, titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.usage_limit_ends_at.text if card.usage_limit_ends_at is not None else None,
+                          helper_job_program=card.helper_job_program, occupant_launch=self.occupant_launch(card))
+
+    @staticmethod
+    def occupant_launch(card: AgentCard) -> str:
+        if card.helper_job_new_session is None:
+            return ""
+        return NEW_SESSION_LAUNCH if card.helper_job_new_session else RESUMED_SESSION_LAUNCH
 
     @staticmethod
     def helper_job(card: AgentCard) -> str:

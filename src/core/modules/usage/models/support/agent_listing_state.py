@@ -37,6 +37,8 @@ class AgentListingState:
     helper_job_description: str
     helper_job_brief: str
     helper_job_title: str
+    helper_job_program: str
+    helper_job_new_session: bool | None
     job_returned: str
     parent_id: int | None
     created_at: Timestamp

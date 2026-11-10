@@ -4,6 +4,9 @@ from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.time.timestamp import Timestamp
 
+NEW_SESSION_LAUNCH = "fresh"
+RESUMED_SESSION_LAUNCH = "resumed"
+
 
 @dataclass(frozen=True, kw_only=True)
 class HelperJob(EnvironmentScoped, Model):
@@ -36,8 +39,13 @@ class HelperJob(EnvironmentScoped, Model):
     source_line_id: int | None = None
     started_at: Timestamp | None = None
     cost_baseline: float | None = None
+    new_session: bool = False
     halted_seconds: float = 0.0
+
+    @property
+    def occupant_launch(self) -> str:
+        return NEW_SESSION_LAUNCH if self.new_session else RESUMED_SESSION_LAUNCH
 
     def next_job(self, session: str, program: str, program_model: str, brief: str, instruction: str, title: str, creator_id: int) -> "HelperJob":
         return replace(self, id=0, version=0, created_at=None, updated_at=None, creator_id=creator_id, tool_key=f"{session}:{self.id}", program=program, program_model=program_model, brief=brief, instruction=instruction, title=title, ended_at=None, returned="", report_message_id=None,
-                       source_message_id=None, source_version=0, source_unavailable=False, source_line_id=None, started_at=None, cost_baseline=None, halted_seconds=0.0)
+                       source_message_id=None, source_version=0, source_unavailable=False, source_line_id=None, started_at=None, cost_baseline=None, halted_seconds=0.0, new_session=False)

@@ -74,7 +74,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         helper = self.bus.dispatch(start, context)
         self.repository.save(HelperJob(session_agent_id=parent.id, creator_id=context.actor.id, tool_key=helper.session, helper_id=helper.id, profile=profile.name, program_model=selection.model, program=selection.program,
                                        description=command.given_name or profile.name, title=command.title.strip(), brief=command.brief, new_agent_reason=command.new_agent_reason.strip(), review_plan_id=command.review_plan_id, instruction=command.brief[:SHORT_BRIEF_CHARACTERS],
-                                       source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp, cost_baseline=0.0), context)
+                                       source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp, cost_baseline=0.0, new_session=True), context)
         self.sources.use_copy(source, source_context)
         self.bus.dispatch(CountProfileUse(profile.name), context)
         return HelperStarted(helper, selection.note)
