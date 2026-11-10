@@ -12,11 +12,9 @@ SERVER_END_SECONDS = 60
 
 
 def is_alive(pid: int) -> bool:
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    return True
+    """A process that ended but is not yet collected by its parent (state Z) is ended."""
+    state = subprocess.run(["ps", "-o", "stat=", "-p", str(pid)], capture_output=True, text=True, check=False).stdout.strip()
+    return bool(state) and not state.startswith("Z")
 
 
 def test_the_server_of_a_demo_ends_with_the_process_it_was_started_for(new_story):
