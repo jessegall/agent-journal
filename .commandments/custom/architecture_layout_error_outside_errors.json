@@ -19,9 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/core/modules/drivers/commands/skip_refusal/skip_refusal.py"
-            },
-            {
                 "file": "src/core/modules/helpers/support/stale_session_error.py"
             },
             {

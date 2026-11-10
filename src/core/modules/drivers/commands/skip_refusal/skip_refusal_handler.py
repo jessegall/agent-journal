@@ -15,7 +15,7 @@ from engine.log.refusal_log import RefusalLog
 from engine.registry.registry import Registry
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.commands.skip_refusal.skip_refusal import SkipRefusal
+from core.modules.drivers.errors.skip_refusal import SkipRefusal
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.models.refusal_skip import RefusalSkip
