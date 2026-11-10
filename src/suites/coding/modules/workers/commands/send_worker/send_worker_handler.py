@@ -39,7 +39,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.gone_agents import GoneAgents
 from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
 from suites.coding.modules.workers.support.worker_recipient import WorkerRecipient
-from suites.coding.modules.workers.support.retired_worker_refusal import RetiredWorkerRefusal
+from suites.coding.modules.workers.errors.retired_worker_refusal import RetiredWorkerRefusal
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.started_task_release import StartedTaskRelease
