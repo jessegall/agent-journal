@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "identifier",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/"
+            },
+            {
+                "name": "parent_suite"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "module-names-its-suite",
+        "description": "A module under src names the suite it is part of itself, with parent_suite.",
+        "rule": "A suite lists its modules in Suite.modules, its own module first, and that list is the one place; a core module is part of no suite.",
+        "skill": "module-registration"
+    }
+}

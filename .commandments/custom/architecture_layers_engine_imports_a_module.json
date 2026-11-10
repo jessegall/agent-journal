@@ -1,0 +1,38 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/engine/"
+            },
+            {
+                "any": [
+                    {
+                        "nameMatches": "^(core\\.modules|suites|tunnels|server|install)(\\.|$)"
+                    },
+                    {
+                        "descendant": {
+                            "nameMatches": "^(core\\.modules|suites|tunnels|server|install)(\\.|$)"
+                        }
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/engine/testing/"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "engine-imports-a-module",
+        "description": "A file of src/engine imports a core module, a suite, a tunnel or the server, so the building blocks depend on what is built from them.",
+        "rule": "The engine imports the engine alone. What it needs from a module is a contract in the engine that the module binds; only the test kit in src/engine/testing may import modules.",
+        "skill": "python/fix-at-the-source"
+    }
+}
