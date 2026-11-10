@@ -1,4 +1,5 @@
 import argparse
+import faulthandler
 import math
 import os
 import resource
@@ -186,6 +187,7 @@ def main(argv: list[str]) -> int:
     files.log_line(f"listening on {files.socket}")
     if threading.current_thread() is threading.main_thread():
         signal.signal(signal.SIGTERM, lambda signal_number, frame: server.request_stop())
+        faulthandler.register(signal.SIGUSR1, file=home.stacks_file.open("a"), all_threads=True)
     for starting_round in (JournalRound(home, "code sync", CodeSyncWork(), opened_container),JournalRound(home, "booting", BootingWork())):
         try:
             starting_round.run()

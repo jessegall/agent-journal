@@ -117,6 +117,10 @@ class JournalHome:
         return self.folder / "modules"
 
     @property
+    def stacks_file(self) -> Path:
+        return self.folder / "runtime" / "stacks.log"
+
+    @property
     def status_folder(self) -> Path:
         return self.folder / "runtime" / "status"
 
