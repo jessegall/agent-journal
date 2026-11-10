@@ -85,7 +85,7 @@ def test_a_replacement_closes_the_old_row_with_its_reason_and_opens_the_new_one(
     sessions, store = sessions_with_store()
     sessions.started(agent("s-1"), CONTEXT)
     sessions.replaced(agent("s-2", "codex"), CACHE_PASSED, CONTEXT)
-    assert [(row.session, row.program, bool(row.ended_at), row.end_reason) for row in sessions.history(4, 50)] == [("s-1", "claude", True, "cache_passed"), ("s-2", "codex", False, "")]
+    assert [(row.session, row.program, bool(row.ended_at), row.end_reason) for row in sessions.newest_sessions(4, 50)] == [("s-2", "codex", False, ""), ("s-1", "claude", True, "cache_passed")]
     assert sessions.current(4).session == "s-2"
 
 

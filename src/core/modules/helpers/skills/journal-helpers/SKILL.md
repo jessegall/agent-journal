@@ -32,6 +32,8 @@ dispatch`, and work that writes goes to one or stays with you.
 - `journal helper send <number> --steer "<text>"` adds to a busy helper's current job. Without `--steer`, a new job for a
   busy helper is refused. Wait for its report when the work is separate.
 - `journal helper stop <number>` stops its program and ends its job, keeping the agent available for reuse.
+- `journal agent sessions <number>` lists the sessions an agent ran under, newest first, each with its program, model,
+  start, end and the reason it ended.
 - `journal agent retire <number> --reason "<why>"` permanently retires a stopped helper. It keeps its record and transcript,
   but cannot receive another job or resume. Stop a running helper before retiring it; a report alone is not retirement.
 - Its report comes to you as a line naming a message to read with `journal message read <n>`.

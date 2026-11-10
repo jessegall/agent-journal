@@ -100,8 +100,8 @@ def test_agent_sessions_lists_each_session_with_its_program_start_end_and_the_re
     story.hook("s-3", HookSamples.session_start())
     rows = json.loads(story.run("agent sessions 1 --environment main --json", actor=story.user).output_text)["rows"]
     story.expect_rows([(row["session"], row["program"], row["end_reason"]) for row in rows]
-                      == [("s-1", "claude", "replaced_by_person"), ("s-2", "codex", "replaced_by_person"), ("s-3", "claude", None)], detail=str(rows))
-    story.expect_rows(all(row["started_at"] for row in rows), [bool(row["ended_at"]) for row in rows] == [True, True, False], all("model" in row for row in rows))
+                      == [("s-3", "claude", None), ("s-2", "codex", "replaced_by_person"), ("s-1", "claude", "replaced_by_person")], detail=str(rows))
+    story.expect_rows(all(row["started_at"] for row in rows), [bool(row["ended_at"]) for row in rows] == [False, True, True], all("model" in row for row in rows))
 
 
 def test_a_late_hook_from_the_old_session_of_a_helper_is_answered_replaced_and_makes_no_agent(cold_helper):

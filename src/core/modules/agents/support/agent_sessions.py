@@ -59,9 +59,9 @@ class AgentSessions:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             return len(self.queries.query(AgentSession).filter(session_agent_id=session_agent_id).descending("id").page(1, 2).rows) - 1
 
-    def history(self, session_agent_id: int, limit: int) -> list[AgentSession]:
+    def newest_sessions(self, session_agent_id: int, limit: int) -> list[AgentSession]:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            return list(self.queries.query(AgentSession).filter(session_agent_id=session_agent_id).oldest().page(1, limit).rows)
+            return list(self.queries.query(AgentSession).filter(session_agent_id=session_agent_id).descending("id").page(1, limit).rows)
 
     def main_sessions(self, program: str) -> tuple[str, ...]:
         main_ids = MainAgentFinder.newest_ids(self.queries, NEWEST_ROWS)
