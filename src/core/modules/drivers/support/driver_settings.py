@@ -26,3 +26,4 @@ DRIVERS_SETTINGS = [
                  any_key=SettingValue("*", "Allowed", "Whether this essential rule may be switched off.", SettingType.FLAG, default=False, scope=SettingScope.PROJECT, person_set=True)),
 ]
 SKIPS_NEED_APPROVAL = "journal.core.helpers.skips-need-approval"
+AUTOMATIC_APPROVAL = "journal.core.helpers.accept-every-approval"
