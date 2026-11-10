@@ -61,6 +61,9 @@ An empty score means nobody scored it; only a route that needs a score stops dis
 When your task closes, the journal starts the next one: a critical task first, then the tasks of a started plan, then
 the most urgent open task. With other tasks still in hand it starts a critical task if one is open, and otherwise takes you back to one of them.
 
+`journal task focus <n>` makes one of your started tasks the one you work on now, so reminders and the status name it;
+`journal task focus` reads it and `--clear` makes it the one started last again. Starting a task makes that one the task in hand.
+
 `journal task next <n>` makes that open task the one you take next, before anything else; a second choice replaces the first. A main agent names another agent with `--agent <agent>`.
 
 ## Waiting

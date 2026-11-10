@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.model.environment_scoped import EnvironmentScoped
@@ -37,6 +37,7 @@ class Task(EnvironmentScoped, Model, StateHolder):
     reason: str = ""
     outcome: str = ""
     started_at: Timestamp | None = None
+    focused_at: Timestamp | None = None
     closed_at: Timestamp | None = None
     delegated_to: int | None = None
     independence_reason: str = ""
@@ -47,6 +48,12 @@ class Task(EnvironmentScoped, Model, StateHolder):
     def start(self, timestamp: Timestamp, actor: Actor) -> "Task":
         delegate_id = actor.id if self.delegated_to is None and actor.type is ActorType.AGENT else self.delegated_to
         return self.moved(TaskLifecycle.start, holder_id=actor.id, started_at=timestamp, delegated_to=delegate_id)
+
+    def focused(self, timestamp: Timestamp | None) -> "Task":
+        return replace(self, focused_at=timestamp)
+
+    def current_at(self) -> Timestamp:
+        return max(stamp for stamp in (self.creation_timestamp(), self.started_at, self.focused_at) if stamp is not None)
 
     def close(self, timestamp: Timestamp, actor: Actor, outcome: str) -> "Task":
         return self.moved(TaskLifecycle.close, outcome=outcome, closed_at=timestamp, holder_id=None)

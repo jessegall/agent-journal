@@ -33,7 +33,7 @@ class TaskQuery(Query[Task]):
         self.kept = kept
 
     def started_tasks(self, agent_id: int) -> tuple[Task, ...]:
-        return self.kept.read(self.table.name, lambda: tuple(self.holder(agent_id).started().descending("started_at").all_rows()),
+        return self.kept.read(self.table.name, lambda: self.newest_current(self.holder(agent_id).started().all_rows()),
                               "holder_id = ? AND state = ?", [agent_id, TaskState.STARTED], name="tasks.current_tasks")
 
     def queued_tasks(self, agent_id: int) -> tuple[Task, ...]:
@@ -50,7 +50,7 @@ class TaskQuery(Query[Task]):
         started = [row for row in present if row.state is TaskState.STARTED]
         queued = [row for row in present if row.state is TaskState.OPEN]
         def with_started(tasks: tuple[Task, ...]) -> tuple[Task, ...]:
-            return tuple(sorted([row for row in tasks if row.id != task.id] + started, key=lambda row: row.started_at or row.creation_timestamp(), reverse=True))
+            return self.newest_current([row for row in tasks if row.id != task.id] + started)
 
         def with_queued(tasks: tuple[Task, ...]) -> tuple[Task, ...]:
             return tuple(sorted([row for row in tasks if row.id != task.id] + queued, key=lambda row: row.id))
@@ -59,6 +59,10 @@ class TaskQuery(Query[Task]):
             self.kept.update(self.table.name, with_started, "holder_id = ? AND state = ?", [task.holder_id, TaskState.STARTED], name="tasks.current_tasks")
         if task.delegated_to is not None:
             self.kept.update(self.table.name, with_queued, "delegated_to = ? AND state = ?", [task.delegated_to, TaskState.OPEN], name="tasks.queued_tasks")
+
+    @staticmethod
+    def newest_current(tasks: Sequence[Task]) -> tuple[Task, ...]:
+        return tuple(sorted(tasks, key=Task.current_at, reverse=True))
 
     def unclosed(self) -> Self:
         return self.matching(IsNull("closed_at"))
