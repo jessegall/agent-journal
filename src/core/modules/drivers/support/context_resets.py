@@ -2,9 +2,12 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 
+RECENT_STARTS = 50
+
 
 class ContextResets:
-    """When an agent's context window was last emptied: its newest compaction, or the newest clear."""
+    """When an agent's context window was last emptied: its newest compaction, or the newest clear among its
+    last 50 session starts."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -17,7 +20,7 @@ class ContextResets:
         return self.created_text(call)
 
     def last_clear(self, agent_id: int) -> str:
-        starts = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.SESSION_START).descending("id").all_rows()
+        starts = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.SESSION_START).descending("id").limited(RECENT_STARTS)
         return self.created_text(next((start for start in starts if start.is_clear_start), None))
 
     @staticmethod

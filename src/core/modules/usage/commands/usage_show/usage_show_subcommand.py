@@ -25,6 +25,7 @@ from core.modules.usage.support.status_files import StatusFiles
 from core.modules.agents.queries.agent_query import AgentQuery
 
 RECENT_COMPACTION_CALLS = 50
+ENDED_HELPERS_COUNTED = 50
 
 
 class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
@@ -59,7 +60,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
     @staticmethod
     def ended_helpers(agents: Query[Agent], opened: tuple[Agent, ...]) -> tuple[Agent, ...]:
         helpers = agents.filter(role=HelperRole.HELPER).matching(Greater("ended_at", "")).matching(Among("parent_id", tuple(agent.id for agent in opened))).matching(Excluding(Among("id", tuple(agent.id for agent in opened))))
-        return tuple(helpers.oldest().all_rows())
+        return tuple(helpers.newest().limited(ENDED_HELPERS_COUNTED)[::-1])
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, EnvironmentUsage):

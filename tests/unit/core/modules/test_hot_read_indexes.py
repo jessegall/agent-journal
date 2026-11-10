@@ -30,7 +30,7 @@ def database(tmp_path):
     (Statement("SELECT * FROM phones WHERE state = ? AND notice_waiting = ?", ("paired", 0)), "phones_state_notice"),
     (Statement("SELECT * FROM reviewers WHERE environment_id = ? AND state = ?", (1, "idle")), "reviewers_environment_state"),
     (Statement("SELECT count(*) FROM memories"), "memories_environment_agent_weight"),
-    (Statement("SELECT * FROM reminders WHERE environment_id = ? AND ended_at IS NULL ORDER BY id", [1]), "reminders_open_environment"),
+    (Statement("SELECT * FROM reminders WHERE environment_id = ? AND ended_at IS NULL ORDER BY id", [1]), "reminders_environment"),
     (Statement("SELECT * FROM questions WHERE session_agent_id = ? AND state = ? ORDER BY id", (1, "answered")), "questions_agent_state"),
     (Statement("SELECT * FROM dumps WHERE closed_at IS NULL ORDER BY id LIMIT 1"), "dumps_closed_at"),
     (Statement("SELECT * FROM messages WHERE parent_id = ? AND type = ? LIMIT 1", (1, "agent")), "messages_parent_type"),
