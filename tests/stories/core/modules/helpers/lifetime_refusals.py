@@ -105,14 +105,14 @@ def helper_actor(story) -> Actor:
 
 def test_a_worker_that_sets_the_merger_to_continue_is_refused_and_no_profile_file_changes(rotating):
     files = profile_files(rotating)
-    rotating.expect_refusal(MERGER_CONTINUE, "only a person or the main agent saves a profile", actor=worker_actor(rotating))
+    rotating.expect_refusal(MERGER_CONTINUE, "cannot save a profile", actor=worker_actor(rotating))
     rotating.expect_text("profile show journal-merger --json", '"occupant": "each-launch"', actor=rotating.user)
     rotating.expect_rows(profile_files(rotating) == files)
 
 
 def test_a_helper_that_gives_the_worker_profile_an_occupant_is_refused_and_no_profile_file_changes(rotating):
     files = profile_files(rotating)
-    rotating.expect_refusal(WORKER_ROTATION, "only a person or the main agent saves a profile", actor=helper_actor(rotating))
+    rotating.expect_refusal(WORKER_ROTATION, "cannot save a profile", actor=helper_actor(rotating))
     rotating.expect_absent("profile show journal-worker --json", '"occupant"', actor=rotating.user)
     rotating.expect_rows(profile_files(rotating) == files)
 

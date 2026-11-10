@@ -13,6 +13,7 @@ from engine.provider.providers import Providers
 from engine.errors.refusal import Refusal
 from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.skills.commands.save_profile.save_profile import SaveProfile
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_format import ProfileFormat
@@ -21,14 +22,15 @@ from core.modules.skills.support.profile_skills import ProfileSkills
 
 
 class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
-    """Saves a personal profile or changes to a registered profile."""
+    """Saves a personal profile or changes to a registered profile. Only a person or the main agent may: a
+    helper or a worker is refused before anything is read or written."""
 
     cli_name = "profile"
     name = "save"
     outward = True
 
-    def __init__(self, files: ProfileFiles, providers: Providers, skills: ProfileSkills, types: HelperTypeBook) -> None:
-        self.files, self.providers, self.skills, self.types = files, providers, skills, types
+    def __init__(self, files: ProfileFiles, providers: Providers, skills: ProfileSkills, types: HelperTypeBook, agents: AgentRows) -> None:
+        self.files, self.providers, self.skills, self.types, self.agents = files, providers, skills, types, agents
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("profile_name")
@@ -50,6 +52,7 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
         parser.add_argument("--program-if-possible", dest="preferred_program", action=BooleanOptionalAction, default=None, help="start on the other program when this one cannot start")
 
     def command(self, arguments: Namespace, caller: Caller) -> SaveProfile:
+        self.agents.require_main(caller.actor, "save a profile")
         if arguments.reuse is not None:
             raise Refusal(KEPT_AGENTS_TEXT, "remove --reuse: --occupant sets when a session is replaced")
         if self.files.has(arguments.profile_name):
