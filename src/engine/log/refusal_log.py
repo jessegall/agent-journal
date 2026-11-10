@@ -7,7 +7,7 @@ from core.base.database.database import Database
 from core.base.guard.guard_refusal import GuardRefusal
 from engine.row.page import Page
 from engine.errors.refusal import Refusal
-from core.base.recorded_refusal import RecordedRefusal
+from engine.log.recorded_refusal import RecordedRefusal
 from core.base.query.conditions.prefix import Prefix
 from core.base.query.select import Select
 

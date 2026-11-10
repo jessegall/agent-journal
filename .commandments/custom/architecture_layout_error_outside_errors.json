@@ -136,9 +136,6 @@
                 "file": "src/core/base/query/unknown_column_error.py"
             },
             {
-                "file": "src/core/base/recorded_refusal.py"
-            },
-            {
                 "file": "src/core/base/registry/lazy_load_error.py"
             },
             {

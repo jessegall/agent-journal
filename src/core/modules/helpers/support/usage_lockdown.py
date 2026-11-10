@@ -1,6 +1,6 @@
 from core.base.driver.lockdown import Lockdown
 from core.base.driver.program_lockdown import ProgramLockdown
-from core.base.system_log_writer import SystemLogWriter
+from engine.log.system_log_writer import SystemLogWriter
 from core.modules.helpers.support.program_states import ProgramStates
 from engine.enums.log_level import LogLevel
 

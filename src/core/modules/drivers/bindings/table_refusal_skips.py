@@ -8,7 +8,7 @@ from core.base.driver.refusal_skips import RefusalSkips
 from core.base.guard.guards import LIFECYCLE_GUARD
 from core.base.query.conditions.has_value import HasValue
 from core.base.query.queries import Queries
-from core.base.refusal_log import RefusalLog
+from engine.log.refusal_log import RefusalLog
 from core.base.registry.registry import Registry
 from core.modules.drivers.commands.skip_refusal.skip_refusal import SkipRefusal
 from core.modules.drivers.commands.use_refusal_skip.use_refusal_skip import UseRefusalSkip

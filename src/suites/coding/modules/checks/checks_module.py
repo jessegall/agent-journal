@@ -14,8 +14,8 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_extension import WindowExtension
 from core.base.viewer.window_icon import WindowIcon
-from core.base.periodic_checks import PeriodicChecks
-from core.base.step_checks import StepChecks
+from engine.check.periodic_checks import PeriodicChecks
+from engine.check.step_checks import StepChecks
 from suites.coding.modules.checks.support.passed_checks import PassedChecks
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace

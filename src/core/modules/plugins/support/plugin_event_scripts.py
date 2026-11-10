@@ -9,7 +9,7 @@ from core.base.cli.caller_stream import CallerStream
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from engine.enums.log_level import LogLevel
-from core.base.system_log_writer import SystemLogWriter
+from engine.log.system_log_writer import SystemLogWriter
 from core.base.model.event_form import EventForm
 from core.base.model.model import Model
 from core.base.registry.registry import Registry

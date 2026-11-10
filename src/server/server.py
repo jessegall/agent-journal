@@ -22,7 +22,7 @@ from core.base.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel
 from engine.errors.refusal import Refusal
-from core.base.periodic_checks import PeriodicChecks
+from engine.check.periodic_checks import PeriodicChecks
 from core.base.performance.performance_state import PerformanceState
 from core.base.ticker.tick_handler import TickHandler
 from core.base.ticker.tick_interval import TickInterval

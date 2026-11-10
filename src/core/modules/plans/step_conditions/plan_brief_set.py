@@ -1,5 +1,5 @@
 from core.base.listener.event_rows import EventRows
-from core.base.step_condition import StepCondition
+from engine.check.step_condition import StepCondition
 from core.modules.plans.models.plan import Plan
 
 

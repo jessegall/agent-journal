@@ -25,7 +25,7 @@ from install.install_journal import InstallJournal
 from install.restore_version_four import RestoreVersionFour
 from install.stray_version_four_error import StrayVersionFourError
 from install.server_wont_stop_error import ServerWontStopError
-from core.base.unix_connection import UnixConnection
+from engine.connection.unix_connection import UnixConnection
 from install.upgrade_outcome import UpgradeOutcome
 from install.upgrade_report_file import UpgradeReportFile
 from install.upgrade_text import UpgradeText

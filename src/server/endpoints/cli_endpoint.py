@@ -2,7 +2,7 @@ from typing import TextIO
 from core.base.cli.line_run import LineRun, ignore_completed
 from collections.abc import Callable
 from engine.container.container import Container
-from core.base.request_queue import RequestQueue
+from engine.request.request_queue import RequestQueue
 from core.base.database.reported_findings import ReportedFindings
 from engine.journal.journal_home import JournalHome
 from core.base.listener.commit_listener_runner import CommitListenerRunner

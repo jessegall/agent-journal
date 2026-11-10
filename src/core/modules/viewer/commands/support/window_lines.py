@@ -1,4 +1,4 @@
-from core.base.exception_sink import ExceptionSink
+from engine.log.exception_sink import ExceptionSink
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.cli.line_parser import LineParser

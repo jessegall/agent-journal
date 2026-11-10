@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.base.exception_sink import ExceptionSink
+from engine.log.exception_sink import ExceptionSink
 from core.modules.developer.support.developer_settings import TOOLS_SETTING
 from tests.stories.core.support.fixtures import UserJoined
 

@@ -3,7 +3,7 @@ from core.base.driver.rule_timings import RuleTimings
 from core.base.driver.refusal_skips import RefusalSkips
 from tests.unit.core.base.driver.nudge_sample import sample_nudge
 from tests.unit.core.base.scope_samples import empty_database_scopes
-from core.base.exception_sink import ExceptionSink
+from engine.log.exception_sink import ExceptionSink
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -22,8 +22,8 @@ from core.base.driver.layers import Layers
 from core.base.driver.open_row import OpenRow
 from core.base.driver.overlay import Overlay
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.error_log import ErrorLog
-from core.base.system_log_writer import SystemLogWriter
+from engine.log.error_log import ErrorLog
+from engine.log.system_log_writer import SystemLogWriter
 from core.base.guard.guard_switches import GuardSwitches
 from engine.journal.journal_home import JournalHome
 from core.base.dotted_path.dotted_path import DottedPath

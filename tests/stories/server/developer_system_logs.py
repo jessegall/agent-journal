@@ -3,10 +3,10 @@ import sqlite3
 
 import pytest
 
-from core.base.error_log import ErrorLog
+from engine.log.error_log import ErrorLog
 from core.base.file_access import FileAccess
 from engine.enums.log_level import LogLevel
-from core.base.system_log_writer import SystemLogWriter
+from engine.log.system_log_writer import SystemLogWriter
 from core.modules.profiles.support.profile_folder_move import ProfileFolderMove
 from core.testing.hook_samples import HookSamples
 from server.request_log import RequestLog

@@ -38,7 +38,7 @@ from core.base.setting.setting_node import SettingNode
 from core.base.ticker.tick_handler import TickHandler
 from core.base.tunnel.tunnel import Tunnel
 from core.base.driver.block_condition import BlockCondition
-from core.base.step_condition import StepCondition
+from engine.check.step_condition import StepCondition
 from core.base.performance.performance_tool import PerformanceTool
 from core.base.template.template_declaration import TemplateDeclaration
 from core.base.viewer.button_declaration import ButtonDeclaration

@@ -3,7 +3,7 @@ from core.base.database.points import Points
 from core.base.driver.hook_event import HookEvent
 from engine.enums.log_level import LogLevel
 from core.base.performance.performance_tool import PerformanceTool
-from core.base.system_log_writer import SystemLogWriter
+from engine.log.system_log_writer import SystemLogWriter
 from core.modules.developer.support.hook_numbers_file import HookNumbersFile
 
 HOOK_LIMIT_POINTS = 50

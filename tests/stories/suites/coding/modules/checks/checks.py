@@ -3,7 +3,7 @@ from core.testing.story_fixture import StoryFixture
 import json
 from datetime import timedelta
 
-from core.base.periodic_checks import PeriodicChecks
+from engine.check.periodic_checks import PeriodicChecks
 from core.base.registry.registry import Registry
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined

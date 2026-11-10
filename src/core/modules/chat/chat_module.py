@@ -3,7 +3,7 @@ from core.modules.chat.migrations.m005_chat_mark_agent_index import ChatMarkAgen
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.chat.support.chat_marks import CHAT_MARKS
-from core.base.exception_sink import ExceptionSink
+from engine.log.exception_sink import ExceptionSink
 from core.modules.chat.commands.record_journal_exception.record_journal_exception_handler import RecordJournalExceptionHandler
 from core.modules.chat.listeners.journal_exception_mark_listener import JournalExceptionMarkListener
 from core.modules.chat.listeners.upgrade_mark_listener import UpgradeMarkListener

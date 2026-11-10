@@ -28,7 +28,7 @@ from core.base.command.request_user_approval import RequestUserApproval
 from core.base.command.server_stopping_error import ServerStoppingError
 from engine.errors.deadline_passed_error import DeadlinePassedError
 from core.base.environment_names import EnvironmentNames
-from core.base.error_log import ErrorLog
+from engine.log.error_log import ErrorLog
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.model.tables import Tables
 from core.base.module.code_fingerprint import CodeFingerprint
@@ -39,7 +39,7 @@ from core.base.driver.refusal_skips import RefusalSkips
 from engine.errors.read_limit_error import ReadLimitError
 from core.base.registry.stale_registry_error import StaleRegistryError
 from engine.errors.refusal import Refusal
-from core.base.refusal_log import RefusalLog
+from engine.log.refusal_log import RefusalLog
 from core.base.scope.scopes import Scopes
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 

@@ -1,4 +1,4 @@
-from core.base.refusal_log import RefusalLog
+from engine.log.refusal_log import RefusalLog
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.support.process_settings import ProcessSettings

@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.refusal_log import RefusalLog
-from core.base.recorded_refusal import RecordedRefusal
+from engine.log.refusal_log import RefusalLog
+from engine.log.recorded_refusal import RecordedRefusal
 
 
 class RefusalShowSubcommand(ReadSubcommand[RecordedRefusal]):

@@ -6,8 +6,8 @@ from engine.time.clock import Clock
 from core.base.command.bus import Bus
 from core.base.driver.hook_event import HookEvent
 from engine.enums.log_level import LogLevel
-from core.base.request_values import RequestValues
-from core.base.system_log_writer import SystemLogWriter
+from engine.request.request_values import RequestValues
+from engine.log.system_log_writer import SystemLogWriter
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute

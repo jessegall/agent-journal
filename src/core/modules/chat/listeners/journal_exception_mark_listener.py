@@ -1,6 +1,6 @@
 from core.base.change.logged_event import LoggedEvent
 from engine.time.clock import Clock
-from core.base.exception_sink import CLOCK_TICK_SOURCE
+from engine.log.exception_sink import CLOCK_TICK_SOURCE
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries

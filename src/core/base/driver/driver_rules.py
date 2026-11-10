@@ -20,9 +20,9 @@ from core.base.driver.rule_answers import RuleAnswers
 from core.base.driver.rule_outcome import RuleOutcome
 from core.base.driver.rule_timings import RuleTimings
 from core.base.driver.walk import Walk
-from core.base.error_log import ErrorLog
+from engine.log.error_log import ErrorLog
 from engine.enums.log_level import LogLevel
-from core.base.system_log_writer import SystemLogWriter
+from engine.log.system_log_writer import SystemLogWriter
 from core.base.guard.guard_switches import GuardSwitches
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.registry import Registry

@@ -7,7 +7,7 @@ from engine.version.code_versions import CodeVersions
 from core.base.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from core.base.unix_connection import UnixConnection
+from engine.connection.unix_connection import UnixConnection
 from engine.enums.log_level import LogLevel
 from core.base.serving.update_steps import FAILED, FINISHED, HANDOVER, PROOF, SERVING, UpdateSteps
 from core.base.serving.server_files import ServerFiles

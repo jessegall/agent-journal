@@ -9,7 +9,7 @@ from core.base.child_process import ChildProcess
 from engine.time.clock import Clock
 from core.base.leftover_process import LeftoverProcess
 from core.base.plugin_script_processes import PluginScriptProcesses
-from core.base.system_log_writer import SystemLogWriter
+from engine.log.system_log_writer import SystemLogWriter
 from engine.enums.log_level import LogLevel
 from core.modules.plugins.models.enums.service_restart import ServiceRestart
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins

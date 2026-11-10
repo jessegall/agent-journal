@@ -64,22 +64,13 @@
                 "file": "src/core/base/conflict_files.py"
             },
             {
-                "file": "src/core/base/connection_probe.py"
-            },
-            {
                 "file": "src/core/base/declaration_names.py"
             },
             {
                 "file": "src/core/base/environment_names.py"
             },
             {
-                "file": "src/core/base/error_log.py"
-            },
-            {
                 "file": "src/core/base/event_listeners.py"
-            },
-            {
-                "file": "src/core/base/exception_sink.py"
             },
             {
                 "file": "src/core/base/file_access.py"
@@ -106,22 +97,10 @@
                 "file": "src/core/base/helper_type_book.py"
             },
             {
-                "file": "src/core/base/instruction_import.py"
-            },
-            {
-                "file": "src/core/base/instruction_imports.py"
-            },
-            {
-                "file": "src/core/base/internet_connection.py"
-            },
-            {
                 "file": "src/core/base/kept_file_text.py"
             },
             {
                 "file": "src/core/base/leftover_process.py"
-            },
-            {
-                "file": "src/core/base/periodic_checks.py"
             },
             {
                 "file": "src/core/base/plugin_script_process.py"
@@ -136,24 +115,6 @@
                 "file": "src/core/base/project_reads.py"
             },
             {
-                "file": "src/core/base/recorded_refusal.py"
-            },
-            {
-                "file": "src/core/base/refusal_log.py"
-            },
-            {
-                "file": "src/core/base/request_queue.py"
-            },
-            {
-                "file": "src/core/base/request_queue_entry.py"
-            },
-            {
-                "file": "src/core/base/request_queue_status.py"
-            },
-            {
-                "file": "src/core/base/request_values.py"
-            },
-            {
                 "file": "src/core/base/rotated_file.py"
             },
             {
@@ -164,18 +125,6 @@
             },
             {
                 "file": "src/core/base/shell_sandbox.py"
-            },
-            {
-                "file": "src/core/base/step_checks.py"
-            },
-            {
-                "file": "src/core/base/step_condition.py"
-            },
-            {
-                "file": "src/core/base/system_log_writer.py"
-            },
-            {
-                "file": "src/core/base/unix_connection.py"
             }
         ]
     },

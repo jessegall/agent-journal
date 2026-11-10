@@ -3,7 +3,7 @@ import logging
 from core.base.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel
-from core.base.system_log_writer import SystemLogWriter
+from engine.log.system_log_writer import SystemLogWriter
 
 
 class NoteLog:

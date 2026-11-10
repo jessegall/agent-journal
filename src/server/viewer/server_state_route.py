@@ -1,6 +1,6 @@
 from engine.time.clock import Clock
 from engine.journal.journal_home import JournalHome
-from core.base.internet_connection import InternetConnection
+from engine.connection.internet_connection import InternetConnection
 from core.base.server_restart_state import ServerRestartState
 from server.viewer.server_state import ServerState
 

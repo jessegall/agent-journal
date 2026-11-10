@@ -6,7 +6,7 @@ from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.base.module.step_conditions import StepConditions
-from core.base.step_checks import StepChecks
+from engine.check.step_checks import StepChecks
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun

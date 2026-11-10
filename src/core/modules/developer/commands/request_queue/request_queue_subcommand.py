@@ -3,9 +3,9 @@ from dataclasses import asdict
 
 from core.base.caller.caller import Caller
 from engine.errors.refusal import Refusal
-from core.base.request_queue import RequestQueue
-from core.base.request_queue_entry import RequestQueueEntry
-from core.base.request_queue_status import RequestQueueStatus
+from engine.request.request_queue import RequestQueue
+from engine.request.request_queue_entry import RequestQueueEntry
+from engine.request.request_queue_status import RequestQueueStatus
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.support.agent_rows import AgentRows

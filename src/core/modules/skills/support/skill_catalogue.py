@@ -7,7 +7,7 @@ from engine.journal.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.base.registry.registry import Registry
 from core.base.registry.skill_entry import SkillEntry
-from core.base.request_values import RequestValues
+from engine.request.request_values import RequestValues
 from core.base.skill.skill_declaration import SKILL_FILE
 from core.base.skill.skill_digest import SkillDigest
 from core.base.skill.skill_contents import FRONT_MATTER_MARK

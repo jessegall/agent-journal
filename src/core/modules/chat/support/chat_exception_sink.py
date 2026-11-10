@@ -1,7 +1,7 @@
 from engine.time.clock import Clock
 from core.base.command.bus import Bus
 from core.base.database.database import Database
-from core.base.exception_sink import CLOCK_TICK_SOURCE, ExceptionSink
+from engine.log.exception_sink import CLOCK_TICK_SOURCE, ExceptionSink
 from core.base.module.module_actors import ModuleActors
 from engine.time.timestamp import Timestamp
 from core.modules.chat.commands.record_journal_exception.record_journal_exception import RecordJournalException

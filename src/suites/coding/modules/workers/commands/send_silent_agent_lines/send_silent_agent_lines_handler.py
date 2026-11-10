@@ -4,7 +4,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.enums.connection_status import ConnectionStatus
-from core.base.internet_connection import InternetConnection
+from engine.connection.internet_connection import InternetConnection
 from engine.journal.journal_home import JournalHome
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull

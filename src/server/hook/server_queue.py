@@ -4,9 +4,9 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from time import monotonic
 
-from core.base.request_queue import RequestQueue
-from core.base.request_queue_entry import RequestQueueEntry
-from core.base.request_queue_status import RequestQueueStatus
+from engine.request.request_queue import RequestQueue
+from engine.request.request_queue_entry import RequestQueueEntry
+from engine.request.request_queue_status import RequestQueueStatus
 from core.base.viewer.window_priority import WindowPriority
 from server.hook.hook_database_busy_error import HookDatabaseBusyError
 from server.hook.queue_priority import QueuePriority

@@ -81,7 +81,7 @@ class RecoveryCase:
 
 @pytest.fixture
 def recovery(new_story, monkeypatch):
-    from core.base.connection_probe import ConnectionProbe
+    from engine.connection.connection_probe import ConnectionProbe
 
     story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)

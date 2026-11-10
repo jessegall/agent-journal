@@ -35,8 +35,8 @@ from core.base.module.module import Module
 from core.base.model.tables import Tables
 from core.base.subcommand.output import Output
 from core.base.query.queries import Queries
-from core.base.refusal_log import RefusalLog
-from core.base.recorded_refusal import RecordedRefusal
+from engine.log.refusal_log import RefusalLog
+from engine.log.recorded_refusal import RecordedRefusal
 from core.base.caller.caller import Caller
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.overview.support.overview_first import OverviewFirst

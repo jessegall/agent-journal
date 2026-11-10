@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from core.base.change.created import Created
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
-from core.base.exception_sink import CLOCK_TICK_SOURCE
+from engine.log.exception_sink import CLOCK_TICK_SOURCE
 from core.base.listener.commit_listener import CommitListener
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows

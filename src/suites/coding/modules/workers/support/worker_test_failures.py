@@ -6,7 +6,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from engine.enums.log_level import LogLevel
 from core.base.repository.repository import Repository
-from core.base.system_log_writer import SystemLogWriter
+from engine.log.system_log_writer import SystemLogWriter
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.models.enums.test_failure_source import TestFailureSource
 from suites.coding.modules.workers.models.worker_test_failure import WorkerTestFailure

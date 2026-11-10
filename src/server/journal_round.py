@@ -3,10 +3,10 @@ from contextlib import nullcontext
 
 from engine.time.clock import Clock
 from engine.container.container import Container
-from core.base.exception_sink import ExceptionSink
+from engine.log.exception_sink import ExceptionSink
 from core.base.database.database import Database
-from core.base.error_log import ErrorLog
-from core.base.system_log_writer import SystemLogWriter
+from engine.log.error_log import ErrorLog
+from engine.log.system_log_writer import SystemLogWriter
 from engine.container.journal_container import synced_database_container
 from engine.journal.journal_home import JournalHome
 from core.base.listener.round_yield import RoundYield

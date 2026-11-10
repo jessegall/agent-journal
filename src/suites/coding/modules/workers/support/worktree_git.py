@@ -11,7 +11,7 @@ import shutil
 from pathlib import Path, PurePosixPath
 
 from core.base.conflict_files import ConflictFiles
-from core.base.instruction_imports import INSTRUCTION_FILES
+from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from engine.errors.refusal import Refusal
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.worktree import Worktree

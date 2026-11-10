@@ -1,5 +1,5 @@
 from engine.errors.refusal import Refusal
-from core.base.request_queue_status import RequestQueueStatus
+from engine.request.request_queue_status import RequestQueueStatus
 
 
 class RequestQueue:

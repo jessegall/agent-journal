@@ -2,7 +2,7 @@ import shutil
 
 import pytest
 
-from core.base.instruction_imports import INSTRUCTION_FILES
+from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.helpers.support.helper_start_folder import HelperStartFolder

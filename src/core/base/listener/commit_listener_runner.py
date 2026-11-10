@@ -7,10 +7,10 @@ from core.base.change.changed import Changed
 from core.base.change.event_type import EventType
 from core.base.change.logged_event import LoggedEvent
 from engine.container.container import Container
-from core.base.error_log import ErrorLog
+from engine.log.error_log import ErrorLog
 from engine.enums.log_level import LogLevel
-from core.base.system_log_writer import SystemLogWriter
-from core.base.exception_sink import ExceptionSink
+from engine.log.system_log_writer import SystemLogWriter
+from engine.log.exception_sink import ExceptionSink
 from core.base.listener.round_yield import RoundYield
 from core.base.listener.commit_listener import is_commit_listener_class
 from core.base.database.listener_cursor_table import ListenerCursorTable

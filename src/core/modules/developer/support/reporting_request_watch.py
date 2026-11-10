@@ -8,7 +8,7 @@ from core.base.database.repeated_calls_error import RepeatedCallsError
 from core.base.database.repeated_finding import RepeatedFinding
 from core.base.database.reported_findings import ReportedFindings
 from core.base.database.request_watch import RequestWatch
-from core.base.error_log import ErrorLog
+from engine.log.error_log import ErrorLog
 from engine.errors.read_limit_error import ReadLimitError
 from core.base.registry.lazy_loading import LazyLoading
 from core.modules.developer.support.developer_settings import PREVENT_LAZY_LOADING_SETTING, READ_LIMIT_SETTING, REPEATED_WORK_SETTING

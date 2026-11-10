@@ -28,12 +28,6 @@
                 "file": "src/core/base/conflict_files.py"
             },
             {
-                "file": "src/core/base/connection_probe.py"
-            },
-            {
-                "file": "src/core/base/exception_sink.py"
-            },
-            {
                 "file": "src/core/base/file_access.py"
             },
             {
@@ -46,12 +40,6 @@
                 "file": "src/core/base/helper_type_book.py"
             },
             {
-                "file": "src/core/base/instruction_imports.py"
-            },
-            {
-                "file": "src/core/base/internet_connection.py"
-            },
-            {
                 "file": "src/core/base/leftover_process.py"
             },
             {
@@ -61,13 +49,7 @@
                 "file": "src/core/base/plugin_script_processes.py"
             },
             {
-                "file": "src/core/base/request_values.py"
-            },
-            {
                 "file": "src/core/base/server_restart_state.py"
-            },
-            {
-                "file": "src/core/base/system_log_writer.py"
             }
         ]
     },

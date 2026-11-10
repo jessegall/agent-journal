@@ -1,4 +1,4 @@
-from core.base.step_condition import StepCondition
+from engine.check.step_condition import StepCondition
 from core.modules.plans.support.plan_order import PlanOrder
 
 

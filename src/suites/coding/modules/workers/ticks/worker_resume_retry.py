@@ -1,5 +1,5 @@
-from core.base.connection_probe import ConnectionProbe
-from core.base.internet_connection import InternetConnection
+from engine.connection.connection_probe import ConnectionProbe
+from engine.connection.internet_connection import InternetConnection
 from engine.journal.journal_home import JournalHome
 from engine.time.clock import Clock
 from engine.actor.actor import Actor

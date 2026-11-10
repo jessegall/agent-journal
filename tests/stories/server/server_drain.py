@@ -1,6 +1,6 @@
 import threading
 
-from core.base.unix_connection import UnixConnection
+from engine.connection.unix_connection import UnixConnection
 from server.request_handler import RequestHandler
 from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.server.support.server_client import request_answer, running_server

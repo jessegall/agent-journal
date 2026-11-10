@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.request_queue_entry import RequestQueueEntry
+from engine.request.request_queue_entry import RequestQueueEntry
 
 
 @dataclass(frozen=True)

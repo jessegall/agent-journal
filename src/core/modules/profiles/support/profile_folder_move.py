@@ -7,7 +7,7 @@ from core.base.file_access import FileAccess
 from engine.enums.log_level import LogLevel
 from core.base.profile.agent_profile import AgentProfile
 from engine.errors.refusal import Refusal
-from core.base.system_log_writer import SystemLogWriter
+from engine.log.system_log_writer import SystemLogWriter
 from engine.text.text_digest import TextDigest
 from core.modules.profiles.support.profile_fields import ProfileFields
 from core.modules.profiles.support.profile_files import CLAUDE_FOLDER, CODEX_FOLDER, SHIPPED_PREFIX, ProfileFiles

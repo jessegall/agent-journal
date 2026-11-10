@@ -9,7 +9,7 @@ from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.base.system_log_writer import SystemLogWriter
+from engine.log.system_log_writer import SystemLogWriter
 from core.modules.agents.models.agent import Agent
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.drivers.commands.record_bypass_line.record_bypass_line import RecordBypassLine

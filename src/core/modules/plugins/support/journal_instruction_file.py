@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 from core.base.file_access import FileAccess
-from core.base.instruction_imports import IMPORT_LINE, INSTRUCTION_FILES, JOURNAL_FILE
+from engine.instruction.instruction_imports import IMPORT_LINE, INSTRUCTION_FILES, JOURNAL_FILE
 from engine.journal.journal_home import JournalHome
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.support.manifest_listener import ManifestListener

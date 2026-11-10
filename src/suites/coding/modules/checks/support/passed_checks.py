@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
-from core.base.step_checks import StepChecks
+from engine.check.step_checks import StepChecks
 from suites.coding.modules.checks.queries.check_query import CheckQuery
 
 

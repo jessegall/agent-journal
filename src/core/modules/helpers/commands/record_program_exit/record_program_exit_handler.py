@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
-from core.base.system_log_writer import SystemLogWriter
+from engine.log.system_log_writer import SystemLogWriter
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole

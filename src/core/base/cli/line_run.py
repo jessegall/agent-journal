@@ -22,7 +22,7 @@ from core.base.performance.route_cost_tool import RouteCostTool
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.caller.caller import Caller
 from engine.time.timing import Timing
-from core.base.request_queue import RequestQueue
+from engine.request.request_queue import RequestQueue
 
 
 def ignore_completed(container: Container, argv: list[str]) -> None:

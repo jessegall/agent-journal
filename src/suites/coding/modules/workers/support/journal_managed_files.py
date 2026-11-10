@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.instruction_imports import INSTRUCTION_FILES
+from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.support.worker_settings import WORKER_INSTRUCTION_FILES_SETTING
 from core.modules.settings.bindings.support.setting_values import SettingValues

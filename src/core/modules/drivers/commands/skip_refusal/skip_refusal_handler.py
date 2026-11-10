@@ -11,7 +11,7 @@ from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.has_value import HasValue
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.refusal_log import RefusalLog
+from engine.log.refusal_log import RefusalLog
 from core.base.registry.registry import Registry
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent

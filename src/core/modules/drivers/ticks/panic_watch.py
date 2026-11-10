@@ -7,7 +7,7 @@ from engine.journal.journal_home import JournalHome
 from core.base.module.module_actors import ModuleActors
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
-from core.base.system_log_writer import SystemLogWriter
+from engine.log.system_log_writer import SystemLogWriter
 from core.base.query.queries import Queries
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.drivers.support.driver_settings import MODULE_KEY

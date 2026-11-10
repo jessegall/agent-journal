@@ -8,7 +8,7 @@ from core.base.driver.command_category import CommandCategory
 from core.base.driver.tool_type import ToolType
 from core.base.guard.guard_refusal import GuardRefusal
 from engine.errors.refusal import Refusal
-from core.base.refusal_log import RefusalLog
+from engine.log.refusal_log import RefusalLog
 from core.base.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.processes.commands.start_process.start_process import PartSpec, StartProcess

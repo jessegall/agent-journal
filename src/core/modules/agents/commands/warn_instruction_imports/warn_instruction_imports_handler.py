@@ -2,7 +2,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.command.request_user_approval import RequestUserApproval
-from core.base.instruction_imports import InstructionImports
+from engine.instruction.instruction_imports import InstructionImports
 from engine.journal.journal_home import JournalHome
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.commands.remove_instruction_import.remove_instruction_import_handler import COMMAND_NAME_PARTS

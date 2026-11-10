@@ -8,7 +8,7 @@ from core.base.database.statement import Statement
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.registry import Registry
 from engine.errors.refusal import Refusal
-from core.base.refusal_log import RefusalLog
+from engine.log.refusal_log import RefusalLog
 from tests.unit.core.base.sample_container import sample_container
 from tests.unit.core.base.command.test_bus import BlockedItem, BlockedItemHandler
 

@@ -1,6 +1,6 @@
 from core.modules.agents.models.agent import Agent
 from core.base.command.bus import Bus
-from core.base.exception_sink import CLOCK_TICK_SOURCE, ExceptionSink
+from engine.log.exception_sink import CLOCK_TICK_SOURCE, ExceptionSink
 from core.base.performance.performance_tool import PerformanceTool
 from core.base.query.queries import Queries
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
