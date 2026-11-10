@@ -1,5 +1,10 @@
 @AGENTS.md
 
+## Architecture
+
+Read ARCHITECTURE.md before you add a file or a folder: it says which layer may use which, what each folder of a
+module holds, the one way to do each recurring thing, and the detector that guards each rule.
+
 ## Private data
 
 Never commit private data: no messages, transcripts, recordings, corpus lines, keys or files from a person's
