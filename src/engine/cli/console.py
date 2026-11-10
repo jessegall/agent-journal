@@ -143,7 +143,7 @@ class Console:
             return SUCCESS_CODE if exit_request.code == 0 else USAGE_CODE
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         self.scopes.check_environment(caller.actor, environment_id)
-        self.agent_numbers.replace_numbers(arguments, environment_id)
+        self.agent_numbers.replace_numbers(arguments, self.scopes.line_environment_id(caller.actor, environment_id))
         caller = replace(caller, environment_id=environment_id)
         try:
             return self.parsed_run(argv, subcommand, arguments, caller, output)
@@ -202,7 +202,7 @@ class Console:
             raise UsageError(f"journal {' '.join(argv)} does not parse: {captured_output.getvalue().strip()}") from None
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         self.scopes.check_environment(caller.actor, environment_id)
-        self.agent_numbers.replace_numbers(arguments, environment_id)
+        self.agent_numbers.replace_numbers(arguments, self.scopes.line_environment_id(caller.actor, environment_id))
         if not isinstance(subcommand, Subcommand):
             raise Refusal(f"journal {' '.join(argv[:2])} only reads, so it has no place in a transaction")
         command = subcommand.command(arguments, replace(caller, environment_id=environment_id))

@@ -73,6 +73,12 @@ class Scopes:
         if not self.actors.is_granted_test_environment(actor.id, environment_id):
             raise Refusal(f"agent {actor.id} works only in its own environment, environment {owner.environment_id}", "leave out --environment")
 
+    def line_environment_id(self, actor: Actor, environment_id: int | None) -> int | None:
+        if environment_id is not None or actor.type is not ActorType.AGENT:
+            return environment_id
+        owner = self.actors.row_owner(actor.id)
+        return None if owner is None else owner.environment_id
+
     def command_scope(self, disabled: WholeScopes, actor: Actor, environment_id: int | None = None) -> ContextManager[None]:
         if self.decided and not disabled and (environment_id is None or self.environment_id is not None):
             return nullcontext()
