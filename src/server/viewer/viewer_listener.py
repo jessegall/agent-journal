@@ -1,3 +1,4 @@
+from collections.abc import Callable
 import socket
 import time
 from http.server import HTTPServer
@@ -26,7 +27,7 @@ class ViewerListener(ViewerEndpoint, HTTPServer):
 
     request_queue_size = QUEUED_CONNECTIONS
 
-    def __init__(self, login: ViewerLogin, routes: ViewerRoutes, last_port: int = 0, port_wait_seconds: float = PORT_WAIT_SECONDS,
+    def __init__(self, login: ViewerLogin, routes: ViewerRoutes, tunnel_address: Callable[[], str | None], last_port: int = 0, port_wait_seconds: float = PORT_WAIT_SECONDS,
                  inherited_socket: socket.socket | None = None) -> None:
         deadline = time.monotonic() + port_wait_seconds
         while True:
@@ -38,7 +39,7 @@ class ViewerListener(ViewerEndpoint, HTTPServer):
                     super().__init__((VIEWER_ADDRESS, 0), ViewerRequestHandler)
                     break
                 time.sleep(PORT_POLL_SECONDS)
-        self.attach(login, routes, LocalDoor(self.host), LocalHeaders(), OpenDoors())
+        self.attach(login, routes, LocalDoor(self.host, tunnel_address), LocalHeaders(), OpenDoors())
 
     @property
     def port(self) -> int:

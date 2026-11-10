@@ -342,7 +342,7 @@ ViewerFactory = Callable[[ViewerLogin, ViewerRoutes], ViewerEndpoint]
 
 
 def local_viewer(login: ViewerLogin, routes: ViewerRoutes) -> ViewerEndpoint:
-    return ViewerListener(login, routes)
+    return ViewerListener(login, routes, lambda: None)
 
 
 @contextmanager

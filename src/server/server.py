@@ -148,6 +148,7 @@ def main(argv: list[str]) -> int:
     reported_findings = ReportedFindings()
     routes = ViewerRoutes(home, listener_thread, login, reported_findings, hook_database.queue, clock)
     inherited_viewer = waiting_server.viewer_socket() if waiting_server else None
+    tunnel = ServerTunnel(home)
     if hosting.is_hosted:
         viewer = ViewerSocketListener(login, routes, files.viewer_socket, hosting.mode.proxy_user, hosting.mode.public_origin, HostProbe().user_id(hosting.mode.proxy_user), inherited_viewer)
         try:
@@ -156,11 +157,10 @@ def main(argv: list[str]) -> int:
             return refused_start_code(files, refusal)
         journal_door = HostedJournalDoor(os.getuid())
     else:
-        viewer = ViewerListener(login, routes, last_port(home), inherited_socket=inherited_viewer)
+        viewer = ViewerListener(login, routes, tunnel.address, last_port(home), inherited_socket=inherited_viewer)
         journal_door = LocalJournalDoor()
         FileAccess.shared().write(home.viewer_port_file, str(viewer.port))
     ticker_thread = ListenerThread(ticker.tick, lambda error: files.log_line(f"the ticker could not tick: {error}", LogLevel.ERROR), TICK_PERIOD_SECONDS, "ticker")
-    tunnel = ServerTunnel(home)
     plugin_services = ServerPluginServices(home)
     backup = ServerBackup(home, clock)
 

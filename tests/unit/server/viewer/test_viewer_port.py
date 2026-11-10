@@ -6,7 +6,7 @@ from server.viewer.viewer_listener import ViewerListener
 
 
 def listener(last_port: int = 0, port_wait_seconds: float = 0.0) -> ViewerListener:
-    return ViewerListener(MagicMock(), MagicMock(), last_port, port_wait_seconds)
+    return ViewerListener(MagicMock(), MagicMock(), lambda: None, last_port, port_wait_seconds)
 
 
 def test_a_restarted_viewer_listens_on_the_port_it_had():

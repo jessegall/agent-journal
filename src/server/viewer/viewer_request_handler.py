@@ -136,7 +136,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
                 return
             self.answer_redirect(kept_query, {"Set-Cookie": viewer.answer_headers.cookie(self.cookie_name(COOKIE_NAME), token)})
             return
-        if route.path == SERVER_STATE_ROUTE and not viewer.door.state_needs_login:
+        if route.path == SERVER_STATE_ROUTE and not viewer.door.state_needs_login(self.door_request(is_change=False)):
             self.answer_server_state(viewer)
             return
         if route.path.startswith(MODULES_ROUTE):

@@ -8,6 +8,5 @@ class Door:
     def refusal(self, request: DoorRequest) -> DoorRefusal | None:
         raise NotImplementedError
 
-    @property
-    def state_needs_login(self) -> bool:
+    def state_needs_login(self, request: DoorRequest) -> bool:
         raise NotImplementedError
