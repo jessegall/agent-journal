@@ -4,9 +4,7 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.driver.nudge import Nudge
-from engine.provider.providers import Providers
 from engine.query.queries import Queries
-from core.modules.profiles.support.profile_files import ProfileFiles
 from engine.errors.refusal import Refusal
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
@@ -19,22 +17,20 @@ from engine.query.conditions.minimum import Minimum
 from core.modules.helpers.commands.send_helper.send_helper import SendHelper
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from suites.coding.modules.workers.support.merger_nudges import MERGER_JOB, MERGER_PROFILE, MERGER_SOURCE
-from core.modules.agents.commands.retire_agent.retire_agent import RetireAgent
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
-from core.modules.helpers.support.profile_models import ProfileModels
 
 
 class StartMergerHandler(Handler[StartMerger, None]):
-    """Gives the merger the job: a new one, or the kept one, resumed or told. A kept merger its profile no longer
-    fits is retired and replaced, since it could never start again. With none able to start, the main agent
-    hears as it did before."""
+    """Gives the merger the job: a new one when none is kept, or the kept one, which is sent the job when it
+    ended and a steering line when it runs. It retires no agent: a kept merger whose program or model differs
+    from its profile keeps its number and memories. With none able to start, the main agent gets the
+    fallback line."""
 
     command = StartMerger
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, bus: Bus, agents: AgentRows, profiles: ProfileFiles, providers: Providers, main_line: MainAgentLine, models: ProfileModels) -> None:
-        self.queries, self.bus, self.agents, self.profiles, self.providers = queries, bus, agents, profiles, providers
-        self.main_line, self.models = main_line, models
+    def __init__(self, queries: Queries, bus: Bus, agents: AgentRows, main_line: MainAgentLine) -> None:
+        self.queries, self.bus, self.agents, self.main_line = queries, bus, agents, main_line
 
     def handle(self, command: StartMerger, context: Context) -> None:
         main_agent = self.agents.main_agent()
@@ -58,16 +54,7 @@ class StartMergerHandler(Handler[StartMerger, None]):
 
     def assign_job(self, actor: Actor, context: Context) -> None:
         kept = self.queries.query(Agent).filter(profile=MERGER_PROFILE).matching(IsNull("retired_at")).newest().first()
-        if kept is not None and kept.ended_at is not None and not self.fits_profile(kept):
-            self.bus.run(RetireAgent(kept.id, f"runs {kept.program} {kept.program_model}, which its profile no longer lists"), actor, environment_id=context.environment_id)
-            kept = None
         if kept is None:
             self.bus.run(StartHelper(MERGER_PROFILE, MERGER_JOB), actor, environment_id=context.environment_id)
             return
         self.bus.run(SendHelper(kept.id, MERGER_JOB, steer=kept.ended_at is None), actor, environment_id=context.environment_id)
-
-
-    def fits_profile(self, kept: Agent) -> bool:
-        profile = self.profiles.effective(MERGER_PROFILE)
-        program = profile.program or kept.program
-        return kept.program == program and kept.program_model == self.models.model(profile, self.providers.provider(program), None, "helper")

@@ -100,3 +100,4 @@ def test_the_merger_profile_says_to_read_its_memories_and_to_write_one_after_eac
 def test_the_first_session_of_the_merger_has_no_memory_and_its_start_is_told_of_none(visiting):
     reply = visiting.story.hook(merger_row(visiting).session, SESSION_START)
     visiting.story.expect_rows(not any(START_MEMORIES.nudge(count=count).text in reply.lines for count in (0, 1)), detail=str(reply.lines))
+    visiting.story.expect_absent("memory list", "Worker 2", actor=visiting.merger)

@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pytest
 
 from core.modules.agents.models.agent import Agent
@@ -9,6 +11,7 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 from tests.stories.core.modules.helpers.helper_jobs import resumable_session
+from tests.stories.core.modules.helpers.support.rotating_helper import real_program_states
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start
@@ -17,6 +20,7 @@ FALLBACK_LINE = "A worker waits for the merger"
 MEMORY_TEXT = "Worker 2, task 1: advised a longer timeout"
 OCCUPANT_SAVE = "profile save journal-merger --occupant {occupant} --reason needed"
 PROGRAM_SAVE = "profile save journal-merger --program {program} --reason needed"
+TWO_PROGRAM_SAVE = "profile save journal-merger --program claude --fallback-programs claude,codex --program-if-possible --reason needed"
 
 
 @pytest.fixture
@@ -80,18 +84,38 @@ def test_a_merger_profile_changed_to_codex_gives_the_same_agent_a_codex_session_
     merging.expect_text("memory list", MEMORY_TEXT, actor=Actor(merger.id, ActorType.AGENT))
 
 
-def test_a_merger_kept_since_before_the_declaration_gets_a_new_session_at_its_next_start(merging, monkeypatch):
-    declared_occupant(merging, "when-cold")
+def test_a_merger_whose_first_program_is_out_runs_on_its_second_and_returns_when_the_outage_ends(merging, monkeypatch):
     merger = ended_merger(merging, monkeypatch)
+    merging.expect_success(TWO_PROGRAM_SAVE, actor=merging.user)
+    real_program_states(merging)
+    ends_at = (merging.clock.timestamp().value + timedelta(minutes=30)).isoformat()
+    merging.expect_success(f'provider-outage make claude "rate limit" --ends-at {ends_at}', actor=merging.agent)
+    during_outage = merger_launch(merging)["command"][0]
+    merging.expect_success(f"agent end {merger.id}", actor=merging.agent)
+    merging.run_listeners()
+    merging.expect_success("provider-outage end claude", actor=merging.user)
+    after_outage = merger_launch(merging)["command"][0]
+    current = mergers(merging)
+    merging.expect_rows(during_outage == "codex", after_outage == "claude", len(current) == 1, current[0].id == merger.id, current[0].retired_at is None,
+                        detail=f"{during_outage} / {after_outage} / {current}")
+
+
+@pytest.fixture
+def when_cold_merger(merging, monkeypatch) -> Agent:
+    declared_occupant(merging, "when-cold")
+    return ended_merger(merging, monkeypatch)
+
+
+def test_a_merger_kept_since_before_the_declaration_gets_a_new_session_at_its_next_start(merging, when_cold_merger):
+    merger = when_cold_merger
     declared_occupant(merging, "each-launch")
     command = merger_launch(merging)["command"]
     current = mergers(merging)
     merging.expect_rows(len(current) == 1, current[0].id == merger.id, current[0].retired_at is None, current[0].session != merger.session, "--resume" not in command, detail=str(command[:4]))
 
 
-def test_a_when_cold_merger_whose_program_is_changed_keeps_its_agent_and_nobody_is_retired(merging, monkeypatch):
-    declared_occupant(merging, "when-cold")
-    merger = ended_merger(merging, monkeypatch)
+def test_a_when_cold_merger_whose_program_is_changed_keeps_its_agent_and_nobody_is_retired(merging, when_cold_merger):
+    merger = when_cold_merger
     merging.expect_success(PROGRAM_SAVE.format(program="codex"), actor=merging.user)
     merger_launch(merging)
     kept = list(merging.container.get(Queries).query(Agent).filter(profile="journal-merger").matching(IsNull("retired_at")).all_rows())
