@@ -61,7 +61,7 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
                                                 process_started_at=command.process_started_at or self.chain.start_timestamp(command.pid)), context)
         main = self.agents.numbered_main(context.environment_id) if command.role == AgentRole.MAIN else None
         if main is not None:
-            return self.taken_over(main, command, context)
+            return self.on_main_row(main, command, context)
         actor = self.repository.save(ActorRecord(type=ActorType.AGENT, name=command.session, creator_id=context.actor.id), context)
         agent = Agent(id=actor.id, parent_id=command.parent_id, creator_id=context.actor.id, access=command.access,
                       session=command.session, program=command.program, role=command.role, pid=command.pid,
@@ -74,7 +74,7 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
         self.sessions.started(created, context)
         return created
 
-    def taken_over(self, main: Agent, command: StartAgent, context: Context) -> Agent:
+    def on_main_row(self, main: Agent, command: StartAgent, context: Context) -> Agent:
         stopped = main if main.ended_at is not None else self.single_main.ended_session(main, context)
         agent = self.repository.save(replace(stopped, ended_at=None, session=command.session, program=command.program, program_model=command.program_model,
                                              pid=command.pid, process_started_at=command.process_started_at or self.chain.start_timestamp(command.pid)), context)

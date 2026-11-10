@@ -9,6 +9,7 @@ from engine.repository.repository import Repository
 from core.modules.agents.commands.bind_agent_session.bind_agent_session import BindAgentSession
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.agents.support.agent_sessions import AgentSessions
 from core.modules.agents.support.single_main_agent import SingleMainAgent
 from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy
 from core.modules.agents.support.agent_label import AgentLabel
@@ -21,8 +22,8 @@ class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
 
     command = BindAgentSession
 
-    def __init__(self, agents: AgentRows, repository: Repository, suites: CurrentAgentPolicy, single_main: SingleMainAgent) -> None:
-        self.agents, self.repository, self.suites, self.single_main = agents, repository, suites, single_main
+    def __init__(self, agents: AgentRows, repository: Repository, suites: CurrentAgentPolicy, single_main: SingleMainAgent, sessions: AgentSessions) -> None:
+        self.agents, self.repository, self.suites, self.single_main, self.sessions = agents, repository, suites, single_main, sessions
 
     def handle(self, command: BindAgentSession, context: Context) -> Agent:
         agent = self.agents.find(command.row_id)
@@ -34,4 +35,5 @@ class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
             reopened = self.repository.update(session_agent, context, ended_at=None, pid=agent.pid, process_started_at=agent.process_started_at, launch_agent_id=agent.id, launch_name=agent.original_launch_name)
             self.single_main.end(reopened, context)
             return reopened
+        self.sessions.bound(agent.session, command.session, context)
         return self.repository.update(agent, context, session=command.session, launch_name=agent.original_launch_name)

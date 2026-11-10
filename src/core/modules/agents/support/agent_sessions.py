@@ -37,7 +37,7 @@ class AgentSessions:
 
     def bound(self, placeholder_session: str, real_session: str, context: Context) -> None:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            row = self.queries.query(AgentSession).filter(session=placeholder_session).first()
+            row = self.queries.query(AgentSession).filter(session=placeholder_session).descending("id").first()
         if row is not None:
             self.repository.update(row, context, session=real_session)
 

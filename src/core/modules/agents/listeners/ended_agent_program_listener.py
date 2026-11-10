@@ -31,17 +31,18 @@ class EndedAgentProgramListener(CommitListener[AgentEnded]):
         if not self.needs_stop(event.row, logged):
             return
         with self.sessions.lock(event.row.session) as available:
-            if available and self.has_new_session(event.row, logged):
-                self.program.stop_process(event.row)
-            elif available and not self.started_after_end(event.row, logged):
-                self.program.stop(event.row)
+            if available:
+                self.stop_program(event.row, self.changed_fields(event.row, logged))
 
     @staticmethod
     def needs_stop(agent: Agent, logged: LoggedEvent) -> bool:
         return logged.actor_id != agent.id and agent.ended_at is not None and logged.command != StopAgent.label()
 
-    def has_new_session(self, agent: Agent, logged: LoggedEvent) -> bool:
-        return any(event.id > logged.id and SESSION_FIELD in event.data for event in self.log.row_events(AGENTS_TABLE, agent.id))
+    def stop_program(self, agent: Agent, changed_fields: set[str]) -> None:
+        if SESSION_FIELD in changed_fields:
+            self.program.stop_process(agent)
+        elif PID_FIELD not in changed_fields:
+            self.program.stop(agent)
 
-    def started_after_end(self, agent: Agent, logged: LoggedEvent) -> bool:
-        return any(event.id > logged.id and PID_FIELD in event.data for event in self.log.row_events(AGENTS_TABLE, agent.id))
+    def changed_fields(self, agent: Agent, logged: LoggedEvent) -> set[str]:
+        return {name for event in self.log.row_events(AGENTS_TABLE, agent.id) if event.id > logged.id for name in event.data}
