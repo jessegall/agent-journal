@@ -122,7 +122,7 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
 
     def started(*modules: str, fixture: type[StoryFixture] | None = None, environment: str | None = None) -> Story:
         story = templates.story(tmp_path / "journal", modules, fixture)
-        story.environment = environment
+        story.environment = environment or (fixture.line_environment() if fixture else None)
         created.append(StorySteps(story, " ".join((*modules, fixture.__name__ if fixture else "")), fixture.__name__ if fixture else ""))
         return story
     yield started

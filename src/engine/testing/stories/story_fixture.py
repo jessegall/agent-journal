@@ -11,9 +11,11 @@ from engine.testing.stories.story import Story
 class StoryFixture:
     """A named starting state for stories: the fixture it builds on, the steps that make its state, and what
     that state must be; it is built once per run and copied for every story that starts from it. Its source
-    is read when the class is defined, so a file changed during a run does not ask for another template."""
+    is read when the class is defined, so a file changed during a run does not ask for another template. The
+    environment it names is the one every line of a story on it runs in, unless the line names another."""
 
     parent: ClassVar[type["StoryFixture"] | None] = None
+    environment: ClassVar[str | None] = None
     source_text: ClassVar[str] = ""
 
     def __init_subclass__(cls, **options: object) -> None:
@@ -37,6 +39,10 @@ class StoryFixture:
             return False
         story_name = function.args.args[1].arg
         return any(isinstance(node, ast.Name) and node.id == story_name for statement in function.body for node in ast.walk(statement))
+
+    @classmethod
+    def line_environment(cls) -> str | None:
+        return next((fixture.environment for fixture in reversed(cls.chain()) if fixture.environment is not None), None)
 
     @classmethod
     def chain(cls) -> tuple[type["StoryFixture"], ...]:

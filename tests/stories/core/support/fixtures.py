@@ -9,6 +9,8 @@ from tests.stories.core.support.plan_steps import ready_plan
 class MainEnvironment(StoryFixture):
     """An environment called main, with no agent in it yet."""
 
+    environment = "main"
+
     def steps(self, story: Story) -> None:
         story.run(lines.NEW_ENVIRONMENT)
 
