@@ -423,7 +423,7 @@ def run_workload_browser(sample: WorkloadServer, tmp_path: Path, case: str = "sc
     FileAccess.shared().write(measurement_file, json.dumps(sample_data))
     print(json.dumps({"identifier": sample_data["workload"]["identifier"], "build": sample_data["workload"]["build"],
                       "dataset": sample_data["workload"]["dataset"], "case": case,
-                      "sample_complete": sample_data["sample_complete"], "log_status": sample_data["log_status"],
+                      "sample_complete": sample_data["sample_complete"], "incomplete_reason": sample_data.get("incomplete_reason", ""), "log_status": sample_data["log_status"],
                       "funnel": sample_data["result"]["funnel"]["counts"], "server_reads": measured,
                       "artifact": str(measurement_file)}, sort_keys=True))
     return sample_data

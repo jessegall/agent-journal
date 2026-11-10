@@ -33,7 +33,7 @@ def is_database_busy(error: sqlite3.Error) -> bool:
 
 
 class RequestLog:
-    """Records requests without waiting for a database writer."""
+    """Records requests without waiting for a database writer; a request counts as attempted and as recorded or dropped under one hold of the lock, so the status never shows a request half counted."""
 
     def __init__(self, home: JournalHome, clock: Clock) -> None:
         self.home = home
@@ -127,21 +127,18 @@ class RequestLog:
             if not self.configuration.enabled:
                 self.counts["receipt_disabled"] += len(receipts)
                 return
-        try:
-            with self.connected() as container:
-                with container.get(Database).transaction():
-                    recorded = sum(container.get(HookRequestsTable).complete_viewer_read(
-                        person_id, receipt.client_id, receipt.command_id, receipt.joined_callers) > 0 for receipt in receipts)
-            with self.lock:
+            try:
+                with self.connected() as container:
+                    with container.get(Database).transaction():
+                        recorded = sum(container.get(HookRequestsTable).complete_viewer_read(
+                            person_id, receipt.client_id, receipt.command_id, receipt.joined_callers) > 0 for receipt in receipts)
                 self.counts["receipt_recorded"] += recorded
                 self.counts["receipt_dropped"] += len(receipts) - recorded
-        except sqlite3.Error as error:
-            with self.lock:
+            except sqlite3.Error as error:
                 self.counts["receipt_dropped"] += len(receipts)
-            if not is_database_busy(error):
-                self.system_log.write(LogLevel.WARNING, f"read receipt recording failed: {error}", LogSource.SERVER)
-        finally:
-            with self.lock:
+                if not is_database_busy(error):
+                    self.system_log.write(LogLevel.WARNING, f"read receipt recording failed: {error}", LogSource.SERVER)
+            finally:
                 self.recording_ms += (perf_counter() - started_at) * 1000
 
     def record(self, line: list[str], role: str, duration_ms: float, queued_ms: float, code: int) -> None:
@@ -151,17 +148,14 @@ class RequestLog:
         started_at = perf_counter()
         with self.lock:
             self.counts["attempted"] += 1
-        try:
-            recorded = record()
-            with self.lock:
+            try:
+                recorded = record()
                 self.counts["recorded" if recorded else "disabled"] += 1
-        except sqlite3.Error as error:
-            with self.lock:
+            except sqlite3.Error as error:
                 self.counts["dropped"] += 1
-            if not is_database_busy(error):
-                self.system_log.write(LogLevel.WARNING, f"request recording failed: {error}", LogSource.SERVER)
-        finally:
-            with self.lock:
+                if not is_database_busy(error):
+                    self.system_log.write(LogLevel.WARNING, f"request recording failed: {error}", LogSource.SERVER)
+            finally:
                 self.recording_ms += (perf_counter() - started_at) * 1000
 
     def save(self, entry: RequestLogEntry) -> None:
@@ -180,19 +174,16 @@ class RequestLog:
             if not configuration.enabled:
                 self.counts["disabled"] += len(entries)
                 return
-        try:
-            with self.connected() as container:
-                log = container.get(HookRequestLog)
-                payloads = [log.payload("", {}, entry.body, entry.duration_ms, HookAnswer.ALLOWED if entry.code == 0 else HookAnswer.REFUSED, entry.queued_ms, entry.role, "") for entry in entries]
-                container.get(HookRequestsTable).record_many(payloads, configuration.limit)
-                self.stored_rows = container.get(HookRequestsTable).kept_row_count()
-            with self.lock:
+            try:
+                with self.connected() as container:
+                    log = container.get(HookRequestLog)
+                    payloads = [log.payload("", {}, entry.body, entry.duration_ms, HookAnswer.ALLOWED if entry.code == 0 else HookAnswer.REFUSED, entry.queued_ms, entry.role, "") for entry in entries]
+                    container.get(HookRequestsTable).record_many(payloads, configuration.limit)
+                    self.stored_rows = container.get(HookRequestsTable).kept_row_count()
                 self.counts["recorded"] += len(entries)
-        except sqlite3.Error as error:
-            with self.lock:
+            except sqlite3.Error as error:
                 self.counts["dropped"] += len(entries)
-            if not is_database_busy(error):
-                self.system_log.write(LogLevel.WARNING, f"request recording failed: {error}", LogSource.SERVER)
-        finally:
-            with self.lock:
+                if not is_database_busy(error):
+                    self.system_log.write(LogLevel.WARNING, f"request recording failed: {error}", LogSource.SERVER)
+            finally:
                 self.recording_ms += (perf_counter() - started_at) * 1000
