@@ -6,6 +6,7 @@ from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
+from tests.stories.core.support.agent_labels import agent_label
 
 TASK_COUNT = 15
 
@@ -32,7 +33,7 @@ def worker_with_waiting_tasks(new_story):
 
 def test_a_stop_of_a_worker_with_fifteen_waiting_tasks_passes_the_repeated_read_check(worker_with_waiting_tasks):
     story = worker_with_waiting_tasks
-    story.expect_success(f"agent stop {story.worker.id}", f"stopped agent {story.worker.id}", actor=story.user)
+    story.expect_success(f"agent stop {story.worker.id}", f"stopped {agent_label(story, story.worker.id)}", actor=story.user)
     story.run_listeners()
 
 

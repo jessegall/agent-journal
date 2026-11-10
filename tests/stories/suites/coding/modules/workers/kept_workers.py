@@ -28,6 +28,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import c
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.worktree_samples import worktree_commit
 from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
+from tests.stories.core.support.agent_labels import agent_label
 
 REASON = '--reason "Its work is finished"'
 
@@ -51,7 +52,7 @@ def test_retire_settles_what_a_worker_holds(new_story):
     general = story.run(f"worker send --wait {worker.id}", actor=story.agent)
     story.expect_rows(general.code == 1)
     stopped(story, worker)
-    story.expect_success(f"agent retire {worker.id} {REASON}", f"retired agent {worker.id}", actor=story.agent)
+    story.expect_success(f"agent retire {worker.id} {REASON}", f"retired {agent_label(story, worker.id)}", actor=story.agent)
     story.expect_success("worker-worktree show 1", "state: removed")
     story.expect_success("task show 1", "state: open")
     repository.expect_no_folder(worker.id)
@@ -276,5 +277,5 @@ def test_retire_hides_the_lines_still_waiting_for_the_worker(new_story):
     with story.container.get(Database).transaction():
         story.container.get(Nudger).send_text(worker.id, "A line the worker never took", "sample.raw", Context(Actor.core(), story.clock.timestamp(), ReadMessage(1)))
     story.expect_text(f"agent-line list --agent {worker.id} --json", '"state": "waiting"', actor=story.user)
-    story.expect_success(f"agent retire {worker.id} {REASON}", f"retired agent {worker.id}", actor=story.agent)
+    story.expect_success(f"agent retire {worker.id} {REASON}", f"retired {agent_label(story, worker.id)}", actor=story.agent)
     story.expect_text(f"agent-line list --agent {worker.id} --json", '"state": "hidden"', actor=story.user)

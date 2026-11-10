@@ -7,6 +7,7 @@ from core.modules.agents.commands.bind_agent_session.bind_agent_session import B
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import AgentStarted, UserJoined
+from tests.stories.core.support.agent_labels import agent_label
 
 TERMINAL_LINES = "1\tready\n2\tReading cart.py\n3\tThe total is in cents now\n"
 
@@ -41,7 +42,7 @@ def test_a_person_types_a_line_in_a_running_agents_terminal(new_story):
     story = new_story(fixture=UserJoined)
     typing = FakeTyping()
     story.container.bind(TerminalTyping, typing)
-    story.expect_success(f'agent type {story.agent.id} "ls -la"', f"typed in the terminal of agent {story.agent.id}", actor=story.user)
+    story.expect_success(f'agent type {story.agent.id} "ls -la"', f"typed in the terminal of {agent_label(story, story.agent.id)}", actor=story.user)
     story.expect_rows(typing.typed == [(story.agent.id, "ls -la")])
 
 

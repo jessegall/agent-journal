@@ -21,6 +21,7 @@ from engine.enums.actor_type import ActorType
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, OpenTaskOrchestrator, BuilderHelper
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_refusal_hook
+from tests.stories.core.support.agent_labels import agent_label
 
 JOURNAL_LINE = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
 READ_SAMPLE = HookSamples.sample("pre_tool_use", {"name": "Read", "category": "read", "files": ["a.py"], "diff": None})
@@ -45,9 +46,9 @@ class FakeTyping(TerminalTyping):
 def test_a_paused_agents_tool_calls_are_refused_until_it_is_resumed(new_story):
     story = new_story(fixture=UserJoined)
     story.container.bind(TerminalTyping, FakeTyping())
-    story.expect_success(f"agent pause {story.agent.id}", f"paused agent {story.agent.id}", actor=story.user)
+    story.expect_success(f"agent pause {story.agent.id}", f"paused {agent_label(story, story.agent.id)}", actor=story.user)
     story.expect_hook_refusal("s-1", EDIT_SAMPLE, "the user paused you")
-    story.expect_success(f"agent resume {story.agent.id}", f"resumed agent {story.agent.id}", actor=story.user)
+    story.expect_success(f"agent resume {story.agent.id}", f"resumed {agent_label(story, story.agent.id)}", actor=story.user)
     story.expect_hook_allowed("s-1", EDIT_SAMPLE)
 
 
@@ -146,7 +147,7 @@ def test_a_worker_pauses_on_its_own_and_not_with_the_agent_that_sent_it(new_stor
     story.container.get(Database).connection.execute("UPDATE agents SET role = 'worker' WHERE id = ?", [worker.id])
     overlay = PausedOverlay(story.container.get(AgentRows))
     story.expect_rows(overlay.open_rows(worker.id) == [])
-    story.expect_success(f"agent pause {worker.id}", f"paused agent {worker.id}", actor=story.user)
+    story.expect_success(f"agent pause {worker.id}", f"paused {agent_label(story, worker.id)}", actor=story.user)
     story.expect_rows(overlay.open_rows(worker.id) != [])
 
 

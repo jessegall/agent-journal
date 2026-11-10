@@ -23,6 +23,7 @@ from tests.stories.server.support.browser_story import expect_browser
 from engine.provider.context_window import ContextWindow
 from core.modules.helpers.support.profile_model import ProfileModel
 import json
+from tests.stories.core.support.agent_labels import agent_label
 
 REASON = '--reason "Its question is answered"'
 
@@ -118,7 +119,7 @@ def test_a_helper_stays_idle_when_its_process_stops(new_story):
 def test_retire_with_a_reason_keeps_its_record_and_it_is_not_retired_again(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
-    story.expect_success(f"agent retire {helper.id} {REASON}", f"retired agent {helper.id}", actor=story.agent)
+    story.expect_success(f"agent retire {helper.id} {REASON}", f"retired {agent_label(story, helper.id)}", actor=story.agent)
     retired = helper_agent(story)
     story.expect_rows(retired.retired_at is not None, retired.retirement_reason == "Its question is answered", retired.retiring_actor_id == story.agent.id)
     story.expect_refusal(f"agent retire {helper.id} {REASON}", "retired already", actor=story.agent)

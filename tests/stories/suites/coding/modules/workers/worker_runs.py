@@ -23,6 +23,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment, worker_session
 from tests.stories.support.story_checks import expect_absent_value, expect_count_output_2, expect_total_cost_less
+from tests.stories.core.support.agent_labels import agent_label
 
 RULE_LIMIT_POINTS = 20
 
@@ -186,7 +187,7 @@ def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story, 
 def test_a_worker_whose_program_the_launcher_runs_is_stopped_through_the_launcher(new_story):
     story, worker, _, _ = worker_with_background_run(new_story)
     launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=b"stopped\n")
-    story.expect_success(f"agent stop {worker.id}", f"stopped agent {worker.id}", actor=story.agent)
+    story.expect_success(f"agent stop {worker.id}", f"stopped {agent_label(story, worker.id)}", actor=story.agent)
     expect_requests_launcher_2(launcher, 1, {"agent_id": worker.id, "stop": True})
     story.expect_text(f"agent show {worker.id}", "ended_at:", actor=story.agent)
 

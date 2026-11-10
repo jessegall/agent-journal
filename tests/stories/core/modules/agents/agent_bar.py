@@ -14,6 +14,7 @@ from core.modules.agents.support.terminal_typing import TerminalTyping
 from tests.stories.core.support.fixtures import UserJoined
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.support.story_checks import expect_value, expect_value_with
+from tests.stories.core.support.agent_labels import agent_label
 
 SLEEP_SECONDS = 300
 
@@ -44,7 +45,7 @@ def test_the_controls_list_the_programs_choices_without_their_lines(new_story):
 
 def test_a_choice_types_the_programs_own_line(new_story):
     story, typing = typing_story(new_story)
-    story.expect_success(f"agent control {story.agent.id} model opus", f"applied to agent {story.agent.id}", actor=story.user)
+    story.expect_success(f"agent control {story.agent.id} model opus", f"applied to {agent_label(story, story.agent.id)}", actor=story.user)
     story.expect_success(f"agent control {story.agent.id} effort high", actor=story.user)
     story.expect_success(f"agent control {story.agent.id} context compact", actor=story.user)
     story.expect_rows(typing.typed == [(story.agent.id, "/model opus"), (story.agent.id, "/effort high"), (story.agent.id, COMPACT_LINE)])
@@ -72,7 +73,7 @@ def test_stop_ends_the_program_under_the_agents_pid_and_its_session(new_story, t
     program = subprocess.Popen([str(fake)], start_new_session=True)
     try:
         agent_id = story.new_row_id(f"agent start s-stand-in claude worker --pid {program.pid} --environment main")
-        story.expect_success(f"agent stop {agent_id}", f"stopped agent {agent_id}", actor=story.user)
+        story.expect_success(f"agent stop {agent_id}", f"stopped {agent_label(story, agent_id)}", actor=story.user)
         story.expect_rows(program.wait(timeout=10) is not None)
         story.expect_text(f"agent show {agent_id}", "ended_at:", actor=story.user)
     finally:
@@ -93,7 +94,7 @@ def test_stopping_holds_no_write_lock_and_a_session_its_hooks_ended_stays_ended(
 
     monkeypatch.setattr(LeftoverProcess, "stop", stopped)
     monkeypatch.setattr(LeftoverProcess, "command_line", staticmethod(lambda pid: "claude" if pid == 4242 and not transaction_flags else ""))
-    story.expect_success(f"agent stop {agent_id}", f"stopped agent {agent_id}", actor=story.user)
+    story.expect_success(f"agent stop {agent_id}", f"stopped {agent_label(story, agent_id)}", actor=story.user)
     story.expect_rows(transaction_flags == [False])
     story.expect_text(f"agent show {agent_id}", "ended_at:", actor=story.user)
 
@@ -115,7 +116,7 @@ def different_program_launcher(story) -> None:
 def stopped_main_agent(new_story, request):
     story = new_story(fixture=UserJoined)
     request.param(story)
-    story.expect_success(f"agent stop {story.agent.id}", f"stopped agent {story.agent.id}", actor=story.user)
+    story.expect_success(f"agent stop {story.agent.id}", f"stopped {agent_label(story, story.agent.id)}", actor=story.user)
     return story
 
 

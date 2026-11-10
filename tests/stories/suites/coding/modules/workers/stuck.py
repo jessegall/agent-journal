@@ -18,6 +18,7 @@ from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestr
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
+from tests.stories.core.support.agent_labels import agent_label
 
 MAIN_SESSION = "s-1"
 PROCESS_START = "2026-10-31T09:00:00+00:00"
@@ -130,7 +131,7 @@ def test_a_worker_a_person_stops_loses_its_tasks_and_is_not_started_again(new_st
     worker = dispatched_worker(story)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
-    story.expect_success(f"agent stop {worker.id}", f"stopped agent {worker.id}", actor=user)
+    story.expect_success(f"agent stop {worker.id}", f"stopped {agent_label(story, worker.id)}", actor=user)
     story.expect_no_text(lines.TASK_DETAILS, f"delegated_to: {worker.id}")
     story.expect_no_text(f"agent-line list --agent {worker.id}", "you ended with tasks left")
     story.expect_text(f"agent-line list --agent {story.agent.id}", "ended with task:1 left")
