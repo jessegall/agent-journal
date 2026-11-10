@@ -1,12 +1,13 @@
 from engine.enums.agent_role import AgentRole
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
-from core.modules.agents.models.agent import Agent
+from core.modules.agents.models.agent import MAIN_NUMBER, Agent
 from core.modules.agents.queries.agent_query import AgentQuery
 
 
 class MainAgentFinder:
-    """The running main agent of an environment: its newest, should two ever run."""
+    """The running main agent of an environment: its newest, should two ever run. The main agent's own row
+    is the one numbered 1, running or not."""
 
     @staticmethod
     def rows(queries: Queries) -> tuple[Agent, ...]:
@@ -25,6 +26,10 @@ class MainAgentFinder:
     @staticmethod
     def latest(queries: Queries) -> Agent | None:
         return queries.query(Agent).filter(role=AgentRole.MAIN).newest().first()
+
+    @staticmethod
+    def numbered_one(queries: Queries) -> Agent | None:
+        return queries.query(Agent).filter(role=AgentRole.MAIN, number=MAIN_NUMBER).first()
 
     @staticmethod
     def newest(queries: Queries) -> Agent | None:

@@ -18,7 +18,6 @@ from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.enums.access import Access
 from engine.actor.actor import Actor
 from engine.sandbox.shell_sandbox import ShellSandbox
-from engine.enums.agent_role import AgentRole
 from core.modules.agents.support.agent_label import AgentLabel
 
 
@@ -59,7 +58,7 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
                 return self.repository.save(replace(started, ended_at=None), context)
             return self.repository.save(replace(started, ended_at=None, pid=command.pid,
                                                 process_started_at=command.process_started_at or self.chain.start_timestamp(command.pid)), context)
-        main = self.agents.numbered_main(context.environment_id) if command.role == AgentRole.MAIN else None
+        main = self.agents.numbered_main(context.environment_id) if command.is_main_session else None
         if main is not None:
             return self.on_main_row(main, command, context)
         actor = self.repository.save(ActorRecord(type=ActorType.AGENT, name=command.session, creator_id=context.actor.id), context)

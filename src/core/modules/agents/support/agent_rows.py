@@ -7,7 +7,7 @@ from engine.errors.refusal import Refusal
 from engine.enums.agent_role import AgentRole
 from engine.scope.environment_scope import EnvironmentScope
 from engine.scope.scopes import Scopes
-from core.modules.agents.models.agent import MAIN_NUMBER, Agent
+from core.modules.agents.models.agent import Agent
 from core.modules.agents.queries.agent_query import AgentQuery
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
@@ -72,7 +72,7 @@ class AgentRows:
 
     def numbered_main(self, environment_id: int) -> Agent | None:
         with self.scopes.opened(None, environment_id):
-            return self.queries.query(Agent).filter(number=MAIN_NUMBER, role=AgentRole.MAIN).first()
+            return MainAgentFinder.numbered_one(self.queries)
 
     def main_agent(self) -> Agent | None:
         return max(self.running_main_agents(), key=lambda agent: agent.id, default=None)
