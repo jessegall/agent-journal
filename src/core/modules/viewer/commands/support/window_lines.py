@@ -10,7 +10,7 @@ from engine.registry.registry import Registry
 from engine.viewer.person_lines import PERSON_LINES
 from core.modules.viewer.commands.support.window_allowances import WindowAllowances
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType
-from core.modules.viewer.commands.support.window_refusal import WindowRefusal
+from core.modules.viewer.errors.window_refusal import WindowRefusal
 from engine.scope.scopes import Scopes
 from core.modules.drivers.support.active_modules import ActiveModules
 

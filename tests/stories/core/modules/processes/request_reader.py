@@ -2,7 +2,7 @@ import json
 
 from engine.query.queries import Queries
 from core.modules.viewer.commands.support.window_lines import WindowLines
-from core.modules.viewer.commands.support.window_refusal import WindowRefusal
+from core.modules.viewer.errors.window_refusal import WindowRefusal
 from core.modules.messages.models.message import Message
 from core.modules.processes.models.reader_request import ReaderRequest
 from tests.stories.core.modules.processes.support.process_samples import install_runner, started_run

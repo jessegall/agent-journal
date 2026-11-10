@@ -19,9 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/core/modules/viewer/commands/support/window_refusal.py"
-            },
-            {
                 "file": "src/install/backup_mismatch_error.py"
             },
             {
