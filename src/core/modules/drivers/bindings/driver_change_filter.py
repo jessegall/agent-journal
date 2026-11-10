@@ -1,6 +1,6 @@
 from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
-from core.base.guard.change_filter import ChangeFilter
+from engine.guard.change_filter import ChangeFilter
 from core.base.model.model import Model
 from core.base.listener.event_rows import EventRows
 from core.base.registry.registry import Registry

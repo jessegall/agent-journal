@@ -1,6 +1,6 @@
 from core.base.change.updated import Updated
 from core.base.command.context import Context
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.helper_job_rows import HelperJobRows

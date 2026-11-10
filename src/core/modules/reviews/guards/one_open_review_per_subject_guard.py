@@ -1,4 +1,4 @@
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.reviews.models.review import Review
 from core.modules.reviews.queries.review_query import ReviewQuery

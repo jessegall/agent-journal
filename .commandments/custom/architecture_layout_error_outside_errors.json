@@ -82,7 +82,7 @@
                 "file": "src/core/base/driver/old_hook_runner_error.py"
             },
             {
-                "file": "src/core/base/guard/guard_refusal.py"
+                "file": "src/engine/guard/guard_refusal.py"
             },
             {
                 "file": "src/core/base/hosting/hosted_file_refusal.py"

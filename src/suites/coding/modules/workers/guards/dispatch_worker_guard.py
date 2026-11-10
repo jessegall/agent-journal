@@ -1,4 +1,4 @@
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent

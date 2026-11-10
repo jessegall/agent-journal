@@ -1,4 +1,4 @@
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from core.modules.tasks.models.task_dependency import TaskDependency
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.base.change.created import Created

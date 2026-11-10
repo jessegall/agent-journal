@@ -10,7 +10,7 @@ from core.base.change.change import Change
 from core.base.change.event_pattern import EventPattern
 from core.base.command.context import Context
 from engine.container.container import Container
-from core.base.guard.change_filter import ChangeFilter
+from engine.guard.change_filter import ChangeFilter
 from core.base.listener.deletion_listener import DeletionListener
 from core.base.listener.listeners import Listeners
 from core.base.listener.save_listener import SaveListener

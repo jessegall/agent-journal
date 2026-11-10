@@ -6,7 +6,7 @@ from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_place import WindowPlace
-from core.base.guard.guard_switches import GuardSwitches
+from engine.guard.guard_switches import GuardSwitches
 from core.modules.settings.migrations.m001_settings import SettingsTableMigration
 from core.modules.settings.bindings.setting_guard_switches import SettingGuardSwitches
 from core.base.module.module import Module

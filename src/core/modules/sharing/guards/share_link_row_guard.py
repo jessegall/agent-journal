@@ -3,7 +3,7 @@ from core.base.change.changed import Changed
 from core.base.change.created import Created
 from core.base.change.deleted import Deleted
 from core.base.command.context import Context
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from core.modules.sharing.models.lifecycles.share_link_lifecycle import ShareLinkLifecycle
 from engine.errors.refusal import Refusal
 from engine.errors.user_approval_refusal import UserApprovalRefusal

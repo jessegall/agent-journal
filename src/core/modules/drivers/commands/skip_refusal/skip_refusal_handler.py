@@ -6,7 +6,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.command.request_user_approval import RequestUserApproval
 from engine.errors.user_approval_refusal import UserApprovalRefusal
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from engine.query.conditions.greater import Greater
 from engine.query.conditions.has_value import HasValue
 from engine.query.queries import Queries

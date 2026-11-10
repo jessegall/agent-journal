@@ -1,6 +1,6 @@
 from core.base.change.changed import Changed
 from core.base.command.context import Context
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from core.modules.helpers.models.provider_outage import ProviderOutage
 from core.modules.helpers.support.program_change_access import ProgramChangeAccess
 

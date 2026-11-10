@@ -1,6 +1,6 @@
 import re
 
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.questions.models.question import Question
 from core.base.change.created import Created

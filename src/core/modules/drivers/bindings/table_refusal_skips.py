@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.command.command import Command
 from core.base.driver.refusal_skips import RefusalSkips
-from core.base.guard.guards import LIFECYCLE_GUARD
+from engine.guard.guards import LIFECYCLE_GUARD
 from engine.query.conditions.has_value import HasValue
 from engine.query.queries import Queries
 from engine.log.refusal_log import RefusalLog

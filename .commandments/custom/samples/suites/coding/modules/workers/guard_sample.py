@@ -1,6 +1,6 @@
 import subprocess
 
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 

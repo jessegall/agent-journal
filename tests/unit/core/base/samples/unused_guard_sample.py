@@ -1,4 +1,4 @@
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.change.updated import Updated
 from core.base.command.context import Context

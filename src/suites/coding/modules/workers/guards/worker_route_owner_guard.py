@@ -3,7 +3,7 @@ from engine.enums.actor_type import ActorType
 from core.base.change.deleted import Deleted
 from core.base.change.updated import Updated
 from core.base.command.context import Context
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from core.base.listener.event_rows import EventRows
 from core.modules.actors.models.actor_record import ActorRecord
 from suites.coding.modules.workers.commands.delete_worker_route.delete_worker_route import DeleteWorkerRoute

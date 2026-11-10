@@ -24,7 +24,7 @@ from core.base.database.module_migrations import ModuleMigrations
 from core.base.database.triggers import Triggers
 from core.base.command.handlers.move_row_handler import MoveRowHandler
 from core.base.command.move_row import MoveRow
-from core.base.guard.lifecycle_guard import LifecycleGuard
+from engine.guard.lifecycle_guard import LifecycleGuard
 from core.base.module.module_states import modules_book
 from core.base.module.state_retirement import StateRetirement
 from core.base.registry.state_addition_entry import StateAdditionEntry

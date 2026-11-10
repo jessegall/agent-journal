@@ -2,7 +2,7 @@ import io
 import json
 
 from core.base.subcommand.output import Output
-from core.base.guard.guard_refusal import GuardRefusal
+from engine.guard.guard_refusal import GuardRefusal
 from core.base.model.tables import Tables
 from engine.row.page import Page
 from engine.errors.refusal import Refusal

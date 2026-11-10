@@ -1,6 +1,6 @@
 from core.base.change.moved import Moved
 from core.base.command.context import Context
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree

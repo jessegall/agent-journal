@@ -1,6 +1,6 @@
 from core.base.change.created import Created
 from core.base.command.context import Context
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message

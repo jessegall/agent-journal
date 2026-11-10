@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from core.base.change.changed import Changed
 from core.base.change.created import Created
 from core.base.command.context import Context
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.support.dock_limits import DockLimits

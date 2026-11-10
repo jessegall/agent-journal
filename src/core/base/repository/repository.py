@@ -9,7 +9,7 @@ from core.base.command.context import Context
 from core.base.database.constraint_refusals import ConstraintRefusals
 from core.base.database.database import Database
 from core.base.database.table_statements import TableStatements
-from core.base.guard.guards import Guards
+from engine.guard.guards import Guards
 from core.base.listener.listeners import Listeners
 from core.base.listener.event_rows import EventRows
 from engine.row.metadata import Metadata

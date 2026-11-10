@@ -2,7 +2,7 @@ from dataclasses import replace
 from time import perf_counter
 
 from engine.container.container import Container
-from core.base.guard.guard_refusal import SKIP_ALLOWED_CASE
+from engine.guard.guard_refusal import SKIP_ALLOWED_CASE
 from core.base.driver.rule_call import RuleCall
 from core.base.driver.rule_record import RuleRecord
 from core.base.driver.stop_check import StopCheck
@@ -23,7 +23,7 @@ from core.base.driver.walk import Walk
 from engine.log.error_log import ErrorLog
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
-from core.base.guard.guard_switches import GuardSwitches
+from engine.guard.guard_switches import GuardSwitches
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.registry import Registry
 from core.base.scope.scopes import Scopes

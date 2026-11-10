@@ -1,6 +1,6 @@
 from core.base.change.change import Change
 from engine.container.container import Container
-from core.base.guard.change_filter import ChangeFilter
+from engine.guard.change_filter import ChangeFilter
 from core.base.listener.deletion_listener import is_deletion_listener_class
 from core.base.listener.save_listener import is_save_listener_class
 from core.base.model.model import Model

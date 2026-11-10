@@ -1,6 +1,6 @@
 from core.base.change.created import Created
 from core.base.command.context import Context
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions

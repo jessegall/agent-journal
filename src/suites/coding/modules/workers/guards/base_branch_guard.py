@@ -1,4 +1,4 @@
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.merge_checks import MergeChecks
 from core.base.change.moved import Moved

@@ -1,4 +1,4 @@
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from core.base.model.model import Model
 from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_tuple

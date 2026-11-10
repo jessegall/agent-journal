@@ -7,7 +7,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.command.context import Context
-from core.base.guard.lifecycle_guard import LifecycleGuard
+from engine.guard.lifecycle_guard import LifecycleGuard
 from core.base.model.state_book import StateBook
 from core.base.model.model import Model
 from engine.errors.refusal import Refusal

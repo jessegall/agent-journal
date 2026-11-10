@@ -9,11 +9,11 @@ from core.base.change.change import Change
 from core.base.change.event_pattern import EventPattern
 from core.base.command.context import Context
 from engine.container.container import Container
-from core.base.guard.change_filter import ChangeFilter
-from core.base.guard.guard import Guard
-from core.base.guard.guard_switches import GuardSwitches
-from core.base.guard.guards import Guards
-from core.base.guard.guard_refusal import GuardRefusal
+from engine.guard.change_filter import ChangeFilter
+from engine.guard.guard import Guard
+from engine.guard.guard_switches import GuardSwitches
+from engine.guard.guards import Guards
+from engine.guard.guard_refusal import GuardRefusal
 from core.base.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry

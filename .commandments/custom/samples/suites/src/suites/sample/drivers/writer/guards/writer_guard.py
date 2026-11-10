@@ -1,4 +1,4 @@
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 
 
 # @righteous architecture_layout_suite_guard_outside_guards

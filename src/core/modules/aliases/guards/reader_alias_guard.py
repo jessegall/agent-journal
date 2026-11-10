@@ -1,4 +1,4 @@
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.base.change.deleted import Deleted

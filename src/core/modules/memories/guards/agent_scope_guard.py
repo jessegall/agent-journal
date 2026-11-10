@@ -1,5 +1,5 @@
 from engine.enums.actor_type import ActorType
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from core.modules.memories.models.memory import Memory
 from core.modules.memories.guards.support.memory_scope import MemoryScope
 from core.base.change.changed import Changed

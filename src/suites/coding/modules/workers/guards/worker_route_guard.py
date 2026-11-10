@@ -3,7 +3,7 @@ from engine.enums.agent_role import AgentRole
 from core.base.change.moved import Moved
 from core.base.change.updated import Updated
 from core.base.command.context import Context
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from core.base.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle

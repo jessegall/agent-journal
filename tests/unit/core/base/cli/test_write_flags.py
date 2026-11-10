@@ -12,8 +12,8 @@ from core.base.command.handlers.make_handler import MakeHandler
 from core.base.command.make_command import MakeCommand
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.guard.guard import Guard
-from core.base.guard.guard_refusal import GuardRefusal
+from engine.guard.guard import Guard
+from engine.guard.guard_refusal import GuardRefusal
 from core.base.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry

@@ -13,7 +13,7 @@ from core.base.module.module_finder import ModuleFinder
 import pytest
 
 from core.base.command.handlers.make_handler import MakeHandler
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from core.base.model.lifecycle import Lifecycle
 from core.base.model.model import Model
 from core.base.model.move import Move

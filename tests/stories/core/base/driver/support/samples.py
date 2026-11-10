@@ -21,7 +21,7 @@ from core.base.driver.overlay import Overlay
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.suite import Suite
 from core.base.driver.tool_type import ToolType
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from core.base.model.lifecycle import Lifecycle
 from core.base.model.model import Model
 from core.base.model.move import Move

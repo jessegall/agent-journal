@@ -5,8 +5,8 @@ from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.command.context import Context
 from engine.container.container import Container
-from core.base.guard.change_filter import ChangeFilter
-from core.base.guard.guard_switches import GuardSwitches
+from engine.guard.change_filter import ChangeFilter
+from engine.guard.guard_switches import GuardSwitches
 from core.base.model.model import Model
 from engine.time.timestamp import Timestamp
 from tests.unit.core.base.command.test_commands import MakeItem

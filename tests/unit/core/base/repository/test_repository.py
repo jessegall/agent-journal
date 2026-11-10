@@ -7,7 +7,7 @@ from core.base.change.event_pattern import EventPattern
 from engine.container.container import Container
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.guard.guard_refusal import GuardRefusal
+from engine.guard.guard_refusal import GuardRefusal
 from core.base.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
@@ -19,7 +19,7 @@ from core.base.repository.repository import Repository
 from core.base.repository.stale_row_error import StaleRowError
 from engine.row.metadata import Metadata
 from engine.query.queries import Queries
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from core.base.listener.save_listener import SaveListener
 from tests.unit.core.base.sample_container import context, empty_registry, sample_container
 from tests.unit.core.base.command.test_commands import MakeItem

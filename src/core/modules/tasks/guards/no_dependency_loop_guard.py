@@ -1,4 +1,4 @@
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.tasks.conditions.dependency_chain import DependencyChain
 from core.modules.tasks.models.task_dependency import TaskDependency

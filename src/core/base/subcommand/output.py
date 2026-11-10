@@ -4,7 +4,7 @@ from dataclasses import fields, is_dataclass
 from typing import TextIO
 
 from engine.text.explanation import Explanation
-from core.base.guard.guard_refusal import GuardRefusal
+from engine.guard.guard_refusal import GuardRefusal
 from engine.row.metadata import Metadata
 from core.base.model.model import Model
 from core.base.model.table import stored

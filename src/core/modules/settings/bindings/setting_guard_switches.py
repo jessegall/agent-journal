@@ -1,4 +1,4 @@
-from core.base.guard.guard_switches import GuardSwitches
+from engine.guard.guard_switches import GuardSwitches
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.settings.support.settings_tree import GUARD_SETTINGS
 

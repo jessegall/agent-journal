@@ -5,7 +5,7 @@ from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.change.created import Created
 from core.base.command.handler import Handler
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from core.base.module.module import Module
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal

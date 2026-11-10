@@ -4,8 +4,8 @@ from core.base.change.changed import Changed
 from core.base.change.deleted import Deleted
 from core.base.command.context import Context
 from core.base.command.completed_command_error import CompletedCommandError
-from core.base.guard.guard import Guard
-from core.base.guard.guards import LIFECYCLE_GUARD
+from engine.guard.guard import Guard
+from engine.guard.guards import LIFECYCLE_GUARD
 from core.base.model.full_lifecycle import FullLifecycle
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook

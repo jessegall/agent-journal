@@ -1,4 +1,4 @@
-from core.base.guard.guard import Guard
+from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.enums.message_type import MessageType
