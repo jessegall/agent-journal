@@ -14,7 +14,7 @@ from tests.stories.suites.coding.modules.workers.context_limit import COMPACTION
 
 TOO_LONG = timedelta(seconds=601)
 EDITED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
-READING_AGE = timedelta(seconds=60)
+STATUS_FILE_AGE = timedelta(seconds=60)
 GROWTH_TOKENS = LIMIT_TOKENS // 10
 TOKENS_OVER_LIMIT = LIMIT_TOKENS + 50_000
 STOPS_WITHOUT_LAUNCHER = 5
@@ -103,7 +103,7 @@ def modified_at_story_time(story, moment=None):
 def set_context_older_than_compaction(story, tokens):
     """A reading the program wrote before the compaction ended, and has not rewritten since."""
     has_context(story, tokens)
-    modified_at_story_time(story, story.clock.timestamp().value - READING_AGE)
+    modified_at_story_time(story, story.clock.timestamp().value - STATUS_FILE_AGE)
 
 
 def expect_compaction_count(story, count):
@@ -111,7 +111,7 @@ def expect_compaction_count(story, count):
 
 
 def ended_at_once(story):
-    story.advance(READING_AGE)
+    story.advance(STATUS_FILE_AGE)
     compacted(story, "manual")
 
 
@@ -184,7 +184,7 @@ def test_b7_the_stop_now_nudge_is_not_said_after_a_compaction_while_the_number_i
 def test_b8_a_memory_mark_does_not_open_at_the_old_percent_after_a_compaction(new_story):
     story = new_story(fixture=CompactedFact)
     story.report_context_percent(SESSION, 55)
-    modified_at_story_time(story, story.clock.timestamp().value - READING_AGE)
+    modified_at_story_time(story, story.clock.timestamp().value - STATUS_FILE_AGE)
     reply = story.hook(SESSION, EDITED)
     story.expect_rows(not any("tool uses to weigh" in line for line in reply.lines), detail=str(reply.lines))
 
@@ -199,7 +199,7 @@ def test_c8_a_post_tool_use_while_the_reading_is_unsettled_says_no_stop_now_and_
 def test_e4_a_reading_over_the_limit_older_than_the_end_of_the_newest_compaction_is_not_due(new_story):
     agent = typing_recorded(new_story(fixture=AutoCompacted))
     set_context_older_than_compaction(agent, LIMIT_TOKENS + 1)
-    agent.advance(READING_AGE)
+    agent.advance(STATUS_FILE_AGE)
     stops(agent)
     expect_compaction_count(agent, 0)
 
@@ -209,7 +209,7 @@ def test_a_reading_the_program_rewrote_after_the_compaction_ended_counts_and_the
     set_context_older_than_compaction(agent, TOKENS_OVER_LIMIT)
     agent.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
     expect_compaction_count(agent, 0)
-    agent.advance(READING_AGE)
+    agent.advance(STATUS_FILE_AGE)
     has_context(agent, TOKENS_OVER_LIMIT)
     modified_at_story_time(agent)
     stops(agent)
