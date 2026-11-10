@@ -19,8 +19,8 @@ class ShopNumbers(RowNumbers):
         return {2: 40}[number]
 
 
-def line(to: str) -> Namespace:
-    return Namespace(text="Count the till", files=[], target_agent=None, to=to)
+def line(target: str) -> Namespace:
+    return Namespace(text="Count the till", files=[], target_agent=None, to=target)
 
 
 def test_a_message_to_agent_two_goes_to_the_row_of_agent_two_in_the_environment_of_the_line():
@@ -28,7 +28,7 @@ def test_a_message_to_agent_two_goes_to_the_row_of_agent_two_in_the_environment_
     assert isinstance(command, SendAgentMessage) and command == SendAgentMessage(40, "Count the till")
 
 
-@pytest.mark.parametrize("to", ["agent:0", "agent:x", "agent:", "worker:2", "agent:1e3"])
-def test_a_target_that_is_no_agent_number_is_refused(to):
+@pytest.mark.parametrize("target", ["agent:0", "agent:x", "agent:", "worker:2", "agent:1e3"])
+def test_a_target_that_is_no_agent_number_is_refused(target):
     with pytest.raises(Refusal, match="is not an agent"):
-        SendMessageSubcommand(ShopNumbers()).command(line(to), SHOP)
+        SendMessageSubcommand(ShopNumbers()).command(line(target), SHOP)
