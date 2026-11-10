@@ -1,6 +1,6 @@
 import pytest
 
-from engine.cli.usage_error import UsageError
+from engine.cli.errors.usage_error import UsageError
 from engine.actor.actor import Actor
 from engine.cli.line_parser import LineParser
 from engine.database.database import READ_LIMIT_ROWS, Database

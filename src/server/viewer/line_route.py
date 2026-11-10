@@ -14,7 +14,7 @@ from engine.cli.console import USAGE_CODE, Console
 from engine.cli.line_run import LineRun, ignore_completed
 from collections.abc import Callable
 from engine.cli.subcommand_lookup import SubcommandLookup
-from engine.cli.usage_error import UsageError
+from engine.cli.errors.usage_error import UsageError
 from engine.container.container import Container
 from engine.database.database import Database
 from engine.database.reported_findings import ReportedFindings

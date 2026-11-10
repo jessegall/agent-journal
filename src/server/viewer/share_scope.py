@@ -1,4 +1,4 @@
-from engine.cli.usage_error import UsageError
+from engine.cli.errors.usage_error import UsageError
 from engine.environment.environment_names import EnvironmentNames
 from engine.container.container import Container
 from engine.query.shared_rows import SharedRows

@@ -19,9 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/engine/cli/usage_error.py"
-            },
-            {
                 "file": "src/engine/command/command_error.py"
             },
             {

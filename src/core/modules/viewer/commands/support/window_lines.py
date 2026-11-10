@@ -3,7 +3,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.cli.line_parser import LineParser
 from engine.cli.parsed_line import ParsedLine
-from engine.cli.usage_error import UsageError
+from engine.cli.errors.usage_error import UsageError
 from engine.cli.write_flags import WriteFlags
 from engine.environment.environment_names import EnvironmentNames
 from engine.registry.registry import Registry

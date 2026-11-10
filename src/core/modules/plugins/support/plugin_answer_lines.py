@@ -4,7 +4,7 @@ from dataclasses import replace
 from engine.actor.actor import Actor
 from engine.caller.caller import Caller
 from engine.cli.console import Console
-from engine.cli.usage_error import UsageError
+from engine.cli.errors.usage_error import UsageError
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.outside_runs import OutsideRuns

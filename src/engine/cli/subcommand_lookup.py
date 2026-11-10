@@ -8,7 +8,7 @@ from engine.command.command import Command
 from engine.container.container import Container
 from engine.model.model import Model
 from engine.registry.registry import Registry
-from engine.cli.usage_error import UsageError
+from engine.cli.errors.usage_error import UsageError
 
 
 AnySubcommand = Subcommand[Command[object], object] | ReadSubcommand[object]

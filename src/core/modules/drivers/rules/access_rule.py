@@ -3,7 +3,7 @@ from engine.enums.access import Access
 from engine.caller.caller_request import SESSION_VARIABLE
 from engine.cli.shell_handoff import RUNNER_VARIABLE
 from engine.cli.subcommand_lookup import SubcommandLookup
-from engine.cli.usage_error import UsageError
+from engine.cli.errors.usage_error import UsageError
 from engine.driver.agent_hook import AgentHook
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.shell_line import ShellLine

@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 import json
 
-from engine.cli.usage_error import UsageError
+from engine.cli.errors.usage_error import UsageError
 from engine.caller.caller import Caller
 from engine.subcommand.subcommand import Subcommand
 from core.modules.settings.models.setting import Setting

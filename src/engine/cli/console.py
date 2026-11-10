@@ -18,7 +18,7 @@ from engine.cli.line_parser import LineParser
 from engine.cli.subcommand_lookup import AnySubcommand
 from engine.cli.shell_aliases import ShellAliases
 from engine.cli.shell_handoff import ShellHandoff
-from engine.cli.usage_error import UsageError
+from engine.cli.errors.usage_error import UsageError
 from engine.cli.write_flags import WriteFlags
 from engine.command.bus import Bus
 from engine.command.context import Context

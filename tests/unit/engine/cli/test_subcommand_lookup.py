@@ -5,7 +5,7 @@ import pytest
 from engine.cli.list_subcommand import ListSubcommand
 from engine.cli.move_subcommand import MoveSubcommand
 from engine.cli.subcommand_lookup import SubcommandLookup
-from engine.cli.usage_error import UsageError
+from engine.cli.errors.usage_error import UsageError
 from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.model_entry import ModelEntry
 from engine.registry.registry import Registry
