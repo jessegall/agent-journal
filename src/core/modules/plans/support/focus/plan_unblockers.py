@@ -30,9 +30,9 @@ class PlanUnblockers:
         self.queries, self.tasks = queries, tasks
 
     def unblockers(self, plan_id: int, agent: Agent) -> Unblockers:
-        return self.of_plans([plan_id], agent)[plan_id]
+        return self.plan_unblockers([plan_id], agent)[plan_id]
 
-    def of_plans(self, plan_ids: Sequence[int], agent: Agent) -> dict[int, Unblockers]:
+    def plan_unblockers(self, plan_ids: Sequence[int], agent: Agent) -> dict[int, Unblockers]:
         if not plan_ids:
             return {}
         unfinished_ids: dict[int, list[int]] = defaultdict(list)

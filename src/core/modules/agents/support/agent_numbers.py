@@ -12,7 +12,7 @@ class AgentNumbers:
     def __init__(self, queries: Queries, scopes: Scopes) -> None:
         self.queries, self.scopes = queries, scopes
 
-    def next_number(self, environment_id: int, role: str) -> int:
+    def next_number(self, environment_id: int | None, role: str) -> int:
         with self.scopes.opened(None, environment_id):
             agents = self.queries.query(Agent).with_removed()
             if role == MAIN_ROLE and not agents.filter(number=MAIN_NUMBER).exists():

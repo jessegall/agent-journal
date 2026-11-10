@@ -23,7 +23,7 @@ class PlanFocus:
 
     def overview(self, agent: Agent) -> FocusOverview:
         plans = tuple(self.queries.query(Plan).filter(state=PlanState.STARTED).ordered("started_at", "id").all_rows())
-        unblockers = self.unblockers.of_plans([plan.id for plan in plans], agent)
+        unblockers = self.unblockers.plan_unblockers([plan.id for plan in plans], agent)
         started = tuple(PlanWork(plan, self.next_tasks.ready(plan.id, agent), unblockers[plan.id]) for plan in plans)
         default = next((work.plan for work in started if work.is_workable), None)
         return FocusOverview(None if default is None else FocusedPlan(default, FocusSource.DEFAULT), started)
