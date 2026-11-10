@@ -1,14 +1,15 @@
 from datetime import timedelta
 
 from engine.testing.examples.hook_samples import HookSamples
+from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run
 from tests.stories.core.support.fixtures import UserJoined
 
 BUILD = "release v7.18.14 build"
 NOTICE = HookSamples.prompt(f"<task-notification>{BUILD} ended</task-notification>")
 
 
-def monitor_start(description: str):
-    command = "journal output monitor 4"
+def monitor_start(description: str, output: int = 4):
+    command = f"journal output monitor {output}"
     tool_input = {"command": command, "description": description}
     return HookSamples.sample("pre_tool_use", {"name": "Monitor", "category": "monitor", "input": tool_input}).with_raw({"tool_input": tool_input})
 
@@ -41,3 +42,12 @@ def test_a_monitor_started_after_the_notice_is_named_again(new_story):
     story.hook("s-1", monitor_start("journal update"))
     story.hook("s-1", HookSamples.stop())
     story.expect_text("usage tool --environment main", "waiting for journal update", actor=story.user)
+
+
+def test_an_agent_stops_waiting_for_a_monitored_run_once_the_run_has_ended(new_story):
+    story = install_runner(new_story(fixture=UserJoined))
+    process = moved_run(story, "make build")
+    story.hook("s-1", monitor_start(BUILD, process.id))
+    end_run(story, process, "done\n")
+    story.hook("s-1", HookSamples.stop())
+    story.expect_absent("usage tool --environment main", BUILD, actor=story.user)
