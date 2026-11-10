@@ -21,13 +21,3 @@ tests/stories/suites/coding/shipped_profile_skills.py::test_a_group_no_longer_ho
 tests/stories/suites/coding/shipped_profile_skills.py::test_a_group_no_longer_holds_the_skill_of_the_agent_that_sends_it[WORKER_SKILLS-journal-workers]  the skills journal-worker and journal-helper, which are not written yet
 tests/stories/suites/coding/shipped_profile_skills.py::test_a_skill_for_one_audience_is_in_that_group_and_no_other[journal-helper-HELPER_SKILLS]  the skills journal-worker and journal-helper, which are not written yet
 tests/stories/suites/coding/shipped_profile_skills.py::test_a_skill_for_one_audience_is_in_that_group_and_no_other[journal-worker-WORKER_SKILLS]  the skills journal-worker and journal-helper, which are not written yet
-tests/stories/core/modules/profiles/helper_lifetime.py::test_a_personal_file_with_occupant_each_launch_shows_in_profile_show  plan 1108 phase 'The declaration': a profile declares its occupant
-tests/stories/core/modules/profiles/helper_lifetime.py::test_profile_save_with_an_occupant_writes_the_file_and_the_list_shows_it  plan 1108 phase 'The declaration': a profile declares its occupant
-tests/stories/core/modules/profiles/helper_lifetime.py::test_a_profile_with_no_occupant_field_is_when_cold  plan 1108 phase 'The declaration': a profile declares its occupant
-tests/stories/core/modules/profiles/helper_lifetime.py::test_independent_reads_as_each_launch_and_is_never_written_again  plan 1108 phase 'The declaration': a profile declares its occupant
-tests/stories/core/modules/profiles/helper_lifetime.py::test_an_unknown_occupant_word_is_refused_and_the_file_stays_as_it_was  plan 1108 phase 'The declaration': a profile declares its occupant
-tests/stories/core/modules/profiles/helper_lifetime.py::test_a_reuse_word_in_a_file_or_on_the_save_line_is_refused_and_the_file_stays_as_it_was[kept]  plan 1108 phase 'The declaration': a profile declares its occupant
-tests/stories/core/modules/profiles/helper_lifetime.py::test_a_reuse_word_in_a_file_or_on_the_save_line_is_refused_and_the_file_stays_as_it_was[never]  plan 1108 phase 'The declaration': a profile declares its occupant
-tests/stories/core/modules/profiles/helper_lifetime.py::test_a_module_upgrade_keeps_a_persons_occupant  plan 1108 phase 'The declaration': a profile declares its occupant
-tests/stories/core/modules/profiles/helper_lifetime.py::test_a_worker_profile_that_declares_an_occupant_is_refused_naming_its_type_and_start_line  plan 1108 phase 'The declaration': a profile declares its occupant
-tests/stories/core/modules/profiles/helper_lifetime.py::test_the_reviewer_the_merger_and_the_researcher_each_show_their_own_occupant  plan 1108 phase 'The declaration': a profile declares its occupant

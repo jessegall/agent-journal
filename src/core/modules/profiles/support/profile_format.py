@@ -4,10 +4,13 @@ from collections.abc import Mapping
 
 from engine.enums.access import Access
 from engine.enums.model_tier import ModelTier
+from engine.profile.agent_profile import KEPT_AGENTS_TEXT
 from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_list, is_mapping, is_tuple
 from core.modules.profiles.support.profile_fields import ProfileFields
 from core.modules.profiles.support.profile_text import ProfileText
+
+OCCUPANT_REFUSAL_TEXT = "occupant must be continue, when-cold or each-launch"
 
 FIELD_NAMES = {"type": "agent_type", "kind": "agent_type", "moved-from": "source_digest", "could-write": "legacy_writing"}
 FILE_NAMES = {"agent_type": "type", "source_digest": "moved-from", "legacy_writing": "could-write"}
@@ -34,10 +37,12 @@ class ProfileFormat:
             fields["codex_model"] = ""
         if fields.get("agent_type") == "subagent":
             fields["agent_type"] = "helper"
-        if "independent" in raw:
-            fields["occupant"] = INDEPENDENT_OCCUPANTS[ProfileFormat.switch("independent", raw["independent"])]
+        if "reuse" in raw:
+            raise Refusal(KEPT_AGENTS_TEXT, "remove the reuse line: the occupant line sets when a session is replaced")
         if "occupant" in raw:
-            fields["occupant"] = Occupant(raw["occupant"])
+            fields["occupant"] = ProfileFormat.occupant(str(raw["occupant"]))
+        if "independent" in raw:
+            fields["occupant"] = ProfileFormat.agreed_occupant(fields, INDEPENDENT_OCCUPANTS[ProfileFormat.switch("independent", raw["independent"])])
         if "preferred_program" in raw:
             fields["preferred_program"] = ProfileFormat.switch("preferred_program", raw["preferred_program"])
         if "uses_project_instructions" in raw:
@@ -151,6 +156,19 @@ class ProfileFormat:
         if text.startswith("["):
             return tuple(str(tool) for tool in json.loads(text))
         return tuple(tool.strip() for tool in text.split(",") if tool.strip())
+
+    @staticmethod
+    def occupant(word: str) -> Occupant:
+        if word not in tuple(Occupant):
+            raise Refusal(OCCUPANT_REFUSAL_TEXT, "write one of the three words")
+        return Occupant(word)
+
+    @staticmethod
+    def agreed_occupant(fields: ProfileFields, independent_occupant: Occupant) -> Occupant:
+        occupant = fields.get("occupant", independent_occupant)
+        if occupant is not independent_occupant:
+            raise Refusal(f"occupant {occupant.value} and the independent line disagree", "remove the independent line")
+        return occupant
 
     @staticmethod
     def text(fields: Mapping[str, object]) -> str:

@@ -29,11 +29,12 @@ def personal_file(story, name: str, text: str):
 def test_a_personal_file_with_occupant_each_launch_shows_in_profile_show(person):
     personal_file(person, "journal-merger", MERGER_PROFILE_TEXT.format(field="occupant: each-launch"))
     person.expect_text("profile show journal-merger", "occupant: each-launch", actor=person.user)
+    person.expect_text("profile show journal-merger --json", '"occupant": "each-launch"', actor=person.user)
 
 
 def test_profile_save_with_an_occupant_writes_the_file_and_the_list_shows_it(person):
     person.expect_success("profile save journal-merger --occupant each-launch --reason needed", actor=person.user)
-    person.expect_rows("occupant: each-launch" in profile_path(person, "journal-merger").read_text())
+    person.expect_rows('occupant: "each-launch"' in profile_path(person, "journal-merger").read_text())
     merger_line = next(line for line in person.run("profile list", actor=person.user).output_text.splitlines() if line.startswith("journal-merger"))
     person.expect_rows("each-launch" in merger_line, detail=merger_line)
 
@@ -48,7 +49,7 @@ def test_independent_reads_as_each_launch_and_is_never_written_again(person):
     person.expect_text("profile show critic", "occupant: each-launch", actor=person.user)
     person.expect_success(f"{CRITIC_SAVE_LINE} --independent", actor=person.user)
     text = profile_path(person).read_text()
-    person.expect_rows("occupant: each-launch" in text, "independent" not in text, detail=text)
+    person.expect_rows('occupant: "each-launch"' in text, "independent" not in text, detail=text)
 
 
 def test_an_unknown_occupant_word_is_refused_and_the_file_stays_as_it_was(person):

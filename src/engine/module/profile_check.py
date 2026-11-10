@@ -1,3 +1,4 @@
+from engine.enums.occupant import Occupant
 from collections.abc import Sequence
 
 from engine.enums.access import Access
@@ -21,6 +22,10 @@ class ProfileCheck:
                 problems.extend(self.profile_problems(module.name, profile, types, claimed))
         return tuple(problems)
 
+    @staticmethod
+    def occupant_problem(profile_name: str, type_label: str, start_line: str) -> str:
+        return f"profile {profile_name} declares an occupant, and a {type_label} starts through {start_line}, which decides its sessions"
+
     def profile_problems(self, module: str, profile: AgentProfile, types: dict[str, HelperType], claimed: dict[str, str]) -> list[str]:
         problems: list[str] = []
         if profile.name in claimed:
@@ -38,4 +43,6 @@ class ProfileCheck:
         declared = types[profile.agent_type]
         if profile.access is Access.WRITING and declared.access is Access.READ:
             problems.append(f"profile {profile.name} asks for writing, and a {declared.label} only reads")
+        if declared.start_line and profile.occupant is not Occupant.COLD_ROTATION:
+            problems.append(self.occupant_problem(profile.name, declared.label, declared.start_line))
         return problems

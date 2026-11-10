@@ -1,4 +1,7 @@
 from engine.enums.occupant import INDEPENDENT_OCCUPANTS
+from engine.helper_type.helper_type_book import HelperTypeBook
+from engine.module.profile_check import ProfileCheck
+from engine.profile.agent_profile import KEPT_AGENTS_TEXT
 from argparse import ArgumentParser, BooleanOptionalAction, Namespace
 from dataclasses import replace
 
@@ -24,8 +27,8 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
     name = "save"
     outward = True
 
-    def __init__(self, files: ProfileFiles, providers: Providers, skills: ProfileSkills) -> None:
-        self.files, self.providers, self.skills = files, providers, skills
+    def __init__(self, files: ProfileFiles, providers: Providers, skills: ProfileSkills, types: HelperTypeBook) -> None:
+        self.files, self.providers, self.skills, self.types = files, providers, skills, types
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("profile_name")
@@ -38,6 +41,8 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
         parser.add_argument("--body")
         parser.add_argument("--access", type=Access, choices=list(Access))
         parser.add_argument("--independent", action=BooleanOptionalAction, default=None)
+        parser.add_argument("--occupant", help="continue, when-cold or each-launch: when the program session of an agent is replaced")
+        parser.add_argument("--reuse", help="not accepted: only a person retires an agent")
         parser.add_argument("--keeps-project-instructions", dest="uses_project_instructions", action=BooleanOptionalAction, default=None, help="a helper's own checkout keeps the project's instruction files beside the ones written for this profile")
         parser.add_argument("--skills", help="the skill folders the profile's agents get, a comma list or a JSON list; blank takes the skills of the profile's type")
         parser.add_argument("--required-skills", help="the skills of this profile its agents must read at the start, a comma list or a JSON list; blank requires none")
@@ -45,6 +50,8 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
         parser.add_argument("--program-if-possible", dest="preferred_program", action=BooleanOptionalAction, default=None, help="start on the other program when this one cannot start")
 
     def command(self, arguments: Namespace, caller: Caller) -> SaveProfile:
+        if arguments.reuse is not None:
+            raise Refusal(KEPT_AGENTS_TEXT, "remove --reuse: --occupant sets when a session is replaced")
         if self.files.has(arguments.profile_name):
             profile = self.files.row(arguments.profile_name)
             if isinstance(profile, ProfileProblem) or profile.problem:
@@ -54,6 +61,8 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
         fields = {name: value for name, value in vars(arguments).items() if name in ("title", "description", "body", "program", "preferred_program", "access", "uses_project_instructions") and value is not None}
         if arguments.independent is not None:
             fields["occupant"] = INDEPENDENT_OCCUPANTS[arguments.independent]
+        if arguments.occupant is not None:
+            fields["occupant"] = ProfileFormat.occupant(arguments.occupant)
         if arguments.tier is not None:
             fields["tier"] = ModelTier.automatic(arguments.tier) if arguments.tier else None
         if arguments.type is not None:
@@ -69,6 +78,9 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
         if arguments.writable_folders is not None:
             fields["writable_folders"] = ProfileFormat.tools(arguments.writable_folders)
         profile = replace(profile, **fields)
+        declared = self.types.find(profile.agent_type)
+        if arguments.occupant is not None and declared.start_line:
+            raise Refusal(ProfileCheck.occupant_problem(profile.name, declared.label, declared.start_line), "remove --occupant")
         for provider in self.providers.all():
             model = getattr(arguments, f"program_model_{provider.name}")
             if model is not None:

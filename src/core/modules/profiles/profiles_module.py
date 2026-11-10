@@ -1,5 +1,6 @@
 from core.modules.profiles.commands.remove_profile.remove_profile_handler import RemoveProfileHandler
 from core.modules.profiles.commands.remove_profile.remove_profile_subcommand import RemoveProfileSubcommand
+from core.modules.profiles.commands.show_profile.show_profile_subcommand import ShowProfileSubcommand
 from core.modules.profiles.commands.reset_profile.reset_profile_handler import ResetProfileHandler
 from core.modules.profiles.commands.reset_profile.reset_profile_subcommand import ResetProfileSubcommand
 from engine.viewer.window_read_search import WindowReadSearch
@@ -25,7 +26,7 @@ class ProfilesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.settings"]
     settings = PROFILE_SETTINGS
     handlers = [ResetProfileHandler, RemoveProfileHandler]
-    subcommands = [ResetProfileSubcommand, RemoveProfileSubcommand]
+    subcommands = [ResetProfileSubcommand, RemoveProfileSubcommand, ShowProfileSubcommand]
     listeners = [ProfilePublishListener]
     windows = [WindowDeclaration("profiles.profiles", "Profiles", "profiles.js", WindowLoading.COMPONENT, skeleton=PROFILES_PROFILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.AGENT, search=WindowReadSearch("profile list", "Find a profile", ("name", "description", "agent_type", "model", "codex_model")),
                                  reads=["agent programs", "helper availability", "profile list", "profile skills"],
