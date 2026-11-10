@@ -5,7 +5,7 @@ from engine.file.file_access import FileAccess
 ALLOW_LIST_FILE = Path(__file__).with_name("folder_budget_allow_list.txt")
 WIDTH_LIMIT_ENTRIES = 12
 DEPTH_LIMIT_LEVELS = 3
-LISTS_OF_EQUALS = {
+STANDARD_FOLDERS = {
     "bindings", "commands", "conditions", "drivers", "enums", "errors", "guards", "listeners", "migrations", "models", "modules", "overlays",
     "providers", "rules", "suites", "tunnels", "upgrade",
 }
@@ -35,7 +35,7 @@ class FolderBudget:
     def wide_folders(self) -> list[str]:
         folders = [self.source, *(folder for folder in sorted(self.source.rglob("*")) if folder.is_dir() and self.is_judged(folder))]
         return [f"{self.relative(folder)} holds more than {WIDTH_LIMIT_ENTRIES} entries" for folder in folders
-                if folder.name not in LISTS_OF_EQUALS and folder != self.source / "engine" and len(self.entries(folder)) > WIDTH_LIMIT_ENTRIES]
+                if folder.name not in STANDARD_FOLDERS and folder != self.source / "engine" and len(self.entries(folder)) > WIDTH_LIMIT_ENTRIES]
 
     def deep_files(self) -> list[str]:
         files = [path for path in sorted(self.source.rglob("*.py")) if self.is_judged(path) and path.name != "__init__.py"]
