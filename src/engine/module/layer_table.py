@@ -5,6 +5,9 @@ from engine.module.layer_pattern import LayerPattern
 from engine.module.layer_tier import LayerTier
 
 LAYER_PATTERNS = (
+    LayerPattern(re.compile(r"src/engine/testing/"), LayerTier.TEST_KIT),
+    LayerPattern(re.compile(r"src/core/modules/([^/]+)/testing/"), LayerTier.TEST_KIT),
+    LayerPattern(re.compile(r"src/suites/([^/]+/modules/[^/]+)/testing/"), LayerTier.TEST_KIT),
     LayerPattern(re.compile(r"src/(?:core/base|engine)/"), LayerTier.ENGINE),
     LayerPattern(re.compile(r"src/core/modules/([^/]+)/"), LayerTier.CORE_MODULE),
     LayerPattern(re.compile(r"src/suites/([^/]+)/modules/([^/]+)/"), LayerTier.SUITE_MODULE),

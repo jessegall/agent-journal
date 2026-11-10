@@ -2,7 +2,8 @@ from enum import Enum
 
 
 class LayerTier(Enum):
-    """The levels of the code from the bottom up; a layer may use its own level and the ones below it."""
+    """The levels of the code from the bottom up; a layer may use its own level and the ones below it. The test kit
+    is the top: it may use every layer and only tests use it."""
 
     ENGINE = "engine"
     CORE_MODULE = "core module"
@@ -10,10 +11,11 @@ class LayerTier(Enum):
     SUITE_MODULE = "suite module"
     TUNNEL = "tunnel"
     HOST = "host"
+    TEST_KIT = "test kit"
 
     @property
     def height(self) -> int:
         return TIER_HEIGHTS[self]
 
 
-TIER_HEIGHTS = {LayerTier.ENGINE: 0, LayerTier.CORE_MODULE: 1, LayerTier.SUITE: 2, LayerTier.SUITE_MODULE: 2, LayerTier.TUNNEL: 2, LayerTier.HOST: 3}
+TIER_HEIGHTS = {LayerTier.ENGINE: 0, LayerTier.CORE_MODULE: 1, LayerTier.SUITE: 2, LayerTier.SUITE_MODULE: 2, LayerTier.TUNNEL: 2, LayerTier.HOST: 3, LayerTier.TEST_KIT: 4}

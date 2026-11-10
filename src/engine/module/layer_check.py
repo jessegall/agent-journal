@@ -77,7 +77,7 @@ class LayerCheck:
         lines: list[str] = []
         for target in sorted(targets, key=self.layer_label):
             line = f"{relative} imports {target.label}, which {layer.label} may not use"
-            is_allowed = target in self.rules.allowed(layer)
+            is_allowed = self.rules.may_use(layer, target)
             if is_allowed or line not in self.allow_list:
                 self.edges[layer.label].add(target.label)
             if not is_allowed:

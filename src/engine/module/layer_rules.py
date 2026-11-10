@@ -23,6 +23,9 @@ class LayerRules:
             return {layer, ENGINE_LAYER, *(module_layer for module_layer in self.layer_by_module.values() if module_layer.tier is LayerTier.CORE_MODULE)}
         return {layer, ENGINE_LAYER, *self.declared_layers(layer)}
 
+    def may_use(self, layer: Layer, target: Layer) -> bool:
+        return layer.tier is LayerTier.TEST_KIT or target in self.allowed(layer)
+
     def declared_layers(self, layer: Layer) -> list[Layer]:
         return [self.layer_by_module[name] for name in self.dependencies_by_layer.get(layer, []) if name in self.layer_by_module]
 

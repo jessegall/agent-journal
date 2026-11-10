@@ -42,6 +42,9 @@ def failures(project, *modules, allow_list=()):
     ("src/tunnels/tunler/tunler_module.py", Layer(LayerTier.TUNNEL, "tunler")),
     ("src/server/viewer/page.py", Layer(LayerTier.HOST, "server")),
     ("src/install/hook_switch.py", Layer(LayerTier.HOST, "install")),
+    ("src/engine/testing/stories/story.py", Layer(LayerTier.TEST_KIT, "test kit")),
+    ("src/core/modules/skills/testing/story_skill_requirement.py", Layer(LayerTier.TEST_KIT, "skills")),
+    ("src/suites/coding/modules/workers/testing/sample_worker.py", Layer(LayerTier.TEST_KIT, "coding/modules/workers")),
 ])
 def test_a_path_gives_its_layer(path, layer):
     assert LayerTable().file_layer(path) == layer
@@ -74,6 +77,23 @@ def test_a_suite_is_limited_to_the_public_folders_of_a_core_module_in_the_printe
 def test_the_engine_may_import_only_itself():
     engine = Layer(LayerTier.ENGINE, "engine")
     assert LayerRules(LayerTable(), []).allowed(engine) == {engine}
+
+
+def test_the_test_kit_may_import_every_layer(tmp_path):
+    module_folder(tmp_path, "core.modules.tasks", "tasks")
+    module_folder(tmp_path, "engine.testing.stories", "story", "from core.modules.tasks.models.task import Task\nfrom server.server import Server\n")
+    module_folder(tmp_path, "core.modules.tasks.testing", "story_task", "from core.modules.tasks.models.task import Task\nfrom engine.testing.stories.story_module import Story\n")
+    assert failures(tmp_path, declared("tasks", "core.modules.tasks")) == []
+
+
+def test_no_layer_below_the_test_kit_may_import_it(tmp_path):
+    module_folder(tmp_path, "core.modules.tasks", "tasks", "from engine.testing.stories.story import Story\nfrom core.modules.tasks.testing.story_task import StoryTask\n")
+    module_folder(tmp_path, "engine.time", "clock", "from engine.testing.fakes.manual_clock import ManualClock\n")
+    assert failures(tmp_path, declared("tasks", "core.modules.tasks")) == [
+        "src/core/modules/tasks/tasks_module.py imports test kit, which core module tasks may not use",
+        "src/core/modules/tasks/tasks_module.py imports test kit tasks, which core module tasks may not use",
+        "src/engine/time/clock_module.py imports test kit, which engine may not use",
+    ]
 
 
 def test_an_undeclared_import_fails(tmp_path):
