@@ -22,6 +22,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.helpers.support.helper_limits import HelperLimits
+from core.modules.helpers.support.helper_program_choice import HelperProgramChoice
 from core.modules.helpers.commands.start_helper.start_helper_handler import StartHelperHandler
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
@@ -70,7 +71,7 @@ def test_when_the_merger_cannot_start_the_main_agent_hears_what_waits(new_story,
         "sandbox": lambda: monkeypatch.setattr(story.container.get(ShellSandbox), "check", fail),
         "no main agent": lambda: monkeypatch.setattr(AgentRows, "main_agent", lambda _rows: None),
         "limit": lambda: monkeypatch.setattr(HelperLimits, "checked_new_place", fail),
-        "outage": lambda: monkeypatch.setattr(StartHelperHandler, "startable_program", fail),
+        "outage": lambda: monkeypatch.setattr(HelperProgramChoice, "startable", fail),
         "unexpected error": lambda: monkeypatch.setattr(StartHelperHandler, "prepare", fail),
     }
     monkeypatch.setattr(HelperLimits, "checked_launcher", lambda _limits: None)

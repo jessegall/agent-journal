@@ -6,7 +6,6 @@ from engine.sandbox.shell_sandbox import ShellSandbox
 from engine.cli.row_numbers import RowNumbers
 from engine.command.bus import Bus
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.driver.program_lockdown import ProgramLockdown
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
@@ -14,23 +13,16 @@ from engine.repository.repository import Repository
 from engine.helper_type.helper_type_book import HelperTypeBook
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.agent_folders import AgentFolders
 from engine.profile.agent_profile import AgentProfile
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_reuse import HelperReuse
 from core.modules.helpers.support.kept_helpers import KeptHelpers
-from core.modules.helpers.support.helper_counts import HelperCounts
-from core.modules.helpers.support.program_shares import ProgramShares
-from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.support.helper_started import HelperStarted
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.profile_model import ProfileModel
-from core.modules.helpers.support.profile_models import ProfileModels
-from core.modules.helpers.support.helper_program import HelperProgram
-from engine.enums.model_tier import ModelTier
-from core.modules.helpers.support.helper_programs import HelperPrograms
-from engine.provider.providers import Providers
+from core.modules.helpers.support.helper_program_choice import HelperProgramChoice
+from core.modules.helpers.support.program_request import ProgramRequest
 from core.modules.usage.commands.count_profile_use.count_profile_use import CountProfileUse
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.messages.support.work_sources import WorkSources
@@ -50,15 +42,12 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
 
     command = StartHelper
 
-    def __init__(self, profiles: ProfileFiles, types: HelperTypeBook, limits: HelperLimits, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers, models: ProfileModels, shares: ProgramShares, states: ProgramStates, counts: HelperCounts, lockdown: ProgramLockdown, numbers: RowNumbers) -> None:
+    def __init__(self, profiles: ProfileFiles, types: HelperTypeBook, limits: HelperLimits, bus: Bus, repository: Repository, reuse: HelperReuse, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers, choice: HelperProgramChoice, numbers: RowNumbers) -> None:
         self.numbers = numbers
-        self.lockdown = lockdown
-        self.kept, self.models = kept, models
+        self.kept, self.choice = kept, choice
         self.sandbox = sandbox
         self.profiles, self.types, self.limits, self.bus, self.repository, self.reuse = profiles, types, limits, bus, repository, reuse
-        self.programs, self.folders, self.providers = programs, folders, providers
         self.sources = sources
-        self.shares, self.states, self.counts = shares, states, counts
 
     def prepare(self, command: StartHelper, actor: Actor) -> None:
         self.sandbox.check()
@@ -77,7 +66,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         reuses_helpers = not command.new_agent_reason.strip() and not profile.independent
         if reuses_helpers:
             self.check_reuse(parent, profile, command.brief)
-        selection = self.startable_program(command, profile, parent)
+        selection = self.choice.startable(profile, parent, ProgramRequest(command.program, command.program_model, command.tier))
         if reuses_helpers:
             self.check_idle(profile, selection.program, selection.model)
         start = StartAgent(str(uuid4()), selection.program, agent_type.key, parent.id, program_model=selection.model, profile=profile.name, given_name=command.given_name, access=profile.access or agent_type.access)
@@ -90,57 +79,6 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         self.sources.use_copy(source, source_context)
         self.bus.dispatch(CountProfileUse(profile.name), context)
         return HelperStarted(helper, selection.note)
-
-    def startable_program(self, command: StartHelper, profile: AgentProfile, parent: Agent) -> HelperProgram:
-        preferred = self.selected_program(command, profile, parent)
-        try:
-            model = self.checked_start(preferred, command.program_model, profile, parent, command.tier)
-            return HelperProgram(preferred, model, self.availability_note(command, preferred))
-        except Refusal as refusal:
-            if not (profile.preferred_program and profile.program and not command.program):
-                raise
-            for fallback_program in profile.fallbacks_after(preferred, [provider.name for provider in self.providers.all()]):
-                try:
-                    return HelperProgram(fallback_program, self.checked_start(fallback_program, "", profile, parent, command.tier),
-                                         f"{profile.program} could not start ({refusal.text}), so it runs on {fallback_program}")
-                except Refusal:
-                    continue
-            raise refusal from None
-
-    def selected_program(self, command: StartHelper, profile: AgentProfile, parent: Agent) -> str:
-        if command.program:
-            return command.program
-        if command.program_model:
-            return self.providers.model_program(command.program_model)
-        if profile.program:
-            return profile.program
-        if profile.mcp_tools:
-            return parent.program
-        if not self.shares.is_configured:
-            return parent.program
-        folder = self.folders.folder(parent)
-        readiness = self.states.readiness(folder)
-        program = self.shares.next_program(self.counts.recent(parent.environment_id), readiness.ready_programs)
-        if program is None:
-            raise Refusal(f"no program can take this helper: {readiness.earliest_line}", "name --program explicitly, or wait")
-        return program
-
-    def availability_note(self, command: StartHelper, program: str) -> str:
-        if not command.program:
-            return ""
-        state = self.states.plan_window_state(program)
-        if state.is_ready:
-            return ""
-        availability = f" until {state.ends_at.text}" if state.ends_at is not None else ""
-        return f"{program} is out{availability}: {state.line}; started as requested"
-
-    def checked_start(self, program: str, program_model: str, profile: AgentProfile, parent: Agent, tier: ModelTier | None) -> str:
-        lockdown = self.lockdown.lockdown(program)
-        if lockdown.is_active:
-            raise lockdown.start_refusal("helper")
-        model = self.limits.checked_profile_model(ProfileModel(program, program_model or self.models.model(profile, self.providers.provider(program), tier, "helper"), profile.name))
-        self.programs.checked(program, self.folders.folder(parent))
-        return model
 
     def check_idle(self, profile: AgentProfile, program: str, model: str) -> None:
         idle_helpers = self.kept.idle(ProfileModel(program, model, profile.name))
