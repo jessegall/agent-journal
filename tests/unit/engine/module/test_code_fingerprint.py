@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from engine.module.code_fingerprint import CodeFingerprint
+from engine.module.code_fingerprint import CORE_FOLDER, ENGINE_FOLDER, CodeFingerprint
 from engine.module.folder_listing import FolderListing
 from engine.module.module import Module
 
@@ -81,3 +81,9 @@ def test_a_second_fingerprint_of_the_same_folders_walks_them_no_more_and_a_new_f
     assert FolderListing.kept([tmp_path]) is listing
     (tmp_path / "b.py").write_text("y = 2\n")
     assert fingerprint.folder_text([tmp_path]) != first
+
+
+def test_the_fingerprint_reads_the_engine_folder_and_the_core_folder():
+    folders = CodeFingerprint.folders([])
+    assert folders == (ENGINE_FOLDER, CORE_FOLDER)
+    assert (ENGINE_FOLDER / "module" / "code_fingerprint.py").is_file() and (CORE_FOLDER / "journal.py").is_file()

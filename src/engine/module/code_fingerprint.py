@@ -10,16 +10,17 @@ from engine.module.module import Module
 from engine.module.source_hash import SourceHash
 from engine.version.version import CORE_VERSION
 
-CORE_FOLDER = Path(__file__).resolve().parents[2]
+SOURCE_FOLDER = Path(__file__).resolve().parents[2]
 BUILT_WINDOWS_FOLDER = Path("web") / "dist"
-SOURCE_FOLDER = CORE_FOLDER.parent
+CORE_FOLDER = SOURCE_FOLDER / "core"
+ENGINE_FOLDER = SOURCE_FOLDER / "engine"
 PINNED_CODE_VARIABLE = "JOURNAL_PINNED_CODE_TEXT"
 
 
 class CodeFingerprint:
-    """A hash of the core version and of every Python file in the core's folder and in each module's folder,
-    by path, size and change time, so a run can tell that the registry was built from other code; a file that
-    appears, changes or is gone is a change, never an error. The folder listing of each set of folders is
+    """A hash of the core version and of every Python file in the folders of the engine, the core and each
+    module, by path, size and change time, so a run can tell that the registry came from other code; a file
+    that appears, changes or is gone is a change, never an error. The folder listing of each set of folders is
     kept, so it is walked again only when a folder changed. A long running server's ticker refreshes the text,
     so a request reads the kept one and never the files; under unit tests, whose code does not change, the
     text uses relative paths and content hashes, so identical checkouts share test templates. A module's own
@@ -57,7 +58,7 @@ class CodeFingerprint:
 
     @staticmethod
     def folders(modules: Sequence[type[Module]]) -> tuple[Path, ...]:
-        return (CORE_FOLDER, *(module.folder() for module in modules if not module.folder().is_relative_to(CORE_FOLDER)))
+        return (ENGINE_FOLDER, CORE_FOLDER, *(module.folder() for module in modules if not module.folder().is_relative_to(CORE_FOLDER)))
 
     def module_text(self, module: type[Module]) -> str:
         built_files = sorted(path for path in (module.folder() / BUILT_WINDOWS_FOLDER).rglob("*") if path.is_file())
