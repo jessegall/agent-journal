@@ -25,7 +25,7 @@ class AgentStarted(StoryFixture):
         story.agent = Actor(story.new_row_id(lines.AGENT_START), ActorType.AGENT)
 
     def expect(self, story: Story) -> None:
-        story.expect_success(f"agent show {story.agent.id}", "session: s-1", "environment_id: 1")
+        story.expect_success("agent show 1", "session: s-1", "environment_id: 1", actor=story.agent)
 
 
 class ProcessAgent(StoryFixture):
@@ -37,7 +37,7 @@ class ProcessAgent(StoryFixture):
         story.agent = Actor(story.new_row_id(lines.AGENT_START_WITH_PROCESS), ActorType.AGENT)
 
     def expect(self, story: Story) -> None:
-        story.expect_success(f"agent show {story.agent.id}", "session: s-7", "pid: 700")
+        story.expect_success("agent show 1", "session: s-7", "pid: 700", actor=story.agent)
 
 
 class ThreeTasks(StoryFixture):

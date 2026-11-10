@@ -31,7 +31,7 @@ class BuilderStarted(StoryFixture):
         story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
 
     def expect(self, story: Story) -> None:
-        story.expect_success(f"agent show {story.agent.id}", "session: s-1", "role: main")
+        story.expect_success("agent show 1", "session: s-1", "role: main", actor=story.agent)
 
 
 class OpenTaskBuilder(StoryFixture):
