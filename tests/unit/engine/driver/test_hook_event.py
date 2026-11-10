@@ -7,7 +7,7 @@ from engine.driver.hook_event import HookEvent
 from engine.driver.hook_event_error import HookEventError
 from engine.driver.hook_event_version_error import HookEventVersionError
 
-HOOK_FOLDER = Path(__file__).resolve().parents[5] / "tools" / "journal-hook"
+HOOK_FOLDER = Path(__file__).resolve().parents[4] / "tools" / "journal-hook"
 SCHEMA_EXAMPLES = sorted((HOOK_FOLDER / "event" / "testdata" / "schema").glob("*.json"))
 SKIPPED_LINE = "skip"
 PREPARED_OBJECTS = sorted((HOOK_FOLDER / "programs" / "testdata" / "prepared").glob("*/*.jsonl"))

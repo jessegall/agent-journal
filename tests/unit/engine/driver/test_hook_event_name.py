@@ -7,7 +7,7 @@ from engine.driver.hook_event import HOOK_EVENT_VERSION, HookEvent
 from engine.driver.hook_event_error import HookEventError
 from engine.driver.hook_event_name import HookEventName
 
-SCHEMA = Path(__file__).parents[5] / "tools" / "journal-hook" / "event" / "hook_event.schema.json"
+SCHEMA = Path(__file__).parents[4] / "tools" / "journal-hook" / "event" / "hook_event.schema.json"
 STOP_BODY = {"version": HOOK_EVENT_VERSION, "program": "claude", "event": "stop", "session": "s-1", "firing": "f-1", "fired_at_ms": 1, "actor": "agent", "environment": "main",
              "helper": "", "tool": None, "prompt": None, "raw": {}, "accepts_lines": True, "launch": "", "foreign": []}
 EVENT_NAMES = ["pre_tool_use", "post_tool_use", "post_tool_use_failure", "prompt", "stop", "stop_failure", "session_start", "session_end", "compact",
