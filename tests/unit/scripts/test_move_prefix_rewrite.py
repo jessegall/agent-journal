@@ -212,3 +212,12 @@ def test_a_branch_file_at_the_target_path_refuses_the_rewrite_with_the_branch_un
         script.move_branch(repository.folder, "work", AREA, AREA_TARGET)
     repository.expect_branch_tip("work", tip)
     assert repository.git("worktree", "list").stdout.count("\n") == 1
+
+
+def test_a_file_moved_with_its_area_keeps_its_exception_of_the_enum_rule_at_its_new_path_until_it_sits_in_enums(tmp_path):
+    write(tmp_path, "src/core/base/sample_area/sample_state.py", "class SampleState:\n    pass\n")
+    rule = write(tmp_path, ".commandments/custom/architecture_layout_enum_outside_enums.json", '{"find": {"reject": [{"file": "src/core/base/sample_area/sample_state.py"}]}}\n')
+    script.move_path(tmp_path, tmp_path / "src/core/base/sample_area", tmp_path / "src/engine/sample_area")
+    assert json.loads(rule.read_text())["find"]["reject"] == [{"file": "src/engine/sample_area/sample_state.py"}]
+    script.move_path(tmp_path, tmp_path / "src/engine/sample_area/sample_state.py", tmp_path / "src/engine/sample_area/enums/sample_state.py")
+    assert json.loads(rule.read_text())["find"]["reject"] == []

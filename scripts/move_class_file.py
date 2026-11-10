@@ -16,7 +16,8 @@ SOURCE_FOLDERS = ("src", "tests", "scripts")
 SKIPPED_FOLDERS = {"__pycache__", "node_modules"}
 TEXT_FILE_PATTERNS = (".commandments/**/*", "tests/snapshots/**/*.json", "docs/writing-a-module.md", "pyrightconfig.json", "src/**/layer_allow_list.txt")
 RECORDING_FILE_PATTERNS = ["tools/journal-hook/**/testdata/*.jsonl"]
-ALLOW_LISTED_RULE_PATTERN = "architecture_layout_*.json"
+LOOSE_FILE_RULE_PATTERN = "architecture_layout_*_loose_*.json"
+PLACED_FOLDER_RULES = {"architecture_layout_enum_outside_enums.json": "enums", "architecture_layout_error_outside_errors.json": "errors"}
 PLUGIN_FILE_PATTERNS =[".journal/plugins/*/journal-plugin.json"]
 TEST_ROOTS = ("tests/unit", "tests/stories")
 SCRIPTS_FOLDER = "scripts"
@@ -396,12 +397,18 @@ def move_plan(root: Path, source: Path, target: Path) -> MovePlan:
     raise MoveError(f"{relative_text(root, source)} does not exist")
 
 
-def without_allow_list_entries(path: Path, text: str, moved_paths: set[str]) -> str:
-    if not path.match(ALLOW_LISTED_RULE_PATTERN):
+def obeys_rule_after_move(path: Path, target: str) -> bool:
+    if path.match(LOOSE_FILE_RULE_PATTERN):
+        return True
+    return Path(target).parent.name == PLACED_FOLDER_RULES[path.name]
+
+
+def without_allow_list_entries(path: Path, text: str, moved_paths: dict[str, str]) -> str:
+    if not path.match(LOOSE_FILE_RULE_PATTERN) and path.name not in PLACED_FOLDER_RULES:
         return text
     rule = json.loads(text)
     reject = rule["find"]["reject"]
-    remaining = [step for step in reject if step.get("file") not in moved_paths]
+    remaining = [step for step in reject if step.get("file") not in moved_paths or not obeys_rule_after_move(path, moved_paths[step["file"]])]
     if len(remaining) == len(reject):
         return text
     rule["find"]["reject"] = remaining
@@ -426,7 +433,7 @@ def planned_files(root: Path, plan: MovePlan) -> dict[Path, str]:
         edited = with_engine_layer_line(rewrite.edited_text(), layer_line)
         if edited != rewrite.text:
             changed[path] = edited
-    moved_paths = {relative_text(root, source) for source in plan.file_targets}
+    moved_paths = {relative_text(root, source): relative_text(root, target) for source, target in plan.file_targets.items()}
     for path in files_matching(root, TEXT_FILE_PATTERNS):
         text = file_text(path)
         if text is None:
