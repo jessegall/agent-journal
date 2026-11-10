@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from engine.map.folder_budget import WIDTH_LIMIT, FolderBudget
+from engine.map.folder_budget import WIDTH_LIMIT_ENTRIES, FolderBudget
 
 SOURCE = Path(__file__).resolve().parents[4] / "src"
 
@@ -15,7 +15,7 @@ def ledger_folder(root: Path, files: int) -> Path:
 
 def test_448_a_folder_with_a_thirteenth_entry_is_refused_unless_it_is_on_the_allow_list(new_story, tmp_path):
     story = new_story()
-    folder = ledger_folder(tmp_path, WIDTH_LIMIT + 1)
+    folder = ledger_folder(tmp_path, WIDTH_LIMIT_ENTRIES + 1)
     line = "src/engine/ledger holds more than 12 entries"
     refused = FolderBudget(tmp_path / "src", []).failures()
     allowed = FolderBudget(tmp_path / "src", [line]).failures()

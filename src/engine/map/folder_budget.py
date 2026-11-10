@@ -3,8 +3,8 @@ from pathlib import Path
 from engine.file.file_access import FileAccess
 
 ALLOW_LIST_FILE = Path(__file__).with_name("folder_budget_allow_list.txt")
-WIDTH_LIMIT = 12
-DEPTH_LIMIT = 3
+WIDTH_LIMIT_ENTRIES = 12
+DEPTH_LIMIT_LEVELS = 3
 LISTS_OF_EQUALS = {
     "bindings", "commands", "conditions", "drivers", "enums", "errors", "guards", "listeners", "migrations", "models", "modules", "overlays",
     "providers", "rules", "suites", "tunnels", "upgrade",
@@ -34,17 +34,17 @@ class FolderBudget:
 
     def wide_folders(self) -> list[str]:
         folders = [self.source, *(folder for folder in sorted(self.source.rglob("*")) if folder.is_dir() and self.is_judged(folder))]
-        return [f"{self.relative(folder)} holds more than {WIDTH_LIMIT} entries" for folder in folders
-                if folder.name not in LISTS_OF_EQUALS and folder != self.source / "engine" and len(self.entries(folder)) > WIDTH_LIMIT]
+        return [f"{self.relative(folder)} holds more than {WIDTH_LIMIT_ENTRIES} entries" for folder in folders
+                if folder.name not in LISTS_OF_EQUALS and folder != self.source / "engine" and len(self.entries(folder)) > WIDTH_LIMIT_ENTRIES]
 
     def deep_files(self) -> list[str]:
         files = [path for path in sorted(self.source.rglob("*.py")) if self.is_judged(path) and path.name != "__init__.py"]
-        return [f"{self.relative(path)} sits more than {DEPTH_LIMIT} levels below its layer" for path in files if self.levels_below_layer(path) > DEPTH_LIMIT]
+        return [f"{self.relative(path)} sits more than {DEPTH_LIMIT_LEVELS} levels below its layer" for path in files if self.layer_depth(path) > DEPTH_LIMIT_LEVELS]
 
-    def levels_below_layer(self, path: Path) -> int:
+    def layer_depth(self, path: Path) -> int:
         parts = path.relative_to(self.source).parts
         if parts[0] == "suites":
-            return len(parts) - (SUITE_MODULE_ROOT_PARTS if parts[2:3] == ("modules",) else SUITE_ROOT_PARTS)
+            return len(parts) - (SUITE_MODULE_ROOT_PARTS if len(parts) > 2 and parts[2] == "modules" else SUITE_ROOT_PARTS)
         return len(parts) - LAYER_ROOT_PARTS.get(parts[0], 1)
 
     def entries(self, folder: Path) -> list[Path]:
