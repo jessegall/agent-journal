@@ -2,11 +2,10 @@ from engine.journal.journal_home import JournalHome
 from engine.provider.context_window import ContextWindow
 from engine.provider.providers import Providers
 from engine.setting.setting_values import SettingValues
-from core.modules.settings.support.context_reading import ContextReading
+from core.modules.settings.support.context_reading import PERCENT_FULL, ContextReading
 
 CONTEXT_LIMIT_ENABLED = "journal.core.helpers.context-limit-on"
 CONTEXT_LIMIT_TOKENS = "journal.core.helpers.context-limit-tokens"
-PERCENT_FULL = 100
 
 
 class ContextShare:
@@ -39,5 +38,4 @@ class ContextShare:
         return self.usage(program, session).percent
 
     def maximum_tokens(self, program: str, session: str) -> int | None:
-        usage = self.usage(program, session)
-        return usage.used_tokens * PERCENT_FULL // usage.percent if usage.used_tokens and usage.percent else None
+        return self.usage(program, session).maximum_tokens()

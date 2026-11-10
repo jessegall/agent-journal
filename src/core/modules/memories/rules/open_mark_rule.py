@@ -1,4 +1,6 @@
 from core.modules.settings.bindings.support.context_share import ContextShare
+from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.drivers.support.current_context_window import CurrentContextWindow
 from core.modules.memories.support.block_conditions.memories_weighed import MemoriesWeighed
 from core.modules.memories.support.memory_nudges import WEIGH_COUNTDOWN, WEIGH_FIRST, WEIGH_MEMORIES
 from engine.driver.agent_hook import AgentHook
@@ -29,19 +31,19 @@ class OpenMarkRule(DriverRule):
     drivers = ["*"]
     role_group = RoleGroup.MARK
 
-    def __init__(self, marks: MarkTracker, settings: SettingValues, memories: ActiveMemoryQuery, share: ContextShare) -> None:
-        self.marks, self.settings, self.memories, self.share = marks, settings, memories, share
+    def __init__(self, marks: MarkTracker, settings: SettingValues, memories: ActiveMemoryQuery, share: ContextShare, agents: AgentRows, current_window: CurrentContextWindow) -> None:
+        self.marks, self.settings, self.memories, self.share, self.agents, self.current_window = marks, settings, memories, share, agents, current_window
 
-    def spaced_marks(self, hook: AgentHook, marks: tuple[int, ...]) -> tuple[int, ...]:
-        maximum_tokens = self.share.maximum_tokens(hook.event.program, hook.event.session)
+    def spaced_marks(self, maximum_tokens: int | None, marks: tuple[int, ...]) -> tuple[int, ...]:
         return marks if maximum_tokens is None else self.marks.spaced(marks, maximum_tokens, self.settings.number(MARK_SPACING_TOKENS_SETTING))
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        percent = self.share.percent(hook.event.program, hook.event.session)
+        usage = self.share.reading(self.current_window.window(self.agents.find(hook.agent_id)))
+        percent = usage.percent
         if percent is None:
             return RuleAnswer.allowed()
         marks = self.settings.numbers(MARKS_SETTING)
-        reached = self.marks.next_reached(hook.agent_id, percent, self.spaced_marks(hook, marks))
+        reached = self.marks.next_reached(hook.agent_id, percent, self.spaced_marks(usage.maximum_tokens(), marks))
         if reached is None or self.marks.open_marks(hook.agent_id):
             return RuleAnswer.allowed()
         tool_uses = self.settings.numbers(MARK_TOOL_USES_SETTING)

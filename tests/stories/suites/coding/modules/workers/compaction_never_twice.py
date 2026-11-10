@@ -14,9 +14,9 @@ from tests.stories.suites.coding.modules.workers.context_limit import COMPACTION
 
 TOO_LONG = timedelta(seconds=601)
 EDITED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
-OLD_READING = timedelta(seconds=60)
+READING_AGE = timedelta(seconds=60)
 GROWTH_TOKENS = LIMIT_TOKENS // 10
-TOKENS_PAST_LIMIT = LIMIT_TOKENS + 50_000
+TOKENS_OVER_LIMIT = LIMIT_TOKENS + 50_000
 STOPS_WITHOUT_LAUNCHER = 5
 WAITING_IN_THE_PROGRAM = timedelta(seconds=20)
 RETRY_DUE = timedelta(seconds=181)
@@ -103,15 +103,15 @@ def modified_at_story_time(story, moment=None):
 def set_context_older_than_compaction(story, tokens):
     """A reading the program wrote before the compaction ended, and has not rewritten since."""
     has_context(story, tokens)
-    modified_at_story_time(story, story.clock.timestamp().value - OLD_READING)
+    modified_at_story_time(story, story.clock.timestamp().value - READING_AGE)
 
 
-def expect_compactions_typed(story, count):
+def expect_compaction_count(story, count):
     story.expect_rows(story.typing.typed.count(COMPACT) == count, detail=str(story.typing.typed))
 
 
 def ended_at_once(story):
-    story.advance(OLD_READING)
+    story.advance(READING_AGE)
     compacted(story, "manual")
 
 
@@ -139,10 +139,10 @@ def started_and_waiting(story):
 def test_a_later_stop_types_the_compaction_a_second_time_only_after_three_minutes_with_none_started(agent, steps_between_stops, compaction_count):
     has_context(agent, LIMIT_TOKENS)
     stops(agent)
-    expect_compactions_typed(agent, 1)
+    expect_compaction_count(agent, 1)
     steps_between_stops(agent)
     stops(agent)
-    expect_compactions_typed(agent, compaction_count)
+    expect_compaction_count(agent, compaction_count)
 
 
 @pytest.mark.parametrize("compaction", [AutoCompacted, ManualCompacted], ids=["b2-by-the-program", "b3-by-a-person"])
@@ -151,7 +151,7 @@ def test_a_stop_after_a_compaction_with_the_old_reading_types_nothing(new_story,
     set_context_older_than_compaction(agent, LIMIT_TOKENS)
     agent.hook(SESSION, HookSamples.prompt("check the cart"))
     agent.hook(SESSION, HookSamples.stop())
-    expect_compactions_typed(agent, 0)
+    expect_compaction_count(agent, 0)
 
 
 def test_b4_a_tool_past_the_second_limit_after_the_stops_compaction_is_allowed_and_types_nothing(hard_agent):
@@ -159,10 +159,10 @@ def test_b4_a_tool_past_the_second_limit_after_the_stops_compaction_is_allowed_a
     has_context(agent, HARD)
     agent.hook(SESSION, HookSamples.prompt("fix the cart"))
     agent.hook(SESSION, HookSamples.stop())
-    expect_compactions_typed(agent, 1)
+    expect_compaction_count(agent, 1)
     compacted(agent, "manual")
     agent.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
-    expect_compactions_typed(agent, 1)
+    expect_compaction_count(agent, 1)
 
 
 def test_b6_the_first_tool_after_the_wake_sees_the_old_number_and_is_allowed_with_nothing_typed(new_story):
@@ -171,7 +171,7 @@ def test_b6_the_first_tool_after_the_wake_sees_the_old_number_and_is_allowed_wit
     agent.advance(timedelta(seconds=40))
     agent.tick(SESSION)
     agent.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
-    expect_compactions_typed(agent, 0)
+    expect_compaction_count(agent, 0)
 
 
 def test_b7_the_stop_now_nudge_is_not_said_after_a_compaction_while_the_number_is_old(new_story):
@@ -184,7 +184,7 @@ def test_b7_the_stop_now_nudge_is_not_said_after_a_compaction_while_the_number_i
 def test_b8_a_memory_mark_does_not_open_at_the_old_percent_after_a_compaction(new_story):
     story = new_story(fixture=CompactedFact)
     story.report_context_percent(SESSION, 55)
-    modified_at_story_time(story, story.clock.timestamp().value - OLD_READING)
+    modified_at_story_time(story, story.clock.timestamp().value - READING_AGE)
     reply = story.hook(SESSION, EDITED)
     story.expect_rows(not any("tool uses to weigh" in line for line in reply.lines), detail=str(reply.lines))
 
@@ -199,9 +199,21 @@ def test_c8_a_post_tool_use_while_the_reading_is_unsettled_says_no_stop_now_and_
 def test_e4_a_reading_over_the_limit_older_than_the_end_of_the_newest_compaction_is_not_due(new_story):
     agent = typing_recorded(new_story(fixture=AutoCompacted))
     set_context_older_than_compaction(agent, LIMIT_TOKENS + 1)
-    agent.advance(OLD_READING)
+    agent.advance(READING_AGE)
     stops(agent)
-    expect_compactions_typed(agent, 0)
+    expect_compaction_count(agent, 0)
+
+
+def test_a_reading_the_program_rewrote_after_the_compaction_ended_counts_and_the_limit_applies_to_that_number(new_story):
+    agent = typing_recorded(new_story(fixture=AutoCompacted))
+    set_context_older_than_compaction(agent, TOKENS_OVER_LIMIT)
+    agent.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
+    expect_compaction_count(agent, 0)
+    agent.advance(READING_AGE)
+    has_context(agent, TOKENS_OVER_LIMIT)
+    modified_at_story_time(agent)
+    stops(agent)
+    expect_compaction_count(agent, 1)
 
 
 class MissingLauncherTyping(RecordedTyping):

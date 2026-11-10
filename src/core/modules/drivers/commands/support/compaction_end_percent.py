@@ -6,6 +6,7 @@ from engine.module.driver_entries import DRIVERS_MODULE
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
+from core.modules.drivers.support.current_context_window import COMPACTION_ENDED_AT
 from core.modules.settings.bindings.support.context_share import ContextShare
 
 COMPACTION_PENDING = "compaction_to_settle"
@@ -15,14 +16,15 @@ class CompactionEndPercent:
     """The session start hook of a compaction runs before the program rewrites its status file, so the percent
     stored there is still the one from before the compaction. The next hook of the session, a tick
     included, reads the percent again and replaces it once it is lower. The agent's row carries a mark from
-    the compaction until it is settled, so every other hook reads no hook call for this."""
+    the compaction until it is settled, so every other hook reads no hook call for this, and the time its
+    newest compaction ended, which CurrentContextWindow compares a reading with."""
 
     def __init__(self, hook_calls: HookCallQuery, share: ContextShare, repository: Repository) -> None:
         self.hook_calls, self.share, self.repository = hook_calls, share, repository
 
     def finish_compaction(self, event: HookEvent, agent: Agent, context: Context) -> None:
         if event.is_compaction_start:
-            self.mark(agent, True, context)
+            self.mark_ended(agent, context)
             return
         if event.event == HookEventName.COMPACT or not agent.metadata.module_part(DRIVERS_MODULE).get(COMPACTION_PENDING):
             return
@@ -35,6 +37,10 @@ class CompactionEndPercent:
             return
         self.mark(agent, False, context)
         self.repository.save_metadata(start, start.metadata_with_context_percent(percent), context)
+
+    def mark_ended(self, agent: Agent, context: Context) -> None:
+        part = {**agent.metadata.module_part(DRIVERS_MODULE), COMPACTION_PENDING: True, COMPACTION_ENDED_AT: context.timestamp.text}
+        self.repository.save_metadata(agent, Metadata({**agent.metadata.values, DRIVERS_MODULE: part}), context)
 
     def mark(self, agent: Agent, pending: bool, context: Context) -> None:
         part = {**agent.metadata.module_part(DRIVERS_MODULE), COMPACTION_PENDING: pending}
