@@ -3,7 +3,8 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
-from core.modules.helpers.support.job_costs import JobCosts, ProfileJobCosts
+from core.modules.helpers.support.job_costs import JobCosts
+from core.modules.helpers.support.profile_job_costs import ProfileJobCosts
 
 
 class HelperLifetimesSubcommand(ReadSubcommand[ProfileJobCosts]):
@@ -21,7 +22,7 @@ class HelperLifetimesSubcommand(ReadSubcommand[ProfileJobCosts]):
         parser.add_argument("profile")
 
     def read(self, arguments: Namespace, caller: Caller) -> ProfileJobCosts:
-        return self.costs.of_profile(arguments.profile)
+        return self.costs.profile_costs(arguments.profile)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ProfileJobCosts):

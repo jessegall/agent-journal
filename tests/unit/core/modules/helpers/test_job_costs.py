@@ -28,7 +28,7 @@ class JobQuery:
 
 def costs(*jobs):
     files = SimpleNamespace(status=lambda session: SimpleNamespace(cost_dollars=REPORTED[session]))
-    return JobCosts(JobQuery(jobs), files).of_profile("steady")
+    return JobCosts(JobQuery(jobs), files).profile_costs("steady")
 
 
 def test_a_job_costs_what_its_session_reported_when_the_next_job_on_it_began_and_the_last_what_the_session_reported_last():
@@ -44,4 +44,4 @@ def test_a_job_with_no_reported_cost_is_counted_and_left_out_of_the_mean():
 
 
 def test_a_cost_reported_below_the_cost_at_the_jobs_start_is_not_counted():
-    assert costs(job(1, "s-1", False, 2.0)).cost_per_job(False) is None
+    assert costs(job(1, "s-1", False, 2.0)).mean_cost(False) is None
