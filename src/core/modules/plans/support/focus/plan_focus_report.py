@@ -5,8 +5,8 @@ from core.modules.plans.support.focus.plan_focus import PlanFocus
 from core.modules.plans.support.focus.plan_unblockers import PlanUnblockers
 
 SOURCE_TEXTS = {FocusSource.DEFAULT: "the default, the oldest started plan with work you can take", FocusSource.EXPLICIT: "you set it"}
-NO_FOCUS = "no started plan has work you can take"
-OTHER_PLANS = "other started plans:"
+FOCUS_MISSING_TEXT = "no started plan has work you can take"
+REMAINING_PLANS_HEADING = "other started plans:"
 
 
 class PlanFocusReport:
@@ -18,11 +18,11 @@ class PlanFocusReport:
 
     def lines(self, agent: Agent) -> list[str]:
         current = self.focus.current(agent)
-        other_plans = [plan for plan in self.focus.started_plans() if current is None or plan.id != current.plan.id]
-        lines = [NO_FOCUS] if current is None else [f"plan {current.plan.id} is your focus: {SOURCE_TEXTS[current.source]}", *self.focus_lines(current.plan, agent)]
-        if other_plans:
-            lines.append(OTHER_PLANS)
-        return [*lines, *(line for plan in other_plans for line in self.other_plan_lines(plan, agent))]
+        remaining_plans = [plan for plan in self.focus.started_plans() if current is None or plan.id != current.plan.id]
+        lines = [FOCUS_MISSING_TEXT] if current is None else [f"plan {current.plan.id} is your focus: {SOURCE_TEXTS[current.source]}", *self.focus_lines(current.plan, agent)]
+        if remaining_plans:
+            lines.append(REMAINING_PLANS_HEADING)
+        return [*lines, *(line for plan in remaining_plans for line in self.remaining_plan_lines(plan, agent))]
 
     def focus_lines(self, plan: Plan, agent: Agent) -> list[str]:
         unblockers = self.unblockers.unblockers(plan.id, agent)
@@ -30,7 +30,7 @@ class PlanFocusReport:
         return [*(f"task {candidate.task_id} holds back {self.task_count(candidate.unlocks)} of plan {plan.id}: you can take it" for candidate in takeable),
                 *(f"it waits on task {line.task_id}, {line.text}" for line in unblockers.waiting)]
 
-    def other_plan_lines(self, plan: Plan, agent: Agent) -> list[str]:
+    def remaining_plan_lines(self, plan: Plan, agent: Agent) -> list[str]:
         if self.focus.is_workable(plan.id, agent):
             return [f"plan {plan.id}: has work you can take"]
         waiting = self.unblockers.unblockers(plan.id, agent).waiting

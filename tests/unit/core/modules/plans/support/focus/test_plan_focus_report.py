@@ -16,8 +16,8 @@ PERSON_WAIT = WaitingLine(40, WaitingReason.NON_TASK_WAIT, "which waits on a per
 def report(focus_plan_id, source=FocusSource.DEFAULT, workable=(), unblockers=None, plans=PLANS):
     current = None if focus_plan_id is None else FocusedPlan(next(plan for plan in plans if plan.id == focus_plan_id), source)
     focus = SimpleNamespace(current=lambda agent: current, started_plans=lambda: tuple(plans), is_workable=lambda plan_id, agent: plan_id in workable)
-    found = unblockers or {}
-    return PlanFocusReport(focus, SimpleNamespace(unblockers=lambda plan_id, agent: found.get(plan_id, Unblockers()))).lines(AGENT)
+    plan_unblockers = unblockers or {}
+    return PlanFocusReport(focus, SimpleNamespace(unblockers=lambda plan_id, agent: plan_unblockers.get(plan_id, Unblockers()))).lines(AGENT)
 
 
 def test_the_default_focus_and_a_focus_the_agent_set_read_differently():
