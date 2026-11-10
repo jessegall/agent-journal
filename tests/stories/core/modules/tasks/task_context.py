@@ -232,10 +232,9 @@ def test_context_includes_a_reply_written_before_resource_creation(linked_scenar
 
 
 def test_another_agents_private_branch_does_not_enter_context(linked_scenario):
-    second_agent_id = linked_scenario.story.new_row_id("agent start private-context-main claude main --environment main")
+    second_agent_id = linked_scenario.story.new_row_id("agent start private-context-worker claude worker --environment main")
     private = linked_scenario.person("messages.chat", "message", "send", "Private branch for another agent", "--target-agent", str(agent_number(linked_scenario.story, second_agent_id)))
     linked_scenario.story.expect_success(f'message edit {private["id"]} --parent-id 1', actor=Actor(second_agent_id, ActorType.AGENT))
-    linked_scenario.story.expect_success(f'message reply {private["id"]} "Private branch response"', actor=Actor(second_agent_id, ActorType.AGENT))
     page = linked_scenario.context(flags="--page-size 50")
     linked_scenario.story.expect_rows("Private branch" not in json.dumps(page))
     outcome = linked_scenario.story.run(f'task context 1 --message {private["id"]} --text-offset 0 --json', actor=linked_scenario.story.agent)

@@ -444,11 +444,10 @@ def test_unread_prints_every_unread_message_and_marks_them_read(new_story):
 def test_the_main_chat_leaves_out_the_marks_of_a_worker(new_story):
     story = delivery_story(new_story)
     main_id = story.container.get(Database).rows(Statement("SELECT id FROM agents WHERE session = 's-1'"))[0]["id"]
-    worker = hook_agent(story, story.hook("s-2", HookSamples.session_start()))
-    story.container.get(Database).connection.execute("UPDATE agents SET role = 'worker' WHERE id = ?", [worker.id])
+    worker_id = story.new_row_id("agent start s-2 claude worker --environment main")
     bus, module = story.container.get(Bus), story.container.get(ModuleActors).actor("journal.core.processes")
     bus.run(ShowMark(ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-main", "From the builder", agent_id=main_id), module, environment_id=1)
-    bus.run(ShowMark(ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-worker", "From the worker", agent_id=worker.id), module, environment_id=1)
+    bus.run(ShowMark(ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-worker", "From the worker", agent_id=worker_id), module, environment_id=1)
     bus.run(ShowMark(ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-nobody", "From the journal"), module, environment_id=1)
     text = story.run("chat-mark main --environment main --json", actor=story.user)
     text.expect_text("From the builder")
