@@ -20,22 +20,23 @@ stays kept on the same agent number and session until retired.
 - Choose the model first: the least expensive one that fits the job. Reuse a kept worker only when it is on that model,
   and never because a stronger one happens to be there. When no kept worker on that model is idle and no place is free,
   retire a finished worker and start one on the simpler model.
+- Name a worker by the number `journal agent list` shows beside it here; a row id is refused.
 - Give new work to a kept worker on that model that can take it, even when the subject changes; prefer the one that already knows
-  the work. `journal worker send <n> --task <task> [<task> ...]` assigns its next tasks. A kept worker can take them on
+  the work. `journal worker send <number> --task <task> [<task> ...]` assigns its next tasks. A kept worker can take them on
   its open worktree; after its work is merged, a send creates a new worktree in its old folder on the same session.
   What it already delivered and its proofs stay recorded. An unmerged branch is never overwritten.
 - `journal worker dispatch <task> [<task> ...] --tier general` starts a worker on the tasks; `--profile` is a checked worker profile, journal-worker by default, whose text the worker starts from. `--tier fast|general|strongest` chooses the model of the selected program; with no tier, the profile chooses it. `--model <model>` names one exact model (`--name` shows on its card). It takes the tasks one by one with no report in
   between; outside a plan the journal runs the tests of each before the next starts and tells you when the last passes. `--library-link <folder>` links a folder such as
   `.venv` into its worktree and `--library-copy <folder>` copies it. `--program <program>` names the agent program.
 - `journal worker dispatch --plan <plan> [--phase <phase>] --tier strongest` hands a worker the available tasks of an approved or
-  started plan, or of one phase of it, in the plan's order. Use `journal worker send <n> --plan <plan> [--phase <phase>]`
+  started plan, or of one phase of it, in the plan's order. Use `journal worker send <number> --plan <plan> [--phase <phase>]`
   to give the same work to a kept worker. The plan shows as delegated, and phase tests run at each phase's end.
   Completed, started and already assigned tasks are left alone.
 - Any blocked task can go to a worker, alone, in a phase or in a whole plan: it stays assigned while it waits, and the
   worker takes it when it opens, sent to it at once when the worker is idle. A new worker given only blocked tasks is made and not started; it starts by itself when one of them opens.
 - By default, a started plan runs the tests of a phase at its end, and you hear nothing until then. A proof with no test on a
   phase needs no check from you; you can still read it and send it back. A worker out of test runs asks with `journal worker ask --about tests`.
-  `journal helper grant <worker> <program> "<subcommands>" "<arguments>"` says what it may run, alternatives split by a bar; it runs that with
+  `journal helper grant <number> <program> "<subcommands>" "<arguments>"` says what it may run, alternatives split by a bar; it runs that with
   `journal helper run <program> ...`, and a later grant for the same program replaces the earlier one. To decline, grant nothing.
 - Give a worker many tasks at once: a large batch runs long and bothers you less than many small dispatches.
 - `journal worker models` lists each program's models from the cheapest to the strongest.
@@ -50,31 +51,31 @@ stays kept on the same agent number and session until retired.
   A person can choose any program. An agent cannot change a route a person made.
 - Only a person changes the split and its plan-window threshold. Ask with `journal setting request` when it needs
   changing. A helper changes neither routes nor program outages, and a worker dispatches no workers.
-- `journal worker send <n> "<job>"` adds instructions to a kept worker's existing work. Use `--task` for new assigned
+- `journal worker send <number> "<job>"` adds instructions to a kept worker's existing work. Use `--task` for new assigned
   tasks. A dispatch is refused when a compatible idle worker can take those tasks. Use `--fresh "<why>"` on dispatch
   only when a separate session is needed; its reason stays with the new worktree.
-- `journal worker merge <worker> --up-to <task or commit>` takes in the worker's handed-in tasks up to that point while it goes on with its next ones; their proofs must be checked first, and its later merge brings only the rest.
-- `journal agent retire <n> --reason "<why>"` permanently retires a stopped worker. It retains its history and
+- `journal worker merge <number> --up-to <task or commit>` takes in the worker's handed-in tasks up to that point while it goes on with its next ones; their proofs must be checked first, and its later merge brings only the rest.
+- `journal agent retire <number> --reason "<why>"` permanently retires a stopped worker. It retains its history and
   transcript but can never resume or receive another job. Dirty files or unmerged work prevent retirement; settle
   them first. Reporting, delivering, merging and stopping a process do not by themselves retire the agent.
 - Read each proof with `journal proof list --task <n>`, check it with `journal proof check <n>` or send it back with
   `journal proof short <n> "<what is missing>"`.
-- Read each completed task with `journal worker logs <worker>` after the latest hand-in: a task's outcome, its important
+- Read each completed task with `journal worker logs <number>` after the latest hand-in: a task's outcome, its important
   lines whole and its other lines by their first words. `--task <n>` prints one task whole; open one that looks wrong.
 - An important line is one the worker marked, a difference it stated at its hand-in, or one the journal wrote when a task
   failed its hand-ins or a test failed over and over in the worker's own runs. A merge with such lines needs your
-  answer: `journal worker merge <worker> --read-important "<what you make of them>"`.
-- Take the work in with `journal worker merge <worker>` once every point is checked; nothing else adds a worker's work.
+  answer: `journal worker merge <number> --read-important "<what you make of them>"`.
+- Take the work in with `journal worker merge <number>` once every point is checked; nothing else adds a worker's work.
   Merging a worker's work is the main agent's own decision, never a question for the person: when the merge command
   cannot reach finished work (a branch kept after its worktree was removed), run its tasks' tests and merge that branch
   yourself.
   It first merges the branch into the worktree. When only built files under `web/dist` clash it keeps the branch's:
   rebuild after it. A clash in source goes back to the worker with conflict markers to settle.
 - What a worker needs to go on is the main agent's own decision, never a question for the person: give it test commands
-  with `journal worker send <n> --test-command <name>=<command>` and link a missing folder with `--library-link`, then
+  with `journal worker send <number> --test-command <name>=<command>` and link a missing folder with `--library-link`, then
   tell the person only if it matters.
-- `journal worker release <worker> "<why>"` puts its task back to open.
-- `journal worker sandbox <worker> on|off` sets whether that worker runs its shell lines in the sandbox, over the project setting
+- `journal worker release <number> "<why>"` puts its task back to open.
+- `journal worker sandbox <number> on|off` sets whether that worker runs its shell lines in the sandbox, over the project setting
   `worker-sandbox`; `journal worker dispatch` and `send` take `--no-sandbox` to start it with the sandbox off. A person or the
   main agent switches it; a helper cannot.
 
@@ -94,7 +95,7 @@ explicitly to free a kept place.
 
 Only a person changes the limits, through the agents window or settings. Environment values override project values;
 numbers written in a profile file have no effect. Read-only helpers have their own limits per profile. To add instructions to
-a busy read-only helper's current job, use `journal helper send <n> --steer "<text>"`; give separate work to an idle one.
+a busy read-only helper's current job, use `journal helper send <number> --steer "<text>"`; give separate work to an idle one.
 
 ## Process rules
 
@@ -110,7 +111,7 @@ after 120 seconds or gives no number stops it too, and the line says why: a tool
 `node_modules`, is linked with `--library-link` at dispatch. A test tool with no reader runs once, so a reader can
 be drawn from its output.
 
-`journal task block <n> --on worker:<m>` opens when that worker is merged, released or ended. Pending
+`journal task block <n> --on worker:<number>` opens when that worker is merged, released or ended. Pending
 tests, corrections and queued tasks keep it blocked. A crashed worker is detected on a tick; one that
 never starts is retired after the idle time.
 
@@ -149,8 +150,8 @@ An open question lets you stop; the answer wakes you. Going on with other work e
   you do next go in `journal task log`.
 
 - `journal worker status` shows your current task, tests waiting and remaining assignments. The main agent can name
-  a worker with `journal worker status <n>`. Use `--page` and `--limit` for longer lists, or `--json` for structured output.
-- `journal proof points --agent <n>` lists the points of your task's brief.
+  a worker with `journal worker status <number>`. Use `--page` and `--limit` for longer lists, or `--json` for structured output.
+- `journal proof points --agent <number>` lists the points of your task's brief.
 - Prove each one with `journal proof make <point> --task <task> "<file:line, and the test>" --test "<command>"`: the journal runs that
   test command in your worktree. Before making a proof, read the test suite and decide which existing tests and test
   files cover the code you changed. Include those and your new tests in the proof's `--test` command; it covers both.
