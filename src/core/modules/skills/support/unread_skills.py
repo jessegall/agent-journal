@@ -6,6 +6,8 @@ from core.modules.skills.support.agent_profile_skills import AgentProfileSkills
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 
 
+DUE_SKILLS_REASON = "the skills due for one agent are at most the skills of the project, kept until one changes"
+
 class UnreadSkills:
     """The skills an agent must still read, oldest first, leaving out any the catalogue no longer holds and any its
     profile does not give it, which it could not read."""
@@ -14,7 +16,7 @@ class UnreadSkills:
         self.queries, self.catalogue, self.kept, self.profile_skills = queries, catalogue, kept, profile_skills
 
     def names(self, agent_id: int) -> list[str]:
-        rows = self.kept.read("agent_skills", lambda: tuple(self.queries.query(AgentSkill).filter(session_agent_id=agent_id, state=AgentSkillState.DUE).oldest().all_rows()),
+        rows = self.kept.read("agent_skills", lambda: tuple(self.queries.query(AgentSkill).filter(session_agent_id=agent_id, state=AgentSkillState.DUE).oldest().full_table(DUE_SKILLS_REASON).all_rows()),
                               "session_agent_id = ? AND state = ?", [agent_id, AgentSkillState.DUE], name="skills.due")
         if not rows:
             return []

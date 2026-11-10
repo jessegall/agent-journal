@@ -7,6 +7,7 @@ from core.modules.settings.models.setting import Setting
 
 SettingModel = type[Setting] | type[SecretSetting]
 TABLES: dict[SettingModel, str] = {Setting: "settings", SecretSetting: "secret_settings"}
+KEPT_SETTINGS_REASON = "every stored setting is read once and kept until a setting is written"
 
 
 class SettingRows:
@@ -24,7 +25,7 @@ class SettingRows:
         return self.kept.read_matching_signature(TABLES[model], lambda signature: self.shared.read(self.database, TABLES[model], signature, lambda: self.table(model)), name="settings.rows")
 
     def table(self, model: SettingModel) -> dict[tuple[str, int | None], Setting | SecretSetting]:
-        return {(row.key, row.environment_id): row for row in self.queries.query(model).all_rows()}
+        return {(row.key, row.environment_id): row for row in self.queries.query(model).full_table(KEPT_SETTINGS_REASON).all_rows()}
 
     def remember(self, row: Setting | SecretSetting) -> None:
         def with_row(rows: dict[tuple[str, int | None], Setting | SecretSetting]) -> dict[tuple[str, int | None], Setting | SecretSetting]:

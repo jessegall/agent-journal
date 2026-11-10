@@ -12,6 +12,9 @@ from core.base.timestamp import Timestamp
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 
 
+OPEN_BLOCKS_REASON = "the open blocks of one agent are few: each is closed or skipped before the agent goes on"
+
+
 @dataclass(frozen=True, kw_only=True)
 class AgentBlock(Model):
     """An agent held from all but reading and journal commands: the line its refused tools are told, what ends

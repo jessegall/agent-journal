@@ -12,7 +12,7 @@ from core.base.driver.tool import Tool
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
-from core.modules.drivers.models.agent_block import AgentBlock
+from core.modules.drivers.models.agent_block import AgentBlock, OPEN_BLOCKS_REASON
 from core.base.driver.tool_type import ToolType
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 
@@ -36,7 +36,7 @@ class AgentBlockRule(DriverRule):
         self.calls = calls
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        blocks = tuple(self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id).matching(IsNull("closed_at")).oldest().all_rows())
+        blocks = tuple(self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id).matching(IsNull("closed_at")).oldest().full_table(OPEN_BLOCKS_REASON).all_rows())
         if not blocks:
             return RuleAnswer.allowed()
         finished_blocks = self.finished(blocks, hook)

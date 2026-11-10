@@ -4,7 +4,7 @@ from core.base.driver.nudge import Nudge
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
-from core.modules.drivers.models.agent_block import AgentBlock
+from core.modules.drivers.models.agent_block import AgentBlock, OPEN_BLOCKS_REASON
 from core.modules.drivers.support.driver_nudges import REQUIRED_COMMAND_REFUSAL
 from engine.enums.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
@@ -56,7 +56,7 @@ class UnmergedWorkerRule(DriverRule):
             nudges.append(replace(declaration.nudge(worker=worktree.session_agent_id, tasks=self.task_names(worktree.session_agent_id), action=action), key=key))
         commands = {f"journal worker merge {worktree.session_agent_id}" for worktree in delivered}
         prefix = f"{REQUIRED_COMMAND_REFUSAL.key}:journal worker merge "
-        blocks = self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id).matching(IsNull("closed_at")).all_rows()
+        blocks = self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id).matching(IsNull("closed_at")).full_table(OPEN_BLOCKS_REASON).all_rows()
         stale = [CloseAgentBlock(block.id) for block in blocks if block.nudge_key.startswith(prefix) and block.condition_text not in commands]
         return RuleAnswer.with_nudges(*nudges).running(*stale)
 

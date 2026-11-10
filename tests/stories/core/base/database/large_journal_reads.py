@@ -12,10 +12,7 @@ from tests.stories.core.base.support.large_journal import EDIT, LargeJournal, Ta
 SESSIONS = ("s-1", "s-helper", "s-worker")
 
 OPEN_LARGE_READS = (
-    "FROM agent_skills WHERE session_agent_id = ? AND state = ?",
     "FROM reminders WHERE ended_at IS NULL AND creator_id NOT IN",
-    "FROM agent_blocks WHERE session_agent_id = ? AND closed_at IS NULL",
-    "SELECT * FROM settings LIMIT",
     "FROM agents WHERE ended_at IS NULL ORDER BY id ASC",
     "FROM agent_activities WHERE id IN",
     "FROM agents WHERE environment_id = ? LIMIT",
