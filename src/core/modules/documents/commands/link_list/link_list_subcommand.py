@@ -1,6 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
+from engine.cli.agent_number import AGENT_MODEL_NAME, AgentNumber
+from engine.cli.row_numbers import RowNumbers
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.documents.models.enums.link_type import LinkType
@@ -14,8 +16,8 @@ class LinkListSubcommand(ReadSubcommand[LinkPage]):
     cli_name = "link"
     name = "list"
 
-    def __init__(self, pages: LinkPages) -> None:
-        self.pages = pages
+    def __init__(self, pages: LinkPages, numbers: RowNumbers) -> None:
+        self.pages, self.numbers = pages, numbers
 
     def arguments(self, parser: ArgumentParser) -> None:
         ends = parser.add_mutually_exclusive_group(required=True)
@@ -31,7 +33,15 @@ class LinkListSubcommand(ReadSubcommand[LinkPage]):
         parser.add_argument("--kind", dest="target_model")
 
     def read(self, arguments: Namespace, caller: Caller) -> LinkPage:
+        for end in ("source", "target", "row"):
+            setattr(arguments, end, self.row_reference(getattr(arguments, end), caller.environment_id))
         return self.pages.read(arguments)
+
+    def row_reference(self, reference: str | None, environment_id: int | None) -> str | None:
+        model_name, _, number = (reference or "").partition(":")
+        if model_name != AGENT_MODEL_NAME or not number.isdigit():
+            return reference
+        return f"{model_name}:{self.numbers.row_id(model_name, int(AgentNumber(number)), environment_id)}"
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, LinkPage):
