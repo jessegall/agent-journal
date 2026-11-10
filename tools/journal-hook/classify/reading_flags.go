@@ -13,6 +13,10 @@ var argumentsEnd = regexp.MustCompile(`(?:^|\s)--(?:\s|$)`)
 
 var timeoutFlag = regexp.MustCompile(`(?:^|\s)--timeout(?:=|\s+)(?:'([^']*)'|"([^"]*)"|([^\s]+))|(?:^|\s)--timeout$`)
 
+// largeReadFlag lets one journal line read past the read limit; a saved command reads no journal rows, so the flag
+// never reaches it.
+var largeReadFlag = regexp.MustCompile(`(?:^|\s)--allow-large-read(?:\s|$)`)
+
 type savedOptions struct {
 	arguments       string
 	selection       string
@@ -39,7 +43,9 @@ func splitSavedOptions(arguments string) savedOptions {
 		value := timeout[1] + timeout[2] + timeout[3]
 		options.timeoutDuration = &value
 	}
-	if selection != nil || timeout != nil {
+	var largeRead []string
+	flags, largeRead = removeSavedFlag(flags, largeReadFlag)
+	if selection != nil || timeout != nil || largeRead != nil {
 		options.arguments = strings.TrimSpace(flags + " " + remainder)
 	}
 	return options

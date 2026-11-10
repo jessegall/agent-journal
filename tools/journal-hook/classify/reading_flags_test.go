@@ -14,6 +14,9 @@ func TestSplitReading(t *testing.T) {
 		{"cart", "cart", ""},
 		{"--tail five", "--tail five", ""},
 		{"--cut 100", "--cut 100", ""},
+		{"--allow-large-read --tail 4 -- tests/unit -q", "tests/unit -q", "tail:4"},
+		{"--allow-large-read cart", "cart", ""},
+		{"-- --allow-large-read", "-- --allow-large-read", ""},
 		{"", "", ""},
 	}
 	for _, testCase := range cases {
