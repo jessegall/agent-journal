@@ -35,9 +35,13 @@ CALL_PASSED = pytest.StashKey[bool]()
 RUN_START = pytest.StashKey[float]()
 RUN_CPU = pytest.StashKey[RunCpu]()
 FULL_RUN = pytest.StashKey[FullRunRecord]()
+FIXTURE_SUMMARY = pytest.StashKey[str]()
 CPU_SECONDS_KEY = "journal_cpu_seconds"
 STORY_STEPS_KEY = "journal_story_steps"
 STORY_PATHS_KEY = "journal_story_paths"
+STORY_FIXTURES_KEY = "journal_story_fixtures"
+FIXTURE_RULES_OPTION = "story_fixture_rules"
+FIXTURE_RULES_FAIL = "fail"
 SINGLE_RUNNER_LIMIT_OPTION = "one_runner_below"
 RUNNERS_OPTION = "runners"
 HIGHEST_COUNT_START_OPTION = "most_runners_from"
@@ -52,6 +56,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addini(SINGLE_RUNNER_LIMIT_OPTION, "a run with -n of fewer tests than this runs in one test runner", default="50")
     parser.addini(RUNNERS_OPTION, "the test runners a run with -n starts", default="4")
     parser.addini(HIGHEST_COUNT_START_OPTION, "a run with -n of this many tests or more starts the most test runners", default="1000")
+    parser.addini(FIXTURE_RULES_OPTION, f"{FIXTURE_RULES_FAIL}: a story with no fixture, stories of different files that open the same way and a fixture that adds no step fail the run; anything else only counts them", default="count")
     parser.addini(MOST_RUNNERS_OPTION, "the most test runners a run with -n starts", default="8")
 
 
@@ -118,11 +123,11 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
     def started(*modules: str, fixture: type[StoryFixture] | None = None, environment: str | None = None) -> Story:
         story = templates.story(tmp_path / "journal", modules, fixture)
         story.environment = environment
-        created.append(StorySteps(story, " ".join((*modules, fixture.__name__ if fixture else ""))))
+        created.append(StorySteps(story, " ".join((*modules, fixture.__name__ if fixture else "")), fixture.__name__ if fixture else ""))
         return story
     yield started
     for steps in created:
-        overlap.add(item.nodeid, steps.start, steps.lines(), [] if StoryBody.reaches_internals(getattr(item, "function")) else steps.path())
+        overlap.add(item.nodeid, steps.start, steps.lines(), [] if StoryBody.reaches_internals(getattr(item, "function")) else steps.path(), steps.fixture)
         steps.story.close()
     created.clear()
     SharedTables.shared.cache_clear()
@@ -175,6 +180,7 @@ def pytest_testnodedown(node: pytest.Session, error: object) -> None:
     output: dict[str, dict[str, list[str]]] = getattr(node, "workeroutput", {})
     node.config.stash[STORY_OVERLAP].stories.update(output.get(STORY_STEPS_KEY, {}))
     node.config.stash[STORY_OVERLAP].story_paths.update(output.get(STORY_PATHS_KEY, {}))
+    node.config.stash[STORY_OVERLAP].story_fixtures.update(getattr(node, "workeroutput", {}).get(STORY_FIXTURES_KEY, {}))
     node.config.stash[RUN_CPU].add(float(getattr(node, "workeroutput", {}).get(CPU_SECONDS_KEY, 0.0)))
 
 
@@ -184,13 +190,14 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
     if process_output is not None:
         process_output[STORY_STEPS_KEY] = overlap.stories
         process_output[STORY_PATHS_KEY] = overlap.story_paths
+        process_output[STORY_FIXTURES_KEY] = overlap.story_fixtures
         process_output[CPU_SECONDS_KEY] = session.config.stash[RUN_CPU].seconds
         return
     if RunSize(session.config.args, 1).is_full_suite() and not session.config.option.collectonly:
         record = FullRunRecord(session.testscollected, session.testsfailed, time.monotonic() - session.config.stash[RUN_START], session.config.stash[RUN_CPU].seconds)
         session.config.stash[FULL_RUN] = record
         FullRunRecords.add(record)
-    lines = overlap.report_lines()
+    lines = [*overlap.report_lines(), *fixture_rule_lines(session.config, overlap)]
     if not lines:
         return
     report = pytest.TestReport(nodeid="stories::overlapping_steps", location=("stories", 0, "overlapping_steps"),
@@ -200,10 +207,22 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
         session.exitstatus = pytest.ExitCode.TESTS_FAILED
 
 
+def fixture_rule_lines(config: pytest.Config, overlap: StoryOverlap) -> list[str]:
+    if not overlap.stories:
+        return []
+    findings = [overlap.no_fixture_lines(), overlap.file_opening_lines(), overlap.empty_fixture_lines(StoryFixture.declared())]
+    config.stash[FIXTURE_SUMMARY] = (f"stories starting from no fixture: {len(findings[0])}, groups of stories sharing their first steps across files: {len(findings[1])}, "
+                                     f"fixtures adding no step: {len(findings[2])}")
+    return [line for lines in findings for line in lines] if config.getini(FIXTURE_RULES_OPTION) == FIXTURE_RULES_FAIL else []
+
+
 def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter, config: pytest.Config, exitstatus: int) -> None:
     full_run = config.stash.get(FULL_RUN, None)
     if full_run is not None:
         terminalreporter.write_line(full_run.summary_line())
+    fixture_summary = config.stash.get(FIXTURE_SUMMARY, None)
+    if fixture_summary is not None:
+        terminalreporter.write_line(fixture_summary)
     run_folder = config.stash.get(RUN_FOLDER, None)
     if run_folder is not None:
         TempFolders().finish(run_folder, exitstatus == pytest.ExitCode.OK)
