@@ -5,11 +5,13 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
 class Statement:
-    """SQL text together with the values for its placeholders."""
+    """SQL text together with the values for its placeholders, the reason it may scan a table and the reason
+    it may load a whole table past the read limit."""
 
     sql: str
     parameters: Sequence[object] = ()
     scan_reason: str | None = field(default=None, compare=False)
+    full_table_reason: str | None = field(default=None, compare=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "parameters", tuple(self.parameters))
@@ -21,6 +23,14 @@ class Statement:
     @property
     def is_read(self) -> bool:
         return self.sql.lstrip().upper().startswith(("SELECT", "WITH", "EXPLAIN", "PRAGMA"))
+
+    @property
+    def is_schema_read(self) -> bool:
+        return "FROM sqlite_master" in self.sql
+
+    @property
+    def is_limited_read(self) -> bool:
+        return self.is_read and self.full_table_reason is None and not self.is_schema_read
 
     def joined(self, tail: "Statement", separator: str = " ") -> "Statement":
         return self.all_joined((self, tail), separator)

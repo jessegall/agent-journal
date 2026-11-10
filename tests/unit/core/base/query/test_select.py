@@ -5,7 +5,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.select import Select
 
 
-def test_a_bare_select_reads_the_whole_table():
+def test_a_bare_select_reads_the_full_table():
     assert Select("tasks").statement() == Statement("SELECT * FROM tasks")
 
 

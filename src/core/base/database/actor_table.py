@@ -10,7 +10,7 @@ from core.base.row_owner import MAIN_AGENT, RowOwner
 CORE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, type, name, created_at, updated_at) VALUES (?, ?, 'core', ?, ?)")
 MODULE_ACTOR = Statement("INSERT OR IGNORE INTO actors (creator_id, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")
 MODULE_ACTOR_ID = Statement("SELECT id FROM actors WHERE type = ? AND name = ?")
-MODULE_ACTOR_IDS = Statement("SELECT id, name FROM actors WHERE type = 'module'")
+MODULE_ACTOR_IDS = Statement("SELECT id, name FROM actors WHERE type = 'module'", full_table_reason="One row for each installed module, never for stored journal rows.")
 ACTOR_ROW = Statement("SELECT 1 FROM actors WHERE id = ? AND type = ?")
 AGENT_OWNER = Statement("SELECT role, environment_id FROM agents WHERE id = ?")
 TEST_ENVIRONMENT_GRANT = Statement("SELECT 1 FROM environments WHERE id = ? AND test = 1 AND test_agent_id = ?")

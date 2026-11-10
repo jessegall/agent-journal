@@ -291,8 +291,7 @@ class Story:
         assert [provider.module for provider in providers] == [module], f"agent program {name} is registered as {providers}"
 
     def expect_logged_event(self, name: str) -> None:
-        names = [event.event for event in self.container.get(EventLog).events_after(0)]
-        assert name in names, f"no {name} event among {names}"
+        assert self.container.get(EventLog).latest_event(name) is not None, f"no {name} event was logged"
 
     def synced_with(self, module: str) -> tuple[int, str]:
         modules = json.loads(FileAccess.shared().read(self.home.module_list))

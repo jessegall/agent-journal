@@ -16,7 +16,7 @@ from core.base.model.tables import Tables
 
 HIDDEN = "hidden"
 
-PAGE_SIZE_EVENTS = 100
+PAGE_SIZE_EVENTS = 50
 REGISTRY_SYNC_EVENT = "registry.sync"
 JOURNAL_BOOTING_EVENT = "journal.booting"
 FILE_PUBLISHING_EVENTS = f"{JOURNAL_BOOTING_EVENT}|{REGISTRY_SYNC_EVENT}"

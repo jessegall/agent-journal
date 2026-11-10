@@ -15,6 +15,7 @@ class Select:
     orders: tuple[Order, ...] = ()
     limit: int = 0
     offset: int = 0
+    full_table_reason: str | None = None
 
     @property
     def is_empty(self) -> bool:
@@ -29,6 +30,9 @@ class Select:
     def sliced(self, limit: int, offset: int) -> "Select":
         return replace(self, limit=limit, offset=offset)
 
+    def full_table(self, reason: str) -> "Select":
+        return replace(self, full_table_reason=reason)
+
     def column(self, column: str) -> "Select":
         return replace(self, columns=column)
 
@@ -40,7 +44,8 @@ class Select:
     def statement(self) -> Statement:
         order = f" ORDER BY {', '.join(order.sql for order in self.orders)}" if self.orders else ""
         page = f" LIMIT {self.limit} OFFSET {self.offset}" if self.limit else ""
-        return self.filtered(Statement(f"SELECT {self.columns} FROM {self.table}")).joined(Statement(order + page), "")
+        statement = self.filtered(Statement(f"SELECT {self.columns} FROM {self.table}")).joined(Statement(order + page), "")
+        return replace(statement, full_table_reason=self.full_table_reason)
 
     def count_statement(self) -> Statement:
         return self.filtered(Statement(f"SELECT count(*) FROM {self.table}"))

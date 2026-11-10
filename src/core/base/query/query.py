@@ -91,6 +91,9 @@ class Query(Generic[M]):
             select = select.ordered(column, True)
         return self.with_select(select)
 
+    def full_table(self, reason: str) -> Self:
+        return self.with_select(self.select.full_table(reason))
+
     def page(self, number: int = 1, size: int = PAGE_SIZE_ROWS) -> Page[M]:
         return Page(tuple(self.rows(self.select.sliced(size, (number - 1) * size))), number, size, self.count())
 

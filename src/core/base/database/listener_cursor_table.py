@@ -5,7 +5,7 @@ from core.base.database.statement import Statement
 
 START = Statement("INSERT OR IGNORE INTO listener_cursors (listener, event_id) VALUES (?, (SELECT coalesce(max(id), 0) FROM events))")
 POSITION = Statement("SELECT event_id FROM listener_cursors WHERE listener = ?")
-POSITIONS = Statement("SELECT listener, event_id FROM listener_cursors")
+POSITIONS = Statement("SELECT listener, event_id FROM listener_cursors", full_table_reason="One row for each listener the code declares, never for stored journal rows.")
 BULK_ADVANCE = "UPDATE listener_cursors SET event_id = ? WHERE event_id < ? AND listener IN ({listeners})"
 CLAIM = Statement("UPDATE listener_cursors SET event_id = ? WHERE listener = ? AND event_id = ?")
 UNHANDLED_EVENTS = Statement("SELECT (SELECT coalesce(min(event_id), 0) FROM listener_cursors) < (SELECT coalesce(max(id), 0) FROM events)")

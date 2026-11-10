@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from core.base.database.nesting_error import NestingError
 from core.base.database.point_tally import PointTally
 from core.base.database.statement import Statement
+from engine.errors.read_limit_error import ReadLimitError
 from core.base.journal_home import JournalHome
 from core.base.row_owner import RowOwner
 
@@ -13,6 +14,7 @@ if TYPE_CHECKING:
 
 PRAGMAS = ("foreign_keys = ON", "journal_mode = WAL", "synchronous = NORMAL")
 BUSY_TIMEOUT_SECONDS = 5.0
+READ_LIMIT_ROWS = 50
 NESTING_LIMIT_LEVELS = 8
 
 
@@ -29,6 +31,7 @@ class Database:
         self.write_rollback_count = 0
         self.row_owner: RowOwner | None = None
         self.kept_rows: "KeptRows | None" = None
+        self.read_limit_rows: int | None = None
 
     @property
     def scope_environment_id(self) -> int | None:
@@ -129,8 +132,15 @@ class Database:
         else:
             self.repeated_work.count_write(statement.sql)
         rows = statement.result(self.connection).fetchall()
+        self.check_read_limit(statement, len(rows))
         self.repeated_work.loaded(rows, statement)
         return rows
+
+    def check_read_limit(self, statement: Statement, count: int) -> None:
+        if self.read_limit_rows is None or not statement.is_limited_read:
+            return
+        if count > self.read_limit_rows:
+            raise ReadLimitError.loaded(count, self.read_limit_rows, statement.sql)
 
     def query_plan(self, statement: Statement) -> tuple[str, ...]:
         return tuple(row[3] for row in self.connection.execute(f"EXPLAIN QUERY PLAN {statement.sql}", statement.parameters))

@@ -13,7 +13,7 @@ from core.base.database.module_migrations import ModuleMigrations
 
 
 MIGRATIONS_TABLE = "CREATE TABLE IF NOT EXISTS migrations (module TEXT NOT NULL, number INTEGER NOT NULL, ran_at TEXT NOT NULL, PRIMARY KEY (module, number)) STRICT"
-APPLIED_NUMBERS = Statement("SELECT module, number FROM migrations")
+APPLIED_NUMBERS = Statement("SELECT module, number FROM migrations", full_table_reason="One row for each migration the code ships, never for stored journal rows.")
 VIEWS = Statement("SELECT name FROM sqlite_master WHERE type = 'view'", scan_reason="Schema maintenance reads SQLite's view catalogue; SQLite does not allow indexing sqlite_master.")
 class Schema:
     """Updates the database's tables, views and checks to match the code."""
