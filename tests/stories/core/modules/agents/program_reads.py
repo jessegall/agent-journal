@@ -1,4 +1,5 @@
 from core.modules.agents.commands.program_command.program_command_subcommand import FIRST_PROMPT
+from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.support.story_checks import expect_value
 
@@ -50,3 +51,13 @@ def test_a_person_who_gave_arguments_gets_no_first_prompt(new_story):
     story = new_story(fixture=MainEnvironment)
     folder = project_folder(story)
     story.expect_absent(f"program command claude {folder} --launch launch-1 --program-argument=--model --program-argument=haiku", FIRST_PROMPT)
+
+
+def test_a_resumed_session_starts_with_the_model_and_effort_it_last_reported_or_the_defaults(new_story):
+    story = new_story(fixture=MainEnvironment)
+    folder = project_folder(story)
+    save_status_file(story, "s-1", {"model": {"id": "claude-fable-5-2", "display_name": "Fable 5.2"}, "effort": {"level": "medium"}})
+    line = f"program command claude {folder} --launch launch-1 --resume s-1"
+    story.expect_text(line, "--model\nclaude-fable-5-2", "--effort\nmedium")
+    story.expect_absent(line, "opus")
+    story.expect_text(f"program command claude {folder} --launch launch-1 --resume s-2", "--model\nopus", "--effort\nhigh")

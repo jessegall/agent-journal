@@ -30,6 +30,8 @@ from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
 from core.base.provider.peer_note import PeerNote
 from core.base.provider.transcript_row import TranscriptRow
+from core.base.file_access import FileAccess
+from core.base.provider.status_file_fields import StatusFileFields
 from core.base.type_guards import is_list, is_mapping
 from core.base.private.server_keys import ServerKeys
 from core.modules.claude_code.providers.support.claude_folder_name import ClaudeFolderName
@@ -120,7 +122,7 @@ class ClaudeCodeProvider(Provider):
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-skip-permissions"] if launch.skip_prompts else []
         model = [] if launch.names_flag("--model") else ["--model", launch.model]
-        effort = [] if launch.names_flag("--effort") else ["--effort", SESSION_EFFORT]
+        effort = [] if launch.names_flag("--effort") else ["--effort", launch.effort or SESSION_EFFORT]
         arguments = [self.executable, *model, *effort, *skip, *launch.program_arguments, *launch.session.arguments(self), *launch.prompt_arguments]
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
 
@@ -130,7 +132,19 @@ class ClaudeCodeProvider(Provider):
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
 
     def session_effort(self, home: JournalHome, session: str) -> str:
-        return SESSION_EFFORT
+        return self.status_text(home, session, "effort", "level") or SESSION_EFFORT
+
+    def reported_model(self, home: JournalHome, session: str) -> str:
+        return self.status_text(home, session, "model", "id")
+
+    @staticmethod
+    def status_text(home: JournalHome, session: str, group: str, name: str) -> str:
+        path = home.status_file(session)
+        if not path.is_file():
+            return ""
+        fields = StatusFileFields.read(path, FileAccess.shared().version(path)).get(group)
+        value = fields.get(name) if is_mapping(fields) else None
+        return value if isinstance(value, str) else ""
 
     def new_session_arguments(self, session: str) -> Sequence[str]:
         return ["--session-id", session]

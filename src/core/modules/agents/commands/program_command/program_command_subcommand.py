@@ -18,7 +18,8 @@ FIRST_PROMPT = "[journal] the journal started this session: follow its opening l
 class ProgramCommandSubcommand(ReadSubcommand[list[str]]):
     """`journal program command <program> <folder> --launch <name> [--resume <session>] [--ask-prompts]
     [--program-argument=<argument>]...`: the command line that starts the program in the folder, one argument
-    a line, as its provider builds it, for the launcher. It starts the program's first turn with the journal's
+    a line, as its provider builds it, for the launcher. A resumed session keeps the model and effort it last
+    ran with. It starts the program's first turn with the journal's
     first prompt, unless the person gave arguments of their own."""
 
     cli_name = "program"
@@ -38,9 +39,10 @@ class ProgramCommandSubcommand(ReadSubcommand[list[str]]):
     def read(self, arguments: Namespace, caller: Caller) -> list[str]:
         provider = self.providers.provider(arguments.program)
         session = ResumedSession(arguments.resume) if arguments.resume else SessionStart(str(uuid4()))
-        launch = Launch(self.home.folder.parent, Path(arguments.folder), provider.session_model(), arguments.launch, session, {},
+        model = provider.reported_model(self.home, arguments.resume) or provider.session_model()
+        launch = Launch(self.home.folder.parent, Path(arguments.folder), model, arguments.launch, session, {},
                         skip_prompts=not arguments.ask_prompts, program_arguments=tuple(arguments.program_argument),
-                        first_prompt="" if arguments.program_argument else FIRST_PROMPT)
+                        first_prompt="" if arguments.program_argument else FIRST_PROMPT, effort=provider.session_effort(self.home, arguments.resume))
         return list(provider.session_command(launch).arguments)
 
     def write_output(self, value: object, output: Output) -> None:
