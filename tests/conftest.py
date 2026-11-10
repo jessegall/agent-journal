@@ -47,7 +47,10 @@ def pytest_configure(config: pytest.Config) -> None:
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     wanted = config.getoption(REAL_PROGRAM_FLAG)
+    waiting = stories_waiting_for_a_plan()
     for item in items:
+        if item.nodeid in waiting:
+            item.add_marker(pytest.mark.xfail(strict=True, reason=f"written ahead of its code: waits for {waiting[item.nodeid]}"))
         if INSTALL_FOLDER in item.path.parts[item.path.parts.index("tests"):]:
             item.add_marker(INSTALL_MARK)
         if browser_driver(item.path):
@@ -55,6 +58,13 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     kept = [item for item in items if (item.get_closest_marker(REAL_PROGRAM_MARK) is not None) == wanted and belongs_job(item, config)]
     config.hook.pytest_deselected(items=[item for item in items if item not in kept])
     items[:] = kept
+
+
+def stories_waiting_for_a_plan() -> dict[str, str]:
+    """The stories written ahead of their code, each with the plan that builds it. Such a story is expected to
+    fail, and fails the run once it passes, so its line is deleted when its plan is built."""
+    lines = (Path(__file__).parent / "stories" / "waiting_for_a_plan.txt").read_text().splitlines()
+    return dict(line.split("  ", 1) for line in lines if line)
 
 
 @cache

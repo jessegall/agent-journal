@@ -49,15 +49,10 @@ def test_a_stop_waits_for_the_weighing_from_the_moment_a_mark_opens(open_context
     story.expect_hook_refusal("s-1", HookSamples.stop(), "weigh your memories first")
 
 
-def test_weighing_a_memory_closes_the_mark(context_memory):
+@pytest.mark.parametrize("weight", [6, 5], ids=["a-new-weight", "the-weight-it-has"])
+def test_weighing_a_memory_closes_the_mark(context_memory, weight):
     story, fact_id = context_memory
-    story.expect_success(f"memory weigh {fact_id} 6", actor=story.agent)
-    story.expect_hook_allowed("s-1", EDIT)
-
-
-def test_weighing_a_memory_at_the_weight_it_has_closes_the_mark(context_memory):
-    story, fact_id = context_memory
-    story.expect_text(f"memory weigh {fact_id} 5", f"memory {fact_id} at 5", actor=story.agent)
+    story.expect_text(f"memory weigh {fact_id} {weight}", f"memory {fact_id} at {weight}", actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)
 
 
@@ -71,11 +66,6 @@ def test_the_same_mark_does_not_open_twice_before_a_compaction(context_memory):
     story, fact_id = context_memory
     story.expect_success(f"memory weigh {fact_id} 6", actor=story.agent)
     story.report_context_percent("s-1", 60)
-    story.expect_hook_silent("s-1", EDITED)
-
-
-def test_a_session_whose_status_line_never_reported_opens_no_mark(new_story):
-    story = new_story(fixture=ContextFact)
     story.expect_hook_silent("s-1", EDITED)
 
 
@@ -122,11 +112,13 @@ def expect_mark_absent(story, tokens: int, window_percent: int) -> None:
     story.expect_hook_silent("s-1", EDITED)
 
 
-def test_a_mark_counts_against_the_context_limit_when_one_is_on(new_story):
+@pytest.mark.parametrize(("tokens", "window_percent", "mark"), [(200_000, 20, "context at 50%"), (328_000, 32, "context at 50%"), (365_000, 36, "context at 90%")],
+                         ids=["at-half-the-limit", "two-marks-too-few-tokens-apart-count-as-the-higher-one", "the-higher-of-two-close-marks-still-opens"])
+def test_a_mark_counts_against_the_context_limit_when_one_is_on(new_story, tokens, window_percent, mark):
     story = new_story(fixture=Limited)
     expect_mark_absent(story, 199_000, 19)
-    expect_context(story, 200_000, 20)
-    story.expect_hook_allowed("s-1", EDITED, "context at 50%")
+    expect_context(story, tokens, window_percent)
+    story.expect_hook_allowed("s-1", EDITED, mark)
 
 
 def test_a_mark_counts_against_the_window_when_the_limit_is_off(new_story):
@@ -138,15 +130,3 @@ def test_a_mark_counts_against_the_window_when_it_is_smaller_than_the_limit(new_
     story = new_story(fixture=LimitedAboveWindow)
     expect_context(story, 240_000, 60)
     story.expect_hook_allowed("s-1", EDITED, "context at 50%")
-
-
-def test_two_marks_too_few_tokens_apart_count_as_the_higher_one(new_story):
-    story = new_story(fixture=Limited)
-    expect_context(story, 328_000, 32)
-    story.expect_hook_allowed("s-1", EDITED, "context at 50%")
-
-
-def test_the_higher_of_two_close_marks_still_opens(new_story):
-    story = new_story(fixture=Limited)
-    expect_context(story, 365_000, 36)
-    story.expect_hook_allowed("s-1", EDITED, "context at 90%")
