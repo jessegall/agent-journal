@@ -11,7 +11,7 @@ from engine.change.updated import Updated
 from engine.command.context import Context
 from engine.model.model import Model
 from engine.model.move import Move
-from engine.change.missing_row_error import MissingRowError
+from engine.change.errors.missing_row_error import MissingRowError
 
 
 M = TypeVar("M", bound=Model, covariant=True)

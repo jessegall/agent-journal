@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.change.changed import M
-from engine.change.missing_move_error import MissingMoveError
+from engine.change.errors.missing_move_error import MissingMoveError
 from engine.change.updated import Updated
 from engine.model.model import Model
 from engine.model.move import Move

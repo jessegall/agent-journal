@@ -19,12 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/engine/change/event_pattern_error.py"
-            },
-            {
-                "file": "src/engine/change/missing_row_error.py"
-            },
-            {
                 "file": "src/engine/cli/usage_error.py"
             },
             {

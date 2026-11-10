@@ -1,6 +1,6 @@
 import pytest
 
-from engine.change.event_pattern_error import EventPatternError
+from engine.change.errors.event_pattern_error import EventPatternError
 from server.viewer.events_request import EventsRequest
 
 

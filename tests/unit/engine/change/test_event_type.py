@@ -5,7 +5,7 @@ import pytest
 from engine.change.changed import Changed
 from engine.change.created import Created
 from engine.change.event_pattern import EventPattern
-from engine.change.event_pattern_error import EventPatternError
+from engine.change.errors.event_pattern_error import EventPatternError
 from engine.change.event_subscriber import E, EventSubscriber
 from engine.change.event_type import EventType
 from engine.change.journal_booting import JournalBooting
