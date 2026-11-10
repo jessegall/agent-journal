@@ -20,6 +20,7 @@ from engine.query.queries import Queries
 RECENT = timedelta(hours=1)
 CONVERSATION_TYPES = (*PERSON_MESSAGE_TYPES, MessageType.AGENT)
 USER = "user"
+UNREADABLE_AGENT = "another agent"
 
 RECENT_MESSAGES = 50
 
@@ -56,10 +57,10 @@ class MessageConversationsSubcommand(ReadSubcommand[tuple[RecentConversation, ..
         if message.peer:
             return message.peer
         if message.creator_id != agent_id:
-            return USER if message.type in PERSON_MESSAGE_TYPES else labels[message.creator_id]
+            return USER if message.type in PERSON_MESSAGE_TYPES else labels.get(message.creator_id, UNREADABLE_AGENT)
         if message.recipient:
             return message.recipient
-        return labels[message.target_agent_id] if message.target_agent_id is not None else USER
+        return labels.get(message.target_agent_id, UNREADABLE_AGENT) if message.target_agent_id is not None else USER
 
     def write_output(self, value: object, output: Output) -> None:
         rows = [row for row in value if isinstance(row, RecentConversation)] if is_tuple(value) else []
