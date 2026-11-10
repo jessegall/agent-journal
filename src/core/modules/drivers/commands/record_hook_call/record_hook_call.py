@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from core.base.driver.hook_event import HookEvent
-from core.base.driver.hook_reply import HookReply
-from core.base.driver.rule_answers import RuleAnswers
+from engine.driver.hook_event import HookEvent
+from engine.driver.hook_reply import HookReply
+from engine.driver.rule_answers import RuleAnswers
 
 
 @dataclass(frozen=True)

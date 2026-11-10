@@ -10,8 +10,8 @@ import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.tool_type import ToolType
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.tool_type import ToolType
 from engine.file.file_access import FileAccess
 from engine.instruction.instruction_imports import JOURNAL_FILE
 from engine.journal.journal_home import JournalHome
@@ -29,7 +29,7 @@ from core.base.profile.agent_profile import AgentProfile
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.provider import Provider
 from engine.enums.halt_style import HaltStyle
-from core.base.driver.refusal_style import RefusalStyle
+from engine.driver.refusal_style import RefusalStyle
 from core.base.provider.transcript_author import JOURNAL_AUTHOR, TRANSCRIPT_AUTHORS, TranscriptAuthor
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.provider.transcript_tail import TranscriptTail

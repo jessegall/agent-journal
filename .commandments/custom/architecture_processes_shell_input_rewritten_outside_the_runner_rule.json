@@ -41,10 +41,10 @@
                 "fileMatches": "processes/rules/runner_rewrite_rule\\.py$"
             },
             {
-                "fileMatches": "base/driver/refusal_line\\.py$"
+                "fileMatches": "engine/driver/refusal_line\\.py$"
             },
             {
-                "fileMatches": "base/driver/rule_answer\\.py$"
+                "fileMatches": "engine/driver/rule_answer\\.py$"
             },
             {
                 "all": [

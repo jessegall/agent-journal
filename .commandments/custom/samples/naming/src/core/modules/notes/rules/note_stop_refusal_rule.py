@@ -1,4 +1,4 @@
-from core.base.driver.driver_rule import DriverRule
+from engine.driver.driver_rule import DriverRule
 
 
 # @sin naming_type_word_inside_a_name

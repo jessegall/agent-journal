@@ -5,9 +5,9 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.caller.caller_request import SESSION_VARIABLE
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.command_effect import CommandEffect
-from core.base.driver.tool_type import ToolType
+from engine.driver.command_category import CommandCategory
+from engine.driver.command_effect import CommandEffect
+from engine.driver.tool_type import ToolType
 from core.modules.drivers.support.access_nudges import ENDED_AGENT, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, UNJUDGED_LINE
 from engine.query.queries import Queries
 from core.modules.documents.models.report import Report

@@ -10,7 +10,7 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from tests.stories.core.modules.processes.support.process_samples import end_run, start_process
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.driver.nudge import Nudge
+from engine.driver.nudge import Nudge
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.file.file_access import FileAccess
@@ -31,10 +31,10 @@ from core.testing.story_shell_sandbox import StoryShellSandbox
 from core.modules.profiles.support.profile_files import ProfileFiles
 from suites.coding.modules.workers.commands.start_merger.start_merger_handler import StartMergerHandler
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, UserBuilder
-from tests.stories.core.base.driver.support.hook_agents import hook_agent
+from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, merged_worker_lines, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.merge import expect_marks_text
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended, queued_story, recording_launch

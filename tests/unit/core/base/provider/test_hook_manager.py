@@ -5,8 +5,8 @@ from unittest.mock import patch
 import pytest
 
 from engine.journal.journal_home import JournalHome
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.refusal_style import RefusalStyle
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.refusal_style import RefusalStyle
 from core.base.provider.hook_effect import HookEffect
 from core.base.provider.hook_manager import HookManager
 from core.base.provider.managed_hooks import ManagedHooks

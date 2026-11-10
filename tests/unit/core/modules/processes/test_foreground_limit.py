@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from core.base.driver.classification import Classification
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.part import Part
-from core.base.driver.shell_line import ShellLine
+from engine.driver.classification import Classification
+from engine.driver.command_category import CommandCategory
+from engine.driver.part import Part
+from engine.driver.shell_line import ShellLine
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.support.foreground_limit import ForegroundLimit
 from core.modules.processes.support.part_command import PartCommand

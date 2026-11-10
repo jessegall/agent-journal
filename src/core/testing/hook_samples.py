@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
-from core.base.driver.hook_event import HOOK_EVENT_VERSION
-from core.base.driver.tool_type import ToolType
+from engine.driver.hook_event import HOOK_EVENT_VERSION
+from engine.driver.tool_type import ToolType
 from core.testing.hook_sample import HookSample
 from core.testing.shell_part import ShellPart
 

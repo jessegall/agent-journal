@@ -1,7 +1,7 @@
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process
 from tests.stories.core.modules.processes.support.process_samples import runner_line, expect_rewritten

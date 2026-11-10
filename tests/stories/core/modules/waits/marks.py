@@ -1,4 +1,4 @@
-from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.chat.support.v4_looks import REPORTED_WAIT, expect_declared_appearance
 import pytest
 
@@ -7,7 +7,7 @@ from engine.errors.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.tasks.models.enums.task_mark_type import TaskMarkType
 from core.modules.tasks.models.enums.task_mark_variant import TaskMarkVariant
-from tests.stories.core.base.driver.support.fixtures import LeadStarted
+from tests.stories.engine.driver.support.fixtures import LeadStarted
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, module_actor, expect_marks_text
 
 

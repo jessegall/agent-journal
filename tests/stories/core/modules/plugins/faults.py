@@ -1,5 +1,5 @@
 from engine.command.bus import Bus
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.models.plugin import Plugin

@@ -1,4 +1,4 @@
-from core.base.driver.suite import Suite
+from engine.driver.suite import Suite
 from core.base.module.module import Module
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.base.viewer.skeleton_part import SkeletonPart

@@ -1,7 +1,7 @@
 import re
 from collections.abc import Sequence
 
-from core.base.driver.hook_reply import HookReply
+from engine.driver.hook_reply import HookReply
 
 NUMBER = re.compile(r"\d+")
 REFUSED = ", refused"

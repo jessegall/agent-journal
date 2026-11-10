@@ -8,8 +8,8 @@ from pathlib import Path
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.file.file_access import FileAccess
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.command_effect import CommandEffect
+from engine.driver.command_category import CommandCategory
+from engine.driver.command_effect import CommandEffect
 from core.modules.plugins.support.login_path import LoginPath
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine

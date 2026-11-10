@@ -1,5 +1,5 @@
-from core.base.driver.foreign_answer import ForeignAnswer
-from core.base.driver.rule_answer import RuleAnswer
+from engine.driver.foreign_answer import ForeignAnswer
+from engine.driver.rule_answer import RuleAnswer
 
 
 def forwarded_input(answer: ForeignAnswer):

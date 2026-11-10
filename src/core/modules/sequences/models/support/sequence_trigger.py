@@ -4,8 +4,8 @@ from fnmatch import fnmatch
 from typing import Self
 import re
 
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.hook_event_name import HookEventName
+from engine.driver.agent_hook import AgentHook
+from engine.driver.hook_event_name import HookEventName
 from engine.errors.refusal import Refusal
 
 

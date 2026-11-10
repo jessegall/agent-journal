@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from pathlib import Path
 
-from core.base.driver.hook_transcript import HookTranscript
+from engine.driver.hook_transcript import HookTranscript
 from core.base.provider.providers import Providers
 from engine.skill.skill_contents import SkillContents
 from engine.skill.skill_digest import SkillDigest

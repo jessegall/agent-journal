@@ -3,9 +3,9 @@ import pytest
 from core.testing.fake_launcher import FakeLauncher
 from core.modules.drivers.support.access_nudges import ENDED_AGENT, UNKNOWN_AGENT
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
-from tests.stories.core.base.driver.support.hook_agents import hook_agent
-from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice
+from tests.stories.engine.driver.support.hook_agents import hook_agent
+from tests.stories.engine.driver.support.samples import SAMPLES
 
 CLEAR_END = HookSamples.sample("session_end").with_raw({"reason": "clear"})
 CLEAR_START = HookSamples.session_start().with_raw({"source": "clear"})

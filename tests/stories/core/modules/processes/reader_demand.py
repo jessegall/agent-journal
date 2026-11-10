@@ -12,7 +12,7 @@ from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from tests.stories.core.modules.processes.support.process_samples import moved_run
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.testing.hook_samples import HookSamples

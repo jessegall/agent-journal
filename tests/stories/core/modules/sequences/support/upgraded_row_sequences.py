@@ -5,7 +5,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from install.upgrade_journal import UpgradeJournal
-from tests.stories.core.base.driver.support.hook_agents import hook_agent
+from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.fixtures.row_sequences import ROW_SEQUENCES, prepare_row_sequences
 from tests.stories.fixtures.version_four import version_four_fixture
 

@@ -1,4 +1,4 @@
-from core.base.driver.seconds import Seconds
+from engine.driver.seconds import Seconds
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.settings.bindings.support.setting_values import SettingValues
 

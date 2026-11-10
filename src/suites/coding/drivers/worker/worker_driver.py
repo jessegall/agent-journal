@@ -1,5 +1,5 @@
 from suites.coding.support.worker_test_rule import WORKER_TEST_RULE
-from core.base.driver.driver import Driver
+from engine.driver.driver import Driver
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.support.context_line import CONTEXT_LINE
 from suites.coding.drivers.worker.rules.worker_command_type_rule import WorkerCommandTypeRule

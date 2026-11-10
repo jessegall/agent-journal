@@ -5,12 +5,12 @@ import pytest
 from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.registry.registry import Registry
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.support.skill_requirement import SkillRequirement
-from tests.stories.core.base.driver.support.hook_agents import hook_agent
+from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.modules.skills.support.skill_samples import PATH
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from tests.stories.support.story_checks import expect_value, expect_value_with, expect_value_without

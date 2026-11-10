@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import replace
 
-from core.base.driver.driver_rule import DriverRule
+from engine.driver.driver_rule import DriverRule
 from core.base.module.module import Module
 from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.driver_entry import DriverEntry

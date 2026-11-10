@@ -1,9 +1,9 @@
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.command_effect import CommandEffect
+from engine.driver.command_category import CommandCategory
+from engine.driver.command_effect import CommandEffect
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.base.driver.support.fixtures import LeadLocked, LeadStarted
-from tests.stories.core.base.driver.support.samples import REMOVAL, SAMPLES
+from tests.stories.engine.driver.support.fixtures import LeadLocked, LeadStarted
+from tests.stories.engine.driver.support.samples import REMOVAL, SAMPLES
 from tests.stories.support.story_checks import expect_refusal_reply, expect_updated_input_hook, expect_updated_input_reply
 
 LISTING = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.SEARCH, ["build"], effects=[CommandEffect.READS_FILES]))

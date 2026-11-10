@@ -3,7 +3,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery

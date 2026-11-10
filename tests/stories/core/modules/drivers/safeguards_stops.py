@@ -7,7 +7,7 @@ from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.messages.reply_teaching import ReplySession
 
 SAFEGUARDS_ERROR = "API Error: this request was stopped by the model safeguards (reasoning_extraction), request id req_011CabcDEF123"

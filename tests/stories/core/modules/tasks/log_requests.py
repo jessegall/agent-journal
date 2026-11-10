@@ -1,6 +1,6 @@
 from core.testing.story_fixture import StoryFixture
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from datetime import timedelta
 
 from core.modules.tasks.rules.unlogged_write_rule import UNLOGGED_WRITES_CEILING

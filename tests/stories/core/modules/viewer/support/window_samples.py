@@ -1,4 +1,4 @@
-from core.base.driver.suite import Suite
+from engine.driver.suite import Suite
 from engine.guard.guard import Guard
 from engine.model.model import Model
 from core.base.module.module import Module

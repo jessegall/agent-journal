@@ -1,5 +1,5 @@
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.shell_line import ShellLine
+from engine.driver.command_category import CommandCategory
+from engine.driver.shell_line import ShellLine
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.background_commands import BackgroundCommands

@@ -4,7 +4,7 @@ from dataclasses import replace
 from core.modules.processes.support.process_nudges import RUNNER_MISSING, SANDBOX_RUNNER_MISSING, SANDBOX_PARSE_ERROR, SANDBOX_FOLDER_MISSING
 from collections.abc import Mapping, Sequence
 
-from core.base.driver.agent_hook import AgentHook
+from engine.driver.agent_hook import AgentHook
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.enums.access import Access
 from engine.agent.agent_checkouts import AgentCheckouts
@@ -12,11 +12,11 @@ from engine.sandbox.agent_sandbox_choice import AgentSandboxChoice
 from engine.agent.agent_write_folder import AgentWriteFolder
 from engine.file.project_reads import ProjectReads
 from engine.sandbox.shell_sandbox import ShellSandbox
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.hook_history import HookHistory
-from core.base.driver.rule_answer import RuleAnswer
-from core.base.driver.shell_line import ShellLine
+from engine.driver.driver_rule import DriverRule
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.hook_history import HookHistory
+from engine.driver.rule_answer import RuleAnswer
+from engine.driver.shell_line import ShellLine
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.foreground_limit import ForegroundLimit

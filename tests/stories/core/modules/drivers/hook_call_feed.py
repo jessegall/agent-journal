@@ -1,6 +1,6 @@
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.base.driver.support.fixtures import LeadStarted
-from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.engine.driver.support.fixtures import LeadStarted
+from tests.stories.engine.driver.support.samples import SAMPLES
 
 
 def test_the_feed_gives_a_hundred_calls_in_one_page_and_the_older_ones_in_the_next(new_story):

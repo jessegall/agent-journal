@@ -3,10 +3,10 @@ from dataclasses import replace
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfinished_tasks_line import WORKER_UNFINISHED_TASKS
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import WORKER_PROGRAM_UNAVAILABLE, WORKER_PROGRAM_RESUMED
-from core.base.driver.interval import Interval
-from core.base.driver.seconds import Seconds
-from core.base.driver.nudge_declaration import NudgeDeclaration
-from core.base.driver.nudge_type import NudgeType
+from engine.driver.interval import Interval
+from engine.driver.seconds import Seconds
+from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.nudge_type import NudgeType
 
 APPROVED_PLAN_WAIT = NudgeDeclaration("workers.approved_plan_wait", NudgeType.REFUSAL, 'plan:{plan} is approved and a worker place is free: start it, then assign its work')
 

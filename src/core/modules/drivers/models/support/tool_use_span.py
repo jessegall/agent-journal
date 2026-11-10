@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from core.base.driver.span import Span
+from engine.driver.span import Span
 
-from core.base.driver.span_queries import SpanQueries
+from engine.driver.span_queries import SpanQueries
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.support.tool_use_count import ToolUseCount
 

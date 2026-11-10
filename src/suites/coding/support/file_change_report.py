@@ -2,7 +2,7 @@ import json
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.base.driver.diff_count import DiffCount
+from engine.driver.diff_count import DiffCount
 from suites.coding.support.file_change import FileChange
 
 

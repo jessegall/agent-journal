@@ -7,11 +7,11 @@ import pytest
 from engine.command.bus import Bus
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.command_effect import CommandEffect
+from engine.driver.command_category import CommandCategory
+from engine.driver.command_effect import CommandEffect
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.processes.support.process_samples import expect_rewritten, install_runner, runner_line, user_waits, with_parse_error
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderHelper
 from core.testing.expect_reply import expect_reply_allowed

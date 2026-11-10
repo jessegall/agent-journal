@@ -1,5 +1,5 @@
-from core.base.driver.nudge_declaration import NudgeDeclaration
-from core.base.driver.nudge_type import NudgeType
+from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.nudge_type import NudgeType
 
 LINE_SOURCE = "transcriptions"
 TRANSCRIPTION_CHANGED = NudgeDeclaration("transcriptions.changed", NudgeType.STEERING, "transcription:{transcription} has new text: summarize it in task:{task}", turn_limited=False)

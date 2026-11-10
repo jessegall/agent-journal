@@ -1,5 +1,5 @@
-from core.base.driver.nudge_declaration import NudgeDeclaration
-from core.base.driver.nudge_type import NudgeType
+from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.nudge_type import NudgeType
 
 QUESTION_ANSWERED = NudgeDeclaration("questions.question_answered", NudgeType.NOTICE,
                                    "question:{question} is answered", wakes_agent=True,

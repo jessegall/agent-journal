@@ -1,8 +1,8 @@
 import pytest
 
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.command_effect import CommandEffect
-from core.base.driver.tool_type import ToolType
+from engine.driver.command_category import CommandCategory
+from engine.driver.command_effect import CommandEffect
+from engine.driver.tool_type import ToolType
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.drivers.support.access_rules import ACCESS_MODULE, AccessStarted

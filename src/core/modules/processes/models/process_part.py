@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.shell_line import JOURNAL_PROGRAM
+from engine.driver.command_category import CommandCategory
+from engine.driver.shell_line import JOURNAL_PROGRAM
 from engine.model.model import Model
 from engine.time.timestamp import Timestamp
 from core.modules.processes.models.enums.part_state import PartState

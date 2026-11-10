@@ -17,15 +17,15 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.processes.models.enums.process_mark_type import ProcessMarkType
 from core.modules.processes.models.enums.process_mark_variant import ProcessMarkVariant
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from server.booting_work import BootingWork
-from tests.stories.core.base.driver.support.fixtures import LeadStarted, SampleSuiteChoice
-from tests.stories.core.base.driver.support.hook_agents import hook_agent
-from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.engine.driver.support.fixtures import LeadStarted, SampleSuiteChoice
+from tests.stories.engine.driver.support.hook_agents import hook_agent
+from tests.stories.engine.driver.support.samples import SAMPLES
 from core.testing.expect_reply import expect_absent_reply_line, expect_absent_reply_refusal, expect_reply_line
 from core.testing.expect_row import expect_row
 from tests.stories.support.story_checks import expect_lines_2, expect_lines_3, expect_refusal_hook, expect_value_with

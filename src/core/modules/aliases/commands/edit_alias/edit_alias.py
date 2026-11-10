@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.modules.aliases.models.alias import Alias
 
 

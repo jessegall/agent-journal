@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from engine.database.kept_rows import KeptRows
-from core.base.driver.nudge import Nudge
+from engine.driver.nudge import Nudge
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.drivers.models.nudge_record import NudgeRecord

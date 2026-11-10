@@ -19,7 +19,7 @@ from core.modules.processes.support.ended_output_text import EndedOutputText
 from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.rules.silent_run_rule import STALLED_SECONDS
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from core.testing.expect_reply import expect_absent_reply_line, expect_reply_line
 from core.testing.hook_samples import HookSamples

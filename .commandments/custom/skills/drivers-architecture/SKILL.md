@@ -20,7 +20,7 @@ each piece keeps to its place.
 - **`rule-builds-its-reader`** - a driver rule or an overlay constructs a `Database`, a `Container`, `Queries`
   or a query class. Name the query it needs in its constructor, `def __init__(self, tasks: TaskQuery)`, and
   the container hands it in.
-- **`driver-base-imports-a-module`** - a file of `core/base/driver/` imports from `core/modules/` or
+- **`driver-base-imports-a-module`** - a file of `engine/driver/` imports from `core/modules/` or
   `suites/`. The base is what every module builds on; what it needs from a module is an interface in the
   base that the module binds, as `HookHistory` and `HookRoute` are.
 - **`driver-piece-without-a-name`** - a suite, driver, driver rule or overlay declares no `name`. Every piece is

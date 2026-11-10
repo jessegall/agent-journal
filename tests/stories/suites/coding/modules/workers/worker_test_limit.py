@@ -8,7 +8,7 @@ from tests.stories.support.story_checks import expect_value
 
 from engine.command.bus import Bus
 from engine.actor.actor import Actor
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine

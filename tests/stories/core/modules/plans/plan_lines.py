@@ -4,12 +4,12 @@ import pytest
 
 from datetime import timedelta
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
+from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.engine.driver.support.samples import SAMPLES
 from core.testing.expect_reply import expect_absent_reply_line
 from tests.stories.support.story_checks import expect_lines_3, expect_value_with, expect_value_without_line
 from tests.stories.core.support.plan_steps import ready_plan

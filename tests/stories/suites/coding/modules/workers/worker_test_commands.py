@@ -2,7 +2,7 @@ import subprocess
 
 import pytest
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.missing_runner_error import MissingRunnerError

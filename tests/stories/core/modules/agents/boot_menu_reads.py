@@ -2,8 +2,8 @@ import json
 
 import pytest
 
-from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
-from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice
+from tests.stories.engine.driver.support.samples import SAMPLES
 
 WORKER_ROWS = 1001
 

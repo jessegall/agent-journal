@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from engine.model.model import Model
 from engine.model.session_private import SessionPrivate
 from engine.time.timestamp import Timestamp
-from core.base.driver.nudge import Nudge
+from engine.driver.nudge import Nudge
 from core.modules.drivers.models.support.agent_line_nudge import AGENT_LINE_AVAILABLE
-from core.base.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.nudge_declaration import NudgeDeclaration
 from core.modules.drivers.models.lifecycles.agent_line_lifecycle import AgentLineLifecycle
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 

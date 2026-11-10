@@ -1,4 +1,4 @@
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from suites.coding.modules.workers.commands.record_own_test_failure.record_own_test_failure import RecordOwnTestFailure
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from engine.actor.actor import Actor

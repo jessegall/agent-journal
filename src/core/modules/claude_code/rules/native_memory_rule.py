@@ -1,10 +1,10 @@
 import re
 
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.command_effect import CommandEffect
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.rule_answer import RuleAnswer
+from engine.driver.agent_hook import AgentHook
+from engine.driver.command_effect import CommandEffect
+from engine.driver.driver_rule import DriverRule
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.rule_answer import RuleAnswer
 from core.modules.claude_code.support.claude_code_nudges import NATIVE_MEMORY_BAN
 
 NATIVE_MEMORY_PATH = re.compile(r"\.claude/projects/[^/\s]+/memory(/|\b)")

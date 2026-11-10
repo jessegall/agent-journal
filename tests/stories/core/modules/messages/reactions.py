@@ -7,9 +7,9 @@ from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.commands.react_message.react_message_handler import REACTION_SOURCE
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
-from tests.stories.core.base.driver.support.hook_agents import hook_agent
-from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice
+from tests.stories.engine.driver.support.hook_agents import hook_agent
+from tests.stories.engine.driver.support.samples import SAMPLES
 
 
 class ReactableMessage(StoryFixture):

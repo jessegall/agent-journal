@@ -1,4 +1,4 @@
-from core.base.driver.suite import Suite
+from engine.driver.suite import Suite
 from core.base.module.module import Module
 
 PATH = "tests.stories.core.modules.drivers.support.extended_suites"

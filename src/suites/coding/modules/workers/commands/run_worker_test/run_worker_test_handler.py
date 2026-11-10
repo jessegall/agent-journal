@@ -3,7 +3,7 @@ from dataclasses import replace
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.errors.refusal import Refusal
 from engine.scope.actor_scope import ActorScope
 from core.modules.processes.commands.start_process.start_process import StartProcess

@@ -3,8 +3,8 @@ import json
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.program_hooks import ProgramHooks
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.base.driver.support.fixtures import LeadStarted
-from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.engine.driver.support.fixtures import LeadStarted
+from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 from core.testing.expect_row import expect_row

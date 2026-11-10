@@ -1,6 +1,6 @@
 from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
 from engine.errors.refusal import Refusal
-from core.base.driver.program_lockdown import ProgramLockdown
+from engine.driver.program_lockdown import ProgramLockdown
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_link import LauncherLink
 

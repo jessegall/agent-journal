@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.part import Part
+from engine.driver.command_category import CommandCategory
+from engine.driver.part import Part
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line

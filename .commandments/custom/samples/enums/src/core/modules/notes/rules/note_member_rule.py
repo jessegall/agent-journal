@@ -1,5 +1,5 @@
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
+from engine.driver.driver_rule import DriverRule
+from engine.driver.hook_event_name import HookEventName
 
 
 class NoteMemberRule(DriverRule):

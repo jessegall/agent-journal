@@ -1,8 +1,8 @@
 from datetime import timedelta
 
 from engine.enums.agent_role import AgentRole
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.hook_event import HookEvent
+from engine.driver.agent_hook import AgentHook
+from engine.driver.hook_event import HookEvent
 from core.modules.drivers.support.agent_activities import AgentActivities
 from core.testing.hook_samples import HookSamples
 from suites.coding.modules.workers.rules.inactive_helper_rule import InactiveHelperRule

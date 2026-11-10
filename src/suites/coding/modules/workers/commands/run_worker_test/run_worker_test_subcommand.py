@@ -3,7 +3,7 @@ from argparse import REMAINDER, ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
-from core.base.driver.shell_line import JOURNAL_PROGRAM
+from engine.driver.shell_line import JOURNAL_PROGRAM
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.run_visibility import RunVisibility

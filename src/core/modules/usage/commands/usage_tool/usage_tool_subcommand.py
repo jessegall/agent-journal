@@ -3,8 +3,8 @@ from collections.abc import Sequence
 
 from engine.caller.caller import Caller
 from engine.time.clock import Clock
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.project_paths import ProjectPaths
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.project_paths import ProjectPaths
 from core.base.provider.transcript_author import MONITOR_OPENINGS
 from engine.query.conditions.among import Among
 from engine.query.conditions.contains_some import ContainsSome

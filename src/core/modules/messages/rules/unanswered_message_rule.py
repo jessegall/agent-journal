@@ -1,9 +1,9 @@
 
 from engine.enums.agent_role import AgentRole
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.rule_answer import RuleAnswer
+from engine.driver.agent_hook import AgentHook
+from engine.driver.driver_rule import DriverRule
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.rule_answer import RuleAnswer
 from engine.query.conditions.among import Among
 from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries
@@ -12,7 +12,7 @@ from engine.query.conditions.excluding import Excluding
 from core.modules.agents.conditions.active_agent_rows import ActiveAgentRows
 from core.modules.agents.models.agent import Agent
 from core.modules.messages.queries.message_query import MessageQuery
-from core.base.driver.interval import Interval
+from engine.driver.interval import Interval
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES, MessageType
 from core.modules.messages.models.message import Message

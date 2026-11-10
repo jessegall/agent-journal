@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from engine.time.timestamp import Timestamp
 from datetime import datetime, timezone
 from core.modules.processes.support.output_folder import OutputFolder
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.browser_story import expect_browser

@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.skill.skill_contents import SkillContents
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.skill_requirement import SkillRequirement

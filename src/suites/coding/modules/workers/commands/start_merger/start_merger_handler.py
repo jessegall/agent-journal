@@ -3,7 +3,7 @@ from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.driver.nudge import Nudge
+from engine.driver.nudge import Nudge
 from core.base.provider.providers import Providers
 from engine.query.queries import Queries
 from core.modules.profiles.support.profile_files import ProfileFiles

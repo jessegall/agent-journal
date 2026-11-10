@@ -3,8 +3,8 @@ from datetime import timedelta
 import pytest
 
 from engine.enums.agent_role import AgentRole
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.tool_type import ToolType
+from engine.driver.command_category import CommandCategory
+from engine.driver.tool_type import ToolType
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery

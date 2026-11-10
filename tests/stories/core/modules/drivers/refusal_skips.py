@@ -4,8 +4,8 @@ from itertools import count
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.tool_type import ToolType
+from engine.driver.command_category import CommandCategory
+from engine.driver.tool_type import ToolType
 from engine.guard.guard_refusal import GuardRefusal
 from engine.errors.refusal import Refusal
 from engine.log.refusal_log import RefusalLog

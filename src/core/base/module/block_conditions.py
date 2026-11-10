@@ -1,5 +1,5 @@
-from core.base.driver.block_condition import BlockCondition
-from core.base.driver.conditions.unregistered_condition import UnregisteredCondition
+from engine.driver.block_condition import BlockCondition
+from engine.driver.conditions.unregistered_condition import UnregisteredCondition
 from core.base.module.module_finder import ModuleFinder
 
 

@@ -1,8 +1,8 @@
 from dataclasses import replace
 
-from core.base.driver.block_until import BlockUntil
-from core.base.driver.interval import Interval
-from core.base.driver.nudge import Nudge
+from engine.driver.block_until import BlockUntil
+from engine.driver.interval import Interval
+from engine.driver.nudge import Nudge
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.support.block_conditions.reader_request_completed import ReaderRequestCompleted
 from core.modules.processes.support.process_nudges import READER_REQUEST, READER_REQUEST_COUNTDOWN, READER_REQUEST_REFUSAL, READER_REQUEST_SPAN

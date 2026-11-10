@@ -2,10 +2,10 @@ from core.modules.secrets.support.secret_nudges import SECRETS_FOLDER_BAN
 import json
 from pathlib import Path
 
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.rule_answer import RuleAnswer
+from engine.driver.agent_hook import AgentHook
+from engine.driver.driver_rule import DriverRule
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.rule_answer import RuleAnswer
 from engine.private.private_folder import PrivateFolder
 
 MARKERS = ("agent-journal/secrets", ".journal/keys")

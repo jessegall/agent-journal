@@ -1,10 +1,10 @@
 from engine.caller.caller import Caller
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.rule_answer import RuleAnswer
+from engine.driver.agent_hook import AgentHook
+from engine.driver.driver_rule import DriverRule
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.rule_answer import RuleAnswer
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.support.alias_access import AliasAccess
 from core.modules.aliases.support.alias_nudges import ALIAS_MISSING, ALIAS_ACCESS_REFUSED, ALIAS_PLUGIN_OFF, ALIAS_UNEXPANDED

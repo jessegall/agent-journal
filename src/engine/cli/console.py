@@ -35,7 +35,7 @@ from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from engine.registry.registry import Registry
 from engine.cli.read_limit_bypass import ReadLimitBypass
-from core.base.driver.refusal_skips import RefusalSkips
+from engine.driver.refusal_skips import RefusalSkips
 from engine.errors.read_limit_error import ReadLimitError
 from engine.registry.stale_registry_error import StaleRegistryError
 from engine.errors.refusal import Refusal

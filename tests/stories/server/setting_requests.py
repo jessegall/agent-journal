@@ -6,8 +6,8 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
-from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice
+from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.server.support.server_client import server_story
 
 SUITE_KEY = "journal.core.drivers.suite"

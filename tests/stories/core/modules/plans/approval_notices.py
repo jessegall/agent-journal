@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from core.modules.approvals.models.approval_request import ApprovalRequest

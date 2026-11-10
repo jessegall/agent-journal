@@ -51,7 +51,7 @@ from core.modules.sequences.seeders.sequences_seeder import SequencesSeeder
 from core.modules.sequences.upgrade.sequences_move import SequencesMove
 from core.modules.sequences.support.sequence_marks import SEQUENCE_MARKS
 from core.modules.sequences.support.skeletons import SEQUENCES_SEQUENCES_SKELETON
-from core.base.driver.stop_blockers import StopBlockers
+from engine.driver.stop_blockers import StopBlockers
 from core.modules.sequences.support.sequence_step_started import SequenceStepStarted
 from core.modules.sequences.support.sequence_stop_blockers import SequenceStopBlockers
 

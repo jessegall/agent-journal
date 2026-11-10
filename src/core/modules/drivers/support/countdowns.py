@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 from engine.command.context import Context
-from core.base.driver.count_down import CountDown
+from engine.driver.count_down import CountDown
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.drivers.models.countdown import Countdown

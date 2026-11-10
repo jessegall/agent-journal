@@ -73,13 +73,13 @@
                 "file": "src/engine/dotted_path/wrong_base_error.py"
             },
             {
-                "file": "src/core/base/driver/hook_event_error.py"
+                "file": "src/engine/driver/hook_event_error.py"
             },
             {
-                "file": "src/core/base/driver/hook_event_version_error.py"
+                "file": "src/engine/driver/hook_event_version_error.py"
             },
             {
-                "file": "src/core/base/driver/old_hook_runner_error.py"
+                "file": "src/engine/driver/old_hook_runner_error.py"
             },
             {
                 "file": "src/engine/guard/guard_refusal.py"

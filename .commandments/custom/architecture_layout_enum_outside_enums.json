@@ -50,28 +50,28 @@
                 "file": "src/engine/chat/mark_outcome.py"
             },
             {
-                "file": "src/core/base/driver/command_category.py"
+                "file": "src/engine/driver/command_category.py"
             },
             {
-                "file": "src/core/base/driver/command_effect.py"
+                "file": "src/engine/driver/command_effect.py"
             },
             {
-                "file": "src/core/base/driver/foreign_outcome.py"
+                "file": "src/engine/driver/foreign_outcome.py"
             },
             {
-                "file": "src/core/base/driver/hook_event_name.py"
+                "file": "src/engine/driver/hook_event_name.py"
             },
             {
-                "file": "src/core/base/driver/hook_wildcard.py"
+                "file": "src/engine/driver/hook_wildcard.py"
             },
             {
-                "file": "src/core/base/driver/nudge_type.py"
+                "file": "src/engine/driver/nudge_type.py"
             },
             {
-                "file": "src/core/base/driver/refusal_style.py"
+                "file": "src/engine/driver/refusal_style.py"
             },
             {
-                "file": "src/core/base/driver/tool_type.py"
+                "file": "src/engine/driver/tool_type.py"
             },
             {
                 "file": "src/engine/model/event_form.py"

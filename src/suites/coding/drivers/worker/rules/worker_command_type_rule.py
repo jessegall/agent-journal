@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from suites.coding.support.coding_nudges import WORKER_COMMAND_TYPE
-from core.base.driver.agent_hook import AgentHook
+from engine.driver.agent_hook import AgentHook
 from core.modules.drivers.rules.allowed_command_types_rule import AllowedCommandTypesRule
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.support.coding_settings import COMMAND_TYPES

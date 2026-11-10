@@ -2,9 +2,9 @@ from core.testing.hook_samples import HookSamples
 from tests.stories.core.support import story_lines as lines
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.base.driver.support.hook_agents import hook_agent
+from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.coding_fixtures import BuilderStarted, CodingEnvironment
-from core.base.driver.tool_type import ToolType
+from engine.driver.tool_type import ToolType
 
 QUESTION_LINE = 'question ask "Which database?" --context "A story asks this so its card and answer can be checked." --options sqlite postgres --environment main'
 QUESTION_TOOL = HookSamples.sample("pre_tool_use", {"name": "AskUserQuestion", "category": ToolType.QUESTION, "files": [], "diff": None})

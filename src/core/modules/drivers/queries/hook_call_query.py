@@ -6,8 +6,8 @@ from engine.database.database import Database
 from engine.database.kept_rows import KeptRows
 from engine.database.statement import Statement
 from engine.time.timestamp import Timestamp
-from core.base.driver.hook_event import HookEvent
-from core.base.driver.hook_event_name import HookEventName
+from engine.driver.hook_event import HookEvent
+from engine.driver.hook_event_name import HookEventName
 from engine.model.tables import Tables
 from engine.query.conditions.less import Less
 from engine.query.conditions.among import Among
@@ -19,7 +19,7 @@ from engine.query.query import Query
 from core.modules.drivers.models.support.views import tool_use_counts_select
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
-from core.base.driver.search_category import CODE, GRAPHIFY
+from engine.driver.search_category import CODE, GRAPHIFY
 
 STOPS_READ = 20
 MOST_DISPLAYED_PARTS = 500

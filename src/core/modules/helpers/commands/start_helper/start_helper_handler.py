@@ -4,7 +4,7 @@ from dataclasses import replace
 from engine.actor.actor import Actor
 from engine.sandbox.shell_sandbox import ShellSandbox
 from engine.command.bus import Bus
-from core.base.driver.program_lockdown import ProgramLockdown
+from engine.driver.program_lockdown import ProgramLockdown
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal

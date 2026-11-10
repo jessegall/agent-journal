@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.time.clock import Clock
 from engine.command.bus import Bus
 from engine.container.container import Container
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.scope.scopes import Scopes
 from core.modules.processes.commands.ask_agent_to_look.ask_agent_to_look import AskAgentToLook
 from core.modules.processes.commands.stop_hung_process.stop_hung_process import StopHungProcess

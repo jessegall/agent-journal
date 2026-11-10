@@ -1,4 +1,4 @@
-from core.base.driver.hook_event_name import HookEventName
+from engine.driver.hook_event_name import HookEventName
 from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 

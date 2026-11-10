@@ -5,7 +5,7 @@ from pathlib import PurePath
 from engine.enums.agent_role import AgentRole
 from engine.change.changed import Changed
 from engine.change.logged_event import LoggedEvent
-from core.base.driver.hook_event_name import HookEventName
+from engine.driver.hook_event_name import HookEventName
 from engine.query.conditions.maximum import Maximum
 from core.modules.agents.models.agent import Agent
 from core.modules.chat.listeners.mark_listener import MarkListener

@@ -37,7 +37,7 @@
     "4a637eb6a659f08bb94347350f2d19470fb39402": {
       "detector": "FeatureEnvyDetector",
       "sin": "feature-envy",
-      "file": "src/core/base/driver/shell_line.py",
+      "file": "src/engine/driver/shell_line.py",
       "line": 86,
       "reason": "BackgroundCommands.alias_names applies configured alias policy to parsed shell commands. Journal-part selection now belongs to ShellLine.parts_running_journal_command; this method calls that API and checks names through the injected ShellAliases interface, then preserves the hook-provided alias names. It does not select programs by traversing shell.parts. ShellLine cannot decide which command names are configured aliases. The remaining traversal is the policy-over-flat-fields exception documented by the tell-dont-ask skill.",
       "repository": "jessegall/code-commandments",

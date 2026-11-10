@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from engine.command.bus import Bus
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.ticks.silent_alias_marking import SilentAliasMarking

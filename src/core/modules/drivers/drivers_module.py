@@ -46,9 +46,9 @@ from core.modules.drivers.listeners.hook_timeout_mark_listener import HookTimeou
 from core.modules.drivers.models.hook_timeout_notice import HookTimeoutNotice
 from core.modules.drivers.migrations.m008_required_command_type import RequiredCommandTypeMigration
 from core.modules.drivers.support.driver_nudges import DRIVER_NUDGES
-from core.base.driver.essential_allowances import EssentialAllowances
-from core.base.driver.hook_history import HookHistory
-from core.base.driver.refusal_skips import RefusalSkips
+from engine.driver.essential_allowances import EssentialAllowances
+from engine.driver.hook_history import HookHistory
+from engine.driver.refusal_skips import RefusalSkips
 from core.modules.drivers.bindings.table_refusal_skips import TableRefusalSkips
 from core.modules.drivers.commands.restore_refusal_skip.restore_refusal_skip_handler import RestoreRefusalSkipHandler
 from core.modules.drivers.commands.restore_refusal_skip.restore_refusal_skip_subcommand import RestoreRefusalSkipSubcommand
@@ -64,7 +64,7 @@ from core.modules.drivers.migrations.m037_agent_line_nudge import AgentLineNudge
 from core.modules.drivers.migrations.m030_hook_call_partial_indexes import HookCallPartialIndexesMigration
 from core.modules.drivers.models.refusal_skip import RefusalSkip
 from engine.guard.change_filter import ChangeFilter
-from core.base.driver.hook_route import HookRoute
+from engine.driver.hook_route import HookRoute
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -153,9 +153,9 @@ from core.modules.drivers.rules.safeguards_stop_rule import SafeguardsStopRule
 from core.modules.drivers.commands.end_silent_helpers.end_silent_helpers_handler import EndSilentHelpersHandler
 from core.modules.drivers.support.block_conditions.all_conditions import AllConditions
 from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
-from core.base.driver.conditions.ran_command import RanCommand
-from core.base.driver.conditions.read_file import ReadFile
-from core.base.driver.conditions.time_reached import TimeReached
+from engine.driver.conditions.ran_command import RanCommand
+from engine.driver.conditions.read_file import ReadFile
+from engine.driver.conditions.time_reached import TimeReached
 from core.modules.drivers.support.block_conditions.agent_resumed import AgentResumed
 from core.modules.drivers.support.block_conditions.tool_uses import ToolUses
 from core.modules.drivers.support.hook_cost_tool import HookCostTool

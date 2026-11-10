@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.driver.tool_type import ToolType
+from engine.driver.tool_type import ToolType
 from core.testing.expect_reply import expect_reply_allowed
 from core.testing.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worker_nudges import WORKER_READ_REFUSAL

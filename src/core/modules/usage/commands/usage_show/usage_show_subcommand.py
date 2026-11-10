@@ -8,14 +8,14 @@ from engine.enums.helper_role import HelperRole
 from engine.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from engine.caller.caller import Caller
-from core.base.driver.program_lockdown import ProgramLockdown
+from engine.driver.program_lockdown import ProgramLockdown
 from engine.query.conditions.among import Among
 from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries
 from engine.query.query import Query
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
-from core.base.driver.hook_event_name import HookEventName
+from engine.driver.hook_event_name import HookEventName
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.usage.support.compaction import Compaction

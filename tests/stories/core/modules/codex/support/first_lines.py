@@ -1,7 +1,7 @@
 import json
 import subprocess
 
-from core.base.driver.tool_type import ToolType
+from engine.driver.tool_type import ToolType
 from engine.query.queries import Queries
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
@@ -12,7 +12,7 @@ from core.modules.processes.support.process_nudges import SILENT_RUN
 from core.modules.processes.support.streaming_hints import StreamingHints
 from core.modules.drivers.models.hook_call import HookCall
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.base.driver.support.hook_agents import hook_agent
+from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment, dispatched_worker, worker_session

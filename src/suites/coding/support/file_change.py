@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from core.base.driver.diff_count import DiffCount
+from engine.driver.diff_count import DiffCount
 
 
 @dataclass(frozen=True)

@@ -1,6 +1,6 @@
 import subprocess
 
-from core.base.driver.rule_answer import RuleAnswer
+from engine.driver.rule_answer import RuleAnswer
 
 
 class SampleRule:

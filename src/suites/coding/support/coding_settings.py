@@ -1,4 +1,4 @@
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.setting.setting_scope import SettingScope
 from engine.setting.ruled_settings import ruled_settings
 from engine.setting.setting_type import SettingType

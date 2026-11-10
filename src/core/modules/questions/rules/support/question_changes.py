@@ -1,7 +1,7 @@
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.hook_history import HookHistory
-from core.base.driver.nudge_declaration import NudgeDeclaration
-from core.base.driver.rule_answer import RuleAnswer
+from engine.driver.agent_hook import AgentHook
+from engine.driver.hook_history import HookHistory
+from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.rule_answer import RuleAnswer
 from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.greater import Greater
 from engine.query.conditions.among import Among
@@ -9,7 +9,7 @@ from engine.query.queries import Queries
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.queries.question_query import QuestionQuery
 from core.modules.waits.models.wait_target import WaitTarget
-from core.base.driver.nudge import Nudge
+from engine.driver.nudge import Nudge
 from core.modules.questions.support.question_nudges import QUESTION_ANSWER_SOURCE
 
 

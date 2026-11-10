@@ -7,7 +7,7 @@ from server.hook.queue_priority import QueuePriority
 
 import pytest
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from engine.enums.hook_answer import HookAnswer
 from core.testing.hook_samples import HookSamples

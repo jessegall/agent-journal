@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery

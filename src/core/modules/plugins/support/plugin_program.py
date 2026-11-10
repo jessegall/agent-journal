@@ -9,7 +9,7 @@ from collections.abc import Callable, Mapping
 
 from engine.agent.agent_checkouts import AgentCheckouts
 from engine.checkout.checkout import Checkout
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.change.event_log import HIDDEN
 from engine.journal.journal_home import JournalHome
 from engine.model.event_form import EventForm

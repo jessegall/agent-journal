@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from core.base.driver.span import Span
+from engine.driver.span import Span
 
 from engine.query.conditions.greater import Greater
-from core.base.driver.span_queries import SpanQueries
+from engine.driver.span_queries import SpanQueries
 from engine.time.timestamp import Timestamp
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery

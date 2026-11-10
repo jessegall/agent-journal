@@ -1,19 +1,19 @@
 import pytest
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.modules.drivers.support.block_conditions.all_conditions import AllConditions
 from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
-from core.base.driver.conditions.ran_command import RanCommand
+from engine.driver.conditions.ran_command import RanCommand
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.base.driver.support.fixtures import LeadStarted
-from tests.stories.core.base.driver.support.hook_agents import hook_agent
-from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.engine.driver.support.fixtures import LeadStarted
+from tests.stories.engine.driver.support.hook_agents import hook_agent
+from tests.stories.engine.driver.support.samples import SAMPLES
 from engine.command.bus import Bus
 from engine.actor.actor import Actor
-from core.base.driver.block_until import BlockUntil
-from core.base.driver.nudge import Nudge
-from core.base.driver.nudge_type import NudgeType
+from engine.driver.block_until import BlockUntil
+from engine.driver.nudge import Nudge
+from engine.driver.nudge_type import NudgeType
 
 READ = ShellPart("cat", CommandCategory.READ, ["notes"])
 JOURNAL = ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"], subcommand="task")

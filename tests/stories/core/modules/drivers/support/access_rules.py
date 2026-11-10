@@ -1,8 +1,8 @@
 from engine.enums.agent_role import AgentRole
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.driver import Driver
-from core.base.driver.suite import Suite
-from core.base.driver.tool_type import ToolType
+from engine.driver.command_category import CommandCategory
+from engine.driver.driver import Driver
+from engine.driver.suite import Suite
+from engine.driver.tool_type import ToolType
 from core.base.module.module import Module
 from core.modules.drivers.rules.allowed_command_types_rule import AllowedCommandTypesRule
 from core.modules.drivers.rules.allowed_tools_rule import AllowedToolsRule
@@ -15,7 +15,7 @@ from core.modules.drivers.rules.read_write_rule import ReadWriteRule
 from core.modules.drivers.rules.readonly_rule import ReadonlyRule
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.base.driver.support.hook_agents import hook_agent
+from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.fixtures import MainEnvironment
 
 ACCESS_MODULE = "tests.stories.core.modules.drivers.support.access_rules:AccessModule"

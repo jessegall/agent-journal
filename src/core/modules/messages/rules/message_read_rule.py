@@ -1,11 +1,11 @@
-from core.base.driver.nudge import Nudge
+from engine.driver.nudge import Nudge
 from core.modules.messages.support.message_nudges import MESSAGE_NOTE, REPLY_COMMAND, IMAGE_TAG_REQUEST
 from pathlib import PurePath
 
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.rule_answer import RuleAnswer
+from engine.driver.agent_hook import AgentHook
+from engine.driver.driver_rule import DriverRule
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.rule_answer import RuleAnswer
 from engine.query.conditions.among import Among
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.commands.read_message.note_message_read import NoteMessageRead

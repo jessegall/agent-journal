@@ -1,6 +1,6 @@
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.tool import Tool
+from engine.driver.agent_hook import AgentHook
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.tool import Tool
 from core.modules.plugins.support.plugin_event import PluginEvent
 
 PLAIN_EVENTS = {HookEventName.STOP: "idle", HookEventName.PROMPT: "prompt_submitted", HookEventName.SESSION_START: "session_started",

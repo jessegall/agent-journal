@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.base.driver.interval import Interval
-from core.base.driver.seconds import Seconds
+from engine.driver.interval import Interval
+from engine.driver.seconds import Seconds
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.time.timestamp import Timestamp

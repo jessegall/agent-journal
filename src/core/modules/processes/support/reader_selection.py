@@ -5,7 +5,7 @@ from fnmatch import fnmatchcase
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.part_reader import PartReader
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 
 ENVIRONMENT_PREFIX = re.compile(r"""^(?:[A-Za-z_]\w*=(?:'[^']*'|"[^"]*"|\S*)\s+)+""")
 

@@ -3,7 +3,7 @@ from dataclasses import replace
 from itertools import islice
 from collections.abc import Sequence
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process_part import ProcessPart

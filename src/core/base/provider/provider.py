@@ -5,9 +5,9 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import ClassVar
 
-from core.base.driver.hook_event import HookEvent
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.tool_type import ToolType
+from engine.driver.hook_event import HookEvent
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.tool_type import ToolType
 from core.base.profile.agent_profile import AgentProfile
 from engine.journal.journal_home import JournalHome
 from core.base.provider.control_group import ControlGroup
@@ -24,7 +24,7 @@ from core.base.provider.peer_note import PeerNote
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.program_server_file import ProgramServerFile
 from engine.enums.halt_style import HaltStyle
-from core.base.driver.refusal_style import RefusalStyle
+from engine.driver.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
 from core.base.provider.transcript_author import AGENT_AUTHOR, USER_AUTHOR
 from core.base.provider.transcript_row import TranscriptRow

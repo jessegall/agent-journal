@@ -1,4 +1,4 @@
-from core.base.driver.essential_allowances import EssentialAllowances
+from engine.driver.essential_allowances import EssentialAllowances
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.drivers.support.driver_settings import ALLOWANCE_SETTINGS
 

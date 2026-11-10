@@ -1,9 +1,9 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.foreign_run import ForeignRun
-from core.base.driver.hook_transcript import HookTranscript
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.foreign_run import ForeignRun
+from engine.driver.hook_transcript import HookTranscript
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.event_form import EventForm
 from engine.row.metadata import Metadata

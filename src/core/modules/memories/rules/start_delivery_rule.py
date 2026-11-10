@@ -1,8 +1,8 @@
 from core.modules.memories.support.memory_nudges import START_MEMORIES
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.rule_answer import RuleAnswer
+from engine.driver.agent_hook import AgentHook
+from engine.driver.driver_rule import DriverRule
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.rule_answer import RuleAnswer
 from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery
 from engine.enums.role_group import RoleGroup
 

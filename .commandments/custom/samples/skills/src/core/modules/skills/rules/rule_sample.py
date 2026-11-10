@@ -1,4 +1,4 @@
-from core.base.driver.rule_answer import RuleAnswer
+from engine.driver.rule_answer import RuleAnswer
 from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 
 

@@ -1,10 +1,10 @@
 from core.modules.questions.support.question_nudges import QUESTION_TOOL
 from engine.enums.agent_role import AgentRole
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.rule_answer import RuleAnswer
-from core.base.driver.tool_type import ToolType
+from engine.driver.agent_hook import AgentHook
+from engine.driver.driver_rule import DriverRule
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.rule_answer import RuleAnswer
+from engine.driver.tool_type import ToolType
 
 
 class OwnQuestionToolRule(DriverRule):

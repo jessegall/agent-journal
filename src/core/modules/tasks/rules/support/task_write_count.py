@@ -1,4 +1,4 @@
-from core.base.driver.agent_hook import AgentHook
+from engine.driver.agent_hook import AgentHook
 from engine.database.kept_rows import KeptRows
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery

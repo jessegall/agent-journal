@@ -2,7 +2,7 @@ import pytest
 
 from core.base.module.module_removal import ModuleRemoval
 from server.viewer.windows_route import WindowsRoute
-from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.drivers.support.extended_suites import PATH
 from tests.stories.core.modules.drivers.support.environment_with_sample_driver import SampleDriverEnvironment
 from tests.stories.core.support.fixtures import MainEnvironment

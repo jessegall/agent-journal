@@ -2,7 +2,7 @@ import json
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 
-from core.base.driver.hook_event_name import HookEventName
+from engine.driver.hook_event_name import HookEventName
 from core.base.provider.program_row import ProgramRow
 from core.base.provider.provider import Provider
 

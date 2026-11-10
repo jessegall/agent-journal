@@ -1,5 +1,5 @@
-from core.base.driver.block_check import BlockCheck
-from core.base.driver.block_condition import BlockCondition
+from engine.driver.block_check import BlockCheck
+from engine.driver.block_condition import BlockCondition
 from core.modules.skills.support.agent_skill_rows import AgentSkillRows
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 

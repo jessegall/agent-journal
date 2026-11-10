@@ -1,12 +1,12 @@
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.processes.support.process_nudges import MONITOR_COMMAND_NOTE, MONITOR_NOTE, AUTOMATIC_RUN_WATCHED
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.nudge_declaration import NudgeDeclaration
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.part import Part
-from core.base.driver.rule_answer import RuleAnswer
-from core.base.driver.tool_type import ToolType
+from engine.driver.agent_hook import AgentHook
+from engine.driver.driver_rule import DriverRule
+from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.part import Part
+from engine.driver.rule_answer import RuleAnswer
+from engine.driver.tool_type import ToolType
 from core.base.provider.providers import Providers
 from core.modules.processes.support.background_commands import JOURNAL
 

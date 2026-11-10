@@ -1,4 +1,4 @@
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from tests.stories.core.modules.processes.run_queue import has_slot, queued, waits, expect_absent_slot, expect_slot, expect_waits
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.modules.processes.support.queue_fixtures import QueueAgents

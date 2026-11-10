@@ -1,4 +1,4 @@
-from core.base.driver.nudge import Nudge
+from engine.driver.nudge import Nudge
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.tasks.models.task import Task

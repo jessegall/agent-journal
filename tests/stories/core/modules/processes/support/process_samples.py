@@ -8,8 +8,8 @@ import shlex
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.hook_reply import HookReply
+from engine.driver.command_category import CommandCategory
+from engine.driver.hook_reply import HookReply
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.move_process.move_process import MoveProcess

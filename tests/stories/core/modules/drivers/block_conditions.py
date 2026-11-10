@@ -1,9 +1,9 @@
 from datetime import timedelta
 
 from engine.enums.agent_role import AgentRole
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.block_check import BlockCheck
-from core.base.driver.hook_event import HookEvent
+from engine.driver.agent_hook import AgentHook
+from engine.driver.block_check import BlockCheck
+from engine.driver.hook_event import HookEvent
 from core.base.module.block_conditions import BlockConditions
 from core.modules.questions.support.block_conditions.question_answered import QuestionAnswered
 from core.modules.questions.support.block_conditions.questions_closed import QuestionsClosed

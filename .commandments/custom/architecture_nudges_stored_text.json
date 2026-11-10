@@ -12,7 +12,7 @@
         "where": [
             {
                 "of": "child:func",
-                "resolvesLike": "core.base.driver.nudge_declaration.NudgeDeclaration"
+                "resolvesLike": "engine.driver.nudge_declaration.NudgeDeclaration"
             },
             {
                 "descendant": {

@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
-from core.base.driver.hook_event_name import HookEventName
+from engine.driver.hook_event_name import HookEventName
 from engine.time.timestamp import Timestamp
 from core.modules.agents.commands.record_agent_interrupt.record_agent_interrupt import RecordAgentInterrupt
 from core.modules.agents.models.agent import Agent

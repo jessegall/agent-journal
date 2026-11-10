@@ -1,5 +1,5 @@
 from engine.enums.agent_role import AgentRole
-from core.base.driver.agent_hook import AgentHook
+from engine.driver.agent_hook import AgentHook
 from core.modules.triggers.models.enums.trigger_condition_type import MAIN_AGENT, TriggerConditionType
 from core.modules.triggers.models.support.trigger_condition import TriggerCondition
 from core.modules.triggers.models.trigger import Trigger

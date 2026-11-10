@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.base.module.module_finder import ModuleFinder
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType

@@ -24,7 +24,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.base.provider.hook_trust import HookTrust
 from core.base.provider.providers import Providers
 from core.testing.fake_launcher import FakeLauncher

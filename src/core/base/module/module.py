@@ -7,16 +7,16 @@ from engine.agent.agent_group import AgentGroup
 from engine.helper_type.helper_type import HelperType
 from core.base.profile.agent_profile import AgentProfile
 
-from core.base.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.chat.dock_declaration import DockDeclaration
 from engine.chat.mark_declaration import MarkDeclaration
 from engine.command.command import Command
 from engine.command.handler import Handler
 from engine.database.migration import Migration
-from core.base.driver.driver import Driver
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.overlay import Overlay
-from core.base.driver.suite import Suite
+from engine.driver.driver import Driver
+from engine.driver.driver_rule import DriverRule
+from engine.driver.overlay import Overlay
+from engine.driver.suite import Suite
 from engine.guard.guard import Guard
 from engine.listener.commit_listener import CommitListener
 from engine.listener.deletion_listener import DeletionListener
@@ -37,7 +37,7 @@ from engine.query.shared_rows import SharedRows
 from engine.setting.setting_node import SettingNode
 from engine.ticker.tick_handler import TickHandler
 from engine.tunnel.tunnel import Tunnel
-from core.base.driver.block_condition import BlockCondition
+from engine.driver.block_condition import BlockCondition
 from engine.check.step_condition import StepCondition
 from engine.performance.performance_tool import PerformanceTool
 from engine.template.template_declaration import TemplateDeclaration

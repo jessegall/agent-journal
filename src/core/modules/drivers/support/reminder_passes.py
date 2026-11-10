@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.driver.reminder_declaration import ReminderDeclaration
+from engine.driver.reminder_declaration import ReminderDeclaration
 from engine.query.queries import Queries
 from core.modules.drivers.commands.record_reminder_passes.record_reminder_passes import RecordReminderPasses
 from core.modules.drivers.models.reminder_pass import ReminderPass

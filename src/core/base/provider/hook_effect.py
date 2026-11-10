@@ -3,9 +3,9 @@ from collections.abc import Sequence
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from core.base.driver.hook_event_name import HookEventName
+from engine.driver.hook_event_name import HookEventName
 from core.base.provider.hook_tool_rule import HookToolRule
-from core.base.driver.hook_wildcard import HookWildcard
+from engine.driver.hook_wildcard import HookWildcard
 from core.base.provider.provider import Provider
 
 if TYPE_CHECKING:

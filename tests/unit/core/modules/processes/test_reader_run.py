@@ -4,7 +4,7 @@ import subprocess
 
 import pytest
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader

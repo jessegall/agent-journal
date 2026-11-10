@@ -5,13 +5,13 @@ from suites.coding.modules.workers.models.worker_test_run import WorkerTestRun
 from suites.coding.modules.workers.commands.record_worker_test_run.record_worker_test_run import RecordWorkerTestRun
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.part import Part
-from core.base.driver.rule_answer import RuleAnswer
-from core.base.driver.shell_line import ShellLine
+from engine.driver.agent_hook import AgentHook
+from engine.driver.command_category import CommandCategory
+from engine.driver.driver_rule import DriverRule
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.part import Part
+from engine.driver.rule_answer import RuleAnswer
+from engine.driver.shell_line import ShellLine
 from engine.query.queries import Queries
 from suites.coding.modules.workers.support.worker_test_group import WorkerTestGroup
 from core.modules.processes.support.background_commands import BackgroundCommands

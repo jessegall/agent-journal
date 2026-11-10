@@ -1,7 +1,7 @@
 from datetime import timedelta
 
-from core.base.driver.hook_route import HookRoute
-from core.base.driver.program_lockdown import ProgramLockdown
+from engine.driver.hook_route import HookRoute
+from engine.driver.program_lockdown import ProgramLockdown
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.hook_call import HookCall

@@ -11,7 +11,7 @@ from core.modules.agents.models.enums.agent_activity import AgentActivity
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from core.base.driver.program_lockdown import ProgramLockdown
+from engine.driver.program_lockdown import ProgramLockdown
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.support.usage_lockdown import UsageLockdown

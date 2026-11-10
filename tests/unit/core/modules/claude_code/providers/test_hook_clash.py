@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.driver.hook_event_name import HookEventName
+from engine.driver.hook_event_name import HookEventName
 from core.base.provider.hook_effect import HookEffect
 from core.base.provider.managed_hook import ManagedHook
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider

@@ -1,11 +1,11 @@
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 import json
 import os
 from pathlib import Path
 
 import pytest
 
-from core.base.driver.hook_event import HookEvent
+from engine.driver.hook_event import HookEvent
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 

@@ -1,9 +1,9 @@
 from core.modules.skills.support.skill_nudges import UNREAD_SKILLS
 from engine.enums.role_group import RoleGroup
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.rule_answer import RuleAnswer
+from engine.driver.agent_hook import AgentHook
+from engine.driver.driver_rule import DriverRule
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.rule_answer import RuleAnswer
 from core.modules.skills.support.unread_skills import UnreadSkills
 from core.modules.skills.support.skill_requirement import SkillRequirement
 

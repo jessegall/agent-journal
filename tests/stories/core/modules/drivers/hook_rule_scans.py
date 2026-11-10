@@ -4,9 +4,9 @@ from time import perf_counter
 import pytest
 
 from engine.database.database import Database
-from core.base.driver import driver_rules
+from engine.driver import driver_rules
 from core.testing.hook_samples import HookSamples
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.drivers.hook_durations import UserBuilder
 from tests.stories.support.story_checks import expect_value

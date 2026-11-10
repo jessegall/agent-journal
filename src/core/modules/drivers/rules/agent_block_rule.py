@@ -1,19 +1,19 @@
 from collections.abc import Sequence
 from engine.enums.role_group import RoleGroup
 from engine.container.container import Container
-from core.base.driver.agent_hook import AgentHook
+from engine.driver.agent_hook import AgentHook
 from core.base.module.block_conditions import BlockConditions
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.nudge import Nudge
-from core.base.driver.nudge_type import NudgeType
-from core.base.driver.rule_answer import RuleAnswer
-from core.base.driver.tool import Tool
+from engine.driver.driver_rule import DriverRule
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.nudge import Nudge
+from engine.driver.nudge_type import NudgeType
+from engine.driver.rule_answer import RuleAnswer
+from engine.driver.tool import Tool
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
 from core.modules.drivers.models.agent_block import AgentBlock, OPEN_BLOCKS_REASON
-from core.base.driver.tool_type import ToolType
+from engine.driver.tool_type import ToolType
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 
 

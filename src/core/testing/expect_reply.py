@@ -1,4 +1,4 @@
-from core.base.driver.hook_reply import HookReply
+from engine.driver.hook_reply import HookReply
 
 
 def expect_reply_line(reply: HookReply, *texts: str) -> None:

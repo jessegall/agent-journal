@@ -1,6 +1,6 @@
 from engine.command.context import Context
-from core.base.driver.nudge_declaration import NudgeDeclaration
-from core.base.driver.nudge import Nudge
+from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.nudge import Nudge
 from engine.repository.repository import Repository
 from core.modules.drivers.models.agent_line import AgentLine
 

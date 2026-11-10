@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.setting.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
 from core.modules.helpers.support import agent_field_options as options

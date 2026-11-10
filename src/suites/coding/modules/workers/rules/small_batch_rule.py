@@ -1,11 +1,11 @@
 from suites.coding.modules.workers.support.worker_nudges import SMALL_BATCH
 from suites.coding.modules.workers.support.worker_settings import WORKER_BATCH_SIZE
 from engine.enums.agent_role import AgentRole
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.rule_answer import RuleAnswer
+from engine.driver.agent_hook import AgentHook
+from engine.driver.command_category import CommandCategory
+from engine.driver.driver_rule import DriverRule
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.rule_answer import RuleAnswer
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.support.dispatch_arguments import DISPATCH_ARGUMENTS
 

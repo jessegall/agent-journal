@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from core.base.driver.hook_event_error import HookEventError
+from engine.driver.hook_event_error import HookEventError
 from dataclasses import dataclass
 
 HOOK_HEADERS = ("X-Journal-Hook-Id", "X-Journal-Request-At", "X-Journal-Actor", "X-Journal-Env")

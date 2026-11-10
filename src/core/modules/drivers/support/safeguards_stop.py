@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 
-from core.base.driver.hook_event import HookEvent
+from engine.driver.hook_event import HookEvent
 
 SAFEGUARDS_WORD = "safeguards"
 ERROR_FIELDS = ("error", "error_details", "last_assistant_message")

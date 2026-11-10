@@ -78,7 +78,7 @@ def test_each_writer_shows_on_the_page_with_its_source_and_level(logs_server, mo
         raise PermissionError("read-only profile folder")
     story = logs_server.story
     with monkeypatch.context() as slow_rules:
-        slow_rules.setattr("core.base.driver.driver_rules.SLOW_RULE_SECONDS", 0)
+        slow_rules.setattr("engine.driver.driver_rules.SLOW_RULE_SECONDS", 0)
         story.hook("s-1", FINISHED)
     ServerFiles(story.home).log_line("sample server line")
     request_log = RequestLog(story.home, story.clock)

@@ -4,7 +4,7 @@ import json
 from datetime import timedelta
 
 from core.modules.agents.support.terminal_typing import TerminalTyping
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.testing.story import Story

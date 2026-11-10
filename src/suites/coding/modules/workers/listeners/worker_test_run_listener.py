@@ -1,6 +1,6 @@
 from engine.change.created import Created
 from engine.change.logged_event import LoggedEvent
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.listener.commit_listener import CommitListener
 from engine.listener.event_rows import EventRows
 from engine.query.queries import Queries

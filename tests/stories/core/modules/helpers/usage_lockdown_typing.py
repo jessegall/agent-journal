@@ -1,4 +1,4 @@
-from core.base.driver.program_lockdown import ProgramLockdown
+from engine.driver.program_lockdown import ProgramLockdown
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker

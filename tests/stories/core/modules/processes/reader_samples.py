@@ -1,5 +1,5 @@
 from engine.database.database import Database
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.scope.scopes import Scopes
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process

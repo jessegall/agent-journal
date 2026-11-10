@@ -1,5 +1,5 @@
-from core.base.driver.nudge_declaration import NudgeDeclaration
-from core.base.driver.nudge_type import NudgeType
+from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.nudge_type import NudgeType
 
 TOOL_RESTRICTION = NudgeDeclaration("drivers.tool_not_allowed", NudgeType.SAFETY_REFUSAL, "this driver allows no {category} tool")
 COMMAND_RESTRICTION = NudgeDeclaration("drivers.command_not_allowed", NudgeType.SAFETY_REFUSAL, "this driver runs no {category} command")

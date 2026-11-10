@@ -2,7 +2,7 @@ from datetime import timedelta
 
 import pytest
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.modules.drivers.support.hook_rule_answers import HookRuleAnswers
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.queries.process_query import ProcessQuery

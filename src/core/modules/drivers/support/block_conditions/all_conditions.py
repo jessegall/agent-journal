@@ -1,7 +1,7 @@
 import json
 
-from core.base.driver.block_check import BlockCheck
-from core.base.driver.block_condition import BlockCondition
+from engine.driver.block_check import BlockCheck
+from engine.driver.block_condition import BlockCondition
 from core.base.module.block_conditions import BlockConditions
 
 

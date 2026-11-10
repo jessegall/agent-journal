@@ -2,8 +2,8 @@ import json
 from unittest.mock import patch
 
 from engine.database.database import Database
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.tool_type import ToolType
+from engine.driver.command_category import CommandCategory
+from engine.driver.tool_type import ToolType
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.fixtures import UserJoined

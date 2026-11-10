@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from core.base.driver.nudge import Nudge
+from engine.driver.nudge import Nudge
 from engine.time.timestamp import Timestamp
 
 

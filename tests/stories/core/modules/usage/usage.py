@@ -5,8 +5,8 @@ import pytest
 
 from engine.command.bus import Bus
 from engine.file.file_access import FileAccess
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.tool_type import ToolType
+from engine.driver.command_category import CommandCategory
+from engine.driver.tool_type import ToolType
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.modules.usage.support.status_files import StatusFiles

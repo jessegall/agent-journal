@@ -4,7 +4,7 @@ from core.testing.story_fixture import StoryFixture
 
 import pytest
 
-from core.base.driver.count_down import COUNTDOWN_LINE_LIMIT
+from engine.driver.count_down import COUNTDOWN_LINE_LIMIT
 from core.testing.hook_samples import HookSamples
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from tests.stories.core.modules.usage.support.status_files import save_status_file

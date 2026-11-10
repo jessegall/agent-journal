@@ -1,9 +1,9 @@
 from datetime import timedelta
 
-from core.base.driver.tool_type import ToolType
+from engine.driver.tool_type import ToolType
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.base.driver.support.hook_agents import hook_agent
+from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.modules.skills.due import environment, start, drain_countdown
 
 

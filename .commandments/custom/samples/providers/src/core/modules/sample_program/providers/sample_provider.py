@@ -2,9 +2,9 @@
 import subprocess
 
 # @sin architecture_providers_provider_decides_what_an_agent_may_do
-from core.base.driver.hook_reply import HookReply
+from engine.driver.hook_reply import HookReply
 # @righteous architecture_providers_provider_decides_what_an_agent_may_do
-from core.base.driver.hook_event import HookEvent
+from engine.driver.hook_event import HookEvent
 
 
 class SampleProvider:

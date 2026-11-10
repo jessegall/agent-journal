@@ -7,9 +7,9 @@ from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from engine.command.bus import Bus
 from engine.database.database import Database
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.hook_event import HookEvent
+from engine.driver.agent_hook import AgentHook
+from engine.driver.command_category import CommandCategory
+from engine.driver.hook_event import HookEvent
 from suites.coding.modules.workers.rules.stopped_worker_run_rule import StoppedWorkerRunRule
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess

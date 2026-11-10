@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.enums.actor_type import ActorType
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart

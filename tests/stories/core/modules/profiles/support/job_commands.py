@@ -2,7 +2,7 @@ import shlex
 import tomllib
 from pathlib import Path
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.journal.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from engine.text.text_digest import TextDigest

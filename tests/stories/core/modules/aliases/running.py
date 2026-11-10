@@ -8,7 +8,7 @@ from engine.caller.caller import Caller
 from engine.caller.caller_request import CallerRequest
 from engine.cli.shell_aliases import ShellAliases
 from engine.command.bus import Bus
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.testing.hook_samples import HookSamples

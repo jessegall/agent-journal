@@ -1,4 +1,4 @@
-from core.base.driver.hook_event import HookEvent
+from engine.driver.hook_event import HookEvent
 
 
 class SampleEndpoint:

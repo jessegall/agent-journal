@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 
 from engine.enums.helper_role import HelperRole
-from core.base.driver.open_row import OpenRow
-from core.base.driver.overlay import Overlay
+from engine.driver.open_row import OpenRow
+from engine.driver.overlay import Overlay
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.rules.paused_agent_rule import PausedAgentRule
 

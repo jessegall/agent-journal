@@ -1,7 +1,7 @@
 from engine.journal.journal_home import JournalHome
 from core.modules.drivers.ticks.panic_watch import PanicWatch
 from core.testing.hook_samples import HookSamples
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text, marks_text
 from tests.stories.core.support.coding_fixtures import BuilderStarted

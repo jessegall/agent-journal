@@ -1,5 +1,5 @@
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.rule_answer import RuleAnswer
+from engine.driver.agent_hook import AgentHook
+from engine.driver.rule_answer import RuleAnswer
 from core.modules.tasks.rules.task_stop_rule import TaskStopRule
 
 

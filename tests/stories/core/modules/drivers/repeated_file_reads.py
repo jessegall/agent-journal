@@ -2,11 +2,11 @@ import os
 from datetime import timedelta
 
 from engine.time.clock import Clock
-from core.base.driver.tool_type import ToolType
+from engine.driver.tool_type import ToolType
 from engine.journal.journal_home import JournalHome
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.base.driver.support.hook_agents import hook_agent
+from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.fixtures import UserJoined
 
 CONTEXT_TEXT = "is still in your context and has not changed since it was read"

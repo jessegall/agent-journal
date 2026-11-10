@@ -5,7 +5,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.database.database import Database
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.registry.registry import Registry
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.skills.support.profile_skills import ProfileSkills

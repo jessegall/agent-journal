@@ -1,12 +1,12 @@
 from collections.abc import Sequence
 from typing import ClassVar
 
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.nudge_declaration import NudgeDeclaration
-from core.base.driver.rule_answer import RuleAnswer
+from engine.driver.agent_hook import AgentHook
+from engine.driver.command_category import CommandCategory
+from engine.driver.driver_rule import DriverRule
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.rule_answer import RuleAnswer
 from core.modules.drivers.support.access_nudges import COMMAND_RESTRICTION
 
 

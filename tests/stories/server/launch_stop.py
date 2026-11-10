@@ -6,8 +6,8 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
-from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice
+from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.server.support.launch_terminal import LaunchTerminal, fake_programs
 from tests.stories.server.support.server_client import ServerStory, server_story
 

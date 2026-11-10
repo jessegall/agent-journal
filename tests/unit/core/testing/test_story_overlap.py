@@ -2,7 +2,7 @@ from core.testing.story_fixture import StoryFixture
 from core.testing.story_overlap import StoryOverlap
 from core.testing.hook_samples import HookSamples
 from core.testing.story_path import StoryPath
-from core.base.driver.hook_reply import HookReply
+from engine.driver.hook_reply import HookReply
 
 FIRST = "a.py::test_first"
 SECOND = "b.py::test_second"

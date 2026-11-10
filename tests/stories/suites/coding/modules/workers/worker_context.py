@@ -13,7 +13,7 @@ from tests.stories.core.modules.documents.support.trail_fixtures import IMAGE_BY
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from core.base.driver.tool_type import ToolType
+from engine.driver.tool_type import ToolType
 
 
 @dataclass(frozen=True)

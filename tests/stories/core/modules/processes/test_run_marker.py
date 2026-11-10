@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.performance.performance_tool import PerformanceTool
 from core.base.module.performance_tools import PerformanceTools
 from core.modules.developer.support.slow_tick_tool import SlowTickTool

@@ -1,10 +1,10 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.base.driver.span import Span
+from engine.driver.span import Span
 
 from engine.query.conditions.greater import Greater
-from core.base.driver.span_queries import SpanQueries
+from engine.driver.span_queries import SpanQueries
 from engine.time.timestamp import Timestamp
 from core.modules.tasks.queries.task_query import TaskQuery
 

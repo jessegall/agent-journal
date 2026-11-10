@@ -4,8 +4,8 @@ from engine.enums.actor_type import ActorType
 from engine.change.logged_event import LoggedEvent
 from engine.chat.mark_outcome import MarkOutcome
 from engine.command.bus import Bus
-from core.base.driver.project_paths import ProjectPaths
-from core.base.driver.command_category import CommandCategory
+from engine.driver.project_paths import ProjectPaths
+from engine.driver.command_category import CommandCategory
 from engine.change.event_subscriber import E
 from engine.listener.commit_listener import CommitListener
 from engine.listener.event_rows import EventRows

@@ -1,9 +1,9 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.span import Span
-from core.base.driver.span_queries import SpanQueries
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.span import Span
+from engine.driver.span_queries import SpanQueries
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 

@@ -2,7 +2,7 @@ import pytest
 
 from datetime import timedelta
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.testing.hook_samples import HookSamples

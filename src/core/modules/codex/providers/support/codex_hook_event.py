@@ -1,7 +1,7 @@
 import re
 from enum import StrEnum
 
-from core.base.driver.hook_event_name import HookEventName
+from engine.driver.hook_event_name import HookEventName
 
 CAPITAL = re.compile(r"(?<!^)(?=[A-Z])")
 

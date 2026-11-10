@@ -4,8 +4,8 @@ from core.base.module.driver_entries import DRIVERS_MODULE
 from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.base.driver.support.fixtures import LeadStarted
-from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.engine.driver.support.fixtures import LeadStarted
+from tests.stories.engine.driver.support.samples import SAMPLES
 from core.testing.expect_reply import expect_reply_allowed
 from core.testing.expect_row import expect_row
 from tests.stories.support.story_checks import expect_updated_input_reply

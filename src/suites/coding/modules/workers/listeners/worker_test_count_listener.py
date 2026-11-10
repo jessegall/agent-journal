@@ -1,6 +1,6 @@
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from engine.command.bus import Bus
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from engine.listener.save_listener import SaveListener
 from engine.listener.event_rows import EventRows
 from engine.query.queries import Queries

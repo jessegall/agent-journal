@@ -1,13 +1,13 @@
 import json
 
 from engine.query.queries import Queries
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_setting import PluginSetting
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from core.testing.shell_part import ShellPart
-from tests.stories.core.base.driver.support.hook_agents import hook_agent
+from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.fixtures.legacy_plugin import INSTALLED_VERSION, PLUGIN_NAME
 

@@ -1,15 +1,15 @@
 import re
 
-from core.base.driver.block_check import BlockCheck
-from core.base.driver.block_condition import BlockCondition
-from core.base.driver.tool_type import ToolType
+from engine.driver.block_check import BlockCheck
+from engine.driver.block_condition import BlockCondition
+from engine.driver.tool_type import ToolType
 from core.base.provider.providers import Providers
 from engine.query.conditions.contains_some import ContainsSome
 from engine.query.conditions.minimum import Minimum
 from engine.query.queries import Queries
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
-from core.base.driver.hook_event_name import HookEventName
+from engine.driver.hook_event_name import HookEventName
 from core.modules.processes.support.monitored_runs import MONITOR_LIFE_SECONDS, MONITOR_TOOL
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process

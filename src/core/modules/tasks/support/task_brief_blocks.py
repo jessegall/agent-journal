@@ -1,6 +1,6 @@
 from engine.command.bus import Bus
 from engine.command.context import Context
-from core.base.driver.block_until import BlockUntil
+from engine.driver.block_until import BlockUntil
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.block_conditions.task_brief_read import TaskBriefRead

@@ -3,7 +3,7 @@ import shlex
 import subprocess
 
 from engine.query.queries import Queries
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from tests.stories.server.support.go_build import GoBuild

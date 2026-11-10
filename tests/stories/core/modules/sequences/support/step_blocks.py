@@ -3,9 +3,9 @@ from engine.database.database import Database
 from engine.database.module_migrations import ModuleMigrations
 from engine.database.schema import Schema
 from engine.database.statement import Statement
-from core.base.driver.block_until import BlockUntil
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.conditions.ran_command import RanCommand
+from engine.driver.block_until import BlockUntil
+from engine.driver.command_category import CommandCategory
+from engine.driver.conditions.ran_command import RanCommand
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.support.block_conditions.any_condition import AnyCondition

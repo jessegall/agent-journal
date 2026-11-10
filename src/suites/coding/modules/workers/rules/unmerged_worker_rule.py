@@ -1,18 +1,18 @@
 from dataclasses import replace
 
-from core.base.driver.nudge import Nudge
+from engine.driver.nudge import Nudge
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
 from core.modules.drivers.models.agent_block import AgentBlock, OPEN_BLOCKS_REASON
 from core.modules.drivers.support.driver_nudges import REQUIRED_COMMAND_REFUSAL
 from engine.enums.agent_role import AgentRole
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.interval import Interval
-from core.base.driver.rule_answer import RuleAnswer
-from core.base.driver.span_queries import SpanQueries
+from engine.driver.agent_hook import AgentHook
+from engine.driver.driver_rule import DriverRule
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.interval import Interval
+from engine.driver.rule_answer import RuleAnswer
+from engine.driver.span_queries import SpanQueries
 from core.modules.drivers.support.nudge_records import NudgeRecords
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.models.worktree import Worktree

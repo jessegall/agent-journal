@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.command_effect import CommandEffect
+from engine.driver.command_category import CommandCategory
+from engine.driver.command_effect import CommandEffect
 
 
 @dataclass(frozen=True)

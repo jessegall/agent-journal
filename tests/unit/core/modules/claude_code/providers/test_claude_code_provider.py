@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from core.base.provider.session_line import SessionLine
-from core.base.driver.hook_event import HookEvent
+from engine.driver.hook_event import HookEvent
 from core.base.provider.helper_launch import HelperLaunch
 from core.base.provider.launch import Launch
 from engine.journal.journal_home import JournalHome

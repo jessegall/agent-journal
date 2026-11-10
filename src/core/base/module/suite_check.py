@@ -1,7 +1,7 @@
 from collections.abc import Iterator, Mapping, Sequence
 
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.suite import Suite
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.suite import Suite
 from core.base.module.module import Module
 from core.base.module.name_groups import NameGroups
 from engine.registry.driver_rule_entry import ANY_HOOK, DriverRuleEntry

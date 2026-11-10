@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.change.logged_event import LoggedEvent
 from engine.change.created import Created
 from engine.command.bus import Bus
-from core.base.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.listener.commit_listener import CommitListener
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger

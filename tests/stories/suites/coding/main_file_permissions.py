@@ -1,6 +1,6 @@
 import pytest
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.command_effect import CommandEffect
+from engine.driver.command_category import CommandCategory
+from engine.driver.command_effect import CommandEffect
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.testing.fake_launcher import FakeLauncher

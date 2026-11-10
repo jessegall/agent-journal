@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.base.driver.foreign_run import ForeignRun
-from core.base.driver.foreign_outcome import ForeignOutcome
+from engine.driver.foreign_run import ForeignRun
+from engine.driver.foreign_outcome import ForeignOutcome
 
 
 @dataclass(frozen=True)

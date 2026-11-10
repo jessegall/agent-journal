@@ -1,12 +1,12 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 from engine.types.type_guards import is_mapping
-from core.base.driver.hook_event import HookEvent
-from core.base.driver.hook_event_error import HookEventError
-from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.hook_fields import mapping, text
-from core.base.driver.tool import Tool
-from core.base.driver.tool_type import ToolType
+from engine.driver.hook_event import HookEvent
+from engine.driver.hook_event_error import HookEventError
+from engine.driver.hook_event_name import HookEventName
+from engine.driver.hook_fields import mapping, text
+from engine.driver.tool import Tool
+from engine.driver.tool_type import ToolType
 from server.hook.hook_headers import HookHeaders
 
 RAW_BODY_VERSION = 0

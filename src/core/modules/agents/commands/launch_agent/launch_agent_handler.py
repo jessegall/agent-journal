@@ -2,7 +2,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from engine.enums.agent_role import AgentRole
-from core.base.driver.program_lockdown import ProgramLockdown
+from engine.driver.program_lockdown import ProgramLockdown
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler

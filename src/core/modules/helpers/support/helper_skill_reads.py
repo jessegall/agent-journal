@@ -1,7 +1,7 @@
 from pathlib import PurePath
 
-from core.base.driver.agent_hook import AgentHook
-from core.base.driver.rule_answer import RuleAnswer
+from engine.driver.agent_hook import AgentHook
+from engine.driver.rule_answer import RuleAnswer
 from core.modules.helpers.support.helper_nudges import HELPER_SKILL_REFUSAL
 from core.modules.skills.support.agent_profile_skills import AgentProfileSkills
 

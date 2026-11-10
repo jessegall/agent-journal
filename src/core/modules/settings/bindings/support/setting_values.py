@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from copy import copy
 from typing import TypeVar
 
-from core.base.driver.seconds import Seconds
+from engine.driver.seconds import Seconds
 from engine.types.type_guards import is_list, is_tuple
 from core.modules.settings.support.setting_reader import SettingReader
 from core.modules.settings.support.setting_type_error import SettingTypeError

@@ -1,9 +1,9 @@
 import pytest
 
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.silent_runs import SilentRuns
-from core.base.driver.nudge_declaration import LONGEST_FIELD_CHARACTERS
+from engine.driver.nudge_declaration import LONGEST_FIELD_CHARACTERS
 from core.modules.processes.support.streaming_hints import GENERAL_HINT, STREAMING_HINTS, StreamingHints
 
 

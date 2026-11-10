@@ -1,5 +1,5 @@
-from core.base.driver.nudge_declaration import NudgeDeclaration
-from core.base.driver.nudge_type import NudgeType
+from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.nudge_type import NudgeType
 
 # @sin architecture_nudges_command_in_a_nudge
 APPROVAL_SHOWN = NudgeDeclaration("sample.show", NudgeType.NOTICE, "approval {approval} was decided: journal approval show {approval}")

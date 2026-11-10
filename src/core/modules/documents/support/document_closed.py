@@ -1,5 +1,5 @@
-from core.base.driver.block_check import BlockCheck
-from core.base.driver.block_condition import BlockCondition
+from engine.driver.block_check import BlockCheck
+from engine.driver.block_condition import BlockCondition
 from engine.query.queries import Queries
 from core.modules.documents.models.open_document import OpenDocument
 

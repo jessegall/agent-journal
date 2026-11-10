@@ -13,7 +13,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from engine.scope.scopes import Scopes
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
-from core.base.driver.tool_type import ToolType
+from engine.driver.tool_type import ToolType
 from core.testing.hook_samples import HookSamples
 from tests.stories.suites.coding.modules.workers.support.helper_types import ClerkStarted, HelperStarted, BuilderNativeHelper, EveryHelperRule, ReaderHelpersRule, WorkerStarted
 

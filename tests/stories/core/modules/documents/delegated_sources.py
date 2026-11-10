@@ -5,7 +5,7 @@ import json
 
 from core.testing.story_fixture import StoryFixture
 from core.testing.hook_samples import HookSamples
-from core.base.driver.tool_type import ToolType
+from engine.driver.tool_type import ToolType
 from tests.stories.core.modules.documents.support.trail_fixtures import SelectedTrail, Scenario, feature
 from tests.stories.core.modules.helpers.start_helper import started
 from tests.stories.core.modules.helpers.helper_jobs import resumable_session, helper_agent

@@ -1,8 +1,8 @@
 from engine.cli.alias_options import AliasOptions
 from engine.cli.shell_aliases import ShellAliases
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.part import Part
-from core.base.driver.shell_line import ShellLine
+from engine.driver.command_category import CommandCategory
+from engine.driver.part import Part
+from engine.driver.shell_line import ShellLine
 from engine.registry.registry import Registry
 from core.modules.processes.support.part_command import PartCommand
 

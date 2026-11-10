@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.command.command import Command
-from core.base.driver.refusal_skips import RefusalSkips
+from engine.driver.refusal_skips import RefusalSkips
 from engine.guard.guards import LIFECYCLE_GUARD
 from engine.query.conditions.has_value import HasValue
 from engine.query.queries import Queries

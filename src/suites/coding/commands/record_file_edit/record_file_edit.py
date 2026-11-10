@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from core.base.driver.diff_count import DiffCount
+from engine.driver.diff_count import DiffCount
 from suites.coding.models.file_edit import FileEdit
 
 

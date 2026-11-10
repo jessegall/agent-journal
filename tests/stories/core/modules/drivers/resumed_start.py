@@ -1,4 +1,4 @@
-from core.base.driver.command_category import CommandCategory
+from engine.driver.command_category import CommandCategory
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart

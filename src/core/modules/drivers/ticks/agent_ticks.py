@@ -1,8 +1,8 @@
 from engine.enums.agent_role import AgentRole
 from engine.time.clock import Clock
 from engine.container.container import Container
-from core.base.driver.hook_event import HookEvent
-from core.base.driver.hook_route import HookRoute
+from engine.driver.hook_event import HookEvent
+from engine.driver.hook_route import HookRoute
 from engine.query.queries import Queries
 from engine.time.timestamp import MINUTE_SECONDS, Timestamp
 from core.modules.agents.models.agent import Agent
