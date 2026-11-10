@@ -28,10 +28,11 @@ class StartHelperSubcommand(Subcommand[StartHelper, HelperStarted]):
         parser.add_argument("--model", default="")
         parser.add_argument("--name", default="")
         parser.add_argument("--plan", type=int, default=None, help="the plan this helper reviews")
+        parser.add_argument("--title", default="", help="a short title for the job, shown in the agent list")
         parser.add_argument("--fresh", default="", metavar="REASON", help="start a new helper though one is idle, and why")
 
     def command(self, arguments: Namespace, caller: Caller) -> StartHelper:
-        return StartHelper(arguments.profile, arguments.brief, arguments.program, arguments.model, arguments.name, arguments.fresh, arguments.plan, arguments.tier)
+        return StartHelper(arguments.profile, arguments.brief, arguments.program, arguments.model, arguments.name, arguments.fresh, arguments.plan, arguments.tier, arguments.title)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, HelperStarted):

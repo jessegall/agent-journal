@@ -18,3 +18,4 @@ class StartHelper(Command[HelperStarted]):
     new_agent_reason: str = ""
     review_plan_id: int | None = None
     tier: ModelTier | None = None
+    title: str = ""
