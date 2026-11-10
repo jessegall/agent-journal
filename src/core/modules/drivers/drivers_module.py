@@ -34,8 +34,8 @@ from core.modules.drivers.migrations.m016_agent_line_wakes import AgentLineWakes
 from core.modules.drivers.migrations.m017_stop_blocks import StopBlocksMigration
 from core.modules.drivers.migrations.m015_agent_line_state_index import AgentLineStateIndexMigration
 from core.modules.drivers.migrations.m005_nudge_debts import NudgeDebtsMigration
-from core.base.ticker.tick_handler import TickHandler
-from core.base.ticker.tick_interval import TickInterval
+from engine.ticker.tick_handler import TickHandler
+from engine.ticker.tick_interval import TickInterval
 from core.modules.drivers.ticks.agent_ticks import AgentTicks
 from core.modules.drivers.ticks.event_pruning import EventPruning
 from core.modules.drivers.ticks.hook_pruning import HookPruning

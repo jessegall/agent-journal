@@ -34,8 +34,8 @@ from core.modules.helpers.commands.record_program_exit.record_program_exit_handl
 from core.modules.helpers.commands.record_program_exit.record_program_exit_subcommand import RecordProgramExitSubcommand
 from core.modules.helpers.listeners.helper_resume_listener import HelperResumeListener
 from core.modules.helpers.listeners.new_main_helpers_listener import NewMainHelpersListener
-from core.base.ticker.tick_handler import TickHandler
-from core.base.ticker.tick_interval import TickInterval
+from engine.ticker.tick_handler import TickHandler
+from engine.ticker.tick_interval import TickInterval
 from core.modules.helpers.commands.end_helpers_past_limits.end_helpers_past_limits_handler import EndHelpersPastLimitsHandler
 from core.modules.helpers.commands.send_helper_limit_warning.send_helper_limit_warning_handler import SendHelperLimitWarningHandler
 from core.modules.helpers.support.helper_nudges import HELPER_NUDGES

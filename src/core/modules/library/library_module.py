@@ -27,8 +27,8 @@ from core.modules.library.commands.remove_library_item.remove_library_item_handl
 from core.modules.library.commands.remove_library_item.remove_library_item_subcommand import RemoveLibraryItemSubcommand
 from core.modules.library.commands.restore_library_item.restore_library_item_handler import RestoreLibraryItemHandler
 from core.modules.library.commands.restore_library_item.restore_library_item_subcommand import RestoreLibraryItemSubcommand
-from core.base.ticker.tick_handler import TickHandler
-from core.base.ticker.tick_interval import TickInterval
+from engine.ticker.tick_handler import TickHandler
+from engine.ticker.tick_interval import TickInterval
 from core.modules.library.commands.delete_library_copy.delete_library_copy_handler import DeleteLibraryCopyHandler
 from core.modules.library.commands.update_library_connection.update_library_connection_handler import UpdateLibraryConnectionHandler
 from core.modules.library.commands.update_library_copy.update_library_copy_handler import UpdateLibraryCopyHandler

@@ -93,8 +93,8 @@ from core.modules.plugins.models.plugin_delivery import PluginDelivery
 from core.modules.plugins.models.plugin_output import PluginOutput
 from core.modules.plugins.models.plugin_queue_file import PluginQueueFile
 from core.modules.plugins.models.plugin_setting import PluginSetting
-from core.base.ticker.tick_handler import TickHandler
-from core.base.ticker.tick_interval import TickInterval
+from engine.ticker.tick_handler import TickHandler
+from engine.ticker.tick_interval import TickInterval
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.ticks.plugin_card_reading import PluginCardReading
 from core.modules.plugins.rules.plugin_rule import PluginRule

@@ -5,7 +5,7 @@ from collections.abc import Callable, Sequence
 
 from engine.journal.journal_home import JournalHome
 from core.base.module.module_finder import ModuleFinder
-from core.base.ticker.tick_handler import TickHandler
+from engine.ticker.tick_handler import TickHandler
 from server.journal_round import JournalRound
 from server.tick_handler_work import TickHandlerWork
 from server.hook.server_queue import ServerQueue

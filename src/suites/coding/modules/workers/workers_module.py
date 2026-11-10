@@ -171,8 +171,8 @@ from suites.coding.modules.workers.models.worker_progress import WorkerProgress
 from suites.coding.modules.workers.commands.worker_progress.worker_progress_subcommand import WorkerProgressSubcommand
 from core.modules.tasks.support.task_assignees import TaskAssignees
 from suites.coding.modules.workers.support.worker_task_assignees import WorkerTaskAssignees
-from core.base.ticker.tick_handler import TickHandler
-from core.base.ticker.tick_interval import TickInterval
+from engine.ticker.tick_handler import TickHandler
+from engine.ticker.tick_interval import TickInterval
 from suites.coding.modules.workers.ticks.stalled_worker_tests import StalledWorkerTests
 from suites.coding.modules.workers.ticks.stopped_worker_libraries import StoppedWorkerLibraries
 from suites.coding.modules.workers.ticks.worker_instruction_refresh import WorkerInstructionRefresh

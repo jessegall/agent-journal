@@ -4,8 +4,8 @@ from core.modules.approvals.commands.answer_agent_approval.answer_agent_approval
 from core.modules.approvals.commands.answer_agent_approval.answer_agent_approval_subcommand import AnswerAgentApprovalSubcommand
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
-from core.base.ticker.tick_handler import TickHandler
-from core.base.ticker.tick_interval import TickInterval
+from engine.ticker.tick_handler import TickHandler
+from engine.ticker.tick_interval import TickInterval
 from core.base.viewer.button_condition import ButtonCondition
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.modules.approvals.commands.accept_approval.accept_approval_subcommand import AcceptApprovalSubcommand

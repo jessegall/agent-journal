@@ -2,7 +2,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from engine.container.container import Container
-from core.base.ticker.tick_interval import TickInterval
+from engine.ticker.tick_interval import TickInterval
 
 
 @dataclass(frozen=True)

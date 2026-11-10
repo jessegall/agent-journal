@@ -4,8 +4,8 @@ import pytest
 
 from engine.container.container import Container
 from core.base.module.module_finder import ModuleFinder
-from core.base.ticker.tick_handler import TickHandler
-from core.base.ticker.tick_interval import TickInterval
+from engine.ticker.tick_handler import TickHandler
+from engine.ticker.tick_interval import TickInterval
 from server.ticker import Ticker
 from tests.stories.core.support.fixtures import UserJoined
 from core.testing.expect_row import expect_row

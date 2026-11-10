@@ -24,8 +24,8 @@ from engine.enums.log_level import LogLevel
 from engine.errors.refusal import Refusal
 from engine.check.periodic_checks import PeriodicChecks
 from engine.performance.performance_state import PerformanceState
-from core.base.ticker.tick_handler import TickHandler
-from core.base.ticker.tick_interval import TickInterval
+from engine.ticker.tick_handler import TickHandler
+from engine.ticker.tick_interval import TickInterval
 from engine.time.timing_log import TimingLog
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder

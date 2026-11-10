@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 from engine.container.container import Container
-from core.base.ticker.tick_handler import TickHandler
+from engine.ticker.tick_handler import TickHandler
 from server.round_work import RoundWork
 
 

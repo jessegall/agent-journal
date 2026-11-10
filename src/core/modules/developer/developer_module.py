@@ -27,8 +27,8 @@ from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_handl
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_subcommand import ResetHookNumbersSubcommand
 from core.base.database.request_watch import RequestWatch
 from core.base.module.module import Module
-from core.base.ticker.tick_handler import TickHandler
-from core.base.ticker.tick_interval import TickInterval
+from engine.ticker.tick_handler import TickHandler
+from engine.ticker.tick_interval import TickInterval
 from core.modules.developer.ticks.private_data_tick import PrivateDataTick
 from core.modules.developer.support.reporting_request_watch import ReportingRequestWatch
 from core.modules.developer.support.developer_settings import DEVELOPER_SETTINGS, TOOLS_SETTING, HOOK_DURATIONS_SETTING, HOOK_REQUEST_LOG_SETTING

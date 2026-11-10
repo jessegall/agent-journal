@@ -15,8 +15,8 @@ from core.modules.aliases.listeners.ended_run_silence_listener import EndedRunSi
 from core.modules.aliases.listeners.plugin_aliases_listener import PluginAliasesListener
 from core.modules.aliases.commands.set_alias_silence.set_alias_silence_handler import SetAliasSilenceHandler
 from core.modules.aliases.ticks.silent_alias_marking import SilentAliasMarking
-from core.base.ticker.tick_handler import TickHandler
-from core.base.ticker.tick_interval import TickInterval
+from engine.ticker.tick_handler import TickHandler
+from engine.ticker.tick_interval import TickInterval
 from core.modules.aliases.migrations.m001_aliases import AliasesTableMigration
 from core.modules.aliases.migrations.m002_alias_category import AliasCategoryMigration
 from core.modules.aliases.models.alias import Alias

@@ -7,8 +7,8 @@ from core.modules.tasks.support.task_context_reader import TaskContextReader
 from core.modules.tasks.support.task_comment_reads import TaskCommentReads
 from core.modules.documents.support.row_task_comment_reads import RowTaskCommentReads
 from core.modules.documents.support.work_context_reader import WorkContextReader
-from core.base.ticker.tick_handler import TickHandler
-from core.base.ticker.tick_interval import TickInterval
+from engine.ticker.tick_handler import TickHandler
+from engine.ticker.tick_interval import TickInterval
 from core.modules.documents.ticks.close_ended_documents_tick import CloseEndedDocumentsTick
 from core.modules.documents.commands.open_doc.open_doc_handler import OpenDocHandler
 from core.modules.documents.commands.open_doc.open_doc_subcommand import OpenDocSubcommand

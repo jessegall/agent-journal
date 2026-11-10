@@ -39,8 +39,8 @@ from core.modules.processes.migrations.m022_reader_requests import ReaderRequest
 from core.modules.processes.support.block_conditions.reader_request_completed import ReaderRequestCompleted
 from core.modules.processes.listeners.reader_block_listener import ReaderBlockListener
 from core.modules.processes.listeners.reader_request_complete_listener import ReaderRequestCompleteListener
-from core.base.ticker.tick_handler import TickHandler
-from core.base.ticker.tick_interval import TickInterval
+from engine.ticker.tick_handler import TickHandler
+from engine.ticker.tick_interval import TickInterval
 from core.modules.processes.ticks.output_reading import OutputReading
 from core.modules.processes.ticks.run_slot_grant import RunSlotGrant
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
