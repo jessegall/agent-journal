@@ -19,7 +19,7 @@ class AgentSessions:
     """Writes and reads the history of the sessions an agent ran under. An agent has one row for each time a
     session started; the newest row is its current session, and every older row has an end and the reason it
     ended. A session a person resumes later gets a new row. A session that replaces another has no start until
-    the launcher starts its program: until then it is unstarted, and a retry launches it instead of replacing it. A session that is in the history of an agent and is
+    the launcher starts its program, and its reason is written over the finished end of the session it replaced: until then it is unstarted, and a retry launches it instead of replacing it. A session that is in the history of an agent and is
     not its current one was replaced."""
 
     def __init__(self, queries: Queries, repository: Repository, scopes: Scopes, clock: Clock, kept: KeptRows) -> None:
@@ -30,7 +30,11 @@ class AgentSessions:
                                                  program_model=agent.program_model, started_at=self.clock.timestamp()), context)
 
     def replaced(self, agent: Agent, reason: EndReason, context: Context) -> AgentSession:
-        self.ended(agent.id, reason, context)
+        current = self.current(agent.id)
+        if current is not None and current.end_reason == EndReason.FINISHED:
+            self.repository.update(current, context, end_reason=reason.value)
+        else:
+            self.ended(agent.id, reason, context)
         return self.repository.save(AgentSession(session_agent_id=agent.id, session=agent.session, program=agent.program, program_model=agent.program_model), context)
 
     def launched(self, session_agent_id: int, context: Context) -> None:

@@ -21,7 +21,6 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.modules.usage.support.status_files import StatusFiles
 from core.modules.agents.support.agent_label import AgentLabel
-from core.modules.agents.support.agent_sessions import AgentSessions
 
 SHORT_JOB_CHARACTERS = 200
 
@@ -31,8 +30,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
 
     command = SendHelper
 
-    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: Nudger, repository: Repository, folders: AgentFolders, sources: WorkSources, scopes: Scopes, providers: Providers, kept: KeptHelpers, files: StatusFiles, sessions: AgentSessions) -> None:
-        self.sessions = sessions
+    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: Nudger, repository: Repository, folders: AgentFolders, sources: WorkSources, scopes: Scopes, providers: Providers, kept: KeptHelpers, files: StatusFiles) -> None:
         self.reach, self.limits, self.jobs, self.nudger, self.repository, self.folders = reach, limits, jobs, nudger, repository, folders
         self.sources = sources
         self.scopes = scopes
@@ -86,8 +84,6 @@ class SendHelperHandler(Handler[SendHelper, int]):
         self.limits.checked_running(helper.profile)
         if not self.folders.has_folder(helper):
             raise Refusal(f"{AgentLabel.from_agent(helper).text} worked in a folder that is gone", 'start a new helper with --fresh "<why>"')
-        if not self.sessions.unstarted(helper) and not self.providers.provider(helper.program).session_matches_folder(self.folders.folder(helper), helper.session):
-            raise Refusal(f"{AgentLabel.from_agent(helper).text} has no conversation to resume and starts a new session on its next launch: journal agent retire {helper.number} --reason \"no conversation\"", "start a new helper")
 
     @staticmethod
     def continues(job: HelperJob, source: WorkSourceCopy) -> bool:

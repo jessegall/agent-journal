@@ -13,6 +13,7 @@ from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.helpers.support.helper_start_folder import HelperStartFolder
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.agents.support.agent_label import AgentLabel
+from core.modules.agents.support.new_session_line import NewSessionLine
 
 ENVIRONMENT_VARIABLE = "JOURNAL_ENV"
 ACTIVE_VARIABLE = "AGENT_JOURNAL_ACTIVE"
@@ -21,9 +22,11 @@ REPORT_STEP = "When the job is done, stop with your report as your last words. A
 
 
 class HelperCommand:
-    """The command line that starts an agent's program on its job, as its provider writes it, in its folder."""
+    """The command line that starts an agent's program on its job, as its provider writes it, in its folder. A
+    session that follows an earlier one of the same agent starts with the line that says what it carries."""
 
-    def __init__(self, providers: Providers, folders: AgentFolders, profiles: ProfileFiles, environments: EnvironmentRows, start_folders: HelperStartFolder, programs: HelperPrograms) -> None:
+    def __init__(self, providers: Providers, folders: AgentFolders, profiles: ProfileFiles, environments: EnvironmentRows, start_folders: HelperStartFolder, programs: HelperPrograms, session_lines: NewSessionLine) -> None:
+        self.session_lines = session_lines
         self.providers, self.folders, self.profiles, self.environments = providers, folders, profiles, environments
         self.start_folders, self.programs = start_folders, programs
 
@@ -35,7 +38,8 @@ class HelperCommand:
         if self.folders.start_folder(helper).is_dir():
             self.programs.checked(helper.program, self.folders.folder(helper))
         profile = self.profiles.effective(helper.profile)
-        return self.launched(helper, SessionStart(helper.session), BLANK_LINE.join((f"You are {AgentLabel.from_agent(helper).text}.", profile.body, job, REPORT_STEP)))
+        opening = (f"You are {AgentLabel.from_agent(helper).text}.", self.session_lines.line(helper), profile.body, job, REPORT_STEP)
+        return self.launched(helper, SessionStart(helper.session), BLANK_LINE.join(part for part in opening if part is not None))
 
     def resumed(self, helper: Agent, job: str) -> LaunchCommand:
         if self.folders.start_folder(helper).is_dir():

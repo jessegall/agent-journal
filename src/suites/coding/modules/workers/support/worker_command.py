@@ -16,6 +16,7 @@ from suites.coding.modules.workers.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.models.worktree import Worktree
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.agent_label import AgentLabel
+from core.modules.agents.support.new_session_line import NewSessionLine
 
 WORK_STEPS = "Read journal worker status first: it says where you are and what to do now. Prove each point with journal proof make, with the tests that cover your changes in its --test command; hand in with journal worker next and journal worker deliver."
 
@@ -23,7 +24,8 @@ WORK_STEPS = "Read journal worker status first: it says where you are and what t
 class WorkerCommand:
     """Builds fresh and resumed worker launch commands through their providers."""
 
-    def __init__(self, providers: Providers, servers: ServerConfigs, libraries: LibraryFolders, helpers: HelperCommand, profiles: ProfileFiles, types: HelperTypeBook) -> None:
+    def __init__(self, providers: Providers, servers: ServerConfigs, libraries: LibraryFolders, helpers: HelperCommand, profiles: ProfileFiles, types: HelperTypeBook, session_lines: NewSessionLine) -> None:
+        self.session_lines = session_lines
         self.providers, self.servers, self.libraries, self.helpers = providers, servers, libraries, helpers
         self.profiles, self.types = profiles, types
 
@@ -36,7 +38,9 @@ class WorkerCommand:
         reads = "\n".join(provider.skill_instruction(name, skills / name / "SKILL.md") for name in
                           ("journal", "journal-etiquette", "journal-tasks", "journal-shell", "journal-workers"))
         profile = self.profiles.effective(worker.profile or self.types.find(worker.role).default_profile)
-        brief = (f"You are {AgentLabel.from_agent(worker).text}.\n{profile.body}\n\nYour task is {task.id}, {task.title}.\n{task.brief}\n{job}\n"
+        session_line = self.session_lines.line(worker)
+        identity = f"You are {AgentLabel.from_agent(worker).text}." if session_line is None else f"You are {AgentLabel.from_agent(worker).text}.\n{session_line}"
+        brief = (f"{identity}\n{profile.body}\n\nYour task is {task.id}, {task.title}.\n{task.brief}\n{job}\n"
                  f"Load these skills before your first write:\n{reads}\n"
                  f"Run journal overview, then journal task overview {worktree.task_id} before changing project files. Load the architectural skills required by the files you change in {skills}.\n"
                  f"{WORKER_TEST_RULE}\n"

@@ -11,4 +11,5 @@ class EndReason(StrEnum):
     DRIVER_CHANGED = "driver_changed"
     LAUNCH_ROTATION = "each_launch"
     UNSTARTED = "never_started"
+    CONVERSATION_MISSING = "conversation_missing"
     UNKNOWN = "unknown"

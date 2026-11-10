@@ -1,3 +1,5 @@
+from core.modules.agents.support.agent_task_reads import AgentTaskReads
+from core.modules.tasks.support.row_agent_task_reads import RowAgentTaskReads
 from core.modules.tasks.migrations.m022_assign_held_tasks import TaskHolderDelegationMigration
 from core.modules.tasks.commands.record_task_read.record_task_read_handler import RecordTaskReadHandler
 from core.modules.tasks.commands.edit_task.edit_task_subcommand import EditTaskSubcommand
@@ -149,6 +151,7 @@ class TasksModule(Module):
     requires_core = ">=5,<6"
     block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged, TaskBriefRead, TaskBlocksReviewed]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking", "journal.core.settings"]
+    bindings = {AgentTaskReads: RowAgentTaskReads}
     skills = [SkillDeclaration("journal-tasks", "Use tasks to declare, log and finish the current work; read it before the first task command of a session", keywords=("task", "tasks", "todo"), commands=["task"])]
     models = [ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskTag, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(TaskBlockRenewal, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(TaskRead, excluded_subcommands=["make", "edit", "show", "list", "delete"])]

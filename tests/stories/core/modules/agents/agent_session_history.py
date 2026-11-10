@@ -120,7 +120,8 @@ def test_a_helper_whose_transcript_is_gone_starts_a_new_session_and_is_told_the_
     command = " ".join(job_launch(story)["command"])
     story.expect_rows(helper_agent(story).id == helper.id, helper_agent(story).session != helper.session, helper.session not in command,
                       UNAVAILABLE_TEXT in command, NEW_SESSION_TEXT in command, detail=command)
-    story.expect_text(f"agent sessions {agent_number(story, helper.id)} --environment main", helper.session, actor=story.user)
+    story.expect_absent(f"agent show {agent_number(story, helper.id)} --environment main", f"session: {helper.session}", actor=story.user)
+    story.expect_text(f"agent sessions {agent_number(story, helper.id)} --environment main", helper.session, "conversation_missing", actor=story.user)
 
 
 def test_a_replacement_the_launcher_cannot_start_keeps_its_new_session_and_the_retry_starts_that_session(cold_helper):
