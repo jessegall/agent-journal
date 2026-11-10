@@ -121,9 +121,9 @@ def test_a_helper_stays_idle_when_its_process_stops(new_story):
 def test_retire_with_a_reason_keeps_its_record_and_it_is_not_retired_again(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
-    story.expect_success(f"agent retire {agent_number(story, helper.id)} {REASON}", f"retired {agent_label(story, helper.id)}", actor=story.agent)
+    story.expect_success(f"agent retire {agent_number(story, helper.id)} {REASON}", f"retired {agent_label(story, helper.id)}", actor=story.user)
     retired = helper_agent(story)
-    story.expect_rows(retired.retired_at is not None, retired.retirement_reason == "Its question is answered", retired.retiring_actor_id == story.agent.id)
+    story.expect_rows(retired.retired_at is not None, retired.retirement_reason == "Its question is answered", retired.retiring_actor_id == story.user.id)
     story.expect_refusal(f"agent retire {agent_number(story, helper.id)} {REASON}", "retired already", actor=story.agent)
 
 
@@ -148,7 +148,7 @@ def test_retired_row_stays_retired(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     story.expect_refusal(f'agent edit {agent_number(story, helper.id)} --retirement-reason "Old"', "does not change a retirement", actor=story.user)
-    story.expect_success(f"agent retire {agent_number(story, helper.id)} {REASON}", actor=story.agent)
+    story.expect_success(f"agent retire {agent_number(story, helper.id)} {REASON}", actor=story.user)
     story.expect_refusal(f'agent edit {agent_number(story, helper.id)} --retirement-reason ""', "does not change a retirement", actor=story.user)
     story.expect_refusal(f"agent delete {agent_number(story, helper.id)}", "record stays", actor=story.user)
     story.expect_refusal(f'helper send {agent_number(story, helper.id)} "One more job"', "retired, for good", actor=story.agent)

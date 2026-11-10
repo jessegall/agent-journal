@@ -53,7 +53,7 @@ def test_retire_settles_what_a_worker_holds(new_story):
     general = story.run(f"worker send --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_rows(general.code == 1)
     stopped(story, worker)
-    story.expect_success(f"agent retire {agent_number(story, worker.id)} {REASON}", f"retired {agent_label(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"agent retire {agent_number(story, worker.id)} {REASON}", f"retired {agent_label(story, worker.id)}", actor=story.user)
     story.expect_success("worker-worktree show 1", "state: removed")
     story.expect_success("task show 1", "state: open")
     repository.expect_no_folder(worker.id)
@@ -76,7 +76,7 @@ def test_a_retire_runs_git_outside_the_transaction(new_story):
             internal.append(database.has_transaction)
         return git(self, *arguments, **options)
     with patch.object(WorktreeGit, "git", recording_git):
-        story.expect_success(f"agent retire {agent_number(story, worker.id)} {REASON}", actor=story.agent)
+        story.expect_success(f"agent retire {agent_number(story, worker.id)} {REASON}", actor=story.user)
     story.expect_rows(bool(internal), not any(internal))
 
 
@@ -278,5 +278,5 @@ def test_retire_hides_the_lines_still_waiting_for_the_worker(new_story):
     with story.container.get(Database).transaction():
         story.container.get(Nudger).send_text(worker.id, "A line the worker never took", "sample.raw", Context(Actor.core(), story.clock.timestamp(), ReadMessage(1)))
     story.expect_text(f"agent-line list --agent {worker.id} --json", '"state": "waiting"', actor=story.user)
-    story.expect_success(f"agent retire {agent_number(story, worker.id)} {REASON}", f"retired {agent_label(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"agent retire {agent_number(story, worker.id)} {REASON}", f"retired {agent_label(story, worker.id)}", actor=story.user)
     story.expect_text(f"agent-line list --agent {worker.id} --json", '"state": "hidden"', actor=story.user)

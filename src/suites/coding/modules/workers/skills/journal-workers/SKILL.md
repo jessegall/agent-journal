@@ -55,8 +55,9 @@ stays kept on the same agent number and session until retired.
   tasks. A dispatch is refused when a compatible idle worker can take those tasks. Use `--fresh "<why>"` on dispatch
   only when a separate session is needed; its reason stays with the new worktree.
 - `journal worker merge <number> --up-to <task or commit>` takes in the worker's handed-in tasks up to that point while it goes on with its next ones; their proofs must be checked first, and its later merge brings only the rest.
-- `journal agent retire <number> --reason "<why>"` permanently retires a stopped worker. It retains its history and
-  transcript but can never resume or receive another job. Dirty files or unmerged work prevent retirement; settle
+- `journal agent retire <number> --reason "<why>"` asks the person to retire a stopped worker for good: only a person
+  retires an agent, so it stays until the person accepts. A retired worker retains its history and transcript but
+  can never resume or receive another job. Dirty files or unmerged work prevent retirement; settle
   them first. Reporting, delivering, merging and stopping a process do not by themselves retire the agent.
 - Read each proof with `journal proof list --task <n>`, check it with `journal proof check <n>` or send it back with
   `journal proof short <n> "<what is missing>"`.

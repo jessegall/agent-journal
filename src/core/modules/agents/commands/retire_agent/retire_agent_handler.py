@@ -1,5 +1,4 @@
 from engine.actor.actor import Actor
-from engine.enums.actor_type import ActorType
 from engine.agent.agent_roster import AgentRoster
 from engine.enums.agent_role import AgentRole
 from engine.command.context import Context
@@ -17,8 +16,9 @@ from core.modules.agents.support.agent_label import AgentLabel
 
 
 class RetireAgentHandler(Handler[RetireAgent, Agent]):
-    """Retires an agent that has ended and holds nothing. Its parent, the main agent of its environment and a person
-    may do it, and the suite that owns the agent's type says what still holds it."""
+    """Retires an agent that has ended and holds nothing. A person retires it directly; an agent that asks,
+    its parent and the main agent included, waits for a person to accept. The suite that owns the agent's
+    type says what still holds it."""
 
     command = RetireAgent
 
@@ -27,15 +27,15 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
 
     def prepare(self, command: RetireAgent, actor: Actor) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
-        self.check_actor(agent, actor, command)
         self.check_state(agent, command.reason)
         roster = self.roster(agent)
-        if roster is None:
-            return
-        block = roster.retire_block(agent)
+        block = roster.retire_block(agent) if roster is not None else ""
         if block:
             raise Refusal(block)
-        roster.release(agent, actor)
+        if actor.is_agent():
+            raise UserApprovalRefusal(f"Retire {AgentLabel.from_agent(agent).text}{self.parent_text(agent)}?", command=command, why=command.reason.strip())
+        if roster is not None:
+            roster.release(agent, actor)
 
     def handle(self, command: RetireAgent, context: Context) -> Agent:
         agent = self.queries.query(Agent).find(command.agent_id)
@@ -44,13 +44,6 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
         if roster is not None:
             roster.release_pending_work(agent, context)
         return self.repository.save(agent.retired(context.timestamp, command.reason.strip(), context.actor.id), context)
-
-    def check_actor(self, agent: Agent, actor: Actor, command: RetireAgent) -> None:
-        if actor.type is not ActorType.AGENT:
-            return
-        caller = self.queries.query(Agent).find(actor.id)
-        if caller.id != agent.parent_id and (caller.role != AgentRole.MAIN or caller.environment_id != agent.environment_id):
-            raise UserApprovalRefusal(f"Retire {AgentLabel.from_agent(agent).text}{self.parent_text(agent)}?", command=command)
 
     def parent_text(self, agent: Agent) -> str:
         if agent.parent_id is None:
