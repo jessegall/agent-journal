@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

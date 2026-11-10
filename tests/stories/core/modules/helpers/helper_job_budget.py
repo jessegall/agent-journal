@@ -1,5 +1,5 @@
 from core.modules.helpers.support.helper_settings import HELPER_MAX_COST
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.helper_jobs import JOB, EndedHelper, StartedHelper, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.helper_reports import enforced, helper_report
 from tests.stories.core.modules.usage.support.status_files import save_status_file

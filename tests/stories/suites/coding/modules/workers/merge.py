@@ -21,7 +21,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import w
 import subprocess
 
 from engine.journal.journal_home import LAUNCHER_SOCKET
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from datetime import timedelta
 
 from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text

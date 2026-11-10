@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from engine.actor.actor import Actor
 from engine.database.database import Database
 from engine.database.statement import Statement
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from engine.enums.actor_type import ActorType

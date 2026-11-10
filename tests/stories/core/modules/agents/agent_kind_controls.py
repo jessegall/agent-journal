@@ -3,7 +3,7 @@ import shlex
 
 from core.modules.helpers.support.agent_admission import AgentAdmission
 from core.modules.helpers.support.agent_options import AgentOptions
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.start_helper import START
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.modules.helpers.helper_reports import enforced, helper_report

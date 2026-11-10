@@ -16,7 +16,7 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.commands.support.part_spec import PartSpec
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from engine.testing.examples.hook_samples import HookSamples
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

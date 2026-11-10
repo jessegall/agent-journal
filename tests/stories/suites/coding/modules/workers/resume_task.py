@@ -18,7 +18,7 @@ from core.modules.drivers.commands.enter_agent_line.enter_agent_line import Ente
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment, worker_session

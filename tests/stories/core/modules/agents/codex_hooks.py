@@ -6,7 +6,7 @@ import pytest
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.providers import Providers
 from engine.testing.stories.story import Story
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.codex.providers.codex_provider import CodexProvider
 from install.hook_writer import HookWriter
 from tests.stories.core.modules.helpers.program_split import helper_split_story

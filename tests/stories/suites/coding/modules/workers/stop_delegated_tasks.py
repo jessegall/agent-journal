@@ -3,7 +3,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.journal.journal_home import LAUNCHER_SOCKET
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 

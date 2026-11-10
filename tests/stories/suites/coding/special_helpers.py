@@ -4,8 +4,8 @@ from engine.query.queries import Queries
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.agents.models.agent import Agent
 from core.modules.helpers.support.helper_programs import HelperPrograms
-from core.testing.fake_launcher import FakeLauncher
-from core.testing.story_helper_programs import StoryHelperPrograms
+from core.modules.agents.testing.fake_launcher import FakeLauncher
+from core.modules.helpers.testing.story_helper_programs import StoryHelperPrograms
 from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from tests.stories.core.modules.helpers.start_helper import started
 from tests.stories.core.support.coding_fixtures import UserBuilder, OpenTaskOrchestrator

@@ -5,7 +5,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.start_helper import START, started
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, START as FILE_START, helper_agent
 from core.modules.helpers.support.helper_programs import HelperPrograms

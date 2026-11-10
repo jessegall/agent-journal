@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import pytest
 
 from engine.journal.journal_home import LAUNCHER_SOCKET
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.commands.record_worktree_removal.record_worktree_removal_handler import RecordWorktreeRemovalHandler
 from engine.actor.actor import Actor
 from engine.testing.stories.story import Story

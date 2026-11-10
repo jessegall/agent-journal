@@ -120,7 +120,7 @@ def test_the_refusal_of_an_error_file_names_the_target_folder():
 
 
 def test_a_file_in_its_area_folder_gets_no_layout_finding():
-    assert not flagged(CLASS_RULE, "src/core/base/clock/clock.py") and not flagged(VALUE_RULE, "src/core/testing/support/clock_values.py")
+    assert not flagged(CLASS_RULE, "src/core/base/clock/clock.py") and not flagged(VALUE_RULE, "src/server/support/clock_values.py")
 
 
 @pytest.mark.parametrize("rule", ALLOW_LISTED_RULES)

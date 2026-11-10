@@ -8,7 +8,7 @@
                 "topLevel": true
             },
             {
-                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/(core|core/testing|server|install|tunnels)/[^/]+\\.py$"
+                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/(core|server|install|tunnels)/[^/]+\\.py$"
             }
         ],
         "reject": [
@@ -17,9 +17,6 @@
             },
             {
                 "testCode": true
-            },
-            {
-                "file": "src/core/testing/fake_launcher.py"
             },
             {
                 "file": "src/install/built_bundle.py"

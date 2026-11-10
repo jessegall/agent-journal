@@ -7,7 +7,7 @@ from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.agents.support.launcher_service import LauncherService
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.ticks.gone_worker_recovery import GoneWorkerRecovery
 from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID, WORKER_PID, missing_program, running_worker, start_launcher, worker_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker

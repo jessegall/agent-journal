@@ -3,7 +3,7 @@ from engine.query.queries import Queries
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.stories.helper_started import HELPER_LAUNCH_NAME, HelperStarted
 from engine.testing.examples.hook_samples import HookSamples
 

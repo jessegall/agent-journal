@@ -5,7 +5,7 @@
         "select": "type-declaration",
         "where": [
             {
-                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/(core|core/testing|server|install|tunnels)/[^/]+\\.py$"
+                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/(core|server|install|tunnels)/[^/]+\\.py$"
             }
         ],
         "reject": [
@@ -14,27 +14,6 @@
             },
             {
                 "testCode": true
-            },
-            {
-                "file": "src/core/testing/fake_launcher.py"
-            },
-            {
-                "file": "src/core/testing/story_helper_programs.py"
-            },
-            {
-                "file": "src/core/testing/story_login_path.py"
-            },
-            {
-                "file": "src/core/testing/story_main_agent_skills.py"
-            },
-            {
-                "file": "src/core/testing/story_overview_first.py"
-            },
-            {
-                "file": "src/core/testing/story_skill_requirement.py"
-            },
-            {
-                "file": "src/core/testing/story_task_brief_requirement.py"
             },
             {
                 "file": "src/install/backup_result.py"

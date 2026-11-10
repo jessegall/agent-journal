@@ -8,7 +8,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from pathlib import Path

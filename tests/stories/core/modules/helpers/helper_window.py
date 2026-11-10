@@ -1,7 +1,7 @@
 from engine.database.database import Database
 from engine.viewer.person_lines import PERSON_LINES
 from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.viewer.migrations.m003_helpers_window_key import HelpersWindowKeyMigration
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, StartedHelper, helper_agent
 from tests.stories.core.modules.viewer.support.window_story import WindowStory

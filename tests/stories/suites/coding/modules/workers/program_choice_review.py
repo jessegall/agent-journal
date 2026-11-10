@@ -27,7 +27,7 @@ from engine.enums.actor_type import ActorType
 from engine.driver.command_category import CommandCategory
 from engine.provider.hook_trust import HookTrust
 from engine.provider.providers import Providers
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.helpers.start_helper import START, started

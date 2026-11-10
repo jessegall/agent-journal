@@ -1,5 +1,5 @@
 from core.modules.agents.guards.agent_name_guard import PLAIN_NAME
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 

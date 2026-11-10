@@ -1,7 +1,7 @@
 import pytest
 from engine.driver.tool_type import ToolType
 from engine.testing.expectations.expect_reply import expect_reply_allowed
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.support.coding_fixtures import UserBuilder

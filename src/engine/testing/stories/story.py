@@ -40,16 +40,16 @@ from engine.log.recorded_refusal import RecordedRefusal
 from engine.caller.caller import Caller
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.overview.support.overview_first import OverviewFirst
-from core.testing.story_helper_programs import StoryHelperPrograms
+from core.modules.helpers.testing.story_helper_programs import StoryHelperPrograms
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.modules.skills.support.main_agent_skills import MainAgentSkills
 from core.modules.plugins.support.login_path import LoginPath
 from engine.database.repeated_work import RepeatedWork
-from core.testing.story_login_path import StoryLoginPath
-from core.testing.story_main_agent_skills import StoryMainAgentSkills
-from core.testing.story_overview_first import StoryOverviewFirst
-from core.testing.story_skill_requirement import StorySkillRequirement
-from core.testing.story_task_brief_requirement import StoryTaskBriefRequirement
+from core.modules.plugins.testing.story_login_path import StoryLoginPath
+from core.modules.skills.testing.story_main_agent_skills import StoryMainAgentSkills
+from core.modules.overview.testing.story_overview_first import StoryOverviewFirst
+from core.modules.skills.testing.story_skill_requirement import StorySkillRequirement
+from core.modules.tasks.testing.story_task_brief_requirement import StoryTaskBriefRequirement
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from engine.testing.examples.hook_sample import HookSample
 from engine.testing.examples.hook_samples import SAMPLE_FIRING, HookSamples

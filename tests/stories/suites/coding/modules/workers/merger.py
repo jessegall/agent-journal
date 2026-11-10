@@ -25,8 +25,8 @@ from core.modules.helpers.commands.start_helper.start_helper_handler import Star
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
-from core.testing.fake_launcher import FakeLauncher
-from core.testing.story_helper_programs import StoryHelperPrograms
+from core.modules.agents.testing.fake_launcher import FakeLauncher
+from core.modules.helpers.testing.story_helper_programs import StoryHelperPrograms
 from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from core.modules.profiles.support.profile_files import ProfileFiles
 from suites.coding.modules.workers.commands.start_merger.start_merger_handler import StartMergerHandler

@@ -12,7 +12,7 @@ from core.modules.drivers.support.access_nudges import ENDED_AGENT, OLD_HOOK_LIN
 from engine.query.queries import Queries
 from core.modules.documents.models.report import Report
 from engine.testing.expectations.expect_reply import expect_reply_allowed
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story_fixture import StoryFixture

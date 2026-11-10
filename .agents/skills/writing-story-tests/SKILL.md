@@ -12,7 +12,7 @@ refusals and recovery. Put related cases in one file under `tests/stories/core/m
 ## Use the API in this checkout
 
 Tests receive the `new_story` pytest fixture. Start with `new_story(fixture=SomeStoryFixture)`.
-Read `src/core/testing/story.py`, `src/core/testing/story_fixture.py` and a nearby story before adding a helper.
+Read `src/engine/testing/stories/story.py`, `src/engine/testing/stories/story_fixture.py` and a nearby story before adding a helper.
 The available fixtures live in `tests/stories/core/support/` and module-specific `support/` folders.
 
 ```python

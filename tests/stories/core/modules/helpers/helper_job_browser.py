@@ -1,6 +1,6 @@
 import json
 
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, StartedHelper, helper_agent, resumable_session
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story

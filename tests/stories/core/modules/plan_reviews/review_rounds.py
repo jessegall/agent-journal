@@ -5,7 +5,7 @@ import pytest
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.documents.models.report import Report
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.browser_story import expect_browser

@@ -1,12 +1,4 @@
 src/core/__init__.py: the file is in no layer
 src/core/modules/__init__.py: the file is in no layer
-src/core/testing/__init__.py: the file is in no layer
-src/core/testing/fake_launcher.py: the file is in no layer
-src/core/testing/story_helper_programs.py: the file is in no layer
-src/core/testing/story_login_path.py: the file is in no layer
-src/core/testing/story_main_agent_skills.py: the file is in no layer
-src/core/testing/story_overview_first.py: the file is in no layer
-src/core/testing/story_skill_requirement.py: the file is in no layer
-src/core/testing/story_task_brief_requirement.py: the file is in no layer
 src/suites/__init__.py: the file is in no layer
 src/tunnels/__init__.py: the file is in no layer

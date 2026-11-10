@@ -7,7 +7,7 @@ from engine.journal.journal_home import LAUNCHER_SOCKET
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 
 __all__ = ["private_folder"]
 

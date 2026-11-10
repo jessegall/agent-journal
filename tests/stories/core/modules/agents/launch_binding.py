@@ -1,6 +1,6 @@
 import pytest
 
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.drivers.support.access_nudges import ENDED_AGENT, UNKNOWN_AGENT
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice

@@ -11,7 +11,7 @@ from core.modules.agents.support.agent_launcher import AgentLauncher
 from core.modules.agents.support.launch_answer import LaunchAnswer
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.helpers.support.helper_programs import HelperPrograms
-from core.testing.story_helper_programs import StoryHelperPrograms
+from core.modules.helpers.testing.story_helper_programs import StoryHelperPrograms
 from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from engine.testing.stories.story_fixture import StoryFixture
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry

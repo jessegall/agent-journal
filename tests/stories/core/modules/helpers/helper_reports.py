@@ -8,7 +8,7 @@ from engine.query.queries import Queries
 from core.modules.agents.support.report_nudges import EMPTY_REPORT_TEXT
 from core.modules.messages.models.message import Message
 from core.modules.drivers.ticks.end_silent_helpers_tick import EndSilentHelpersTick
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import resumable_session, EndedHelper, JOB, StartedHelper, read_jobs, helper_agent

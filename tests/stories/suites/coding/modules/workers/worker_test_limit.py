@@ -25,7 +25,7 @@ from tests.stories.core.modules.processes.support.reader_block_fixtures import F
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTestListings
 from engine.testing.expectations.expect_reply import expect_reply_refusal

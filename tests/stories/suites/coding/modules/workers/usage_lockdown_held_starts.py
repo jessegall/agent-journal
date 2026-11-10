@@ -13,7 +13,7 @@ from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.environments.models.environment import Environment
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.enums.actor_type import ActorType
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry

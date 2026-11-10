@@ -8,8 +8,8 @@ from suites.coding.modules.workers.commands.record_own_test_failure.record_own_t
 from engine.driver.command_category import CommandCategory
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
-from core.testing.fake_launcher import FakeLauncher
-from core.testing.story_helper_programs import StoryHelperPrograms
+from core.modules.agents.testing.fake_launcher import FakeLauncher
+from core.modules.helpers.testing.story_helper_programs import StoryHelperPrograms
 from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_refusal
 from engine.testing.examples.shell_part import ShellPart

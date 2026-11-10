@@ -7,7 +7,7 @@ from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.claude_code.providers.claude_code_provider import CONFIG_VARIABLE
 from core.modules.claude_code.providers.support.claude_folder_name import ClaudeFolderName
 from core.modules.drivers.models.helper_job import HelperJob
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 

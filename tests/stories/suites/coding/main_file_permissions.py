@@ -3,7 +3,7 @@ from engine.driver.command_category import CommandCategory
 from engine.driver.command_effect import CommandEffect
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
 from tests.stories.core.modules.helpers.start_helper import START
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder, UserBuilder, OpenTaskOrchestrator

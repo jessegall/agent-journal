@@ -1,6 +1,6 @@
 from engine.errors.refusal import Refusal
 from core.modules.helpers.support.helper_limits import HelperLimits
-from core.testing.story_helper_programs import StoryHelperPrograms
+from core.modules.helpers.testing.story_helper_programs import StoryHelperPrograms
 import json
 
 from datetime import timedelta
@@ -13,7 +13,7 @@ from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder

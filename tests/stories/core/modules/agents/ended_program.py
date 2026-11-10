@@ -11,7 +11,7 @@ from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.time.timestamp import Timestamp
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.support.fixtures import UserJoined
 
 PROGRAM_PID = 4242

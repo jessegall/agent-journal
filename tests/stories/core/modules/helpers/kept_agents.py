@@ -6,14 +6,14 @@ from core.modules.claude_code.providers.claude_code_provider import ClaudeCodePr
 from engine.sandbox.shell_sandbox import ShellSandbox
 from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
-from core.testing.story_helper_programs import StoryHelperPrograms
+from core.modules.helpers.testing.story_helper_programs import StoryHelperPrograms
 import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.usage.support.agent_type_limits import AgentTypeLimits
 from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.helpers.support.kept_helpers import KeptHelpers
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, resumable_session

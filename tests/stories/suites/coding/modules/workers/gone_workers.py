@@ -9,7 +9,7 @@ from engine.process.leftover_process import LeftoverProcess
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
-from core.testing.fake_launcher import FakeLauncher
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder, OpenTaskOrchestrator
