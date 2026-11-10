@@ -7,6 +7,9 @@ from core.modules.drivers.support.suite_choice import SuiteChoice
 from engine.agent.agent_policy import AgentPolicy
 import json
 from collections.abc import Mapping, Sequence
+from dataclasses import replace
+
+from core.modules.usage.support.agent_spend import AgentSpend
 from argparse import ArgumentParser, Namespace
 
 from engine.sandbox.agent_sandbox_choice import AgentSandboxChoice
@@ -48,8 +51,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     name = "agents"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice, types: HelperTypeBook, share: ContextShare) -> None:
-        self.share = share
+    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice, types: HelperTypeBook, share: ContextShare, spend: AgentSpend) -> None:
+        self.share, self.spend = share, spend
         self.activity, self.sandbox, self.types = activity, sandbox, types
         self.queries, self.files, self.providers, self.home, self.suites, self.profiles = queries, files, providers, home, suites, profiles
         self.settings, self.clock = settings, clock
@@ -75,7 +78,9 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         statuses = self.statuses(cards_read)
         account = self.files.plan_windows(statuses)
         sandboxes = self.sandboxes(cards_read, read_rows)
-        return AgentFactsList(tuple(self.facts(card, policy, titles, pending.get(card.id), statuses[card.session], account, sandboxes.get(card.id, True)) for card in cards_read))
+        session_costs = self.spend.session_costs([card.id for card in cards_read])
+        return AgentFactsList(tuple(replace(self.facts(card, policy, titles, pending.get(card.id), statuses[card.session], account, sandboxes.get(card.id, True)), session_costs=session_costs[card.id])
+                                    for card in cards_read))
 
     def sandboxes(self, cards: Sequence[AgentCard], read_rows: Sequence[Agent]) -> dict[int, bool]:
         separate_folder_ids = {card.id for card in cards if self.types.find(card.role).separate_folder}

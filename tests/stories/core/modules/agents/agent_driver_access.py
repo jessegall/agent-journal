@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from engine.actor.actor import Actor
@@ -5,7 +7,6 @@ from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.agents.agent_driver import CODEX_MODEL, DRIVER
 from tests.stories.core.modules.helpers.helper_jobs import JOB, EndedHelper, helper_agent
 from tests.stories.core.modules.helpers.lifetime_reviewers import refusal_text
-from tests.stories.core.modules.helpers.rotation_mid_job import session_rows
 from tests.stories.core.modules.usage.support.status_files import full_status
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.program_split import outage
@@ -61,5 +62,6 @@ def test_the_spend_of_an_agent_is_counted_for_each_session_so_two_programs_are_n
     ended.expect_success(codex_driver_line(ended, helper.number), actor=ended.user)
     full_status(ended, helper.session, 40, OLD_SESSION_DOLLARS)
     full_status(ended, helper_agent(ended).session, 10, NEW_SESSION_DOLLARS)
-    rows = session_rows(ended)
-    ended.expect_rows([(row["program"], row["cost_dollars"]) for row in rows] == [("codex", NEW_SESSION_DOLLARS), (helper.program, OLD_SESSION_DOLLARS)], detail=str(rows))
+    facts = json.loads(ended.run(f"usage agents --closed --agent {helper.number} --environment main --json", actor=ended.user).output_text)["rows"][0]
+    ended.expect_rows([(cost["program"], cost["cost_dollars"]) for cost in facts["session_costs"]] == [("codex", NEW_SESSION_DOLLARS), (helper.program, OLD_SESSION_DOLLARS)],
+                      facts["total_cost_dollars"] == OLD_SESSION_DOLLARS + NEW_SESSION_DOLLARS, detail=str(facts["session_costs"]))
