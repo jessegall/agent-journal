@@ -12,9 +12,7 @@ from engine.driver.span_queries import SpanQueries
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
-from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.docking.support.dock_room import DockRoom
-from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.processes.models.enums.process_dock_type import ProcessDockType
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.enums.process_setting import ProcessSetting
@@ -28,34 +26,36 @@ from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.support.run_title import RunTitle
 
 
+RUNS_CONSIDERED = 2
+
+
 class LongRunDockRule(DriverRule):
     """Docks visible runs after the dock seconds of running, time in the queue left out, and asks for a name when a
-    docked run has none."""
+    docked run has none. It looks at the two oldest runs not yet docked in a hook, so a hook that finds many runs
+    due costs a few rows and docks them over the next hooks."""
 
     name = "processes.long-run-dock"
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
 
-    def __init__(self, processes: ProcessQuery, items: DockItemQuery, outputs: OutputQuery, folder: OutputFolder, visibility: RunVisibility, queries: Queries, room: DockRoom, settings: ProcessSettings, spans: SpanQueries) -> None:
-        self.processes, self.items, self.outputs, self.folder, self.visibility = processes, items, outputs, folder, visibility
+    def __init__(self, processes: ProcessQuery, outputs: OutputQuery, folder: OutputFolder, visibility: RunVisibility, queries: Queries, room: DockRoom, settings: ProcessSettings, spans: SpanQueries) -> None:
+        self.processes, self.outputs, self.folder, self.visibility = processes, outputs, folder, visibility
         self.queries, self.room, self.settings, self.spans = queries, room, settings, spans
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         dock = Interval(self.settings.seconds(ProcessSetting.DOCK_AFTER_SECONDS))
-        running = tuple(self.processes.agent(hook.agent_id).running().long_run_candidates(hook.timestamp, dock.seconds).all_rows())
-        if not running:
+        runs = self.processes.agent(hook.agent_id)
+        docked = tuple(runs.running().docked_runs().all_rows())
+        fresh = tuple(runs.running().fresh_long_runs(hook.timestamp, dock.seconds).oldest().limited(RUNS_CONSIDERED))
+        if not docked and not fresh:
             return RuleAnswer.allowed()
-        ids = [process.id for process in running]
         parts: dict[int, list[ProcessPart]] = defaultdict(list)
-        for part in self.queries.query(ProcessPart).matching(Among("process_id", ids)).oldest().all_rows():
+        for part in self.queries.query(ProcessPart).matching(Among("process_id", [process.id for process in fresh])).oldest().all_rows():
             parts[part.process_id].append(part)
-        outputs = {output.process_id: output for output in self.outputs.matching(Among("process_id", ids)).all_rows()}
-        items = tuple(self.items.type_items(ProcessDockType.OUTPUT.value).filter(target_model="process").matching(Among("target_id", ids)).all_rows())
-        existing = {item.target_id for item in items}
-        due = [process for process in running if process.id not in existing and self.needs_dock(process, hook, dock, tuple(parts[process.id]))]
+        due = [process for process in fresh if self.needs_dock(process, hook, dock, tuple(parts[process.id]))]
         placed = due[:self.room.places(ProcessDockType.OUTPUT.value)]
-        docked = {item.target_id for item in items if item.state is DockItemState.DOCKED}
-        shown = [process for process in running if process.id in docked or process in placed]
+        shown = [*docked, *placed]
+        outputs = {output.process_id: output for output in self.outputs.matching(Among("process_id", [process.id for process in shown])).all_rows()} if shown and hook.role == AgentRole.MAIN else {}
         titles = self.title_nudges(shown, outputs) if hook.role == AgentRole.MAIN else ()
         return RuleAnswer.with_nudges(*titles).running(*(AddDockItem(ProcessDockType.OUTPUT.value, process.model_name, process.id) for process in placed))
 
