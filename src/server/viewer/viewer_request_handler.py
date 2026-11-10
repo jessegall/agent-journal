@@ -10,7 +10,7 @@ from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qsl, parse_qs, urlencode, urlsplit
 
-from server.server_instance import server_instance
+from server.request.server_instance import server_instance
 from server.hook.queue_request import QueueRequest
 from server.viewer.read_attribution import ReadAttribution
 from server.viewer.viewer_request_record import ViewerHttpRequest, ViewerRequestRecord

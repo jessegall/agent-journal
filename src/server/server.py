@@ -37,13 +37,13 @@ from server.code_folders import CodeFolders
 from server.handover_descriptors import HandoverDescriptors
 from server.door.hosted_journal_door import HostedJournalDoor
 from server.door.local_journal_door import LocalJournalDoor
-from server.journal_server import JournalServer
+from server.request.journal_server import JournalServer
 from core.base.serving.server_limits import DRAIN_LIMIT_SECONDS
-from server.server_context import ServerContext
+from server.request.server_context import ServerContext
 from server.server_plugin_services import ServerPluginServices
 from server.server_tunnel import ServerTunnel
 from server.hook.hook_database import HookDatabase
-from server.request_log import SETTINGS_REFRESH_SECONDS
+from server.request.request_log import SETTINGS_REFRESH_SECONDS
 from server.work.journal_round import JournalRound
 from server.work.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
 from engine.process.plugin_script_processes import PluginScriptProcesses
@@ -60,7 +60,7 @@ from server.viewer.phone_sessions import PhoneSessions
 from server.viewer.share_sessions import ShareSessions
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
-from server.request_handler import RequestHandler
+from server.request.request_handler import RequestHandler
 from server.server_backup import ServerBackup
 from core.base.serving.server_files import ServerFiles
 from server.waiting_server import WaitingServer

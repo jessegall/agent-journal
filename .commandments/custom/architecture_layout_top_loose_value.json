@@ -73,34 +73,16 @@
                 "file": "src/server/handover_descriptors.py"
             },
             {
-                "file": "src/server/journal_server.py"
-            },
-            {
-                "file": "src/server/request_handler.py"
-            },
-            {
-                "file": "src/server/request_log.py"
-            },
-            {
                 "file": "src/server/server.py"
             },
             {
                 "file": "src/server/server_backup.py"
             },
             {
-                "file": "src/server/server_context.py"
-            },
-            {
-                "file": "src/server/server_instance.py"
-            },
-            {
                 "file": "src/server/successor_proof.py"
             },
             {
                 "file": "src/server/successor_start.py"
-            },
-            {
-                "file": "src/server/tracked_requests.py"
             }
         ]
     },

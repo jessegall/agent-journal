@@ -10,7 +10,7 @@ from server.work.listener_thread import ListenerThread
 from core.base.serving.server_files import ServerFiles
 from server.server_tunnel import ServerTunnel
 from server.viewer.viewer_endpoint import ViewerEndpoint
-from server.request_log import RequestLog
+from server.request.request_log import RequestLog
 
 HOOK_LIMIT_SECONDS = 3.5
 AGENT_HOOK_LIMIT_SECONDS = 45.0

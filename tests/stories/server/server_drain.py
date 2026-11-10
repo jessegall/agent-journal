@@ -1,7 +1,7 @@
 import threading
 
 from engine.connection.unix_connection import UnixConnection
-from server.request_handler import RequestHandler
+from server.request.request_handler import RequestHandler
 from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.server.support.server_client import request_answer, running_server
 from tests.stories.support.story_checks import expect_value, expect_wait_arrived

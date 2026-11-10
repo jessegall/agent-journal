@@ -19,16 +19,7 @@
                 "testCode": true
             },
             {
-                "file": "src/server/client_disconnected.py"
-            },
-            {
-                "file": "src/server/request_log.py"
-            },
-            {
                 "file": "src/server/server.py"
-            },
-            {
-                "file": "src/server/server_instance.py"
             }
         ]
     },

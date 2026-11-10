@@ -8,7 +8,7 @@ import pytest
 
 from engine.journal.journal_home import JournalHome
 from server.handover_descriptors import QUEUED_CONNECTIONS, HandoverDescriptors
-from server.journal_server import JournalServer
+from server.request.journal_server import JournalServer
 from core.base.serving.server_files import ServerFiles
 from server.viewer.viewer_listener import ViewerListener
 

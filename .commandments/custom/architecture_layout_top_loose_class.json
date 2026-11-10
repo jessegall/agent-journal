@@ -85,25 +85,7 @@
                 "file": "src/server/handover_descriptors.py"
             },
             {
-                "file": "src/server/journal_server.py"
-            },
-            {
-                "file": "src/server/request_handler.py"
-            },
-            {
-                "file": "src/server/request_log.py"
-            },
-            {
-                "file": "src/server/request_log_entry.py"
-            },
-            {
-                "file": "src/server/request_log_settings.py"
-            },
-            {
                 "file": "src/server/server_backup.py"
-            },
-            {
-                "file": "src/server/server_context.py"
             },
             {
                 "file": "src/server/server_plugin_services.py"
@@ -122,9 +104,6 @@
             },
             {
                 "file": "src/server/ticker.py"
-            },
-            {
-                "file": "src/server/tracked_requests.py"
             },
             {
                 "file": "src/server/waiting_server.py"

@@ -5,7 +5,7 @@ import time
 from socketserver import TCPServer, ThreadingMixIn
 from typing import Any
 
-from server.client_disconnected import client_disconnected
+from server.request.client_disconnected import client_disconnected
 
 DRAIN_POLL_SECONDS = 0.05
 

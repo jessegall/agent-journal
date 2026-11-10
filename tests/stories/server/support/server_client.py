@@ -38,16 +38,16 @@ from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
 from server.door.journal_door import JournalDoor
 from server.door.local_journal_door import LocalJournalDoor
-from server.journal_server import JournalServer
+from server.request.journal_server import JournalServer
 from core.base.serving.server_limits import DRAIN_LIMIT_SECONDS
-from server.server_context import ServerContext
+from server.request.server_context import ServerContext
 from server.hook.hook_database import HookDatabase
 from server.hook.queue_priority import QueuePriority
 from server.work.journal_round import JournalRound
 from server.work.listener_thread import ListenerThread
 from server.work.listener_wake import ListenerWake
 from server.work.listener_work import ListenerWork
-from server.request_handler import EXIT_CODE_TRAILER, RequestHandler
+from server.request.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from core.base.serving.server_files import ServerFiles
 from server.viewer.viewer_endpoint import ViewerEndpoint
 from server.viewer.viewer_listener import ViewerListener
