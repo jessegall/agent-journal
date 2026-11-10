@@ -8,7 +8,7 @@ from core.base.journal_home import JournalHome
 from core.base.performance.performance_state import PerformanceState
 from core.base.timing import Timing
 from core.base.timing_log import TimingLog
-from server.server_files import ServerFiles, socket_path
+from core.base.serving.server_files import ServerFiles, socket_path
 from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.server_client import request_answer
 

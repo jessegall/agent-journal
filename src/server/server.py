@@ -37,7 +37,8 @@ from server.code_folders import CodeFolders
 from server.handover_descriptors import HandoverDescriptors
 from server.hosted_journal_door import HostedJournalDoor
 from server.local_journal_door import LocalJournalDoor
-from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer
+from server.journal_server import JournalServer
+from core.base.serving.server_limits import DRAIN_LIMIT_SECONDS
 from server.server_context import ServerContext
 from server.server_plugin_services import ServerPluginServices
 from server.server_tunnel import ServerTunnel
@@ -61,7 +62,7 @@ from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
 from server.request_handler import RequestHandler
 from server.server_backup import ServerBackup
-from server.server_files import ServerFiles
+from core.base.serving.server_files import ServerFiles
 from server.waiting_server import WaitingServer
 
 MAX_OPEN_FILES = 10240

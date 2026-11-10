@@ -2,7 +2,7 @@ import fcntl
 import os
 import time
 from collections.abc import Generator
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from typing import IO
 from core.base.clock import Clock
@@ -12,7 +12,7 @@ from core.base.log_level import LogLevel
 from core.base.log_source import LogSource
 from core.base.system_log_writer import LOG_LIMIT_BYTES, SystemLogWriter
 from core.base.server_restart_state import ServerRestartState
-from server.server_files_error import ServerFilesError
+from engine.errors.server_files_error import ServerFilesError
 
 
 SOCKET_FILE_MODE = 0o600
@@ -42,15 +42,17 @@ class ServerFiles:
         self.start_mark = home.folder / "server-starting"
         self.tunnel_pid_file = home.folder / "tunnel.pid"
         self.lock_file: IO[str] | None = None
+        self.opened_lock = ExitStack()
 
     def acquire_lock(self) -> bool:
-        lock_file = self.lock.open("a")
+        opened = ExitStack()
+        lock_file = opened.enter_context(FileAccess.shared().writer(self.lock, "a"))
         try:
             fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
-            lock_file.close()
+            opened.close()
             return False
-        self.lock_file = lock_file
+        self.lock_file, self.opened_lock = lock_file, opened
         return True
 
     def keep_lock_descriptor(self, descriptor: int) -> None:
@@ -141,4 +143,5 @@ class ServerFiles:
     def release_lock(self) -> None:
         if self.lock_file is not None:
             self.lock_file.close()
+            self.opened_lock.close()
             self.lock_file = None

@@ -9,10 +9,10 @@ from core.base.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from core.base.unix_connection import UnixConnection
 from core.base.log_level import LogLevel
-from install.update_steps import FAILED, FINISHED, HANDOVER, PROOF, SERVING, UpdateSteps
-from server.server_files import ServerFiles
-from server.successor_start import PROOF_LIMIT_SECONDS
-from install.launcher_replacement import LauncherReplacement
+from core.base.serving.update_steps import FAILED, FINISHED, HANDOVER, PROOF, SERVING, UpdateSteps
+from core.base.serving.server_files import ServerFiles
+from core.base.serving.server_limits import PROOF_LIMIT_SECONDS
+from core.base.serving.launcher_replacement import LauncherReplacement
 
 TAKEOVER_LIMIT_SECONDS = 90
 PID_POLL_SECONDS = 0.02

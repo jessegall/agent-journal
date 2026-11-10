@@ -7,7 +7,6 @@ from server.server_context import ServerContext
 from server.tracked_requests import TrackedRequests
 
 
-DRAIN_LIMIT_SECONDS = 10
 class JournalServer(TrackedRequests, UnixStreamServer):
     """The server on the journal's socket: one daemon thread per request, kept so a stop waits for them up to
     its limit, and a loop that sleeps on its socket and a wake socket, so a stop returns at once. A client

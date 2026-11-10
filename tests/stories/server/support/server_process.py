@@ -8,7 +8,7 @@ from pathlib import Path
 from core.base.child_process import ChildProcess
 from core.base.journal_home import JournalHome
 from core.base.unix_connection import UnixConnection
-from server.server_files import ServerFiles, socket_path
+from core.base.serving.server_files import ServerFiles, socket_path
 from tests.stories.server.support.server_client import request_answer
 
 ROOT = Path(__file__).resolve().parents[4]

@@ -3,8 +3,8 @@ import time
 from core.base.journal_home import JournalHome
 from install.server_wont_stop_error import ServerWontStopError
 from core.base.unix_connection import UnixConnection
-from server.journal_server import DRAIN_LIMIT_SECONDS
-from server.server_files import ServerFiles
+from core.base.serving.server_limits import DRAIN_LIMIT_SECONDS
+from core.base.serving.server_files import ServerFiles
 from core.base.leftover_process import POLL_SECONDS
 
 SERVER_ABSENT = "no server running"

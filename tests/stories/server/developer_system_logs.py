@@ -11,7 +11,7 @@ from core.modules.profiles.support.profile_folder_move import ProfileFolderMove
 from core.testing.hook_samples import HookSamples
 from server.request_log import RequestLog
 from server.request_log_settings import RequestLogSettings
-from server.server_files import ServerFiles
+from core.base.serving.server_files import ServerFiles
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.server.support.server_client import server_story
 

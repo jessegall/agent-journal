@@ -55,9 +55,6 @@
                 "file": "src/server/server.py"
             },
             {
-                "file": "src/server/server_files.py"
-            },
-            {
                 "file": "src/server/server_instance.py"
             },
             {

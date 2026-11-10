@@ -1,8 +1,6 @@
 src/core/__init__.py: the file is in no layer
 src/core/journal.py: the file is in no layer
 src/core/modules/__init__.py: the file is in no layer
-src/core/modules/updates/commands/install_release/install_release_handler.py imports host install, which core module updates may not use
-src/core/modules/updates/support/release_install_steps.py imports host install, which core module updates may not use
 src/core/testing/__init__.py: the file is in no layer
 src/core/testing/expect_reply.py: the file is in no layer
 src/core/testing/expect_row.py: the file is in no layer
@@ -46,11 +44,5 @@ src/core/testing/template_adaptation.py: the file is in no layer
 src/core/testing/template_cache.py: the file is in no layer
 src/core/testing/template_databases.py: the file is in no layer
 src/core/testing/working_journal.py: the file is in no layer
-src/install/code_handover.py imports host server, which host install may not use
-src/install/run_drain.py imports host server, which host install may not use
-src/install/server_lock.py imports host server, which host install may not use
-src/install/server_stop.py imports host server, which host install may not use
-src/install/upgrade_journal.py imports host server, which host install may not use
 src/suites/__init__.py: the file is in no layer
 src/tunnels/__init__.py: the file is in no layer
-src/tunnels/tunler/support/tunler_client.py imports host server, which tunnel tunler may not use

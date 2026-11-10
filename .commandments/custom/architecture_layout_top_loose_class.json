@@ -148,9 +148,6 @@
                 "file": "src/install/chat_update_steps.py"
             },
             {
-                "file": "src/install/code_handover.py"
-            },
-            {
                 "file": "src/install/code_replacement.py"
             },
             {
@@ -161,9 +158,6 @@
             },
             {
                 "file": "src/install/install_journal.py"
-            },
-            {
-                "file": "src/install/launcher_replacement.py"
             },
             {
                 "file": "src/install/restore_version_four.py"
@@ -182,9 +176,6 @@
             },
             {
                 "file": "src/install/stray_version_four_error.py"
-            },
-            {
-                "file": "src/install/update_steps.py"
             },
             {
                 "file": "src/install/upgrade_journal.py"
@@ -278,12 +269,6 @@
             },
             {
                 "file": "src/server/server_context.py"
-            },
-            {
-                "file": "src/server/server_files.py"
-            },
-            {
-                "file": "src/server/server_files_error.py"
             },
             {
                 "file": "src/server/server_plugin_services.py"

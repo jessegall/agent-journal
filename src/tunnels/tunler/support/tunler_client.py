@@ -9,7 +9,7 @@ from core.base.journal_home import JournalHome
 from core.base.leftover_process import LeftoverProcess
 from engine.errors.refusal import Refusal
 from core.base.tunnel.tunnel_state import TunnelState
-from server.server_files import ServerFiles
+from core.base.serving.server_files import ServerFiles
 from tunnels.tunler.support.tunler_answer import TunlerAnswer
 from tunnels.tunler.support.tunler_installer import TunlerInstaller
 from tunnels.tunler.support.tunler_login import TunlerLogin

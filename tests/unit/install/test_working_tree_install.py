@@ -2,7 +2,7 @@ import subprocess
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
-from install.update_steps import UpdateSteps
+from core.base.serving.update_steps import UpdateSteps
 from install.working_tree_install import WorkingTreeInstall
 
 

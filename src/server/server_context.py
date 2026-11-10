@@ -7,7 +7,7 @@ from server.code_version import CodeVersion
 from server.hook.hook_database import HookDatabase
 from server.journal_door import JournalDoor
 from server.listener_thread import ListenerThread
-from server.server_files import ServerFiles
+from core.base.serving.server_files import ServerFiles
 from server.server_tunnel import ServerTunnel
 from server.viewer.viewer_endpoint import ViewerEndpoint
 from server.request_log import RequestLog

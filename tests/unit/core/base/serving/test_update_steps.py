@@ -4,8 +4,8 @@ import pytest
 
 from core.base.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from install.code_handover import CodeHandover
-from install.update_steps import UpdateSteps
+from core.base.serving.code_handover import CodeHandover
+from core.base.serving.update_steps import UpdateSteps
 
 
 class RecordedSteps(UpdateSteps):

@@ -241,9 +241,6 @@
                 "file": "src/server/hook/hook_database_busy_error.py"
             },
             {
-                "file": "src/server/server_files_error.py"
-            },
-            {
                 "file": "src/server/viewer/door_refusal.py"
             },
             {
