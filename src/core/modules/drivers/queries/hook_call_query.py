@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from itertools import takewhile
 from typing import Self
 
@@ -9,6 +9,7 @@ from core.base.timestamp import Timestamp
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_name import HookEventName
 from core.base.model.tables import Tables
+from core.base.query.conditions.less import Less
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.maximum import Maximum
@@ -22,6 +23,7 @@ from core.base.driver.search_category import CODE, GRAPHIFY
 
 STOPS_READ = 20
 MOST_DISPLAYED_PARTS = 500
+CALL_BATCH_ROWS = 50
 TURN_HOOKS = (HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE, HookEventName.STOP)
 TOOL_HOOKS = (HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE)
 IDLE_LIMIT_SECONDS = 30
@@ -54,9 +56,17 @@ class HookCallQuery(Query[HookCall]):
     def displayed_block(self, agent_id: int, event: HookEvent) -> str:
         if not event.is_final_display:
             return ""
-        calls = self.agent(agent_id).filter(hook=HookEventName.MESSAGE_DISPLAY).newest().limited(MOST_DISPLAYED_PARTS)
-        part_calls = takewhile(lambda call: call.displayed_part != "" and call.displayed_message_id == event.displayed_message_id, calls)
+        part_calls = takewhile(lambda call: call.displayed_part != "" and call.displayed_message_id == event.displayed_message_id, self.newest_calls(agent_id, HookEventName.MESSAGE_DISPLAY, MOST_DISPLAYED_PARTS))
         return "".join([*(call.displayed_part for call in reversed(list(part_calls))), event.displayed_part]).strip()
+
+    def newest_calls(self, agent_id: int, hook: HookEventName, most: int) -> Iterator[HookCall]:
+        hook_calls = self.agent(agent_id).filter(hook=hook).newest()
+        calls = hook_calls.limited(min(most, CALL_BATCH_ROWS))
+        for read_count in range(CALL_BATCH_ROWS, most + CALL_BATCH_ROWS, CALL_BATCH_ROWS):
+            yield from calls
+            if len(calls) < CALL_BATCH_ROWS or read_count >= most:
+                return
+            calls = hook_calls.matching(Less("id", calls[-1].id)).limited(min(most - read_count, CALL_BATCH_ROWS))
 
     def latest_turn_call(self, agent_id: int) -> HookCall | None:
         return self.kept.read_newest(self.table.name, self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).newest().first,
@@ -89,7 +99,7 @@ class HookCallQuery(Query[HookCall]):
 
     def code_searches_after_graphify(self, agent_id: int, tool_uses: int) -> int:
         count = 0
-        for call in self.agent(agent_id).filter(hook=HookEventName.PRE_TOOL_USE).newest().limited(tool_uses):
+        for call in self.newest_calls(agent_id, HookEventName.PRE_TOOL_USE, tool_uses):
             if call.search_category == GRAPHIFY:
                 break
             count += call.search_category == CODE
