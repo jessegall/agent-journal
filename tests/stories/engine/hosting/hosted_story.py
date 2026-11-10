@@ -1,4 +1,4 @@
-from core.base.hosting.hosting import Hosting
+from engine.hosting.hosting import Hosting
 from tests.stories.core.support.hosted_fixtures import start_hosted
 from tests.stories.support.story_checks import expect_value
 

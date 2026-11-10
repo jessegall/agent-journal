@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.base.hosting.hosted_mode import HostedMode
-from core.base.hosting.local_journal_refusal import LocalJournalRefusal
+from engine.hosting.hosted_mode import HostedMode
+from engine.hosting.local_journal_refusal import LocalJournalRefusal
 
 
 @dataclass(frozen=True)

@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from core.base.hosting.host_probe import HostProbe
-from core.base.hosting.hosted_start_check import CGROUP_CONTROLLERS, SYSTEMD_FOLDER
+from engine.hosting.host_probe import HostProbe
+from engine.hosting.hosted_start_check import CGROUP_CONTROLLERS, SYSTEMD_FOLDER
 
 
 class FakeHost(HostProbe):

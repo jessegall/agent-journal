@@ -1,13 +1,13 @@
 from pathlib import Path
 
-from core.base.hosting.hosting import Hosting
-from core.base.hosting.host_probe import HostProbe
-from core.base.hosting.missing_cgroup_refusal import MissingCgroupRefusal
-from core.base.hosting.missing_systemd_refusal import MissingSystemdRefusal
-from core.base.hosting.unsupported_kernel_refusal import UnsupportedKernelRefusal
-from core.base.hosting.shared_user_refusal import SharedUserRefusal
-from core.base.hosting.writable_hosted_file_refusal import WritableHostedFileRefusal
-from core.base.hosting.wrong_socket_mode_refusal import WrongSocketModeRefusal
+from engine.hosting.hosting import Hosting
+from engine.hosting.host_probe import HostProbe
+from engine.hosting.missing_cgroup_refusal import MissingCgroupRefusal
+from engine.hosting.missing_systemd_refusal import MissingSystemdRefusal
+from engine.hosting.unsupported_kernel_refusal import UnsupportedKernelRefusal
+from engine.hosting.shared_user_refusal import SharedUserRefusal
+from engine.hosting.writable_hosted_file_refusal import WritableHostedFileRefusal
+from engine.hosting.wrong_socket_mode_refusal import WrongSocketModeRefusal
 
 LINUX_KERNEL = "Linux"
 SYSTEMD_FOLDER = Path("/run/systemd/system")

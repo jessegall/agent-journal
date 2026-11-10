@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import Any
 
 from engine.file.file_access import FileAccess
-from core.base.hosting.hosted_file_refusal import HostedFileRefusal
-from core.base.hosting.hosted_mode import HostedMode
-from core.base.hosting.hosting import Hosting
+from engine.hosting.hosted_file_refusal import HostedFileRefusal
+from engine.hosting.hosted_mode import HostedMode
+from engine.hosting.hosting import Hosting
 from engine.journal.journal_home import JournalHome
 
 HOSTED_FILE_PATH = Path("/etc/journal/hosted.toml")

@@ -27,7 +27,7 @@ from core.base.driver.hook_route import HookRoute
 from engine.command.script_policy import ScriptPolicy
 from engine.container.journal_container import synced_container
 from core.base.listener.commit_listener_runner import CommitListenerRunner
-from core.base.hosting.hosting import Hosting
+from engine.hosting.hosting import Hosting
 from engine.journal.journal_home import JournalHome
 from engine.model.model import Model
 from core.modules import DEFAULT_MODULES

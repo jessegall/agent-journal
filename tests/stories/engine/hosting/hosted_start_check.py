@@ -2,16 +2,16 @@ from pathlib import Path
 
 import pytest
 
-from core.base.hosting.hosted_mode import HostedMode
-from core.base.hosting.hosted_start_check import CGROUP_CONTROLLERS, HostedStartCheck, SYSTEMD_FOLDER
-from core.base.hosting.hosting import Hosting
-from core.base.hosting.missing_cgroup_refusal import MissingCgroupRefusal
-from core.base.hosting.missing_systemd_refusal import MissingSystemdRefusal
-from core.base.hosting.shared_user_refusal import SharedUserRefusal
-from core.base.hosting.unsupported_kernel_refusal import UnsupportedKernelRefusal
-from core.base.hosting.writable_hosted_file_refusal import WritableHostedFileRefusal
-from core.base.hosting.wrong_socket_mode_refusal import WrongSocketModeRefusal
-from tests.stories.core.base.hosting.support.fake_host import FakeHost
+from engine.hosting.hosted_mode import HostedMode
+from engine.hosting.hosted_start_check import CGROUP_CONTROLLERS, HostedStartCheck, SYSTEMD_FOLDER
+from engine.hosting.hosting import Hosting
+from engine.hosting.missing_cgroup_refusal import MissingCgroupRefusal
+from engine.hosting.missing_systemd_refusal import MissingSystemdRefusal
+from engine.hosting.shared_user_refusal import SharedUserRefusal
+from engine.hosting.unsupported_kernel_refusal import UnsupportedKernelRefusal
+from engine.hosting.writable_hosted_file_refusal import WritableHostedFileRefusal
+from engine.hosting.wrong_socket_mode_refusal import WrongSocketModeRefusal
+from tests.stories.engine.hosting.support.fake_host import FakeHost
 
 HOSTED_FILE = Path("/etc/journal/hosted.toml")
 VIEWER_SOCKET = Path("/run/journal/viewer.sock")

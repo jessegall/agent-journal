@@ -14,9 +14,9 @@ if __name__ == "__main__":
 
 from engine.time.clock import Clock
 from engine.container.container import Container
-from core.base.hosting.host_probe import HostProbe
-from core.base.hosting.hosted_file import HOSTED_FILE_PATH, HostedFile
-from core.base.hosting.hosted_start_check import HostedStartCheck
+from engine.hosting.host_probe import HostProbe
+from engine.hosting.hosted_file import HOSTED_FILE_PATH, HostedFile
+from engine.hosting.hosted_start_check import HostedStartCheck
 from engine.container.journal_container import opened_container, synced_database_container
 from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome

@@ -85,28 +85,28 @@
                 "file": "src/engine/guard/guard_refusal.py"
             },
             {
-                "file": "src/core/base/hosting/hosted_file_refusal.py"
+                "file": "src/engine/hosting/hosted_file_refusal.py"
             },
             {
-                "file": "src/core/base/hosting/local_journal_refusal.py"
+                "file": "src/engine/hosting/local_journal_refusal.py"
             },
             {
-                "file": "src/core/base/hosting/missing_cgroup_refusal.py"
+                "file": "src/engine/hosting/missing_cgroup_refusal.py"
             },
             {
-                "file": "src/core/base/hosting/missing_systemd_refusal.py"
+                "file": "src/engine/hosting/missing_systemd_refusal.py"
             },
             {
-                "file": "src/core/base/hosting/shared_user_refusal.py"
+                "file": "src/engine/hosting/shared_user_refusal.py"
             },
             {
-                "file": "src/core/base/hosting/unsupported_kernel_refusal.py"
+                "file": "src/engine/hosting/unsupported_kernel_refusal.py"
             },
             {
-                "file": "src/core/base/hosting/writable_hosted_file_refusal.py"
+                "file": "src/engine/hosting/writable_hosted_file_refusal.py"
             },
             {
-                "file": "src/core/base/hosting/wrong_socket_mode_refusal.py"
+                "file": "src/engine/hosting/wrong_socket_mode_refusal.py"
             },
             {
                 "file": "src/core/base/listener/commit_listener_error.py"
