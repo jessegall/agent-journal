@@ -1,7 +1,7 @@
 import re
 
-from core.base.seed.demo import Demo
-from core.base.seed.seeder import Seeder
+from engine.seed.demo import Demo
+from engine.seed.seeder import Seeder
 
 CODE_LINE = re.compile(r"^code: (\S+)$", re.MULTILINE)
 

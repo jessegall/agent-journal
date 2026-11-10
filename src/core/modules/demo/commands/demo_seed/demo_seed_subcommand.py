@@ -4,7 +4,7 @@ from engine.caller.caller import Caller
 from engine.enums.actor_type import ActorType
 from engine.container.container import Container
 from engine.errors.refusal import Refusal
-from core.base.seed.demo import Demo
+from engine.seed.demo import Demo
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.actors.queries.actor_query import ActorQuery
 from core.modules.demo.commands.support.demo_report import DemoReport

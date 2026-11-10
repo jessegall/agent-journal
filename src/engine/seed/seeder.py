@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, ClassVar
 
 if TYPE_CHECKING:
-    from core.base.seed.demo import Demo
+    from engine.seed.demo import Demo
 
 
 class Seeder:

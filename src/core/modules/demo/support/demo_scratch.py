@@ -9,8 +9,8 @@ from pathlib import Path
 from engine.file.code_copy import CodeCopy
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from core.base.seed.demo import DEMO_ENVIRONMENT
-from core.base.seed.demo_link import DemoLink
+from engine.seed.demo import DEMO_ENVIRONMENT
+from engine.seed.demo_link import DemoLink
 from engine.connection.unix_connection import UnixConnection
 from core.modules.demo.support.demo_session import DemoSession
 

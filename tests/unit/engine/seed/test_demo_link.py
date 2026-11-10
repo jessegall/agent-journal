@@ -1,4 +1,4 @@
-from core.base.seed.demo_link import DemoLink, FORBIDDEN_PORTS
+from engine.seed.demo_link import DemoLink, FORBIDDEN_PORTS
 
 
 def test_the_login_link_names_the_viewer_port_and_the_key():

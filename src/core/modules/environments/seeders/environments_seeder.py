@@ -1,6 +1,6 @@
 from engine.journal.journal_home import JournalHome
-from core.base.seed.demo import Demo
-from core.base.seed.seeder import Seeder
+from engine.seed.demo import Demo
+from engine.seed.seeder import Seeder
 
 
 class EnvironmentsSeeder(Seeder):

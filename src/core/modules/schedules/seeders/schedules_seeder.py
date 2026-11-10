@@ -1,6 +1,6 @@
 from engine.query.queries import Queries
-from core.base.seed.demo import Demo
-from core.base.seed.seeder import Seeder
+from engine.seed.demo import Demo
+from engine.seed.seeder import Seeder
 from core.modules.agents.models.agent import Agent
 from core.modules.schedules.commands.record_scheduled_job.record_scheduled_job import RecordScheduledJob
 

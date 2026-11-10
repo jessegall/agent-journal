@@ -8,7 +8,7 @@ from engine.caller.caller import Caller
 from core.base.cli.console import Console
 from core.base.command.bus import Bus
 from engine.container.container import Container
-from core.base.seed.demo_error import DemoError
+from engine.seed.demo_error import DemoError
 from engine.types.type_guards import is_mapping
 
 DEMO_ENVIRONMENT = "demo"

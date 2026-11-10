@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.seed.seeder import Seeder
+from engine.seed.seeder import Seeder
 
 
 @dataclass(frozen=True)

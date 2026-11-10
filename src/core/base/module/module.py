@@ -30,7 +30,7 @@ from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_extension import WindowExtension
 from core.base.subcommand.subcommand import Subcommand
-from core.base.seed.seeder import Seeder
+from engine.seed.seeder import Seeder
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.library.library_share_class import LibraryShareClass
 from engine.query.shared_rows import SharedRows

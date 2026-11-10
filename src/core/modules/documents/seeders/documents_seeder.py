@@ -1,5 +1,5 @@
-from core.base.seed.demo import Demo
-from core.base.seed.seeder import Seeder
+from engine.seed.demo import Demo
+from engine.seed.seeder import Seeder
 
 CART_RULES = "The cart keeps every amount in cents, as task 1 asks.\\n## Totals\\n- in cents\\n- rounded once, at the end\\n## Shipping\\nPriced by weight."
 

@@ -3,7 +3,7 @@ import re
 import signal
 import time
 
-from core.base.seed.demo_link import DemoLink
+from engine.seed.demo_link import DemoLink
 from core.modules.demo.support.demo_scratch import DemoScratch
 
 

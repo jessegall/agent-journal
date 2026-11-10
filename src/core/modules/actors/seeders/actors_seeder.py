@@ -1,7 +1,7 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.seed.demo import Demo
-from core.base.seed.seeder import Seeder
+from engine.seed.demo import Demo
+from engine.seed.seeder import Seeder
 
 
 class ActorsSeeder(Seeder):
