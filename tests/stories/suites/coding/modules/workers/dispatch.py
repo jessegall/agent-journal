@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
@@ -14,7 +15,7 @@ def test_a_dispatch_cuts_the_worktree_from_the_environments_branch_while_the_che
     repository = repository_environment(story)
     base_commit = repository.tip(ENVIRONMENT_BRANCH)
     worker_id = dispatched_worker(story).id
-    story.expect_success(f"agent show {worker_id}", "role: worker", f"parent_id: {story.agent.id}")
+    story.expect_success(f"agent show {agent_number(story, worker_id)}", "role: worker", f"parent_id: {story.agent.id}")
     story.expect_success("worker-worktree show 1", "state: cut", f"session_agent_id: {worker_id}", "task_id: 1", f"folder: {repository.worktree_folder(worker_id)}",
                          f"branch: {repository.worker_branch(worker_id)}", f"base_branch: {ENVIRONMENT_BRANCH}", f"base_commit: {base_commit}")
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker_id}")
@@ -84,5 +85,5 @@ def test_a_persons_dispatch_with_a_program_uses_the_tasks_environment(new_story)
     repository_environment(story)
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     worker_id = story.new_row_id(f"{DISPATCH} --program claude", actor=person)
-    story.expect_text(f"agent show {worker_id}", "environment_id: 1", "role: worker")
+    story.expect_text(f"agent show {agent_number(story, worker_id)}", "environment_id: 1", "role: worker")
     story.expect_text("task show 1", f"holder_id: {worker_id}", "state: started")

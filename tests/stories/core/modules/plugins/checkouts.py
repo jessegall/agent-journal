@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 import json
@@ -47,7 +48,7 @@ def test_s49_an_edit_under_a_linked_library_is_linked_and_stays_with_the_worktre
 
 def edited_release(new_story):
     story = checkout_story(new_story)
-    story.expect_success(f'worker release {story.worker.id} "{RELEASE_REASON}"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, story.worker.id)} "{RELEASE_REASON}"', actor=story.agent)
     scanned_edit(story, story.worker_session, ORDER, folder=story.worktree)
     return story
 
@@ -59,8 +60,8 @@ def test_s50_from_base_reads_from_the_merged_branch(new_story):
     story.expect_success(DELIVERY, actor=story.worker)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
     story.repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {story.worker.id}", actor=story.agent)
-    story.expect_success(f"worker merge --wait {story.worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, story.worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, story.worker.id)}", actor=story.agent)
     story.expect_text(f"plugin file {ORDER} --agent {story.worker.id} --from base", CHANGED_ORDER_TEXT.strip(), actor=story.user)
 
 

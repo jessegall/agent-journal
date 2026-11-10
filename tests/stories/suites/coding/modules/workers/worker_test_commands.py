@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import subprocess
 
 import pytest
@@ -103,12 +104,12 @@ def test_dispatch_with_no_test_command_is_refused(task_story):
 
 
 def test_a_send_of_new_work_may_name_the_commands(worker_without_commands):
-    worker_without_commands.story.expect_success(f"worker send --wait {worker_without_commands.worker.id} --task 2 {PYTHON}", actor=worker_without_commands.story.agent)
+    worker_without_commands.story.expect_success(f"worker send --wait {agent_number(worker_without_commands.story, worker_without_commands.worker.id)} --task 2 {PYTHON}", actor=worker_without_commands.story.agent)
     worker_without_commands.story.expect_text(PYTHON_RUN, "output", actor=worker_without_commands.worker)
 
 
 def test_a_later_send_replaces_a_name_and_keeps_the_others(worker_with_commands):
-    worker_with_commands.story.expect_success(f'worker send --wait {worker_with_commands.worker.id} "go on" --test-command python=py.test', actor=worker_with_commands.story.agent)
+    worker_with_commands.story.expect_success(f'worker send --wait {agent_number(worker_with_commands.story, worker_with_commands.worker.id)} "go on" --test-command python=py.test', actor=worker_with_commands.story.agent)
     worker_with_commands.story.expect_success(PYTHON_RUN, actor=worker_with_commands.worker)
     worker_with_commands.story.expect_success("worker test vite src/cart.test.js", actor=worker_with_commands.worker)
     expect_value(started_lines(worker_with_commands), ["py.test tests/cart.py", "npx vitest run src/cart.test.js"])

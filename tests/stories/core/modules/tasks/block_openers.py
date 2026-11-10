@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.modules.tasks.task_waits import TwoTasks, posted
 
@@ -14,7 +15,7 @@ def test_a_task_waiting_for_a_helper_opens_when_its_report_arrives(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
     task = story.new_row_id('task make "Read the report" --environment main', actor=story.agent)
-    story.expect_success(f'task block {task} --on helper:{helper.id}', 'state: blocked', actor=story.agent)
+    story.expect_success(f'task block {task} --on helper:{agent_number(story, helper.id)}', 'state: blocked', actor=story.agent)
     story.expect_text(f'task inspect {task} --json', f'helper {helper.id} reports')
     story.expect_success(f'agent end {helper.id}', actor=story.user)
     story.run_listeners()

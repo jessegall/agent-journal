@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from engine.actor.actor import Actor
@@ -129,8 +130,8 @@ def test_a_delivered_phase_that_passes_gives_the_main_agent_one_line_and_the_mer
     lines = delivered_phase.main_agent_lines()
     delivered_phase.story.expect_rows(len(lines) == 1 and f"the tests of worker:{delivered_phase.worker.id} all pass" in lines[0])
     delivered_phase.repository.checkout(ENVIRONMENT_BRANCH)
-    delivered_phase.story.expect_success(f"worker logs {delivered_phase.worker.id}", actor=delivered_phase.story.agent)
-    delivered_phase.story.expect_success(f"worker merge --wait {delivered_phase.worker.id}", actor=delivered_phase.story.agent)
+    delivered_phase.story.expect_success(f"worker logs {agent_number(delivered_phase.story, delivered_phase.worker.id)}", actor=delivered_phase.story.agent)
+    delivered_phase.story.expect_success(f"worker merge --wait {agent_number(delivered_phase.story, delivered_phase.worker.id)}", actor=delivered_phase.story.agent)
     delivered_phase.repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
 
 

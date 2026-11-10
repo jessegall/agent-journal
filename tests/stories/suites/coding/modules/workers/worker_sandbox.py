@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import shlex
 
 from engine.actor.actor import Actor
@@ -31,21 +32,21 @@ def test_the_project_setting_off_runs_a_workers_lines_without_the_sandbox(new_st
     story.run("task overview 1", actor=worker)
     expect_rewritten(story.hook(session, READ), runner_line(story, 1, "cat cart.py", session=session, read_command=True))
     story.expect_text("process show 1", "sandbox_level: none")
-    story.expect_text(f"usage agents --agent {worker.id} --json", '"sandbox_off": true', actor=story.agent)
+    story.expect_text(f"usage agents --agent {agent_number(story, worker.id)} --json", '"sandbox_off": true', actor=story.agent)
 
 
 def test_a_worker_switched_back_on_runs_in_the_sandbox_again(new_story):
     story = sandboxed_story(new_story)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
-    story.expect_success(f"worker sandbox {worker.id} off", actor=story.agent)
-    story.expect_success(f"worker sandbox {worker.id} on", actor=story.user)
+    story.expect_success(f"worker sandbox {agent_number(story, worker.id)} off", actor=story.agent)
+    story.expect_success(f"worker sandbox {agent_number(story, worker.id)} on", actor=story.user)
     session = worker_session(story, worker)
     story.run("task overview 1", actor=worker)
     expected = runner_line(story, 1, "cat cart.py", session=session, read_command=True, sandbox=True)
     expected = expected.replace(" --read-only-shell", f" --read-only-shell --write-folder {shlex.quote(str(repository.worktree_folder(worker.id)))}")
     expect_rewritten(story.hook(session, READ), expected)
-    story.expect_text(f"usage agents --agent {worker.id} --json", '"sandbox_off": false', actor=story.agent)
+    story.expect_text(f"usage agents --agent {agent_number(story, worker.id)} --json", '"sandbox_off": false', actor=story.agent)
 
 
 def test_a_worker_switched_on_stays_in_the_sandbox_while_the_project_setting_is_off(new_story):
@@ -53,8 +54,8 @@ def test_a_worker_switched_on_stays_in_the_sandbox_while_the_project_setting_is_
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success(f"setting set {SANDBOX_SETTING} off --project", actor=story.user)
-    story.expect_success(f"worker sandbox {worker.id} on", actor=story.agent)
-    story.expect_text(f"usage agents --agent {worker.id} --json", '"sandbox_off": false', actor=story.agent)
+    story.expect_success(f"worker sandbox {agent_number(story, worker.id)} on", actor=story.agent)
+    story.expect_text(f"usage agents --agent {agent_number(story, worker.id)} --json", '"sandbox_off": false', actor=story.agent)
 
 
 def test_the_worker_itself_and_a_helper_cannot_switch_the_sandbox(new_story):
@@ -62,21 +63,21 @@ def test_the_worker_itself_and_a_helper_cannot_switch_the_sandbox(new_story):
     repository_environment(story)
     worker = dispatched_worker(story)
     helper = Actor(story.new_row_id(f"agent start helper-1 claude helper --parent {worker.id} --environment main"), ActorType.AGENT)
-    story.expect_refusal(f"worker sandbox {worker.id} off", "cannot switch a worker's sandbox", actor=worker)
-    story.expect_refusal(f"worker sandbox {worker.id} off", "cannot switch a worker's sandbox", actor=helper)
-    story.expect_text(f"usage agents --agent {worker.id} --json", '"sandbox_off": false', actor=story.agent)
+    story.expect_refusal(f"worker sandbox {agent_number(story, worker.id)} off", "cannot switch a worker's sandbox", actor=worker)
+    story.expect_refusal(f"worker sandbox {agent_number(story, worker.id)} off", "cannot switch a worker's sandbox", actor=helper)
+    story.expect_text(f"usage agents --agent {agent_number(story, worker.id)} --json", '"sandbox_off": false', actor=story.agent)
 
 
 def test_a_dispatch_with_no_sandbox_starts_the_worker_switched_off(new_story):
     story = sandboxed_story(new_story)
     repository_environment(story)
     worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet --no-sandbox 1")
-    story.expect_text(f"usage agents --agent {worker.id} --json", '"sandbox_off": true', actor=story.agent)
+    story.expect_text(f"usage agents --agent {agent_number(story, worker.id)} --json", '"sandbox_off": true', actor=story.agent)
 
 
 def test_a_send_with_no_sandbox_switches_a_kept_worker_off(new_story):
     story = sandboxed_story(new_story)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.expect_success(f'worker send {worker.id} "Check the totals too" --wait --no-sandbox', actor=story.agent)
-    story.expect_text(f"usage agents --agent {worker.id} --json", '"sandbox_off": true', actor=story.agent)
+    story.expect_success(f'worker send {agent_number(story, worker.id)} "Check the totals too" --wait --no-sandbox', actor=story.agent)
+    story.expect_text(f"usage agents --agent {agent_number(story, worker.id)} --json", '"sandbox_off": true', actor=story.agent)

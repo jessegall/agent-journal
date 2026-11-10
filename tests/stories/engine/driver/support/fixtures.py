@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support import story_lines as lines
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
@@ -27,7 +28,7 @@ class LeadStarted(StoryFixture):
         story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
 
     def expect(self, story: Story) -> None:
-        story.expect_success(f"agent show {story.agent.id}", "session: s-1")
+        story.expect_success(f"agent show {agent_number(story, story.agent.id)}", "session: s-1")
 
 
 class LeadLocked(StoryFixture):

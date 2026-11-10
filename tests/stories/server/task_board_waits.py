@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
@@ -12,7 +13,7 @@ def test_the_board_reports_which_blocked_tasks_open_automatically(new_story):
     story.expect_success('plan make "Plan" --environment main', actor=story.agent)
     story.expect_success('question ask "Which colour?" --context "Choose one" --options "Red" "Blue"', actor=story.agent)
     blocks = ['--reason "Needs attention"', '--until-user --reason "Needs a person"', '--on task:1',
-              '--on question:1', '--on plan:1', f'--on worker:{worker.id}', "--until 'false'", '--until-user --reason "Needs a person" --on task:1']
+              '--on question:1', '--on plan:1', f'--on worker:{agent_number(story, worker.id)}', "--until 'false'", '--until-user --reason "Needs a person" --on task:1']
     tasks = []
     for index, block in enumerate(blocks):
         task = story.new_row_id(f'task make "Wait {index}" --environment main', actor=story.agent)

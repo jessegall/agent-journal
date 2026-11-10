@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from datetime import timedelta
@@ -26,7 +27,7 @@ def test_a_claude_agents_transcript_is_read_from_its_session_file(new_story, tmp
                                                                  {"type": "summary", "summary": "skipped"}]) + "\n")
     story = new_story(fixture=ClaudeTranscriptAgent)
     agent_id = story.agent.id
-    story.expect_success(f"agent transcript {agent_id}", "1  user  user  Fix the cart total", "2  assistant  assistant  The total is in cents now")
+    story.expect_success(f"agent transcript {agent_number(story, agent_id)}", "1  user  user  Fix the cart total", "2  assistant  assistant  The total is in cents now")
 
 
 def test_a_workers_transcript_is_found_under_its_worktrees_folder(new_story, tmp_path, monkeypatch):
@@ -36,7 +37,7 @@ def test_a_workers_transcript_is_found_under_its_worktrees_folder(new_story, tmp
     transcript.write_text(json.dumps({"type": "user", "message": {"content": "Fix the cart total"}}) + "\n")
     story = new_story(fixture=ClaudeTranscriptAgent)
     agent_id = story.agent.id
-    story.expect_success(f"agent transcript {agent_id}", "1  user  user  Fix the cart total")
+    story.expect_success(f"agent transcript {agent_number(story, agent_id)}", "1  user  user  Fix the cart total")
 
 
 def test_a_user_row_from_the_journal_or_a_monitor_carries_its_own_tag(new_story, tmp_path, monkeypatch):
@@ -46,7 +47,7 @@ def test_a_user_row_from_the_journal_or_a_monitor_carries_its_own_tag(new_story,
     transcript.write_text("\n".join(json.dumps({"type": "user", "message": {"content": text}}) for text in ["Stop hook feedback: carry on", "<task-notification>ended</task-notification>", "Fix it"]) + "\n")
     story = new_story(fixture=ClaudeTranscriptAgent)
     agent_id = story.agent.id
-    story.expect_success(f"agent transcript {agent_id}", "1  journal  user  Stop hook feedback: carry on", "2  monitor  user  <task-notification>ended</task-notification>", "3  user  user  Fix it")
+    story.expect_success(f"agent transcript {agent_number(story, agent_id)}", "1  journal  user  Stop hook feedback: carry on", "2  monitor  user  <task-notification>ended</task-notification>", "3  user  user  Fix it")
 
 
 def test_a_codex_agents_transcript_is_read_from_its_rollout(new_story, tmp_path, monkeypatch):
@@ -56,14 +57,14 @@ def test_a_codex_agents_transcript_is_read_from_its_rollout(new_story, tmp_path,
     rollout.write_text(json.dumps({"type": "response_item", "payload": {"role": "user", "content": [{"type": "input_text", "text": "Write the tests"}]}}) + "\n")
     story = new_story(fixture=MainEnvironment)
     agent_id = story.new_row_id("agent start t-1 codex main --environment main")
-    story.expect_success(f"agent transcript {agent_id}", "1  user  user  Write the tests")
+    story.expect_success(f"agent transcript {agent_number(story, agent_id)}", "1  user  user  Write the tests")
 
 
 def test_an_agent_with_no_transcript_yet_shows_nothing_found(new_story, tmp_path, monkeypatch):
     monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "claude"))
     story = new_story(fixture=ClaudeTranscriptAgent)
     agent_id = story.agent.id
-    story.expect_success(f"agent transcript {agent_id}", "nothing found")
+    story.expect_success(f"agent transcript {agent_number(story, agent_id)}", "nothing found")
 
 
 def user_lines(*numbers):
@@ -82,18 +83,18 @@ def test_a_transcripts_pages_and_total_stay_right_when_the_file_grows(new_story,
     transcript.write_text(user_lines(1, 2, 3))
     story = new_story(fixture=ClaudeTranscriptAgent)
     agent_id = story.agent.id
-    story.expect_success(f"agent transcript {agent_id} --limit 2", "2  user  user  line 2", "3  user  user  line 3", "page 1, 2 of 3 rows: --page 2 for the next")
+    story.expect_success(f"agent transcript {agent_number(story, agent_id)} --limit 2", "2  user  user  line 2", "3  user  user  line 3", "page 1, 2 of 3 rows: --page 2 for the next")
     with transcript.open("a") as grown:
         grown.write(user_lines(4, 5))
-    story.expect_success(f"agent transcript {agent_id} --limit 2", "4  user  user  line 4", "5  user  user  line 5", "page 1, 2 of 5 rows: --page 2 for the next")
-    story.expect_success(f"agent transcript {agent_id} --limit 2 --page 3", "1  user  user  line 1")
-    story.expect_absent(f"agent transcript {agent_id} --limit 2 --page 3", "2  user  user  line 2", "page 3, 1 of 5 rows: --page 4 for the next")
+    story.expect_success(f"agent transcript {agent_number(story, agent_id)} --limit 2", "4  user  user  line 4", "5  user  user  line 5", "page 1, 2 of 5 rows: --page 2 for the next")
+    story.expect_success(f"agent transcript {agent_number(story, agent_id)} --limit 2 --page 3", "1  user  user  line 1")
+    story.expect_absent(f"agent transcript {agent_number(story, agent_id)} --limit 2 --page 3", "2  user  user  line 2", "page 3, 1 of 5 rows: --page 4 for the next")
 
 
 def test_a_line_still_being_written_is_read_once_it_ends(partial_transcript):
     transcript, complete_line, story, agent_id = partial_transcript
     transcript.write_text(user_lines(1) + complete_line)
-    story.expect_success(f"agent transcript {agent_id}", "1  user  user  line 1", "2  user  user  line 2")
+    story.expect_success(f"agent transcript {agent_number(story, agent_id)}", "1  user  user  line 1", "2  user  user  line 2")
 
 
 def reply_rows(first, last):
@@ -149,5 +150,5 @@ def partial_transcript(new_story, tmp_path, monkeypatch):
     transcript.write_text(user_lines(1) + complete_line[:10])
     story = new_story(fixture=ClaudeTranscriptAgent)
     agent_id = story.agent.id
-    story.expect_success(f"agent transcript {agent_id}", "1  user  user  line 1")
+    story.expect_success(f"agent transcript {agent_number(story, agent_id)}", "1  user  user  line 1")
     return transcript, complete_line, story, agent_id

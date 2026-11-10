@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 from datetime import timedelta
 
@@ -14,7 +15,7 @@ def test_a_second_dispatch_shows_only_its_worktree_totals_and_keeps_its_pace_on_
     repository = repository_environment(story)
     first = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker merge --wait {first.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, first.id)}", actor=story.agent)
     story.advance(timedelta(hours=2))
     for title in ("Add tax", "Add receipt"):
         story.run(f'task make "{title}" --environment main', actor=story.agent)

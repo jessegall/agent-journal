@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
@@ -12,7 +13,7 @@ def test_a_worker_with_a_started_and_a_blocked_task_shows_its_current_task(new_s
     worker = dispatched_worker(story)
     story.expect_success('actor make user "Ada"')
     task = story.new_row_id('task make "Blocked follow-up" --environment main', actor=story.agent)
-    story.expect_success(f"task assign {task} --to {worker.id}", actor=story.agent)
+    story.expect_success(f"task assign {task} --to {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_success(f"task block {task} --on task:1", actor=story.agent)
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))

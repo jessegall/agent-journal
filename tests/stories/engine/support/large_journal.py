@@ -66,7 +66,7 @@ SEED_LINES = (
 )
 
 PERSON_SEED_LINES = (
-    'message send "Please fix the cart" --to agent:{agent}',
+    'message send "Please fix the cart" --to agent:{agent_number(story, agent)}',
     'rule make "Count in cents"',
 )
 

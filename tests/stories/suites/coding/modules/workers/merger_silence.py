@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from dataclasses import dataclass
 
 import pytest
@@ -38,7 +39,7 @@ class WorkerWithMerger:
 
     def return_merge(self, count: int) -> None:
         for _ in range(count):
-            self.story.expect_success(f'merger findings {self.worker.id} "The tax is added twice"', actor=self.actor)
+            self.story.expect_success(f'merger findings {agent_number(self.story, self.worker.id)} "The tax is added twice"', actor=self.actor)
         self.story.run_listeners()
 
 

@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import CORE_ACTOR_ID
 from engine.caller.caller_request import CallerRequest
 from engine.cli.console import REFUSED_CODE, USAGE_CODE
@@ -69,7 +70,7 @@ def test_an_ended_agent_preserves_its_process_identity_but_a_command_from_it_nam
     story, agent_id = agent_with_pid(new_story)
     story.use_processes(ProcessRow(900, 700, REUSED_START_TIME), ProcessRow(700, 1, AGENT_START_TIME))
     story.run(f"agent end {agent_id}")
-    story.expect_text(f"agent show {agent_id}", "pid: 700", f"process_started_at: {AGENT_START_TIME.text}")
+    story.expect_text(f"agent show {agent_number(story, agent_id)}", "pid: 700", f"process_started_at: {AGENT_START_TIME.text}")
     story.expect_requested_success(f"{TASK_LINE} --environment main", CallerRequest(pid=900), f"creator_id: {CORE_ACTOR_ID}")
 
 
@@ -83,4 +84,4 @@ def test_a_pid_given_without_its_start_gets_the_start_the_process_table_reads(ne
     story = new_story(fixture=MainEnvironment)
     story.use_processes(ProcessRow(700, 1, AGENT_START_TIME))
     agent_id = story.new_row_id("agent start s-8 claude main --pid 700 --environment main")
-    story.expect_success(f"agent show {agent_id}", "pid: 700", f"process_started_at: {AGENT_START_TIME.text}")
+    story.expect_success(f"agent show {agent_number(story, agent_id)}", "pid: 700", f"process_started_at: {AGENT_START_TIME.text}")

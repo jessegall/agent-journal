@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 from datetime import timedelta
 
@@ -40,7 +41,7 @@ def test_split_passes_over_a_program_not_trusted(helper_split_story, tmp_path, m
     real_program_checks(story)
     story.container.get(HelperPrograms).checked("claude", tmp_path / "helper-project")
     helper_id, _ = started(story)
-    story.expect_text(f'agent show {helper_id}', 'program: claude')
+    story.expect_text(f'agent show {agent_number(story, helper_id)}', 'program: claude')
 
 
 def test_a_named_program_whose_hooks_are_not_trusted_has_them_written_and_trusted(helper_split_story, tmp_path, monkeypatch):
@@ -87,7 +88,7 @@ def test_helper_goes_by_the_split(helper_split_story, helper_viewer):
     story = helper_split_story
     set_split(story, 'claude 0,codex 100', viewer=helper_viewer)
     helper_id, _ = started(story)
-    story.expect_text(f'agent show {helper_id}', 'program: codex', 'program_model: gpt-6.1-terra')
+    story.expect_text(f'agent show {agent_number(story, helper_id)}', 'program: codex', 'program_model: gpt-6.1-terra')
     answer = story.run('worker split --json --environment main')
     story.expect_rows(answer.code == 0, detail=answer.output_text)
     rows = json.loads(answer.output_text)['rows']
@@ -100,7 +101,7 @@ def test_helper_goes_by_the_split_reuse_still_goes_first(new_story):
     helper_id = helper_agent(story).id
     set_split(story, 'codex 100,claude 0')
     FakeLauncher.listening(story.home.socket('launcher'))
-    story.expect_refusal(FILE_START, f'journal helper send {helper_id}', actor=story.agent)
+    story.expect_refusal(FILE_START, f'journal helper send {agent_number(story, helper_id)}', actor=story.agent)
 
 
 def test_helper_goes_by_the_split_named_out_program_is_started_with_warning(helper_split_story):

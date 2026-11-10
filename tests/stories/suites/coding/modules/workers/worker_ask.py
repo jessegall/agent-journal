@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 from dataclasses import dataclass
 
@@ -70,7 +71,7 @@ class AskingWorker:
         self.story.hook(self.session(), READ_OF_A_FILE)
 
     def program_ended(self) -> None:
-        self.story.expect_success(f"agent edit {self.worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+        self.story.expect_success(f"agent edit {agent_number(self.story, self.worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
         self.story.use_processes()
         self.story.tick("s-1")
 
@@ -203,7 +204,7 @@ def test_with_the_merger_off_an_ask_reaches_the_main_agent_and_the_worker_may_st
 
 def test_a_job_sent_to_a_worker_that_asked_gets_through(open_question):
     open_question.story.expect_hook_allowed(open_question.session(), HookSamples.stop())
-    open_question.story.expect_success(f'worker send {open_question.worker.id} "Use clang" --wait', actor=open_question.story.agent)
+    open_question.story.expect_success(f'worker send {agent_number(open_question.story, open_question.worker.id)} "Use clang" --wait', actor=open_question.story.agent)
 
 
 def test_the_main_agent_cannot_ask(asking):
@@ -222,6 +223,6 @@ def test_a_helper_cannot_ask(asking):
 
 
 def test_a_worker_with_no_task_cannot_ask(asking):
-    asking.story.expect_success(f'worker release {asking.worker.id} "not needed"', actor=asking.story.agent)
+    asking.story.expect_success(f'worker release {agent_number(asking.story, asking.worker.id)} "not needed"', actor=asking.story.agent)
     asking.story.expect_refusal(f'worker ask "{QUESTION}"', "no task", actor=asking.worker)
     asking.story.expect_rows(asking.merger_lines() == ())

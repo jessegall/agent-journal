@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 
 from engine.actor.actor import Actor
@@ -19,7 +20,7 @@ NUMBER_REFUSAL = "the number of an agent cannot be changed"
 
 
 def shown(story: Story, agent_id: int, actor: Actor | None = None) -> dict:
-    return json.loads(story.run(f"agent show {agent_id} --json", actor=actor or story.user).output_text)
+    return json.loads(story.run(f"agent show {agent_number(story, agent_id)} --json", actor=actor or story.user).output_text)
 
 
 def test_a_main_agent_reads_a_workers_report_by_the_workers_number_not_its_row_id(new_story):
@@ -36,8 +37,8 @@ def test_an_earlier_main_session_reads_as_earlier_and_only_the_current_main_read
     ended_id = story.new_row_id("agent start s-1 claude main --environment main")
     story.expect_success(f"agent end {ended_id}", actor=story.user)
     current_id = story.new_row_id("agent start s-2 claude main --environment main")
-    story.expect_text(f"agent show {ended_id}", f"display_name: {ENDED_MAIN_TITLE}", actor=story.user)
-    story.expect_text(f"agent show {current_id}", f"display_name: {MAIN_TITLE}", actor=story.user)
+    story.expect_text(f"agent show {agent_number(story, ended_id)}", f"display_name: {ENDED_MAIN_TITLE}", actor=story.user)
+    story.expect_text(f"agent show {agent_number(story, current_id)}", f"display_name: {MAIN_TITLE}", actor=story.user)
     rows = listed(story)
     story.expect_rows(rows[ended_id]["display_name"] == ENDED_MAIN_TITLE, rows[current_id]["display_name"] == MAIN_TITLE,
                       [row["display_name"] for row in rows.values()].count(MAIN_TITLE) == 1)
@@ -53,16 +54,16 @@ def test_agent_show_json_keeps_the_row_id_under_id_and_gives_the_number_beside_i
 def test_a_person_editing_an_agents_number_is_refused_and_nothing_changes(new_story):
     story = new_story(fixture=UserBuilder)
     worker_id = started_worker(story, "s-9", "main", story.agent.id)
-    story.expect_refusal(f"agent edit {worker_id} --number 9", NUMBER_REFUSAL, actor=story.user)
-    story.expect_refusal(f"agent edit {story.agent.id} --number 9", NUMBER_REFUSAL, actor=story.user)
+    story.expect_refusal(f"agent edit {agent_number(story, worker_id)} --number 9", NUMBER_REFUSAL, actor=story.user)
+    story.expect_refusal(f"agent edit {agent_number(story, story.agent.id)} --number 9", NUMBER_REFUSAL, actor=story.user)
     story.expect_rows(shown(story, worker_id)["number"] == 2, shown(story, story.agent.id)["number"] == 1)
 
 
 def test_an_agent_changing_its_own_number_is_refused_and_nothing_is_written(new_story):
     story = new_story(fixture=UserBuilder)
     worker = Actor(started_worker(story, "s-9", "main", story.agent.id), ActorType.AGENT)
-    story.expect_refusal(f"agent edit {worker.id} --number 1", NUMBER_REFUSAL, actor=worker)
-    story.expect_refusal(f"agent edit {story.agent.id} --number 9", NUMBER_REFUSAL, actor=story.agent)
+    story.expect_refusal(f"agent edit {agent_number(story, worker.id)} --number 1", NUMBER_REFUSAL, actor=worker)
+    story.expect_refusal(f"agent edit {agent_number(story, story.agent.id)} --number 9", NUMBER_REFUSAL, actor=story.agent)
     story.expect_rows(shown(story, worker.id)["number"] == 2, shown(story, story.agent.id)["number"] == 1)
 
 

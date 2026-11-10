@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.queries.task_query import TaskQuery
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
@@ -17,7 +18,7 @@ def test_releasing_the_first_worker_leaves_the_second_workers_started_task_uncha
     expect_row(task, holder_id=second_worker.id)
     expect_row(task, delegated_to=second_worker.id)
 
-    story.expect_success(f'worker release {first_worker.id} "old worker stopped"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, first_worker.id)} "old worker stopped"', actor=story.agent)
 
     expect_tasks(tasks, 1, task)
     story.expect_success("worker-worktree show 1", "state: removed")

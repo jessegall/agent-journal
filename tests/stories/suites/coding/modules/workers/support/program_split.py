@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 import shutil
 from contextlib import contextmanager, nullcontext
@@ -63,7 +64,7 @@ def dispatch(story, tasks='1', flags='', actor=None):
 
 
 def expect_program(story, worker, program, model=''):
-    story.expect_text(f'agent show {worker.id}', f'program: {program}', *([f'program_model: {model}'] if model else []))
+    story.expect_text(f'agent show {agent_number(story, worker.id)}', f'program: {program}', *([f'program_model: {model}'] if model else []))
 
 
 def new_task(story, title, flags=''):

@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.modules.plans.support.started_plans import ThreeStartedPlans
 from tests.stories.suites.coding.support.hand_outs import next_task_id, outside_task
 
@@ -20,7 +21,7 @@ def test_b3_a_reserved_task_of_the_focus_is_taken_at_the_focus_and_a_reserved_ta
     story = new_story(fixture=ThreeStartedPlans)
     later = outside_task(story, "Later job")
     for task_id in (later, 6):
-        story.expect_success(f"task assign {task_id} --to {story.agent.id}", actor=story.agent)
+        story.expect_success(f"task assign {task_id} --to {agent_number(story, story.agent.id)}", actor=story.agent)
     story.run("task edit 6 --priority high", actor=story.user)
     story.run("plan focus 3", actor=story.agent)
     story.expect_rows(next_task_id(story) == 6, next_task_id(story, 6) == 5)
@@ -51,7 +52,7 @@ def test_b15_closing_a_task_of_another_plan_starts_the_next_task_of_the_focus(ne
 def test_b16_a_task_that_waits_on_a_task_the_same_agent_has_started_is_not_kept_back(new_story):
     story = new_story(fixture=ThreeStartedPlans)
     for task_id in (1, 2):
-        story.expect_success(f"task assign {task_id} --to {story.agent.id}", actor=story.agent)
+        story.expect_success(f"task assign {task_id} --to {agent_number(story, story.agent.id)}", actor=story.agent)
     story.run("task depend 2 --on 1", actor=story.user)
     story.expect_success("task start 1", actor=story.agent)
     story.expect_rows(next_task_id(story) == 2)

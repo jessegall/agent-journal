@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import shlex
 from pathlib import Path
 
@@ -73,12 +74,12 @@ def delivered_worker(story: Story, repository: GitRepository, line: str = DISPAT
 def checked_worker(story: Story, repository: GitRepository, line: str = DISPATCH) -> Actor:
     worker = delivered_worker(story, repository, line)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     return worker
 
 
 def worker_session(story: Story, worker: Actor) -> str:
-    details = story.run(f"agent show {worker.id}").output_text.splitlines()
+    details = story.run(f"agent show {agent_number(story, worker.id)}").output_text.splitlines()
     return next(line for line in details if line.startswith("session: ")).removeprefix("session: ")
 
 

@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 
 import pytest
@@ -118,7 +119,7 @@ def test_complexity_out_of_range_is_refused_valid_scores_round_trip_on_cards(tag
 def test_read_only_planner_tags_and_scores(tag_story):
     story = tag_story
     helper_id, _ = started(story, 'helper start journal-planner --brief "Plan the network queue" --environment main')
-    details = story.run(f'agent show {helper_id}').output_text
+    details = story.run(f'agent show {agent_number(story, helper_id)}').output_text
     session = next(line.removeprefix('session: ') for line in details.splitlines() if line.startswith('session: '))
     arguments = ['task', 'make', 'Queue', '--complexity', '3', '--tag', 'networking', '--confirm', '--environment', 'main']
     story.expect_hook_allowed(session, HookSamples.shell('journal task make Queue --complexity 3 --tag networking --confirm --environment main', ShellPart('journal', CommandCategory.JOURNAL, arguments, subcommand='task')))

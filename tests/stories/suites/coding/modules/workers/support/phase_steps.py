@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 import shlex
 from dataclasses import dataclass, replace
@@ -141,7 +142,7 @@ class StoryWorker:
 
     def program_ended(self) -> None:
         self.story.advance(timedelta(minutes=5))
-        self.story.run(f"agent edit {self.worker.id} --pid 700 --process-started-at 2026-10-31T09:00:00+00:00")
+        self.story.run(f"agent edit {agent_number(self.story, self.worker.id)} --pid 700 --process-started-at 2026-10-31T09:00:00+00:00")
         self.story.use_processes()
         self.story.tick("s-1")
 

@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support import story_lines as lines
 from engine.testing.stories.story import Story
@@ -32,7 +33,7 @@ class CodexBuilderStarted(StoryFixture):
         story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start().with_fields(program="codex")))
 
     def expect(self, story: Story) -> None:
-        story.expect_success(f"agent show {story.agent.id}", "session: s-1", "role: main")
+        story.expect_success(f"agent show {agent_number(story, story.agent.id)}", "session: s-1", "role: main")
 
 
 def test_asking_opens_a_wait_whose_one_target_is_the_question(new_story):

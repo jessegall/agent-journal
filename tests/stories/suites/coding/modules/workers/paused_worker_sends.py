@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from engine.query.queries import Queries
@@ -16,7 +17,7 @@ def paused_worker(new_story, monkeypatch):
     repository_environment(story)
     monkeypatch.setattr(QueuedProcessLaunch, "start", lambda *_args: None)
     story.worker = dispatched_worker(story)
-    story.expect_success(f"agent pause {story.worker.id}", actor=story.agent)
+    story.expect_success(f"agent pause {agent_number(story, story.worker.id)}", actor=story.agent)
     return story
 
 
@@ -28,8 +29,8 @@ def test_an_unblocked_task_of_a_paused_worker_tells_its_main_agent_the_worker_is
     story = paused_worker
     task = story.new_row_id('task make "Later work" --environment main', actor=story.agent)
     story.expect_success(f'task block {task} --reason "Waits on the design"', actor=story.agent)
-    story.expect_success(f"worker send --wait {story.worker.id} --task {task}", actor=story.agent)
+    story.expect_success(f"worker send --wait {agent_number(story, story.worker.id)} --task {task}", actor=story.agent)
     story.expect_success(f"task unblock {task}", actor=story.agent)
     lines = main_agent_lines(story)
-    story.expect_rows(f"worker:{story.worker.id} is paused" in lines, f"journal agent resume {story.worker.id}" in lines, "has the job" not in lines, detail=lines)
+    story.expect_rows(f"worker:{story.worker.id} is paused" in lines, f"journal agent resume {agent_number(story, story.worker.id)}" in lines, "has the job" not in lines, detail=lines)
     story.expect_rows(story.container.get(Queries).query(WorkerOperation).count() == 0)

@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from datetime import timedelta
@@ -104,13 +105,13 @@ def test_a_paused_worker_stays_stopped_when_its_run_ends(new_story, monkeypatch)
     story, worker, run, bus = worker_with_background_run(new_story)
     hands = []
     monkeypatch.setattr(AgentLauncher, "hand", lambda self, *arguments: hands.append(arguments))
-    story.expect_success(f"agent pause {worker.id}", actor=story.agent)
+    story.expect_success(f"agent pause {agent_number(story, worker.id)}", actor=story.agent)
     story.run(f"agent end {worker.id}", actor=worker)
     bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)
     story.run_listeners()
     WorkerResumeRetry()(story.container)
     expect_absent_value(hands)
-    story.expect_text(f"agent show {worker.id}", "paused_at:", actor=story.agent)
+    story.expect_text(f"agent show {agent_number(story, worker.id)}", "paused_at:", actor=story.agent)
 
 
 def test_a_worker_with_a_run_going_may_stop(new_story):
@@ -187,14 +188,14 @@ def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story, 
 def test_a_worker_whose_program_the_launcher_runs_is_stopped_through_the_launcher(new_story):
     story, worker, _, _ = worker_with_background_run(new_story)
     launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=b"stopped\n")
-    story.expect_success(f"agent stop {worker.id}", f"stopped {agent_label(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"agent stop {agent_number(story, worker.id)}", f"stopped {agent_label(story, worker.id)}", actor=story.agent)
     expect_requests_launcher_2(launcher, 1, {"agent_id": worker.id, "stop": True})
-    story.expect_text(f"agent show {worker.id}", "ended_at:", actor=story.agent)
+    story.expect_text(f"agent show {agent_number(story, worker.id)}", "ended_at:", actor=story.agent)
 
 
 def test_a_worker_no_launcher_runs_is_refused_a_stop_and_keeps_its_tasks(new_story):
     story, worker, _, _ = worker_with_background_run(new_story)
-    story.expect_refusal(f"agent stop {worker.id}", "does not know the process", actor=story.agent)
+    story.expect_refusal(f"agent stop {agent_number(story, worker.id)}", "does not know the process", actor=story.agent)
     story.expect_text("task show 1", f"delegated_to: {worker.id}", actor=story.agent)
 
 

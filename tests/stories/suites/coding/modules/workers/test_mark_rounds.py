@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.database.database import Database
@@ -25,7 +26,7 @@ def test_a_second_test_round_of_the_same_task_gets_its_own_mark(new_story, monke
     first = story.container.get(Queries).query(ChatMark).filter(key="worker-tests:1:1").first()
     story.expect_rows(first is not None, first.state is ChatMarkState.ENDED)
 
-    story.expect_success(f'worker send --wait {worker.id} "Add the tax test"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Add the tax test"', actor=story.agent)
     repository.changed(worker.id, "tax.py", "TAX = 1\n")
     story.expect_success('proof make 2 --task 1 "tax.py:1" --test "python tests/tax.py"', actor=worker)
     story.expect_success("worker deliver --wait --differences none", actor=worker)

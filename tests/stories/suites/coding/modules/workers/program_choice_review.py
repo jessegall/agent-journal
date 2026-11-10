@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from core.modules.mcp.support.server_configs import ServerConfigs
 from core.modules.profiles.support.profile_files import ProfileFiles
 from tests.stories.server.support.browser_story import expect_browser
@@ -55,7 +56,7 @@ def test_nothing_set_ignores_readiness(split_story, agent_role, cause):
         expect_program(story, dispatch(story), 'claude', 'sonnet')
         return
     helper_id, _ = started(story)
-    story.expect_text(f'agent show {helper_id}', 'program: claude')
+    story.expect_text(f'agent show {agent_number(story, helper_id)}', 'program: claude')
 
 
 def test_worker_returns_when_its_program_is_back(failed_worker_story):
@@ -98,7 +99,7 @@ def test_both_plans_reuse_stays_on_the_chosen_program_for_a_helper(started_split
     resumable_session(story, helper, monkeypatch)
     set_split(story, 'claude 0,codex 100', viewer=split_viewer)
     next_helper, _ = started(story, 'helper start journal-researcher --brief "Read the new queue" --environment main')
-    story.expect_text(f'agent show {next_helper}', 'program: codex')
+    story.expect_text(f'agent show {agent_number(story, next_helper)}', 'program: codex')
     story.expect_rows(next_helper != helper_id)
 
 
@@ -110,7 +111,7 @@ def test_both_plans_reuse_stays_on_the_chosen_program_counts_each_helper_job(spl
     helper = story.container.get(Queries).query(Agent).find(helper_id)
     resumable_session(story, helper, monkeypatch)
     launcher = FakeLauncher.listening(story.home.socket('launcher'))
-    story.expect_success(f'helper send {helper_id} "Read the next queue"', actor=story.agent)
+    story.expect_success(f'helper send {agent_number(story, helper_id)} "Read the next queue"', actor=story.agent)
     story.run_listeners()
     counts = json.loads(story.run('worker split --json').output_text)['rows']
     story.expect_rows(next(row for row in counts if row['id'] == 'claude')['helpers_recent'] == 2, len(launcher.starts) == 1)
@@ -125,7 +126,7 @@ def test_named_model_fixes_the_program(split_story, program, model, shares, agen
         expect_program(story, dispatch(story, flags=f'--model {model}'), program, model)
         return
     helper_id, _ = started(story, f'{START} --model {model}')
-    story.expect_text(f'agent show {helper_id}', f'program: {program}', f'program_model: {model}')
+    story.expect_text(f'agent show {agent_number(story, helper_id)}', f'program: {program}', f'program_model: {model}')
 
 
 def test_named_model_fixes_the_program_route_still_holds(split_story):
@@ -179,19 +180,19 @@ def outage_helper_story(split_story, monkeypatch):
 
 def test_helper_send_on_an_out_program_says_until_when(outage_helper_story):
     story, helper_id, ends_at = outage_helper_story
-    story.expect_refusal(f'helper send {helper_id} "Read the listener"', ends_at, actor=story.agent)
-    story.expect_text(f'agent show {helper_id}', 'ended_at:')
+    story.expect_refusal(f'helper send {agent_number(story, helper_id)} "Read the listener"', ends_at, actor=story.agent)
+    story.expect_text(f'agent show {agent_number(story, helper_id)}', 'ended_at:')
 
 
 def test_helper_send_on_an_out_program_says_until_when_reuse_names_it(outage_helper_story):
     story, helper_id, ends_at = outage_helper_story
     story.expect_refusal(START, ends_at, actor=story.agent)
-    story.expect_rows(f'journal helper send {helper_id}' in story.results[-1].output_text)
+    story.expect_rows(f'journal helper send {agent_number(story, helper_id)}' in story.results[-1].output_text)
 
 
 def test_helper_send_on_an_out_program_says_until_when_resume_keeps_its_job(started_split_helper):
     story, helper_id = started_split_helper
-    story.expect_success(f'helper send {helper_id} "Read the next file" --steer', actor=story.agent)
+    story.expect_success(f'helper send {agent_number(story, helper_id)} "Read the next file" --steer', actor=story.agent)
     outage(story, 'claude')
     launcher = FakeLauncher.listening(story.home.socket('launcher'), request_count=2)
     story.expect_success(f'agent end {helper_id}', actor=story.user)
@@ -246,7 +247,7 @@ def test_profile_with_tools_stays_on_its_program(split_story, split_viewer):
     split_viewer.value('profiles.profiles', ['profile', 'save', 'tool-reader', '--description', 'Reads the design', '--body', 'Read the design.', '--model', 'sonnet', '--mcp-tools', 'mcp__design__read'])
     set_split(story, 'codex 100,claude 0', viewer=split_viewer)
     helper_id, _ = started(story, 'helper start tool-reader --brief "Read the design" --environment main')
-    story.expect_text(f'agent show {helper_id}', 'program: claude')
+    story.expect_text(f'agent show {agent_number(story, helper_id)}', 'program: claude')
 
 
 def test_profile_with_tools_stays_on_its_program_for_a_worker(split_story, split_viewer):
@@ -261,7 +262,7 @@ def test_profile_with_tools_stays_on_its_program_when_the_profile_names_one(spli
     split_viewer.value('profiles.profiles', ['profile', 'save', 'codex-tools', '--description', 'Reads the design', '--body', 'Read the design.', '--program', 'codex', '--model', 'gpt-6.1-terra', '--mcp-tools', 'mcp__design__read'])
     set_split(story, 'claude 100,codex 0', viewer=split_viewer)
     helper_id, _ = started(story, 'helper start codex-tools --brief "Read the design" --environment main')
-    story.expect_text(f'agent show {helper_id}', 'program: codex')
+    story.expect_text(f'agent show {agent_number(story, helper_id)}', 'program: codex')
 
 
 def test_read_only_helper_tags_only_when_making_a_task(split_story):
@@ -413,7 +414,7 @@ def test_profile_tier_alone_beats_default_models_cli_save(split_story):
     story = split_story
     story.expect_success('profile save tier-reader --description "Reads files" --body "Read files." --tier strongest', actor=story.user)
     helper_id, _ = started(story, 'helper start tier-reader --brief "Read the queue" --environment main')
-    story.expect_text(f'agent show {helper_id}', 'program_model: opus')
+    story.expect_text(f'agent show {agent_number(story, helper_id)}', 'program_model: opus')
 
 
 def test_profile_tier_alone_beats_default_models_bad_file_is_a_problem(split_story):

@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from engine.testing.examples.hook_samples import HookSamples
@@ -137,7 +138,7 @@ def test_a_worker_with_no_task_left_may_stop(new_story):
     story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.expect_success(f'worker release {worker.id} "done with it"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "done with it"', actor=story.agent)
     story.expect_hook_allowed(worker_session(story, worker), HookSamples.stop())
 
 

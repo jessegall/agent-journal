@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import re
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -26,17 +27,17 @@ class MainControlsActors(StoryFixture):
         for name, role in AGENT_ROLES.items():
             row_id = story.new_row_id(f"agent start {name}-session claude {role} --parent {story.agent.id} --environment main")
             if name in PROFILES:
-                story.expect_success(f"agent edit {row_id} --profile {PROFILES[name]}")
+                story.expect_success(f"agent edit {agent_number(story, row_id)} --profile {PROFILES[name]}")
 
     def expect(self, story: Story) -> None:
         for name, actor in agent_actors(story).items():
-            story.expect_success(f"agent show {actor.id}", f"role: {'main' if name == 'main' else AGENT_ROLES[name]}")
+            story.expect_success(f"agent show {agent_number(story, actor.id)}", f"role: {'main' if name == 'main' else AGENT_ROLES[name]}")
 
 
 def agent_actors(story: Story) -> dict[str, Actor]:
     actors = {"main": story.agent}
     for row_id in range(story.user.id + 1, story.user.id + 1 + len(AGENT_ROLES)):
-        session = re.search(r"^session: (\w+)-session$", story.run(f"agent show {row_id}", actor=story.user).output_text, re.MULTILINE)
+        session = re.search(r"^session: (\w+)-session$", story.run(f"agent show {agent_number(story, row_id)}", actor=story.user).output_text, re.MULTILINE)
         actors[session[1]] = Actor(row_id, ActorType.AGENT)
     return actors
 

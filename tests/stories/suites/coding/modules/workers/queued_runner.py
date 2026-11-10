@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import os
 import subprocess
 from pathlib import Path
@@ -67,7 +68,7 @@ def test_a_queued_worker_command_runs_through_the_real_runner_and_cli(worker_run
     if command_name != "deliver":
         task_id = story.new_row_id('task make "The next cart change" --brief "Add the receipt"', actor=story.agent)
     if command_name == "next":
-        story.expect_success(f"worker send {worker.id} --wait --task {task_id}", actor=story.agent)
+        story.expect_success(f"worker send {agent_number(story, worker.id)} --wait --task {task_id}", actor=story.agent)
     if command_name == "send":
         arguments = ["worker", "send", str(worker.id), "--task", str(task_id)]
         actor = story.agent

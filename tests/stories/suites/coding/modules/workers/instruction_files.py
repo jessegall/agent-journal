@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from dataclasses import dataclass
 
 import pytest
@@ -85,12 +86,12 @@ def hand_in(branch):
     story.expect_success(FIRST_PROOF, "point: 1", actor=branch.worker)
     story.expect_success(DELIVERY, actor=branch.worker)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
-    story.expect_success(f"worker logs {branch.worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, branch.worker.id)}", actor=story.agent)
     branch.repository.checkout(ENVIRONMENT_BRANCH)
 
 
 def merge_worker(branch):
-    branch.story.expect_success(f"worker merge --wait {branch.worker.id}", actor=branch.story.agent)
+    branch.story.expect_success(f"worker merge --wait {agent_number(branch.story, branch.worker.id)}", actor=branch.story.agent)
 
 
 @pytest.fixture

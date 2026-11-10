@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 import json
@@ -247,29 +248,29 @@ def test_a_helpers_facts_carry_its_profile_given_name_and_instruction(new_story)
 def test_the_tool_of_a_helper_is_read_by_its_agent_number(new_story):
     story = new_story(fixture=BuilderHelper)
     story.hook("sub-1", HookSamples.edit("src/cart.py", 3, 1))
-    story.expect_text(f"usage tool --agent {story.helper.id}", "Edit src/cart.py +3 -1", actor=story.agent)
-    story.expect_absent(f"usage tool --agent {story.agent.id}", "Edit src/cart.py +3 -1", actor=story.agent)
+    story.expect_text(f"usage tool --agent {agent_number(story, story.helper.id)}", "Edit src/cart.py +3 -1", actor=story.agent)
+    story.expect_absent(f"usage tool --agent {agent_number(story, story.agent.id)}", "Edit src/cart.py +3 -1", actor=story.agent)
 
 
 def test_a_helper_s_chained_command_is_named_by_the_part_it_runs(new_story):
     story = install_runner(new_story(fixture=BuilderHelper))
     chained = HookSamples.shell("ls src && cat notes.md", ShellPart("ls", CommandCategory.PROCESS, ["src"]), ShellPart("cat", CommandCategory.PROCESS, ["notes.md"]))
     story.hook("sub-1", chained)
-    story.expect_text(f"usage tool --agent {story.helper.id}", "ls src", actor=story.agent)
-    story.expect_absent(f"usage tool --agent {story.helper.id}", "cat notes.md", actor=story.agent)
+    story.expect_text(f"usage tool --agent {agent_number(story, story.helper.id)}", "ls src", actor=story.agent)
+    story.expect_absent(f"usage tool --agent {agent_number(story, story.helper.id)}", "cat notes.md", actor=story.agent)
 
 
 def test_a_helper_that_ran_no_command_says_so_plainly(new_story):
     story = new_story(fixture=BuilderHelper)
-    story.expect_text(f"usage tool --agent {story.helper.id}", "has run no command yet", actor=story.agent)
-    story.expect_text(f"usage tool --agent {story.helper.id} --json", '"note": "has run no command yet"', actor=story.agent)
+    story.expect_text(f"usage tool --agent {agent_number(story, story.helper.id)}", "has run no command yet", actor=story.agent)
+    story.expect_text(f"usage tool --agent {agent_number(story, story.helper.id)} --json", '"note": "has run no command yet"', actor=story.agent)
 
 
 def test_a_helper_that_stopped_after_a_command_says_nothing_of_having_run_none(new_story):
     story = new_story(fixture=BuilderHelper)
     story.hook("sub-1", HookSamples.edit("src/cart.py"))
     story.hook("sub-1", HookSamples.stop())
-    story.expect_absent(f"usage tool --agent {story.helper.id}", "has run no command yet", actor=story.agent)
+    story.expect_absent(f"usage tool --agent {agent_number(story, story.helper.id)}", "has run no command yet", actor=story.agent)
 
 
 def test_agent_running_lists_every_running_agent_and_no_ended_one(new_story):

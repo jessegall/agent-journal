@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from pathlib import Path
 from typing import NamedTuple
 
@@ -48,7 +49,7 @@ def test_an_install_trusts_generated_hooks_and_a_codex_helper_starts(codex_proje
     HookWriter(folder).write(f'"{folder}/.journal/bin/journal-hook"', is_upgrade=upgrade)
     story.expect_success(f'program trust codex "{folder}"', 'ready')
     helper, _ = started(story, f'{START} --program codex --model gpt-6.1-sol')
-    story.expect_text(f'agent show {helper}', 'program: codex')
+    story.expect_text(f'agent show {agent_number(story, helper)}', 'program: codex')
     story.expect_rows('model = "gpt-6.1-sol"' in config.read_text())
 
 

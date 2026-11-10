@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
@@ -13,8 +14,8 @@ def stopped_worker(story):
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at 2026-10-31T09:00:00+00:00", "pid: 700")
-    story.expect_success(f"agent stop {worker.id}", actor=user)
+    story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at 2026-10-31T09:00:00+00:00", "pid: 700")
+    story.expect_success(f"agent stop {agent_number(story, worker.id)}", actor=user)
     return worker
 
 

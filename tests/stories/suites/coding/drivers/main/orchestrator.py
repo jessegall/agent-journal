@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.command_category import CommandCategory
 from engine.enums.actor_type import ActorType
@@ -59,7 +60,7 @@ def test_tasks_a_released_worker_gave_back_hold_the_main_agent_at_stop(new_story
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, "worker dispatch --test-command python=pytest 1 2 --model sonnet")
-    story.expect_success(f'worker release {worker.id} "wrong job"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "wrong job"', actor=story.agent)
     story.expect_hook_refusal("s-1", HookSamples.stop(), "open tasks wait for a worker: 1, 2")
 
 

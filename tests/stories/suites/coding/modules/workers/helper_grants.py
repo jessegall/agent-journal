@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import subprocess
 
 import pytest
@@ -34,6 +35,6 @@ def test_what_the_grant_does_not_name_is_refused(granted, line):
 
 
 def test_a_later_grant_for_the_same_program_replaces_the_earlier_one(granted):
-    granted.story.expect_success(f'helper grant {granted.worker.id} git "status"', actor=granted.story.agent)
+    granted.story.expect_success(f'helper grant {agent_number(granted.story, granted.worker.id)} git "status"', actor=granted.story.agent)
     granted.story.expect_refusal("helper run git tag -d v1", REFUSED_LINE, actor=granted.worker)
     granted.story.expect_success("helper run git status", actor=granted.worker)

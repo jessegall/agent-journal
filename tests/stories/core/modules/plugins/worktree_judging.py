@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 
 import pytest
@@ -49,7 +50,7 @@ def test_a_resumed_worker_is_not_judged_for_new_main_commits(worktree_story):
     story.repository.changed(story.worker.id, "cart.py", "TOTAL = 1\n")
     story.repository.checkout(ENVIRONMENT_BRANCH)
     story.repository.committed("main_only.py", SIN, "Main adds a function")
-    story.expect_success(f'worker send --wait {story.worker.id} "Continue the worker changes"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, story.worker.id)} "Continue the worker changes"', actor=story.agent)
     story.expect_rows((story.worktree / "main_only.py").read_text() == SIN)
     story.expect_success("worker next --wait --differences none", actor=story.worker)
     data = json.loads((story.home.folder / "plugin-data/worktree-judge/delivery.json").read_text())
@@ -61,6 +62,6 @@ def test_a_resumed_workers_new_sin_still_holds_its_handoff(worktree_story):
     story = worktree_story
     story.repository.checkout(ENVIRONMENT_BRANCH)
     story.repository.committed("main_only.py", SIN, "Main adds a function")
-    story.expect_success(f'worker send --wait {story.worker.id} "Add the worker function"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, story.worker.id)} "Add the worker function"', actor=story.agent)
     story.repository.changed(story.worker.id, "cart.py", SIN)
     story.expect_refusal("worker next --wait --differences none", f"{story.worktree / 'cart.py'}: mutable default", actor=story.worker)

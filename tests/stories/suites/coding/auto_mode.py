@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.testing.stories.story_fixture import StoryFixture
 
 import pytest
@@ -86,7 +87,7 @@ def test_a_task_queued_for_a_worker_is_not_started_for_the_main_agent(new_story)
     story.run('task make "Queued at the worker" --environment main --priority critical', actor=story.agent)
     story.run('task make "Fix the totals" --environment main --priority high', actor=story.agent)
     worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet 2")
-    story.expect_success(f"worker send --wait {worker.id} --task 3", actor=story.agent)
+    story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task 3", actor=story.agent)
     story.expect_success('task release 1 --reason "later"', actor=story.agent)
     story.run_listeners()
     expect_started_holder(story, 3, "state: open")

@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from core.modules.helpers.support.agent_use import AgentUse
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
@@ -35,8 +36,8 @@ class EndedHelper(StoryFixture):
 
     def steps(self, story):
         helper = helper_agent(story)
-        story.expect_success(f"agent edit {helper.id} --pid 4242", actor=story.user)
-        story.expect_success(f"agent stop {helper.id}", actor=story.agent)
+        story.expect_success(f"agent edit {agent_number(story, helper.id)} --pid 4242", actor=story.user)
+        story.expect_success(f"agent stop {agent_number(story, helper.id)}", actor=story.agent)
 
 
 @pytest.fixture
@@ -119,62 +120,62 @@ def test_a_helper_stays_idle_when_its_process_stops(new_story):
 def test_retire_with_a_reason_keeps_its_record_and_it_is_not_retired_again(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
-    story.expect_success(f"agent retire {helper.id} {REASON}", f"retired {agent_label(story, helper.id)}", actor=story.agent)
+    story.expect_success(f"agent retire {agent_number(story, helper.id)} {REASON}", f"retired {agent_label(story, helper.id)}", actor=story.agent)
     retired = helper_agent(story)
     story.expect_rows(retired.retired_at is not None, retired.retirement_reason == "Its question is answered", retired.retiring_actor_id == story.agent.id)
-    story.expect_refusal(f"agent retire {helper.id} {REASON}", "retired already", actor=story.agent)
+    story.expect_refusal(f"agent retire {agent_number(story, helper.id)} {REASON}", "retired already", actor=story.agent)
 
 
 def test_retire_needs_a_reason_and_an_ended_agent(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
-    story.expect_refusal(f"agent retire {helper.id} {REASON}", "still running", actor=story.agent)
-    story.expect_success(f"agent edit {helper.id} --pid 4242", actor=story.user)
-    story.expect_success(f"agent stop {helper.id}", actor=story.agent)
-    story.expect_refusal(f'agent retire {helper.id} --reason " "', "needs its reason", actor=story.agent)
+    story.expect_refusal(f"agent retire {agent_number(story, helper.id)} {REASON}", "still running", actor=story.agent)
+    story.expect_success(f"agent edit {agent_number(story, helper.id)} --pid 4242", actor=story.user)
+    story.expect_success(f"agent stop {agent_number(story, helper.id)}", actor=story.agent)
+    story.expect_refusal(f'agent retire {agent_number(story, helper.id)} --reason " "', "needs its reason", actor=story.agent)
 
 
 def test_retire_permissions(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
-    story.expect_refusal(f"agent retire {story.agent.id} {REASON}", "main agent is not retired", actor=story.agent)
-    story.expect_refusal(f"agent retire {helper.id} {REASON}", "belongs to agent", actor=Actor(helper.id, ActorType.AGENT))
-    story.expect_success(f"agent retire {helper.id} {REASON}", actor=story.user)
+    story.expect_refusal(f"agent retire {agent_number(story, story.agent.id)} {REASON}", "main agent is not retired", actor=story.agent)
+    story.expect_refusal(f"agent retire {agent_number(story, helper.id)} {REASON}", "belongs to agent", actor=Actor(helper.id, ActorType.AGENT))
+    story.expect_success(f"agent retire {agent_number(story, helper.id)} {REASON}", actor=story.user)
 
 
 def test_retired_row_stays_retired(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
-    story.expect_refusal(f'agent edit {helper.id} --retirement-reason "Old"', "does not change a retirement", actor=story.user)
-    story.expect_success(f"agent retire {helper.id} {REASON}", actor=story.agent)
-    story.expect_refusal(f'agent edit {helper.id} --retirement-reason ""', "does not change a retirement", actor=story.user)
-    story.expect_refusal(f"agent delete {helper.id}", "record stays", actor=story.user)
-    story.expect_refusal(f'helper send {helper.id} "One more job"', "retired, for good", actor=story.agent)
+    story.expect_refusal(f'agent edit {agent_number(story, helper.id)} --retirement-reason "Old"', "does not change a retirement", actor=story.user)
+    story.expect_success(f"agent retire {agent_number(story, helper.id)} {REASON}", actor=story.agent)
+    story.expect_refusal(f'agent edit {agent_number(story, helper.id)} --retirement-reason ""', "does not change a retirement", actor=story.user)
+    story.expect_refusal(f"agent delete {agent_number(story, helper.id)}", "record stays", actor=story.user)
+    story.expect_refusal(f'helper send {agent_number(story, helper.id)} "One more job"', "retired, for good", actor=story.agent)
     story.expect_rows(helper_agent(story).retired_at is not None)
 
 
 def test_session_gone_says_retire(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
-    story.expect_refusal(f'helper send {helper.id} "One more job"', f"journal agent retire {helper.id}", actor=story.agent)
+    story.expect_refusal(f'helper send {agent_number(story, helper.id)} "One more job"', f"journal agent retire {agent_number(story, helper.id)}", actor=story.agent)
 
 
 def test_session_gone_with_open_job_can_be_settled_and_retired(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
-    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
+    story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
     story.expect_success(f"agent end {helper.id}", actor=story.user)
     story.run_listeners()
-    story.expect_refusal(f'agent retire {helper.id} --reason "session gone"', f"journal helper stop {helper.id}", actor=story.user)
-    story.expect_success(f"helper stop {helper.id}", actor=story.user)
-    story.expect_success(f'agent retire {helper.id} --reason "session gone"', actor=story.user)
-    story.expect_text(f"agent show {helper.id}", "retirement_reason: session gone", actor=story.user)
+    story.expect_refusal(f'agent retire {agent_number(story, helper.id)} --reason "session gone"', f"journal helper stop {agent_number(story, helper.id)}", actor=story.user)
+    story.expect_success(f"helper stop {agent_number(story, helper.id)}", actor=story.user)
+    story.expect_success(f'agent retire {agent_number(story, helper.id)} --reason "session gone"', actor=story.user)
+    story.expect_text(f"agent show {agent_number(story, helper.id)}", "retirement_reason: session gone", actor=story.user)
 
 
 def test_old_callback_leaves_the_new_run(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
-    story.expect_success(f"agent edit {helper.id} --pid 4242", actor=story.user)
+    story.expect_success(f"agent edit {agent_number(story, helper.id)} --pid 4242", actor=story.user)
     story.expect_success(f"agent exited {helper.id} 0 --pid 1111", actor=story.user)
     story.expect_rows(helper_agent(story).ended_at is None)
     story.expect_success(f"agent exited {helper.id} 0 --pid 4242", actor=story.user)
@@ -201,7 +202,7 @@ def test_at_the_kept_maximum_a_new_start_is_refused_with_a_retire_line(new_story
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:4:1"]\' --project', actor=story.user)
-    expect_start_refused(story, f"journal agent retire {helper.id}")
+    expect_start_refused(story, f"journal agent retire {agent_number(story, helper.id)}")
 
 
 def test_launches_in_flight_count(new_story, monkeypatch):
@@ -210,7 +211,7 @@ def test_launches_in_flight_count(new_story, monkeypatch):
     resumable_session(story, helper, monkeypatch)
     story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:1:8"]\' --project', actor=story.user)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_success(f'helper send {helper.id} "One more job"', actor=story.agent)
+    story.expect_success(f'helper send {agent_number(story, helper.id)} "One more job"', actor=story.agent)
     story.expect_refusal("helper start journal-researcher --fresh 'A second reader' --brief 'Read src/other.py' --environment main", "1 of journal-researcher run", actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
@@ -221,7 +222,7 @@ def test_a_start_with_an_idle_helper_is_refused_with_its_send_line(new_story, mo
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_refusal('helper start journal-researcher --brief "Read src/till.py" --environment main', f'helper {helper.id} is idle: journal helper send {helper.id} "<job>"', actor=story.agent)
+    story.expect_refusal('helper start journal-researcher --brief "Read src/till.py" --environment main', f'helper {helper.id} is idle: journal helper send {agent_number(story, helper.id)} "<job>"', actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
 
@@ -261,8 +262,8 @@ def test_two_sends_to_one_idle_helper_run_one_session(new_story, monkeypatch):
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_success(f'helper send {helper.id} "One more job"', actor=story.agent)
-    story.expect_refusal(f'helper send {helper.id} "And another"', "is busy with a job", actor=story.agent)
+    story.expect_success(f'helper send {agent_number(story, helper.id)} "One more job"', actor=story.agent)
+    story.expect_refusal(f'helper send {agent_number(story, helper.id)} "And another"', "is busy with a job", actor=story.agent)
     open_jobs = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).matching(IsNull("ended_at")).all_rows()
     story.expect_rows(len(tuple(open_jobs)) == 1)
     launcher.server.close()
@@ -276,7 +277,7 @@ def test_a_new_main_takes_over_an_idle_helper_and_gets_its_report(new_story, mon
     story.run(f"agent end {story.agent.id}", actor=story.user)
     second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_success(f'helper send {helper.id} "One more job"', actor=second)
+    story.expect_success(f'helper send {agent_number(story, helper.id)} "One more job"', actor=second)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).newest().first()
     story.expect_rows(helper_agent(story).parent_id == second.id, job.session_agent_id == second.id)
     launcher.server.close()
@@ -286,8 +287,8 @@ def test_a_new_main_takes_over_an_idle_helper_and_gets_its_report(new_story, mon
 def test_steering_or_new_job(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
-    story.expect_refusal(f'helper send {helper.id} "Unrelated work"', f"helper {helper.id} is busy", actor=story.agent)
-    story.expect_success(f'helper send {helper.id} "Also read the tax" --steer', actor=story.agent)
+    story.expect_refusal(f'helper send {agent_number(story, helper.id)} "Unrelated work"', f"helper {helper.id} is busy", actor=story.agent)
+    story.expect_success(f'helper send {agent_number(story, helper.id)} "Also read the tax" --steer', actor=story.agent)
     jobs = tuple(story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).all_rows())
     story.expect_rows(len(jobs) == 1, "Also read the tax" in jobs[0].brief)
 
@@ -302,8 +303,8 @@ def test_same_reviewer_same_plan_is_refused(new_story, monkeypatch):
     story.expect_success(f"agent end {reviewer.id}", actor=story.user)
     story.run_listeners()
     resumable_session(story, reviewer, monkeypatch)
-    story.expect_refusal(f'helper send {reviewer.id} "Review it again" --plan 7', "reviewed plan 7", actor=story.agent)
-    story.expect_success(f'helper send {reviewer.id} "Review plan 8" --plan 8', actor=story.agent)
+    story.expect_refusal(f'helper send {agent_number(story, reviewer.id)} "Review it again" --plan 7', "reviewed plan 7", actor=story.agent)
+    story.expect_success(f'helper send {agent_number(story, reviewer.id)} "Review plan 8" --plan 8', actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
 
@@ -322,5 +323,5 @@ def test_a_refusal_for_no_kept_place_suggests_the_idle_agent_of_the_model_with_t
     story = new_story(fixture=ReportedHelper)
     helper = helper_agent(story)
     story.expect_text("agent mix", f"journal-researcher, {helper.program_model}: jobs 1, kept 1, idle", actor=story.agent)
-    story.expect_rows(f"journal agent retire {helper.id}" in story.container.get(AgentUse).retire_suggestion("journal-researcher"),
+    story.expect_rows(f"journal agent retire {agent_number(story, helper.id)}" in story.container.get(AgentUse).retire_suggestion("journal-researcher"),
                       story.container.get(AgentUse).retire_suggestion("journal-planner") == "")

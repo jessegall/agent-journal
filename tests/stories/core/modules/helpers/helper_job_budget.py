@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from core.modules.helpers.support.helper_settings import HELPER_MAX_COST
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.helper_jobs import JOB, EndedHelper, StartedHelper, helper_agent, read_jobs, resumable_session
@@ -25,7 +26,7 @@ def test_s59_kept_session_new_job_has_new_cost_baseline(new_story, monkeypatch):
     story.expect_success(f"setting set {HELPER_MAX_COST} 1 --project", actor=story.user)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
     resumable_session(story, helper, monkeypatch)
-    story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {agent_number(story, helper.id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
     expect_value([job.cost_baseline for job in read_jobs(story, helper)], [0.0, 3.0])
@@ -39,7 +40,7 @@ def test_s59_resume_keeps_budget_use(new_story):
     helper = helper_agent(story)
     story.expect_success(f"setting set {HELPER_MAX_COST} 1 --project", actor=story.user)
     report_cost(story, 0.6)
-    story.expect_success(f'helper send {helper.id} "{JOB}" --steer', actor=story.agent)
+    story.expect_success(f'helper send {agent_number(story, helper.id)} "{JOB}" --steer', actor=story.agent)
     expect_value([job.cost_baseline for job in read_jobs(story, helper)], [0.0])
     report_cost(story, 1.2)
     enforced(story, 1)

@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
@@ -33,9 +34,9 @@ def test_a_person_dispatches_a_worker_that_starts_no_program_and_its_session_hoo
         story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
         story.expect_success(DELIVERY, actor=worker)
         story.expect_success("proof check 1", "state: checked", actor=story.agent)
-        story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+        story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
         repository.checkout(ENVIRONMENT_BRANCH)
-        story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+        story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
         story.expect_success(lines.TASK_DETAILS, "state: completed")
     finally:
         launcher.server.close()
