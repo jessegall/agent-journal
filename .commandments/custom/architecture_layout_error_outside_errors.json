@@ -19,9 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/engine/seed/demo_error.py"
-            },
-            {
                 "file": "src/engine/upgrade/dry_run_end_error.py"
             },
             {
