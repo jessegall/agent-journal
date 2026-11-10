@@ -6,7 +6,7 @@ from typing import TypeVar
 from engine.driver.seconds import Seconds
 from engine.types.type_guards import is_list, is_tuple
 from core.modules.settings.support.setting_reader import SettingReader
-from core.modules.settings.support.setting_type_error import SettingTypeError
+from core.modules.settings.errors.setting_type_error import SettingTypeError
 
 T = TypeVar("T")
 
