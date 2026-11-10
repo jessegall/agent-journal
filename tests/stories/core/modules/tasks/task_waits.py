@@ -199,7 +199,7 @@ def waiting_task_hook(new_story):
     story = new_story(fixture=TwoTasks)
     entered = kept_typing(story)
     story.run("task block 1 --on task:2")
-    story.hook("s-1", HookSamples.edit("src/cart.py"))
+    story.hook("s-1", HookSamples.stop())
     return story, entered
 
 

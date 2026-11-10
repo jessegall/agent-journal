@@ -77,8 +77,9 @@ def post_target(server, cookie, target, text):
 def test_a_message_wakes_its_idle_target(targeted_chat, role):
     server, cookie, typing = targeted_chat
     story = server.story
-    story.advance(timedelta(seconds=31))
     target = getattr(story, role)
+    story.hook(story.row(Agent, target.id).session, HookSamples.stop())
+    story.advance(timedelta(seconds=31))
     message = post_target(server, cookie, target, f"Continue the {role} job")
     story.run_listeners()
     expect_row(typing, typed=[(target.id, f"[journal] new message {message['id']}")])
@@ -150,6 +151,7 @@ def test_a_read_message_edit_wakes_the_same_worker(targeted_chat):
     post_target(server, cookie, story.worker, "Worker text before editing")
     story.run("message read 1", actor=story.worker)
     story.hook(story.worker_session, READ_MESSAGE_HOOK)
+    story.hook(story.worker_session, HookSamples.stop())
     story.advance(timedelta(seconds=31))
     server.viewer_line_value(cookie, {"window": "messages.chat", "environment": "main", "line": ["message", "edit", "1", "--text", "Worker text after editing"]})
     story.run_listeners()
