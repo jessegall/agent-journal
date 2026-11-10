@@ -19,9 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/engine/caller/caller_request_error.py"
-            },
-            {
                 "file": "src/engine/change/event_pattern_error.py"
             },
             {

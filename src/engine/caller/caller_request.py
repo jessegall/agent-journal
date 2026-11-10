@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from engine.types.type_guards import is_mapping
-from engine.caller.caller_request_error import CallerRequestError
+from engine.caller.errors.caller_request_error import CallerRequestError
 
 SESSION_VARIABLE = "JOURNAL_AGENT_SESSION"
 
