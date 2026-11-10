@@ -204,3 +204,113 @@ func TestTerminalInputsRecordKeysAndTypedLinesAndPressKeys(t *testing.T) {
 		t.Fatal("keys the watcher pressed are no typed line")
 	}
 }
+
+type unsentLineTerminal struct {
+	watcher *MenuWatcher
+	current time.Time
+	line    *EnteredLine
+	enters  int
+	pending string
+	answers []string
+	onEnter func(terminal *unsentLineTerminal)
+}
+
+func newUnsentLineTerminal() *unsentLineTerminal {
+	terminal := &unsentLineTerminal{current: time.Unix(1000, 0)}
+	terminal.line = &EnteredLine{EnteredAt: terminal.current}
+	terminal.watcher = &MenuWatcher{
+		CurrentTime: func() time.Time { return terminal.current },
+		EnteredLine: func() (EnteredLine, bool) {
+			if terminal.line == nil {
+				return EnteredLine{}, false
+			}
+			return *terminal.line, true
+		},
+		ForgetLine: func() { terminal.line = nil },
+		EnterAgain: func() bool {
+			terminal.enters++
+			terminal.line = &EnteredLine{terminal.current, terminal.line.MoreEnters + 1}
+			if terminal.onEnter != nil {
+				terminal.onEnter(terminal)
+			}
+			return true
+		},
+		PendingText: func() string { return terminal.pending },
+		OnAnswer: func(question, explanation string) {
+			terminal.answers = append(terminal.answers, question+": "+explanation)
+		},
+	}
+	return terminal
+}
+
+func (terminal *unsentLineTerminal) draw(text string) {
+	_, _ = terminal.watcher.Write([]byte(text))
+}
+
+func (terminal *unsentLineTerminal) later(duration time.Duration) {
+	terminal.current = terminal.current.Add(duration)
+}
+
+func TestALineLeftInTheInputBoxIsSentByASecondEnter(t *testing.T) {
+	terminal := newUnsentLineTerminal()
+	terminal.draw("❯ [journal] your context was compacted\r\n")
+	terminal.later(time.Second)
+	if terminal.watcher.CheckUnsentLine() || terminal.enters != 0 {
+		t.Fatal("pressed Enter before the line had time to be sent")
+	}
+	terminal.later(2 * time.Second)
+	terminal.onEnter = func(terminal *unsentLineTerminal) { terminal.draw("working\r\n") }
+	if !terminal.watcher.CheckUnsentLine() || terminal.enters != 1 {
+		t.Fatalf("the still screen got %d more Enters", terminal.enters)
+	}
+	terminal.later(2100 * time.Millisecond)
+	terminal.draw("still working\r\n")
+	if terminal.watcher.CheckUnsentLine() || terminal.enters != 1 || terminal.line != nil {
+		t.Fatalf("a program that draws its work took the line: %d Enters, watched %v", terminal.enters, terminal.line)
+	}
+}
+
+func TestALineTheProgramTookGetsNoSecondEnter(t *testing.T) {
+	terminal := newUnsentLineTerminal()
+	terminal.later(2500 * time.Millisecond)
+	terminal.draw("working\r\n")
+	if terminal.watcher.CheckUnsentLine() || terminal.enters != 0 || terminal.line != nil {
+		t.Fatalf("a screen that changed half a second ago is a program at work: %d Enters", terminal.enters)
+	}
+}
+
+func TestAMenuOrTextThePersonTypesKeepsTheSecondEnterAway(t *testing.T) {
+	onMenu := newUnsentLineTerminal()
+	onMenu.draw(switchModelScreen)
+	onMenu.later(3 * time.Second)
+	typing := newUnsentLineTerminal()
+	typing.pending = "half a sen"
+	typing.later(3 * time.Second)
+	for name, terminal := range map[string]*unsentLineTerminal{"a menu": onMenu, "typed text": typing} {
+		if terminal.watcher.CheckUnsentLine() || terminal.enters != 0 || terminal.line != nil {
+			t.Fatalf("with %s on the screen Enter was pressed %d times", name, terminal.enters)
+		}
+	}
+}
+
+func TestAnEnterThatChangesNothingEndsTheWatchAndThreeThatDoNotSendAreToldOf(t *testing.T) {
+	ignored := newUnsentLineTerminal()
+	ignored.later(3 * time.Second)
+	ignored.watcher.CheckUnsentLine()
+	ignored.later(3 * time.Second)
+	if ignored.watcher.CheckUnsentLine() || ignored.enters != 1 || ignored.line != nil || len(ignored.answers) != 0 {
+		t.Fatalf("an Enter the screen did not answer was repeated: %d Enters, %v", ignored.enters, ignored.answers)
+	}
+	stubborn := newUnsentLineTerminal()
+	stubborn.onEnter = func(terminal *unsentLineTerminal) {
+		terminal.later(100 * time.Millisecond)
+		terminal.draw("\r\n")
+	}
+	for range 5 {
+		stubborn.later(3 * time.Second)
+		stubborn.watcher.CheckUnsentLine()
+	}
+	if stubborn.enters != 3 || len(stubborn.answers) != 1 || !strings.Contains(stubborn.answers[0], "stays in the input box") || stubborn.line != nil {
+		t.Fatalf("%d Enters and told %v", stubborn.enters, stubborn.answers)
+	}
+}

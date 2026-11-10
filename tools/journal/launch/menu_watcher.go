@@ -30,7 +30,7 @@ type MenuAnswer struct {
 // MenuWatcher reads an agent's screen and keeps the agent from sitting at a menu: one the journal or the person caused is
 // confirmed, the trust question for the launched folder accepted, any other declined or closed with Escape. A menu the
 // person opened at the keyboard that asks no yes or no is theirs, and a permission question or a list of past sessions
-// is left alone.
+// is left alone. It also presses Enter again for a line the journal typed that the program did not send.
 type MenuWatcher struct {
 	mutex          sync.Mutex
 	screen         []byte
@@ -41,6 +41,11 @@ type MenuWatcher struct {
 	KeyedAt        func() time.Time
 	TypedAt        func() time.Time
 	Press          func(keys string) bool
+	OnScreen       func()
+	EnteredLine    func() (EnteredLine, bool)
+	ForgetLine     func()
+	EnterAgain     func() bool
+	PendingText    func() string
 	OnAnswer       func(question, explanation string)
 }
 
@@ -51,12 +56,20 @@ func NewMenuWatcher(inputs *TerminalInputs, agentID int, onAnswer func(question,
 		KeyedAt:     func() time.Time { return inputs.KeyedAt(agentID) },
 		TypedAt:     func() time.Time { return inputs.TypedAt(agentID) },
 		Press:       func(keys string) bool { return inputs.PressKeys(agentID, keys) },
+		OnScreen:    func() { inputs.NoteOutput(agentID) },
+		EnteredLine: func() (EnteredLine, bool) { return inputs.EnteredLine(agentID) },
+		ForgetLine:  func() { inputs.ForgetEnteredLine(agentID) },
+		EnterAgain:  func() bool { return inputs.EnterAgain(agentID) },
+		PendingText: func() string { return inputs.Pending(agentID) },
 		OnAnswer:    onAnswer,
 	}
 }
 
-// Write keeps the screen's latest bytes.
+// Write keeps the screen's latest bytes, and notes that the screen changed.
 func (watcher *MenuWatcher) Write(output []byte) (int, error) {
+	if watcher.OnScreen != nil {
+		watcher.OnScreen()
+	}
 	watcher.mutex.Lock()
 	defer watcher.mutex.Unlock()
 	watcher.screen = append(watcher.screen, output...)
@@ -77,6 +90,7 @@ func (watcher *MenuWatcher) Watch(stop <-chan struct{}) {
 			return
 		case <-ticker.C:
 			watcher.CheckMenu()
+			watcher.CheckUnsentLine()
 		}
 	}
 }
