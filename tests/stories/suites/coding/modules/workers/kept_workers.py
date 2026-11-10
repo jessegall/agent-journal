@@ -86,7 +86,7 @@ def test_at_the_kept_maximum_a_dispatch_is_refused_with_a_retire_line(new_story)
     story.expect_success("setting set journal.suites.coding.workers.worker-kept-limit 1 --environment main", actor=story.user)
     worker = dispatched_worker(story)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
-    story.expect_refusal(f"worker dispatch --test-command python=pytest --model sonnet {task_id}", f"the limit of 1 workers is reached: agent:{worker.id}", actor=story.agent)
+    story.expect_refusal(f"worker dispatch --test-command python=pytest --model sonnet {task_id}", f"the limit of 1 workers is reached: agent:{agent_number(story, worker.id)}", actor=story.agent)
 
 
 def test_a_worker_resume_at_the_run_limit_is_held_and_starts_when_a_place_frees(new_story):

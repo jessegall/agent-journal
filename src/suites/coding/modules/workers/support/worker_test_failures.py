@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AGENT_MODEL_NAME
 import re
 from collections.abc import Mapping, Sequence
 
@@ -35,7 +36,7 @@ class WorkerTestFailures:
         self.record(worker_id, task_id, TestFailureSource.DELIVERY, test_name, context)
         failures = self.queries.query(WorkerTestFailure).filter(task_id=task_id, source=TestFailureSource.DELIVERY).count()
         if failures % DELIVERY_REVIEW_INTERVAL_COUNT == 0:
-            self.inbox.send(f"worker:{worker_id} failed {failures} hand-ins in a row on task:{task_id}: work out where it goes wrong and tell it", MERGER_SOURCE, context)
+            self.inbox.send(f"worker:{self.numbers.number(AGENT_MODEL_NAME, worker_id)} failed {failures} hand-ins in a row on task:{task_id}: work out where it goes wrong and tell it", MERGER_SOURCE, context)
 
     def record_worker_run(self, worker_id: int, task_id: int, line: str, context: Context) -> None:
         for test_name in self.test_names(line):

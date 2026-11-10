@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.enums.actor_type import ActorType
 from engine.enums.helper_role import HelperRole
 from engine.command.context import Context
@@ -30,7 +32,8 @@ class HelperLimits:
     """Who may start a helper, on which model, and how many of a profile run or are kept. A helper with an open job
     holds a run place while its resume is on its way, before its session binds."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, suites: SuiteChoice, models: AllowedModels, providers: Providers, agents: AgentRows, launcher: LauncherLink, limits: AgentTypeLimits, kept: KeptHelpers, use: AgentUse, admission: AgentAdmission) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, suites: SuiteChoice, models: AllowedModels, providers: Providers, agents: AgentRows, launcher: LauncherLink, limits: AgentTypeLimits, kept: KeptHelpers, use: AgentUse, admission: AgentAdmission, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.use, self.admission = use, admission
         self.limits, self.kept = limits, kept
         self.launcher = launcher
@@ -59,7 +62,7 @@ class HelperLimits:
         running_ids = {helper.id for helper in self.helpers(profile).matching(IsNull("ended_at")).all_rows()} | self.kept.with_open_jobs(profile)
         limit = self.helper_limits(profile).run
         if len(running_ids) >= limit:
-            names = ", ".join(f"agent:{helper_id}" for helper_id in sorted(running_ids))[:RUNNING_NAMES_CHARACTERS]
+            names = ", ".join(f"agent:{self.numbers.number(AGENT_MODEL_NAME, helper_id)}" for helper_id in sorted(running_ids))[:RUNNING_NAMES_CHARACTERS]
             raise Refusal(f"{limit} of {profile} run: {names}", self.next_step_text())
 
     def checked_new_place(self, profile: str) -> None:
