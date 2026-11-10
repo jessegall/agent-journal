@@ -39,6 +39,10 @@ class AgentListingState:
     helper_job_title: str
     helper_job_program: str
     helper_job_new_session: bool | None
+    session_count: int
+    replaced_session_end_reason: str | None
+    memory_count: int
+    retiring_actor_name: str | None
     job_returned: str
     parent_id: int | None
     created_at: Timestamp

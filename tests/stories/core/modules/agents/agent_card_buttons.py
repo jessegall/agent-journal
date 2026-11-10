@@ -1,5 +1,5 @@
 from core.modules.agents.testing.fake_launcher import FakeLauncher
-from tests.stories.core.modules.agents.agent_cards_numbers import WINDOW, cards
+from tests.stories.core.modules.agents.agent_cards_numbers import WINDOW, card
 from tests.stories.core.modules.agents.agent_driver import CODEX_MODEL, DRIVER
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, StartedHelper, helper_agent
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
@@ -27,8 +27,8 @@ def test_the_card_of_an_agent_whose_session_was_replaced_is_the_same_card_and_sa
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     with viewer_client(story) as person:
-        card = cards(person, "--closed", "--agent", str(helper.number))[0]
+        first_card = card(person, helper.number)
         person.value(WINDOW, DRIVER.format(number=helper.number, program="codex", model=CODEX_MODEL).split())
-        replaced_card = cards(person, "--closed", "--agent", str(helper.number))[0]
-    story.expect_rows(replaced_card["id"] == card["id"] == helper.id, replaced_card["number"] == card["number"], replaced_card["session"] != card["session"],
-                      replaced_card["replaced_session_end_reason"] == "driver_changed", card["replaced_session_end_reason"] is None, detail=str(replaced_card))
+        replaced_card = card(person, helper.number)
+    story.expect_rows(replaced_card["id"] == first_card["id"] == helper.id, replaced_card["number"] == first_card["number"], replaced_card["session"] != first_card["session"],
+                      replaced_card["replaced_session_end_reason"] == "driver_changed", first_card["replaced_session_end_reason"] is None, detail=str(replaced_card))

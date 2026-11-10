@@ -2,6 +2,7 @@
 import {computed, defineAsyncComponent, onUnmounted, ref, watch} from "vue";
 import {READ_RATES, coalesced, EmptyState, FoldGroup, InnerTabs, eventMayBeChildOf, loadWindowComponent, peekRef, SwitchCase, TabBody, useWindow} from "@journal/window-kit";
 import AgentCommand from "./AgentCommand.vue";
+import AgentLastingFacts from "./AgentLastingFacts.vue";
 import AgentTaskGroup from "./AgentTaskGroup.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
@@ -50,6 +51,7 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
 
 <template>
     <div class="agent-more" data-agent-more @click.stop>
+        <AgentLastingFacts :row="row" />
         <template v-if="row.retirement_reason"><p class="agent-summary" data-agent-retirement-reason>Retirement reason: {{ row.retirement_reason }}</p></template>
         <template v-if="row.resume_reason"><p class="agent-summary" data-agent-resume-reason>{{ row.resume_reason }}</p></template>
                 <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>

@@ -8,7 +8,7 @@ import AgentTaskLine from "./AgentTaskLine.vue";
 import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
 
 const IN_HAND_STATES = new Set(["started", "testing", "blocked"]);
-const FALLBACK_TITLES = {helper: "Helper", reviewer: "Reviewer"};
+const FALLBACK_TITLES = {helper: "Helper", reviewer: "Reviewer", main: "Main agent"};
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
 const emit = defineEmits(["toggle"]);
 const now = useNow();
