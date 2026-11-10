@@ -44,7 +44,7 @@ class MergeWorkerSubcommand(Subcommand[Command[object], MergeOutcome]):
             self.step_check.check(worktree, MERGE_EVENTS, "the worker puts it right: journal worker send it the reason, then merge again")
         command = MergeWorker(arguments.worker_id, arguments.read_important, arguments.reconcile)
         return self.requests.command(command, arguments.worker_id,
-                                     ["worker", "merge", str(arguments.worker_id), "--read-important", arguments.read_important, "--reconcile", arguments.reconcile], arguments, caller)
+                                     ["worker", "merge", str(arguments.worker_id.number), "--read-important", arguments.read_important, "--reconcile", arguments.reconcile], arguments, caller)
 
     def write_output(self, value: object, output: Output) -> None:
         if self.requests.write_output(value, output):

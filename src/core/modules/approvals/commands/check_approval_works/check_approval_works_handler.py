@@ -1,6 +1,3 @@
-import io
-from contextlib import redirect_stderr, redirect_stdout
-
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
@@ -50,16 +47,11 @@ class CheckApprovalWorksHandler(Handler[CheckApprovalWorks, None]):
 
     def explain_line(self, arguments: tuple[str, ...], caller: Caller, context: Context) -> None:
         line = list(arguments)
-        subcommand, parser = self.console.line_parser.parser(line)
+        subcommand, _ = self.console.line_parser.parser(line)
         if not isinstance(subcommand, Subcommand):
             return None
-        captured_text = io.StringIO()
-        try:
-            with redirect_stdout(captured_text), redirect_stderr(captured_text):
-                parsed = parser.parse_args(line[2:])
-        except SystemExit:
-            raise Refusal(captured_text.getvalue().strip()) from None
-        self.explain(subcommand.command(parsed, caller), caller.actor, context)
+        command, _ = self.console.line_command(line, caller)
+        self.explain(command, caller.actor, context)
 
     def explain(self, command: Command[object], person: Actor, context: Context) -> None:
         if self.bus.handler(command).has_prepare_step:

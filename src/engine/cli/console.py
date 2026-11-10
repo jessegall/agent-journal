@@ -22,6 +22,7 @@ from engine.cli.shell_handoff import ShellHandoff
 from engine.cli.errors.usage_error import UsageError
 from engine.cli.write_flags import WriteFlags
 from engine.command.bus import Bus
+from engine.command.command import Command
 from engine.command.context import Context
 from engine.command.check_approval_works import CheckApprovalWorks
 from engine.command.accept_covered_approval import AcceptCoveredApproval
@@ -194,6 +195,14 @@ class Console:
             self.overview_reads.note(caller.actor, f"{subcommand.cli_name} {subcommand.name}", subcommand.overview_target(arguments))
 
     def dispatched(self, argv: list[str], caller: Caller, context: Context) -> object:
+        command, environment_id = self.line_command(argv, caller)
+        handler = self.bus.handler(command)
+        if handler.has_prepare_step:
+            raise Refusal(f"journal {' '.join(argv[:2])} works outside the database, so it cannot run inside a transaction")
+        with self.scopes.command_scope(handler.disabled_scopes, caller.actor, environment_id):
+            return self.bus.dispatch(command, replace(context, actor=caller.actor, environment_id=environment_id))
+
+    def line_command(self, argv: list[str], caller: Caller) -> tuple[Command[object], int | None]:
         subcommand, parser = self.line_parser.parser(argv)
         captured_output = io.StringIO()
         try:
@@ -207,12 +216,7 @@ class Console:
         self.agent_numbers.replace_numbers(arguments, environment_id)
         if not isinstance(subcommand, Subcommand):
             raise Refusal(f"journal {' '.join(argv[:2])} only reads, so it has no place in a transaction")
-        command = subcommand.command(arguments, replace(caller, environment_id=environment_id))
-        handler = self.bus.handler(command)
-        if handler.has_prepare_step:
-            raise Refusal(f"journal {' '.join(argv[:2])} works outside the database, so it cannot run inside a transaction")
-        with self.scopes.command_scope(handler.disabled_scopes, caller.actor, environment_id):
-            return self.bus.dispatch(command, replace(context, actor=caller.actor, environment_id=environment_id))
+        return subcommand.command(arguments, replace(caller, environment_id=environment_id)), environment_id
 
     def scoped_caller(self, subcommand: ReadSubcommand[object], caller: Caller) -> Caller:
         environment_id = self.scopes.environment_id or caller.environment_id
