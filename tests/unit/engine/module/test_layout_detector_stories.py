@@ -7,7 +7,7 @@ import pytest
 
 from tests.unit.test_layout_allow_list import ALLOW_LISTED_RULES, stale_entries
 
-ROOT = Path(__file__).resolve().parents[5]
+ROOT = Path(__file__).resolve().parents[4]
 CUSTOM_FOLDER = ROOT / ".commandments" / "custom"
 CLASS_RULE = "architecture_layout_base_loose_class"
 FUNCTION_RULE = "architecture_layout_top_loose_function"

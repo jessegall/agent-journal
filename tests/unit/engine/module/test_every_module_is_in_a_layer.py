@@ -6,7 +6,7 @@ from engine.module.layer_check import LayerCheck
 from engine.module.layer_table import LayerTable
 from engine.module.module_finder import ModuleFinder
 
-PROJECT_FOLDER = Path(__file__).resolve().parents[5]
+PROJECT_FOLDER = Path(__file__).resolve().parents[4]
 
 
 def test_every_module_and_suite_is_in_a_layer():

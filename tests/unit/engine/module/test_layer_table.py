@@ -11,7 +11,7 @@ from engine.module.layer_tier import LayerTier
 from engine.module.module import Module
 
 
-CONFIG_FILE = Path(__file__).resolve().parents[5] / ".commandments" / "config.json"
+CONFIG_FILE = Path(__file__).resolve().parents[4] / ".commandments" / "config.json"
 
 
 def declared(name, folder, dependencies=()):
