@@ -5,4 +5,4 @@ import suites.coding.coding_suite
 # @sin architecture_layers_engine_imports_a_module
 from server.server import Server
 # @righteous architecture_layers_engine_imports_a_module
-from engine.clock.clock import Clock
+from engine.command.command import Command

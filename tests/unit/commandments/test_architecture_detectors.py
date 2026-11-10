@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[3]
 CUSTOM_FOLDER = ROOT / ".commandments" / "custom"
 KNOWN_WITHOUT_SAMPLE = ROOT / "tests" / "snapshots" / "detectors_without_sample.txt"
 KNOWN_MISSING_FOLDERS = ROOT / "tests" / "snapshots" / "detector_folders_missing.txt"
+KNOWN_MISSING_SAMPLE_FOLDERS = ROOT / "tests" / "snapshots" / "detector_sample_folders_missing.txt"
 DETECTORS = sorted(path.stem for path in CUSTOM_FOLDER.glob("architecture_*.json"))
 PATH_KEYS = ("file", "fileMatches", "calledFrom")
 PATTERN_START = re.compile(r"^(\(\^\|/\)|\^|\*\*/|/)+")
@@ -62,6 +63,26 @@ def lines_without_sample() -> list[str]:
     return [name for name in DETECTORS if f"@sin {name}\n" not in text or f"@righteous {name}\n" not in text]
 
 
+def configuration() -> dict:
+    return json.loads((ROOT / ".commandments" / "config.json").read_text())
+
+
+def sample_folders_missing() -> list[str]:
+    owners = set()
+    for path in (CUSTOM_FOLDER / "samples").rglob("*.py"):
+        parts = path.relative_to(CUSTOM_FOLDER / "samples").parts
+        if "src" not in parts:
+            continue
+        below = parts[parts.index("src") + 1:-1]
+        if below[:1] == ("engine",) and len(below) > 1:
+            owners.add(f"src/engine/{below[1]}")
+        if below[:2] == ("core", "modules") and len(below) > 2:
+            owners.add(f"src/core/modules/{below[2]}")
+        if below[:1] == ("suites",) and len(below) > 1:
+            owners.add(f"src/suites/{below[1]}")
+    return sorted(owner for owner in owners if not (ROOT / owner).is_dir())
+
+
 def known(path: Path) -> list[str]:
     return path.read_text().splitlines()
 
@@ -96,3 +117,22 @@ def test_the_literal_folder_of_a_pattern_is_what_stands_before_its_first_pattern
     assert literal_folder("src/core/modules/*/rules/*.py") == "src/core/modules"
     assert literal_folder("(^|/)engine/driver/[^/]+\\.py$") == "engine/driver"
     assert literal_folder("*Repository.py") == ""
+
+
+def test_every_detector_file_is_listed_in_the_configuration_so_the_judge_runs_it():
+    files = sorted(path.stem for path in CUSTOM_FOLDER.glob("*.json") if path.stem != "lists")
+    assert [name for name in files if name not in configuration()["detectors"]] == []
+
+
+def test_every_top_folder_of_the_source_is_judged():
+    top_folders = sorted(f"src/{folder.name}" for folder in (ROOT / "src").iterdir() if folder.is_dir() and folder.name != "__pycache__")
+    assert [folder for folder in top_folders if folder not in configuration()["paths"]] == []
+
+
+def test_a_sample_that_mirrors_an_engine_area_a_core_module_or_a_suite_names_one_that_exists():
+    added = sorted(set(sample_folders_missing()) - set(known(KNOWN_MISSING_SAMPLE_FOLDERS)))
+    assert added == [], "the area, module or suite of a sample is gone: move the sample with the source it mirrors"
+
+
+def test_a_sample_folder_that_exists_again_is_taken_off_the_known_list():
+    assert sorted(set(known(KNOWN_MISSING_SAMPLE_FOLDERS)) - set(sample_folders_missing())) == []
