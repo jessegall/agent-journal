@@ -29,7 +29,11 @@ class LimitSet(StoryFixture):
 
 
 def lockdown_story(new_story, fixture=LimitSet) -> Story:
-    story = new_story(fixture=fixture)
+    return with_reported_usage(new_story(fixture=fixture))
+
+
+def with_reported_usage(story: Story) -> Story:
+    """The story reads the usage the program's status file reports, so a limit can be reached in it."""
     story.container.bind(ProgramStates, story.container.constructed(ProgramStates))
     story.container.bind(ProgramLockdown, story.container.constructed(UsageLockdown))
     story.container.bind(HookRoute, story.container.constructed(type(story.container.get(HookRoute))))

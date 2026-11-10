@@ -4,6 +4,7 @@ from dataclasses import replace
 from core.base.actor import Actor
 from core.base.shell_sandbox import ShellSandbox
 from core.base.command.bus import Bus
+from core.base.driver.program_lockdown import ProgramLockdown
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
@@ -45,7 +46,8 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
 
     command = StartHelper
 
-    def __init__(self, profiles: ProfileFiles, types: HelperTypeBook, limits: HelperLimits, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers, models: ProfileModels, shares: ProgramShares, states: ProgramStates, counts: HelperCounts) -> None:
+    def __init__(self, profiles: ProfileFiles, types: HelperTypeBook, limits: HelperLimits, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers, models: ProfileModels, shares: ProgramShares, states: ProgramStates, counts: HelperCounts, lockdown: ProgramLockdown) -> None:
+        self.lockdown = lockdown
         self.kept, self.models = kept, models
         self.sandbox = sandbox
         self.profiles, self.types, self.limits, self.bus, self.repository, self.reuse = profiles, types, limits, bus, repository, reuse
@@ -121,13 +123,16 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
     def availability_note(self, command: StartHelper, program: str) -> str:
         if not command.program:
             return ""
-        state = self.states.allowance_state(program)
+        state = self.states.plan_window_state(program)
         if state.is_ready:
             return ""
         availability = f" until {state.ends_at.text}" if state.ends_at is not None else ""
         return f"{program} is out{availability}: {state.line}; started as requested"
 
     def checked_start(self, program: str, program_model: str, profile: AgentProfile, parent: Agent, tier: ModelTier | None) -> str:
+        lockdown = self.lockdown.lockdown(program)
+        if lockdown.is_active:
+            raise lockdown.start_refusal("helper")
         model = self.limits.checked_profile_model(ProfileModel(program, program_model or self.models.model(profile, self.providers.provider(program), tier, "helper"), profile.name))
         self.programs.checked(program, self.folders.folder(parent))
         return model

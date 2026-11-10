@@ -1,3 +1,4 @@
+from core.base.driver.program_lockdown import ProgramLockdown
 from core.base.command.context import Context
 from suites.coding.modules.workers.support.worker_route_policy import WorkerRoutePolicy
 from suites.coding.modules.workers.support.worker_route_request import WorkerRouteRequest
@@ -31,7 +32,8 @@ class WorkerRouting:
 
     def __init__(self, shares: ProgramShares, states: ProgramStates, counts: WorkerCounts,
                  environments: EnvironmentRows, providers: Providers, models: ProfileModels,
-                 programs: HelperPrograms, routes: WorkerRoutes, policy: WorkerRoutePolicy, admission: AgentAdmission) -> None:
+                 programs: HelperPrograms, routes: WorkerRoutes, policy: WorkerRoutePolicy, admission: AgentAdmission, lockdown: ProgramLockdown) -> None:
+        self.lockdown = lockdown
         self.shares, self.states, self.counts, self.environments = shares, states, counts, environments
         self.providers, self.models, self.programs, self.routes = providers, models, programs, routes
         self.policy = policy
@@ -96,6 +98,9 @@ class WorkerRouting:
 
     def selected(self, command: WorkerProgramRequest, profile: AgentProfile, program: str,
                  reason: str, route: WorkerRoute | None = None) -> WorkerChoice:
+        lockdown = self.lockdown.lockdown(program)
+        if lockdown.is_active:
+            raise lockdown.start_refusal("worker")
         provider = self.providers.provider(program)
         wanted_tier = command.tier
         if wanted_tier is None and route is not None:

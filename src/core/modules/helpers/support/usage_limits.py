@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 from datetime import datetime, timezone
 
+from core.base.database.kept_rows import KeptRows
 from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
 from core.modules.helpers.models.enums.usage_limit_mode import UsageLimitMode
@@ -17,11 +18,12 @@ class UsageLimits:
     and says when the last limit reached ends: a window's own reset, or the end of the clock hour for an
     hourly limit."""
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, kept_rows: KeptRows) -> None:
+        self.queries, self.kept_rows = queries, kept_rows
 
     def program_limits(self, program: str) -> tuple[UsageLimit, ...]:
-        return tuple(self.queries.query(UsageLimit).filter(program=program).oldest().all_rows())
+        return self.kept_rows.read("usage_limits", lambda: tuple(self.queries.query(UsageLimit).filter(program=program).oldest().all_rows()),
+                                   "program = ?", [program], name="helpers.program-limits")
 
     @staticmethod
     def matching_window(limit: UsageLimit, windows: Sequence[PlanWindow]) -> PlanWindow | None:

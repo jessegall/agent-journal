@@ -1,3 +1,4 @@
+from core.base.driver.program_lockdown import ProgramLockdown
 from core.modules.settings.bindings.support.context_share import ContextShare
 from engine.enums.helper_role import HelperRole
 from core.base.database.kept_rows import KeptRows
@@ -20,7 +21,8 @@ class KeptHelpers:
     the program and model asked for, with a session that resumes in its folder and is not nearly full. The
     newest comes first."""
 
-    def __init__(self, queries: Queries, providers: Providers, folders: AgentFolders, kept_rows: KeptRows, states: ProgramStates, share: ContextShare) -> None:
+    def __init__(self, queries: Queries, providers: Providers, folders: AgentFolders, kept_rows: KeptRows, states: ProgramStates, share: ContextShare, lockdown: ProgramLockdown) -> None:
+        self.lockdown = lockdown
         self.queries, self.providers, self.folders, self.kept_rows = queries, providers, folders, kept_rows
         self.states, self.share = states, share
 
@@ -57,6 +59,9 @@ class KeptHelpers:
         return self.states.outage_state(helper.program)
 
     def check_program(self, helper: Agent) -> None:
+        lockdown = self.lockdown.lockdown(helper.program)
+        if lockdown.is_active:
+            raise lockdown.start_refusal("helper")
         state = self.program_state(helper)
         if not state.is_ready:
             raise Refusal(f"helper {helper.id} waits on {helper.program}: {state.wait_line}", f"journal helper send {helper.id} after it is back")

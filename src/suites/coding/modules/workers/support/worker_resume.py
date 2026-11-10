@@ -1,3 +1,4 @@
+from core.base.driver.program_lockdown import ProgramLockdown
 from suites.coding.modules.workers.support.worker_routes import WorkerRoutes
 from datetime import timedelta
 
@@ -51,7 +52,8 @@ class WorkerResume:
     with no job waiting is given the line that tells it to go on."""
 
     def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement,
-                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows, admission: AgentAdmission, started_work: WorkerStartedWork, cold: ColdSessions, instruction_files: WorkerInstructionFiles, compaction: WorkerCompaction, conversations: AgentConversations) -> None:
+                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows, admission: AgentAdmission, started_work: WorkerStartedWork, cold: ColdSessions, instruction_files: WorkerInstructionFiles, compaction: WorkerCompaction, conversations: AgentConversations, lockdown: ProgramLockdown) -> None:
+        self.lockdown = lockdown
         self.admission, self.started_work, self.instruction_files = admission, started_work, instruction_files
         self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
         self.cold, self.conversations = cold, conversations
@@ -70,7 +72,7 @@ class WorkerResume:
     def may_resume(self, worker: Agent) -> bool:
         with self.scopes.row_scope(worker):
             permitted = not self.admission.resume_reasons("worker", worker.profile) and not self.admission.model_reasons("worker", worker.profile, worker.program, worker.program_model)
-        return permitted and self.program_state(worker).is_ready
+        return permitted and not self.lockdown.lockdown(worker.program).is_active and self.program_state(worker).is_ready
 
     def replace_running_program(self, worker: Agent, actor: Actor) -> None:
         ended_at = worker.ended_at

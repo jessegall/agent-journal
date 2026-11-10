@@ -4,8 +4,10 @@ from core.base.system_log_writer import SystemLogWriter
 from core.modules.helpers.support.program_states import ProgramStates
 from engine.enums.log_level import LogLevel
 
-STOP_LINE = "[journal] {program} is at your usage limit until {ends_at}. Everything is stopped until then{lift}."
+REASON = "{program} is at your usage limit until {ends_at}"
+STOP_LINE = "[journal] {reason}. Everything is stopped until then{lift}."
 LIFT_TEXT = "; a person can lift the limit with usage-limit delete {limit}"
+SUGGESTION = "wait until it ends{lift}"
 
 
 class UsageLockdown(ProgramLockdown):
@@ -25,4 +27,5 @@ class UsageLockdown(ProgramLockdown):
         if end is None:
             return Lockdown()
         lift = LIFT_TEXT.format(limit=end.limit_id) if end.limit_id is not None else ""
-        return Lockdown(end.ends_at, STOP_LINE.format(program=program.capitalize(), ends_at=end.ends_at.value.astimezone().strftime("%H:%M on %d %b"), lift=lift))
+        reason = REASON.format(program=program.capitalize(), ends_at=end.ends_at.value.astimezone().strftime("%H:%M on %d %b"))
+        return Lockdown(end.ends_at, STOP_LINE.format(reason=reason, lift=lift), reason, SUGGESTION.format(lift=lift))

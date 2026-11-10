@@ -52,13 +52,19 @@ class ProgramStates:
         return self.allowance_state(program)
 
     def allowance_state(self, program: str) -> ProgramState:
+        state = self.plan_window_state(program)
+        if not state.is_ready:
+            return state
+        custom_limit = self.custom_limit_reset_timestamp(program)
+        return ProgramState.ready() if custom_limit is None else ProgramState.unavailable(f"a usage limit set for {program} is reached", custom_limit)
+
+    def plan_window_state(self, program: str) -> ProgramState:
         outage = self.outage_state(program)
         if not outage.is_ready:
             return outage
         window = self.window_reaching(program, self.settings.number(PROGRAM_WINDOW_PERCENT) or LIMIT_PERCENT)
         if window is None:
-            custom_limit = self.custom_limit_reset_timestamp(program)
-            return ProgramState.ready() if custom_limit is None else ProgramState.unavailable(f"a usage limit set for {program} is reached", custom_limit)
+            return ProgramState.ready()
         return ProgramState.unavailable(window.line, Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc)))
 
     def limit_reset_timestamp(self, program: str) -> Timestamp | None:

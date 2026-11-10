@@ -1,5 +1,6 @@
 from core.base.actor import Actor
 from core.base.command.bus import Bus
+from core.base.driver.program_lockdown import ProgramLockdown
 from engine.errors.refusal import Refusal
 from core.base.provider.launch_command import LaunchCommand
 from core.modules.agents.models.agent import Agent
@@ -18,14 +19,17 @@ ROLE_VARIABLE = "JOURNAL_ROLE"
 
 
 class AgentLauncher:
-    """Start an agent through the launcher and record its process."""
+    """Start an agent through the launcher and record its process. A program at a usage limit is not started:
+    it answers locked down before anything is asked of the launcher."""
 
-    def __init__(self, link: LauncherLink, bus: Bus, sessions: AgentLaunchGuard) -> None:
-        self.link, self.bus, self.sessions = link, bus, sessions
+    def __init__(self, link: LauncherLink, bus: Bus, sessions: AgentLaunchGuard, lockdown: ProgramLockdown) -> None:
+        self.link, self.bus, self.sessions, self.lockdown = link, bus, sessions, lockdown
 
     def hand(self, agent: Agent, environment: Environment, command: LaunchCommand) -> LaunchAnswer:
         if agent.retired_at is not None:
             raise Refusal(f"agent {agent.id} is retired, for good", "start a new agent")
+        if self.lockdown.lockdown(agent.program).is_active:
+            return LaunchAnswer.LOCKED_DOWN
         with self.sessions.lock(agent.session) as available:
             if not available:
                 return LaunchAnswer.LOCKED

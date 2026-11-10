@@ -1,5 +1,8 @@
 from core.base.actor import Actor
 from core.base.container import Container
+from core.base.driver.program_lockdown import ProgramLockdown
+from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.profiles.support.profile_files import ProfileFiles
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.scope.scopes import Scopes
@@ -22,7 +25,8 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class MergerRetry:
-    """Wakes an idle merger when the next worker can be merged or a line waits unread for it."""
+    """Wakes an idle merger when the next worker can be merged or a line waits unread for it. A merger whose
+    program is at a usage limit is left alone until the limit ends."""
 
     def __call__(self, container: Container) -> None:
         worktrees = container.get(WorktreeQuery).all_worktrees()
@@ -54,7 +58,17 @@ class MergerRetry:
         if not container.get(SettingValues).flag(MERGER_ENABLED):
             return False
         merger = container.get(Queries).query(Agent).filter(profile=MERGER_PROFILE).matching(IsNull("retired_at")).newest().first()
-        return merger is None or (merger.ended_at is not None and container.get(HelperJobRows).open_job(merger.id) is None)
+        if merger is None:
+            return not MergerRetry.is_profile_program_locked_down(container)
+        if container.get(ProgramLockdown).lockdown(merger.program).is_active:
+            return False
+        return merger.ended_at is not None and container.get(HelperJobRows).open_job(merger.id) is None
+
+    @staticmethod
+    def is_profile_program_locked_down(container: Container) -> bool:
+        main_agent = container.get(AgentRows).main_agent()
+        program = container.get(ProfileFiles).effective(MERGER_PROFILE).program or (main_agent.program if main_agent is not None else "")
+        return bool(program) and container.get(ProgramLockdown).lockdown(program).is_active
 
     def retry(self, container: Container, worktree: Worktree) -> None:
         if not self.is_merger_idle(container):
