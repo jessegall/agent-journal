@@ -19,9 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/core/journal.py"
-            },
-            {
                 "file": "src/core/testing/expect_reply.py"
             },
             {

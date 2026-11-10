@@ -31,7 +31,7 @@ def test_the_upgrade_of_a_version_4_project_makes_version_5_live_and_moves_versi
     run = upgrade(scratch, "--yes")
     assert run.returncode == 0, run.stdout + run.stderr
     assert "upgraded" in run.stdout and "dropped collections: 1 rows" in run.stdout
-    assert (scratch.journal / "version-5.db").is_file() and (scratch.journal / "src" / "core" / "journal.py").is_file()
+    assert (scratch.journal / "version-5.db").is_file() and (scratch.journal / "src" / "engine" / "cli" / "journal.py").is_file()
     assert not (scratch.journal / "journal.db").exists() and content(scratch.journal / "version-4" / "journal.db") == version_four_bytes
     assert content(next((scratch.journal / "version-4").rglob("journal.db"))) == version_four_bytes
 

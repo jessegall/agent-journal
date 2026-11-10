@@ -28,7 +28,7 @@ class InstallJournal:
         if VersionFour(self.home.folder).exists() and not self.home.database.exists():
             print(ANSWER, file=sys.stderr)
             return REFUSED
-        if self.home.database.exists() and self.code().joinpath("core", "journal.py").exists():
+        if self.home.database.exists() and self.entry_point().exists():
             print(f"version 5 is already installed in {self.home.folder}; nothing changed")
             return INSTALLED
         self.home.folder.mkdir(parents=True, exist_ok=True)
@@ -43,12 +43,15 @@ class InstallJournal:
     def code(self) -> Path:
         return CodeCopy(self.source, self.home).folder()
 
+    def entry_point(self) -> Path:
+        return self.code() / "engine" / "cli" / "journal.py"
+
     def copy_code(self) -> None:
         CodeVersions(self.home).install(self.source, Clock())
 
     def sync(self) -> None:
         environment = {**os.environ, HOME_VARIABLE: str(self.home.folder)}
-        finished = subprocess.run([sys.executable, str(self.code() / "core" / "journal.py"), "module", "sync"], cwd=self.project, env=environment,
+        finished = subprocess.run([sys.executable, str(self.entry_point()), "module", "sync"], cwd=self.project, env=environment,
                                   capture_output=True, text=True, timeout=SYNC_LIMIT_SECONDS)
         if finished.returncode != 0:
             raise SystemExit(f"the first module sync failed: {finished.stdout}{finished.stderr}")

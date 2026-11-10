@@ -1,5 +1,4 @@
 src/core/__init__.py: the file is in no layer
-src/core/journal.py: the file is in no layer
 src/core/modules/__init__.py: the file is in no layer
 src/core/testing/__init__.py: the file is in no layer
 src/core/testing/expect_reply.py: the file is in no layer

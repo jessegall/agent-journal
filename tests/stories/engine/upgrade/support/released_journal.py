@@ -22,7 +22,7 @@ class ReleasedJournal:
         assert finished.returncode == 0, finished.stdout + finished.stderr
 
     def expect_command(self, line: str, text: str) -> None:
-        command = self.scratch.journal / "src" / "core" / "journal.py"
+        command = self.scratch.journal / "src" / "engine" / "cli" / "journal.py"
         finished = self.run([sys.executable, str(command), *shlex.split(line)])
         assert finished.returncode == 0 and text in finished.stdout, finished.stdout + finished.stderr
 

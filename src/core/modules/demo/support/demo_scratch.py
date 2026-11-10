@@ -46,7 +46,7 @@ class DemoScratch:
         return DemoSession(self.folder, server.pid, DemoLink.build(port, self.login_key(), DEMO_ENVIRONMENT))
 
     def journal(self, arguments: list[str]) -> None:
-        outcome = subprocess.run([sys.executable, str(self.code.folder() / "core" / "journal.py"), *arguments], cwd=self.folder, capture_output=True, text=True, timeout=STEP_SECONDS,
+        outcome = subprocess.run([sys.executable, str(self.code.folder() / "engine" / "cli" / "journal.py"), *arguments], cwd=self.folder, capture_output=True, text=True, timeout=STEP_SECONDS,
                               env={**os.environ, "JOURNAL_HOME": str(self.home.folder), "USER": PERSON}, check=False)
         if outcome.returncode != 0:
             raise Refusal(f"journal {' '.join(arguments)} gave {outcome.returncode} in the demo's folder: {(outcome.stdout + outcome.stderr).strip()[:300]}", "start it again")

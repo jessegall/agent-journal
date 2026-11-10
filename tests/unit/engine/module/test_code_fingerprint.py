@@ -86,4 +86,4 @@ def test_a_second_fingerprint_of_the_same_folders_walks_them_no_more_and_a_new_f
 def test_the_fingerprint_reads_the_engine_folder_and_the_core_folder():
     folders = CodeFingerprint.folders([])
     assert folders == (ENGINE_FOLDER, CORE_FOLDER)
-    assert (ENGINE_FOLDER / "module" / "code_fingerprint.py").is_file() and (CORE_FOLDER / "journal.py").is_file()
+    assert (ENGINE_FOLDER / "module" / "code_fingerprint.py").is_file() and (ENGINE_FOLDER / "cli" / "journal.py").is_file()

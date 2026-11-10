@@ -48,7 +48,7 @@ def test_a_path_gives_its_layer(path, layer):
 
 
 def test_a_path_that_matches_no_pattern_has_no_layer():
-    assert LayerTable().file_layer("src/core/journal.py") is None
+    assert LayerTable().file_layer("src/core/__init__.py") is None
 
 
 def test_a_file_in_no_layer_fails(tmp_path):

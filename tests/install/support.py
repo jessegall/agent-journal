@@ -78,7 +78,7 @@ class ServerScratch:
                 "JOURNAL_PYTHON": sys.executable, "HOME": str(self.home.folder.parent)}
 
     def sync(self) -> None:
-        finished = subprocess.run([sys.executable, str(SERVER_SOURCE / "core" / "journal.py"), "module", "sync"], cwd=self.home.folder.parent,
+        finished = subprocess.run([sys.executable, str(SERVER_SOURCE / "engine" / "cli" / "journal.py"), "module", "sync"], cwd=self.home.folder.parent,
                                   env=self.environment(), capture_output=True, text=True, timeout=TIMEOUT_SECONDS)
         assert finished.returncode == 0, finished.stdout + finished.stderr
 

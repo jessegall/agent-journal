@@ -98,7 +98,7 @@ find_python() {
 
 # the code is the src beside this script, or else the release's agent-journal.tar.gz, checked against checksums.txt
 SOURCE="$HERE/src"
-if [ ! -f "$SOURCE/core/journal.py" ]; then
+if [ ! -f "$SOURCE/engine/cli/journal.py" ]; then
   archive=$(mktemp -d)
   trap 'rm -rf "$archive"' EXIT
   curl -fsSL "$RELEASE/agent-journal.tar.gz" -o "$archive/agent-journal.tar.gz" || fail "the release has no agent-journal.tar.gz"

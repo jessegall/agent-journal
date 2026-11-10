@@ -17,7 +17,7 @@ def test_install_in_an_empty_project_makes_a_version_5_database_synced_from_the_
     scratch = installed
     database = scratch.journal / "version-5.db"
     assert database.is_file() and {"tasks", "agents", "registry"} <= scratch.tables(database)
-    assert (scratch.journal / "src" / "core" / "journal.py").is_file()
+    assert (scratch.journal / "src" / "engine" / "cli" / "journal.py").is_file()
     assert not (scratch.journal / "journal.db").exists()
 
 

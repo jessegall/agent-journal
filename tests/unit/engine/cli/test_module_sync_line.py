@@ -1,7 +1,7 @@
 import json
 
 from engine.journal.journal_home import JournalHome
-from core.journal import main
+from engine.cli.journal import main
 from tests.unit.engine.module.test_module_sync import ITEM_COUNT, ITEMS
 
 

@@ -11,7 +11,7 @@ from tests.unit.engine.module.test_module_sync import ITEMS, synced
 ROOT = Path(__file__).resolve().parents[4]
 STARTUP_LIMIT_SECONDS = 3.0
 TIMEOUT_SECONDS = 30
-SCRIPT = "import sys; from core.journal import main; sys.exit(main(sys.argv[1:]))"
+SCRIPT = "import sys; from engine.cli.journal import main; sys.exit(main(sys.argv[1:]))"
 
 
 @pytest.mark.skipif("PYTEST_XDIST_WORKER" in os.environ, reason="a time limit means nothing beside five other workers: run this file alone")
@@ -26,7 +26,7 @@ def test_a_run_answers_within_its_startup_limit(tmp_path):
 
 def test_a_journal_never_synced_is_told_to_sync(tmp_path):
     environment = {**os.environ, "JOURNAL_HOME": str(tmp_path), "PYTHONPATH": str(ROOT / "src")}
-    finished = subprocess.run([sys.executable, str(ROOT / "src" / "core" / "journal.py"), "item", "list"], env=environment, capture_output=True, text=True,
+    finished = subprocess.run([sys.executable, str(ROOT / "src" / "engine" / "cli" / "journal.py"), "item", "list"], env=environment, capture_output=True, text=True,
                               timeout=TIMEOUT_SECONDS)
     assert (finished.returncode, finished.stdout) == (2, "the journal has never been synced: journal module sync\n")
 

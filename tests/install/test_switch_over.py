@@ -85,7 +85,7 @@ def test_the_upgrade_runs_from_the_release_package_with_no_code_beside_the_scrip
     run = subprocess.run(["sh", str(folder / "install.sh"), "upgrade", "--yes"], cwd=scratch.project, env=scratch.environment(), capture_output=True, text=True,
                          timeout=TIMEOUT_SECONDS)
     assert run.returncode == 0, run.stdout + run.stderr
-    assert (scratch.journal / "version-5.db").is_file() and (scratch.journal / "src" / "core" / "journal.py").is_file()
+    assert (scratch.journal / "version-5.db").is_file() and (scratch.journal / "src" / "engine" / "cli" / "journal.py").is_file()
 
 
 def run_hook(command: str, scratch: Scratch) -> subprocess.CompletedProcess[str]:
