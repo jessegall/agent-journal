@@ -24,8 +24,9 @@ class ChangeAgentDriverHandler(Handler[ChangeAgentDriver, Agent]):
         self.rows, self.bus, self.admission, self.access = rows, bus, admission, access
 
     def prepare(self, command: ChangeAgentDriver, actor: Actor) -> None:
-        self.access.check(actor)
-        self.check_agent(self.rows.required(Agent, command.agent_id), command)
+        agent = self.rows.required(Agent, command.agent_id)
+        self.access.check_driver_change(actor, agent)
+        self.check_agent(agent, command)
 
     def handle(self, command: ChangeAgentDriver, context: Context) -> Agent:
         agent = self.rows.required(Agent, command.agent_id)

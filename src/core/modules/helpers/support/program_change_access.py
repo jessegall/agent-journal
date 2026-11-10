@@ -7,7 +7,8 @@ from core.modules.agents.models.agent import Agent
 
 
 class ProgramChangeAccess:
-    """Allows a person or main agent to change how agent programs are assigned."""
+    """Allows a person or main agent to change how agent programs are assigned, and the program of one agent;
+    no agent changes its own."""
 
     def __init__(self, rows: EventRows) -> None:
         self.rows = rows
@@ -18,3 +19,11 @@ class ProgramChangeAccess:
         agent = self.rows.required(Agent, actor.id)
         if agent.role != AgentRole.MAIN:
             raise Refusal(f"a {agent.role} cannot change program settings", "ask the main agent")
+
+    def check_driver_change(self, actor: Actor, agent: Agent) -> None:
+        if not actor.is_agent():
+            return
+        if actor.id == agent.id:
+            raise Refusal("an agent does not change its own driver", "ask the person")
+        if not self.rows.required(Agent, actor.id).is_main:
+            raise Refusal("only a person or the main agent changes a driver", "ask the main agent")
