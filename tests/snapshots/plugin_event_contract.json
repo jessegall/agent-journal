@@ -416,6 +416,39 @@
       "usage_limit_ends_at"
     ]
   },
+  "core.agents.agent.launch": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "access",
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "given_name",
+      "halted_at",
+      "interrupted_at",
+      "launch_agent_id",
+      "launch_name",
+      "launched_at",
+      "number",
+      "parent_id",
+      "paused_at",
+      "pid",
+      "process_started_at",
+      "profile",
+      "program",
+      "program_model",
+      "retired_at",
+      "retirement_reason",
+      "retiring_actor_id",
+      "role",
+      "session",
+      "usage_limit_ends_at"
+    ]
+  },
   "core.agents.agent.updated": {
     "forms": [
       "commit",
@@ -447,6 +480,57 @@
       "role",
       "session",
       "usage_limit_ends_at"
+    ]
+  },
+  "core.agents.agent_session.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "end_reason",
+      "ended_at",
+      "environment_id",
+      "program",
+      "program_model",
+      "session",
+      "session_agent_id",
+      "started_at"
+    ]
+  },
+  "core.agents.agent_session.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "end_reason",
+      "ended_at",
+      "environment_id",
+      "program",
+      "program_model",
+      "session",
+      "session_agent_id",
+      "started_at"
+    ]
+  },
+  "core.agents.agent_session.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "end_reason",
+      "ended_at",
+      "environment_id",
+      "program",
+      "program_model",
+      "session",
+      "session_agent_id",
+      "started_at"
     ]
   },
   "core.agents.menu_answer.created": {
@@ -1934,6 +2018,7 @@
       "instruction",
       "new_agent_reason",
       "profile",
+      "program",
       "program_model",
       "report_message_id",
       "returned",
@@ -1966,6 +2051,7 @@
       "instruction",
       "new_agent_reason",
       "profile",
+      "program",
       "program_model",
       "report_message_id",
       "returned",
@@ -1998,6 +2084,7 @@
       "instruction",
       "new_agent_reason",
       "profile",
+      "program",
       "program_model",
       "report_message_id",
       "returned",

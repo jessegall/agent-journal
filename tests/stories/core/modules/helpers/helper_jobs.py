@@ -75,6 +75,7 @@ def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story, mon
     story.run_listeners()
     launcher.drain_requests()
     story.expect_rows(len(read_jobs(story, helper)) == 2, helper.session in " ".join(launcher.requests[0]["command"]), JOB in " ".join(launcher.requests[0]["command"]))
+    story.expect_rows([job.program for job in read_jobs(story, helper)] == [helper.program, helper.program], bool(helper.program))
 
 
 def test_a_send_refuses_an_agent_that_is_no_helper(new_story):
