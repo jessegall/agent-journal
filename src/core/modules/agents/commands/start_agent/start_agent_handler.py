@@ -9,6 +9,7 @@ from engine.caller.process_chain import ProcessChain
 from engine.command.context import Context
 from engine.command.handler import Handler
 from core.modules.agents.support.agent_numbers import AgentNumbers
+from core.modules.agents.support.agent_sessions import AgentSessions
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.single_main_agent import SingleMainAgent
 from engine.errors.refusal import Refusal
@@ -26,12 +27,13 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
     command = StartAgent
     caller_prepares = True
 
-    def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, types: HelperTypeBook, sandbox: ShellSandbox, single_main: SingleMainAgent, numbers: AgentNumbers) -> None:
+    def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, types: HelperTypeBook, sandbox: ShellSandbox, single_main: SingleMainAgent, numbers: AgentNumbers, sessions: AgentSessions) -> None:
         self.agents, self.repository, self.chain = agents, repository, chain
         self.types = types
         self.sandbox = sandbox
         self.single_main = single_main
         self.numbers = numbers
+        self.sessions = sessions
 
     def prepare(self, command: StartAgent, actor: Actor) -> None:
         if self.types.find(command.role).access is Access.READ:
@@ -61,9 +63,11 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
                       process_started_at=command.process_started_at or self.chain.start_timestamp(command.pid),
                       program_model=command.program_model, profile=command.profile, given_name=command.given_name)
         try:
-            return self.numbered(agent, context)
+            created = self.numbered(agent, context)
         except ExistingRowRefusal:
-            return self.numbered(agent, context)
+            created = self.numbered(agent, context)
+        self.sessions.started(created, context)
+        return created
 
     def numbered(self, agent: Agent, context: Context) -> Agent:
         return self.repository.save(replace(agent, number=self.numbers.next_number(context.environment_id, agent.role)), context)
