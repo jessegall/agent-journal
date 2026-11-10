@@ -25,7 +25,7 @@ def worker(new_story, monkeypatch):
 
 @pytest.fixture
 def granted(worker):
-    worker.story.expect_success(GRANT.format(helper=worker.worker.id), actor=worker.story.agent)
+    worker.story.expect_success(GRANT.format(helper=agent_number(worker.story, worker.worker.id)), actor=worker.story.agent)
     return worker
 
 

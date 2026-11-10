@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
 import pytest
@@ -234,7 +235,7 @@ def overview_block(agent):
 
 def test_a_paused_agent_held_for_its_overview_is_not_woken(overview_block):
     agent = overview_block
-    agent.expect_success(f"agent pause {agent.agent.id}", actor=agent.user)
+    agent.expect_success(f"agent pause {agent_number(agent, agent.agent.id)}", actor=agent.user)
     agent.typing.typed.clear()
     agent.advance(timedelta(seconds=40))
     agent.tick(SESSION)

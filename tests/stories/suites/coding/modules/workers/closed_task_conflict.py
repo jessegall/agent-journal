@@ -19,7 +19,7 @@ def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new
     story.expect_success('task close 1 --outcome "tests passed"', actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
-    story.expect_text(command.format(worker=worker.id), notice, actor=story.agent)
+    story.expect_text(command.format(worker=agent_number(story, worker.id)), notice, actor=story.agent)
     story.expect_text(f"agent-line list --agent {worker.id}", "clashes on cart.py")
     story.expect_text("task show 1", "state: started", f"holder_id: {worker.id}")
     path = repository.worktree_folder(worker.id) / "cart.py"

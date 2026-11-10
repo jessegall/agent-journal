@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import subprocess
 
 import pytest
@@ -25,7 +26,7 @@ def spent(new_story, monkeypatch):
 
 @pytest.fixture
 def granted(spent):
-    spent.story.expect_success(GRANT.format(worker=spent.worker.id), actor=spent.story.agent)
+    spent.story.expect_success(GRANT.format(worker=agent_number(spent.story, spent.worker.id)), actor=spent.story.agent)
     return spent
 
 
@@ -44,7 +45,7 @@ def test_the_worker_reads_what_it_was_granted(granted):
 
 
 def test_a_worker_cannot_grant_itself_or_another_worker(spent):
-    spent.story.expect_refusal(GRANT.format(worker=spent.worker.id), GRANT_REFUSAL, actor=spent.worker)
+    spent.story.expect_refusal(GRANT.format(worker=agent_number(spent.story, spent.worker.id)), GRANT_REFUSAL, actor=spent.worker)
 
 
 def test_a_grant_shows_as_a_mark_for_the_worker(granted):

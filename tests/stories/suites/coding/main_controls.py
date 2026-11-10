@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 import shlex
 
@@ -96,8 +97,8 @@ def test_s45_fixture_actors_are_distinct_agents_that_are_all_refused_a_person_on
     story = new_story(fixture=MainControlsActors)
     actors = agent_actors(story)
     expect_value((len({actor.id for actor in actors.values()}), list(actors)), (5, ["main", "worker", "helper", "merger", "designer"]))
-    story.expect_text(f"agent show {actors['merger'].id}", "journal-merger", actor=story.user)
-    story.expect_text(f"agent show {actors['designer'].id}", "journal-designer", actor=story.user)
+    story.expect_text(f"agent show {agent_number(story, actors['merger'].id)}", "journal-merger", actor=story.user)
+    story.expect_text(f"agent show {agent_number(story, actors['designer'].id)}", "journal-designer", actor=story.user)
     for actor in actors.values():
         story.expect_refusal("setting set journal.suites.coding.auto-mode off --environment main --reason 'a story asks'", "A person was asked", actor=actor)
     story.expect_success("setting show journal.suites.coding.auto-mode --environment main", "value: True", actor=story.user)

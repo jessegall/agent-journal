@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 import json
 
@@ -91,7 +92,7 @@ def test_a_rule_for_read_only_helpers_leaves_a_worker_alone(new_story):
 def test_helper_stop_tells_a_worker_where_its_work_goes(new_story):
     story = new_story(fixture=WorkerStarted)
     worker = json.loads(story.run("agent list --role worker --json").output_text)["rows"][0]
-    story.expect_refusal(f"helper stop {worker['id']}", "takes its work with journal worker send")
+    story.expect_refusal(f"helper stop {agent_number(story, worker['id'])}", "takes its work with journal worker send")
 
 
 def test_a_wait_on_a_helper_that_is_a_worker_follows_the_worker(new_story):

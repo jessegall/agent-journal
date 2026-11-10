@@ -223,7 +223,7 @@ def test_a_profile_that_uses_its_program_if_possible_starts_on_the_other_one_and
     launcher.drain_requests()
     launcher.server.close()
     story.expect_rows(answer["program"] == "codex", answer["note"] == "claude could not start (claude is not installed here: install claude or name another program), so it runs on codex")
-    story.expect_success(f"agent show {answer['id']}", "program: codex", "program_model: gpt-6.1-sol")
+    story.expect_success(f"agent show {agent_number(story, answer['id'])}", "program: codex", "program_model: gpt-6.1-sol")
 
 
 def test_a_profile_that_uses_its_program_if_possible_keeps_it_when_it_can_start(new_story):
