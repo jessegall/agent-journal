@@ -2,7 +2,7 @@ from argparse import Namespace
 from dataclasses import dataclass
 
 from engine.cli.subcommand_lookup import AnySubcommand
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 
 
 @dataclass(frozen=True)

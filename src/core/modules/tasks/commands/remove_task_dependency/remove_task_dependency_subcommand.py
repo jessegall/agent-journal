@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.tasks.commands.remove_task_dependency.remove_task_dependency import RemoveTaskDependency
 from core.modules.tasks.commands.support.dependency_subcommands import dependency_arguments
 

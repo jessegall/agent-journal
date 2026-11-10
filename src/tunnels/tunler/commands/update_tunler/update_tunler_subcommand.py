@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from tunnels.tunler.commands.update_tunler.update_tunler import UpdateTunler
 
 

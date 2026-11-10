@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from dataclasses import MISSING, Field, fields
 from typing import Any, get_type_hints
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from engine.command.move_command import ROW_ID, MoveCommand
 from engine.model.model import Model
 from engine.model.table import Table, plain_type

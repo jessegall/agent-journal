@@ -2,8 +2,8 @@ import json
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from core.modules.plugins.models.enums.plugin_card_tone import PluginCardTone
 from core.modules.plugins.models.plugin_output import PluginOutput

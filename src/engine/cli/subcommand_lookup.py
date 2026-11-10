@@ -2,8 +2,8 @@ from collections.abc import Sequence
 from engine.bookkeeping.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMANDS
 from engine.cli.default_subcommands import DefaultSubcommands
 from engine.cli.move_subcommand import MoveSubcommand
-from core.base.subcommand.subcommand import Subcommand, is_subcommand_class
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.subcommand import Subcommand, is_subcommand_class
+from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.command.command import Command
 from engine.container.container import Container
 from engine.model.model import Model

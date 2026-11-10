@@ -2,8 +2,8 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.release_worker.release_worker import ReleaseWorker
 from suites.coding.modules.workers.support.release_outcome import ReleaseOutcome
 

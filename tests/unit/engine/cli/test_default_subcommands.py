@@ -7,8 +7,8 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.cli.default_subcommands import DefaultSubcommands
-from core.base.subcommand.subcommand import Subcommand
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.subcommand import Subcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.command.bus import Bus
 from engine.container.container import Container
 from core.base.database.database import Database

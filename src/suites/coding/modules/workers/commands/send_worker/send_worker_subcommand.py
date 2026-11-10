@@ -8,8 +8,8 @@ from engine.scope.scopes import Scopes
 from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from core.modules.drivers.models.agent_line import AgentLine

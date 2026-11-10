@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from tunnels.tunler.commands.login_tunler.login_tunler import LoginTunler
 from tunnels.tunler.support.tunler_login import TunlerLogin
 

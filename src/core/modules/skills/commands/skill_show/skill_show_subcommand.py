@@ -2,9 +2,9 @@ from engine.skill.skill_contents import SkillContents
 from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
-from core.base.subcommand.argument_alias import declare_argument_alias
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.argument_alias import declare_argument_alias
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.skill_text import SkillText
 from pathlib import Path

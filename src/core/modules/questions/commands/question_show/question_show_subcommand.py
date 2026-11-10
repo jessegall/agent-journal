@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question
 from core.modules.questions.queries.question_query import QuestionQuery

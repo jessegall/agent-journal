@@ -3,8 +3,8 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.tasks.support.task_opener import TaskOpener
 from core.modules.tasks.support.task_wait_attempts import TaskWaitAttempts
 from core.modules.tasks.models.task import Task

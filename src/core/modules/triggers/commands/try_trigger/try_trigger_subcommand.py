@@ -2,8 +2,8 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal
-from core.base.subcommand.argument_alias import declare_argument_alias
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.argument_alias import declare_argument_alias
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.triggers.models.enums.trigger_match import TriggerMatch
 from core.modules.triggers.support.trigger_trial import TriggerTrial
 

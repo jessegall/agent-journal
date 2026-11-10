@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.enums.log_level import LogLevel
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.plugins.commands.log_plugin_line.log_plugin_line import LogPluginLine
 from core.modules.plugins.queries.plugin_query import PluginQuery
 

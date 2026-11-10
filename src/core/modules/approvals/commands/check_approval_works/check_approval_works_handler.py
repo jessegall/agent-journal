@@ -14,7 +14,7 @@ from engine.command.dry_run import DryRunReachedEffect, dry_run
 from engine.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.actors.models.actor_record import ActorRecord
 
 

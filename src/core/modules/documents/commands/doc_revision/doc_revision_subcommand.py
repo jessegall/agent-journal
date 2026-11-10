@@ -3,8 +3,8 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.documents.commands.support.revision_reading import RevisionReading
 from core.modules.documents.models.doc_revision import DocRevision
 

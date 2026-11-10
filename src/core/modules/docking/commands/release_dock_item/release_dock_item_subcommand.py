@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.docking.commands.release_dock_item.release_dock_item import ReleaseDockItem
 from core.modules.docking.models.dock_item import DockItem
 

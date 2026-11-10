@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.reviews.commands.add_reviewer.add_reviewer import AddReviewer
 from core.modules.reviews.models.reviewer import Reviewer
 

@@ -7,8 +7,8 @@ from engine.caller.caller import Caller
 from core.base.profile.agent_profile import AgentProfile
 from core.base.provider.providers import Providers
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.skills.commands.save_profile.save_profile import SaveProfile
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_format import ProfileFormat

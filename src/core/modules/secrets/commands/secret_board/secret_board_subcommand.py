@@ -1,8 +1,8 @@
 from argparse import Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.secrets.commands.secret_list.secret_list_subcommand import SecretListSubcommand
 from core.modules.secrets.models.secret import Secret
 from core.modules.secrets.queries.secret_query import SecretQuery

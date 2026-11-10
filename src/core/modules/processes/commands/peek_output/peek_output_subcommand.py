@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.processes.commands.support.output_lines import OutputLines
 from core.modules.processes.commands.support.output_lines_writing import OutputLinesWriting
 from core.modules.processes.commands.read_output.read_output import ReadOutput

@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from engine.container.container import Container
 from engine.errors.refusal import Refusal
 from engine.seed.demo import Demo
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.actors.queries.actor_query import ActorQuery
 from core.modules.demo.commands.support.demo_report import DemoReport
 from core.modules.demo.commands.support.demo_report_writing import DemoReportWriting

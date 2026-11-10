@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.updates.commands.install_release.install_release import InstallRelease
 from core.modules.updates.models.release_install import ReleaseInstall
 from core.modules.updates.models.enums.update_step import UpdateStep

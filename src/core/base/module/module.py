@@ -29,9 +29,9 @@ from engine.skill.skill_declaration import SkillDeclaration
 from engine.upgrade.version_four_move import VersionFourMove
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_extension import WindowExtension
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from engine.seed.seeder import Seeder
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.base.library.library_share_class import LibraryShareClass
 from engine.query.shared_rows import SharedRows
 from engine.setting.setting_node import SettingNode

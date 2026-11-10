@@ -5,8 +5,8 @@ from engine.caller.caller import Caller
 from engine.time.clock import Clock
 from engine.query.conditions.among import Among
 from engine.query.conditions.minimum import Minimum
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.time.timestamp import Timestamp
 from engine.types.type_guards import is_tuple
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES, MessageType

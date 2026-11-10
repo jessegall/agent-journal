@@ -1,4 +1,4 @@
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from core.modules.documents.commands.support.edit_text_subcommand import EditTextSubcommand
 from core.modules.documents.models.doc import Doc
 

@@ -4,8 +4,8 @@ from pathlib import Path
 from engine.caller.caller import Caller
 from core.base.provider.hook_trust import HookTrust
 from core.base.provider.providers import Providers
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 
 
 class ProgramTrustSubcommand(ReadSubcommand[HookTrust]):

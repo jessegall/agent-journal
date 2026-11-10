@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from engine.bookkeeping.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMANDS
-from core.base.subcommand.default_lines import COMMAND_SUBCOMMANDS, READ_SUBCOMMANDS
+from engine.subcommand.default_lines import COMMAND_SUBCOMMANDS, READ_SUBCOMMANDS
 from core.base.module.inspector_slots import InspectorSlots
 from core.base.module.module import Module
 from core.base.module.module_finder import ModuleFinder
@@ -11,7 +11,7 @@ from core.base.module.subcommand_line import subcommand_line
 from core.base.module.version_requirement import VersionRequirement
 from core.base.registry.button_line import ButtonLine
 from core.base.registry.button_window import ButtonWindow
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.base.viewer.viewer_kit import VIEWER_KIT
 from core.base.viewer.registry_lines import RegistryLines
 from core.base.viewer.window_place import WindowPlace

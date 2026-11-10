@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.voices.support.builtin_catalogue import BuiltinCatalogue
 from core.modules.voices.support.voice_choice import VoiceChoice
 from core.modules.voices.support.voice_line import VoiceLine

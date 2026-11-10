@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.models.process_part import ProcessPart
 

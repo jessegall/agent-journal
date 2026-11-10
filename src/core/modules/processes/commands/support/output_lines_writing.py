@@ -1,4 +1,4 @@
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from core.modules.processes.commands.support.output_lines import OutputLines
 
 

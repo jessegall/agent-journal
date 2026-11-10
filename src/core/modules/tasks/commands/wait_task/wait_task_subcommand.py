@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.tasks.commands.wait_task.wait_task import WaitTask
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_wait_targets import TaskWaitTargets

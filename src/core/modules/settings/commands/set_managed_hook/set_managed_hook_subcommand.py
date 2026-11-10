@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from core.base.provider.managed_hook import ManagedHook
 from core.base.provider.managed_state import ManagedState
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.settings.commands.set_managed_hook.set_managed_hook import SetManagedHook
 
 

@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.tasks.commands.make_task_dependency.make_task_dependency import MakeTaskDependency
 from core.modules.tasks.models.task_dependency import TaskDependency
 from core.modules.tasks.commands.support.dependency_subcommands import dependency_arguments

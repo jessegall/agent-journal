@@ -2,8 +2,8 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
-from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.subcommand.row_list import RowList
+from engine.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.row_list import RowList
 from core.modules.tasks.models.task_tag import TaskTag
 from core.modules.tasks.models.task_tag_word import TaskTagWord
 

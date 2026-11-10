@@ -8,8 +8,8 @@ from core.base.provider.launch import Launch
 from core.base.provider.providers import Providers
 from core.base.provider.resumed_session import ResumedSession
 from core.base.provider.session_start import SessionStart
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_text_list
 
 FIRST_PROMPT = "[journal] the journal started this session: follow its opening lines"

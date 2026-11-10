@@ -2,9 +2,9 @@ from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
 
 from engine.caller.caller import Caller
-from core.base.subcommand.row_lines import RowLines
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.row_lines import RowLines
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from suites.coding.modules.checks.commands.support.check_lines import CheckLines
 from suites.coding.modules.checks.models.check import Check
 from suites.coding.modules.checks.queries.check_query import CheckQuery

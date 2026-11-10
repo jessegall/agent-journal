@@ -18,8 +18,8 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.contains_every import ContainsEvery
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.usage.models.agent_filter_options_view import AgentFilterOptionsView
 from core.modules.usage.support.agent_filter_options import AgentFilterOptions
 from core.modules.usage.conditions.agent_activity import AgentActivity

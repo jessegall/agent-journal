@@ -2,8 +2,8 @@ from argparse import ArgumentParser, Namespace
 from typing import ClassVar
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun
 from core.modules.sequences.commands.support.sequence_line import SequenceLine
 

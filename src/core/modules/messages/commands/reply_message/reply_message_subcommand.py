@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.models.message import Message
 

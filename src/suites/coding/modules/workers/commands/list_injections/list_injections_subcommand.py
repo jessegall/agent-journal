@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from suites.coding.modules.workers.support.injection_list import InjectionList
 from suites.coding.modules.workers.support.worker_instruction_files import WorkerInstructionFiles
 

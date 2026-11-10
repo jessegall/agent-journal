@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from core.modules.settings.commands.support.current_setting_output import CurrentSettingOutput
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.settings.commands.set_setting.set_setting import SetSetting
 from core.modules.settings.support.current_setting import CurrentSetting
 

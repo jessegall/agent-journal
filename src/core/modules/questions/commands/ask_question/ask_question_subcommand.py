@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.questions.commands.ask_question.ask_question import AskQuestion
 from core.modules.questions.models.question import Question
 from core.modules.questions.support.question_place import QuestionPlace

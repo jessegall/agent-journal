@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.change.event_log import EventLog
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from suites.coding.modules.checks.support.check_run_history import CheckRunHistory
 
 CHECKS_TABLE = "checks"

@@ -4,7 +4,7 @@ from core.modules.agents.models.agent import Agent
 from core.base.registry.registry import Registry
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from engine.time.timestamp import Timestamp
 
 

@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.settings.commands.support.current_setting_output import CurrentSettingOutput
 from core.modules.settings.support.current_setting import CurrentSetting
 from core.modules.usage.commands.set_profile_limits.set_profile_limits import SetProfileLimits

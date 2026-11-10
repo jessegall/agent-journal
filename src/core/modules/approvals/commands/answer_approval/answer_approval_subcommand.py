@@ -2,8 +2,8 @@ from argparse import ArgumentParser, Namespace
 from typing import ClassVar
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.approvals.commands.answer_approval.answer_approval import AnswerApproval
 from core.modules.approvals.models.enums.approval_decision import ApprovalDecision
 from core.modules.approvals.models.enums.standing_scope import StandingScope

@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.cli.row_links import RowLinks
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.model.model import Model
 from engine.model.table import Table
 from engine.query.queries import Queries

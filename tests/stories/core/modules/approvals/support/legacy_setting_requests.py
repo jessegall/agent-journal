@@ -8,7 +8,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from core.base.module.module import Module
 from engine.repository.repository import Repository
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.questions.commands.ask_question.ask_question import AskQuestion
 from core.modules.setting_requests.commands.request_setting.request_setting_handler import APPROVE_OPTION, REFUSE_OPTION
 from core.modules.setting_requests.models.setting_request import SettingRequest

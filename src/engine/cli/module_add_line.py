@@ -7,7 +7,7 @@ from core.base.database.schema_mismatch_error import SchemaMismatchError
 from engine.model.tables import Tables
 from core.base.module.module_addition import ModuleAddition
 from core.base.module.module_error import ModuleError
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 
 MODULE_ADDITION_ARGUMENTS = ["module", "add"]
 

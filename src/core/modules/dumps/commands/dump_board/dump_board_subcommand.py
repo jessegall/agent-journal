@@ -5,8 +5,8 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.less import Less
 from engine.query.queries import Queries
 from engine.query.query import PAGE_SIZE_ROWS
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.dumps.models.dump import Dump
 from core.modules.dumps.models.dump_item import DumpItem
 from core.modules.dumps.support.dump_board import DumpBoard

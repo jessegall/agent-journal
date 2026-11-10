@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.tools.commands.install_tool.install_tool import InstallTool
 from core.modules.tools.support.tool_card import ToolCard
 

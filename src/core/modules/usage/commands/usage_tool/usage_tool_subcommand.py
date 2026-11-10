@@ -11,8 +11,8 @@ from engine.query.conditions.contains_some import ContainsSome
 from engine.query.conditions.minimum import Minimum
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.processes.support.monitored_runs import MONITOR_LIFE_SECONDS, MONITOR_TOOL

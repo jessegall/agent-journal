@@ -3,8 +3,8 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from engine.scope.environment_scope import EnvironmentScope
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.support.active_environments import ActiveEnvironments
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 

@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.commands.ask_merger.ask_merger import AskMerger
 from suites.coding.models.enums.ask_topic import AskTopic

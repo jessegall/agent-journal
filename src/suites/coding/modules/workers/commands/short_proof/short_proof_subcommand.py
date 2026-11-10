@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.short_proof.short_proof import ShortProof
 from suites.coding.modules.workers.models.proof import Proof
 

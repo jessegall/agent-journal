@@ -1,6 +1,6 @@
 from dataclasses import is_dataclass
-from core.base.subcommand.lines_value import LinesValue
-from core.base.subcommand.output import Output
+from engine.subcommand.lines_value import LinesValue
+from engine.subcommand.output import Output
 from engine.model.model import Model
 from engine.row.page import is_page
 

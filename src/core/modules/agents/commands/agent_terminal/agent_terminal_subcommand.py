@@ -5,7 +5,7 @@ from engine.journal.journal_home import JournalHome
 from core.base.provider.transcript_tail import TranscriptTail
 from engine.query.queries import Queries
 from engine.row.page import Page
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.commands.support.terminal_line import TerminalLine
 from core.modules.agents.models.agent import Agent
 

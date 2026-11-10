@@ -4,8 +4,8 @@ from typing import ClassVar
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.documents.support.row_comments import RowComments
 from core.modules.documents.commands.support.text_comments import TextComments
 from core.modules.documents.models.text_row import TextRow

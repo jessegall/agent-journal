@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.viewer.commands.remove_person_preset.remove_person_preset import RemovePersonPreset
 from core.modules.viewer.models.person_preset import PersonPreset
 

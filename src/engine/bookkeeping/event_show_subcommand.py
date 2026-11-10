@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from engine.change.event_log import EventLog
 from engine.change.logged_event import LoggedEvent
 from engine.caller.caller import Caller
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 
 
 class EventShowSubcommand(ReadSubcommand[LoggedEvent]):

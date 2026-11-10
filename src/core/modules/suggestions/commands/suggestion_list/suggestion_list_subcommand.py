@@ -5,8 +5,8 @@ from engine.caller.caller import Caller
 from engine.row.page import Page, is_page
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.suggestions.models.suggestion import Suggestion
 
 

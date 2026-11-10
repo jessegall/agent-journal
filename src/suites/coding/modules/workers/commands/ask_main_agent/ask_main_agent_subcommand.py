@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.ask_main_agent.ask_main_agent import AskMainAgent
 
 QUESTION_SHAPE = 'journal merger tell "<what>" --tried "<what you tried>" --option "<one>" --option "<two>" --recommend "<your choice>"'

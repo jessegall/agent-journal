@@ -1,7 +1,7 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.module.template_check import TemplateCheck
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.template.template_declaration import TemplateDeclaration
 from tests.unit.engine.model.test_model import Item
 

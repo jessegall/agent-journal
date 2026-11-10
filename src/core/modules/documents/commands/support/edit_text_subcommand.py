@@ -3,7 +3,7 @@ from typing import ClassVar
 
 from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.documents.commands.edit_text.edit_text import EditText
 from core.modules.documents.commands.support.text_body import TextBody
 from core.modules.documents.models.text_row import TextRow

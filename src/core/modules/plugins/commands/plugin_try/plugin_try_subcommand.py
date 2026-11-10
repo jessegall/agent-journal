@@ -4,8 +4,8 @@ from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from engine.scope.environment_scope import EnvironmentScope
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.plugins.support.plugin_call_access import PluginCallAccess
 from core.modules.plugins.support.plugin_try import PluginTry

@@ -4,8 +4,8 @@ from dataclasses import asdict
 from engine.agent.agent_brief_points import AgentBriefPoints
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.commands.agent_programs.agent_programs_subcommand import AgentProgramsSubcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.skills.models.agent_skill import AgentSkill

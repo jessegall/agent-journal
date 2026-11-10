@@ -3,8 +3,8 @@ from argparse import Namespace
 from engine.caller.caller import Caller
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.tasks.commands.support.task_graph import TaskGraph
 from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES
 from core.modules.tasks.models.task_card import TaskCard

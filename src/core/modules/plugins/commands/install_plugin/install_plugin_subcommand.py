@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.plugins.commands.install_plugin.install_plugin import InstallPlugin
 from core.modules.plugins.commands.support.plugin_install import PluginInstall
 

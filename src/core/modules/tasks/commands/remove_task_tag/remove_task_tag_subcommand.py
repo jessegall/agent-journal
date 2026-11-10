@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.tasks.commands.remove_task_tag.remove_task_tag import RemoveTaskTag
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery

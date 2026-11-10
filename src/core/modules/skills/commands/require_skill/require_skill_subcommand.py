@@ -3,12 +3,12 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
 from core.modules.skills.support.skill_files import SkillFiles
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 
 
 class RequireSkillSubcommand(Subcommand[RequireSkill, AgentSkill]):

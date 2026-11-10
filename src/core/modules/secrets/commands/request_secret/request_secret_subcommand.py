@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.secrets.commands.make_secret.make_secret import MakeSecret
 from core.modules.secrets.models.enums.secret_type import SecretType
 from core.modules.secrets.models.secret import Secret

@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from engine.caller.caller import Caller
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.drivers.commands.support.suite_description import SuiteDescription
 
 

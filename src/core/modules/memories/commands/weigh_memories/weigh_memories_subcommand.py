@@ -2,10 +2,10 @@ from argparse import ArgumentParser, Namespace
 
 from engine.cli.number_list import number_list
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from engine.types.type_guards import is_list
 from core.modules.memories.models.memory import Memory
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.memories.models.memory import Memory
 from core.modules.memories.commands.weigh_memories.weigh_memories import WeighMemories
 

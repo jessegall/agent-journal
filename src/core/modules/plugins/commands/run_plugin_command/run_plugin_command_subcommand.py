@@ -5,8 +5,8 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.cli.usage_error import UsageError
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.plugins.commands.run_plugin_command.run_plugin_command import RunPluginCommand
 from core.modules.plugins.support.plugin_call_access import PluginCallAccess
 from core.modules.plugins.support.plugin_command_run import PluginCommandRun

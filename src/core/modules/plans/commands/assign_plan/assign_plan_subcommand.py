@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.plans.commands.assign_plan.assign_plan import AssignPlan
 from core.modules.plans.models.plan import Plan
 

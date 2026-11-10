@@ -4,7 +4,7 @@ from engine.caller.caller import Caller
 from engine.row.page import Page
 from engine.query.queries import Queries
 from engine.query.query import PAGE_SIZE_ROWS
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.viewer.models.person_preset import PersonPreset
 
 

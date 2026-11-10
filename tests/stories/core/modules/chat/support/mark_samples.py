@@ -8,7 +8,7 @@ from engine.caller.caller import Caller
 from engine.command.command import Command
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.chat.models.chat_mark import ChatMark
 from engine.chat.mark_button import MarkButton
 from engine.chat.mark_declaration import MarkDeclaration

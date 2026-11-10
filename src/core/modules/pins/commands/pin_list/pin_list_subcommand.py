@@ -2,8 +2,8 @@ from argparse import Namespace
 from collections.abc import Sequence
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple
 from core.modules.pins.models.pin import Pin
 from core.modules.pins.queries.pin_query import PinQuery

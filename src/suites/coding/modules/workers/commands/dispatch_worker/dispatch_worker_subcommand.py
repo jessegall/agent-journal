@@ -3,14 +3,14 @@ from argparse import ArgumentParser, Namespace
 from core.base.profile.model_tier import ModelTier
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 import shlex
 import stat
 
 from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
 from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
 from suites.coding.modules.workers.support.test_command_entry import TEST_COMMAND_EXAMPLE, TestCommandEntry
 from suites.coding.modules.workers.support.plan_worker_tasks import PlanWorkerTasks

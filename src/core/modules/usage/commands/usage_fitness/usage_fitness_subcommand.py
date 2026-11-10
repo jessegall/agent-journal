@@ -4,8 +4,8 @@ from engine.caller.caller import Caller
 from engine.time.clock import Clock
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.usage.support.agent_fitness import AgentFitness
 from core.modules.usage.support.fitness_measures import FitnessMeasures

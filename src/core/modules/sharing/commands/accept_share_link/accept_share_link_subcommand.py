@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.sharing.commands.accept_share_link.accept_share_link import AcceptShareLink
 from core.modules.sharing.commands.support.share_invitation import ShareInvitation
 

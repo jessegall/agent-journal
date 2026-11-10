@@ -2,8 +2,8 @@ from argparse import ArgumentParser, Namespace
 from typing import ClassVar
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.dumps.commands.move_dump_item.move_dump_item import MoveDumpItem
 from core.modules.dumps.commands.support.dump_line import DumpLine
 

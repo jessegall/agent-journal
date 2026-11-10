@@ -2,8 +2,8 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from core.base.provider.managed_hook import ManagedHook
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from engine.types.type_guards import is_list
 from core.modules.settings.commands.remove_managed_hooks.remove_managed_hooks import RemoveManagedHooks
 

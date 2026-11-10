@@ -6,8 +6,8 @@ from engine.row.page import Page
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.skills.support.skill_files import SkillFiles
 from core.modules.skills.support.unread_skills import UnreadSkills

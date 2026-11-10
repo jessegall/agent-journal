@@ -8,8 +8,8 @@ from core.base.provider.providers import Providers
 from core.base.provider.transcript_index import TranscriptIndex
 from core.base.provider.transcript_row import TranscriptRow
 from engine.query.queries import Queries
-from core.base.subcommand.page_arguments import page_arguments
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.page_arguments import page_arguments
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.transcript_authors import TranscriptAuthors
 from core.modules.environments.models.environment import Environment

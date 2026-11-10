@@ -4,7 +4,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.messages.models.attached_file import AttachedFile
 from core.modules.messages.support.attachment_page import AttachmentPage
 

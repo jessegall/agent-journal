@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.processes.commands.support.output_lines import OutputLines
 from core.modules.processes.models.enums.process_state import RUNNING_STATES, ProcessState
 from core.modules.processes.models.process import Process

@@ -1,7 +1,7 @@
 import io
 import json
 
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from engine.guard.guard_refusal import GuardRefusal
 from engine.model.tables import Tables
 from engine.row.page import Page

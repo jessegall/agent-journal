@@ -4,8 +4,8 @@ from engine.agent.agent_checkouts import AgentCheckouts
 from engine.caller.caller import Caller
 from engine.checkout.checkout_file import CheckoutFile
 from engine.scope.environment_scope import EnvironmentScope
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple
 from core.modules.plugins.support.plugin_call_access import PluginCallAccess
 

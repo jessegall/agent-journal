@@ -5,8 +5,8 @@ from engine.cli.make_subcommand import MakeSubcommand
 from engine.cli.write_flags import WriteFlags
 from engine.command.command import Command
 from engine.model.tables import Tables
-from core.base.subcommand.subcommand import Subcommand
-from core.base.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
 from core.modules.plans.commands.make_planned_task.make_planned_task import MakePlannedTask
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_metadata_reminder import TaskMetadataReminder

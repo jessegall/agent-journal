@@ -4,7 +4,7 @@ import shlex
 from engine.caller.caller import Caller
 from engine.cli.write_flags import WriteFlags
 from engine.command.command import Command
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from suites.coding.modules.workers.commands.queue_worker_operation.queue_worker_operation import QueueWorkerOperation, WorkerCommand
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName

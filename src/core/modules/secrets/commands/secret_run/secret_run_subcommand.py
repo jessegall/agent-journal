@@ -6,8 +6,8 @@ from engine.enums.agent_role import AgentRole
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.secrets.queries.secret_query import SecretQuery
 from core.modules.secrets.support.secret_run import SecretRun

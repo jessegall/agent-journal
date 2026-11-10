@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.suggestions.commands.answer_suggestion.answer_suggestion import AnswerSuggestion
 from core.modules.suggestions.models.enums.suggestion_answer import SuggestionAnswer
 from core.modules.suggestions.models.suggestion import Suggestion

@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.library.support.item_arguments import ItemArguments
 from core.modules.library.support.library_browse import LibraryBrowse
 from core.modules.library.support.library_inspection import LibraryInspection

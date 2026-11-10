@@ -33,7 +33,7 @@ from engine.model.model import Model
 from core.modules import DEFAULT_MODULES
 from core.base.module.module import Module
 from engine.model.tables import Tables
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from engine.query.queries import Queries
 from engine.log.refusal_log import RefusalLog
 from engine.log.recorded_refusal import RecordedRefusal

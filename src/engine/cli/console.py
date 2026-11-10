@@ -9,11 +9,11 @@ from engine.caller.caller_resolver import CallerResolver
 from engine.caller.caller import Caller
 from engine.change.event_log import EventLog
 from engine.change.touched_rows import TouchedRows
-from core.base.subcommand.output import Output
-from core.base.subcommand.overview_command import OverviewCommand
-from core.base.subcommand.overview_reads import OverviewReads
-from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.overview_command import OverviewCommand
+from engine.subcommand.overview_reads import OverviewReads
+from engine.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.subcommand import Subcommand
 from engine.cli.line_parser import LineParser
 from engine.cli.subcommand_lookup import AnySubcommand
 from engine.cli.shell_aliases import ShellAliases

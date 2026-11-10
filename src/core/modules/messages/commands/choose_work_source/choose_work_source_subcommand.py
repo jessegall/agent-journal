@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.messages.commands.choose_work_source.choose_work_source import ChooseWorkSource
 from core.modules.messages.models.message_work_source import MessageWorkSource
 

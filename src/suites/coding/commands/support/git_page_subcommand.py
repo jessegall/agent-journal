@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.subcommand.overview_command import OverviewCommand
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.overview_command import OverviewCommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from suites.coding.support.git_rows import GitRows
 from suites.coding.support.project_git import ProjectGit
 

@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from dataclasses import asdict
 
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from core.modules.documents.support.work_context_page import WorkContextPage
 from core.modules.documents.support.work_context_request import WorkContextRequest
 from core.modules.documents.support.work_context_text import WorkContextText

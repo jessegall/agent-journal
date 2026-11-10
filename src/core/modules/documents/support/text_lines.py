@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from core.modules.documents.support.outline import Outline
 
 OUTLINE_HINT = 'read a section with --section <n or heading>, its bullets with --bullets, search with --grep "<words>", or read it all with --all'

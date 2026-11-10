@@ -3,8 +3,8 @@ from argparse import ArgumentParser, Namespace
 from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.phone.commands.ensure_push_keys.ensure_push_keys import EnsurePushKeys
 from core.modules.phone.commands.support.push_key_pair import PushKeyPair
 

@@ -3,8 +3,8 @@ from argparse import ArgumentParser, Namespace
 from core.base.profile.model_tier import ModelTier
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.helpers.support.helper_started import HelperStarted
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper

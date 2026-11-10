@@ -3,8 +3,8 @@ from suites.coding.modules.workers.support.worker_command_request import WorkerC
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.merge_worker.merge_worker import MergeWorker
 from suites.coding.modules.workers.commands.merge_finished_tasks.merge_finished_tasks import MergeFinishedTasks
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery

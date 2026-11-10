@@ -3,7 +3,7 @@ from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.errors.refusal import Refusal
 from engine.scope.scopes import Scopes
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.profiles.support.profile_files import ProfileFiles
@@ -19,8 +19,8 @@ from pathlib import Path
 from engine.caller.caller import Caller
 from engine.journal.journal_home import JournalHome
 from core.base.provider.providers import Providers
-from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.subcommand.row_list import RowList
+from engine.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.row_list import RowList
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.helpers.support.program_shares import ProgramShares
 from core.modules.helpers.support.program_states import ProgramStates

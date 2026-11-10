@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.messages.commands.send_agent_message.send_agent_message import SendAgentMessage
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.models.message import Message

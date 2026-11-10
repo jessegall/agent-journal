@@ -4,8 +4,8 @@ from engine.caller.caller import Caller
 from engine.row.page import Page, is_page
 from engine.query.queries import Queries
 from engine.query.query import PAGE_SIZE_ROWS
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.queries.dock_item_query import DockItemQuery

@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_skill_list import ProfileSkillList
 from core.modules.skills.support.profile_skills import ProfileSkills

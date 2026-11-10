@@ -2,8 +2,8 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from core.base.driver.command_category import CommandCategory
-from core.base.subcommand.output import Output as CommandOutput
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output as CommandOutput
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.process_part_query import ProcessPartQuery

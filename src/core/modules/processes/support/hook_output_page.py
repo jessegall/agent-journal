@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from core.modules.processes.support.output_page import OutputPage
 
 

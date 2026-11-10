@@ -1,10 +1,10 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.subcommand.page_arguments import page_arguments
+from engine.subcommand.page_arguments import page_arguments
 from engine.row.page import Page
 from engine.query.queries import Queries
 from engine.caller.caller import Caller
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.memories.models.context_memory import ContextMemory
 
 

@@ -1,10 +1,10 @@
 from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.row.page import Page
 from engine.log.refusal_log import RefusalLog
 from engine.log.recorded_refusal import RecordedRefusal
-from core.base.subcommand.page_arguments import page_arguments
+from engine.subcommand.page_arguments import page_arguments
 
 
 class RefusalListSubcommand(ReadSubcommand[Page[RecordedRefusal]]):

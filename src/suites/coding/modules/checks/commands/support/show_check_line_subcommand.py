@@ -1,8 +1,8 @@
 from typing import Generic, TypeVar
 
 from engine.command.command import Command
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from suites.coding.modules.checks.commands.support.check_lines import CheckLines
 from suites.coding.modules.checks.models.check import Check
 

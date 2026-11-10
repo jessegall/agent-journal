@@ -1,4 +1,4 @@
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from core.modules.demo.commands.support.demo_report import DemoReport
 
 

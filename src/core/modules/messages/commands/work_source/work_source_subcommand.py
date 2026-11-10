@@ -3,8 +3,8 @@ from argparse import Namespace
 from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.messages.support.work_source_copy import WorkSourceCopy
 from core.modules.messages.support.work_sources import WorkSources
 

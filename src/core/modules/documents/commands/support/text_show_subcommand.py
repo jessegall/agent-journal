@@ -4,8 +4,8 @@ from typing import ClassVar
 from engine.caller.caller import Caller
 from engine.cli.row_links import LINKS_SHOWN, RowLinks
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.base.library.library_reading import LibraryReading
 from core.modules.documents.commands.support.text_reading import TextReading
 from core.modules.documents.models.text_row import TextRow

@@ -18,8 +18,8 @@ from core.base.provider.context_window import ContextWindow
 from core.base.provider.providers import Providers
 from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.drivers.support.driver_settings import BLOCK_CARD_SECONDS
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.settings.bindings.support.setting_values import SettingValues

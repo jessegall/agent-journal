@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.subcommand.row_list import RowList
+from engine.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.row_list import RowList
 from engine.errors.refusal import Refusal
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.queries.plugin_query import PluginQuery

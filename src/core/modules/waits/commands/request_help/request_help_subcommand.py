@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.waits.models.wait import Wait
 from core.modules.waits.commands.open_wait.open_wait import OpenWait
 from core.modules.waits.models.enums.wait_type import WaitType

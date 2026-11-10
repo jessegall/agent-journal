@@ -6,8 +6,8 @@ from engine.caller.caller import Caller
 from engine.checkout.checkout import Checkout
 from engine.errors.refusal import Refusal
 from engine.scope.environment_scope import EnvironmentScope
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plugins.support.plugin_call_access import PluginCallAccess
 from core.modules.plugins.commands.plugin_path.support.checkout_path import CheckoutPath
 

@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 
 
 @dataclass(frozen=True)

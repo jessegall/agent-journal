@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.project_rules.commands.make_rule.make_rule import MakeRule
 from core.modules.project_rules.models.project_rule import ProjectRule
 

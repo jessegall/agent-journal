@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.plans.commands.place_phase.place_phase import PlacePhase
 from core.modules.plans.models.phase_task import PhaseTask
 

@@ -7,8 +7,8 @@ from engine.caller.caller import Caller
 from core.base.profile.agent_profile import AgentProfile
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_problem import ProfileProblem

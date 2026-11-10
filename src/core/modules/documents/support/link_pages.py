@@ -7,7 +7,7 @@ from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.query.query import Query
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from core.modules.documents.conditions.first_link_counterpart import FirstLinkCounterpart
 from core.modules.documents.conditions.link_counterparts import LinkCounterparts
 from core.modules.documents.conditions.link_scope import LinkScope

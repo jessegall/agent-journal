@@ -1,8 +1,8 @@
 from argparse import REMAINDER, ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.helpers.commands.run_granted_command.run_granted_command import RunGrantedCommand
 from core.modules.processes.models.process import Process

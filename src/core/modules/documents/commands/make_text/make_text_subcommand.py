@@ -3,8 +3,8 @@ from typing import ClassVar
 
 from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.documents.commands.make_text.make_text import MakeText
 from core.modules.documents.commands.support.new_text import NewText
 from core.modules.documents.commands.support.text_body import TextBody

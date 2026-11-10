@@ -5,8 +5,8 @@ from engine.caller.caller import Caller
 from engine.query.conditions.contains_every import ContainsEvery
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message

@@ -1,10 +1,10 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from core.base.provider.providers import Providers
 from engine.query.queries import Queries
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_control_list import AgentControlList
 

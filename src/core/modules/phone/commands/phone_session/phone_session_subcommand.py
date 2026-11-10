@@ -4,8 +4,8 @@ from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.phone.models.enums.phone_state import PhoneState
 from core.modules.phone.models.phone import Phone
 

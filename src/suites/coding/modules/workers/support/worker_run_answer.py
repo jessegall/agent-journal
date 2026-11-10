@@ -1,4 +1,4 @@
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation

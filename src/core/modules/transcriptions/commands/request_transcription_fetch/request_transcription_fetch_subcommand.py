@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.tasks.models.task import Task
 from core.modules.transcriptions.commands.request_transcription_fetch.request_transcription_fetch import RequestTranscriptionFetch
 

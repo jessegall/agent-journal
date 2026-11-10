@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.row.page import Page
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.developer.support.system_log import SystemLog
 from core.modules.developer.support.log_filter import LogFilter
 from engine.enums.log_level import LogLevel

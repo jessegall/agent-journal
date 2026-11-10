@@ -2,7 +2,7 @@ from argparse import Namespace
 
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.documents.support.work_context_page import WorkContextPage
 from core.modules.documents.support.work_context_text import WorkContextText
 from core.modules.documents.support.work_context_attachment_page import WorkContextAttachmentPage

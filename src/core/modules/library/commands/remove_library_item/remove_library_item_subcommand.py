@@ -1,8 +1,8 @@
 from argparse import Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.library.commands.remove_library_item.remove_library_item import RemoveLibraryItem
 from core.modules.library.support.item_arguments import ItemArguments
 from core.base.library.library_item import LibraryItem

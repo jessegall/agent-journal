@@ -7,8 +7,8 @@ from core.base.library.library_aware_show import LibraryAwareShow
 from core.base.library.library_reading import LibraryReading
 from core.base.library.library_ref import LibraryRef
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.support.sequence_guards import SequenceGuards
 from core.modules.sequences.models.support.sequence_triggers import SequenceTriggers

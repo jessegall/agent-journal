@@ -2,8 +2,8 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plan_reviews.support.plan_rounds import PlanRounds
 from core.modules.plan_reviews.support.review_tip import ReviewTip
 from core.modules.plans.models.plan import Plan

@@ -2,9 +2,9 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from engine.types.type_guards import is_list
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.dumps.models.dump import Dump
 from core.modules.dumps.models.dump_item import DumpItem
 

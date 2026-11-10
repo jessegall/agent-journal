@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.processes.commands.make_reader_draft.make_reader_draft import MakeReaderDraft
 from core.modules.processes.support.reader_draft import ReaderDraft
 

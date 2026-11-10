@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import TypeVar
 
 from engine.model.model import Model
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from engine.types.type_guards import is_tuple
 
 M = TypeVar("M", bound=Model)

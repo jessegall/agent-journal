@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, BooleanOptionalAction, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.skills.commands.set_required_skill.set_required_skill import SetRequiredSkill
 from core.modules.skills.support.required_agents import RequiredAgents
 from core.modules.skills.support.skill_requirements import SkillRequirements

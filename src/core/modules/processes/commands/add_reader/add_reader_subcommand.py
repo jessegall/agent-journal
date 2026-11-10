@@ -2,10 +2,10 @@ from argparse import ArgumentParser, Namespace
 
 from engine.actor.actor import CORE_ACTOR_ID
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.processes.commands.add_reader.add_reader import AddReader
 from core.modules.processes.models.reader import Reader
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.support.reader_selection import ReaderSelection
 

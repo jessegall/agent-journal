@@ -3,7 +3,7 @@ import dataclasses
 from dataclasses import field
 from typing import get_type_hints
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from engine.command.edit_command import EditCommand
 from engine.model.model import Model
 from engine.model.table import Table

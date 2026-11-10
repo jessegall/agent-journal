@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.agents.commands.record_agent_interrupt.record_agent_interrupt import RecordAgentInterrupt
 from core.modules.agents.models.agent import Agent
 

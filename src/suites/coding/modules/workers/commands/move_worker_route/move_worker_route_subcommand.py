@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.move_worker_route.move_worker_route import MoveWorkerRoute
 from suites.coding.modules.workers.models.worker_route import WorkerRoute
 

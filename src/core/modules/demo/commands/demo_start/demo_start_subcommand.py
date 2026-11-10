@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from engine.caller.caller import Caller
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.demo.commands.support.demo_report import DemoReport
 from core.modules.demo.commands.support.demo_report_writing import DemoReportWriting
 from core.modules.demo.support.demo_scratch import DemoScratch

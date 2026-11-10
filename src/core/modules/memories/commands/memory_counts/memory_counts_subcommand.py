@@ -6,7 +6,7 @@ from engine.caller.caller import Caller
 from engine.query.conditions.has_value import HasValue
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.memories.models.enums.memory_state import MemoryState
 from core.modules.memories.models.memory import Memory
 

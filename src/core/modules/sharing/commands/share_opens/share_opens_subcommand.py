@@ -1,10 +1,10 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.argument_alias import declare_argument_alias
-from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.subcommand.row_list import RowList
+from engine.subcommand.output import Output
+from engine.subcommand.argument_alias import declare_argument_alias
+from engine.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.row_list import RowList
 from core.modules.plans.support.plan_shared_rows import PlanSharedRows
 from core.modules.sharing.commands.support.share_targets import ShareTargets
 

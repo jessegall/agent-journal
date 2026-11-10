@@ -11,8 +11,8 @@ from engine.query.conditions.greater import Greater
 from engine.query.conditions.less import Less
 from engine.query.queries import Queries
 from engine.query.query import PAGE_SIZE_ROWS, Query
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 
 
 class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):

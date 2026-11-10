@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.secrets.commands.change_secret_deletion.change_secret_deletion import ChangeSecretDeletion
 from core.modules.secrets.models.secret import Secret
 

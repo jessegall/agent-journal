@@ -3,8 +3,8 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.file.file_access import FileAccess
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins

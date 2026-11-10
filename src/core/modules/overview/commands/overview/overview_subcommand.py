@@ -4,9 +4,9 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.cli.console import Console
-from core.base.subcommand.output import Output
-from core.base.subcommand.overview_command import OverviewCommand
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.overview_command import OverviewCommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.overview.support.overview_page import OverviewPage
 from core.modules.overview.support.overview_section import OverviewSection
 from core.modules.overview.support.overview_settings import COMMANDS_KEY

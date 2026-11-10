@@ -3,8 +3,8 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from core.base.driver.command_category import CommandCategory
 from core.base.registry.registry import Registry
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.aliases.commands.edit_alias.edit_alias import EditAlias
 from core.modules.aliases.models.alias import Alias
 

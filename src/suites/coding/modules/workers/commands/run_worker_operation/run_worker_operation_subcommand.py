@@ -3,8 +3,8 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.run_worker_operation.claim_worker_operation import ClaimWorkerOperation
 from suites.coding.modules.workers.commands.run_worker_operation.run_worker_operation import RunWorkerOperation
 

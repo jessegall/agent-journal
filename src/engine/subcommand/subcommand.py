@@ -2,10 +2,10 @@ from argparse import ArgumentParser, Namespace
 from typing import ClassVar, Generic, TypeIs, TypeVar
 from engine.caller.caller import Caller
 from engine.scope.scopes import WholeScopes
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from engine.command.command import Command
-from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.subcommand.render_value import render_value
+from engine.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.render_value import render_value
 
 
 C = TypeVar("C", bound=Command[object], covariant=True)

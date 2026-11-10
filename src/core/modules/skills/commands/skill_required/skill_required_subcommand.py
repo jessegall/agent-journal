@@ -3,8 +3,8 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple
 from core.modules.skills.support.skill_files import SkillFiles
 from core.modules.skills.support.unread_skills import UnreadSkills

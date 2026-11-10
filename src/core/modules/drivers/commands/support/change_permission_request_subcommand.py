@@ -1,8 +1,8 @@
 from typing import TypeVar
 
 from engine.command.command import Command
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.drivers.models.permission_request import PermissionRequest
 
 PermissionCommand = TypeVar("PermissionCommand", bound=Command[PermissionRequest])

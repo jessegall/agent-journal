@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.approvals.commands.relay_approval.relay_approval import RelayApproval
 from core.modules.approvals.models.approval_request import ApprovalRequest
 

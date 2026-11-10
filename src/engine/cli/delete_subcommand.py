@@ -1,9 +1,9 @@
 from argparse import ArgumentParser, Namespace
 import dataclasses
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from engine.command.delete_command import DeleteCommand
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from engine.model.model import Model
 from engine.model.table import Table
 

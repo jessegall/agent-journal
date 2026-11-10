@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.drivers.commands.allow_essential_rule.allow_essential_rule import AllowEssentialRule
 from core.modules.settings.models.setting import Setting
 

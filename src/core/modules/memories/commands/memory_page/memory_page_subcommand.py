@@ -6,8 +6,8 @@ from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.caller.caller import Caller
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.memories.commands.memory_list.memory_list_subcommand import MemoryListSubcommand
 from core.modules.memories.models.memory import Memory
 from core.modules.memories.models.memory_holder import MemoryHolder

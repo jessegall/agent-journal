@@ -2,9 +2,9 @@ from argparse import ArgumentParser, Namespace
 from engine.change.event_log import EventLog
 from engine.change.logged_event import LoggedEvent
 from engine.caller.caller import Caller
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.row.page import Page
-from core.base.subcommand.page_arguments import page_arguments
+from engine.subcommand.page_arguments import page_arguments
 
 
 class EventListSubcommand(ReadSubcommand[Page[LoggedEvent]]):

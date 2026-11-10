@@ -6,7 +6,7 @@ from engine.cli.line_parser import LineParser
 from core.base.database.database import READ_LIMIT_ROWS, Database
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples
 from engine.enums.actor_type import ActorType

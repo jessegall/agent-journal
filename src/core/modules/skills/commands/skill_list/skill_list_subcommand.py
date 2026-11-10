@@ -6,8 +6,8 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.row.page import Page
 from core.base.registry.skill_entry import SkillEntry
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple
 from core.modules.skills.support.skill_agent_groups import SkillAgentGroups
 from core.modules.skills.support.skill_catalogue import SkillCatalogue

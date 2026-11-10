@@ -1,4 +1,4 @@
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from core.modules.settings.support.current_setting import CurrentSetting
 from core.modules.settings.support.setting_lines import SettingLines
 

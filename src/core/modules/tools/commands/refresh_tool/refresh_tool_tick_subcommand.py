@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
+from engine.subcommand.output import Output
 from core.modules.tools.commands.refresh_tool.refresh_tool import RefreshTool
 from core.modules.tools.commands.refresh_tool.refresh_tool_subcommand import RefreshToolSubcommand
 

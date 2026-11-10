@@ -10,8 +10,8 @@ from engine.command.handler import Handler
 from core.base.module.module import Module
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.pins.models.pin import Pin
 
 

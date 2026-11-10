@@ -7,8 +7,8 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.model.state_book import StateBook
 from engine.query.query import PAGE_SIZE_ROWS, Query
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_card import TaskCard

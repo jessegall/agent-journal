@@ -6,8 +6,8 @@ from core.base.library.library_aware_show import LibraryAwareShow
 from core.base.library.library_reading import LibraryReading
 from core.base.library.library_ref import LibraryRef
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from suites.coding.modules.checks.models.check import Check
 
 class CheckShowSubcommand(LibraryAwareShow[Check], ReadSubcommand[Check | LibraryReading]):

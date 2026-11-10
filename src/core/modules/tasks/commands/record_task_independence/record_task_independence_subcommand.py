@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import Subcommand
 from core.modules.tasks.commands.record_task_independence.record_task_independence import RecordTaskIndependence
 from core.modules.tasks.models.task import Task
 

@@ -2,9 +2,9 @@ from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
 
 from engine.caller.caller import Caller
-from core.base.subcommand.row_lines import RowLines
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.row_lines import RowLines
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.triggers.commands.support.trigger_lines import TriggerLines
 from core.modules.triggers.models.enums.trigger_action import TriggerAction
 from core.modules.triggers.models.trigger import Trigger

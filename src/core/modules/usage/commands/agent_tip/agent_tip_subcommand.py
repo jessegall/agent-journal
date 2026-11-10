@@ -2,8 +2,8 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
-from core.base.subcommand.output import Output
-from core.base.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import MAIN_ROLE, MAIN_TITLE, Agent
 from core.modules.agents.models.enums.agent_activity import AgentActivity
 from core.modules.usage.commands.usage_agents.usage_agents_subcommand import UsageAgentsSubcommand

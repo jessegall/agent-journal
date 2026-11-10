@@ -5,8 +5,8 @@ from engine.change.event_log import EventLog
 from engine.cli.row_links import RowLinks
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.subcommand.subcommand import Subcommand
-from core.base.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_text import MessageText

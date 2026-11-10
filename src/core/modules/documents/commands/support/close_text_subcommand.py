@@ -2,8 +2,8 @@ from argparse import ArgumentParser, Namespace
 from typing import ClassVar
 
 from engine.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
 from core.modules.documents.commands.close_text.close_text import CloseText
 from core.modules.documents.models.text_row import TextRow
 
