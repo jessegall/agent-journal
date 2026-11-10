@@ -41,6 +41,7 @@ from engine.driver.nudger import Nudger
 from engine.driver.search_category import SearchCategory
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from engine.module.driver_entries import DRIVERS_MODULE
+from core.modules.agents.support.agent_label import AgentLabel
 
 LOG_LINE_CHARACTERS = 240
 
@@ -103,7 +104,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              metadata=Metadata({DRIVERS_MODULE: metadata})), context)
         refusing = [check.refusal_text for check in answers.stop_checks if check.is_refusal]
         if refusing:
-            self.system_log.write(LogLevel.INFORMATION, f"stop {call.id} agent {agent.id} refused: {'; '.join(refusing)}"[:LOG_LINE_CHARACTERS])
+            self.system_log.write(LogLevel.INFORMATION, f"stop {call.id} {AgentLabel.from_agent(agent).text} refused: {'; '.join(refusing)}"[:LOG_LINE_CHARACTERS])
         self.nudges.write(agent.id, answers, context)
         self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")

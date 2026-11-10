@@ -6,6 +6,7 @@ from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.pause_agent.pause_agent import PauseAgent
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class PauseAgentSubcommand(Subcommand[PauseAgent, Agent]):
@@ -23,4 +24,4 @@ class PauseAgentSubcommand(Subcommand[PauseAgent, Agent]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Agent):
-            output.line(f"paused agent {value.id}")
+            output.line(f"paused {AgentLabel.from_agent(value).text}")

@@ -20,6 +20,7 @@ from engine.scope.scopes import Scopes
 from engine.scope.actor_scope import ActorScope
 from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.modules.usage.support.status_files import StatusFiles
+from core.modules.agents.support.agent_label import AgentLabel
 
 SHORT_JOB_CHARACTERS = 200
 
@@ -40,10 +41,10 @@ class SendHelperHandler(Handler[SendHelper, int]):
         helper = self.reach.checked_helper(command.helper_id, context.actor, context.command)
         jobs = self.jobs.helper_jobs(helper.id)
         if not jobs:
-            raise Refusal(f"helper {helper.id} has no job to go on from", "journal helper start starts a new one")
+            raise Refusal(f"{AgentLabel.from_agent(helper).text} has no job to go on from", "journal helper start starts a new one")
         last_job = jobs[-1]
         if command.review_plan_id is not None and any(job.review_plan_id == command.review_plan_id for job in jobs):
-            raise Refusal(f"helper {helper.id} reviewed plan {command.review_plan_id} already", "an independent review needs another helper: journal helper start")
+            raise Refusal(f"{AgentLabel.from_agent(helper).text} reviewed plan {command.review_plan_id} already", "an independent review needs another helper: journal helper start")
         self.kept.check_program(helper)
         source_context = replace(context, environment_id=helper.environment_id)
         source = self.sources.source_copy(source_context)
@@ -65,7 +66,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
 
     def running_helper_job(self, helper: Agent, last_job: HelperJob, source: WorkSourceCopy, source_context: Context, command: SendHelper, context: Context) -> int:
         if last_job.ended_at is None and not command.steer and context.actor.type is ActorType.AGENT:
-            raise Refusal(f"helper {helper.id} is busy with a job", f'wait for its report, or journal helper send {helper.id} --steer "<text>" adds to that job')
+            raise Refusal(f"{AgentLabel.from_agent(helper).text} is busy with a job", f'wait for its report, or journal helper send {helper.number} --steer "<text>" adds to that job')
         with self.scopes.opened(context.actor.id, context.environment_id, [ActorScope]):
             line = self.nudger.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
         if self.continues(last_job, source):
@@ -78,13 +79,13 @@ class SendHelperHandler(Handler[SendHelper, int]):
 
     def check_resume(self, helper: Agent) -> None:
         if not helper.profile:
-            raise Refusal(f"helper {helper.id} ran as a program subagent and cannot be resumed", "start a new helper")
+            raise Refusal(f"{AgentLabel.from_agent(helper).text} ran as a program subagent and cannot be resumed", "start a new helper")
         self.limits.checked_resume_session(helper)
         self.limits.checked_running(helper.profile)
         if not self.folders.has_folder(helper):
-            raise Refusal(f"helper {helper.id} worked in a folder that is gone", 'start a new helper with --fresh "<why>"')
+            raise Refusal(f"{AgentLabel.from_agent(helper).text} worked in a folder that is gone", 'start a new helper with --fresh "<why>"')
         if not self.providers.provider(helper.program).session_matches_folder(self.folders.folder(helper), helper.session):
-            raise Refusal(f"helper {helper.id} has no conversation to resume and starts a new session on its next launch: journal agent retire {helper.id} --reason \"no conversation\"", "start a new helper")
+            raise Refusal(f"{AgentLabel.from_agent(helper).text} has no conversation to resume and starts a new session on its next launch: journal agent retire {helper.number} --reason \"no conversation\"", "start a new helper")
 
     @staticmethod
     def continues(job: HelperJob, source: WorkSourceCopy) -> bool:

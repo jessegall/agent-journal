@@ -13,6 +13,7 @@ from engine.repository.repository import Repository
 from core.modules.agents.commands.retire_agent.retire_agent import RetireAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_roster_check import is_agent_roster
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class RetireAgentHandler(Handler[RetireAgent, Agent]):
@@ -49,7 +50,7 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
             return
         caller = self.queries.query(Agent).find(actor.id)
         if caller.id != agent.parent_id and (caller.role != AgentRole.MAIN or caller.environment_id != agent.environment_id):
-            raise UserApprovalRefusal(f"Retire agent {agent.id}, which belongs to agent {agent.parent_id}?", command=command)
+            raise UserApprovalRefusal(f"Retire {AgentLabel.from_agent(agent).text}, which belongs to agent {agent.parent_id}?", command=command)
 
     def check_state(self, agent: Agent, reason: str) -> None:
         if not reason.strip():
@@ -57,9 +58,9 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
         if agent.role == AgentRole.MAIN:
             raise Refusal("a main agent is not retired", f"journal agent stop {agent.id} ends its session")
         if agent.retired_at is not None:
-            raise Refusal(f"agent {agent.id} is retired already")
+            raise Refusal(f"{AgentLabel.from_agent(agent).text} is retired already")
         if agent.ended_at is None:
-            raise Refusal(f"agent {agent.id} is still running", f"journal agent stop {agent.id}, then retire it")
+            raise Refusal(f"{AgentLabel.from_agent(agent).text} is still running", f"journal agent stop {agent.number}, then retire it")
 
     def roster(self, agent: Agent) -> AgentRoster[Agent] | None:
         entry = next((entry for entry in self.registry.helper_types if entry.key == agent.role), None)

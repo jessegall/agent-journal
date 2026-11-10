@@ -11,6 +11,7 @@ from core.modules.agents.commands.record_agent_process.record_agent_process impo
 from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
 from core.modules.agents.models.enums.agent_session_state import AgentSessionState
 from core.modules.agents.models.enums.launch_answer import LaunchAnswer
+from core.modules.agents.support.agent_label import AgentLabel
 
 FAILED_ANSWER = b"failed\n"
 RUNNING_ANSWER = b"running\n"
@@ -27,7 +28,7 @@ class AgentLauncher:
 
     def hand(self, agent: Agent, environment: Environment, command: LaunchCommand) -> LaunchAnswer:
         if agent.retired_at is not None:
-            raise Refusal(f"agent {agent.id} is retired, for good", "start a new agent")
+            raise Refusal(f"{AgentLabel.from_agent(agent).text} is retired, for good", "start a new agent")
         if self.lockdown.lockdown(agent.program).is_active:
             return LaunchAnswer.LOCKED_DOWN
         with self.sessions.lock(agent.session) as available:

@@ -4,6 +4,7 @@ from engine.command.edit_command import EditCommand
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class RetiredRowGuard(Guard[Updated[Agent]]):
@@ -21,4 +22,4 @@ class RetiredRowGuard(Guard[Updated[Agent]]):
         if isinstance(context.command, EditCommand) and retirement != (row.retired_at, row.retirement_reason, row.retiring_actor_id):
             raise Refusal("an edit does not change a retirement", f'journal agent retire {row.id} --reason "<why>"')
         if old_row.retired_at is not None and (row.retired_at is None or row.ended_at is None):
-            raise Refusal(f"agent {row.id} is retired, for good", "start a new agent")
+            raise Refusal(f"{AgentLabel.from_agent(row).text} is retired, for good", "start a new agent")

@@ -6,6 +6,7 @@ from engine.errors.refusal import Refusal
 from core.modules.agents.commands.choose_agent_control.choose_agent_control import ChooseAgentControl
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.terminal_typing import TerminalTyping
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class ChooseAgentControlHandler(Handler[ChooseAgentControl, Agent]):
@@ -24,6 +25,6 @@ class ChooseAgentControlHandler(Handler[ChooseAgentControl, Agent]):
         if not choices:
             raise Refusal(f"{command.key} {command.value} is not a choice the agent bar offers", f"journal agent controls {agent.id} lists them")
         if agent.ended_at is not None:
-            raise Refusal(f"agent {agent.id} has ended")
+            raise Refusal(f"{AgentLabel.from_agent(agent).text} has ended")
         self.typing.type_line(agent, choices[0].line)
         return agent

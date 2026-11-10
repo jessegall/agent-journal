@@ -1,6 +1,7 @@
 from argparse import Namespace
 
-from engine.cli.agent_number import AGENT_MODEL_NAME, AgentNumber, NumberedAgentId
+from engine.cli.agent_number import AGENT_MODEL_NAME, AgentNumber
+from engine.cli.numbered_agent_id import NumberedAgentId
 from engine.cli.row_numbers import RowNumbers
 
 
@@ -19,4 +20,4 @@ class AgentNumberArguments:
                 setattr(arguments, name, [self.row_id(item, environment_id) if isinstance(item, AgentNumber) else item for item in value])
 
     def row_id(self, number: AgentNumber, environment_id: int | None) -> NumberedAgentId:
-        return NumberedAgentId.of(self.numbers.row_id(AGENT_MODEL_NAME, int(number), environment_id), int(number))
+        return NumberedAgentId.with_number(self.numbers.row_id(AGENT_MODEL_NAME, number, environment_id), number)

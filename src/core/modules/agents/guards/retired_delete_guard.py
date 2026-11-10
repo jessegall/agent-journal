@@ -3,6 +3,7 @@ from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class RetiredDeleteGuard(Guard[Deleted[Agent]]):
@@ -13,4 +14,4 @@ class RetiredDeleteGuard(Guard[Deleted[Agent]]):
 
     def check(self, event: Deleted[Agent], context: Context) -> None:
         if event.row.retired_at is not None:
-            raise Refusal(f"agent {event.row.id} is retired, and its record stays")
+            raise Refusal(f"{AgentLabel.from_agent(event.row).text} is retired, and its record stays")

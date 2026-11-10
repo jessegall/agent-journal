@@ -8,6 +8,7 @@ from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class ReservedTaskGuard(Guard[Moved[Task]]):
@@ -25,4 +26,4 @@ class ReservedTaskGuard(Guard[Moved[Task]]):
             return
         reserving_agent = self.rows.required(Agent, task.delegated_to)
         if reserving_agent.role == AgentRole.MAIN and reserving_agent.ended_at is None:
-            raise Refusal(f"task {task.id} is reserved for agent {reserving_agent.id}", f"journal task assign {task.id} --to <agent> moves it")
+            raise Refusal(f"task {task.id} is reserved for {AgentLabel.from_agent(reserving_agent).text}", f"journal task assign {task.id} --to <agent> moves it")

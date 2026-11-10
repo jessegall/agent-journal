@@ -6,6 +6,7 @@ from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from core.modules.agents.commands.choose_agent_control.choose_agent_control import ChooseAgentControl
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class ChooseAgentControlSubcommand(Subcommand[ChooseAgentControl, Agent]):
@@ -26,4 +27,4 @@ class ChooseAgentControlSubcommand(Subcommand[ChooseAgentControl, Agent]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Agent):
-            output.line(f"applied to agent {value.id}")
+            output.line(f"applied to {AgentLabel.from_agent(value).text}")

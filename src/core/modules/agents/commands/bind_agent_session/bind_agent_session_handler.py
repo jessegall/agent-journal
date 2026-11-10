@@ -11,6 +11,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.single_main_agent import SingleMainAgent
 from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
@@ -26,7 +27,7 @@ class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
     def handle(self, command: BindAgentSession, context: Context) -> Agent:
         agent = self.agents.find(command.row_id)
         if agent.ended_at is not None:
-            raise Refusal(f"agent {agent.id} has ended already", f"journal agent show {agent.id}")
+            raise Refusal(f"{AgentLabel.from_agent(agent).text} has ended already", f"journal agent show {agent.number}")
         session_agent = self.agents.session(command.session)
         if session_agent is not None and session_agent.id != agent.id:
             self.repository.save_change(agent, agent.ended(context.timestamp, self.suites.agent_policy()), replace(context, actor=Actor(agent.id, ActorType.AGENT)))

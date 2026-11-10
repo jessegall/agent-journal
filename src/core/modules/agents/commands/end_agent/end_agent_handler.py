@@ -6,6 +6,7 @@ from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class EndAgentHandler(Handler[EndAgent, Agent]):
@@ -20,5 +21,5 @@ class EndAgentHandler(Handler[EndAgent, Agent]):
     def handle(self, command: EndAgent, context: Context) -> Agent:
         agent = self.rows.required(Agent, command.row_id)
         if agent.ended_at is not None:
-            raise CompletedCommandError(f"agent {agent.id} has ended already", f"journal agent show {agent.id}")
+            raise CompletedCommandError(f"{AgentLabel.from_agent(agent).text} has ended already", f"journal agent show {agent.number}")
         return self.repository.save_change(agent, agent.ended(context.timestamp, self.suites.agent_policy()), context)

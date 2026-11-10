@@ -10,6 +10,7 @@ from core.modules.tasks.commands.assign_task.assign_task import AssignTask
 from core.modules.tasks.models.enums.task_state import UNSTARTED_STATES, TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_assignees import TaskAssignees
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class AssignTaskHandler(Handler[AssignTask, Task]):
@@ -32,6 +33,6 @@ class AssignTaskHandler(Handler[AssignTask, Task]):
         if task.state is not TaskState.STARTED:
             raise Refusal(f"task {task.id} is {task.state.value}: only an open, blocked or started task moves")
         if task.holder_id == agent.id:
-            raise Refusal(f"task {task.id} is with agent {agent.id}: nothing to move")
+            raise Refusal(f"task {task.id} is with {AgentLabel.from_agent(agent).text}: nothing to move")
         self.assignees.check_reassignment(task)
-        return self.repository.save(replace(task.release(context.timestamp, context.actor, f"assigned to agent {agent.id}"), delegated_to=delegated_to), context)
+        return self.repository.save(replace(task.release(context.timestamp, context.actor, f"assigned to {AgentLabel.from_agent(agent).text}"), delegated_to=delegated_to), context)

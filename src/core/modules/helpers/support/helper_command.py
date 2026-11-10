@@ -12,6 +12,7 @@ from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.helpers.support.helper_start_folder import HelperStartFolder
 from core.modules.profiles.support.profile_files import ProfileFiles
+from core.modules.agents.support.agent_label import AgentLabel
 
 ENVIRONMENT_VARIABLE = "JOURNAL_ENV"
 ACTIVE_VARIABLE = "AGENT_JOURNAL_ACTIVE"
@@ -34,7 +35,7 @@ class HelperCommand:
         if self.folders.start_folder(helper).is_dir():
             self.programs.checked(helper.program, self.folders.folder(helper))
         profile = self.profiles.effective(helper.profile)
-        return self.launched(helper, SessionStart(helper.session), BLANK_LINE.join((f"You are helper {helper.id}.", profile.body, job, REPORT_STEP)))
+        return self.launched(helper, SessionStart(helper.session), BLANK_LINE.join((f"You are {AgentLabel.from_agent(helper).text}.", profile.body, job, REPORT_STEP)))
 
     def resumed(self, helper: Agent, job: str) -> LaunchCommand:
         if self.folders.start_folder(helper).is_dir():

@@ -23,6 +23,7 @@ from core.modules.usage.support.environment_usage import EnvironmentUsage
 from core.modules.usage.support.session_status import SessionStatus
 from core.modules.usage.support.status_files import StatusFiles
 from core.modules.agents.queries.agent_query import AgentQuery
+from core.modules.agents.support.agent_label import AgentLabel
 
 RECENT_COMPACTION_CALLS = 50
 ENDED_HELPERS_COUNTED = 50
@@ -87,7 +88,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
 
     @staticmethod
     def agent_line(agent: Agent, status: SessionStatus) -> str:
-        start = f"agent {agent.id}  {agent.session}  {agent.program}"
+        start = f"{AgentLabel.from_agent(agent).text}  {agent.session}  {agent.program}"
         if not status.is_reported:
             return f"{start}  nothing reported yet"
         context = f"  context {status.context_percent}%" if status.context_percent is not None else ""

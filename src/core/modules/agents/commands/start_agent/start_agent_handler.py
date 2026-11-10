@@ -16,6 +16,7 @@ from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.enums.access import Access
 from engine.actor.actor import Actor
 from engine.sandbox.shell_sandbox import ShellSandbox
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class StartAgentHandler(Handler[StartAgent, Agent]):
@@ -68,6 +69,6 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
 
     def check_resume(self, agent: Agent, command: StartAgent, environment_id: int) -> None:
         if agent.environment_id != environment_id:
-            raise Refusal(f"session {command.session} is agent {agent.id} of environment {agent.environment_id}", "resume it in its own environment")
+            raise Refusal(f"session {command.session} is {AgentLabel.from_agent(agent).text} of environment {agent.environment_id}", "resume it in its own environment")
         if (agent.role, agent.program) != (command.role, command.program):
-            raise Refusal(f"session {command.session} is agent {agent.id}, a {agent.role} agent of {agent.program}", "resume it as it started")
+            raise Refusal(f"session {command.session} is {AgentLabel.from_agent(agent).text}, a {agent.role} agent of {agent.program}", "resume it as it started")

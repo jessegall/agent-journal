@@ -27,6 +27,7 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.helpers.support.exit_reasons import ExitReasons
 from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
 from core.modules.helpers.commands.make_provider_outage.make_provider_outage import MakeProviderOutage
+from core.modules.agents.support.agent_label import AgentLabel
 
 OUTAGE_MINUTES = 15
 
@@ -62,7 +63,7 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
     def is_earlier_run(self, agent: Agent, command: RecordProgramExit) -> bool:
         if command.pid is None or agent.pid is None or command.pid == agent.pid:
             return False
-        self.system_log.write(LogLevel.INFORMATION, f"agent {agent.id}: the exit of process {command.pid} changed nothing, since process {agent.pid} runs now")
+        self.system_log.write(LogLevel.INFORMATION, f"{AgentLabel.from_agent(agent).text}: the exit of process {command.pid} changed nothing, since process {agent.pid} runs now")
         return True
 
     def has_no_waiting_job(self, agent: Agent) -> bool:

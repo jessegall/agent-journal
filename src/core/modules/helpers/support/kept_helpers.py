@@ -12,6 +12,7 @@ from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.helpers.support.profile_model import ProfileModel
 from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.support.program_state import ProgramState
+from core.modules.agents.support.agent_label import AgentLabel
 
 FULL_SESSION_PERCENT = 80
 
@@ -64,4 +65,4 @@ class KeptHelpers:
             raise lockdown.start_refusal("helper")
         state = self.program_state(helper)
         if not state.is_ready:
-            raise Refusal(f"helper {helper.id} waits on {helper.program}: {state.wait_line}", f"journal helper send {helper.id} after it is back")
+            raise Refusal(f"{AgentLabel.from_agent(helper).text} waits on {helper.program}: {state.wait_line}", f"journal helper send {helper.number} after it is back")

@@ -7,6 +7,7 @@ from engine.errors.refusal import Refusal
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 HELPER_JOB_COMMAND = ("helper", "send")
@@ -26,9 +27,9 @@ class HelperReach:
         if job_command and job_command != HELPER_JOB_COMMAND:
             raise Refusal(f"agent {helper_id} is a {self.helper_types.label(helper.role)}: it takes its work with journal {' '.join(job_command)}")
         if helper.retired_at is not None:
-            raise Refusal(f"helper {helper.id} is retired, for good", "journal helper start starts a new one")
+            raise Refusal(f"{AgentLabel.from_agent(helper).text} is retired, for good", "journal helper start starts a new one")
         if actor.type is ActorType.AGENT and not self.may_reach(helper, actor.id):
-            raise UserApprovalRefusal(f"Allow this action on helper {helper.id}, which belongs to agent {helper.parent_id}?", command=command)
+            raise UserApprovalRefusal(f"Allow this action on {AgentLabel.from_agent(helper).text}, which belongs to agent {helper.parent_id}?", command=command)
         return helper
 
     def new_parent(self, helper: Agent, actor: Actor) -> int | None:

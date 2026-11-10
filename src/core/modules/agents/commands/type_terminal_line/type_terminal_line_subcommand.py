@@ -5,6 +5,7 @@ from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from core.modules.agents.commands.type_terminal_line.type_terminal_line import TypeTerminalLine
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class TypeTerminalLineSubcommand(Subcommand[TypeTerminalLine, Agent]):
@@ -23,4 +24,4 @@ class TypeTerminalLineSubcommand(Subcommand[TypeTerminalLine, Agent]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Agent):
-            output.line(f"typed in the terminal of agent {value.id}")
+            output.line(f"typed in the terminal of {AgentLabel.from_agent(value).text}")
