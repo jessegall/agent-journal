@@ -1,4 +1,4 @@
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from dataclasses import replace
 
 from engine.dotted_path.dotted_path import DottedPath

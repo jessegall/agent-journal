@@ -11,7 +11,7 @@ from core.base.viewer.person_lines import PERSON_LINES
 from core.modules.viewer.commands.support.window_allowances import WindowAllowances
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType
 from core.modules.viewer.commands.support.window_refusal import WindowRefusal
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.drivers.support.active_modules import ActiveModules
 
 WINDOW_SETTING_LINES = ("window save-setting", "window setting")

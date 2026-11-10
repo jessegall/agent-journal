@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.conditions.minimum import Minimum
 from engine.query.queries import Queries
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox

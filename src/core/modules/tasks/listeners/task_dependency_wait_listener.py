@@ -2,7 +2,7 @@ from core.base.change.created import Created
 from core.base.change.deleted import Deleted
 from core.base.command.context import Context
 from core.base.listener.save_listener import SaveListener
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.tasks.models.task_dependency import TaskDependency
 from core.modules.tasks.support.dependency_waits import DependencyWaits
 

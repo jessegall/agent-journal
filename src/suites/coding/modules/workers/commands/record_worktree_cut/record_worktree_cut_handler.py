@@ -8,7 +8,7 @@ from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.dependency_waits import DependencyWaits

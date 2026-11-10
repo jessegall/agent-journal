@@ -3,8 +3,8 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.listener.event_rows import EventRows
-from core.base.scope.actor_scope import ActorScope
-from core.base.scope.environment_scope import EnvironmentScope
+from engine.scope.actor_scope import ActorScope
+from engine.scope.environment_scope import EnvironmentScope
 from core.modules.docking.commands.schedule_dock_item_leave.schedule_dock_item_leave import ScheduleDockItemLeave
 from core.modules.docking.listeners.environment_dock_listener import MODULE_NAME
 from core.modules.docking.models.dock import Dock

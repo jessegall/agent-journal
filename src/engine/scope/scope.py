@@ -3,7 +3,7 @@ from collections.abc import Callable
 from core.base.change.change import Change
 from core.base.change.logged_event import LoggedEvent
 from core.base.model.model import Model
-from core.base.scope.scope_opening import ScopeOpening
+from engine.scope.scope_opening import ScopeOpening
 
 
 class Scope:

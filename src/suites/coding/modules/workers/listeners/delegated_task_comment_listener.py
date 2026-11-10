@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from core.base.listener.save_listener import SaveListener
 from engine.query.queries import Queries
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent
 from core.modules.documents.models.enums.link_type import LinkType

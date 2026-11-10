@@ -1,4 +1,4 @@
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 
 
 class SampleListener:

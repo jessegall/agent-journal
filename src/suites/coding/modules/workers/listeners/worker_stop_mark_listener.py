@@ -6,8 +6,8 @@ from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from core.base.listener.event_rows import EventRows
-from core.base.scope.actor_scope import ActorScope
-from core.base.scope.scopes import DisabledScopes
+from engine.scope.actor_scope import ActorScope
+from engine.scope.scopes import DisabledScopes
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.tasks.models.task import Task

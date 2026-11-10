@@ -1,6 +1,6 @@
 from core.base.database.database import Database
 from core.base.driver.command_category import CommandCategory
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted

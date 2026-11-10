@@ -4,7 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.hook_event_name import HookEventName
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.support.reader_request_text import ReaderRequestText
 from core.modules.processes.support.reader_request_notices import ReaderRequestNotices

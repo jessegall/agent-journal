@@ -1,5 +1,5 @@
 from core.base.change.logged_event import LoggedEvent
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.reviews.models.enums.review_mark_type import ReviewMarkType
 from core.modules.reviews.models.enums.review_mark_variant import ReviewMarkVariant

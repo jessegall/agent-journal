@@ -2,7 +2,7 @@ from engine.enums.agent_role import AgentRole
 from core.base.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from core.base.change.created import Created

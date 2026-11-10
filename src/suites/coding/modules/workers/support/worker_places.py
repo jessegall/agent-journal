@@ -9,8 +9,8 @@ from engine.time.timestamp import Timestamp
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.scope.actor_scope import ActorScope
-from core.base.scope.scopes import Scopes
+from engine.scope.actor_scope import ActorScope
+from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.usage.support.agent_type_limits import UNLIMITED_AGENT_COUNT, AgentTypeLimits
 from core.modules.agents.support.type_limits import TypeLimits

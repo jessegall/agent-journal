@@ -10,7 +10,7 @@ from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.rules.support.run_folder_ends import RunFolderEnds
 from core.modules.processes.support.output_folder import OutputFolder
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.processes.support.process_settings import ProcessSettings
 
 

@@ -5,7 +5,7 @@ from core.base.command.bus import Bus
 from engine.journal.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
 from engine.query.queries import Queries
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.modules.agents.events.agent_ended import AgentEnded
 from core.modules.agents.models.agent import Agent

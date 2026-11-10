@@ -7,8 +7,8 @@ import pytest
 from engine.caller.caller_request import CallerRequest
 from core.base.change.event_log import EventLog
 from engine.query.queries import Queries
-from core.base.scope.actor_scope import ActorScope
-from core.base.scope.scopes import Scopes
+from engine.scope.actor_scope import ActorScope
+from engine.scope.scopes import Scopes
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState

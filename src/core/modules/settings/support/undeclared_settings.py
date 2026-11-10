@@ -1,7 +1,7 @@
 import json
 from collections.abc import Sequence
 
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.base.registry.setting_entry import SettingEntry
 from core.base.setting.setting_declaration import ANY_KEY
 from core.modules.settings.models.secret_setting import SecretSetting

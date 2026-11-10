@@ -4,8 +4,8 @@ from core.base.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from core.base.registry.registry import Registry
 from engine.repository.repository import Repository
-from core.base.scope.environment_scope import EnvironmentScope
-from core.base.scope.scopes import Scopes
+from engine.scope.environment_scope import EnvironmentScope
+from engine.scope.scopes import Scopes
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.viewer.models.window_permission import WindowPermission
 from core.modules.viewer.commands.prune_window_permissions.prune_window_permissions import PruneWindowPermissions

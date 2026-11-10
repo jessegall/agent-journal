@@ -1,5 +1,5 @@
 from engine.query.queries import Queries
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from tests.stories.core.support.fixtures import MainEnvironment
 

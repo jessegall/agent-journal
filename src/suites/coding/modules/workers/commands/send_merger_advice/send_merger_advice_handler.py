@@ -4,7 +4,7 @@ from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.messages.commands.send_agent_message.send_agent_message import SendAgentMessage
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger

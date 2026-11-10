@@ -3,7 +3,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.driver.nudge import Nudge
 from engine.query.queries import Queries
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.messages.commands.send_agent_message.send_agent_message import SendAgentMessage
 from suites.coding.modules.workers.commands.send_merger_report.send_merger_report import SendMergerReport

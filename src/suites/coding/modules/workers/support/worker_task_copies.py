@@ -1,6 +1,6 @@
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES

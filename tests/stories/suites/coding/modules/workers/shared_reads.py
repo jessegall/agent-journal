@@ -5,7 +5,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.query.queries import Queries
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story

@@ -3,7 +3,7 @@ from engine.enums.agent_role import AgentRole
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.repository.repository import Repository
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.receivers import Receivers
 from core.modules.agents.support.report_nudges import PARENT_REPORT, PARENT_REPORT_SOURCE

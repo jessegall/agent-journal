@@ -6,7 +6,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.span_queries import SpanQueries
 from engine.enums.helper_role import HelperRole
 from engine.enums.role_group import RoleGroup
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure import RecordAgentLaunchFailure
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.queries.hook_call_query import HookCallQuery

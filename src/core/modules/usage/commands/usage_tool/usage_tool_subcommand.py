@@ -10,7 +10,7 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.contains_some import ContainsSome
 from engine.query.conditions.minimum import Minimum
 from engine.query.queries import Queries
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from engine.enums.hook_answer import HookAnswer

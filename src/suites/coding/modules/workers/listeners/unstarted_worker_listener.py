@@ -2,7 +2,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.change.moved import Moved
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.event_rows import EventRows
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from core.modules.environments.support.environment_rows import EnvironmentRows

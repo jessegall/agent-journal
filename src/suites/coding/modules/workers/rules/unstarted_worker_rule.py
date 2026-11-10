@@ -8,7 +8,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.interval import Interval
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.span_queries import SpanQueries
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.drivers.support.agent_activities import AgentActivities
 from core.modules.settings.bindings.support.setting_values import SettingValues

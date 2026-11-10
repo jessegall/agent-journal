@@ -1,4 +1,4 @@
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.schedules.support.schedule_nudges import JOB_STOPPED
 from core.base.command.context import Context
 from core.base.command.handler import Handler

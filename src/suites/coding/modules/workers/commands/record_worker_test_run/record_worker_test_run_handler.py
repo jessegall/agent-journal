@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.repository.repository import Repository
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.commands.record_worker_test_run.record_worker_test_run import RecordWorkerTestRun
 from suites.coding.modules.workers.models.worker_test_run import WorkerTestRun
 

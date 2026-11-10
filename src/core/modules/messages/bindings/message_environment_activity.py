@@ -1,4 +1,4 @@
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.environments.support.environment_activity import EnvironmentActivity
 from core.modules.messages.queries.message_query import MessageQuery
 

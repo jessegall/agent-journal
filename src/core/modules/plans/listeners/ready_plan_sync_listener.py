@@ -5,8 +5,8 @@ from core.base.command.close_user_approval import CloseUserApproval
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
-from core.base.scope.actor_scope import ActorScope
-from core.base.scope.environment_scope import EnvironmentScope
+from engine.scope.actor_scope import ActorScope
+from engine.scope.environment_scope import EnvironmentScope
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.docking.queries.dock_item_query import DockItemQuery

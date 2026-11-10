@@ -8,7 +8,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from engine.query.queries import Queries
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.memories.models.memory import Memory
 from core.modules.memories.commands.remove_memory.remove_memory import RemoveMemory
 from core.modules.memories.models.enums.memory_state import MemoryState

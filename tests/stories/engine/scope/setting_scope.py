@@ -1,8 +1,8 @@
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.base.scope.environment_rows import TwoWorkingEnvironments, staging_agent
+from tests.stories.engine.scope.environment_rows import TwoWorkingEnvironments, staging_agent
 
 BATCH_SIZE = "journal.core.processes.run-batch-size"
 

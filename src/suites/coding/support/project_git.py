@@ -7,7 +7,7 @@ from pathlib import Path
 
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.environments.models.environment import Environment
 from suites.coding.support.git_pull_rows import GitPullRows
 from suites.coding.support.git_rows import GitRows

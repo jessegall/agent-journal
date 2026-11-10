@@ -6,7 +6,7 @@ from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
-from core.base.scope.environment_scope import EnvironmentScope
+from engine.scope.environment_scope import EnvironmentScope
 from core.modules.approvals.commands.recover_approvals.recover_approvals import RecoverApprovals
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState

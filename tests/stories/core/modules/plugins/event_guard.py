@@ -9,7 +9,7 @@ from engine.enums.agent_role import AgentRole
 from core.base.model.event_form import EventForm
 from engine.query.queries import Queries
 from core.base.registry.registry import Registry
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from engine.enums.script_stop import ScriptStop
 from core.modules.drivers.models.agent_line import AgentLine

@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.event_rows import EventRows
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process
 from core.modules.processes.commands.end_process.end_process import EndProcess

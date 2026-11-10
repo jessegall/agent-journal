@@ -7,8 +7,8 @@ from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
-from core.base.scope.actor_scope import ActorScope
-from core.base.scope.environment_scope import EnvironmentScope
+from engine.scope.actor_scope import ActorScope
+from engine.scope.environment_scope import EnvironmentScope
 from core.modules.agents.models.agent import Agent
 from core.modules.docking.commands.remove_dock_item.remove_dock_item import RemoveDockItem
 from core.modules.docking.models.dock import Dock

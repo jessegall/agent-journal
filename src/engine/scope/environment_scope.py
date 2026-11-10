@@ -1,4 +1,4 @@
-from core.base.scope.scope import Scope
+from engine.scope.scope import Scope
 
 
 class EnvironmentScope(Scope):

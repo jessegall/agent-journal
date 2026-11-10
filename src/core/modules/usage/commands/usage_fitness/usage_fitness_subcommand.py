@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.time.clock import Clock
 from engine.query.queries import Queries
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent

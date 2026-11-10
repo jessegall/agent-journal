@@ -7,7 +7,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.tool_type import ToolType
 from engine.enums.role_group import RoleGroup
-from core.base.scope.scopes import WholeScopes
+from engine.scope.scopes import WholeScopes
 
 
 class DriverRule:

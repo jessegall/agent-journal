@@ -4,8 +4,8 @@ from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.scope.environment_scope import EnvironmentScope
-from core.base.scope.scopes import Scopes
+from engine.scope.environment_scope import EnvironmentScope
+from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_program import AgentProgram
 from core.modules.processes.commands.stop_process.stop_process import StopProcess

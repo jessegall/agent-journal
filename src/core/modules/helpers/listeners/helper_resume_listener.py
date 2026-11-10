@@ -4,7 +4,7 @@ from engine.enums.helper_role import HelperRole
 from core.base.listener.commit_listener import CommitListener
 from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.helpers.support.helper_resume import HelperResume

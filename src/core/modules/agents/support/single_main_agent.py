@@ -7,7 +7,7 @@ from engine.errors.refusal import Refusal
 from engine.enums.agent_role import AgentRole
 from core.base.command.bus import Bus
 from core.base.command.context import Context
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.agents.commands.end_replaced_main.end_replaced_main import EndReplacedMain
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows

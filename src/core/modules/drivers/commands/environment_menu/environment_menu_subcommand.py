@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
-from core.base.scope.environment_scope import EnvironmentScope
+from engine.scope.environment_scope import EnvironmentScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.drivers.commands.support.environment_menu import EnvironmentMenu

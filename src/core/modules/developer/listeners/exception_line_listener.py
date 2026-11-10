@@ -4,7 +4,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from engine.log.exception_sink import CLOCK_TICK_SOURCE
 from core.base.listener.commit_listener import CommitListener
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.chat.models.journal_exception import JournalException
 from core.modules.developer.commands.send_exception_line.send_exception_line import SendExceptionLine

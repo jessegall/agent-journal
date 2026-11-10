@@ -18,7 +18,7 @@ from core.base.model.table import Table
 from core.base.model.tables import Tables
 from engine.query.queries import Queries
 from engine.repository.stale_row_error import StaleRowError
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 
 M = TypeVar("M", bound=Model)
 

@@ -14,8 +14,8 @@ from core.base.change.event_log import HIDDEN
 from engine.journal.journal_home import JournalHome
 from core.base.model.event_form import EventForm
 from engine.process.plugin_script_processes import PluginScriptProcesses
-from core.base.scope.environment_scope import EnvironmentScope
-from core.base.scope.scopes import Scopes
+from engine.scope.environment_scope import EnvironmentScope
+from engine.scope.scopes import Scopes
 from engine.enums.script_stop import ScriptStop
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.environments.support.environment_rows import EnvironmentRows

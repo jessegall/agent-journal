@@ -5,7 +5,7 @@ from core.base.command.context import Context
 from core.base.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.report_nudges import PARENT_REPORT_SOURCE
 from core.modules.drivers.models.agent_line import AgentLine

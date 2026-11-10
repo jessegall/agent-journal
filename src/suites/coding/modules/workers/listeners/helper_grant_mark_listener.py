@@ -1,6 +1,6 @@
 from core.base.change.created import Created
 from core.base.change.logged_event import LoggedEvent
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.helpers.models.helper_grant import HelperGrant

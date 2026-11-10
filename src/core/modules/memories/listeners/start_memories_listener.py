@@ -6,7 +6,7 @@ from core.base.module.module_actors import ModuleActors
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.memories.commands.give_memories.give_memories import GiveMemories
 from core.modules.memories.models.enums.delivery_cause import DeliveryCause
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery
 from core.modules.drivers.events.session_started import SessionStarted
 

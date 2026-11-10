@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from core.modules.processes.commands.send_reader_request_notice.send_reader_request_notice import SendReaderRequestNotice
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery

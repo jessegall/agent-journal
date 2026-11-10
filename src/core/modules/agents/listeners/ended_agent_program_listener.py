@@ -2,7 +2,7 @@ from core.base.change.event_log import EventLog
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.commit_listener_runner import PROGRAM_STOP_RUN_ORDER
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
 from core.modules.agents.events.agent_ended import AgentEnded
 from core.modules.agents.models.agent import AGENTS_TABLE, PID_FIELD, Agent

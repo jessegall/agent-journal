@@ -6,7 +6,7 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.reviews.listeners.reviewer_ended_listener import MODULE_NAME
 from core.modules.reviews.models.enums.review_mark_type import ReviewMarkType

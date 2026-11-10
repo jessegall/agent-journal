@@ -5,7 +5,7 @@ from core.base.command.bus import Bus
 from core.base.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process_part import ProcessPart

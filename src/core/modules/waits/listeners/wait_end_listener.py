@@ -1,4 +1,4 @@
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.waits.support.wait_nudges import WAIT_ENDED
 from core.base.change.moved import Moved
 from core.base.command.context import Context

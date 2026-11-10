@@ -5,7 +5,7 @@ import pytest
 
 from core.base.command.bus import Bus
 from core.base.command.context import Context
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.modules.viewer.support.window_story import WindowStory

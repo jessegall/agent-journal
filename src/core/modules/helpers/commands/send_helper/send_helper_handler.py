@@ -16,8 +16,8 @@ from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.helper_reach import HelperReach
 from core.modules.messages.support.work_source_copy import WorkSourceCopy
 from core.modules.messages.support.work_sources import WorkSources
-from core.base.scope.scopes import Scopes
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.scopes import Scopes
+from engine.scope.actor_scope import ActorScope
 from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.modules.usage.support.status_files import StatusFiles
 

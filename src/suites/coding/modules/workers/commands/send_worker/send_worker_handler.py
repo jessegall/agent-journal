@@ -10,8 +10,8 @@ from core.base.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.modules.helpers.support.agent_admission import AgentAdmission
 from engine.repository.repository import Repository
-from core.base.scope.actor_scope import ActorScope
-from core.base.scope.scopes import Scopes
+from engine.scope.actor_scope import ActorScope
+from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.nudger import Nudger

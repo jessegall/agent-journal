@@ -5,8 +5,8 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.listener.event_rows import EventRows
-from core.base.scope.actor_scope import ActorScope
-from core.base.scope.environment_scope import EnvironmentScope
+from engine.scope.actor_scope import ActorScope
+from engine.scope.environment_scope import EnvironmentScope
 from core.modules.agents.models.agent import Agent
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState

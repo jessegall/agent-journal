@@ -16,7 +16,7 @@
                         "name": "when"
                     },
                     {
-                        "file": "src/core/base/scope/scope.py"
+                        "file": "src/engine/scope/scope.py"
                     }
                 ]
             },

@@ -26,7 +26,7 @@ from engine.log.system_log_writer import SystemLogWriter
 from engine.guard.guard_switches import GuardSwitches
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.registry import Registry
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 
 
 SLOW_RULE_SECONDS = 0.1

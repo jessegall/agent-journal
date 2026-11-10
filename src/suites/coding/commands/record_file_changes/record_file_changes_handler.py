@@ -6,7 +6,7 @@ from core.base.command.handler import Handler
 from engine.file.file_access import FileAccess
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.plugins.commands.deliver_file_edit.deliver_file_edit import DeliverFileEdit

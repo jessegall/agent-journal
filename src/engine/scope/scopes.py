@@ -17,11 +17,11 @@ from core.base.model.session_bound import SessionBound
 from core.base.model.session_private import SessionPrivate
 from core.base.model.table import indefinite_article
 from engine.errors.refusal import Refusal
-from core.base.scope.actor_scope import ActorScope
-from core.base.scope.environment_scope import EnvironmentScope
+from engine.scope.actor_scope import ActorScope
+from engine.scope.environment_scope import EnvironmentScope
 from engine.row.row_owner import RowOwner
-from core.base.scope.scope import Scope
-from core.base.scope.scope_opening import ScopeOpening
+from engine.scope.scope import Scope
+from engine.scope.scope_opening import ScopeOpening
 
 M = TypeVar("M", bound=Model)
 WholeScopes = Sequence[type[Scope]]

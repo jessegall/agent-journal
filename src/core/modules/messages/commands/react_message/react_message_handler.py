@@ -1,4 +1,4 @@
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.messages.support.message_nudges import MESSAGE_REACTION
 from engine.enums.actor_type import ActorType
 from core.base.command.context import Context

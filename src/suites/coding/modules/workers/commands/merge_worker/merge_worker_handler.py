@@ -9,7 +9,7 @@ from pathlib import Path
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.environments.models.environment import Environment
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.tasks.models.task import Task

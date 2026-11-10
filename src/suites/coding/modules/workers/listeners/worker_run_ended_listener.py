@@ -12,7 +12,7 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_OPERATION
 from core.modules.processes.events.process_ended import ProcessEnded
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.listener.save_listener import SaveListener
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.nudger import Nudger
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState

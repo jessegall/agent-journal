@@ -4,7 +4,7 @@ from core.base.command.context import Context
 from core.base.listener.save_listener import SaveListener
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.support.driver_nudges import REQUIRED_COMMAND_REFUSAL

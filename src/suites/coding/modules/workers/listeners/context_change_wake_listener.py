@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.commands.wake_compacted_agent.wake_compacted_agent import WakeCompactedAgent
 from core.modules.drivers.events.session_started import SessionStarted

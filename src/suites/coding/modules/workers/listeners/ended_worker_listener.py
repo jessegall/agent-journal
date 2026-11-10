@@ -2,8 +2,8 @@ from core.modules.agents.events.agent_ended import AgentEnded
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.listener.save_listener import SaveListener
 from engine.query.queries import Queries
-from core.base.scope.actor_scope import ActorScope
-from core.base.scope.scopes import Scopes
+from engine.scope.actor_scope import ActorScope
+from engine.scope.scopes import Scopes
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from core.modules.drivers.support.nudger import Nudger

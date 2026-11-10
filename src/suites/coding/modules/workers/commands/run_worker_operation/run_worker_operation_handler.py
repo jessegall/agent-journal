@@ -8,7 +8,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.processes.models.process import Process
 from core.modules.messages.support.work_sources import WorkSources
 from suites.coding.modules.workers.commands.run_worker_operation.run_worker_operation import RunWorkerOperation

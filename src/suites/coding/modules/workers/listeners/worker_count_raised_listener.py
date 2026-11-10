@@ -3,9 +3,9 @@ import json
 from core.base.listener.save_listener import SaveListener
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
-from core.base.scope.actor_scope import ActorScope
-from core.base.scope.environment_scope import EnvironmentScope
-from core.base.scope.scopes import Scopes
+from engine.scope.actor_scope import ActorScope
+from engine.scope.environment_scope import EnvironmentScope
+from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.support.nudger import Nudger

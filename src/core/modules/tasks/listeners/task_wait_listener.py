@@ -3,7 +3,7 @@ from core.base.model.model import Model
 from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
 from engine.repository.repository import Repository
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.tasks.models.task import Task

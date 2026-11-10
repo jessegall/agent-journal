@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from typing import ClassVar, Generic, TypeVar
 from engine.caller.caller import Caller
-from core.base.scope.scopes import WholeScopes
+from engine.scope.scopes import WholeScopes
 from core.base.subcommand.output import Output
 from core.base.subcommand.render_value import render_value
 from core.base.subcommand.rows_value import RowsValue

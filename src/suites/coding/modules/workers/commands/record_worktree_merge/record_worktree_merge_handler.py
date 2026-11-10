@@ -5,7 +5,7 @@ from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task

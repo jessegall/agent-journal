@@ -10,7 +10,7 @@ from core.modules.viewer.commands.support.window_allowances import WindowAllowan
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType
 from server.viewer.button_permission import ButtonPermission
 from server.viewer.buttons_listing import ButtonsListing
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from server.viewer.unknown_environment_error import UnknownEnvironmentError
 
 

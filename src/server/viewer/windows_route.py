@@ -14,7 +14,7 @@ from core.base.viewer.window_place import WindowPlace
 from core.modules.drivers.support.active_modules import ActiveModules
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from engine.container.container import Container
 from server.viewer.unknown_environment_error import UnknownEnvironmentError
 from core.base.registry.window_listing import WindowListing

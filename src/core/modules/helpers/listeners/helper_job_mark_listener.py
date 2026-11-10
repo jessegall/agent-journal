@@ -1,5 +1,5 @@
 from core.base.change.logged_event import LoggedEvent
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import AGENTS_TABLE
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.drivers.models.enums.dispatch_mark_type import DispatchMarkType

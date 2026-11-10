@@ -13,7 +13,7 @@ from engine.helper_type.helper_type_book import HelperTypeBook
 from core.base.profile.agent_profile import AgentProfile
 from engine.errors.refusal import Refusal
 from core.modules.profiles.support.profile_files import ProfileFiles
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.modules.agents.commands.start_agent.start_agent import StartAgent

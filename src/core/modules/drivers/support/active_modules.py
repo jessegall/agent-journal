@@ -1,5 +1,5 @@
 from core.base.registry.registry import Registry
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.drivers.support.suite_choice import SuiteChoice
 
 

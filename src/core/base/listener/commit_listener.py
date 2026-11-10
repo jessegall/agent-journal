@@ -3,7 +3,7 @@ from collections.abc import Sequence
 
 from core.base.change.event_subscriber import E, EventSubscriber
 from core.base.change.logged_event import LoggedEvent
-from core.base.scope.scopes import DisabledScopes
+from engine.scope.scopes import DisabledScopes
 
 
 class CommitListener(EventSubscriber[E]):

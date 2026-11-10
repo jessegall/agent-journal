@@ -2,7 +2,7 @@ from typing import ClassVar, TypeIs
 
 from core.base.change.event_subscriber import E, EventSubscriber
 from core.base.command.context import Context
-from core.base.scope.scopes import DisabledScopes
+from engine.scope.scopes import DisabledScopes
 
 
 class SaveListener(EventSubscriber[E]):

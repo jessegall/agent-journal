@@ -1,4 +1,4 @@
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.dumps.support.dump_nudges import DUMP_ARRIVED
 from core.base.listener.save_listener import SaveListener

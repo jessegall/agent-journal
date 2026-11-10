@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.query.queries import Queries
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from engine.errors.refusal import Refusal
 from engine.caller.caller import Caller
 from core.base.subcommand.read_subcommand import ReadSubcommand

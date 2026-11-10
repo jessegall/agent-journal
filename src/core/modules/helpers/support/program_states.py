@@ -7,8 +7,8 @@ from core.base.provider.hook_trust import HookTrust
 from core.base.provider.providers import Providers
 from core.base.provider.unknown_program_error import UnknownProgramError
 from engine.query.queries import Queries
-from core.base.scope.environment_scope import EnvironmentScope
-from core.base.scope.scopes import Scopes
+from engine.scope.environment_scope import EnvironmentScope
+from engine.scope.scopes import Scopes
 from engine.errors.refusal import Refusal
 from engine.time.timestamp import Timestamp
 from core.modules.agents.queries.agent_query import AgentQuery

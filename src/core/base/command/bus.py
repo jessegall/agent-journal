@@ -12,7 +12,7 @@ from core.base.database.database import Database
 from engine.time.deadline import Deadline
 from engine.text.explanation import Explanation
 from core.base.registry.registry import Registry
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from engine.time.timing import Timing
 from core.base.command.missing_handler_error import MissingHandlerError
 from core.base.command.transaction_error import TransactionError

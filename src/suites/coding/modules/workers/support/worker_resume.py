@@ -40,7 +40,7 @@ from core.modules.helpers.support.program_state import ProgramState
 from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.support.program_shares import ProgramShares
 from core.modules.environments.support.environment_rows import EnvironmentRows
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.helpers.support.agent_admission import AgentAdmission
 from pathlib import Path
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery

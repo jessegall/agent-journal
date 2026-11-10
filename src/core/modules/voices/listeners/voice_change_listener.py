@@ -1,5 +1,5 @@
 from core.base.listener.save_listener import SaveListener
-from core.base.scope.environment_scope import EnvironmentScope
+from engine.scope.environment_scope import EnvironmentScope
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.settings.models.setting import Setting
 from core.modules.voices.support.voice_lines import VoiceLines

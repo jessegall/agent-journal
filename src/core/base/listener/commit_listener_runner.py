@@ -17,7 +17,7 @@ from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.base.listener.commit_listener_error import CommitListenerError
 from core.base.listener.event_builder import EventBuilder
 from core.base.database.performance_costs import PerformanceCosts

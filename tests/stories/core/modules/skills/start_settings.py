@@ -1,4 +1,4 @@
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.skills.support.start_skills import JOURNAL_SKILLS, StartSkills
 
 DEFAULT_SKILLS = list(JOURNAL_SKILLS)

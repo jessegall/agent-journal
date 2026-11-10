@@ -10,7 +10,7 @@ from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from core.base.database.statement import Statement
 from engine.query.queries import Queries
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_read import TaskRead
 from core.modules.documents.conditions.work_context_seeds import WorkContextSeeds

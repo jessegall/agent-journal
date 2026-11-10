@@ -2,7 +2,7 @@ from engine.enums.helper_role import HelperRole
 from core.base.command.bus import Bus
 from core.base.listener.save_listener import SaveListener
 from core.base.listener.event_rows import EventRows
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState

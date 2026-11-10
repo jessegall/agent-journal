@@ -4,7 +4,7 @@ from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from core.base.listener.event_rows import EventRows
 from engine.query.conditions.among import Among
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.tasks.models.enums.task_state import TaskState

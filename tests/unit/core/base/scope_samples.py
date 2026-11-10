@@ -2,7 +2,7 @@ import sqlite3
 
 from engine.container.container import Container
 from core.base.database.database import Database
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 
 
 def empty_database_scopes() -> Scopes:

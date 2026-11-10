@@ -6,7 +6,7 @@ from core.base.listener.save_listener import is_save_listener_class
 from core.base.model.model import Model
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.base.listener.listener_class_error import ListenerClassError
 from collections.abc import Sequence
 

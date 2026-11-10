@@ -9,7 +9,7 @@ from core.base.command.command_json import CommandJson
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.approvals.commands.answer_approval.answer_approval import AnswerApproval
 from core.modules.approvals.commands.make_standing_approval.make_standing_approval import MakeStandingApproval
 from core.modules.approvals.commands.move_approval.move_approval import MoveApproval

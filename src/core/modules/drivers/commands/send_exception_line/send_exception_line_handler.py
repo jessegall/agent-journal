@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.scope.actor_scope import ActorScope
+from engine.scope.actor_scope import ActorScope
 from core.modules.developer.commands.send_exception_line.send_exception_line import SendExceptionLine
 from core.modules.developer.support.developer_nudges import EXCEPTION_LINE
 from core.modules.drivers.support.nudger import Nudger

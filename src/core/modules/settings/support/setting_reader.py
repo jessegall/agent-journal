@@ -2,7 +2,7 @@ import json
 from collections.abc import Generator, Mapping
 from contextlib import contextmanager
 
-from core.base.scope.scopes import Scopes
+from engine.scope.scopes import Scopes
 from core.modules.settings.support.setting_rows import SettingRows
 from core.base.registry.setting_entry import SettingEntry
 from engine.types.type_guards import is_list, is_object_mapping

@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from engine.agent.agent_checkouts import AgentCheckouts
 from engine.caller.caller import Caller
 from engine.checkout.checkout import Checkout
-from core.base.scope.environment_scope import EnvironmentScope
+from engine.scope.environment_scope import EnvironmentScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plugins.support.plugin_call_access import PluginCallAccess
