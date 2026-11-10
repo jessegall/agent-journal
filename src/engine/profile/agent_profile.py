@@ -56,10 +56,6 @@ class AgentProfile:
     def is_builtin(self) -> bool:
         return bool(self.module)
 
-    @property
-    def independent(self) -> bool:
-        return self.occupant is Occupant.LAUNCH_ROTATION
-
     @staticmethod
     def stored_occupant(fields: Mapping[str, Any]) -> Occupant:
         if "reuse" in fields:

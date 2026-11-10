@@ -1,3 +1,4 @@
+from engine.enums.occupant import Occupant
 import json
 
 import pytest
@@ -37,14 +38,14 @@ def test_a_module_that_is_no_suite_registers_a_profile_and_keeps_its_origin(new_
     story.expect_rows(registered.module == "sample.profiles", registered.profile.body == "Read the files.")
 
 
-def test_shipped_profiles_have_registered_types_and_independent_review(new_story):
+def test_shipped_profiles_have_registered_types_and_the_plan_reviewer_is_each_launch(new_story):
     story = new_story()
     registry = Registry.read(story.container.get(Database))
     for name in ("journal-researcher", "journal-planner", "journal-debugger", "journal-plan-reviewer", "journal-code-reviewer"):
         story.expect_rows(registry.profile(name).profile.agent_type == "helper")
     for name in ("journal-senior", "journal-medior", "journal-worker"):
         story.expect_rows(registry.profile(name).profile.agent_type == "worker")
-    story.expect_rows(registry.profile("journal-plan-reviewer").profile.independent,
+    story.expect_rows(registry.profile("journal-plan-reviewer").profile.occupant is Occupant.LAUNCH_ROTATION,
                       registry.helper_type_book().find("worker").default_profile == "journal-worker")
 
 

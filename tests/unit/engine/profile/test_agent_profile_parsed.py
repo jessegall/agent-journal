@@ -26,6 +26,6 @@ def test_a_stored_reuse_word_is_refused():
         AgentProfile.parsed(stored_fields(reuse="never"))
 
 
-def test_a_profile_with_neither_field_is_when_cold_and_not_independent():
+def test_a_profile_with_neither_field_is_when_cold():
     profile = AgentProfile.parsed(stored_fields())
-    assert (profile.occupant, profile.independent) == (Occupant.COLD_ROTATION, False)
+    assert profile.occupant is Occupant.COLD_ROTATION
