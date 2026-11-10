@@ -42,7 +42,7 @@ from engine.registry.overlay_entry import OverlayEntry
 from engine.registry.provider_entry import ProviderEntry
 from engine.registry.skill_entry import SkillEntry
 from engine.model.state_book import StateBook
-from engine.registry.stale_registry_error import StaleRegistryError
+from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.registry.state_addition_entry import StateAdditionEntry
 from engine.registry.suite_entry import SuiteEntry
 from engine.registry.window_entry import WindowEntry

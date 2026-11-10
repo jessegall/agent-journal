@@ -18,7 +18,7 @@ from engine.model.event_form import EventForm
 from engine.registry.event_key_entry import EventKeyEntry
 from engine.registry.listener_timing import ListenerTiming
 from engine.registry.registry import Registry
-from engine.registry.stale_registry_error import StaleRegistryError
+from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.profile.agent_profile import AgentProfile
 from engine.enums.access import Access
 from engine.registry.profile_entry import ProfileEntry

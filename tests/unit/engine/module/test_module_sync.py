@@ -12,7 +12,7 @@ from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
 from engine.module.module_sync import ModuleSync
 from engine.registry.registry import Registry
-from engine.registry.stale_registry_error import StaleRegistryError
+from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.registry.template_entry import TemplateEntry
 from engine.template.template_declaration import TemplateDeclaration
 

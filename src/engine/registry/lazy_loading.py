@@ -1,4 +1,4 @@
-from engine.registry.lazy_load_error import LazyLoadError
+from engine.registry.errors.lazy_load_error import LazyLoadError
 
 
 class LazyLoading:

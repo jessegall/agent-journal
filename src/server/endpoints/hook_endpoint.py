@@ -18,7 +18,7 @@ from engine.container.journal_container import synced_database_container
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
 from engine.registry.registry import Registry
-from engine.registry.stale_registry_error import StaleRegistryError
+from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.time.timing import Timing
 from engine.module.performance_tools import PerformanceTools
 from engine.performance.route_cost_tool import RouteCostTool

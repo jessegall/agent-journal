@@ -19,7 +19,7 @@ from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.performance_tools import PerformanceTools
 from engine.performance.route_cost_tool import RouteCostTool
-from engine.registry.stale_registry_error import StaleRegistryError
+from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.caller.caller import Caller
 from engine.time.timing import Timing
 from engine.request.request_queue import RequestQueue

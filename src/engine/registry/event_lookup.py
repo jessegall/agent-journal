@@ -2,7 +2,7 @@ from engine.change.event_pattern import ALTERNATIVE, ANY
 from engine.registry.guard_entry import GuardEntry
 from engine.registry.listener_entry import ListenerEntry
 from engine.registry.listener_timing import ListenerTiming
-from engine.registry.unscanned_event_error import UnscannedEventError
+from engine.registry.errors.unscanned_event_error import UnscannedEventError
 
 
 class EventLookup:
