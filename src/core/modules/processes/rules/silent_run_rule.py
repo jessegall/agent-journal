@@ -13,7 +13,7 @@ from core.modules.processes.support.silent_runs import SILENT_SECONDS, SilentRun
 from core.modules.processes.support.streaming_hints import StreamingHints
 
 STALLED_SECONDS = 300
-RUNS_CHECKED = 5
+RUNS_CHECKED = 2
 
 
 class SilentRunRule(DriverRule):
