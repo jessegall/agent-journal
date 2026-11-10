@@ -13,8 +13,9 @@ from core.modules.agents.support.agent_rows import AgentRows
 
 
 class RemovedWorktreeAgentListener(SaveListener[Changed[Worktree]]):
-    """A worker whose worktree is removed, by a merge or a release, has no work left: its helpers stop first, and
-    its row ends with it, also when its program never reported an end, so nothing keeps asking after it."""
+    """A worker whose worktree is removed, by a merge or a release, has no work left: its helpers stop first and
+    its session ends, also when its program never reported an end, so nothing keeps asking after it. The worker
+    itself stays kept and idle, with its number and its memories, until a person retires it."""
 
     name = "workers.removed-worktree-agent"
     disabled_scopes = [ActorScope]

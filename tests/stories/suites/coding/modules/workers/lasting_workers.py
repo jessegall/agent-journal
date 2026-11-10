@@ -60,6 +60,7 @@ def merged_worker(new_story):
     story.expect_success(f'memory make "{MEMORY_TEXT}" --weight 5', actor=story.worker)
     story.repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge --wait {agent_number(story, story.worker.id)}", actor=story.agent)
+    story.run_listeners()
     return story
 
 
