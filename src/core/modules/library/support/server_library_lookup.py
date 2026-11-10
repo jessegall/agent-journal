@@ -9,7 +9,7 @@ from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.support.kept_library_failure import KeptLibraryFailure
 from core.modules.library.support.library_browse import LibraryBrowse
 from core.modules.library.support.library_client import LibraryClient
-from core.modules.library.support.library_failure_error import LibraryFailureError
+from core.modules.library.errors.library_failure_error import LibraryFailureError
 from core.modules.library.support.page_request import PageRequest
 
 FIND_LIMIT_SECONDS = 2

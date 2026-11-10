@@ -13,10 +13,10 @@ from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.support.library_address import ADDRESS_SETTING, LibraryAddress
 from core.modules.library.support.library_certificate import LibraryCertificate
 from core.modules.library.support.library_client import PROTOCOL, TOKEN_VARIABLE, LibraryClient
-from core.modules.library.support.library_failure_error import LibraryFailureError
+from core.modules.library.errors.library_failure_error import LibraryFailureError
 from engine.enums.actor_type import ActorType
-from core.modules.library.support.library_stopped_error import LibraryStoppedError
-from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
+from core.modules.library.errors.library_stopped_error import LibraryStoppedError
+from core.modules.library.errors.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.server_info import ServerInfo
 from core.modules.library.support.server_user import ServerUser
 from core.modules.settings.bindings.support.setting_values import SettingValues

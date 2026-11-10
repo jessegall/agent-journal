@@ -7,7 +7,7 @@ from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.support.library_client import LibraryClient
 from engine.library.library_item import LibraryItem
 from core.modules.library.support.library_page import LibraryPage
-from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
+from core.modules.library.errors.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.library_versions import LibraryVersions
 from core.modules.library.support.page_request import PageRequest
 

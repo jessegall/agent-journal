@@ -1,14 +1,14 @@
 import json
 
-from core.modules.library.support.library_denied_error import LibraryDeniedError
-from core.modules.library.support.library_failure_error import LibraryFailureError
+from core.modules.library.errors.library_denied_error import LibraryDeniedError
+from core.modules.library.errors.library_failure_error import LibraryFailureError
 from core.modules.library.support.library_item_body import LibraryItemBody
-from core.modules.library.support.library_item_removed_error import LibraryItemRemovedError
-from core.modules.library.support.library_rejected_error import LibraryRejectedError
-from core.modules.library.support.library_stale_error import LibraryStaleError
-from core.modules.library.support.library_stopped_error import LibraryStoppedError
+from core.modules.library.errors.library_item_removed_error import LibraryItemRemovedError
+from core.modules.library.errors.library_rejected_error import LibraryRejectedError
+from core.modules.library.errors.library_stale_error import LibraryStaleError
+from core.modules.library.errors.library_stopped_error import LibraryStoppedError
 from core.modules.library.support.library_answer import LibraryAnswer
-from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
+from core.modules.library.errors.library_unreachable_error import LibraryUnreachableError
 
 STALE_CODE = 409
 FAILURE_CLASSES: dict[int, type[LibraryFailureError]] = {

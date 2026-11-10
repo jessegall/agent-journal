@@ -1,7 +1,7 @@
 from typing import TypeIs
 
 from engine.types.type_guards import is_list
-from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
+from core.modules.library.errors.library_unreachable_error import LibraryUnreachableError
 
 
 class LibraryAnswer:

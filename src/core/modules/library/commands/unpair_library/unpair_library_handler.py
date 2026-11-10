@@ -11,7 +11,7 @@ from core.modules.library.support.library_certificate import LibraryCertificate
 from core.modules.library.support.library_client import TOKEN_VARIABLE
 from core.modules.library.support.library_disconnection import LibraryDisconnection
 from core.modules.library.support.library_person import LibraryPerson
-from core.modules.library.support.library_stopped_error import LibraryStoppedError
+from core.modules.library.errors.library_stopped_error import LibraryStoppedError
 
 STOPPED_TEXT = "Disconnected. Connect again to sync."
 

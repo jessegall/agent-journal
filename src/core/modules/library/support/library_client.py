@@ -19,9 +19,9 @@ from core.modules.library.support.library_page import LibraryPage
 from core.modules.library.support.page_request import PageRequest
 from core.modules.library.support.version_request import VersionRequest
 from core.modules.library.support.library_versions import LibraryVersions
-from core.modules.library.support.library_unchanged_error import LibraryUnchangedError
-from core.modules.library.support.library_stopped_error import LibraryStoppedError
-from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
+from core.modules.library.errors.library_unchanged_error import LibraryUnchangedError
+from core.modules.library.errors.library_stopped_error import LibraryStoppedError
+from core.modules.library.errors.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.models.enums.library_role import LibraryRole
 from core.modules.library.support.library_token import LibraryToken
 from core.modules.library.support.library_tokens import LibraryTokens

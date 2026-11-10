@@ -2,13 +2,13 @@ import json
 
 import pytest
 
-from core.modules.library.support.library_denied_error import LibraryDeniedError
+from core.modules.library.errors.library_denied_error import LibraryDeniedError
 from core.modules.library.support.library_failures import LibraryFailures
-from core.modules.library.support.library_item_removed_error import LibraryItemRemovedError
-from core.modules.library.support.library_rejected_error import LibraryRejectedError
-from core.modules.library.support.library_stale_error import LibraryStaleError
-from core.modules.library.support.library_stopped_error import LibraryStoppedError
-from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
+from core.modules.library.errors.library_item_removed_error import LibraryItemRemovedError
+from core.modules.library.errors.library_rejected_error import LibraryRejectedError
+from core.modules.library.errors.library_stale_error import LibraryStaleError
+from core.modules.library.errors.library_stopped_error import LibraryStoppedError
+from core.modules.library.errors.library_unreachable_error import LibraryUnreachableError
 
 ERROR_BODY = json.dumps({"error": "it failed", "hint": "try this"}).encode()
 STALE_BODY = json.dumps({"error": "this item has changed", "hint": "compare",

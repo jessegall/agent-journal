@@ -12,7 +12,7 @@ from core.modules.library.queries.library_connection_query import LibraryConnect
 from core.modules.library.support.library_browse import LibraryBrowse
 from core.modules.library.support.library_person import LibraryPerson
 from core.modules.library.support.library_shares import LibraryShares
-from core.modules.library.support.library_stopped_error import LibraryStoppedError
+from core.modules.library.errors.library_stopped_error import LibraryStoppedError
 from core.modules.library.ticks.library_sync import LibrarySync
 
 

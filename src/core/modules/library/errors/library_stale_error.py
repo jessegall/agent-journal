@@ -1,4 +1,4 @@
-from core.modules.library.support.library_failure_error import LibraryFailureError
+from core.modules.library.errors.library_failure_error import LibraryFailureError
 from engine.library.library_item import LibraryItem
 
 

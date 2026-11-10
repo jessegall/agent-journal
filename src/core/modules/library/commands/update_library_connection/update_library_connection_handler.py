@@ -4,7 +4,7 @@ from engine.repository.repository import Repository
 from core.modules.library.commands.update_library_connection.update_library_connection import UpdateLibraryConnection
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
-from core.modules.library.support.library_stopped_error import LibraryStoppedError
+from core.modules.library.errors.library_stopped_error import LibraryStoppedError
 
 
 class UpdateLibraryConnectionHandler(Handler[UpdateLibraryConnection, LibraryConnection]):

@@ -3,7 +3,7 @@ from functools import cached_property
 
 from core.modules.library.models.enums.library_role import LibraryRole
 from core.modules.library.support.library_answer import LibraryAnswer
-from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
+from core.modules.library.errors.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.state_entry import StateEntry
 
 

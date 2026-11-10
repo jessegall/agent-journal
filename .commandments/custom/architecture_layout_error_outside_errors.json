@@ -25,30 +25,6 @@
                 "file": "src/core/modules/helpers/support/stale_session_error.py"
             },
             {
-                "file": "src/core/modules/library/support/library_denied_error.py"
-            },
-            {
-                "file": "src/core/modules/library/support/library_failure_error.py"
-            },
-            {
-                "file": "src/core/modules/library/support/library_item_removed_error.py"
-            },
-            {
-                "file": "src/core/modules/library/support/library_rejected_error.py"
-            },
-            {
-                "file": "src/core/modules/library/support/library_stale_error.py"
-            },
-            {
-                "file": "src/core/modules/library/support/library_stopped_error.py"
-            },
-            {
-                "file": "src/core/modules/library/support/library_unchanged_error.py"
-            },
-            {
-                "file": "src/core/modules/library/support/library_unreachable_error.py"
-            },
-            {
                 "file": "src/core/modules/phone/support/infinite_point_error.py"
             },
             {

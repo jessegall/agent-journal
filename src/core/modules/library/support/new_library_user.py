@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from core.modules.library.support.library_token import LibraryToken
 from core.modules.library.support.library_answer import LibraryAnswer
-from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
+from core.modules.library.errors.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.library_user import LibraryUser
 
 
