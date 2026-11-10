@@ -64,6 +64,8 @@ def test_an_idle_helper_of_one_environment_is_not_offered_to_a_start_in_another(
 def test_a_job_sent_to_a_retired_helper_is_refused_and_nothing_is_made(idle_helper):
     story = idle_helper
     helper = helper_agent(story)
+    story.expect_success(f'memory make "{MEMORY_TEXT}" --weight 5', actor=Actor(helper.id, ActorType.AGENT))
     story.expect_success(f'agent retire {helper.number} --reason "Its reading is done" --environment main', actor=story.user)
-    refusal_text(story, f'helper send {helper.number} "{JOB}"')
-    story.expect_rows(len(researchers(story)) == 1, len(read_jobs(story, helper)) == 1, helper_agent(story).session == helper.session, helper_agent(story).retired_at is not None)
+    refusal = refusal_text(story, f'helper send {helper.number} "{JOB}"')
+    story.expect_text("memory list", MEMORY_TEXT, actor=Actor(helper.id, ActorType.AGENT))
+    story.expect_rows(f"helper {helper.number} is retired, for good" in refusal, len(researchers(story)) == 1, len(read_jobs(story, helper)) == 1, helper_agent(story).session == helper.session, helper_agent(story).retired_at is not None)

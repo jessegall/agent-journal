@@ -16,7 +16,8 @@ START_MEMORIES_REASON = "A session start gives its agent every active memory it 
 
 class StartMemoriesListener(CommitListener[SessionStarted]):
     """Records the memories a session start gave its agent after the hook has answered, heaviest first, so a hook
-    costs the same however many memories the project holds; one a keyword gave first is not given again."""
+    costs the same however many memories the project holds; one a keyword gave first is not given again. A retired
+    agent is given none: its memories stay readable and reach no session."""
 
     name = "memories.start-memories"
 
@@ -26,7 +27,8 @@ class StartMemoriesListener(CommitListener[SessionStarted]):
 
     def handle(self, event: SessionStarted, logged: LoggedEvent) -> None:
         call = event.row
-        if self.agents.find(call.session_agent_id).role not in self.suites.agent_policy().prompt_roles:
+        agent = self.agents.find(call.session_agent_id)
+        if agent.retired_at is not None or agent.role not in self.suites.agent_policy().prompt_roles:
             return
         with self.scopes.opened(call.session_agent_id):
             memory_ids = tuple(row.memory_id for row in self.memories.absent_memories(call.session_agent_id).weight_order().full_table(START_MEMORIES_REASON).all_rows())
