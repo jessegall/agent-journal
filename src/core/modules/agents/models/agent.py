@@ -25,6 +25,7 @@ class Agent(EnvironmentScoped, Model):
 
     change_names = tuple([END_CHANGE])
     model_name = "agent"
+    numbered = True
     cli_name = "agent"
     search_fields = ["given_name", "program", "program_model", "profile", "session"]
     filter_fields = ["role"]

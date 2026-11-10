@@ -1,3 +1,4 @@
+from engine.cli.agent_number import row_argument_type
 from argparse import ArgumentParser, Namespace
 import dataclasses
 from dataclasses import field
@@ -22,7 +23,7 @@ class EditSubcommand(Subcommand[EditCommand[Model], Model]):
         self.command_class = edit_command(table)
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("row_id", type=int)
+        parser.add_argument("row_id", type=row_argument_type(self.table.model.numbered))
         for column in editable_columns(self.table):
             parser_argument(parser, f"--{column.replace('_', '-')}", self.table.types[column])
 

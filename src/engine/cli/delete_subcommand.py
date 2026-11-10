@@ -1,3 +1,4 @@
+from engine.cli.agent_number import row_argument_type
 from argparse import ArgumentParser, Namespace
 import dataclasses
 from engine.caller.caller import Caller
@@ -19,7 +20,7 @@ class DeleteSubcommand(Subcommand[DeleteCommand, None]):
         self.command_class = deletion_command(table)
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("row_id", type=int)
+        parser.add_argument("row_id", type=row_argument_type(self.table.model.numbered))
 
     def command(self, arguments: Namespace, caller: Caller) -> DeleteCommand:
         return self.command_class(row_id=arguments.row_id)

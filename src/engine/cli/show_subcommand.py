@@ -1,3 +1,4 @@
+from engine.cli.agent_number import row_argument_type
 from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.cli.row_links import RowLinks
@@ -18,7 +19,7 @@ class ShowSubcommand(ReadSubcommand[Model]):
         self.cli_name = table.model.cli_name
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("id", type=int)
+        parser.add_argument("id", type=row_argument_type(self.table.model.numbered))
 
     def read(self, arguments: Namespace, caller: Caller) -> Model:
         return self.queries.query(self.table.model).find(arguments.id)

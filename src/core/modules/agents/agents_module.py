@@ -85,6 +85,8 @@ from engine.enums.window_shows import WindowShows
 from engine.viewer.window_tab import WindowTab
 from engine.agent.agent_checkouts import AgentCheckouts
 from core.modules.agents.bindings.agent_caller_resolver import AgentCallerResolver
+from core.modules.agents.bindings.agent_row_numbers import AgentRowNumbers
+from engine.cli.row_numbers import RowNumbers
 from core.modules.agents.bindings.agent_project_checkouts import AgentProjectCheckouts
 from core.modules.agents.migrations.m011_helper_rows import HelperRowsMigration
 from core.modules.agents.migrations.m012_open_agent_index import OpenAgentIndexMigration
@@ -133,7 +135,7 @@ class AgentsModule(Module):
     guards = [AgentNameGuard, NumberGuard, RetiredRowGuard, RetiredDeleteGuard, AgentChatGuard]
     handlers = [HaltAgentHandler, EndAgentHaltHandler, ReplaceAgentSessionHandler, WarnInstructionImportsHandler, RemoveInstructionImportHandler, RecordAgentInterruptHandler, SetAgentUsageLimitHandler, RetireAgentHandler, EndReplacedMainHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
     subcommands = [RemoveInstructionImportSubcommand, RecordAgentInterruptSubcommand, RetireAgentSubcommand, ShowMainAgentsSubcommand, MainSessionsSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, AgentPeopleSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
-    bindings = {CallerResolver: AgentCallerResolver, AgentCheckouts: AgentProjectCheckouts, AgentRoleReader: AgentRoleRows}
+    bindings = {CallerResolver: AgentCallerResolver, AgentCheckouts: AgentProjectCheckouts, AgentRoleReader: AgentRoleRows, RowNumbers: AgentRowNumbers}
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, skeleton=AGENTS_AGENTS_SKELETON, search=WindowSearch(AgentSearcher, "Search the agents"), icon=WindowIcon.AGENT, reads=["agent show", *CARD_READS], runs=["setting set", "message send", "helper send", "agent retire"], events=CARD_EVENTS, tabs=CARD_TABS, keys=CARD_KEYS),
                WindowDeclaration("agents.helpers", "Helpers", "helpers.js", WindowLoading.COMPONENT, skeleton=AGENTS_HELPERS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, search=WindowSearch(AgentSearcher, "Search the agents"), reads=CARD_READS, runs=["setting set", "message send", "helper send", "helper stop", "agent retire"],
                                  events=CARD_EVENTS, tabs=CARD_TABS, keys=CARD_KEYS),

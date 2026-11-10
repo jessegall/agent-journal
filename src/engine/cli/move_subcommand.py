@@ -1,3 +1,4 @@
+from engine.cli.agent_number import row_argument_type
 from argparse import ArgumentParser, Namespace
 from dataclasses import MISSING, Field, fields
 from typing import Any, get_type_hints
@@ -19,7 +20,7 @@ class MoveSubcommand(Subcommand[MoveCommand[Model], Model]):
         self.name = command_class.move.name.replace("_", "-")
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("row_id", type=int)
+        parser.add_argument("row_id", type=row_argument_type(self.table.model.numbered))
         hints = get_type_hints(self.command_class)
         for command_field in self.command_fields():
             flag = f"--{command_field.name.replace('_', '-')}"

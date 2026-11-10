@@ -13,3 +13,7 @@ class AgentNumber(int):
         if not 1 <= number <= HIGHEST_NUMBER:
             raise ValueError(f"{text} is no agent number")
         return number
+
+
+def row_argument_type(is_numbered: bool) -> type[int]:
+    return AgentNumber if is_numbered else int
