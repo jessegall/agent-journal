@@ -1,4 +1,4 @@
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from engine.enums.log_level import LogLevel
 from datetime import timedelta
 

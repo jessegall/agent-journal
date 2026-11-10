@@ -7,7 +7,7 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.helper_type.helper_type import HelperType
 from engine.driver.suite import Suite
 from engine.module.module import Module
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from suites.coding.coding_suite import CodingSuite
 
 

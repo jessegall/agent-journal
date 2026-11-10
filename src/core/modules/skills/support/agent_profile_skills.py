@@ -1,4 +1,4 @@
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_problem import ProfileProblem

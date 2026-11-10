@@ -8,7 +8,7 @@ from typing import ClassVar
 from engine.driver.hook_event import HookEvent
 from engine.driver.hook_event_name import HookEventName
 from engine.driver.tool_type import ToolType
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from engine.journal.journal_home import JournalHome
 from engine.provider.control_group import ControlGroup
 from engine.provider.helper_launch import HelperLaunch
@@ -19,7 +19,7 @@ from engine.provider.hook_trust import HookTrust
 from engine.provider.launch import Launch
 from engine.provider.launch_command import LaunchCommand
 from engine.provider.program_folders import ProgramFolders
-from core.base.profile.model_tier import ModelTier
+from engine.profile.model_tier import ModelTier
 from engine.provider.peer_note import PeerNote
 from engine.provider.program_model import ProgramModel
 from engine.provider.program_server_file import ProgramServerFile

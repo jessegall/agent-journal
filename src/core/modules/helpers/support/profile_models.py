@@ -1,5 +1,5 @@
-from core.base.profile.agent_profile import AgentProfile
-from core.base.profile.model_tier import ModelTier
+from engine.profile.agent_profile import AgentProfile
+from engine.profile.model_tier import ModelTier
 from engine.provider.provider import Provider
 from core.modules.helpers.support.agent_options import AgentOptions
 from core.modules.helpers.support.allowed_models import AllowedModels

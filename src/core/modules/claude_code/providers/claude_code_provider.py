@@ -1,7 +1,7 @@
 from engine.provider.program_server_file import ProgramServerFile
 from core.modules.claude_code.providers.support.claude_server_file import ClaudeServerFile
 from dataclasses import replace
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from engine.provider.context_window import ContextWindow
 import json
 import os
@@ -18,7 +18,7 @@ from engine.provider.hook_file import HookFile
 from engine.provider.hook_trust import HookTrust
 from engine.provider.launch import Launch
 from engine.provider.launch_command import LaunchCommand
-from core.base.profile.model_tier import ModelTier
+from engine.profile.model_tier import ModelTier
 from engine.provider.transcript_author import AGENT_AUTHOR, TRANSCRIPT_AUTHORS, USER_AUTHOR, TranscriptAuthor
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.program_folders import ProgramFolders

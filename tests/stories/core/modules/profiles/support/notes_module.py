@@ -1,6 +1,6 @@
 from engine.module.module import Module
 from engine.helper_type.helper_type import HelperType
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from engine.template.template_declaration import TemplateDeclaration
 from tests.stories.core.modules.profiles.support.notes_suite import NotesSuite
 from tests.stories.core.modules.profiles.support.notes_driver import NotesDriver

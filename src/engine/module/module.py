@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import ClassVar, Never
 from engine.agent.agent_group import AgentGroup
 from engine.helper_type.helper_type import HelperType
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.chat.dock_declaration import DockDeclaration

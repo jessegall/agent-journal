@@ -5,7 +5,7 @@ from pathlib import Path
 from engine.enums.access import Access
 from engine.file.file_access import FileAccess
 from engine.enums.log_level import LogLevel
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from engine.errors.refusal import Refusal
 from engine.log.system_log_writer import SystemLogWriter
 from engine.text.text_digest import TextDigest

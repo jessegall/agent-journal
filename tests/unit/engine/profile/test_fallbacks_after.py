@@ -1,4 +1,4 @@
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 
 REGISTERED = ["claude", "codex", "gemini"]
 

@@ -80,7 +80,7 @@
                 "file": "src/engine/module/layer_tier.py"
             },
             {
-                "file": "src/core/base/profile/model_tier.py"
+                "file": "src/engine/profile/model_tier.py"
             },
             {
                 "file": "src/engine/provider/hook_decoder.py"

@@ -2,7 +2,7 @@ import json
 from collections.abc import Mapping
 
 from engine.enums.access import Access
-from core.base.profile.model_tier import ModelTier
+from engine.profile.model_tier import ModelTier
 from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_list, is_mapping, is_tuple
 from core.modules.profiles.support.profile_fields import ProfileFields

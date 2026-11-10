@@ -13,7 +13,7 @@ from engine.helper_type.helper_type_book import HelperTypeBook
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_reuse import HelperReuse
 from core.modules.helpers.support.kept_helpers import KeptHelpers
@@ -26,7 +26,7 @@ from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.profile_model import ProfileModel
 from core.modules.helpers.support.profile_models import ProfileModels
 from core.modules.helpers.support.helper_program import HelperProgram
-from core.base.profile.model_tier import ModelTier
+from engine.profile.model_tier import ModelTier
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from engine.provider.providers import Providers
 from core.modules.usage.commands.count_profile_use.count_profile_use import CountProfileUse

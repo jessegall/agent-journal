@@ -1,5 +1,5 @@
-from core.base.profile.model_tier import ModelTier
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.model_tier import ModelTier
+from engine.profile.agent_profile import AgentProfile
 from suites.coding.support.profile_commands import READ_COMMANDS, DOCUMENT_COMMANDS, PLAN_COMMANDS, PLAN_REVIEW_COMMANDS, WORKER_COMMANDS
 
 HELPER_SKILLS = ("journal", "journal-etiquette", "journal-messages", "journal-memory", "journal-shell", "journal-tasks", "journal-helpers", "journal-documents")

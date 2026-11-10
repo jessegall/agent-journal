@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.profile.model_tier import ModelTier
+from engine.profile.model_tier import ModelTier
 
 
 @dataclass(frozen=True)

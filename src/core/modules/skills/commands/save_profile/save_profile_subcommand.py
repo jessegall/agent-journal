@@ -2,9 +2,9 @@ from argparse import ArgumentParser, BooleanOptionalAction, Namespace
 from dataclasses import replace
 
 from engine.enums.access import Access
-from core.base.profile.model_tier import ModelTier
+from engine.profile.model_tier import ModelTier
 from engine.caller.caller import Caller
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from engine.provider.providers import Providers
 from engine.errors.refusal import Refusal
 from engine.subcommand.output import Output

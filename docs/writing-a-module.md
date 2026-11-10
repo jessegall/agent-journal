@@ -87,7 +87,7 @@ Declare profiles on the module that owns them. Each profile names a registered a
 
 ```python
 from engine.module.module import Module
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 
 
 class NotesProfilesModule(Module):

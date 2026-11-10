@@ -2,7 +2,7 @@ from engine.enums.access import Access
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from engine.errors.refusal import Refusal
 from core.modules.skills.commands.save_profile.save_profile import SaveProfile
 from core.modules.profiles.support.profile_files import ProfileFiles

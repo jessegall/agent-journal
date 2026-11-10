@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from core.base.profile.model_tier import ModelTier
+from engine.profile.model_tier import ModelTier
 
 
 class WorkerProgramRequest(Protocol):

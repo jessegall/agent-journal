@@ -4,7 +4,7 @@ from dataclasses import replace
 
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.caller.caller import Caller
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.subcommand.output import Output

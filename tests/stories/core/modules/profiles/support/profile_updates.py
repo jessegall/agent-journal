@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from engine.helper_type.helper_type import HelperType
 from engine.module.module import Module
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_loading import WindowLoading
 from engine.viewer.skeleton_part import SkeletonPart

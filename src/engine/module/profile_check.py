@@ -2,8 +2,8 @@ from collections.abc import Sequence
 
 from engine.enums.access import Access
 from engine.module.module import Module
-from core.base.profile.agent_profile import AgentProfile
-from core.base.profile.profile_name import PROFILE_NAME
+from engine.profile.agent_profile import AgentProfile
+from engine.profile.profile_name import PROFILE_NAME
 from engine.helper_type.helper_type import HelperType
 
 

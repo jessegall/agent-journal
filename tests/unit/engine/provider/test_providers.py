@@ -5,7 +5,7 @@ import pytest
 
 from engine.provider.providers import Providers
 from engine.provider.program_model import ProgramModel
-from core.base.profile.model_tier import ModelTier
+from engine.profile.model_tier import ModelTier
 from engine.errors.refusal import Refusal
 from engine.provider.unknown_program_error import UnknownProgramError
 from engine.dotted_path.dotted_path import DottedPath

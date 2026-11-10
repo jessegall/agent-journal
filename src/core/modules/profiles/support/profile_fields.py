@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 from engine.enums.access import Access
-from core.base.profile.model_tier import ModelTier
+from engine.profile.model_tier import ModelTier
 
 
 class ProfileFields(TypedDict, total=False):

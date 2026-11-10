@@ -13,7 +13,7 @@ from engine.journal.journal_home import JournalHome
 from engine.module.module import Module
 from engine.provider.hook_trust import HookTrust
 from engine.provider.managed_hooks import ManagedHooks
-from core.base.profile.model_tier import ModelTier
+from engine.profile.model_tier import ModelTier
 from engine.provider.program_model import ProgramModel
 from engine.provider.providers import Providers
 from core.modules.helpers.support.helper_programs import HelperPrograms

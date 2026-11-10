@@ -19,7 +19,7 @@ from engine.registry.event_key_entry import EventKeyEntry
 from engine.registry.listener_timing import ListenerTiming
 from engine.registry.registry import Registry
 from engine.registry.stale_registry_error import StaleRegistryError
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from engine.enums.access import Access
 from engine.registry.profile_entry import ProfileEntry
 from engine.registry.suite_entry import SuiteEntry

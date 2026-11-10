@@ -5,7 +5,7 @@ from suites.coding.modules.workers.support.worker_route_request import WorkerRou
 from dataclasses import replace
 from pathlib import Path
 
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from engine.provider.providers import Providers
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent

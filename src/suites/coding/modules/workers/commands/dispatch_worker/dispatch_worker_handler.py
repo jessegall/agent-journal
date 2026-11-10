@@ -10,7 +10,7 @@ from engine.provider.providers import Providers
 from engine.query.queries import Queries
 from engine.listener.event_rows import EventRows
 from engine.helper_type.helper_type_book import HelperTypeBook
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from engine.errors.refusal import Refusal
 from core.modules.profiles.support.profile_files import ProfileFiles
 from engine.scope.scopes import Scopes

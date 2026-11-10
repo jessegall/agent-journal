@@ -3,7 +3,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.database.database import Database
-from core.base.profile.model_tier import ModelTier
+from engine.profile.model_tier import ModelTier
 from engine.query.queries import Queries
 from engine.registry.registry import Registry
 from core.modules.sequences.models.sequence import Sequence

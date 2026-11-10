@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from engine.errors.refusal import Refusal
 from engine.registry.skill_entry import SkillEntry
 from core.modules.profiles.support.profile_skill import ProfileSkill

@@ -3,7 +3,7 @@ from pathlib import Path
 from argparse import ArgumentParser, Namespace
 import json
 
-from core.base.profile.agent_profile import AgentProfile
+from engine.profile.agent_profile import AgentProfile
 from core.modules.profiles.support.profile_files import ProfileFiles
 from engine.enums.agent_role import AgentRole
 from engine.enums.helper_role import HelperRole
