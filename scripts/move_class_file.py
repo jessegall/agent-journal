@@ -29,6 +29,7 @@ LAYER_PATTERN_TWO_FOLDERS = LAYER_PATTERN_LINE.format("src/(?:core/base|engine)"
 LAYER_PATTERN_NEW_FOLDER = LAYER_PATTERN_LINE.format(ENGINE_TARGET)
 DOTTED_SEPARATORS = ".:"
 PATH_SEPARATORS = "/"
+SOURCE_TOP = "src/"
 ESCAPED_DOTS = ("\\\\.", "\\.")
 STRING_OPENING = re.compile(rb"""[rRuU]*('''|\"\"\"|'|\")""")
 
@@ -47,7 +48,13 @@ class Rename:
 
     @property
     def pattern(self) -> re.Pattern[str]:
-        return re.compile(rf"(?<![\w.]){re.escape(self.previous)}(?!\w)")
+        return re.compile(rf"(?<![\w.])(?<!{SOURCE_TOP}){re.escape(self.previous)}(?!\w)")
+
+    @property
+    def without_top_folder(self) -> list["Rename"]:
+        if not self.previous.startswith(SOURCE_TOP) or not self.moved.startswith(SOURCE_TOP):
+            return []
+        return [Rename(self.previous.removeprefix(SOURCE_TOP), self.moved.removeprefix(SOURCE_TOP), self.separators)]
 
     @property
     def regular_expression_forms(self) -> list[tuple[str, str]]:
@@ -335,7 +342,7 @@ def with_engine_layer_line(text: str, line: str | None) -> str:
 def plan_renames(root: Path, pairs: Sequence[tuple[Path, Path]]) -> tuple[Rename, ...]:
     dotted = [Rename(module_name(root, source), module_name(root, target), DOTTED_SEPARATORS) for source, target in pairs]
     paths = [Rename(relative_text(root, source), relative_text(root, target), PATH_SEPARATORS) for source, target in pairs]
-    return tuple(dotted + paths)
+    return tuple(dotted + paths + [short for path in paths for short in path.without_top_folder])
 
 
 def test_file_pairs(root: Path, source: Path, target: Path) -> list[tuple[Path, Path]]:

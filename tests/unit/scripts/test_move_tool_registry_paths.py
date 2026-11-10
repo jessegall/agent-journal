@@ -78,3 +78,12 @@ def test_a_file_path_with_its_dot_escaped_for_a_regular_expression_is_rewritten_
     rule = write(tmp_path, ".commandments/custom/rule.json", '{"fileMatches": "(^|/)src/core/base/sample_error\\\\.py$"}\n')
     script.move_path(tmp_path, tmp_path / SOURCE, tmp_path / TARGET)
     assert rule.read_text() == '{"fileMatches": "(^|/)src/engine/errors/sample_error\\\\.py$"}\n'
+
+
+def test_a_path_written_from_the_package_on_is_rewritten_in_a_rule_and_in_a_python_string(tmp_path):
+    write(tmp_path, SOURCE, "class SampleError(Exception):\n    pass\n")
+    rule = write(tmp_path, ".commandments/custom/rule.json", '{"rule": "only core/base/sample_error.py may raise it"}\n')
+    importer = write(tmp_path, "src/core/user.py", 'SKIPPED_FILES = ("core/base/sample_error.py", "core/base/sample_error_list.py")\n')
+    script.move_path(tmp_path, tmp_path / SOURCE, tmp_path / TARGET)
+    assert rule.read_text() == '{"rule": "only engine/errors/sample_error.py may raise it"}\n'
+    assert importer.read_text() == 'SKIPPED_FILES = ("engine/errors/sample_error.py", "core/base/sample_error_list.py")\n'
