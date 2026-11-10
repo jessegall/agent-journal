@@ -93,7 +93,7 @@ def test_a_stuck_worker_tells_its_main_agent_at_once_and_shows_a_mark_in_the_mai
     last_reply(tmp_path, worker_session(story, worker), "The build tool is gone from the path")
     story.expect_success('wait stuck "the build tool is missing"', actor=worker)
     story.run_listeners()
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} is stuck on task:1, wait:", "send it a job")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} is stuck on task:1, wait:", "send it a job")
     story.expect_text("chat-mark list --environment 1", f"Worker {worker.id} is stuck: the build tool is missing")
     story.expect_text(f"chat-mark show {stop_mark(story, 'help request')}", "Tasks left: task 1", "Task 1: ", "Last words: The build tool is gone from the path", f"target_id: {worker.id}", "outcome: warned")
     story.expect_absent(f"chat-mark show {stop_mark(story, 'help request')}", "agent_id:")
@@ -109,7 +109,7 @@ def test_a_worker_that_stops_with_tasks_left_shows_a_mark_and_its_main_agent_hea
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.run_listeners()
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} stopped with task:1 left and is started again")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} stopped with task:1 left and is started again")
     story.expect_text("chat-mark list --environment 1", f"Worker {worker.id} stopped with 1 tasks left")
     story.expect_text(f"chat-mark show {stop_mark(story, 'ended early')}", "Tasks left: task 1", "Last words: I ran out of ideas")
 
@@ -163,7 +163,7 @@ def test_a_worker_that_ends_with_only_a_queued_task_has_it_named_to_the_main_age
     story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} ended with task:2 left")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} ended with task:2 left")
 
 
 def test_a_queued_task_waiting_on_an_open_task_is_not_next_in_the_queue(new_story):
@@ -186,7 +186,7 @@ def test_a_worker_that_keeps_ending_is_named_to_the_main_agent(new_story, monkey
     story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} ended with task:1 left: send it a job, or release it")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} ended with task:1 left: send it a job, or release it")
 
 
 def test_a_worker_that_ends_with_many_tasks_left_gives_the_main_agent_one_line(new_story, monkeypatch):
@@ -199,7 +199,7 @@ def test_a_worker_that_ends_with_many_tasks_left_gives_the_main_agent_one_line(n
     story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} ended with task:1, task:2, task:3 left")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} ended with task:1, task:2, task:3 left")
     story.expect_absent(f"agent-line list --agent {story.agent.id}", "is still queued")
 
 
@@ -230,7 +230,7 @@ def test_a_main_session_that_ends_with_a_worker_out_leaves_its_worktree_and_the_
     story.hook(MAIN_SESSION, HookSamples.sample("session_end"))
     story.expect_success("worker-worktree show 1", "state: cut")
     repository.expect_head(repository.worker_branch(worker.id), repository.worktree_folder(worker.id))
-    story.expect_hook_allowed("s-3", HookSamples.session_start(), f"worker:{worker.id} has task:1")
+    story.expect_hook_allowed("s-3", HookSamples.session_start(), f"worker:{agent_number(story, worker.id)} has task:1")
 
 
 def test_two_environments_of_one_checkout_dispatch_side_by_side_on_branches_of_their_own(new_story):
@@ -255,5 +255,5 @@ def test_a_stuck_worker_reaches_the_merger_and_not_the_main_agent(new_story, mon
         story.expect_success('wait stuck "the build tool is missing"', actor=worker)
         story.run_listeners()
     rows = story.container.get(Queries).query(MergerLine).all_rows()
-    story.expect_rows(any(f"worker:{worker.id} is stuck on task:1" in row.text for row in rows), detail=str(rows))
+    story.expect_rows(any(f"worker:{agent_number(story, worker.id)} is stuck on task:1" in row.text for row in rows), detail=str(rows))
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "is stuck")

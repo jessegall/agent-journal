@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.listener.event_rows import EventRows
@@ -39,7 +41,8 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     command = RecordWorkerTest
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MergerInbox, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger, rows: EventRows, phases: WorkerPhases, failures: WorkerTestFailures, settings: SettingValues, next_task: WorkerNextTask, guidance: WorkerGuidance) -> None:
+    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MergerInbox, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger, rows: EventRows, phases: WorkerPhases, failures: WorkerTestFailures, settings: SettingValues, next_task: WorkerNextTask, guidance: WorkerGuidance, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.next_task, self.guidance = next_task, guidance
         self.failures, self.settings = failures, settings
         self.queries, self.repository, self.main_agent_line, self.tasks, self.advance, self.nudger = queries, repository, main_agent_line, tasks, advance, nudger
@@ -73,12 +76,12 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         if waiting:
             for task_id in sorted({row.task_id for row in waiting}):
                 proof_ids = ', '.join(str(row.id) for row in waiting if row.task_id == task_id)
-                self.main_agent_line.send_nudge(PROOF_CHECK.nudge(worker=worktree.session_agent_id, task=task_id, proofs=proof_ids), LINE_SOURCE, context)
+                self.main_agent_line.send_nudge(PROOF_CHECK.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), task=task_id, proofs=proof_ids), LINE_SOURCE, context)
             return
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.mark_tests_passed, tests_passed_at=context.timestamp), context)
         if self.settings.flag(MERGER_ENABLED):
             return
-        self.main_agent_line.send_nudge(WORKER_TESTS_PASSED.nudge(worker=worktree.session_agent_id), LINE_SOURCE, context)
+        self.main_agent_line.send_nudge(WORKER_TESTS_PASSED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), LINE_SOURCE, context)
 
     def complete_tested(self, proofs: tuple[Proof, ...], context: Context) -> None:
         task_ids = sorted({row.task_id for row in proofs})

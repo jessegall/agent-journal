@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.driver.nudge import Nudge
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK
 from engine.driver.agent_hook import AgentHook
@@ -18,9 +20,10 @@ class WorkersOutRule(DriverRule):
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, worktrees: WorktreeQuery) -> None:
+    def __init__(self, worktrees: WorktreeQuery, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.worktrees = worktrees
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        nudges: list[Nudge] = [WORKER_TASK.nudge(worker=worktree.session_agent_id, task=worktree.task_id) for worktree in self.worktrees.open_worktrees()]
+        nudges: list[Nudge] = [WORKER_TASK.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), task=worktree.task_id) for worktree in self.worktrees.open_worktrees()]
         return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

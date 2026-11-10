@@ -30,6 +30,6 @@ class RecordAgentLaunchFailureHandler(Handler[RecordAgentLaunchFailure, None]):
         agent = self.rows.required(Agent, command.agent_id)
         if agent.ended_at is None and not self.types.find(agent.role).separate_folder:
             self.bus.dispatch(EndAgent(agent.id), context)
-        notice = AGENT_START_FAILED.nudge(agent=agent.id)
+        notice = AGENT_START_FAILED.nudge(agent=agent.number)
         if agent.parent_id is not None and not self.queries.query(AgentLine).filter(source=SOURCE, text=notice.text).exists():
-            self.nudger.send(agent.parent_id, AGENT_START_FAILED, SOURCE, context, agent=agent.id)
+            self.nudger.send(agent.parent_id, AGENT_START_FAILED, SOURCE, context, agent=agent.number)

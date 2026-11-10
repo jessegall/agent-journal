@@ -15,7 +15,7 @@ WORKER_OPERATION_MERGED = NudgeDeclaration("workers.operation_merged", NudgeType
 WORKER_OPERATION_JOB = NudgeDeclaration("workers.operation_job", NudgeType.STEERING,
     'worker:{worker} has the job: output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_PAUSED = NudgeDeclaration("workers.operation_paused", NudgeType.STEERING,
-    'worker:{worker} is paused, so the job waits: journal agent resume {worker}', turn_limited=False, wakes_agent=True)
+    'worker:{worker} is paused, so the job waits until it is resumed', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_DELIVERED = NudgeDeclaration("workers.operation_delivered", NudgeType.STEERING,
     'worker:{worker} handed in its task: output {output}', turn_limited=False, wakes_agent=True)
 
@@ -30,11 +30,11 @@ class WorkerOperationName(StrEnum):
     def is_handoff(self) -> bool:
         return self in (self.NEXT, self.DELIVER)
 
-    def finished_nudge(self, worker_id: int, process_id: int) -> Nudge:
+    def finished_nudge(self, worker_number: int, process_id: int) -> Nudge:
         match self:
             case self.MERGE:
-                return WORKER_OPERATION_MERGED.nudge(worker=worker_id, output=process_id)
+                return WORKER_OPERATION_MERGED.nudge(worker=worker_number, output=process_id)
             case self.JOB:
-                return WORKER_OPERATION_JOB.nudge(worker=worker_id, output=process_id)
+                return WORKER_OPERATION_JOB.nudge(worker=worker_number, output=process_id)
             case self.NEXT | self.DELIVER:
-                return WORKER_OPERATION_DELIVERED.nudge(worker=worker_id, output=process_id)
+                return WORKER_OPERATION_DELIVERED.nudge(worker=worker_number, output=process_id)

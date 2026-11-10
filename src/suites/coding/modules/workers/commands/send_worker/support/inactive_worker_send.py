@@ -38,7 +38,7 @@ class InactiveWorkerSend:
         if worker.parent_id is None:
             return
         if worker.paused_at is not None:
-            self.nudger.send(worker.parent_id, WORKER_OPERATION_PAUSED, WORKER_JOB_SOURCE, context, worker=worker.id)
+            self.nudger.send(worker.parent_id, WORKER_OPERATION_PAUSED, WORKER_JOB_SOURCE, context, worker=worker.number)
             return
         if not self.is_idle(worker):
             return

@@ -24,10 +24,10 @@ def test_with_the_merger_on_the_ended_line_of_a_worker_goes_to_the_merger_and_no
     worker = stopped_worker(story)
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "workers.ended-worker")
     lines = story.container.get(Queries).query(MergerLine).all_rows()
-    story.expect_rows(any(f"worker:{worker.id} {ENDED}" in line.text for line in lines))
+    story.expect_rows(any(f"worker:{agent_number(story, worker.id)} {ENDED}" in line.text for line in lines))
 
 
 def test_with_the_merger_off_the_main_agent_hears_the_ended_line_of_a_worker(new_story):
     story = new_story(fixture=MergerOffOrchestrator)
     worker = stopped_worker(story)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} {ENDED}")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} {ENDED}")

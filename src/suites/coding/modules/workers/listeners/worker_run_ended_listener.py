@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.driver.nudge import Nudge
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
@@ -31,7 +33,8 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
     name = "workers.run-ended"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, nudger: Nudger, stop: WorkerStop, queries: Queries, repository: Repository, proof_queue: WorkerProofQueue) -> None:
+    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, nudger: Nudger, stop: WorkerStop, queries: Queries, repository: Repository, proof_queue: WorkerProofQueue, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.queries, self.repository, self.proof_queue = queries, repository, proof_queue
         self.agents, self.worktrees, self.nudger, self.stop = agents, worktrees, nudger, stop
 
@@ -66,7 +69,7 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
             if self.proof_queue.tests_pending(worktree):
                 return WORKER_OPERATION_TESTS.nudge(task=task.id, output=process.id)
         if operation.name is WorkerOperationName.MERGE and worktree is not None and not self.worktrees.merged_since(operation.worker_id, process.creation_timestamp()):
-            return WORKER_OPERATION_CONFLICT.nudge(worker=operation.worker_id, output=process.id)
+            return WORKER_OPERATION_CONFLICT.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, operation.worker_id), output=process.id)
         if operation.name is WorkerOperationName.JOB and self.agents.find(operation.worker_id).paused_at is not None:
-            return WORKER_OPERATION_PAUSED.nudge(worker=operation.worker_id)
-        return operation.name.finished_nudge(operation.worker_id, process.id)
+            return WORKER_OPERATION_PAUSED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, operation.worker_id))
+        return operation.name.finished_nudge(self.numbers.number(AGENT_MODEL_NAME, operation.worker_id), process.id)

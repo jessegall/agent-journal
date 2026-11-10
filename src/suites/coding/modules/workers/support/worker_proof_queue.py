@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
@@ -28,7 +30,8 @@ class WorkerProofQueue:
     main agent of the proofs with no test, which wait for its check. At the end of a phase those proofs are
     checked instead, and the phase's own test is added as a proof."""
 
-    def __init__(self, proofs: ProofQuery, repository: Repository, main_agent_line: MergerInbox, settings: SettingValues, git: WorktreeGit, queries: Queries) -> None:
+    def __init__(self, proofs: ProofQuery, repository: Repository, main_agent_line: MergerInbox, settings: SettingValues, git: WorktreeGit, queries: Queries, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.proofs, self.repository, self.main_agent_line, self.queries = proofs, repository, main_agent_line, queries
         self.settings, self.git = settings, git
 
@@ -88,4 +91,4 @@ class WorkerProofQueue:
     def send_untested_line(self, worktree: Worktree, context: Context) -> None:
         proofs = [str(proof.id) for proof in self.proofs.untested_proofs(worktree.id).oldest().all_rows()]
         if proofs:
-            self.main_agent_line.send_nudge(PROOF_WAITS.nudge(worker=worktree.session_agent_id, proofs=" ".join(proofs)), PROOF_WAITS_SOURCE, context)
+            self.main_agent_line.send_nudge(PROOF_WAITS.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), proofs=" ".join(proofs)), PROOF_WAITS_SOURCE, context)

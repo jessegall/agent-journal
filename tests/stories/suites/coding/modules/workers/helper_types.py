@@ -58,7 +58,7 @@ def test_an_ended_helper_is_left_out_of_the_inactive_notice(new_story):
     story.advance(timedelta(minutes=15))
     story.tick("s-1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}",
-                         f"helper:{helper['id']} has used no tool")
+                         f"helper:{agent_number(story, helper['id'])} has used no tool")
 
 
 def test_a_helper_has_saved_commands_from_its_first_start(new_story):

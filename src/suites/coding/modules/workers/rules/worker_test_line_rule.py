@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule
@@ -22,7 +24,8 @@ class WorkerTestLineRule(DriverRule):
     roles = [CodingHelperRole.WORKER]
     refuses_one_action = "A worker runs a test only through its named test commands"
 
-    def __init__(self, commands: BackgroundCommands, names: WorkerTestNames) -> None:
+    def __init__(self, commands: BackgroundCommands, names: WorkerTestNames, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.commands, self.names = commands, names
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -36,4 +39,4 @@ class WorkerTestLineRule(DriverRule):
 
     def refusal(self, worker_id: int) -> Nudge:
         names = self.names.names_text(worker_id)
-        return WORKER_TEST_LINE_REFUSED.nudge(names=names) if names else WORKER_NO_TEST_COMMANDS.nudge(worker=worker_id)
+        return WORKER_TEST_LINE_REFUSED.nudge(names=names) if names else WORKER_NO_TEST_COMMANDS.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id))

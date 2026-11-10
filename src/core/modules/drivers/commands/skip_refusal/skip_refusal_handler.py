@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
@@ -36,7 +38,8 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
 
     command = SkipRefusal
 
-    def __init__(self, queries: Queries, repository: Repository, refusals: RefusalLog, registry: Registry, nudger: Nudger, bus: Bus) -> None:
+    def __init__(self, queries: Queries, repository: Repository, refusals: RefusalLog, registry: Registry, nudger: Nudger, bus: Bus, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.queries, self.repository, self.refusals, self.registry = queries, repository, refusals, registry
         self.nudger, self.bus = nudger, bus
 
@@ -102,7 +105,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
             approval = self.restoration_approval(agent)
             self.bus.dispatch(RequestUserApproval(approval, approval.arguments, agent_id), context)
             return
-        self.nudger.send(agent.parent_id, SKIPS_SPENT, SKIP_SOURCE, context, agent=agent_id, count=MOST_SKIP_COUNT)
+        self.nudger.send(agent.parent_id, SKIPS_SPENT, SKIP_SOURCE, context, agent=self.numbers.number(AGENT_MODEL_NAME, agent_id), count=MOST_SKIP_COUNT)
 
     @staticmethod
     def restoration_approval(agent: Agent) -> UserApprovalRefusal:

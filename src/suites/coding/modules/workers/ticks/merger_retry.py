@@ -1,3 +1,5 @@
+from engine.cli.agent_number import AGENT_MODEL_NAME
+from engine.cli.row_numbers import RowNumbers
 from engine.actor.actor import Actor
 from engine.container.container import Container
 from engine.driver.program_lockdown import ProgramLockdown
@@ -79,5 +81,5 @@ class MergerRetry:
             return
         if git.uncommitted_overlap(environment.folder, worktree):
             return
-        line = WORKER_TESTS_PASSED.nudge(worker=worktree.session_agent_id).text
+        line = WORKER_TESTS_PASSED.nudge(worker=container.get(RowNumbers).number(AGENT_MODEL_NAME, worktree.session_agent_id)).text
         container.get(Bus).run(StartMerger(line, worktree.tests_passed_at), Actor.core(), environment_id=worktree.environment_id)

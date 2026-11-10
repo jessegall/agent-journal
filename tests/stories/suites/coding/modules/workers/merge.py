@@ -58,7 +58,7 @@ def test_a_merged_worker_whose_program_never_ended_ends_at_the_merge_and_is_not_
     story.advance(timedelta(minutes=10))
     story.tick("s-1")
     story.run_listeners()
-    story.expect_absent(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has used no tool")
+    story.expect_absent(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has used no tool")
 
 
 @pytest.fixture

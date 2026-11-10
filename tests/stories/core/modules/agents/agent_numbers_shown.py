@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 
 from engine.actor.actor import Actor
@@ -28,7 +29,7 @@ def test_a_main_agent_reads_a_workers_report_by_the_workers_number_not_its_row_i
     story.container.get(Bus).run(RecordParentReport(worker.id, story.agent.id, "Handed in"), worker, environment_id=1)
     story.run_listeners()
     story.expect_text(f"agent-line list --agent {story.agent.id}", "worker 2 reports in message:1")
-    story.expect_absent(f"agent-line list --agent {story.agent.id}", f"agent:{worker.id} reports")
+    story.expect_absent(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, worker.id)} reports")
 
 
 def test_an_earlier_main_session_reads_as_earlier_and_only_the_current_main_reads_main_agent(new_story):

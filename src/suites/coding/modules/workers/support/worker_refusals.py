@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.driver.count_down import CountDown
 from engine.driver.times_span import TimesSpan
@@ -16,7 +18,8 @@ REFUSAL_COUNTDOWN = CountDown("workers.worker_refusal", "worker refusal", TimesS
 class WorkerRefusals:
     """Counts consecutive refused worker steps and tells the main agent when they keep failing."""
 
-    def __init__(self, repository: Repository, main_agent_line: MergerInbox, queries: Queries, countdowns: Countdowns) -> None:
+    def __init__(self, repository: Repository, main_agent_line: MergerInbox, queries: Queries, countdowns: Countdowns, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.repository, self.main_agent_line, self.queries, self.countdowns = repository, main_agent_line, queries, countdowns
 
     def record(self, worktree: Worktree, context: Context, refusal_text: str | None = None) -> None:
@@ -28,7 +31,7 @@ class WorkerRefusals:
         if refusal.notice_at is not None and refusal.notice_at.elapsed_seconds(context.timestamp) < WORKER_REFUSAL_INTERVAL.seconds:
             return
         count = self.countdowns.used_count(REFUSAL_COUNTDOWN, worktree.session_agent_id)
-        notice = WORKER_REFUSED.nudge(worker=worktree.session_agent_id, count=count, task=worktree.task_id)
+        notice = WORKER_REFUSED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), count=count, task=worktree.task_id)
         self.main_agent_line.send_nudge(notice, "workers.repeated-refusal", context)
         self.repository.save(refusal.changed(notice_at=context.timestamp), context)
 

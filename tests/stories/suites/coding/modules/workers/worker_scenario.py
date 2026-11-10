@@ -152,7 +152,7 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     expect_states(story, task1="completed", task2="completed", task3="completed")
 
     # all pass: the main agent is told to merge, and the merge closes all three
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{worker.id} all pass", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{agent_number(story, worker.id)} all pass", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
@@ -171,4 +171,4 @@ def test_a_worker_with_queued_tasks_is_not_reported_while_its_own_tests_run(new_
     story.expect_success(f"agent end {worker.id}", actor=worker)
     story.advance(timedelta(minutes=20))
     story.tick("s-1")
-    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")

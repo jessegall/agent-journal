@@ -108,7 +108,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
             activity_at = max(worker.ended_at, activity.last_hook_at or activity.created_at)
             if activity_at.elapsed_seconds(context.timestamp) < grace:
                 continue
-            line = IDLE_WORKER.nudge(worker=worker.id)
+            line = IDLE_WORKER.nudge(worker=worker.number)
             previous = [row for row in notices if row.text == line.text and row.creation_timestamp() >= activity_at]
             if previous and previous[-1].creation_timestamp().elapsed_seconds(context.timestamp) < repeat:
                 continue

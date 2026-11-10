@@ -1,3 +1,5 @@
+from engine.cli.agent_number import AGENT_MODEL_NAME
+from engine.cli.row_numbers import RowNumbers
 from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
@@ -17,5 +19,8 @@ class ContinuedSessionRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
+    def __init__(self, numbers: RowNumbers) -> None:
+        self.numbers = numbers
+
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_nudges(CONTINUED_SESSION.nudge(agent=hook.agent_id)) if hook.event.is_resume else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(CONTINUED_SESSION.nudge(agent=self.numbers.number(AGENT_MODEL_NAME, hook.agent_id))) if hook.event.is_resume else RuleAnswer.allowed()

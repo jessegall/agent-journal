@@ -68,8 +68,8 @@ class InactiveHelperRule(DriverRule):
         if not inactive and not unstarted:
             return RuleAnswer.allowed()
         notes = self.queue_notes(inactive)
-        return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(name=helper.role, agent=helper.id, minutes=grace.minute_count, queue=notes[helper.id], action=self.action(helper)) for helper in inactive),
-                                      *(UNSTARTED_JOB.nudge(name=helper.role, agent=helper.id, minutes=grace.minute_count, action=self.action(helper)) for helper in unstarted))
+        return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(name=helper.role, agent=helper.number, minutes=grace.minute_count, queue=notes[helper.id], action=self.action(helper)) for helper in inactive),
+                                      *(UNSTARTED_JOB.nudge(name=helper.role, agent=helper.number, minutes=grace.minute_count, action=self.action(helper)) for helper in unstarted))
 
     @staticmethod
     def action(helper: Agent) -> str:

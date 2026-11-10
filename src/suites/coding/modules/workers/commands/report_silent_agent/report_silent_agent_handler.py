@@ -20,7 +20,7 @@ class ReportSilentAgentHandler(Handler[ReportSilentAgent, None]):
 
     def handle(self, command: ReportSilentAgent, context: Context) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
-        text = f"agent:{agent.id} could not resume: {command.reason}. Check its terminal."
+        text = f"agent:{agent.number} could not resume: {command.reason}. Check its terminal."
         notices = self.queries.query(MergerLine).filter(fallback_source=SILENT_FAILURE_SOURCE, text=text).matching(Minimum("created_at", command.inactive_at.text))
         if not notices.exists():
             self.main_agent_line.send(text, SILENT_FAILURE_SOURCE, context)

@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.time.clock import Clock
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
@@ -28,7 +30,8 @@ class WorkerStopRule(DriverRule):
     roles = [CodingHelperRole.WORKER]
     refuses_one_action = "A worker may stop with no task, at a point of its round that waits, while a run or a helper of its own"
 
-    def __init__(self, tasks: TaskQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows, compaction: WorkerCompaction, guidance: WorkerGuidance) -> None:
+    def __init__(self, tasks: TaskQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows, compaction: WorkerCompaction, guidance: WorkerGuidance, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.compaction, self.guidance = compaction, guidance
         self.tasks, self.processes, self.requests, self.clock, self.agents = tasks, processes, requests, clock, agents
 
@@ -41,7 +44,7 @@ class WorkerStopRule(DriverRule):
             return RuleAnswer.allowed()
         if task is None:
             blocked = self.tasks.filter(delegated_to=hook.agent_id, state=TaskState.BLOCKED).all_rows()
-            return RuleAnswer.with_nudges(*(WORKER_TASK_BLOCKED.nudge(worker=hook.agent_id, task=row.id) for row in blocked))
+            return RuleAnswer.with_nudges(*(WORKER_TASK_BLOCKED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, hook.agent_id), task=row.id) for row in blocked))
         if worker_point.step.may_stop():
             return RuleAnswer.allowed()
         if self.processes.agent(hook.agent_id).running().exists() or self.has_running_helper(hook.agent_id):

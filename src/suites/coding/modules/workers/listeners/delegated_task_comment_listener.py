@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from engine.listener.save_listener import SaveListener
@@ -27,7 +29,8 @@ class DelegatedTaskCommentListener(SaveListener[Created[Link]]):
     name = "workers.delegated-task-comment"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, links: RowLinkWriter, queries: Queries, nudger: Nudger) -> None:
+    def __init__(self, links: RowLinkWriter, queries: Queries, nudger: Nudger, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.links, self.queries, self.nudger = links, queries, nudger
 
     def handle(self, event: Created[Link], context: Context) -> None:
@@ -44,4 +47,4 @@ class DelegatedTaskCommentListener(SaveListener[Created[Link]]):
         self.links.save(Link(creator_id=context.actor.id, source_model=Message.model_name, source_id=message.id, target_model=Agent.model_name, target_id=worker_id, link_type=LinkType.RECIPIENT), context)
         parent_id = self.queries.query(Agent).find(worker_id).parent_id
         if parent_id is not None:
-            self.nudger.send(parent_id, WORKER_COMMENT_COPY, SOURCE, context, worker=worker_id, message=message.id)
+            self.nudger.send(parent_id, WORKER_COMMENT_COPY, SOURCE, context, worker=self.numbers.number(AGENT_MODEL_NAME, worker_id), message=message.id)

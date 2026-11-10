@@ -123,7 +123,7 @@ def test_a_worker_with_an_open_ask_still_reaches_its_parent_when_it_ends(new_sto
     worker.story.expect_success(MERGER_OFF, actor=worker.story.user)
     worker.story.expect_success('wait stuck "the plan is unclear"', actor=worker.worker)
     worker.program_ended()
-    worker.story.expect_text(f"agent-line list --agent {worker.story.agent.id}", f"worker:{worker.worker.id} ended with")
+    worker.story.expect_text(f"agent-line list --agent {worker.story.agent.id}", f"worker:{agent_number(worker.story, worker.worker.id)} ended with")
 
 
 def test_a_worker_with_a_run_going_may_stop(phase_worker):

@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 from unittest.mock import patch
 import pytest
@@ -56,9 +57,9 @@ def test_a_later_tick_reads_fresh_activity_after_a_worker_acts(four_workers):
     expect_value(len(activity_reads), 2)
     story.expect_rows(any("parent_id" in call.args[1].sql for call in activity_reads),
                       any("id IN" in call.args[1].sql for call in activity_reads))
-    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{workers[0].id} has used no tool")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, workers[0].id)} has used no tool")
     for worker in workers[1:]:
-        story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has used no tool")
+        story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has used no tool")
 
 
 @pytest.mark.real_git

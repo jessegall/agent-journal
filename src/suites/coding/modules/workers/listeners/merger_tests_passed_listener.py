@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.actor.actor import Actor
 from engine.event.logged_event import LoggedEvent
 from engine.event.moved import Moved
@@ -15,11 +17,12 @@ class MergerTestsPassedListener(CommitListener[Moved[Worktree]]):
     name = "workers.merger-tests-passed"
     moves = [WorktreeLifecycle.mark_tests_passed]
 
-    def __init__(self, bus: Bus, settings: SettingValues) -> None:
+    def __init__(self, bus: Bus, settings: SettingValues, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.bus, self.settings = bus, settings
 
     def handle(self, event: Moved[Worktree], logged: LoggedEvent) -> None:
         if not self.settings.flag(MERGER_ENABLED) or event.row.tests_passed_at is None or event.row.returned_at is not None:
             return
-        line = WORKER_TESTS_PASSED.nudge(worker=event.row.session_agent_id)
+        line = WORKER_TESTS_PASSED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, event.row.session_agent_id))
         self.bus.run(StartMerger(line, event.row.tests_passed_at), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)

@@ -60,7 +60,7 @@ class UnmergedWorkerRule(DriverRule):
                 action = f"journal proof check {', '.join(str(proof.id) for proof in proofs)}"
             key = f"{WORKER_UNMERGED.key}.{worktree.session_agent_id}"
             declaration = WORKER_UNMERGED_DUE if self.delivered_reminder_count(hook.agent_id, key) >= BLOCKING_REMINDER_COUNT - 1 else WORKER_UNMERGED
-            nudges.append(replace(declaration.nudge(worker=worktree.session_agent_id, tasks=self.task_names(worktree.session_agent_id), action=action), key=key))
+            nudges.append(replace(declaration.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), tasks=self.task_names(worktree.session_agent_id), action=action), key=key))
         commands = {self.merge_command(worktree) for worktree in delivered}
         prefix = f"{REQUIRED_COMMAND_REFUSAL.key}:journal worker merge "
         blocks = self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id).matching(IsNull("closed_at")).full_table(OPEN_BLOCKS_REASON).all_rows()

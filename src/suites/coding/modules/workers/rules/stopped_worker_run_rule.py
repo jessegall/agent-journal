@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
@@ -24,14 +26,15 @@ class StoppedWorkerRunRule(DriverRule):
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries, processes: ProcessQuery, unfinished: WorkerUnfinishedTasks, settings: SettingValues, spans: SpanQueries) -> None:
+    def __init__(self, queries: Queries, processes: ProcessQuery, unfinished: WorkerUnfinishedTasks, settings: SettingValues, spans: SpanQueries, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.queries, self.processes, self.unfinished, self.settings, self.spans = queries, processes, unfinished, settings, spans
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         runs = list(self.processes.running().oldest().all_rows())
         workers = {worker.id: worker for worker in self.queries.query(Agent).find_many([run.session_agent_id for run in runs])}
         limit = Interval(self.settings.minutes(STOPPED_WORKER_RUN_MINUTES))
-        return RuleAnswer.with_nudges(*(WORKER_RUN_RUNS_AFTER_STOP.nudge(worker=run.session_agent_id, output=run.id) for run in runs if self.is_running_after_stop(workers[run.session_agent_id], hook, limit)))
+        return RuleAnswer.with_nudges(*(WORKER_RUN_RUNS_AFTER_STOP.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, run.session_agent_id), output=run.id) for run in runs if self.is_running_after_stop(workers[run.session_agent_id], hook, limit)))
 
     def is_running_after_stop(self, worker: Agent, hook: AgentHook, limit: Interval) -> bool:
         ended_at = worker.ended_at

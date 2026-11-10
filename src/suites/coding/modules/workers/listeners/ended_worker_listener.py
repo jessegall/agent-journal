@@ -56,7 +56,7 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
         if (self.unfinished.has_running_process(new.id) or self.handoff.is_pending(new)) and not is_final:
             return
         if self.launches.has_failed(new) and not is_final:
-            self.nudger.send(new.parent_id, WORKER_LAUNCH_FAILED, SOURCE, context, worker=new.id, line=self.launches.error_text(new))
+            self.nudger.send(new.parent_id, WORKER_LAUNCH_FAILED, SOURCE, context, worker=new.number, line=self.launches.error_text(new))
             return
         delegated = any(task.delegated_to == new.id for task in unfinished)
         tasks = self.unfinished.names(unfinished)
@@ -71,8 +71,8 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
                 if not state.is_ready:
                     self.waits.notify_wait(new, context)
                     return
-                self.nudger.send(new.parent_id, WORKER_RESTARTED, SOURCE, context, worker=new.id, tasks=tasks)
+                self.nudger.send(new.parent_id, WORKER_RESTARTED, SOURCE, context, worker=new.number, tasks=tasks)
                 return
         resume_limit_reached = delegated and not is_final and not help_requested
         with self.scopes.row_scope(new):
-            (self.main_line if resume_limit_reached else self.inbox).send_nudge(WORKER_ENDED_WITH_TASKS.nudge(worker=new.id, tasks=tasks), SOURCE, context)
+            (self.main_line if resume_limit_reached else self.inbox).send_nudge(WORKER_ENDED_WITH_TASKS.nudge(worker=new.number, tasks=tasks), SOURCE, context)

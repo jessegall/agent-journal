@@ -93,7 +93,7 @@ def test_a_worker_that_keeps_ending_with_the_merger_on_is_named_to_the_main_agen
     ended(story)
     story.tick(MAIN_SESSION)
     lines = main_agent_lines(story)
-    story.expect_rows(lines.count(f"worker:{story.worker.id} ended with") == 1, detail=lines)
+    story.expect_rows(lines.count(f"worker:{agent_number(story, story.worker.id)} ended with") == 1, detail=lines)
 
 
 def test_a_worker_that_keeps_ending_with_a_blocked_current_task_names_its_open_task_to_the_main_agent(two_task_worker, monkeypatch):
@@ -105,7 +105,7 @@ def test_a_worker_that_keeps_ending_with_a_blocked_current_task_names_its_open_t
     story.advance(timedelta(minutes=1))
     launcher = retried(story)
     lines = main_agent_lines(story)
-    story.expect_rows(launcher.requests == [], f"worker:{story.worker.id} ended with" in lines, "task:2" in lines, detail=lines)
+    story.expect_rows(launcher.requests == [], f"worker:{agent_number(story, story.worker.id)} ended with" in lines, "task:2" in lines, detail=lines)
 
 
 def test_a_worker_handing_on_to_an_open_task_is_pointed_at_it(worker_command):

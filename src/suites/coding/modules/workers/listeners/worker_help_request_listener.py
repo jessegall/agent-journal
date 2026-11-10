@@ -31,4 +31,4 @@ class WorkerHelpRequestListener(SaveListener[Created[Wait]]):
         worker = self.queries.query(Agent).find(wait.session_agent_id)
         should_notify = worker.role == CodingHelperRole.WORKER and worker.parent_id is not None and not self.unfinished.has_running_process(worker.id)
         if should_notify:
-            self.inbox.send_nudge(WORKER_HELP_REQUEST.nudge(worker=worker.id, tasks=self.unfinished.names(self.unfinished.rows(worker.id)), wait=wait.id), SOURCE, context)
+            self.inbox.send_nudge(WORKER_HELP_REQUEST.nudge(worker=worker.number, tasks=self.unfinished.names(self.unfinished.rows(worker.id)), wait=wait.id), SOURCE, context)

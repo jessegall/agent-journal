@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from collections.abc import Sequence
 
 from engine.driver.agent_hook import AgentHook
@@ -22,7 +24,8 @@ class ForeignHooksRule(DriverRule):
     drivers = ["*"]
     essential = True
 
-    def __init__(self, providers: Providers, queries: Queries) -> None:
+    def __init__(self, providers: Providers, queries: Queries, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.providers, self.queries = providers, queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -37,7 +40,7 @@ class ForeignHooksRule(DriverRule):
             commands = []
         if refusal:
             commands.append(RecordAgentNotice(hook.agent_id, refusal, self.name))
-            nudge = MANAGED_HOOK_REFUSAL.nudge(agent=hook.agent_id)
+            nudge = MANAGED_HOOK_REFUSAL.nudge(agent=self.numbers.number(AGENT_MODEL_NAME, hook.agent_id))
             refusal = nudge.text
             nudges = [*nudges, nudge]
         return RuleAnswer(refusal=refusal, nudges=nudges, commands=tuple(commands), updated_input=rewritten.updated_input if rewritten is not None else {},

@@ -56,4 +56,4 @@ class StoppedWorkerRule(DriverRule):
         if self.stop.was_stopped(worker):
             return None
         declaration = WORKER_ASKING_STOPPED if worker_round.is_asking else WORKER_LIMIT_STOPPED
-        return replace(declaration.nudge(worker=worker.id, tasks=self.unfinished.names(tasks)), key=f"{declaration.key}.{worker.id}")
+        return replace(declaration.nudge(worker=worker.number, tasks=self.unfinished.names(tasks)), key=f"{declaration.key}.{worker.id}")

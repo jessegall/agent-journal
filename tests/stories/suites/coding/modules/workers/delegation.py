@@ -71,10 +71,10 @@ def test_a_persons_comment_on_a_delegated_task_reaches_the_worker_and_the_main_a
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
     story.expect_text(f"agent-line list --agent {worker.id}", "the user commented on task:1")
     story.expect_text("task comments 1", "use the new cart", actor=worker)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} was also told message:")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} was also told message:")
     story.expect_text("message unread --environment main", "use the new cart", actor=story.agent)
     message_id = last_message_id(story)
-    story.expect_text(f"link list --source message:{message_id}", f"message:{message_id}  sent_to  agent:{worker.id}")
+    story.expect_text(f"link list --source message:{message_id}", f"message:{message_id}  sent_to  agent:{agent_number(story, worker.id)}")
 
 
 def test_a_worker_gets_none_of_the_messages_the_person_wrote_to_the_main_agent(new_story):
@@ -180,7 +180,7 @@ def ended_worker_story(new_story):
 
 def test_a_dispatch_on_a_file_an_ended_worker_changed_is_refused_naming_it(new_story):
     story, worker = ended_worker_story(new_story)
-    story.expect_hook_refusal("s-1", dispatch_sample("2", "--model", "sonnet"), f"worker:{worker.id} changed these files")
+    story.expect_hook_refusal("s-1", dispatch_sample("2", "--model", "sonnet"), f"worker:{agent_number(story, worker.id)} changed these files")
 
 
 def test_several_tasks_go_to_one_worker_and_only_the_first_starts(new_story):

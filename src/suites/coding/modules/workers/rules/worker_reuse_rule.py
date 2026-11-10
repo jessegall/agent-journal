@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
@@ -26,7 +28,8 @@ class WorkerReuseRule(DriverRule):
     roles = [AgentRole.MAIN]
     refuses_one_action = "A dispatch for work that an ended worker still holds in its worktree is refused"
 
-    def __init__(self, queries: Queries, git: WorktreeGit) -> None:
+    def __init__(self, queries: Queries, git: WorktreeGit, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.queries, self.git = queries, git
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -36,7 +39,7 @@ class WorkerReuseRule(DriverRule):
                 continue
             worker_id = self.worker_with_files(part)
             if worker_id is not None:
-                return RuleAnswer.refused(WORKER_REUSE.nudge(worker=worker_id))
+                return RuleAnswer.refused(WORKER_REUSE.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id)))
         return RuleAnswer.allowed()
 
     def worker_with_files(self, part: Part) -> int | None:

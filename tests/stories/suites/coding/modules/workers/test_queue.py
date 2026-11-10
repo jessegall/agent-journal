@@ -81,7 +81,7 @@ def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_me
     ended(story, started[0], 0)
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
     expect_marks_text(story, "passed")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{worker.id} all pass", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{agent_number(story, worker.id)} all pass", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
@@ -318,7 +318,7 @@ def test_every_third_failed_hand_in_in_a_row_puts_a_line_before_the_merger(new_s
         story.run_listeners()
     expect_value(review_lines(story), [])
     ended(story, started[2], 1)
-    expect_value(review_lines(story), [f"worker:{worker.id} failed 3 hand-ins in a row on task:1: work out where it goes wrong and tell it"])
+    expect_value(review_lines(story), [f"worker:{agent_number(story, worker.id)} failed 3 hand-ins in a row on task:1: work out where it goes wrong and tell it"])
 
 
 def review_lines(story) -> list[str]:
@@ -333,11 +333,11 @@ def test_a_worker_waiting_for_tests_or_merge_is_not_reported_as_stopped(new_stor
     story.expect_success(f"agent end {worker.id}", actor=worker)
     story.advance(timedelta(minutes=20))
     story.tick("s-1")
-    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
     ended(story, started[0], 0)
     story.advance(timedelta(minutes=20))
     story.tick("s-1")
-    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
 
 
 def test_a_queued_proof_survives_the_workers_first_hook_on_a_freshly_started_server_and_counts(new_story, monkeypatch):

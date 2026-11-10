@@ -32,5 +32,5 @@ def test_an_unblocked_task_of_a_paused_worker_tells_its_main_agent_the_worker_is
     story.expect_success(f"worker send --wait {agent_number(story, story.worker.id)} --task {task}", actor=story.agent)
     story.expect_success(f"task unblock {task}", actor=story.agent)
     lines = main_agent_lines(story)
-    story.expect_rows(f"worker:{story.worker.id} is paused" in lines, f"journal agent resume {agent_number(story, story.worker.id)}" in lines, "has the job" not in lines, detail=lines)
+    story.expect_rows(f"worker:{agent_number(story, story.worker.id)} is paused, so the job waits until it is resumed" in lines, "has the job" not in lines, detail=lines)
     story.expect_rows(story.container.get(Queries).query(WorkerOperation).count() == 0)

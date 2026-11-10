@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.driver.hook_timeouts import HookTimeouts
@@ -20,7 +22,8 @@ class RecordHookTimeoutHandler(Handler[RecordHookTimeout, None]):
 
     command = RecordHookTimeout
 
-    def __init__(self, timeouts: HookTimeouts, timings: RuleTimings, nudger: Nudger, repository: Repository, queries: Queries) -> None:
+    def __init__(self, timeouts: HookTimeouts, timings: RuleTimings, nudger: Nudger, repository: Repository, queries: Queries, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.timeouts, self.timings, self.nudger, self.repository, self.queries = timeouts, timings, nudger, repository, queries
 
     def handle(self, command: RecordHookTimeout, context: Context) -> None:
@@ -31,5 +34,5 @@ class RecordHookTimeoutHandler(Handler[RecordHookTimeout, None]):
         main = MainAgentFinder.newest(self.queries)
         receiver = main.id if main is not None else command.agent_id
         rule = self.timings.slowest(command.agent_id) or UNTIMED_RULE
-        self.nudger.send(receiver, HOOK_TIMEOUTS, LINE_SOURCE, context, agent=command.agent_id, count=count)
+        self.nudger.send(receiver, HOOK_TIMEOUTS, LINE_SOURCE, context, agent=self.numbers.number(AGENT_MODEL_NAME, command.agent_id), count=count)
         self.repository.save(HookTimeoutNotice(session_agent_id=command.agent_id, receiver_id=receiver, timeout_count=count, slowest_rule=rule), context)

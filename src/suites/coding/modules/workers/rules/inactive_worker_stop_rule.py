@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.enums.duration_unit import DurationUnit
 from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
@@ -26,7 +28,8 @@ class InactiveWorkerStopRule(DriverRule):
     roles = [AgentRole.MAIN]
     disabled_scopes = [ActorScope]
 
-    def __init__(self, worktrees: WorkerWorktrees, activities: AgentActivities, settings: SettingValues) -> None:
+    def __init__(self, worktrees: WorkerWorktrees, activities: AgentActivities, settings: SettingValues, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.worktrees, self.activities, self.settings = worktrees, activities, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -34,7 +37,7 @@ class InactiveWorkerStopRule(DriverRule):
         activities = self.activities.read(hook)
         idle = [worktree for worktree in self.worktrees.main_worktrees() if worktree.state is WorktreeState.CUT and worktree.session_agent_id in activities and self.is_idle(activities[worktree.session_agent_id], hook, hours)]
         commands = [EndInactiveWorker(worktree.session_agent_id) for worktree in idle]
-        return RuleAnswer.with_nudges(*(WORKER_IDLE_STOPPED.nudge(worker=worktree.session_agent_id, task=worktree.task_id) for worktree in idle)).running(*commands)
+        return RuleAnswer.with_nudges(*(WORKER_IDLE_STOPPED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), task=worktree.task_id) for worktree in idle)).running(*commands)
 
     def is_idle(self, worker: AgentActivity, hook: AgentHook, hours: int) -> bool:
         return worker.ended_at is None and worker.is_inactive(hook.timestamp, hours * DurationUnit.HOUR.seconds)

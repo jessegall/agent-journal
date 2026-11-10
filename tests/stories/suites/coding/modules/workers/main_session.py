@@ -34,7 +34,7 @@ def started_replacement(replacement):
 def test_a_new_main_session_hears_a_workers_report(replacement):
     story, worker, main = replacement
     story.expect_hook_allowed(worker_session(story, worker), stop_with_text(REPORT))
-    story.expect_text(f"agent-line list --agent {main.id}", f"agent:{worker.id} reports in message:1")
+    story.expect_text(f"agent-line list --agent {main.id}", f"agent:{agent_number(story, worker.id)} reports in message:1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "reports in message:1")
 
 
@@ -48,7 +48,7 @@ def test_a_new_main_session_hears_a_comment_sent_to_its_worker(replacement):
     story, worker, main = replacement
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
-    story.expect_text(f"agent-line list --agent {main.id}", f"worker:{worker.id} was also told message:1")
+    story.expect_text(f"agent-line list --agent {main.id}", f"worker:{agent_number(story, worker.id)} was also told message:1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "was also told")
 
 

@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from pathlib import Path
 
 from engine.enums.agent_role import AgentRole
@@ -18,7 +20,8 @@ class WorkerFileRule(DriverRule):
     roles = [AgentRole.MAIN]
     refuses_one_action = "The main agent edits no file inside a worker's worktree"
 
-    def __init__(self, worktrees: WorkerWorktrees) -> None:
+    def __init__(self, worktrees: WorkerWorktrees, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.worktrees = worktrees
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -27,5 +30,5 @@ class WorkerFileRule(DriverRule):
             return RuleAnswer.allowed()
         for worktree in self.worktrees.main_worktrees():
             if any(Path(path).is_relative_to(worktree.folder) for path in tool.files):
-                return RuleAnswer.refused(WORKER_FILE.nudge(worker=worktree.session_agent_id))
+                return RuleAnswer.refused(WORKER_FILE.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)))
         return RuleAnswer.allowed()

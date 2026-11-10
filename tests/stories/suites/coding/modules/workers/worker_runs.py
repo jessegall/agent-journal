@@ -98,7 +98,7 @@ def test_a_worker_stopped_past_the_limit_on_a_run_that_goes_on_is_named_to_the_m
     story.expect_absent(f"agent-line list --agent {story.agent.id}", f"waits on output {run.id}")
     story.advance(timedelta(minutes=31))
     story.tick("s-1")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} stopped and waits on output {run.id}")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} stopped and waits on output {run.id}")
 
 
 def test_a_paused_worker_stays_stopped_when_its_run_ends(new_story, monkeypatch):
@@ -123,7 +123,7 @@ def test_a_worker_past_its_restarts_that_stops_with_a_run_going_leaves_the_main_
     monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
     story, worker, run, bus = worker_with_a_run
     session = worker_session(story, worker)
-    line = f"worker:{worker.id} ended with"
+    line = f"worker:{agent_number(story, worker.id)} ended with"
     for _ in range(3):
         story.run(f"agent end {worker.id}", actor=worker)
         story.run_listeners()
@@ -174,7 +174,7 @@ def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story, 
     story.run(f"agent end {worker.id}", actor=worker)
     story.hook(session, HookSamples.session_start())
     story.run(f"agent end {worker.id}", actor=worker)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} ended with task:1")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} ended with task:1")
     story.hook(session, HookSamples.session_start())
     story.advance(timedelta(minutes=1))
     story.expect_success('task block 1 --reason "waits on a person"', actor=worker)

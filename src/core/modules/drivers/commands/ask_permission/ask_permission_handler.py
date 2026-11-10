@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -26,7 +28,8 @@ class AskPermissionHandler(Handler[AskPermission, PermissionRequest]):
 
     command = AskPermission
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus) -> None:
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.queries, self.repository, self.bus = queries, repository, bus
 
     def handle(self, command: AskPermission, context: Context) -> PermissionRequest:
@@ -41,5 +44,5 @@ class AskPermissionHandler(Handler[AskPermission, PermissionRequest]):
             return request
         main = MainAgentFinder.newest(self.queries)
         if main is not None:
-            self.bus.dispatch(RecordAgentNudge(main.id, PERMISSION_REQUESTED.nudge(agent=context.actor.id, request=request.id), SOURCE), context)
+            self.bus.dispatch(RecordAgentNudge(main.id, PERMISSION_REQUESTED.nudge(agent=self.numbers.number(AGENT_MODEL_NAME, context.actor.id), request=request.id), SOURCE), context)
         return request

@@ -40,5 +40,5 @@ class AnswerRefusalSkipHandler(Handler[AnswerRefusalSkip, RefusalSkip]):
         approver_id = agent.parent_id if agent.role != AgentRole.MAIN and self.settings.flag(SKIPS_NEED_APPROVAL) else None
         confirmed = self.repository.update(skip, context, confirmed_at=context.timestamp, tried=tried, needs_approval=approver_id is not None)
         if approver_id is not None:
-            self.nudger.send(approver_id, SKIP_NEEDS_APPROVAL, SKIP_SOURCE, context, agent=agent.id, refusal=skip.id)
+            self.nudger.send(approver_id, SKIP_NEEDS_APPROVAL, SKIP_SOURCE, context, agent=agent.number, refusal=skip.id)
         return confirmed

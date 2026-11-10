@@ -78,7 +78,7 @@ def test_when_the_merger_cannot_start_the_main_agent_hears_what_waits(new_story,
     ended(story, started[0], 0)
     story.expect_rows(failure == "no main agent" or reached == [failure])
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
-    notice = f"the tests of worker:{worker.id} all pass"
+    notice = f"the tests of worker:{agent_number(story, worker.id)} all pass"
     story.expect_rows(lines.count(notice) == 1, "agent:0" not in lines, detail=lines)
     log = story.home.system_log
     story.expect_rows(not log.exists() or "merger start failed" not in FileAccess.shared().read(log))
@@ -96,7 +96,7 @@ def test_a_merge_waits_until_a_main_agent_returns(new_story, monkeypatch):
     MergerRetry()(story.container)
     MergerRetry()(story.container)
     lines = story.run(f"agent-line list --agent {main.id}", actor=main).output_text
-    story.expect_rows(lines.count(f"the tests of worker:{worker.id} all pass") == 1, detail=lines)
+    story.expect_rows(lines.count(f"the tests of worker:{agent_number(story, worker.id)} all pass") == 1, detail=lines)
 
 
 def test_a_retry_that_fails_again_does_not_repeat_the_line_once_the_main_agent_has_read_it(new_story, monkeypatch):
@@ -115,7 +115,7 @@ def test_a_retry_that_fails_again_does_not_repeat_the_line_once_the_main_agent_h
         story.hook("new-main", HookSamples.prompt("go on"))
         story.clock.advance(timedelta(minutes=1))
     lines = story.run(f"agent-line list --agent {main.id}", actor=main).output_text
-    story.expect_rows(lines.count(f"the tests of worker:{worker.id} all pass") == 1, detail=lines)
+    story.expect_rows(lines.count(f"the tests of worker:{agent_number(story, worker.id)} all pass") == 1, detail=lines)
 
 
 @pytest.mark.parametrize("merger_enabled", [True, False])
@@ -146,7 +146,7 @@ def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_
         story.expect_text("merger next", agent_label(story, worker.id), actor=Actor(merger.id, ActorType.AGENT))
     else:
         story.expect_rows(merger_agent(story) is None)
-        story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{worker.id} all pass", actor=story.agent)
+        story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{agent_number(story, worker.id)} all pass", actor=story.agent)
 
 
 def test_only_the_merger_runs_its_commands(new_story):
@@ -200,9 +200,9 @@ def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_s
     merger = Actor(merger_agent(story).id, ActorType.AGENT)
     second_agent = Actor(story.new_row_id(f"agent start s-other claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_success(f'merger advise {agent_number(story, worker.id)} "Rebase on main first"', actor=merger)
-    story.expect_text(f"agent-line list --agent {worker.id}", f"agent:{merger.id} reports in message:", actor=worker)
+    story.expect_text(f"agent-line list --agent {worker.id}", f"agent:{agent_number(story, merger.id)} reports in message:", actor=worker)
     story.expect_success(f'message send "Rebased" --to agent:{agent_number(story, merger.id)}', actor=worker)
-    story.expect_text(f"agent-line list --agent {merger.id}", f"agent:{worker.id} reports in message:", actor=merger)
+    story.expect_text(f"agent-line list --agent {merger.id}", f"agent:{agent_number(story, worker.id)} reports in message:", actor=merger)
     story.expect_refusal(f'message send "Hello" --to agent:{agent_number(story, second_agent.id)}', "not yours to message", actor=worker)
 
 
@@ -242,7 +242,7 @@ def test_with_the_merger_on_a_workers_closing_words_do_not_reach_the_main_agent(
     stop = HookSamples.stop()
     story.hook(worker_session(story, worker), stop.with_raw({**stop.body["raw"], "last_assistant_message": "Handed in all assigned work."}))
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
-    story.expect_rows("Handed in all assigned work" not in lines, f"agent:{worker.id} reports" not in lines, detail=lines)
+    story.expect_rows("Handed in all assigned work" not in lines, f"agent:{agent_number(story, worker.id)} reports" not in lines, detail=lines)
 
 
 def test_merger_notices_combine_worker_numbers_without_reasons():
@@ -336,7 +336,7 @@ def test_the_merger_ending_without_a_report_does_not_notify_the_main_agent(new_s
     story.run_listeners()
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "It ended without a report")
     lines = story.run(f"agent-line list --agent {story.agent.id}").output_text
-    story.expect_rows((f"agent:{merger.id} program exited with code 137" in lines) == fault)
+    story.expect_rows((f"agent:{agent_number(story, merger.id)} program exited with code 137" in lines) == fault)
     story.expect_rows(story.container.get(HelperJobRows).open_job(merger.id) is None)
 
 
@@ -356,7 +356,7 @@ def test_a_worker_left_to_the_main_agent_is_not_reported_as_stopped(new_story, m
     story.expect_success(f"agent end {worker.id}", actor=worker)
     story.advance(timedelta(minutes=20))
     story.tick("s-1")
-    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
 
 
 def test_long_merger_lines_wait_until_the_output_is_read_whole(new_story, monkeypatch):
@@ -469,7 +469,7 @@ def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_
     merger = merger_agent(story)
     story.expect_success(f"agent end {merger.id}", actor=Actor(merger.id, ActorType.AGENT))
     story.run_listeners()
-    reminder = f"worker:{worker.id} delivered"
+    reminder = f"worker:{agent_number(story, worker.id)} delivered"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick("s-1")
     story.expect_rows(reminder not in story.run(main_lines).output_text)
@@ -493,13 +493,13 @@ def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "important differences need the main agent"', actor=merger)
     story.run_listeners()
-    story.expect_text(main_lines, f"the merger leaves worker:{worker.id} to you: its merge waits on you")
+    story.expect_text(main_lines, f"the merger leaves worker:{agent_number(story, worker.id)} to you: its merge waits on you")
     story.tick("s-1")
-    story.expect_text(main_lines, f"worker:{worker.id} delivered")
-    first = story.run(main_lines).output_text.count(f"worker:{worker.id} delivered")
+    story.expect_text(main_lines, f"worker:{agent_number(story, worker.id)} delivered")
+    first = story.run(main_lines).output_text.count(f"worker:{agent_number(story, worker.id)} delivered")
     story.advance(timedelta(minutes=15))
     story.tick("s-1")
-    story.expect_rows(story.run(main_lines).output_text.count(f"worker:{worker.id} delivered") > first)
+    story.expect_rows(story.run(main_lines).output_text.count(f"worker:{agent_number(story, worker.id)} delivered") > first)
 
 
 def test_a_started_merger_fits_its_profile_so_its_end_does_not_retire_it(new_story, monkeypatch):

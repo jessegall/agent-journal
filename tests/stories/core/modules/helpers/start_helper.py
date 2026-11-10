@@ -138,7 +138,7 @@ def test_a_person_s_start_has_the_main_agent_as_parent(new_story):
 def test_at_the_limit_a_start_names_the_running_helpers_and_an_ended_one_gives_its_slot_back(new_story):
     story, helper_id, _ = start_source(new_story, OneHelperAllowed, f'{START} --name "Rosalind Franklin"')
     fake_launcher(story)
-    story.expect_refusal(START, f"agent:{helper_id}", actor=story.agent)
+    story.expect_refusal(START, f"agent:{agent_number(story, helper_id)}", actor=story.agent)
     story.home.socket("launcher").unlink()
     story.expect_success(f"agent end {helper_id}", actor=story.user)
     started(story)
@@ -169,7 +169,7 @@ def test_a_failed_launch_ends_the_helper_and_tells_the_parent(new_story):
     story.run_listeners()
     launcher.drain_requests()
     story.expect_text(f"agent show {agent_number(story, helper_id)}", "ended_at: 20")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{helper_id} could not start")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, helper_id)} could not start")
 
 
 def test_a_helper_with_no_hook_after_a_minute_ends_and_the_parent_is_told(new_story):
@@ -179,7 +179,7 @@ def test_a_helper_with_no_hook_after_a_minute_ends_and_the_parent_is_told(new_st
     story.hook("s-1", HookSamples.tick())
     story.run_listeners()
     story.expect_text(f"agent show {agent_number(story, helper_id)}", "ended_at: 20")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{helper_id} could not start")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, helper_id)} could not start")
 
 
 def test_a_helper_that_sent_a_hook_stays(new_story):

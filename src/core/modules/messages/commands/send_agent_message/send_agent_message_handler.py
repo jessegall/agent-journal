@@ -1,3 +1,5 @@
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from engine.command.context import Context
@@ -21,7 +23,8 @@ class SendAgentMessageHandler(Handler[SendAgentMessage, Message]):
     command = SendAgentMessage
     disabled_scopes = [ActorScope]
 
-    def __init__(self, repository: Repository, nudger: Nudger, receivers: Receivers, agents: AgentRows, routes: AgentMessageRoutes) -> None:
+    def __init__(self, repository: Repository, nudger: Nudger, receivers: Receivers, agents: AgentRows, routes: AgentMessageRoutes, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.repository, self.nudger, self.receivers, self.agents, self.routes = repository, nudger, receivers, agents, routes
 
     def handle(self, command: SendAgentMessage, context: Context) -> Message:
@@ -31,5 +34,5 @@ class SendAgentMessageHandler(Handler[SendAgentMessage, Message]):
         message = self.repository.save(Message(session_agent_id=sender_id, target_agent_id=None if receiver.role == AgentRole.MAIN else receiver.id, creator_id=context.actor.id,
                                                type=MessageType.AGENT, text=command.text, is_chat_visible=False), context)
         if command.notifies:
-            self.nudger.send(self.receivers.message_receiver(command.recipient_agent_id).id, PARENT_REPORT, PARENT_REPORT_SOURCE, context, agent=context.actor.id, message=message.id)
+            self.nudger.send(self.receivers.message_receiver(command.recipient_agent_id).id, PARENT_REPORT, PARENT_REPORT_SOURCE, context, agent=self.numbers.number(AGENT_MODEL_NAME, context.actor.id), message=message.id)
         return message

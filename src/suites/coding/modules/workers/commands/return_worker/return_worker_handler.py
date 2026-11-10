@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
@@ -34,5 +35,5 @@ class ReturnWorkerHandler(Handler[ReturnWorker, None]):
             raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has nothing delivered")
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.return_worker, returned_at=context.timestamp, pass_reason=command.reason), context)
         line = self.repository.save(MergerLine(text=f"worker:{command.worker_id}: {command.reason}", fallback_source=MERGER_SOURCE, read_at=context.timestamp), context)
-        self.main_line.send_nudge(MERGER_PASSED.nudge(worker=command.worker_id), MERGER_SOURCE, context)
+        self.main_line.send_nudge(MERGER_PASSED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, command.worker_id)), MERGER_SOURCE, context)
         self.main_line.send_nudge(MERGER_LINE_AVAILABLE.nudge(line=line.id), MERGER_SOURCE, context)

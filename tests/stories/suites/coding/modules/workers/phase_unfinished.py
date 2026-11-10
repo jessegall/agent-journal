@@ -91,7 +91,7 @@ def test_after_its_limit_a_worker_that_ended_names_its_tasks_those_in_testing_in
     monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
     program_ended.story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=program_ended.story.user)
     program_ended.story.tick(MAIN_SESSION)
-    program_ended.story.expect_text(f"agent-line list --agent {program_ended.story.agent.id}", f"worker:{program_ended.worker.id} ended with task:1, task:2, task:3 left")
+    program_ended.story.expect_text(f"agent-line list --agent {program_ended.story.agent.id}", f"worker:{agent_number(program_ended.story, program_ended.worker.id)} ended with task:1, task:2, task:3 left")
 
 
 @pytest.mark.parametrize("fixture, reason", [("advanced_worker", "the plan changed"), ("phase_delivered", "the tests take too long")], ids=["in the middle of a phase", "after the hand-in"])

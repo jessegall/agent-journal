@@ -63,7 +63,7 @@ class WorkerPlaces:
             raise Refusal(f"{self.run_limit()} workers are running", "wait for a merge, release or retirement")
         workers = self.kept_workers()
         if self.kept_limit() != UNLIMITED_AGENT_COUNT and len(workers) >= self.kept_limit():
-            names = ", ".join(f"agent:{worker.id}" for worker in workers[:KEPT_NAMES_SHOWN])
+            names = ", ".join(f"agent:{worker.number}" for worker in workers[:KEPT_NAMES_SHOWN])
             raise Refusal(f"the limit of {self.kept_limit()} workers is reached: {names}", self.use.retire_suggestion(CodingHelperRole.WORKER) or TypeLimits.retirement_instruction(workers))
 
     def run_limit(self) -> int:

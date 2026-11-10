@@ -38,4 +38,4 @@ class StartHelperSubcommand(Subcommand[StartHelper, HelperStarted]):
         if isinstance(value, HelperStarted):
             line = "its report wakes you, so you may stop" if self.launcher.is_running else "keep working and read journal overview: its report arrives at your next hook"
             note = f", on {value.agent.program}: {value.note}" if value.note else ""
-            output.write(f"started agent:{value.agent.id}{note}: {line}", {"id": value.agent.id, "program": value.agent.program, "note": value.note})
+            output.write(f"started agent:{value.agent.number}{note}: {line}", {"id": value.agent.id, "program": value.agent.program, "note": value.note})
