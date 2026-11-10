@@ -278,6 +278,6 @@ def test_a_message_the_main_agent_sends_a_helper_is_not_among_the_main_agents_re
 def test_unread_reports_are_found_by_their_agent_and_their_words(new_story):
     story = new_story(fixture=ReportedHelper)
     report = helper_report(story)
-    story.expect_text(f"message reports --agent {helper_agent(story).id} --environment main", f"message:{report.id}", actor=story.agent)
+    story.expect_text(f"message reports --agent {agent_number(story, helper_agent(story).id)} --environment main", f"message:{report.id}", actor=story.agent)
     story.expect_text(f"message reports --agent {agent_number(story, story.agent.id)} --environment main", "no unread reports", actor=story.agent)
     story.expect_text("message reports --search 'total wrong' --environment main", "The total is wrong.", actor=story.agent)

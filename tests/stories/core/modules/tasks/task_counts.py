@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 from datetime import timedelta
 
@@ -18,7 +19,7 @@ class FourStatesTasks(StoryFixture):
         started, blocked, delegated, finished, _ = (story.new_row_id(f'task make "Counted task {number}" --environment main', actor=story.agent) for number in range(1, 6))
         story.expect_success(f"task start {started} --environment main", actor=story.agent)
         story.expect_success(f'task block {blocked} --reason "Waiting for a review" --environment main', actor=story.agent)
-        story.expect_success(f"task assign {delegated} --to {worker} --environment main", actor=story.agent)
+        story.expect_success(f"task assign {delegated} --to {agent_number(story, worker)} --environment main", actor=story.agent)
         story.expect_success(f"task start {finished} --environment main", actor=story.agent)
         story.expect_success(f'task close {finished} --outcome "Done" --environment main', actor=story.agent)
 
