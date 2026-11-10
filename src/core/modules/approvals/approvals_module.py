@@ -6,8 +6,8 @@ from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
-from core.base.viewer.button_condition import ButtonCondition
-from core.base.viewer.button_declaration import ButtonDeclaration
+from engine.viewer.button_condition import ButtonCondition
+from engine.viewer.button_declaration import ButtonDeclaration
 from core.modules.approvals.commands.accept_approval.accept_approval_subcommand import AcceptApprovalSubcommand
 from core.modules.approvals.commands.close_user_approval.close_user_approval_handler import CloseUserApprovalHandler
 from core.modules.approvals.commands.answer_approval.answer_approval_handler import AnswerApprovalHandler
@@ -32,7 +32,7 @@ from core.modules.approvals.commands.check_approval_works.check_approval_works_h
 from core.modules.approvals.models.standing_approval import StandingApproval
 from core.modules.approvals.guards.standing_approval_guard import StandingApprovalGuard
 from core.modules.approvals.commands.make_standing_approval.make_standing_approval_handler import MakeStandingApprovalHandler
-from core.base.viewer.button_menu_item import ButtonMenuItem
+from engine.viewer.button_menu_item import ButtonMenuItem
 from core.modules.approvals.commands.accept_covered_approval.accept_covered_approval_handler import AcceptCoveredApprovalHandler
 from core.modules.approvals.listeners.standing_approval_accept_listener import StandingApprovalAcceptListener
 from core.modules.approvals.listeners.standing_approval_dock_listener import StandingApprovalDockListener

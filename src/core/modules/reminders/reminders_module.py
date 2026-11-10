@@ -2,11 +2,11 @@ from core.modules.reminders.migrations.m002_open_reminder_index import OpenRemin
 from core.modules.reminders.migrations.m003_environment_reminder_index import EnvironmentReminderIndexMigration
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_key import WindowKey
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_loading import WindowLoading
+from engine.viewer.window_place import WindowPlace
 from core.modules.reminders.commands.make_reminder.make_reminder_handler import MakeReminderHandler
 from core.modules.reminders.commands.make_reminder.make_reminder_subcommand import MakeReminderSubcommand
 from core.modules.reminders.commands.record_reminder_fired.record_reminder_fired_handler import RecordReminderFiredHandler

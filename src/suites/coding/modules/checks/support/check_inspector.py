@@ -1,6 +1,6 @@
-from core.base.viewer.button_condition import ButtonCondition
-from core.base.viewer.button_declaration import ButtonDeclaration
-from core.base.viewer.inspector_declaration import InspectorDeclaration
+from engine.viewer.button_condition import ButtonCondition
+from engine.viewer.button_declaration import ButtonDeclaration
+from engine.viewer.inspector_declaration import InspectorDeclaration
 from suites.coding.modules.checks.models.check import Check
 
 CHECK_INSPECTOR = InspectorDeclaration(

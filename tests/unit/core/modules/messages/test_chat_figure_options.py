@@ -1,5 +1,5 @@
-from core.base.viewer.choice_option import ChoiceOption
-from core.base.viewer.toggle_option import ToggleOption
+from engine.viewer.choice_option import ChoiceOption
+from engine.viewer.toggle_option import ToggleOption
 from core.modules.messages.messages_module import MessagesModule
 
 

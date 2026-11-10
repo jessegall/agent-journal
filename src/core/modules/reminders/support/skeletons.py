@@ -1,5 +1,5 @@
-from core.base.viewer.skeleton_part import SkeletonPart
-from core.base.viewer.skeleton_size import SkeletonSize
+from engine.viewer.skeleton_part import SkeletonPart
+from engine.viewer.skeleton_size import SkeletonSize
 
 REMINDERS_REMINDERS_SKELETON = [
     SkeletonPart.stack([

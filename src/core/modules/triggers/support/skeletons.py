@@ -1,5 +1,5 @@
-from core.base.viewer.skeleton_part import SkeletonPart
-from core.base.viewer.skeleton_size import SkeletonSize
+from engine.viewer.skeleton_part import SkeletonPart
+from engine.viewer.skeleton_size import SkeletonSize
 
 TRIGGERS_TRIGGERS_SKELETON = [
 SkeletonPart.row([SkeletonPart.line(SkeletonSize.SMALL, "90px"), SkeletonPart.grow(), SkeletonPart.block(26, "110px")], padding="8px 20px"),

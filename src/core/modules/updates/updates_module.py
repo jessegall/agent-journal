@@ -4,11 +4,11 @@ from core.modules.updates.commands.record_release_install.record_release_install
 from core.modules.updates.listeners.release_install_listener import ReleaseInstallListener
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_key import WindowKey
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_loading import WindowLoading
+from engine.viewer.window_place import WindowPlace
 from core.modules.updates.commands.install_release.install_release_handler import InstallReleaseHandler
 from core.modules.updates.commands.show_update_step.show_update_step_handler import ShowUpdateStepHandler
 from core.modules.updates.commands.show_update_step.show_update_step_subcommand import ShowUpdateStepSubcommand

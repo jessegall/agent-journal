@@ -4,7 +4,7 @@ import time
 import pytest
 
 from server.hook.hook_database_busy_error import HookDatabaseBusyError
-from core.base.viewer.window_priority import WindowPriority
+from engine.viewer.window_priority import WindowPriority
 from server.hook.queue_priority import QueuePriority
 from server.hook.server_queue import ServerQueue
 

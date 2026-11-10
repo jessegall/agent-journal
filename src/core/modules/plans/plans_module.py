@@ -9,7 +9,7 @@ from core.modules.plans.listeners.plan_wait_listener import PlanWaitListener
 from core.modules.plans.models.plan_context_read import PlanContextRead
 from core.modules.plans.support.block_conditions.plan_context_read import PlanContextRead as PlanContextReadCondition
 from core.modules.plans.rules.plan_context_rule import PlanContextRule
-from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration, ButtonMenuItem, TextField
+from engine.viewer.button_declaration import ButtonCondition, ButtonDeclaration, ButtonMenuItem, TextField
 from core.modules.plans.commands.block_plan.block_plan import BlockPlan
 from core.modules.plans.commands.rework_plan.return_plan import ReturnPlan
 from core.modules.plans.commands.approve_plan.approve_plan import ApprovePlan
@@ -60,13 +60,13 @@ from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.queries.plan_query import PlanQuery
 from core.modules.plans.support.plan_shared_rows import PlanSharedRows
 from engine.module.module import Module
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_extension import WindowExtension
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.key_loading import KeyLoading
-from core.base.viewer.window_tab import WindowTab
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_loading import WindowLoading
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_extension import WindowExtension
+from engine.viewer.window_key import WindowKey
+from engine.viewer.key_loading import KeyLoading
+from engine.viewer.window_tab import WindowTab
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_loading import WindowLoading
 from engine.module.model_declaration import ModelDeclaration
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.phase_task import PhaseTask
@@ -93,8 +93,8 @@ PLAN_COMMANDS = (ApprovePlan, BlockPlan, CancelPlan, ClosePlan, ReturnPlan, Star
 from core.modules.plans.support.plan_inspector import PLAN_INSPECTOR
 from core.modules.plans.commands.assign_plan.assign_plan_handler import AssignPlanHandler
 from core.modules.plans.commands.assign_plan.assign_plan_subcommand import AssignPlanSubcommand
-from core.base.viewer.skeleton_part import SkeletonPart
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.skeleton_part import SkeletonPart
+from engine.viewer.window_place import WindowPlace
 
 
 class PlansModule(Module):

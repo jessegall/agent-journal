@@ -2,11 +2,11 @@ from engine.module.model_declaration import ModelDeclaration
 from core.modules.viewer.migrations.m003_helpers_window_key import HelpersWindowKeyMigration
 from core.modules.viewer.migrations.m004_person_row_indexes import PersonRowIndexesMigration
 from engine.module.module import Module
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.key_loading import KeyLoading
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_loading import WindowLoading
+from engine.viewer.window_key import WindowKey
+from engine.viewer.key_loading import KeyLoading
 from core.modules.viewer.migrations.m001_viewer import ViewerTablesMigration
 from core.modules.viewer.migrations.m002_person_presets import PersonPresetsMigration
 from core.modules.viewer.commands.person_preset_list.person_preset_list_subcommand import PersonPresetListSubcommand

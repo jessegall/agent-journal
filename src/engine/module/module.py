@@ -27,8 +27,8 @@ from engine.module.model_declaration import ModelDeclaration
 from engine.provider.provider import Provider
 from engine.skill.skill_declaration import SkillDeclaration
 from engine.upgrade.version_four_move import VersionFourMove
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_extension import WindowExtension
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_extension import WindowExtension
 from engine.subcommand.subcommand import Subcommand
 from engine.seed.seeder import Seeder
 from engine.subcommand.read_subcommand import ReadSubcommand
@@ -41,8 +41,8 @@ from engine.driver.block_condition import BlockCondition
 from engine.check.step_condition import StepCondition
 from engine.performance.performance_tool import PerformanceTool
 from engine.template.template_declaration import TemplateDeclaration
-from core.base.viewer.button_declaration import ButtonDeclaration
-from core.base.viewer.inspector_declaration import InspectorDeclaration
+from engine.viewer.button_declaration import ButtonDeclaration
+from engine.viewer.inspector_declaration import InspectorDeclaration
 
 GuardClass = type[Guard[Never]]
 ListenerClass = type[DeletionListener[Never]] | type[SaveListener[Never]] | type[CommitListener[Never]]

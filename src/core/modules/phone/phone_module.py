@@ -4,12 +4,12 @@ from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from core.modules.phone.ticks.phone_notices import PhoneNotices
 from engine.module.module import Module
-from core.base.viewer.window_search import WindowSearch
+from engine.viewer.window_search import WindowSearch
 from core.modules.phone.support.phone_searcher import PhoneSearcher
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_loading import WindowLoading
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_key import WindowKey
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_loading import WindowLoading
 from core.modules.phone.commands.pair_phone.pair_phone_handler import PairPhoneHandler
 from core.modules.phone.commands.pair_phone.pair_phone_subcommand import PairPhoneSubcommand
 from core.modules.phone.commands.phone_session.phone_session_subcommand import PhoneSessionSubcommand

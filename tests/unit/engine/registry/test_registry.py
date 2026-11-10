@@ -26,7 +26,7 @@ from engine.registry.suite_entry import SuiteEntry
 from engine.template.template_declaration import TemplateDeclaration
 from engine.registry.template_entry import TemplateEntry
 from engine.registry.button_entry import ButtonEntry
-from core.base.viewer.button_declaration import AgentField, ButtonCondition, ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TemplateField, TextField
+from engine.viewer.button_declaration import AgentField, ButtonCondition, ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TemplateField, TextField
 from engine.agent.agent_policy import AgentPolicy
 from engine.registry.window_entry import WindowEntry
 from dataclasses import replace

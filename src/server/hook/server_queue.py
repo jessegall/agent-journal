@@ -7,7 +7,7 @@ from time import monotonic
 from engine.request.request_queue import RequestQueue
 from engine.request.request_queue_entry import RequestQueueEntry
 from engine.request.request_queue_status import RequestQueueStatus
-from core.base.viewer.window_priority import WindowPriority
+from engine.viewer.window_priority import WindowPriority
 from server.hook.hook_database_busy_error import HookDatabaseBusyError
 from server.hook.queue_priority import QueuePriority
 from server.hook.queue_request import QueueRequest

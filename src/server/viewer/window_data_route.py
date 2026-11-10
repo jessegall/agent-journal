@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.window_key_line import WindowKeyLine
+from engine.viewer.window_key import WindowKey
+from engine.viewer.window_key_line import WindowKeyLine
 from server.viewer.line_route import LineRoute
 from server.viewer.shared_row import SharedRow
 from server.viewer.timed_line_answer import TimedLineAnswer

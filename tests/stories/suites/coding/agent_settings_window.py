@@ -5,7 +5,7 @@ from tests.stories.suites.coding.support.main_controls_fixture import MainContro
 from tests.stories.support.story_checks import expect_value
 from engine.database.database import Database
 from engine.registry.registry import Registry
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.window_place import WindowPlace
 from suites.coding.coding_suite import CodingSuite
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 

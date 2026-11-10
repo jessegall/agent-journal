@@ -4,8 +4,8 @@ import shlex
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
-from core.base.viewer.button_field import ButtonField
-from core.base.viewer.choice_field import ChoiceField
+from engine.viewer.button_field import ButtonField
+from engine.viewer.choice_field import ChoiceField
 
 ROW_BLANK = "row_id"
 BUTTON_SUBJECT = "button:{module}"

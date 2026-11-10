@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.base.viewer.choice import Choice
+from engine.viewer.choice import Choice
 from tests.stories.core.modules.viewer.support.acme_buttons_module import AcmeButtonsModule, FIELDS
 
 PATH = "tests.stories.core.modules.viewer.support.wider_acme_buttons_module:WiderAcmeButtonsModule"

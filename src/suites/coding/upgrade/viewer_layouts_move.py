@@ -9,7 +9,7 @@ from engine.upgrade.move_map import MoveMap
 from engine.upgrade.move_report import MoveReport
 from engine.upgrade.version_four_move import VersionFourMove
 from engine.upgrade.version_four_source import VersionFourSource
-from core.base.viewer.layout_shape import LayoutTabs, stored_layout
+from engine.viewer.layout_shape import LayoutTabs, stored_layout
 
 LAYOUT_PAGES = {"layout": "home", "inspector_layout": "inspector", "worker_layout": "worker"}
 VIEW_WINDOWS = {"chat": "messages.chat", "tasks": "tasks.tasks", "plans": "plans.plans", "agents": "agents.agents", "subagents": "agents.helpers",

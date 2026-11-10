@@ -5,11 +5,11 @@ from core.modules.sequences.support.sequence_nudges import SEQUENCE_NUDGES
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from core.modules.sequences.listeners.sequence_event_index_listener import SequenceEventIndexListener
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_loading import WindowLoading
+from engine.viewer.window_key import WindowKey
+from engine.viewer.window_place import WindowPlace
 from core.modules.sequences.commands.abandon_sequence.abandon_sequence_subcommand import AbandonSequenceSubcommand
 from core.modules.sequences.commands.follow_step.follow_step_subcommand import FollowStepSubcommand
 from core.modules.sequences.commands.make_sequence.make_sequence_handler import MakeSequenceHandler

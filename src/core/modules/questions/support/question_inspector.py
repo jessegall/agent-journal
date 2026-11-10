@@ -1,8 +1,8 @@
-from core.base.viewer.button_condition import ButtonCondition
-from core.base.viewer.button_declaration import ButtonDeclaration
-from core.base.viewer.inspector_component import InspectorComponent
-from core.base.viewer.inspector_declaration import InspectorDeclaration
-from core.base.viewer.text_field import TextField
+from engine.viewer.button_condition import ButtonCondition
+from engine.viewer.button_declaration import ButtonDeclaration
+from engine.viewer.inspector_component import InspectorComponent
+from engine.viewer.inspector_declaration import InspectorDeclaration
+from engine.viewer.text_field import TextField
 from core.modules.questions.models.question import Question
 
 OPEN = ButtonCondition("state", tuple(["open"]))

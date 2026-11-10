@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 
-from core.base.viewer.window_key import WindowKey
+from engine.viewer.window_key import WindowKey
 from server.viewer.timed_line_answer import TimedLineAnswer
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.window_data_body import WindowDataBody

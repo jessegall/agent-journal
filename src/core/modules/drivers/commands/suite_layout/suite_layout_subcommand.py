@@ -5,7 +5,7 @@ from engine.errors.refusal import Refusal
 from engine.registry.suite_windows import SuiteWindows
 from engine.caller.caller import Caller
 from engine.subcommand.read_subcommand import ReadSubcommand
-from core.base.viewer.layout_shape import stored_layout
+from engine.viewer.layout_shape import stored_layout
 from core.modules.drivers.commands.support.page_layout import PageLayout
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.environments.models.environment import Environment

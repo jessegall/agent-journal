@@ -1,5 +1,5 @@
-from core.base.viewer.skeleton_part import SkeletonPart
-from core.base.viewer.skeleton_size import SkeletonSize
+from engine.viewer.skeleton_part import SkeletonPart
+from engine.viewer.skeleton_size import SkeletonSize
 
 PROJECT_HOOKS_SKELETON = [SkeletonPart.stack([
     SkeletonPart.row([SkeletonPart.block(32, "100px"), SkeletonPart.block(32, "120px")]),

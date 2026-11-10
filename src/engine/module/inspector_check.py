@@ -2,10 +2,10 @@ from collections.abc import Sequence
 
 from engine.module.module import Module
 from engine.module.window_check import WindowCheck
-from core.base.viewer.inspector_declaration import InspectorDeclaration
-from core.base.viewer.registry_lines import RegistryLines
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.inspector_declaration import InspectorDeclaration
+from engine.viewer.registry_lines import RegistryLines
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_place import WindowPlace
 
 
 class InspectorCheck:

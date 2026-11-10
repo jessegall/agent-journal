@@ -2,11 +2,11 @@ from engine.module.module import Module
 from engine.setting.setting_scope import SettingScope
 from engine.setting.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_key import WindowKey
+from engine.viewer.window_loading import WindowLoading
+from engine.viewer.window_place import WindowPlace
 from tunnels.tunler.commands.install_tunler.install_tunler_handler import InstallTunlerHandler
 from tunnels.tunler.commands.install_tunler.install_tunler_subcommand import InstallTunlerSubcommand
 from tunnels.tunler.commands.login_tunler.login_tunler_handler import LoginTunlerHandler

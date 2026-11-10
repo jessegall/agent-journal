@@ -1,5 +1,5 @@
-from core.base.viewer.skeleton_part import SkeletonPart
-from core.base.viewer.skeleton_size import SkeletonSize
+from engine.viewer.skeleton_part import SkeletonPart
+from engine.viewer.skeleton_size import SkeletonSize
 
 TEMPLATES_TEMPLATES_SKELETON = [
     SkeletonPart.stack([

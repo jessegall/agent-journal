@@ -1,5 +1,5 @@
-from core.base.viewer.skeleton_part import SkeletonPart
-from core.base.viewer.skeleton_size import SkeletonSize
+from engine.viewer.skeleton_part import SkeletonPart
+from engine.viewer.skeleton_size import SkeletonSize
 
 PLUGINS_PLUGINS_SKELETON = [
     SkeletonPart.row([SkeletonPart.block(34, "640px")], padding="8px 14px 8px 22px"),

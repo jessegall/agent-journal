@@ -1,5 +1,5 @@
-from core.base.viewer.skeleton_part import SkeletonPart
-from core.base.viewer.skeleton_size import SkeletonSize
+from engine.viewer.skeleton_part import SkeletonPart
+from engine.viewer.skeleton_size import SkeletonSize
 
 TASKS_TASKS_SKELETON = [
     SkeletonPart.row([SkeletonPart.block(32), SkeletonPart.block(26, "96px")], spacing=10, padding="8px 12px"),

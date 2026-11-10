@@ -58,14 +58,14 @@ from engine.driver.watched_runs import WatchedRuns
 from core.modules.processes.support.monitored_runs import MonitoredRuns
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from core.base.viewer.auto_scroll import AutoScroll
-from core.base.viewer.window_search import WindowSearch
+from engine.viewer.auto_scroll import AutoScroll
+from engine.viewer.window_search import WindowSearch
 from core.modules.processes.support.process_searcher import ProcessSearcher
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.key_loading import KeyLoading
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_loading import WindowLoading
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_key import WindowKey
+from engine.viewer.key_loading import KeyLoading
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_loading import WindowLoading
 from core.modules.processes.upgrade.processes_move import ProcessesMove
 from core.modules.processes.commands.end_process.end_process_handler import EndProcessHandler
 from core.modules.processes.commands.end_process_part.end_process_part_handler import EndProcessPartHandler
@@ -227,8 +227,8 @@ WINDOW_EVENTS = ["process.*", "output.*"]
 
 
 from core.modules.processes.support.queue_inspector import QUEUE_INSPECTOR
-from core.base.viewer.window_place import WindowPlace
-from core.base.viewer.skeleton_part import SkeletonPart
+from engine.viewer.window_place import WindowPlace
+from engine.viewer.skeleton_part import SkeletonPart
 
 
 class ProcessesModule(Module):

@@ -1,4 +1,4 @@
-from core.base.viewer.model_searcher import ModelSearcher
+from engine.viewer.model_searcher import ModelSearcher
 from core.modules.templates.models.template import Template
 from core.modules.templates.queries.template_query import TemplateQuery
 

@@ -1,6 +1,6 @@
 from engine.module.module import Module
 from engine.template.template_declaration import TemplateDeclaration
-from core.base.viewer.button_declaration import ButtonDeclaration
+from engine.viewer.button_declaration import ButtonDeclaration
 
 
 class FolderNotesModule(Module):

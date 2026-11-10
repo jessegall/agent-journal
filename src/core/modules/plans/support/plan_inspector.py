@@ -1,11 +1,11 @@
-from core.base.viewer.agent_field import AgentField
-from core.base.viewer.button_condition import ButtonCondition
-from core.base.viewer.button_declaration import ButtonDeclaration
-from core.base.viewer.inspector_component import InspectorComponent
-from core.base.viewer.inspector_declaration import InspectorDeclaration
-from core.base.viewer.inspector_links import InspectorLinks
-from core.base.viewer.inspector_width import InspectorWidth
-from core.base.viewer.text_field import TextField
+from engine.viewer.agent_field import AgentField
+from engine.viewer.button_condition import ButtonCondition
+from engine.viewer.button_declaration import ButtonDeclaration
+from engine.viewer.inspector_component import InspectorComponent
+from engine.viewer.inspector_declaration import InspectorDeclaration
+from engine.viewer.inspector_links import InspectorLinks
+from engine.viewer.inspector_width import InspectorWidth
+from engine.viewer.text_field import TextField
 from core.modules.plans.models.plan import Plan
 
 ASSIGNABLE = ("draft", "ready", "approved", "started", "blocked")

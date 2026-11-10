@@ -1,7 +1,7 @@
 from engine.database.database import Database
 from engine.registry.registry import Registry
-from core.base.viewer.panel_labels import PanelLabels
-from core.base.viewer.window_icon import WindowIcon
+from engine.viewer.panel_labels import PanelLabels
+from engine.viewer.window_icon import WindowIcon
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.support.story_checks import expect_value
 

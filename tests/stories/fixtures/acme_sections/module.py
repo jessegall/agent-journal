@@ -1,9 +1,9 @@
 from engine.module.module import Module
-from core.base.viewer.skeleton_part import SkeletonPart
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.skeleton_part import SkeletonPart
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_loading import WindowLoading
+from engine.viewer.window_place import WindowPlace
 
 
 def section(name: str, title: str, entry: str, *slots: str, reads: tuple[str, ...] = ()) -> WindowDeclaration:

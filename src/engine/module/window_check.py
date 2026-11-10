@@ -12,9 +12,9 @@ from engine.module.version_requirement import VersionRequirement
 from engine.registry.button_line import ButtonLine
 from engine.registry.button_window import ButtonWindow
 from engine.subcommand.read_subcommand import ReadSubcommand
-from core.base.viewer.viewer_kit import VIEWER_KIT
-from core.base.viewer.registry_lines import RegistryLines
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.viewer_kit import VIEWER_KIT
+from engine.viewer.registry_lines import RegistryLines
+from engine.viewer.window_place import WindowPlace
 from engine.module.window_extensions import WindowExtensions
 from engine.module.button_command_check import ButtonCommandCheck
 

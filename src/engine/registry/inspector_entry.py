@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from engine.registry.inspector_listing import InspectorListing
-from core.base.viewer.inspector_declaration import InspectorDeclaration
+from engine.viewer.inspector_declaration import InspectorDeclaration
 
 
 @dataclass(frozen=True)

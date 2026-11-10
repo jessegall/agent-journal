@@ -33,17 +33,17 @@ from core.modules.plugins.support.plugin_nudges import PLUGIN_NUDGES
 from core.modules.plugins.support.plugin_project_reads import PluginProjectReads
 from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from engine.module.module import Module
-from core.base.viewer.window_search import WindowSearch
+from engine.viewer.window_search import WindowSearch
 from core.modules.plugins.support.plugin_searcher import PluginSearcher
 from engine.setting.setting_scope import SettingScope
 from engine.setting.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.key_loading import KeyLoading
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_key import WindowKey
+from engine.viewer.key_loading import KeyLoading
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_loading import WindowLoading
+from engine.viewer.window_place import WindowPlace
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output_handler import AddPluginOutputHandler
 from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults_handler import ClearPluginFaultsHandler
 from core.modules.plugins.commands.clear_plugin_queue_file.clear_plugin_queue_file_handler import ClearPluginQueueFileHandler

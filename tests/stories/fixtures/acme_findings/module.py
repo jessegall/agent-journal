@@ -1,10 +1,10 @@
 from engine.module.module import Module
-from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration
-from core.base.viewer.skeleton_part import SkeletonPart
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.button_declaration import ButtonCondition, ButtonDeclaration
+from engine.viewer.skeleton_part import SkeletonPart
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_loading import WindowLoading
+from engine.viewer.window_place import WindowPlace
 
 from .note_plan_handler import NotePlanHandler
 from .note_plan_subcommand import NotePlanSubcommand

@@ -1,10 +1,10 @@
 from engine.driver.suite import Suite
 from engine.module.module import Module
-from core.base.viewer.button_declaration import ButtonDeclaration
-from core.base.viewer.skeleton_part import SkeletonPart
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.button_declaration import ButtonDeclaration
+from engine.viewer.skeleton_part import SkeletonPart
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_loading import WindowLoading
+from engine.viewer.window_place import WindowPlace
 
 MODULE_FILE = "tests.stories.core.modules.viewer.support.section_modules"
 UNKNOWN_SLOT = f"{MODULE_FILE}:UnknownSlotModule"

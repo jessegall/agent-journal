@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from engine.module.module import Module
-from core.base.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_declaration import WindowDeclaration
 
 
 class WindowExtensions:

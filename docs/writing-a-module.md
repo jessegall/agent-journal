@@ -15,7 +15,7 @@ This is the complete review module's `module.py`:
 ```python
 from engine.module.module import Module
 from engine.template.template_declaration import TemplateDeclaration
-from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration
+from engine.viewer.button_declaration import ButtonCondition, ButtonDeclaration
 
 from .audit_plan_handler import AuditPlanHandler
 from .audit_plan_subcommand import AuditPlanSubcommand
@@ -139,11 +139,11 @@ Its complete `module.py` is:
 
 ```python
 from engine.module.module import Module
-from core.base.viewer.skeleton_part import SkeletonPart
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.skeleton_part import SkeletonPart
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_loading import WindowLoading
+from engine.viewer.window_place import WindowPlace
 
 
 class AcmeFindingsModule(Module):

@@ -1,8 +1,8 @@
-from core.base.viewer.button_condition import ButtonCondition
-from core.base.viewer.button_declaration import ButtonDeclaration
-from core.base.viewer.inspector_component import InspectorComponent
-from core.base.viewer.inspector_declaration import InspectorDeclaration
-from core.base.viewer.inspector_width import InspectorWidth
+from engine.viewer.button_condition import ButtonCondition
+from engine.viewer.button_declaration import ButtonDeclaration
+from engine.viewer.inspector_component import InspectorComponent
+from engine.viewer.inspector_declaration import InspectorDeclaration
+from engine.viewer.inspector_width import InspectorWidth
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.enums.agent_activity import AgentActivity
 

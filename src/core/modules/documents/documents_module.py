@@ -23,15 +23,15 @@ from core.modules.documents.listeners.plan_document_link_listener import PlanDoc
 from core.modules.documents.listeners.reply_link_listener import ReplyLinkListener
 from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from engine.module.module import Module
-from core.base.viewer.window_search import WindowSearch
+from engine.viewer.window_search import WindowSearch
 from core.modules.documents.support.doc_library_share import DocLibraryShare
 from core.modules.documents.support.doc_searcher import DocSearcher
 from core.modules.documents.support.document_nudges import DOCUMENT_OPEN, DOCUMENT_STOP_REFUSAL
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_key import WindowKey
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_loading import WindowLoading
+from engine.viewer.window_place import WindowPlace
 from core.modules.documents.commands.comment_text.comment_text_handler import CommentTextHandler
 from core.modules.documents.commands.comment_doc.comment_doc_subcommand import CommentDocSubcommand
 from core.modules.documents.commands.report_comment.report_comment_subcommand import ReportCommentSubcommand
@@ -88,7 +88,7 @@ from core.modules.documents.upgrade.documents_move import DocumentsMove
 from core.modules.documents.upgrade.message_links_move import MessageLinksMove
 from core.modules.documents.support.skeletons import DOCUMENTS_DOCUMENTS_SKELETON
 from core.modules.documents.support.text_inspectors import DOC_INSPECTOR, REPORT_INSPECTOR
-from core.base.viewer.skeleton_part import SkeletonPart
+from engine.viewer.skeleton_part import SkeletonPart
 from core.modules.documents.listeners.phase_mention_listener import PhaseMentionListener
 from core.modules.documents.listeners.task_log_mention_listener import TaskLogMentionListener
 from core.modules.documents.listeners.deleted_row_link_listener import DeletedRowLinkListener

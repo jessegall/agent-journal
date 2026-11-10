@@ -2,7 +2,7 @@ import pytest
 
 from engine.database.database import Database
 from engine.registry.registry import Registry
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.window_place import WindowPlace
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from core.testing.line_outcome import LineOutcome

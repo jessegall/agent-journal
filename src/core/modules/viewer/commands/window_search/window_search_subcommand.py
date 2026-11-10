@@ -8,7 +8,7 @@ from engine.errors.refusal import Refusal
 from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.registry import Registry
 from engine.subcommand.read_subcommand import ReadSubcommand
-from core.base.viewer.window_searcher import WindowSearcher
+from engine.viewer.window_searcher import WindowSearcher
 
 
 class WindowSearchSubcommand(ReadSubcommand[Page[Model]]):

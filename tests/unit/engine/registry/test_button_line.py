@@ -3,11 +3,11 @@ from dataclasses import replace
 import pytest
 
 from engine.registry.button_line import ButtonLine
-from core.base.viewer.choice import Choice
-from core.base.viewer.choice_field import ChoiceField
-from core.base.viewer.agent_field import AgentField
-from core.base.viewer.template_field import TemplateField
-from core.base.viewer.text_field import TextField
+from engine.viewer.choice import Choice
+from engine.viewer.choice_field import ChoiceField
+from engine.viewer.agent_field import AgentField
+from engine.viewer.template_field import TemplateField
+from engine.viewer.text_field import TextField
 
 LINE = ButtonLine("memories", "memory open {row_id}", True)
 

@@ -46,10 +46,10 @@ from engine.registry.stale_registry_error import StaleRegistryError
 from engine.registry.state_addition_entry import StateAdditionEntry
 from engine.registry.suite_entry import SuiteEntry
 from engine.registry.window_entry import WindowEntry
-from core.base.viewer.layout_preset import LayoutPreset
-from core.base.viewer.window_declaration import DEFAULT_FLOAT_SIZE
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.layout_shape import loaded_layout, stored_layout
+from engine.viewer.layout_preset import LayoutPreset
+from engine.viewer.window_declaration import DEFAULT_FLOAT_SIZE
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.layout_shape import loaded_layout, stored_layout
 
 
 # a registry saved before windows were split into where they are drawn and whose work they show: an environment or agent window was drawn in a pane

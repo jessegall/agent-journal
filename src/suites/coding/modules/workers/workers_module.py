@@ -182,7 +182,7 @@ from suites.coding.modules.workers.ticks.unlaunched_worker_tests import Unlaunch
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from suites.coding.modules.workers.commands.queue_worker_tests.queue_stalled_tests_handler import QueueStalledTestsHandler
-from core.base.viewer.window_icon import WindowIcon
+from engine.viewer.window_icon import WindowIcon
 from engine.module.model_declaration import ModelDeclaration, ALL_SUBCOMMANDS
 from core.modules.messages.support.assigned_work_sources import AssignedWorkSources
 from suites.coding.modules.workers.bindings.worker_task_sources import WorkerTaskSources
@@ -191,9 +191,9 @@ from suites.coding.modules.workers.migrations.m023_worker_task_sources import Wo
 from suites.coding.modules.workers.listeners.worker_job_source_listener import WorkerJobSourceListener
 from suites.coding.modules.workers.listeners.deleted_worker_source_listener import DeletedWorkerSourceListener
 from engine.module.module import Module
-from core.base.viewer.button_condition import ButtonCondition
-from core.base.viewer.button_declaration import ButtonDeclaration
-from core.base.viewer.text_field import TextField
+from engine.viewer.button_condition import ButtonCondition
+from engine.viewer.button_declaration import ButtonDeclaration
+from engine.viewer.text_field import TextField
 from engine.enums.access import Access
 from engine.helper_type.helper_type import HelperType
 from suites.coding.modules.workers.bindings.worker_roster import WorkerRoster
@@ -220,15 +220,15 @@ from suites.coding.modules.workers.ticks.gone_worker_recovery import GoneWorkerR
 from suites.coding.modules.workers.rules.missing_process_rule import MissingProcessRule
 from suites.coding.modules.workers.support.queue_run_workers import QueueRunWorkers
 from suites.coding.modules.workers.bindings.worker_queue_run_workers import WorkerQueueRunWorkers
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.window_tab import WindowTab
-from core.base.viewer.window_extension import WindowExtension
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.window_source import WindowSource
-from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_place import WindowPlace
-from core.base.viewer.window_shows import WindowShows
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_key import WindowKey
+from engine.viewer.window_tab import WindowTab
+from engine.viewer.window_extension import WindowExtension
+from engine.viewer.window_key import WindowKey
+from engine.viewer.window_source import WindowSource
+from engine.viewer.window_loading import WindowLoading
+from engine.viewer.window_place import WindowPlace
+from engine.viewer.window_shows import WindowShows
 from suites.coding.modules.workers.commands.record_todo_list.record_todo_list_handler import RecordTodoListHandler
 from suites.coding.modules.workers.migrations.m002_todo_items import TodoItemsTableMigration
 from suites.coding.modules.workers.models.todo_item import TodoItem

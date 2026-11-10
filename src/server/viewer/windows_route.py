@@ -10,7 +10,7 @@ from engine.registry.inspector_defaults import InspectorDefaults
 from engine.registry.inspector_listing import InspectorListing
 from engine.registry.registry import Registry
 from engine.registry.suite_windows import SuiteWindows
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.window_place import WindowPlace
 from core.modules.drivers.support.active_modules import ActiveModules
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.bindings.support.setting_values import SettingValues

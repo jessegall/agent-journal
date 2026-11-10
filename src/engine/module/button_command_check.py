@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from engine.module.module import Module
 from engine.registry.button_line import ButtonLine
-from core.base.viewer.person_lines import PERSON_LINES
+from engine.viewer.person_lines import PERSON_LINES
 
 
 class ButtonCommandCheck:

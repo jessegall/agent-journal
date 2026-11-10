@@ -1,5 +1,5 @@
 from engine.module.module import Module
-from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration
+from engine.viewer.button_declaration import ButtonCondition, ButtonDeclaration
 
 
 class DemoReviewModule(Module):

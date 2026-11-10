@@ -1,5 +1,5 @@
-from core.base.viewer.skeleton_part import SkeletonPart
-from core.base.viewer.skeleton_size import SkeletonSize
+from engine.viewer.skeleton_part import SkeletonPart
+from engine.viewer.skeleton_size import SkeletonSize
 
 DOCUMENTS_DOCUMENTS_SKELETON = [
     SkeletonPart.row([SkeletonPart.block(32), SkeletonPart.block(30, "130px"), SkeletonPart.block(30, "110px"), SkeletonPart.block(30, "120px"), SkeletonPart.block(26, "100px")],

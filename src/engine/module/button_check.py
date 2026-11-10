@@ -12,10 +12,10 @@ from engine.module.name_groups import NameGroups
 from engine.module.template_check import TemplateCheck
 from engine.module.window_check import WindowCheck
 from engine.registry.button_line import BLANK
-from core.base.viewer.button_declaration import ButtonDeclaration
-from core.base.viewer.button_field import ButtonField
-from core.base.viewer.panel_labels import PanelLabels
-from core.base.viewer.text_field import TextField
+from engine.viewer.button_declaration import ButtonDeclaration
+from engine.viewer.button_field import ButtonField
+from engine.viewer.panel_labels import PanelLabels
+from engine.viewer.text_field import TextField
 
 ROW_PLACEHOLDER = "row_id"
 CARD_SLOT_PREFIX = "dock."

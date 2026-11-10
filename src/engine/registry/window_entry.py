@@ -2,7 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
 from engine.registry.window_listing import WindowListing
-from core.base.viewer.window_loading import WindowLoading
+from engine.viewer.window_loading import WindowLoading
 
 
 @dataclass(frozen=True)

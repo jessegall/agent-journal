@@ -5,7 +5,7 @@ from engine.driver.suite import Suite
 from engine.module.module import Module
 from engine.module.name_groups import NameGroups
 from engine.registry.driver_rule_entry import ANY_HOOK, DriverRuleEntry
-from core.base.viewer.layout_shape import layout_windows
+from engine.viewer.layout_shape import layout_windows
 
 
 class SuiteCheck:

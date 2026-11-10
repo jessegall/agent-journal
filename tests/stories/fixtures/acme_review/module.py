@@ -1,6 +1,6 @@
 from engine.module.module import Module
 from engine.template.template_declaration import TemplateDeclaration
-from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration
+from engine.viewer.button_declaration import ButtonCondition, ButtonDeclaration
 
 from .audit_plan_handler import AuditPlanHandler
 from .audit_plan_subcommand import AuditPlanSubcommand

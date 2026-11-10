@@ -1,4 +1,4 @@
-from core.base.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_declaration import WindowDeclaration
 
 # @sin architecture_layout_value_at_a_module_top
 windows = [

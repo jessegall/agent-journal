@@ -1,5 +1,5 @@
 from engine.database.database import Database
-from core.base.viewer.person_lines import PERSON_LINES
+from engine.viewer.person_lines import PERSON_LINES
 from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT
 from core.testing.fake_launcher import FakeLauncher
 from core.modules.viewer.migrations.m003_helpers_window_key import HelpersWindowKeyMigration

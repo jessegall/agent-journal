@@ -3,11 +3,11 @@ from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.secrets.support.secret_nudges import SECRET_NUDGES
 from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from engine.module.module import Module
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_loading import WindowLoading
+from engine.viewer.window_key import WindowKey
+from engine.viewer.window_place import WindowPlace
 from core.modules.secrets.commands.allow_program.allow_program_handler import AllowProgramHandler
 from core.modules.secrets.commands.change_secret_deletion.change_secret_deletion_handler import ChangeSecretDeletionHandler
 from core.modules.secrets.commands.edit_secret.edit_secret_handler import EditSecretHandler

@@ -9,16 +9,16 @@ from core.modules.memories.migrations.m006_memory_owner import MemoryOwnerMigrat
 from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.memories.support.memory_nudges import MEMORY_NUDGES
 from engine.module.model_declaration import ModelDeclaration
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_loading import WindowLoading
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_loading import WindowLoading
 from core.modules.memories.commands.memory_counts.memory_counts_subcommand import MemoryCountsSubcommand
 from core.modules.memories.commands.memory_page.memory_page_subcommand import MemoryPageSubcommand
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.key_loading import KeyLoading
-from core.base.viewer.window_place import WindowPlace
+from engine.viewer.window_key import WindowKey
+from engine.viewer.key_loading import KeyLoading
+from engine.viewer.window_place import WindowPlace
 from engine.module.module import Module
-from core.base.viewer.window_search import WindowSearch
+from engine.viewer.window_search import WindowSearch
 from core.modules.memories.support.memory_searcher import MemorySearcher
 from core.modules.memories.guards.agent_scope_guard import AgentScopeGuard
 from core.modules.memories.guards.keyword_scope_guard import KeywordScopeGuard
@@ -69,7 +69,7 @@ from core.modules.memories.seeders.memories_seeder import MemoriesSeeder
 from core.modules.memories.support.block_conditions.memories_weighed import MemoriesWeighed
 from core.modules.memories.support.skeletons import MEMORIES_MEMORIES_SKELETON
 from core.modules.memories.support.memory_inspector import MEMORY_INSPECTOR
-from core.base.viewer.skeleton_part import SkeletonPart
+from engine.viewer.skeleton_part import SkeletonPart
 
 
 class MemoriesModule(Module):

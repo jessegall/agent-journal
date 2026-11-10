@@ -2,17 +2,17 @@ from engine.driver.suite import Suite
 from engine.guard.guard import Guard
 from engine.model.model import Model
 from engine.module.module import Module
-from core.base.viewer.auto_scroll import AutoScroll
-from core.base.viewer.layout_preset import LayoutPreset
-from core.base.viewer.window_tab import WindowTab
-from core.base.viewer.layout_shape import split, tabs
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.choice_option import ChoiceOption
-from core.base.viewer.toggle_option import ToggleOption
-from core.base.viewer.window_size import WindowSize
-from core.base.viewer.window_loading import WindowLoading
-from core.base.viewer.skeleton_part import SkeletonPart
+from engine.viewer.auto_scroll import AutoScroll
+from engine.viewer.layout_preset import LayoutPreset
+from engine.viewer.window_tab import WindowTab
+from engine.viewer.layout_shape import split, tabs
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.choice_option import ChoiceOption
+from engine.viewer.toggle_option import ToggleOption
+from engine.viewer.window_size import WindowSize
+from engine.viewer.window_loading import WindowLoading
+from engine.viewer.skeleton_part import SkeletonPart
 from engine.change.moved import Moved
 from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle

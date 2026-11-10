@@ -1,5 +1,5 @@
 from engine.module.module import Module
-from core.base.viewer.button_declaration import ButtonDeclaration
+from engine.viewer.button_declaration import ButtonDeclaration
 
 PATH = "tests.stories.core.modules.viewer.support.button_module:NotesButtonsModule"
 

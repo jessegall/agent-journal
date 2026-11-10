@@ -24,14 +24,14 @@ from core.modules.questions.listeners.question_answered_mark_listener import Que
 from core.modules.questions.listeners.question_open_mark_listener import QuestionOpenMarkListener
 from core.modules.questions.listeners.question_closed_mark_listener import QuestionClosedMarkListener
 from core.modules.questions.listeners.question_edited_mark_listener import QuestionEditedMarkListener
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_key import WindowKey
-from core.base.viewer.key_loading import KeyLoading
-from core.base.viewer.window_search import WindowSearch
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_key import WindowKey
+from engine.viewer.key_loading import KeyLoading
+from engine.viewer.window_search import WindowSearch
 from core.modules.questions.support.question_searcher import QuestionSearcher
-from core.base.viewer.window_place import WindowPlace
-from core.base.viewer.window_icon import WindowIcon
-from core.base.viewer.window_loading import WindowLoading
+from engine.viewer.window_place import WindowPlace
+from engine.viewer.window_icon import WindowIcon
+from engine.viewer.window_loading import WindowLoading
 from core.modules.questions.migrations.m001_questions import QuestionsTablesMigration
 from core.modules.questions.migrations.m002_answer_message import AnswerMessageMigration
 from core.modules.questions.migrations.m004_question_place import QuestionPlaceMigration
@@ -41,7 +41,7 @@ from core.modules.questions.upgrade.questions_move import QuestionsMove
 from core.modules.questions.upgrade.question_links_move import QuestionLinksMove
 from core.modules.questions.support.block_conditions.question_answered import QuestionAnswered
 from core.modules.questions.support.block_conditions.questions_closed import QuestionsClosed
-from core.base.viewer.skeleton_part import SkeletonPart
+from engine.viewer.skeleton_part import SkeletonPart
 from core.modules.questions.support.question_inspector import QUESTION_INSPECTOR
 from core.modules.questions.support.skeletons import QUESTIONS_QUESTIONS_SKELETON, QUESTIONS_QUESTION_SKELETON, QUESTIONS_WAITING_SKELETON
 

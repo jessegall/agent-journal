@@ -1,8 +1,8 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from core.base.viewer.layout_preset import LayoutPreset
-from core.base.viewer.layout_shape import LayoutShape
+from engine.viewer.layout_preset import LayoutPreset
+from engine.viewer.layout_shape import LayoutShape
 from engine.agent.agent_policy import AgentPolicy
 
 

@@ -8,9 +8,9 @@ from engine.module.module import Module
 from engine.registry.button_window import ButtonWindow
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.subcommand.subcommand import Subcommand
-from core.base.viewer.button_declaration import ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TemplateField, TextField
-from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.viewer.window_loading import WindowLoading
+from engine.viewer.button_declaration import ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TemplateField, TextField
+from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_loading import WindowLoading
 from tests.unit.engine.model.test_model import Item
 
 BUTTON = ButtonDeclaration("review.run", tuple(["row.item"]), "Review", "note review {row_id}")

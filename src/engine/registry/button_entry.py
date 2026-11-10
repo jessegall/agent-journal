@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from typing import Any
 
-from core.base.viewer.button_declaration import ButtonDeclaration
+from engine.viewer.button_declaration import ButtonDeclaration
 
 
 @dataclass(frozen=True)

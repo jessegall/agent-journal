@@ -1,5 +1,5 @@
 from engine.module.module import Module
-from core.base.viewer.button_declaration import ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TextField
+from engine.viewer.button_declaration import ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TextField
 
 PATH = "tests.stories.core.modules.viewer.support.acme_buttons_module:AcmeButtonsModule"
 FIELDS = (ChoiceField("priority", "Priority", (Choice("normal", "Normal"), Choice("high", "High"))), TextField("message", "Message"))

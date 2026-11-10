@@ -1,6 +1,6 @@
 from engine.registry.inspector_entry import InspectorEntry
 from engine.registry.registry import Registry
-from core.base.viewer.inspector_declaration import InspectorDeclaration
+from engine.viewer.inspector_declaration import InspectorDeclaration
 
 
 class InspectorDefaults:

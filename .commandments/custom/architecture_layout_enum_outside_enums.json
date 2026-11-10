@@ -110,37 +110,37 @@
                 "file": "src/engine/tunnel/tunnel_state.py"
             },
             {
-                "file": "src/core/base/viewer/auto_scroll.py"
+                "file": "src/engine/viewer/auto_scroll.py"
             },
             {
-                "file": "src/core/base/viewer/inspector_width.py"
+                "file": "src/engine/viewer/inspector_width.py"
             },
             {
-                "file": "src/core/base/viewer/key_loading.py"
+                "file": "src/engine/viewer/key_loading.py"
             },
             {
-                "file": "src/core/base/viewer/panel_labels.py"
+                "file": "src/engine/viewer/panel_labels.py"
             },
             {
-                "file": "src/core/base/viewer/skeleton_shape.py"
+                "file": "src/engine/viewer/skeleton_shape.py"
             },
             {
-                "file": "src/core/base/viewer/skeleton_size.py"
+                "file": "src/engine/viewer/skeleton_size.py"
             },
             {
-                "file": "src/core/base/viewer/window_icon.py"
+                "file": "src/engine/viewer/window_icon.py"
             },
             {
-                "file": "src/core/base/viewer/window_loading.py"
+                "file": "src/engine/viewer/window_loading.py"
             },
             {
-                "file": "src/core/base/viewer/window_place.py"
+                "file": "src/engine/viewer/window_place.py"
             },
             {
-                "file": "src/core/base/viewer/window_priority.py"
+                "file": "src/engine/viewer/window_priority.py"
             },
             {
-                "file": "src/core/base/viewer/window_shows.py"
+                "file": "src/engine/viewer/window_shows.py"
             },
             {
                 "file": "src/core/modules/agents/support/agent_session_state.py"
