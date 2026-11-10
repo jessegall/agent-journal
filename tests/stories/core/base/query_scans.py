@@ -12,7 +12,7 @@ from core.modules.messages.models.message import Message
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.sequences.models.sequence_run_row import SequenceRunRow
 from engine.scope.scopes import Scopes
-from engine.database.repeated_calls_error import RepeatedCallsError
+from engine.database.errors.repeated_calls_error import RepeatedCallsError
 from tests.stories.support.story_checks import expect_value
 
 

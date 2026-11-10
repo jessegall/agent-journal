@@ -9,7 +9,7 @@ from core.modules.documents.commands.support.text_body import TextBody
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from engine.file.file_access import FileAccess
 from engine.module.module_finder import ModuleFinder
-from engine.database.repeated_calls_error import RepeatedCallsError
+from engine.database.errors.repeated_calls_error import RepeatedCallsError
 from tests.stories.support.story_checks import expect_value
 
 

@@ -16,7 +16,7 @@ from engine.database.point_tally import PointTally
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.file.file_access import FILE_READ_EVENT, FILE_CHANGE_EVENT
-from engine.database.repeated_calls_error import RepeatedCallsError
+from engine.database.errors.repeated_calls_error import RepeatedCallsError
 from engine.database.repeated_finding import RepeatedFinding
 
 READ_LIMIT_REPEATS = 1

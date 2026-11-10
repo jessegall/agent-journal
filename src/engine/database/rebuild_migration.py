@@ -1,7 +1,7 @@
 from engine.database.database import Database
 from engine.database.migration import Migration
 from engine.database.statement import Statement
-from engine.database.foreign_key_error import ForeignKeyError
+from engine.database.errors.foreign_key_error import ForeignKeyError
 
 
 class RebuildMigration(Migration):

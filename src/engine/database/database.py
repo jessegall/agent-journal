@@ -2,7 +2,7 @@ import sqlite3
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
-from engine.database.nesting_error import NestingError
+from engine.database.errors.nesting_error import NestingError
 from engine.database.point_tally import PointTally
 from engine.database.statement import Statement
 from engine.errors.read_limit_error import ReadLimitError

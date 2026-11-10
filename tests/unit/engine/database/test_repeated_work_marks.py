@@ -1,6 +1,6 @@
 import pytest
 
-from engine.database.repeated_calls_error import RepeatedCallsError
+from engine.database.errors.repeated_calls_error import RepeatedCallsError
 from engine.database.repeated_work import RepeatedWork
 from engine.database.statement import Statement
 

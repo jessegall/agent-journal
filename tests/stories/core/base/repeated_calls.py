@@ -11,7 +11,7 @@ from engine.actor.actor import Actor
 from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.query.queries import Queries
 from core.modules.environments.models.environment import Environment
-from engine.database.repeated_calls_error import RepeatedCallsError
+from engine.database.errors.repeated_calls_error import RepeatedCallsError
 from engine.database.repeated_work import COMMAND_LIMIT_REPEATS, READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS
 from core.testing.story_line_run import StoryLineRun
 

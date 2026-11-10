@@ -6,7 +6,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from engine.database.schema_mismatch_error import SchemaMismatchError
+from engine.database.errors.schema_mismatch_error import SchemaMismatchError
 from engine.dotted_path.dotted_path import DottedPath
 from engine.journal.journal_home import JournalHome
 from engine.module.module import Module

@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from engine.database.repeated_lines import RepeatedLines
 from engine.database.collecting_repeated_work import CollectingRepeatedWork
 from engine.database.database import READ_LIMIT_ROWS, Database
-from engine.database.repeated_calls_error import RepeatedCallsError
+from engine.database.errors.repeated_calls_error import RepeatedCallsError
 from engine.database.repeated_finding import RepeatedFinding
 from engine.database.reported_findings import ReportedFindings
 from engine.database.request_watch import RequestWatch

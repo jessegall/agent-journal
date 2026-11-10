@@ -4,7 +4,7 @@ from engine.time.clock import Clock
 from engine.database.database import Database
 from engine.database.migration import Migration
 from engine.database.rebuild_migration import RebuildMigration
-from engine.database.schema_mismatch_error import SchemaMismatchError
+from engine.database.errors.schema_mismatch_error import SchemaMismatchError
 from engine.model.view_model import ViewModel
 from engine.database.statement import Statement
 from engine.model.model import Model

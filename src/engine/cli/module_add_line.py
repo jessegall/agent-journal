@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import TextIO
 
 from engine.cli.console import REFUSED_CODE, SUCCESS_CODE, USAGE_CODE
-from engine.database.schema_mismatch_error import SchemaMismatchError
+from engine.database.errors.schema_mismatch_error import SchemaMismatchError
 from engine.model.tables import Tables
 from engine.module.module_addition import ModuleAddition
 from engine.module.module_error import ModuleError

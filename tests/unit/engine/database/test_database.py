@@ -4,7 +4,7 @@ from contextlib import ExitStack
 import pytest
 
 from engine.database.database import BUSY_TIMEOUT_SECONDS, NESTING_LIMIT_LEVELS, Database
-from engine.database.nesting_error import NestingError
+from engine.database.errors.nesting_error import NestingError
 from engine.database.statement import Statement
 from engine.journal.journal_home import JournalHome
 

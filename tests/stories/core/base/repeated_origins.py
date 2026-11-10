@@ -3,7 +3,7 @@ import re
 import pytest
 
 from engine.database.database import Database
-from engine.database.repeated_calls_error import RepeatedCallsError
+from engine.database.errors.repeated_calls_error import RepeatedCallsError
 from engine.database.statement import Statement
 from engine.file.file_access import FileAccess
 from tests.stories.support.story_checks import expect_value

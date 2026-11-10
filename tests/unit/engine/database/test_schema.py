@@ -10,7 +10,7 @@ from engine.database.rebuild_migration import RebuildMigration
 from engine.database.schema import Schema
 from engine.database.module_migrations import ModuleMigrations
 from engine.database.statement import Statement
-from engine.database.schema_mismatch_error import SchemaMismatchError
+from engine.database.errors.schema_mismatch_error import SchemaMismatchError
 from engine.model.view_model import ViewModel
 from engine.journal.journal_home import JournalHome
 from engine.model.tables import Tables
