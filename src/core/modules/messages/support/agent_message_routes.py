@@ -7,10 +7,8 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.agents.support.agent_label import AgentLabel
 
-ROUTE_ADVICE = {
-    AgentRole.MAIN: "message your own helpers",
-    AgentRole.HELPER: "message your main agent and the merger",
-}
+MAIN_AGENT_ROUTES = "message your own helpers"
+HELPER_ROUTES = "message your main agent and the merger"
 
 
 class AgentMessageRoutes:
@@ -29,7 +27,7 @@ class AgentMessageRoutes:
         if agent.id == receiver.id:
             raise Refusal("an agent sends no message to itself", "name another agent in --to")
         if not self.is_related(agent, receiver):
-            raise Refusal(f"{AgentLabel.from_agent(receiver).text} is not yours to message", ROUTE_ADVICE[agent.role])
+            raise Refusal(f"{AgentLabel.from_agent(receiver).text} is not yours to message", MAIN_AGENT_ROUTES if agent.role == AgentRole.MAIN else HELPER_ROUTES)
 
     def is_related(self, agent: Agent, peer: Agent) -> bool:
         if agent.parent_id == peer.id or peer.parent_id == agent.id:
