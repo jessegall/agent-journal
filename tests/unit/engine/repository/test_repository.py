@@ -16,7 +16,7 @@ from engine.registry.listener_timing import ListenerTiming
 from engine.registry.registry import Registry
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
-from engine.repository.stale_row_error import StaleRowError
+from engine.repository.errors.stale_row_error import StaleRowError
 from engine.row.metadata import Metadata
 from engine.query.queries import Queries
 from engine.guard.guard import Guard

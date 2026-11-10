@@ -7,7 +7,7 @@ from engine.driver.rule_outcome import SILENCED
 from engine.driver.rule_record import RuleRecord
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from engine.repository.stale_row_error import StaleRowError
+from engine.repository.errors.stale_row_error import StaleRowError
 from engine.driver.hook_history import HookHistory
 from core.modules.drivers.models.rule_history import RuleHistory
 from core.modules.drivers.models.enums.rule_due_outcome import RuleDueOutcome

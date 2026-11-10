@@ -19,9 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/engine/repository/stale_row_error.py"
-            },
-            {
                 "file": "src/engine/seed/demo_error.py"
             },
             {

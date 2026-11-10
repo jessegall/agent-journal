@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from engine.repository.stale_row_error import StaleRowError
+from engine.repository.errors.stale_row_error import StaleRowError
 from core.modules.library.commands.merge_library_item.merge_library_item import MergeLibraryItem
 from core.modules.library.models.enums.copy_state import CopyState
 from core.modules.library.models.library_copy import LibraryCopy

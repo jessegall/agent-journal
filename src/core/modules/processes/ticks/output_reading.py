@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.container.container import Container
 from engine.module.performance_tools import PerformanceTools
-from engine.repository.stale_row_error import StaleRowError
+from engine.repository.errors.stale_row_error import StaleRowError
 from engine.scope.scopes import Scopes
 from engine.database.points import Points
 from core.modules.developer.support.slow_tick_tool import SlowTickTool, TICK_LIMIT_POINTS
