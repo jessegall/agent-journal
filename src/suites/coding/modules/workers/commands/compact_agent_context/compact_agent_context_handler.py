@@ -18,4 +18,4 @@ class CompactAgentContextHandler(Handler[CompactAgentContext, None]):
 
     def handle(self, command: CompactAgentContext, context: Context) -> None:
         self.bus.dispatch(ChooseAgentControl(command.agent_id, CONTROL_KEY, self.limit_check.action()), context)
-        self.limit_check.ask(command.agent_id, context.timestamp)
+        self.limit_check.record_request(command.agent_id, context.timestamp)

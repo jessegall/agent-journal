@@ -6,25 +6,26 @@ from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, C
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.queries.task_query import TaskQuery
 
-ASKED_AGAIN_SECONDS = 600
+REQUEST_RETRY_SECONDS = 180
 
 
 class ContextLimitCheck:
     """Says how many tokens an agent's context holds once the context limit is on and that context has reached
     it, and whether the agent's next stop compacts it: it does unless it holds a task to finish first and
-    is under the second limit. An agent asked to compact at a context size is not asked again at that size until
-    ten minutes have passed, whichever rule asks, since the size stays as it was until the compaction is read."""
+    is under the second limit. An agent asked to compact is not asked a second time for three minutes, whichever
+    rule asks and whatever its context size is by then: the typed line can wait in the program until the agent
+    pauses. After three minutes over the limit it is asked once more."""
 
     def __init__(self, settings: SettingValues, agents: AgentRows, providers: Providers, home: JournalHome, tasks: TaskQuery) -> None:
         self.settings, self.agents, self.providers, self.home, self.tasks = settings, agents, providers, home, tasks
-        self.asked: dict[int, tuple[int | None, Timestamp]] = {}
+        self.requested_at: dict[int, Timestamp] = {}
 
-    def was_asked(self, agent_id: int, now: Timestamp) -> bool:
-        asked = self.asked.get(agent_id)
-        return asked is not None and asked[0] == self.tokens(agent_id) and asked[1].elapsed_seconds(now) < ASKED_AGAIN_SECONDS
+    def is_compaction_requested(self, agent_id: int, timestamp: Timestamp) -> bool:
+        requested_at = self.requested_at.get(agent_id)
+        return requested_at is not None and requested_at.elapsed_seconds(timestamp) < REQUEST_RETRY_SECONDS
 
-    def ask(self, agent_id: int, at: Timestamp) -> None:
-        self.asked[agent_id] = (self.tokens(agent_id), at)
+    def record_request(self, agent_id: int, timestamp: Timestamp) -> None:
+        self.requested_at[agent_id] = timestamp
 
     def tokens(self, agent_id: int) -> int | None:
         if not self.settings.flag(CONTEXT_LIMIT_ENABLED):

@@ -24,6 +24,6 @@ class ContextSizeRule(DriverRule):
         self.limit_check = limit_check
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if not self.limit_check.needs_compaction(hook.agent_id) or self.limit_check.was_asked(hook.agent_id, hook.timestamp):
+        if not self.limit_check.needs_compaction(hook.agent_id) or self.limit_check.is_compaction_requested(hook.agent_id, hook.timestamp):
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(CONTEXT_COMPACTED.nudge()).running(CompactAgentContext(hook.agent_id))

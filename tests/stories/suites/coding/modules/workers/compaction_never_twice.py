@@ -18,6 +18,8 @@ OLD_READING = timedelta(seconds=60)
 GROWTH_TOKENS = LIMIT_TOKENS // 10
 TOKENS_PAST_LIMIT = LIMIT_TOKENS + 50_000
 STOPS_WITHOUT_LAUNCHER = 5
+WAITING_IN_THE_PROGRAM = timedelta(seconds=20)
+RETRY_DUE = timedelta(seconds=181)
 
 
 def compacted(story, trigger):
@@ -119,7 +121,12 @@ def ended_after_too_long(story):
 
 
 def sent_and_waiting(story):
-    story.advance(TOO_LONG)
+    story.advance(RETRY_DUE)
+
+
+def larger_context_while_waiting(story):
+    story.advance(WAITING_IN_THE_PROGRAM)
+    has_context(story, LIMIT_TOKENS + GROWTH_TOKENS)
 
 
 def started_and_waiting(story):
@@ -127,14 +134,15 @@ def started_and_waiting(story):
     story.advance(TOO_LONG)
 
 
-@pytest.mark.parametrize("moment", [ended_at_once, ended_after_too_long, sent_and_waiting, started_and_waiting], ids=["b1-ended-at-once", "b5-c9-ended-after-601-seconds", "c9-sent", "c9-started"])
-def test_a_later_stop_does_not_type_the_compaction_the_first_stop_typed_again(agent, moment):
+@pytest.mark.parametrize("steps_between_stops, compaction_count", [(ended_at_once, 1), (ended_after_too_long, 1), (larger_context_while_waiting, 1), (sent_and_waiting, 2), (started_and_waiting, 1)],
+                         ids=["b1-ended-at-once", "b5-c9-ended-after-601-seconds", "larger-context-while-the-line-waits", "sent-and-not-started-after-three-minutes-is-typed-once-more", "c9-started"])
+def test_a_later_stop_types_the_compaction_a_second_time_only_after_three_minutes_with_none_started(agent, steps_between_stops, compaction_count):
     has_context(agent, LIMIT_TOKENS)
     stops(agent)
     expect_compactions_typed(agent, 1)
-    moment(agent)
+    steps_between_stops(agent)
     stops(agent)
-    expect_compactions_typed(agent, 1)
+    expect_compactions_typed(agent, compaction_count)
 
 
 @pytest.mark.parametrize("compaction", [AutoCompacted, ManualCompacted], ids=["b2-by-the-program", "b3-by-a-person"])
