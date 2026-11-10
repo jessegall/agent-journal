@@ -21,8 +21,6 @@ from suites.coding.modules.workers.support.worktree_changes import WorktreeChang
 from suites.coding.modules.workers.support.worktree_file_change import WorktreeFileChange
 from suites.coding.modules.workers.support.worktree_start import WorktreeStart
 from suites.coding.modules.workers.support.worker_folder_runs import WorkerFolderRuns
-from core.modules.agents.support.agent_label import AgentLabel
-from engine.cli.row_numbers import RowNumbers
 
 GIT_LIMIT_SECONDS = 60
 CHECKOUT_LIMIT_SECONDS = 300
@@ -54,8 +52,7 @@ class WorktreeGit:
     stash stack, so a worktree finds its stash by its own message, and a lock holds the stack during a push or
     a drop."""
 
-    def __init__(self, runs: WorkerFolderRuns, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, runs: WorkerFolderRuns) -> None:
         self.runs = runs
 
     def tip(self, folder: str, branch: str) -> str:
@@ -316,7 +313,7 @@ class WorktreeGit:
         applied = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash).returncode == 0
         has_markers = bool(self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip())
         if not applied and not has_markers and not self.head_contains(worktree.folder, stash):
-            raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text}", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: the worker applies them"))
+            raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of the worker", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: the worker applies them"))
         with self.stash_stack_lock(worktree):
             entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
             for entry in (line.split() for line in entries):
