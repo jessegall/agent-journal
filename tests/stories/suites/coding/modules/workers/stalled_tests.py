@@ -79,11 +79,7 @@ def minute_tick_names():
     return {type(tick.handler).__name__ for tick in WorkersModule.tick_handlers}
 
 
-def test_the_tick_that_starts_waiting_test_runs_is_named_for_test_runs(new_story):
+def test_385_386_the_two_ticks_of_waiting_test_runs_are_named_for_test_runs(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    story.expect_rows(StalledWorkerTestRuns.__name__ in minute_tick_names(), "StalledWorkerTests" not in minute_tick_names())
-
-
-def test_the_tick_that_launches_a_test_run_again_is_named_for_test_runs(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    story.expect_rows(UnlaunchedWorkerTestRuns.__name__ in minute_tick_names(), "UnlaunchedWorkerTests" not in minute_tick_names())
+    story.expect_rows({StalledWorkerTestRuns.__name__, UnlaunchedWorkerTestRuns.__name__} <= minute_tick_names())
+    story.expect_rows(not {"StalledWorkerTests", "UnlaunchedWorkerTests"} & minute_tick_names())
