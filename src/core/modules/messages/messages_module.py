@@ -84,7 +84,7 @@ from core.modules.messages.rules.unread_message_write_rule import UnreadMessageW
 from core.modules.messages.commands.reply_message.reply_message_subcommand import ReplyMessageSubcommand
 from core.modules.messages.commands.send_message.send_message_subcommand import SendMessageSubcommand
 from core.base.module.module import Module
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from core.base.viewer.choice_option import ChoiceOption
 from core.base.viewer.toggle_option import ToggleOption
 from core.base.viewer.window_declaration import WindowDeclaration

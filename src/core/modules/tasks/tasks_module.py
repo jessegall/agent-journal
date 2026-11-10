@@ -24,7 +24,7 @@ from core.modules.tasks.models.task_block_review import TaskBlockReview
 from core.modules.tasks.migrations.m011_task_block_renewals import TaskBlockRenewalsMigration
 from core.modules.tasks.listeners.task_block_renewal_listener import TaskBlockRenewalListener
 from core.modules.tasks.support.block_conditions.task_blocks_reviewed import TaskBlocksReviewed
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.tasks.support.task_nudges import TASK_NUDGES
 from core.modules.tasks.rules.task_return_reminder_rule import TaskReturnReminderRule
 from core.modules.tasks.rules.blocked_work_rule import BlockedWorkRule

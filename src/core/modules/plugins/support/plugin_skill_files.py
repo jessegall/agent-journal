@@ -1,9 +1,9 @@
-from core.base.skill.skill_contents import SkillContents
+from engine.skill.skill_contents import SkillContents
 from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from core.base.provider.providers import Providers
-from core.base.skill.skill_declaration import SKILL_FILE
+from engine.skill.skill_declaration import SKILL_FILE
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.skills.support.skill_catalogue import FRONT_MATTER_MARK, PLUGIN_KEY
 from core.modules.skills.support.skill_projects import SkillProjects

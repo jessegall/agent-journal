@@ -1,5 +1,5 @@
 from core.base.module.module import Module
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 
 PATH = "tests.stories.core.modules.skills.support.skill_samples"
 DEPENDENCIES = ["journal.core.tasks"]

@@ -166,7 +166,7 @@ from suites.coding.modules.workers.models.merger_visit import MergerVisit
 from suites.coding.modules.workers.models.worker_test_command import WorkerTestCommand
 from suites.coding.modules.workers.rules.worker_test_line_rule import WorkerTestLineRule
 from suites.coding.modules.workers.support.worker_nudges import WORKER_NUDGES
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from suites.coding.modules.workers.models.worker_progress import WorkerProgress
 from suites.coding.modules.workers.commands.worker_progress.worker_progress_subcommand import WorkerProgressSubcommand
 from core.modules.tasks.support.task_assignees import TaskAssignees

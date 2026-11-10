@@ -6,7 +6,7 @@ from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.tool_type import ToolType
-from core.base.skill.skill_digest import SkillDigest
+from engine.skill.skill_digest import SkillDigest
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import start_process

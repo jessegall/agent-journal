@@ -1,4 +1,4 @@
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 
 
 def test_a_skill_declares_its_folder_description_keywords_commands_and_events():

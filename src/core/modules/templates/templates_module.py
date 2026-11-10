@@ -1,4 +1,4 @@
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.template.template_declaration import TemplateDeclaration

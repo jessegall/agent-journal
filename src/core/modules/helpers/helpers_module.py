@@ -55,7 +55,7 @@ from core.modules.helpers.commands.set_usage_limit.set_usage_limit_handler impor
 from core.modules.helpers.commands.set_usage_limit.set_usage_limit_subcommand import SetUsageLimitSubcommand
 from core.modules.helpers.commands.refresh_hourly_limits.refresh_hourly_limits_handler import RefreshHourlyLimitsHandler
 from core.modules.helpers.commands.end_agent_lockdown.end_agent_lockdown_handler import EndAgentLockdownHandler
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.helpers.commands.helper_availability.helper_availability_subcommand import HelperAvailabilitySubcommand
 from core.modules.helpers.rules.helper_report_rule import HelperReportRule
 from core.modules.helpers.rules.helper_skill_read_rule import HelperSkillReadRule

@@ -1,5 +1,5 @@
 from core.modules.dumps.migrations.m003_dump_closed_index import DumpClosedIndexMigration
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch

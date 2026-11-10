@@ -11,7 +11,7 @@ from core.base.viewer.window_tab import WindowTab
 from suites.coding.support.coding_nudges import CODING_NUDGES
 from suites.coding.support.coding_templates import CODING_TEMPLATES
 from core.base.module.model_declaration import ModelDeclaration
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from core.base.module.module import Module
 from engine.agent.agent_group import AgentGroup
 from engine.helper_type.helper_type import HelperType

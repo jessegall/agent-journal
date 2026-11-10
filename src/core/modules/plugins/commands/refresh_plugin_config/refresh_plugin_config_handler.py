@@ -12,7 +12,7 @@ from engine.json.json_schema import JsonSchema
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
-from core.base.skill.skill_digest import SkillDigest
+from engine.skill.skill_digest import SkillDigest
 from engine.types.type_guards import is_object_mapping
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.commands.refresh_plugin_config.refresh_plugin_config import RefreshPluginConfig

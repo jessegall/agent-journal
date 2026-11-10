@@ -13,7 +13,7 @@ from core.modules.tools.commands.set_tool.set_tool_handler import SetToolHandler
 from core.modules.tools.commands.set_tool.set_tool_off_subcommand import SetToolOffSubcommand
 from core.modules.tools.commands.set_tool.set_tool_state_subcommand import SetToolStateSubcommand
 from core.modules.tools.commands.tool_list.tool_list_subcommand import ToolListSubcommand
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.tools.listeners.graphify_hook_removal_listener import GraphifyHookRemovalListener
 from core.modules.tools.rules.graphify_search_rule import GraphifySearchRule
 from core.modules.tools.support.tool_catalogue import GRAPHIFY

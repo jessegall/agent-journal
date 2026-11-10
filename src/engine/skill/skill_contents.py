@@ -4,7 +4,7 @@ from pathlib import Path
 
 from engine.file.file_access import FileAccess
 from engine.file.file_version import FileVersion
-from core.base.skill.skill_digest import SkillDigest
+from engine.skill.skill_digest import SkillDigest
 
 FRONT_MATTER_MARK = "---"
 

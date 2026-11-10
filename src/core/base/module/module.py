@@ -25,7 +25,7 @@ from core.base.model.state_addition import StateAddition
 from core.base.model.view_model import ViewModel
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.provider.provider import Provider
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_extension import WindowExtension

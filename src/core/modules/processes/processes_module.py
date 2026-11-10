@@ -52,7 +52,7 @@ from core.modules.processes.commands.resume_run_queue.resume_run_queue_handler i
 from core.modules.processes.commands.resume_run_queue.resume_run_queue_subcommand import ResumeRunQueueSubcommand
 from core.modules.processes.rules.run_queue_halted_rule import RunQueueHaltedRule
 from core.modules.processes.listeners.waiting_message_run_listener import WaitingMessageRunListener
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.processes.support.process_nudges import PROCESS_NUDGES
 from core.base.driver.watched_runs import WatchedRuns
 from core.modules.processes.support.monitored_runs import MonitoredRuns

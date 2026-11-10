@@ -7,7 +7,7 @@ from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_fields import mapping, mappings, text, texts
 from core.base.driver.shell_line import ShellLine
 from core.base.driver.tool_type import ToolType
-from core.base.skill.skill_declaration import SKILL_FILE
+from engine.skill.skill_declaration import SKILL_FILE
 
 GRAPHIFY_PROGRAM = "graphify"
 

@@ -1,5 +1,5 @@
 from core.base.module.module import Module
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration, Choice, ChoiceField, TemplateField, TextField
 from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.viewer.window_declaration import WindowDeclaration

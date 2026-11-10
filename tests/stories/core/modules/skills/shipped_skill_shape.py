@@ -4,7 +4,7 @@ from pathlib import Path
 
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
-from core.base.skill.skill_shape import DESCRIPTION_CHARACTER_LIMIT, IMPERATIVE_VERBS, READ_IT_PHRASES
+from engine.skill.skill_shape import DESCRIPTION_CHARACTER_LIMIT, IMPERATIVE_VERBS, READ_IT_PHRASES
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_absent_value
 

@@ -5,7 +5,7 @@ from suites.coding.modules.checks.migrations.m007_check_task_wait_index import C
 from suites.coding.modules.checks.migrations.m006_open_check_result_index import OpenCheckResultIndexMigration
 from suites.coding.modules.checks.commands.check_runs.check_runs_subcommand import CheckRunsSubcommand
 from suites.coding.modules.checks.support.check_nudges import CHECK_NUDGES
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch

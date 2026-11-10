@@ -3,7 +3,7 @@ from core.modules.plugins.commands.log_plugin_line.log_plugin_line_handler impor
 from core.modules.plugins.commands.log_plugin_line.log_plugin_line_subcommand import LogPluginLineSubcommand
 from core.modules.plugins.migrations.m004_plugin_session import PluginSessionMigration
 from core.modules.plugins.migrations.m003_plugin_output_index import PluginOutputIndexMigration
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.plugins.commands.deliver_file_edit.deliver_file_edit_handler import DeliverFileEditHandler
 from engine.file.project_reads import ProjectReads
 from core.modules.plugins.guards.plugin_event_guard import PluginEventGuard

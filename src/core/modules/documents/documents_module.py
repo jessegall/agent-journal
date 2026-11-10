@@ -1,6 +1,6 @@
 from core.modules.documents.migrations.m008_message_link_paths import MessageLinkPathsMigration
 from core.modules.documents.commands.comment_message.comment_message_subcommand import CommentMessageSubcommand
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.documents.commands.plan_context_read.read_plan_context_subcommand import ReadPlanContextSubcommand
 from core.modules.documents.commands.plan_context.read_plan_context_handler import ReadPlanContextHandler
 from core.modules.tasks.support.task_context_reader import TaskContextReader

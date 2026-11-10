@@ -1,6 +1,6 @@
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
-from core.base.skill.skill_digest import SkillDigest
+from engine.skill.skill_digest import SkillDigest
 from tests.stories.core.modules.skills.support.skill_samples import PATH
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story

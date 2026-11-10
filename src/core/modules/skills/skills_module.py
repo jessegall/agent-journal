@@ -3,7 +3,7 @@ from core.modules.skills.commands.set_required_skill.set_required_skill_subcomma
 from core.modules.skills.commands.skill_requirements.skill_requirements_subcommand import SkillRequirementsSubcommand
 from core.modules.skills.migrations.m003_skill_session import SkillSessionMigration
 from core.base.viewer.window_read_search import WindowReadSearch
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.skills.listeners.skill_publish_listener import SkillPublishListener
 from core.modules.skills.support.skill_nudges import SKILL_NUDGES
 from core.base.module.model_declaration import ModelDeclaration

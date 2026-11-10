@@ -1,4 +1,4 @@
-from core.base.skill.skill_contents import SkillContents
+from engine.skill.skill_contents import SkillContents
 from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal

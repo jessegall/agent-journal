@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from core.base.driver.command_category import CommandCategory
-from core.base.skill.skill_contents import SkillContents
+from engine.skill.skill_contents import SkillContents
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.testing.hook_samples import HookSamples

@@ -3,8 +3,8 @@ from pathlib import Path
 
 from core.base.driver.hook_transcript import HookTranscript
 from core.base.provider.providers import Providers
-from core.base.skill.skill_contents import SkillContents
-from core.base.skill.skill_digest import SkillDigest
+from engine.skill.skill_contents import SkillContents
+from engine.skill.skill_digest import SkillDigest
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 

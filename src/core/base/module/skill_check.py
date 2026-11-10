@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from core.base.change.event_pattern import EventPattern
 from core.base.module.module import Module
 from core.base.module.name_groups import NameGroups
-from core.base.skill.skill_declaration import SKILLS_FOLDER
+from engine.skill.skill_declaration import SKILLS_FOLDER
 
 FOLDER_PREFIX = "journal"
 

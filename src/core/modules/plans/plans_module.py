@@ -1,4 +1,4 @@
-from core.base.skill.skill_declaration import SkillDeclaration
+from engine.skill.skill_declaration import SkillDeclaration
 from core.base.module.model_declaration import ALL_SUBCOMMANDS
 from core.modules.plans.migrations.m008_plan_context_reads import PlanContextReadsMigration
 from core.modules.plans.migrations.m009_plan_waits import PlanWaitsMigration

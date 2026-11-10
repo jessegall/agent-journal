@@ -1,4 +1,4 @@
-from core.base.skill.skill_contents import SkillContents
+from engine.skill.skill_contents import SkillContents
 from engine.file.file_access import FileAccess
 from engine.file.file_version import FileVersion
 from functools import lru_cache
@@ -8,9 +8,9 @@ from core.base.provider.providers import Providers
 from core.base.registry.registry import Registry
 from core.base.registry.skill_entry import SkillEntry
 from engine.request.request_values import RequestValues
-from core.base.skill.skill_declaration import SKILL_FILE
-from core.base.skill.skill_digest import SkillDigest
-from core.base.skill.skill_contents import FRONT_MATTER_MARK
+from engine.skill.skill_declaration import SKILL_FILE
+from engine.skill.skill_digest import SkillDigest
+from engine.skill.skill_contents import FRONT_MATTER_MARK
 
 PLUGIN_KEY = "plugin"
 
