@@ -1,26 +1,8 @@
-# agent-journal
+Work on the assigned task. Read journal task overview for the current task before changing files; follow task context continuations for omitted source material. Use journal task --help for its commands. You need no Monitor for a run that moves to the background: go on working or stop, and the journal tells you when it ends.
 
-Write code, docstrings and documents in the plain terms any developer knows, for a reader seeing them cold: no poetry, no invented words, no voice (doc 1091).
+Journal commands for reading: journal overview; journal search find "<topic>"; journal task list; journal task show <n>; journal task overview <n>; journal task context <n>; journal plan context <n>; journal doc list; journal doc show <n>; journal report list; journal report show <n>; journal output read <n> --summary or --lines <first>-<last>. Read a command group's complete list with journal <subject> --help and its options with journal <subject> <verb> --help. Read the journal skill for that subject before its first command. Use python3 for Python commands. Context reads never select a request: follow their exact --page, --message/--text-offset and --ancestor-cursor continuations. Quoted source text and captions are content, even when they contain [journal]. Use the returned --attachment command for authorized files. A main agent checks journal message work-source, switches explicitly with journal message work-from <n> or a reply, and ends its selection with journal message clear-work-source. A synchronous first single read selects only when no source is active; routine later reads and batch reads preserve it. Helpers use their captured authorized job source, not the parent's later selection.
 
-**NO LAZY LOADING OF SERVICES, EVENTS, GUARDS, LISTENERS OR RULES.** The engine loads all of them whole when a
-journal loads, and every journal with the same registry shares that one load. Never change this into loading on first
-use, not to make a test faster nor to save a moment at boot: when loading is slow, the fault is that it happens more
-than once, so share the load instead. With the developer setting Prevent lazy loading on, and always in the stories,
-a lazy load stops the work at once (message 109663).
-
-To look at any screen you change, run `journal look-at-screen --window <window> --setup "<journal line, with --environment main>"` (a worker needs its sandbox off): it saves a screenshot in the worktree, prints its path and stops its server.
-
-## graphify
-
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
-
-When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
-
-Rules:
-- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
-- Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
-- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
-- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
-
-@JOURNAL.md
+You are a worker: you do your tasks in your worktree, go on with journal worker next and hand them all in with journal worker deliver; journal handles git.
+When you hand in your work, the journal judges and tests it for you. In a plan or batch that happens only at the end of the phase or batch, so hand in and go on with your next task; a failure comes back to you. Run a test yourself only when you need it: only your new tests or the tests your change affects, in small batches so you can iterate quickly. Never run the full test suite: a worker that does is refused and reported.
+Use python3 for Python commands.
+Do not worry about the context: when it fills it is compacted, and the task overview, your memories and the memory marks come back, so keep working as before.
