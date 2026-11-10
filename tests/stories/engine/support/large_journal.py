@@ -31,7 +31,7 @@ class LargeJournal(StoryFixture):
         for line in SEED_LINES:
             story.expect_success(f"{line} --environment main", actor=story.agent)
         for line in PERSON_SEED_LINES:
-            story.expect_success(f"{line.format(agent=story.agent.id)} --environment main", actor=story.user)
+            story.expect_success(f"{line.format(agent=agent_number(story, story.agent.id))} --environment main", actor=story.user)
         launcher = FakeLauncher.listening(story.home.socket("launcher"))
         for profile in HELPER_PROFILES:
             story.expect_success(f'helper start {profile} --brief "Read the cart code" --environment main', actor=story.agent)
@@ -66,7 +66,7 @@ SEED_LINES = (
 )
 
 PERSON_SEED_LINES = (
-    'message send "Please fix the cart" --to agent:{agent_number(story, agent)}',
+    'message send "Please fix the cart" --to agent:{agent}',
     'rule make "Count in cents"',
 )
 
