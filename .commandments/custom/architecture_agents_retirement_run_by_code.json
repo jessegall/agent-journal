@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "constructs": "RetireAgent"
+            }
+        ],
+        "reject": [
+            {
+                "of": "enclosingType",
+                "nameIn": [
+                    "RetireAgentSubcommand"
+                ]
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "retirement-run-by-code",
+        "description": "A handler, listener or tick builds the RetireAgent command, so the journal retires an agent by itself.",
+        "rule": "No code retires an agent by itself. RetireAgentSubcommand alone builds the command, from the line a person or an agent ran; at a kept limit refuse and say to ask the person.",
+        "skill": "drivers-architecture"
+    }
+}

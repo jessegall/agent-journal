@@ -266,7 +266,14 @@
         "architecture_layout_file_too_deep_below_its_layer",
         "architecture_agents_agent_argument_as_int",
         "architecture_agents_agent_row_id_in_text",
-        "architecture_suites_module_names_its_suite"
+        "architecture_suites_module_names_its_suite",
+        "architecture_agents_agent_retired_outside_the_retire_command",
+        "architecture_agents_retirement_run_by_code",
+        "architecture_agents_retire_command_in_a_text",
+        "architecture_agents_driver_changed_outside_the_driver_command",
+        "architecture_agents_number_read_without_an_environment",
+        "architecture_agents_number_returned_as_its_row_id",
+        "architecture_workers_later_branch_named_by_hand"
     ],
     "parallel": 2,
     "configure": {

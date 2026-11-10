@@ -65,3 +65,10 @@ def test_number_one_of_an_environment_without_a_main_agent_is_absent(numbers):
 def test_another_model_than_the_agent_is_a_programming_error(numbers):
     with pytest.raises(ValueError):
         numbers.row_id("task", 1, 1)
+
+
+def test_a_number_read_in_no_environment_is_refused_and_never_read_as_a_row_id(numbers):
+    with pytest.raises(Refusal, match="agent 3 is read in an environment, and this line runs in none"):
+        numbers.row_id("agent", 3, None)
+    with pytest.raises(Refusal, match="agent with row 3 is read in an environment, and this line runs in none"):
+        numbers.environment_number("agent", 3, None)

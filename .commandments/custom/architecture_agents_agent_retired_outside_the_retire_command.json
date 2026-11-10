@@ -1,0 +1,33 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "retired"
+            },
+            {
+                "of": "receiver",
+                "typeLike": "*Agent"
+            }
+        ],
+        "reject": [
+            {
+                "of": "enclosingType",
+                "nameIn": [
+                    "RetireAgentHandler"
+                ]
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "agent-retired-outside-the-retire-command",
+        "description": "Code sets an agent's retirement itself, so an agent can end for good without a person's command or approval.",
+        "rule": "Only RetireAgentHandler retires an agent: a person runs journal agent retire, and an agent that runs it waits for a person to accept.",
+        "skill": "drivers-architecture"
+    }
+}

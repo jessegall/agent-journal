@@ -1,0 +1,40 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "return",
+        "where": [
+            {
+                "of": "enclosingFunction",
+                "name": "row_id"
+            },
+            {
+                "of": "enclosingType",
+                "nameLike": "?*RowNumbers"
+            },
+            {
+                "child": {
+                    "all": [
+                        {
+                            "is": "identifier"
+                        },
+                        {
+                            "name": "number"
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "number-returned-as-its-row-id",
+        "description": "A row_id of a numbering hands the number back as the row id, so an agent's number of one environment reaches another agent's row.",
+        "rule": "row_id looks the number up in its environment and answers the id of the row found, or raises.",
+        "skill": "drivers-architecture"
+    }
+}
