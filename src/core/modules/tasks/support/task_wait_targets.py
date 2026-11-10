@@ -1,3 +1,5 @@
+from engine.cli.agent_number import AGENT_MODEL_NAME
+from engine.cli.row_numbers import RowNumbers
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.errors.refusal import Refusal
@@ -12,10 +14,14 @@ FINISHED_STATES = ("completed", "cancelled", "answered", "closed")
 
 
 class TaskWaitTargets:
-    """Validates the rows a task can wait on and returns their stored references."""
+    """Validates the rows a task can wait on and returns their stored references. A helper is named by its
+    number in the environment of the line."""
 
-    def __init__(self, database: Database, queries: Queries) -> None:
-        self.database, self.queries = database, queries
+    def __init__(self, database: Database, queries: Queries, numbers: RowNumbers) -> None:
+        self.database, self.queries, self.numbers = database, queries, numbers
+
+    def agent_row_id(self, number: int) -> int:
+        return self.numbers.row_id(AGENT_MODEL_NAME, number, self.database.scope_environment_id)
 
     @property
     def target_types(self) -> tuple[str, ...]:
@@ -28,7 +34,7 @@ class TaskWaitTargets:
 
     def target(self, target_type: str, row_id: int) -> str:
         if target_type == "helper":
-            return self.helper_target(row_id)
+            return self.helper_target(self.agent_row_id(row_id))
         table = TARGET_TABLES.get(target_type)
         if table is None:
             raise Refusal(f"{target_type}:{row_id} gives nothing to wait on", self.target_help)

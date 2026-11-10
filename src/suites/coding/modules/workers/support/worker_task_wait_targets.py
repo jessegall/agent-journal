@@ -19,8 +19,7 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
     """Validates worker wait targets and resolves them after the worker finishes."""
 
     def __init__(self, database: Database, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, waits: TaskWaits, numbers: RowNumbers) -> None:
-        self.numbers = numbers
-        super().__init__(database, queries)
+        super().__init__(database, queries, numbers)
         self.queries, self.worktrees, self.proofs, self.waits = queries, worktrees, proofs, waits
 
     @property
@@ -30,17 +29,18 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
     def target(self, target_type: str, row_id: int) -> str:
         if target_type != "worker":
             return super().target(target_type, row_id)
-        worker = self.queries.query(Agent).filter(id=row_id).first()
-        if worker is None:
-            raise Refusal(f"{AgentLabel.from_row_id(row_id, self.numbers, "worker").text} does not exist", "name an existing worker")
+        return self.worker_target(self.queries.query(Agent).find(self.agent_row_id(row_id)))
+
+    def worker_target(self, worker: Agent) -> str:
         if worker.role != CodingHelperRole.WORKER:
-            raise Refusal(f"{AgentLabel.from_row_id(row_id, self.numbers).text} is not a worker", "name a worker")
+            raise Refusal(f"{AgentLabel.from_agent(worker).text} is not a worker", "name a worker")
         if self.is_finished(worker):
-            raise Refusal(f"{AgentLabel.from_row_id(row_id, self.numbers, "worker").text} has already finished", "nothing waits on it; carry on with the task")
-        return f"workers:{row_id}"
+            raise Refusal(f"{AgentLabel.from_agent(worker).text} has already finished", "nothing waits on it; carry on with the task")
+        return f"workers:{worker.id}"
 
     def helper_target(self, row_id: int) -> str:
-        return self.target("worker", row_id) if self.queries.query(Agent).find(row_id).role == CodingHelperRole.WORKER else super().helper_target(row_id)
+        agent = self.queries.query(Agent).find(row_id)
+        return self.worker_target(agent) if agent.role == CodingHelperRole.WORKER else super().helper_target(row_id)
 
     def is_finished(self, worker: Agent) -> bool:
         worktree = self.worktrees.worker_worktree(worker.id)
