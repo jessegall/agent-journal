@@ -13,6 +13,7 @@ class PausedOverlay(Overlay):
 
     name = "drivers.paused"
     exclusive = True
+    pauses_agent = True
     delays_lines = True
     rules = [PausedAgentRule]
 

@@ -5,10 +5,11 @@ from core.modules.tasks.rules.task_stop_rule import TaskStopRule
 
 class AutoModeTaskStopRule(TaskStopRule):
     """In auto mode a stop with a started task in hand is refused even while a wait is open, which silences
-    the ordinary rules: the agent blocks, completes or cancels the task instead."""
+    the ordinary rules: the agent blocks, completes or cancels the task instead. A paused agent may stop."""
 
     name = "tasks.carry-on-at-stop-in-auto-mode"
     overlay_proof = True
+    yields_to_pause = True
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         assigner = self.assigners.assigner()
