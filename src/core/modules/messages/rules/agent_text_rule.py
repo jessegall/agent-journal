@@ -9,6 +9,7 @@ from core.modules.messages.support.agent_text_filter import AgentTextFilter
 from core.modules.messages.support.message_nudges import CLOSING_CHOICE, CLOSING_LINE_HIDDEN, REPEATED_CLOSING
 from core.modules.messages.support.question_message import QuestionMessage
 from core.modules.messages.support.repeated_messages import RepeatedMessages
+from core.modules.messages.support.turn_reply_targets import TurnReplyTargets
 
 
 class AgentTextRule(DriverRule):
@@ -20,8 +21,8 @@ class AgentTextRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, texts: AgentTextFilter, hook_calls: HookCallQuery, repeats: RepeatedMessages) -> None:
-        self.texts, self.hook_calls, self.repeats = texts, hook_calls, repeats
+    def __init__(self, texts: AgentTextFilter, hook_calls: HookCallQuery, repeats: RepeatedMessages, targets: TurnReplyTargets) -> None:
+        self.texts, self.hook_calls, self.repeats, self.targets = texts, hook_calls, repeats, targets
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         text = self.hook_calls.displayed_block(hook.agent_id, hook.event)
@@ -36,4 +37,4 @@ class AgentTextRule(DriverRule):
         if repeated is not None:
             return RuleAnswer.with_nudges(REPEATED_CLOSING.nudge(message=repeated.id))
         shown = RuleAnswer.with_nudges(CLOSING_CHOICE.nudge()) if QuestionMessage.is_choice(text) else RuleAnswer.allowed()
-        return shown.running(SendMessage(text, is_agent_text=True))
+        return shown.running(SendMessage(text, self.targets.live_parent_id(hook.agent_id, text), is_agent_text=True))

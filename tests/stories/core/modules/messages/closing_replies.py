@@ -1,0 +1,78 @@
+from datetime import timedelta
+
+from engine.query.queries import Queries
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
+from core.modules.messages.models.enums.message_type import MessageType
+from core.modules.messages.models.message import Message
+from tests.stories.core.support.coding_fixtures import UserBuilder
+
+CLOSING = "I fixed the cart total and the stories pass."
+STEP = timedelta(seconds=5)
+
+
+def send_as_user(story: Story, text: str) -> None:
+    story.expect_success(f'message send "{text}" --environment main', actor=story.user)
+    story.advance(STEP)
+
+
+def agent_messages(story: Story) -> list[Message]:
+    return list(story.container.get(Queries).query(Message).filter(type=MessageType.AGENT).oldest().all_rows())
+
+
+class MessageWhileIdle(StoryFixture):
+    """The agent ended its turn, then a person wrote message 1 and the journal's line for it started a new turn."""
+
+    parent = UserBuilder
+
+    def steps(self, story: Story) -> None:
+        story.hook("s-1", HookSamples.stop())
+        story.advance(STEP)
+        send_as_user(story, "Is the cart done?")
+        story.hook("s-1", HookSamples.prompt("[journal] new message 1"))
+        story.advance(STEP)
+
+
+class MessageDuringTurn(StoryFixture):
+    """The agent works in a turn that a journal line started, and a person writes message 1 in the middle of it."""
+
+    parent = UserBuilder
+
+    def steps(self, story: Story) -> None:
+        story.hook("s-1", HookSamples.prompt("[journal] task 1 is yours"))
+        story.hook("s-1", HookSamples.edit("src/cart.py"))
+        story.advance(STEP)
+        send_as_user(story, "Is the cart done?")
+
+
+def test_the_closing_text_of_a_turn_that_a_message_started_replies_to_it(new_story):
+    story = new_story(fixture=MessageWhileIdle)
+    story.hook("s-1", HookSamples.message_display(CLOSING))
+    closing = agent_messages(story)[0]
+    story.expect_rows(closing.text == CLOSING, closing.parent_id == 1)
+
+
+def test_the_closing_text_of_a_turn_is_no_reply_to_a_message_that_came_during_it(new_story):
+    story = new_story(fixture=MessageDuringTurn)
+    story.hook("s-1", HookSamples.message_display(CLOSING))
+    story.hook("s-1", HookSamples.stop())
+    closing = agent_messages(story)[0]
+    story.expect_rows(closing.text == CLOSING, closing.parent_id is None)
+
+
+def test_a_message_read_and_answered_in_the_turn_is_linked_only_by_the_reply_command(new_story):
+    story = new_story(fixture=MessageDuringTurn)
+    story.expect_success('message reply 1 "Not yet, the stories still run."', actor=story.agent)
+    story.advance(STEP)
+    story.hook("s-1", HookSamples.message_display(f"{CLOSING}\n\nThe cart total is right now."))
+    messages = agent_messages(story)
+    story.expect_rows([message.parent_id for message in messages if message.parent_id is not None] == [1], messages[0].parent_id == 1)
+
+
+def test_with_one_message_before_the_turn_and_one_during_it_the_closing_text_replies_to_the_first(new_story):
+    story = new_story(fixture=MessageWhileIdle)
+    send_as_user(story, "And the tax too?")
+    story.hook("s-1", HookSamples.message_display(CLOSING))
+    closing = agent_messages(story)[0]
+    story.expect_rows(closing.parent_id == 1)

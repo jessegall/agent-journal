@@ -53,6 +53,9 @@ class MessageQuery(Query[Message]):
         self.kept.update(self.table.name, newest,
                          "creator_id = ? AND type = ?", [message.creator_id, MessageType.AGENT], name="messages.latest_agent_message")
 
+    def person_messages_between(self, agent_id: int, after_text: str, until_at: Timestamp) -> Self:
+        return self.addressed(agent_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(Greater("created_at", after_text)).matching(Maximum("created_at", until_at.text))
+
     def replies(self, message_id: int) -> Self:
         return self.filter(parent_id=message_id)
 
