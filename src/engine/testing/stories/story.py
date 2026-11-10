@@ -1,3 +1,5 @@
+from engine.enums.actor_type import ActorType
+from engine.environment.environment_names import EnvironmentNames
 from engine.file.file_access import FileAccess
 import io
 import json
@@ -82,6 +84,8 @@ class Story:
         self.path: list[str] = []
         self.agent, self.user, self.helper = state.agent, state.user, state.helper
         self.environment: str | None = None
+        self.fixture_environment: str | None = None
+        self.fixture_environment_id: int | None = None
         self.replacements: dict[type, object] = {}
 
     @classmethod
@@ -108,13 +112,23 @@ class Story:
     def run(self, line: str, actor: Actor | None = None, environment_id: int | None = None, process_id: int | None = None) -> LineOutcome:
         stream = io.StringIO()
         line = self.scope_line(line)
-        caller = Caller(actor or Actor.core(), environment_id, process_id=process_id)
+        caller = Caller(actor or Actor.core(), environment_id or self.caller_environment_id(actor), process_id=process_id)
         self.steps.append(f"command {caller.actor.id} {environment_id}: {line}")
         with self.repeated_work.request():
             code = self.container.get(Console).run(shlex.split(line), caller, stream)
         self.path.append(StoryPath.command(caller.actor.id, shlex.split(line), code))
         self.results.append(LineOutcome(line, code, stream.getvalue()))
         return self.results[-1]
+
+    def use_fixture_environment(self, name: str | None) -> None:
+        self.fixture_environment, self.fixture_environment_id = name, None
+
+    def caller_environment_id(self, actor: Actor | None) -> int | None:
+        if self.fixture_environment is None or (actor is not None and actor.type is ActorType.AGENT):
+            return None
+        if self.fixture_environment_id is None:
+            self.fixture_environment_id = self.container.get(EnvironmentNames).environment_id(self.fixture_environment)
+        return self.fixture_environment_id
 
     def scope_line(self, line: str) -> str:
         if self.environment is None or "--environment" in shlex.split(line):

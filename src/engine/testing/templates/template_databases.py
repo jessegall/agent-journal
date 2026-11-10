@@ -118,9 +118,9 @@ class TemplateDatabases:
     def fixture_template(self, folder: Path, modules: tuple[str, ...], fixture: type[StoryFixture]) -> Template:
         base = self.template(modules, fixture.parent)
         story = Story.opened(self.copy(base, folder), base.state)
-        story.environment = fixture.parent.line_environment() if fixture.parent else None
+        story.use_fixture_environment(fixture.parent.line_environment() if fixture.parent else None)
         fixture().steps(story)
-        story.environment = fixture.line_environment()
+        story.use_fixture_environment(fixture.line_environment())
         fixture().expect(story)
         story.close()
         return Template(story.home, story.state)
