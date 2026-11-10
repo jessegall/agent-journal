@@ -90,3 +90,13 @@ Every line is `journal <thing> <verb>`; `journal <thing> --help` lists its verbs
 ## Tests
 
     sh scripts/run_tests.sh
+
+## Licence
+
+Copyright (c) 2026 Jesse Gall (https://github.com/jessegall/agent-journal)
+
+agent-journal is free software under the [GNU Affero General Public License, version 3](LICENSE.md). You may use,
+change and pass it on. If you pass it on, or let others use a changed version over a network, you offer them the
+source of that version under the same licence. It comes with no warranty.
+
+A commercial licence without these conditions is available from the copyright holder.
