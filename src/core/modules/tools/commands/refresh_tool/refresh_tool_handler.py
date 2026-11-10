@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.journal.journal_home import JournalHome

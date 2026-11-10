@@ -1,6 +1,6 @@
 import re
 
-from engine.change.created import Created
+from engine.event.created import Created
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal

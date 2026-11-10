@@ -4,7 +4,7 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.tasks.commands.cancel_task.cancel_task import CancelTask
-from engine.change.moved import Moved
+from engine.event.moved import Moved
 from engine.command.context import Context
 from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 from core.modules.plans.models.plan import Plan

@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
-from engine.change.change import Change
-from engine.change.logged_event import LoggedEvent
+from engine.event.change import Change
+from engine.event.logged_event import LoggedEvent
 from engine.model.model import Model
 from engine.scope.scope_opening import ScopeOpening
 

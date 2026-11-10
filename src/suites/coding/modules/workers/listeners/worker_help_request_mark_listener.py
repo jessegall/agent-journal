@@ -1,11 +1,11 @@
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from core.modules.agents.models.agent import Agent
 from core.modules.waits.models.enums.wait_type import WaitType
 from core.modules.waits.models.wait import Wait
 from suites.coding.modules.workers.listeners.worker_stop_mark_listener import WorkerStopMarkListener
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
-from engine.change.created import Created
+from engine.event.created import Created
 
 
 class WorkerHelpRequestMarkListener(WorkerStopMarkListener[Created[Wait]]):

@@ -5,7 +5,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from engine.actor.actor import CORE_ACTOR_ID
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.time.clock import Clock
 from engine.container.container import Container
 from engine.database.database import Database

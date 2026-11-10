@@ -1,5 +1,5 @@
-from engine.change.logged_event import LoggedEvent
-from engine.change.moved import Moved
+from engine.event.logged_event import LoggedEvent
+from engine.event.moved import Moved
 from engine.listener.commit_listener import CommitListener
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task

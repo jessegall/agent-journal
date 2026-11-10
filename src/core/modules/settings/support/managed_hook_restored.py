@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.change.system_event import SystemEvent
+from engine.event.system_event import SystemEvent
 
 
 @dataclass(frozen=True)

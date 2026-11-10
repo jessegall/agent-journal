@@ -1,5 +1,5 @@
 from engine.enums.actor_type import ActorType
-from engine.change.changed import Changed
+from engine.event.changed import Changed
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.query.queries import Queries

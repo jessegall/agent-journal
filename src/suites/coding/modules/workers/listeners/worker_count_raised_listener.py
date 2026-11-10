@@ -16,8 +16,8 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LIMIT_RAISED
 from suites.coding.modules.workers.support.worker_settings import DEFAULT_WORKER_COUNT, WORKER_RUN_LIMIT
-from engine.change.changed import Changed
-from engine.change.deleted import Deleted
+from engine.event.changed import Changed
+from engine.event.deleted import Deleted
 from engine.command.context import Context
 
 

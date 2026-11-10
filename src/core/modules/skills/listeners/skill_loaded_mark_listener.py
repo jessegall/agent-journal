@@ -1,9 +1,9 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.models.enums.skill_mark_type import SkillMarkType
 from core.modules.skills.models.enums.skill_mark_variant import SkillMarkVariant
-from engine.change.moved import Moved
+from engine.event.moved import Moved
 from core.modules.skills.models.lifecycles.agent_skill_lifecycle import AgentSkillLifecycle
 
 

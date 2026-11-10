@@ -6,7 +6,7 @@ from engine.skill.skill_declaration import SKILL_FILE
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
-from engine.change.created import Created
+from engine.event.created import Created
 from engine.command.context import Context
 
 

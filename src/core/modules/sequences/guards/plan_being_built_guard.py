@@ -1,5 +1,5 @@
 from engine.enums.actor_type import ActorType
-from engine.change.moved import Moved
+from engine.event.moved import Moved
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.listener.event_rows import EventRows

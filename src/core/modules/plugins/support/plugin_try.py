@@ -1,4 +1,4 @@
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.time.clock import Clock
 from engine.enums.event_form import EventForm
 from engine.query.queries import Queries

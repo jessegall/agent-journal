@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
 from core.modules.messages.commands.record_waiting_message_line.record_waiting_message_line import RecordWaitingMessageLine

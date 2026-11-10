@@ -2,12 +2,12 @@ from dataclasses import replace
 from collections.abc import Sequence
 from typing import TypeVar
 
-from engine.change.changed import Changed, is_changed_class
-from engine.change.created import Created
-from engine.change.deleted import Deleted
-from engine.change.event_type import EventType
-from engine.change.logged_event import LoggedEvent
-from engine.change.updated import Updated
+from engine.event.changed import Changed, is_changed_class
+from engine.event.created import Created
+from engine.event.deleted import Deleted
+from engine.event.event_type import EventType
+from engine.event.logged_event import LoggedEvent
+from engine.event.updated import Updated
 from engine.model.model import Model
 from engine.model.move import Move
 from engine.model.state_book import StateBook

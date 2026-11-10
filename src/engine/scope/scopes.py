@@ -5,9 +5,9 @@ from typing import ContextManager, TypeVar
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.change.change import Change
-from engine.change.event_log import EventLog
-from engine.change.logged_event import LoggedEvent
+from engine.event.change import Change
+from engine.event.event_log import EventLog
+from engine.event.logged_event import LoggedEvent
 from engine.database.actor_table import ActorTable
 from engine.database.database import Database
 from engine.model.agent_scoped import AgentScoped

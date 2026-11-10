@@ -1,8 +1,8 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 from core.modules.skills.listeners.skill_listener import SkillListener
 from core.modules.skills.models.skill_request import SkillRequest
-from engine.change.created import Created
+from engine.event.created import Created
 
 
 class SkillRequestListener(SkillListener[Created[SkillRequest]]):

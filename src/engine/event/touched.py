@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Generic
 
-from engine.change.changed import M
+from engine.event.changed import M
 from engine.model.model import Model
 from engine.model.move import Move
 

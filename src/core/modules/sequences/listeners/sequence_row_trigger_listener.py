@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
 from engine.query.queries import Queries
@@ -11,7 +11,7 @@ from core.modules.sequences.models.support.sequence_trigger import SequenceTrigg
 from core.modules.sequences.support.sequence_events import SequenceEvents
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from engine.change.touched import Touched
+from engine.event.touched import Touched
 from engine.model.model import Model
 
 

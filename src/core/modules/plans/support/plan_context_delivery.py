@@ -1,4 +1,4 @@
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.command.context import Context
 from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries

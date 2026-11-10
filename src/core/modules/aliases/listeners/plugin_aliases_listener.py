@@ -1,8 +1,8 @@
 from dataclasses import replace
 from pathlib import Path
 
-from engine.change.created import Created
-from engine.change.updated import Updated
+from engine.event.created import Created
+from engine.event.updated import Updated
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
 from engine.repository.repository import Repository

@@ -1,5 +1,5 @@
-from engine.change.logged_event import LoggedEvent
-from engine.change.changed import Changed
+from engine.event.logged_event import LoggedEvent
+from engine.event.changed import Changed
 from engine.scope.actor_scope import ActorScope
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_mark_type import ApprovalMarkType

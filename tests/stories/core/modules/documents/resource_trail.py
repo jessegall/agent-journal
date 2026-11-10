@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.query.query import Query
 from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.command.bus import Bus

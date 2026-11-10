@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.change.change import Change
+from engine.event.change import Change
 from engine.command.context import Context
 from engine.container.container import Container
 from engine.guard.change_filter import ChangeFilter

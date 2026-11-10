@@ -4,7 +4,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.change.event_pattern import EventPattern
+from engine.event.event_pattern import EventPattern
 from engine.command.bus import Bus
 from engine.command.errors.missing_handler_error import MissingHandlerError
 from engine.command.errors.transaction_error import TransactionError
@@ -34,7 +34,7 @@ from tests.unit.engine.samples.sample_container import sample_container
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.engine.model.test_lifecycle import ItemLifecycle
 from tests.unit.engine.model.test_model import Item
-from engine.change.created import Created
+from engine.event.created import Created
 
 AGENT = Actor(7, ActorType.AGENT)
 ROUNDS: list[int] = []

@@ -1,8 +1,8 @@
 from collections.abc import Sequence
-from engine.change.change import METADATA
+from engine.event.change import METADATA
 from engine.enums.event_form import EventForm
-from engine.change.event_log import JOURNAL_BOOTING_EVENT, REGISTRY_SYNC_EVENT, UPGRADE_FINISHED_EVENT, UPGRADE_MOVED_EVENT
-from engine.change.event_pattern import EventPattern
+from engine.event.event_log import JOURNAL_BOOTING_EVENT, REGISTRY_SYNC_EVENT, UPGRADE_FINISHED_EVENT, UPGRADE_MOVED_EVENT
+from engine.event.event_pattern import EventPattern
 from engine.model.model import Model
 from engine.model.state_book import StateBook
 from engine.model.tables import Tables

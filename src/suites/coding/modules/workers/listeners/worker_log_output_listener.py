@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from engine.change.updated import Updated
+from engine.event.updated import Updated
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries

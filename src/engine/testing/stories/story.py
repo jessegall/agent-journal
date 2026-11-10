@@ -14,7 +14,7 @@ from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from engine.cli.console import Console
 from engine.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
 from engine.registry.registry import Registry
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.caller.caller_request import CallerRequest
 from engine.caller.process_table import ProcessTable
 from engine.caller.process_row import ProcessRow

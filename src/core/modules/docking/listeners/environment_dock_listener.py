@@ -1,11 +1,11 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
 from engine.scope.actor_scope import ActorScope
 from engine.scope.environment_scope import EnvironmentScope
 from core.modules.docking.commands.make_dock.make_dock import MakeDock
-from engine.change.created import Created
+from engine.event.created import Created
 from core.modules.environments.models.environment import Environment
 
 MODULE_NAME = "journal.core.docking"

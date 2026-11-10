@@ -13,7 +13,7 @@ from engine.viewer.toggle_option import ToggleOption
 from engine.viewer.window_size import WindowSize
 from engine.enums.window_loading import WindowLoading
 from engine.viewer.skeleton_part import SkeletonPart
-from engine.change.moved import Moved
+from engine.event.moved import Moved
 from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task

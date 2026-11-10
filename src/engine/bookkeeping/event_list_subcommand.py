@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
-from engine.change.event_log import EventLog
-from engine.change.logged_event import LoggedEvent
+from engine.event.event_log import EventLog
+from engine.event.logged_event import LoggedEvent
 from engine.caller.caller import Caller
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.row.page import Page

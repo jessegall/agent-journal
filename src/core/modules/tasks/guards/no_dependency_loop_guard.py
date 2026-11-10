@@ -3,7 +3,7 @@ from engine.errors.refusal import Refusal
 from core.modules.tasks.conditions.dependency_chain import DependencyChain
 from core.modules.tasks.models.task_dependency import TaskDependency
 from core.modules.tasks.queries.task_query import TaskQuery
-from engine.change.created import Created
+from engine.event.created import Created
 from engine.command.context import Context
 
 

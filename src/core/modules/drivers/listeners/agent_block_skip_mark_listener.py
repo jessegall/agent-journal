@@ -1,9 +1,9 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.models.enums.required_command_mark_type import RequiredCommandMarkType
 from core.modules.drivers.models.enums.required_command_mark_variant import RequiredCommandMarkVariant
-from engine.change.changed import Changed
+from engine.event.changed import Changed
 
 SKIP_FIELD = "skip_reason"
 

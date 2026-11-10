@@ -4,7 +4,7 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.tasks.support.task_waits import TaskWaits
 from suites.coding.modules.checks.models.check import Check
-from engine.change.updated import Updated
+from engine.event.updated import Updated
 from engine.command.context import Context
 
 

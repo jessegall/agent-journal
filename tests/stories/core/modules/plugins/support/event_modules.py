@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from engine.change.created import Created
-from engine.change.logged_event import LoggedEvent
+from engine.event.created import Created
+from engine.event.logged_event import LoggedEvent
 from engine.command.command import Command
 from engine.command.context import Context
 from engine.command.handler import Handler

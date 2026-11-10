@@ -1,4 +1,4 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.journal.journal_home import JournalHome
 from engine.listener.commit_listener import CommitListener

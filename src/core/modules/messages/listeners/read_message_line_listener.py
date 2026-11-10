@@ -1,10 +1,10 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.listener.commit_listener import CommitListener
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.waiting_message_lines import WaitingMessageLines
 from core.modules.messages.support.message_targets import MessageTargets
-from engine.change.updated import Updated
+from engine.event.updated import Updated
 
 READ_FIELD = "read_at"
 

@@ -1,12 +1,12 @@
 from engine.enums.agent_role import AgentRole
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from core.modules.agents.models.agent import Agent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.sequences.models.enums.sequence_mark_type import SequenceMarkType
 from core.modules.sequences.models.enums.sequence_mark_variant import SequenceMarkVariant
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
-from engine.change.created import Created
+from engine.event.created import Created
 
 
 class SequenceStartedMarkListener(MarkListener[Created[SequenceRun]]):

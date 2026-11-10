@@ -2,10 +2,10 @@ from datetime import datetime, timezone
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.change.change import Change
-from engine.change.created import Created
-from engine.change.deleted import Deleted
-from engine.change.moved import Moved
+from engine.event.change import Change
+from engine.event.created import Created
+from engine.event.deleted import Deleted
+from engine.event.moved import Moved
 from engine.command.context import Context
 from engine.time.timestamp import Timestamp
 from engine.row.metadata import Metadata

@@ -5,8 +5,8 @@ from core.modules.settings.models.setting import Setting
 from core.modules.voices.support.voice_lines import VoiceLines
 from core.modules.voices.support.voice_nudges import VOICE_CHANGED
 from core.modules.voices.support.voices_settings import VOICE_KEYS
-from engine.change.changed import Changed
-from engine.change.deleted import Deleted
+from engine.event.changed import Changed
+from engine.event.deleted import Deleted
 from engine.command.context import Context
 
 

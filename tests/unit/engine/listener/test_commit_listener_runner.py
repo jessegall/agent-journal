@@ -4,9 +4,9 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.change.event_log import EventLog, PAGE_SIZE_EVENTS
-from engine.change.event_pattern import EventPattern
-from engine.change.logged_event import LoggedEvent
+from engine.event.event_log import EventLog, PAGE_SIZE_EVENTS
+from engine.event.event_pattern import EventPattern
+from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.command.delete_command import DeleteCommand
 from engine.command.edit_command import EditCommand
@@ -30,8 +30,8 @@ from tests.unit.engine.samples.sample_container import sample_container
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.engine.model.test_lifecycle import ItemLifecycle
 from tests.unit.engine.model.test_model import Item
-from engine.change.created import Created
-from engine.change.moved import Moved
+from engine.event.created import Created
+from engine.event.moved import Moved
 
 AGENT = Actor(7, ActorType.AGENT)
 HANDLED: list[str] = []

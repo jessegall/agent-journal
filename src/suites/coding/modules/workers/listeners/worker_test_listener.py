@@ -2,10 +2,10 @@ from engine.enums.command_category import CommandCategory
 from suites.coding.modules.workers.commands.record_own_test_failure.record_own_test_failure import RecordOwnTestFailure
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from engine.actor.actor import Actor
-from engine.change.logged_event import LoggedEvent
-from engine.change.created import Created
-from engine.change.moved import Moved
-from engine.change.updated import Updated
+from engine.event.logged_event import LoggedEvent
+from engine.event.created import Created
+from engine.event.moved import Moved
+from engine.event.updated import Updated
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
 from engine.listener.event_rows import EventRows

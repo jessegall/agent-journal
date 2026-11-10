@@ -1,4 +1,4 @@
-from engine.change.changed import Changed
+from engine.event.changed import Changed
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope

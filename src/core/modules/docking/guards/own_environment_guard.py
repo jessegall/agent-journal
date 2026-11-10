@@ -3,7 +3,7 @@ from engine.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
-from engine.change.changed import Changed
+from engine.event.changed import Changed
 from engine.command.context import Context
 
 

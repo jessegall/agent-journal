@@ -9,8 +9,8 @@ from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_task_wait_targets import WorkerTaskWaitTargets
-from engine.change.changed import Changed
-from engine.change.updated import Updated
+from engine.event.changed import Changed
+from engine.event.updated import Updated
 
 
 class WorkerTaskWaitListener(SaveListener[AgentEnded | Updated[Agent] | Changed[Worktree] | Changed[Proof]]):

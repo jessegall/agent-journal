@@ -1,6 +1,6 @@
-from engine.change.changed import Changed
-from engine.change.deleted import Deleted
-from engine.change.logged_event import LoggedEvent
+from engine.event.changed import Changed
+from engine.event.deleted import Deleted
+from engine.event.logged_event import LoggedEvent
 from core.modules.processes.listeners.process_mark_listener import MODULE_NAME, ProcessMarkListener
 from core.modules.processes.models.process import Process
 

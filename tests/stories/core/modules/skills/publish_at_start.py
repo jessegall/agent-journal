@@ -1,4 +1,4 @@
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from server.work.booting_work import BootingWork
 from tests.stories.core.modules.plugins.hooks import installed_story
 from tests.stories.core.support.coding_fixtures import BuilderStarted

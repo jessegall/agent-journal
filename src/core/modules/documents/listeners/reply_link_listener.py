@@ -1,8 +1,8 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 
-from engine.change.logged_event import LoggedEvent
-from engine.change.created import Created
+from engine.event.logged_event import LoggedEvent
+from engine.event.created import Created
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
 from engine.query.queries import Queries

@@ -1,4 +1,4 @@
-from engine.change.event_log import EventLog, JOURNAL_BOOTING_EVENT
+from engine.event.event_log import EventLog, JOURNAL_BOOTING_EVENT
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 

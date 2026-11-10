@@ -1,10 +1,10 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.waits.models.enums.wait_mark_type import WaitMarkType
 from core.modules.waits.models.enums.wait_mark_variant import WaitMarkVariant
 from core.modules.waits.models.enums.wait_type import WaitType
 from core.modules.waits.models.wait import Wait
-from engine.change.created import Created
+from engine.event.created import Created
 
 
 class ReportedWaitMarkListener(MarkListener[Created[Wait]]):

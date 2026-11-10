@@ -5,7 +5,7 @@ from datetime import timedelta
 import pytest
 
 from engine.caller.caller_request import CallerRequest
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from engine.scope.scopes import Scopes

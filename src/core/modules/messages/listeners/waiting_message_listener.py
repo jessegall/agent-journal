@@ -1,11 +1,11 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
 from core.modules.messages.commands.record_waiting_message_line.record_waiting_message_line import RecordWaitingMessageLine
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
-from engine.change.created import Created
+from engine.event.created import Created
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_targets import MessageTargets
 

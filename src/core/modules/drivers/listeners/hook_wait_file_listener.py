@@ -1,11 +1,11 @@
 from engine.file.file_access import FileAccess
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.journal.journal_home import JournalHome
 from engine.listener.commit_listener import CommitListener
 from core.modules.drivers.support.driver_settings import HOOK_WAIT_SECONDS
 from core.modules.settings.models.setting import Setting
-from engine.change.changed import Changed
-from engine.change.deleted import Deleted
+from engine.event.changed import Changed
+from engine.event.deleted import Deleted
 
 
 class HookWaitFileListener(CommitListener[Changed[Setting]]):

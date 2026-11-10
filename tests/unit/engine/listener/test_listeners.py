@@ -6,8 +6,8 @@ import pytest
 from tests.unit.engine.samples.scope_samples import empty_database_scopes
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.change.change import Change
-from engine.change.event_pattern import EventPattern
+from engine.event.change import Change
+from engine.event.event_pattern import EventPattern
 from engine.command.context import Context
 from engine.container.container import Container
 from engine.guard.change_filter import ChangeFilter
@@ -22,9 +22,9 @@ from engine.registry.registry import Registry
 from engine.time.timestamp import Timestamp
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.engine.model.test_model import Item
-from engine.change.changed import Changed
-from engine.change.created import Created
-from engine.change.deleted import Deleted
+from engine.event.changed import Changed
+from engine.event.created import Created
+from engine.event.deleted import Deleted
 
 HANDLED: list[str] = []
 

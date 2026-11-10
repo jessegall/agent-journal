@@ -1,6 +1,6 @@
 from engine.file.file_access import FileAccess
 from engine.enums.agent_role import AgentRole
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.enums.mark_outcome import MarkOutcome
 from engine.command.bus import Bus
 from engine.journal.journal_home import JournalHome
@@ -17,7 +17,7 @@ from core.modules.drivers.models.enums.bypass_mark_type import BypassMarkType
 from core.modules.drivers.models.enums.bypass_mark_variant import BypassMarkVariant
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.support.driver_settings import MODULE_KEY
-from engine.change.changed import Changed
+from engine.event.changed import Changed
 
 
 

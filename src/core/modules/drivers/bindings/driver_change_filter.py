@@ -1,5 +1,5 @@
 from engine.enums.actor_type import ActorType
-from engine.change.change import Change
+from engine.event.change import Change
 from engine.guard.change_filter import ChangeFilter
 from engine.model.model import Model
 from engine.listener.event_rows import EventRows

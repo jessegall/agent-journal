@@ -1,9 +1,9 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.messages.models.enums.message_mark_type import MessageMarkType
 from core.modules.messages.models.enums.message_mark_variant import MessageMarkVariant
 from core.modules.messages.models.message import Message
-from engine.change.updated import Updated
+from engine.event.updated import Updated
 
 EDIT_COMMAND = f"Edit{Message.__name__}"
 

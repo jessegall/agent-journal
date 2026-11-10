@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.database.database import Database
 from core.modules.tasks.models.task import Task
 from engine.query.queries import Queries

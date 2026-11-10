@@ -4,7 +4,7 @@ from engine.listener.save_listener import SaveListener
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_brief_blocks import TaskBriefBlocks
-from engine.change.changed import Changed
+from engine.event.changed import Changed
 from engine.command.context import Context
 
 

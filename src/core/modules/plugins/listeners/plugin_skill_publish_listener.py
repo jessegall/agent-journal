@@ -1,9 +1,9 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.listener.commit_listener import CommitListener
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
-from engine.change.journal_booting import JournalBooting
+from engine.event.journal_booting import JournalBooting
 
 
 class PluginSkillPublishListener(CommitListener[JournalBooting]):

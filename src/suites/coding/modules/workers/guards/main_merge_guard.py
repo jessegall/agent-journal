@@ -1,4 +1,4 @@
-from engine.change.moved import Moved
+from engine.event.moved import Moved
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal

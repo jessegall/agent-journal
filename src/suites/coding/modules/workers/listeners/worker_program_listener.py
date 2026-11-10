@@ -1,4 +1,4 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.listener.commit_listener import CommitListener
 from engine.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
@@ -8,7 +8,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from core.modules.agents.support.agent_launcher import AgentLauncher
-from engine.change.moved import Moved
+from engine.event.moved import Moved
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 
 

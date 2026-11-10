@@ -4,8 +4,8 @@ from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_tuple
 from engine.private.secret_values import SecretValues
 from engine.private.server_keys import ServerKeys
-from engine.change.changed import Changed
-from engine.change.deleted import Deleted
+from engine.event.changed import Changed
+from engine.event.deleted import Deleted
 from engine.command.context import Context
 
 SHORTEST_GUARDED_CHARACTERS = 6

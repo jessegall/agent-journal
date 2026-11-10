@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from engine.enums.actor_type import ActorType
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.database.kept_rows import KeptRows
 from engine.model.model import Model
 from engine.model.tables import Tables

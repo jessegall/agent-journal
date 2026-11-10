@@ -1,5 +1,5 @@
-from engine.change.changed import Changed
-from engine.change.logged_event import LoggedEvent
+from engine.event.changed import Changed
+from engine.event.logged_event import LoggedEvent
 from engine.enums.helper_role import HelperRole
 from engine.listener.commit_listener import CommitListener
 from engine.query.conditions.greater import Greater

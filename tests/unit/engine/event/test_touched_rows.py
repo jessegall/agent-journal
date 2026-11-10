@@ -1,5 +1,5 @@
-from engine.change.logged_event import LoggedEvent
-from engine.change.touched_rows import TouchedRows
+from engine.event.logged_event import LoggedEvent
+from engine.event.touched_rows import TouchedRows
 from engine.time.timestamp import Timestamp
 
 

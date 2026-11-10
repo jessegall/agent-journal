@@ -1,9 +1,9 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.suggestions.models.enums.suggestion_mark_type import SuggestionMarkType
 from core.modules.suggestions.models.enums.suggestion_mark_variant import SuggestionMarkVariant
 from core.modules.suggestions.models.suggestion import Suggestion
-from engine.change.created import Created
+from engine.event.created import Created
 
 
 class SuggestionMarkListener(MarkListener[Created[Suggestion]]):

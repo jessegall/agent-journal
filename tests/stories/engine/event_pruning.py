@@ -3,7 +3,7 @@ from datetime import timedelta
 import pytest
 
 from engine.actor.actor import Actor
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.database.statement import Statement

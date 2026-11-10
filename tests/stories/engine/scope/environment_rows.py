@@ -3,7 +3,7 @@ from dataclasses import fields
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.model.view_model import ViewModel

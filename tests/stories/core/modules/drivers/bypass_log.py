@@ -1,6 +1,6 @@
 import pytest
 
-from engine.change.deleted import Deleted
+from engine.event.deleted import Deleted
 from core.modules.drivers.support.driver_settings import HOOK_WAIT_SECONDS
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.setting_rows import SettingRows

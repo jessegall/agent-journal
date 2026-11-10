@@ -1,5 +1,5 @@
-from engine.change.created import Created
-from engine.change.logged_event import LoggedEvent
+from engine.event.created import Created
+from engine.event.logged_event import LoggedEvent
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.chat.listeners.mark_listener import MarkListener

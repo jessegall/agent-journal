@@ -1,4 +1,4 @@
-from engine.change.change import Change
+from engine.event.change import Change
 from engine.container.container import Container
 from engine.guard.change_filter import ChangeFilter
 from engine.listener.deletion_listener import is_deletion_listener_class

@@ -1,5 +1,5 @@
-from engine.change.event_log import EventLog
-from engine.change.logged_event import LoggedEvent
+from engine.event.event_log import EventLog
+from engine.event.logged_event import LoggedEvent
 from engine.listener.commit_listener import CommitListener
 from engine.listener.commit_listener_runner import PROGRAM_STOP_RUN_ORDER
 from engine.scope.actor_scope import ActorScope

@@ -1,10 +1,10 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.types.type_guards import is_mapping
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.chat.models.enums.chat_mark_type import ChatMarkType
 from core.modules.chat.models.enums.upgrade_mark_variant import UpgradeMarkVariant
 from core.modules.environments.models.environment import Environment
-from engine.change.upgrade_finished import UpgradeFinished
+from engine.event.upgrade_finished import UpgradeFinished
 
 SHOWN = ("tasks", "plans", "messages", "memories")
 

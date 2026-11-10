@@ -1,6 +1,6 @@
 from engine.enums.agent_role import AgentRole
-from engine.change.logged_event import LoggedEvent
-from engine.change.updated import Updated
+from engine.event.logged_event import LoggedEvent
+from engine.event.updated import Updated
 from core.modules.agents.models.agent import Agent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run_handler import ABANDONED, FINISHED

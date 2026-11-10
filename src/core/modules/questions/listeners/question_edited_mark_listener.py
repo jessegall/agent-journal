@@ -1,5 +1,5 @@
 from core.modules.questions.listeners.question_mark_listener import QuestionMarkListener
-from engine.change.updated import Updated
+from engine.event.updated import Updated
 from core.modules.questions.models.question import Question
 
 

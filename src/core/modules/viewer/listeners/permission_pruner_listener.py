@@ -1,9 +1,9 @@
 from engine.actor.actor import Actor
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
 from core.modules.viewer.commands.prune_window_permissions.prune_window_permissions import PruneWindowPermissions
-from engine.change.registry_synced import RegistrySynced
+from engine.event.registry_synced import RegistrySynced
 
 
 class PermissionPrunerListener(CommitListener[RegistrySynced]):

@@ -9,8 +9,8 @@ from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.tasks.support.task_waits import TaskWaits
-from engine.change.changed import Changed
-from engine.change.deleted import Deleted
+from engine.event.changed import Changed
+from engine.event.deleted import Deleted
 from engine.command.context import Context
 
 

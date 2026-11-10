@@ -3,7 +3,7 @@ from engine.errors.refusal import Refusal
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.queries.message_query import MessageQuery
-from engine.change.created import Created
+from engine.event.created import Created
 from engine.command.context import Context
 
 

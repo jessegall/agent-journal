@@ -1,6 +1,6 @@
 from engine.scope.actor_scope import ActorScope
 from core.modules.waits.support.wait_nudges import WAIT_ENDED
-from engine.change.moved import Moved
+from engine.event.moved import Moved
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
 from core.modules.waits.models.lifecycles.wait_lifecycle import WaitLifecycle

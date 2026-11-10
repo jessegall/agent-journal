@@ -1,11 +1,11 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from core.modules.memories.listeners.memory_mark_listener import MemoryMarkListener
 from core.modules.memories.models.enums.delivery_cause import DeliveryCause
 from core.modules.memories.models.enums.memory_mark_type import MemoryMarkType
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
 from core.modules.memories.models.memory import Memory
 from core.modules.memories.models.memory_delivery import MemoryDelivery
-from engine.change.created import Created
+from engine.event.created import Created
 
 REMINDING_CAUSES = [DeliveryCause.KEYWORD]
 

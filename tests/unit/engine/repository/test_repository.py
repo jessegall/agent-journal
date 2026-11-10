@@ -2,8 +2,8 @@ from dataclasses import replace
 
 import pytest
 
-from engine.change.event_log import EventLog
-from engine.change.event_pattern import EventPattern
+from engine.event.event_log import EventLog
+from engine.event.event_pattern import EventPattern
 from engine.container.container import Container
 from engine.database.database import Database
 from engine.database.statement import Statement
@@ -25,9 +25,9 @@ from tests.unit.engine.samples.sample_container import context, empty_registry, 
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.engine.model.test_lifecycle import ItemLifecycle
 from tests.unit.engine.model.test_model import Item
-from engine.change.updated import Updated
+from engine.event.updated import Updated
 from engine.command.context import Context
-from engine.change.changed import Changed
+from engine.event.changed import Changed
 
 EVENT_COUNTS: list[str] = []
 

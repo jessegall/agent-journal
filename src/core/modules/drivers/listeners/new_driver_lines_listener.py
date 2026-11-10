@@ -4,7 +4,7 @@ from core.modules.drivers.support.driver_settings import DRIVER_SETTINGS, SUITE_
 from engine.driver.nudger import Nudger
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.models.setting import Setting
-from engine.change.changed import Changed
+from engine.event.changed import Changed
 from engine.command.context import Context
 from core.modules.agents.support.agent_rows import AgentRows
 

@@ -3,7 +3,7 @@ import shlex
 
 from engine.enums.agent_role import AgentRole
 from engine.caller.caller import Caller
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.cli.console import Console
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
@@ -23,7 +23,7 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
 from core.modules.skills.commands.request_skill.request_skill import RequestSkill
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
-from engine.change.created import Created
+from engine.event.created import Created
 
 TONES = {tone.value: tone for tone in PluginCardTone}
 

@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
 from core.modules.plans.models.enums.plan_state import PlanState
@@ -11,7 +11,7 @@ from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners
 from core.modules.tasks.models.support.task_priority import URGENT_PRIORITY
-from engine.change.moved import Moved
+from engine.event.moved import Moved
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 

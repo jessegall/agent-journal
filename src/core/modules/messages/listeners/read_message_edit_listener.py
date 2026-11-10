@@ -1,12 +1,12 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line import RecordMessageUpdatedLine
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
-from engine.change.updated import Updated
+from engine.event.updated import Updated
 
 TEXT_FIELD = "text"
 

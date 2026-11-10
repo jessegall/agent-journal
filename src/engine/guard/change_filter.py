@@ -1,4 +1,4 @@
-from engine.change.change import Change
+from engine.event.change import Change
 from engine.model.model import Model
 
 

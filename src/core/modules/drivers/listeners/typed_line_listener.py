@@ -1,8 +1,8 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.listener.commit_listener import CommitListener
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.waiting_line_typing import IDLE_MESSAGE_SOURCE, PAUSE_SOURCE, RESUME_SOURCE, TERMINAL_SOURCES, WaitingLineTyping
-from engine.change.created import Created
+from engine.event.created import Created
 
 __all__ = ["IDLE_MESSAGE_SOURCE", "PAUSE_SOURCE", "RESUME_SOURCE", "TERMINAL_SOURCES", "TypedLineListener"]
 

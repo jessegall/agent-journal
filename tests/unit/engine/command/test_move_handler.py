@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import pytest
 
 from engine.actor.actor import Actor
-from engine.change.event_pattern import EventPattern
+from engine.event.event_pattern import EventPattern
 from engine.command.handlers.move_handler import MoveHandler
 from engine.command.move_command import MoveCommand
 from engine.guard.lifecycle_guard import LifecycleGuard

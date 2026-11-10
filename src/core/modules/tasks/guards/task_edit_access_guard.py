@@ -1,6 +1,6 @@
 from engine.enums.access import Access
 from engine.enums.actor_type import ActorType
-from engine.change.updated import Updated
+from engine.event.updated import Updated
 from engine.command.context import Context
 from engine.command.edit_command import is_edit_command
 from engine.guard.guard import Guard

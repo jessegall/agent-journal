@@ -1,4 +1,4 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.listener.commit_listener import CommitListener
 from engine.provider.managed_hooks import ManagedHooks
 from core.modules.drivers.events.session_started import SessionStarted

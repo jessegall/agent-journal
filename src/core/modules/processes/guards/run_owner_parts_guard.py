@@ -4,7 +4,7 @@ from engine.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
-from engine.change.changed import Changed
+from engine.event.changed import Changed
 from engine.command.context import Context
 
 

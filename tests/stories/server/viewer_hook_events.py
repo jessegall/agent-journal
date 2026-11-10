@@ -1,6 +1,6 @@
 import pytest
 
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.database.database import Database
 from engine.registry.registry import Registry
 from engine.testing.examples.hook_samples import HookSamples

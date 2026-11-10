@@ -1,5 +1,5 @@
-from engine.change.deleted import Deleted
-from engine.change.logged_event import LoggedEvent
+from engine.event.deleted import Deleted
+from engine.event.logged_event import LoggedEvent
 from engine.journal.journal_home import JournalHome
 from engine.listener.commit_listener import CommitListener
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound

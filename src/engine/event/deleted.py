@@ -1,15 +1,15 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from engine.change.changed import Changed, M
+from engine.event.changed import Changed, M
 from engine.model.model import Model
 from engine.model.move import Move
 
 
 @dataclass(frozen=True)
-class Created(Changed[M]):
-    """A new row."""
+class Deleted(Changed[M]):
+    """A row that is being deleted, as it last stood."""
 
     @classmethod
     def pattern(cls, model: type[Model], moves: Sequence[Move]) -> str:
-        return f"{model.model_name}.create"
+        return f"{model.model_name}.delete"

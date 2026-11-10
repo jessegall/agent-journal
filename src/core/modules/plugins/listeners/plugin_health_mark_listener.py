@@ -1,10 +1,10 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.scope.actor_scope import ActorScope
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.plugins.models.enums.plugin_mark_type import PluginMarkType
 from core.modules.plugins.models.enums.plugin_mark_variant import PluginMarkVariant
 from core.modules.plugins.models.plugin import Plugin
-from engine.change.updated import Updated
+from engine.event.updated import Updated
 
 
 class PluginHealthMarkListener(MarkListener[Updated[Plugin]]):

@@ -7,8 +7,8 @@ from typing import TextIO
 from engine.caller.caller_request import CallerRequest
 from engine.caller.caller_resolver import CallerResolver
 from engine.caller.caller import Caller
-from engine.change.event_log import EventLog
-from engine.change.touched_rows import TouchedRows
+from engine.event.event_log import EventLog
+from engine.event.touched_rows import TouchedRows
 from engine.subcommand.output import Output
 from engine.subcommand.overview_command import OverviewCommand
 from engine.subcommand.overview_reads import OverviewReads

@@ -13,11 +13,11 @@ from engine.module.model_declaration import ModelDeclaration
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
-from engine.change.moved import Moved
+from engine.event.moved import Moved
 from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
-from engine.change.deleted import Deleted
+from engine.event.deleted import Deleted
 
 
 class SignoffState(StrEnum):

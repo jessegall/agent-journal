@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.enums.mark_outcome import MarkOutcome
 from engine.command.bus import Bus
 from engine.module.module_actors import ModuleActors
@@ -15,7 +15,7 @@ from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMa
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.support.worker_stop_detail import WorkerStopDetail
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
-from engine.change.event_subscriber import E
+from engine.event.event_subscriber import E
 
 
 class WorkerStopMarkListener(MarkListener[E]):

@@ -5,8 +5,8 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.change.change import Change
-from engine.change.event_pattern import EventPattern
+from engine.event.change import Change
+from engine.event.event_pattern import EventPattern
 from engine.command.context import Context
 from engine.container.container import Container
 from engine.guard.change_filter import ChangeFilter
@@ -22,8 +22,8 @@ from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.engine.model.test_model import Item
-from engine.change.changed import Changed
-from engine.change.created import Created
+from engine.event.changed import Changed
+from engine.event.created import Created
 
 GUARD_CALLS: list[str] = []
 

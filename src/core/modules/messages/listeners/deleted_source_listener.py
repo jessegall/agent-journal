@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from engine.change.deleted import Deleted
+from engine.event.deleted import Deleted
 from engine.command.context import Context
 from engine.listener.deletion_listener import DeletionListener
 from engine.model.model import Model

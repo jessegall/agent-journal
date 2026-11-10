@@ -2,8 +2,8 @@ import json
 import subprocess
 from dataclasses import asdict
 
-from engine.change.created import Created
-from engine.change.updated import Updated
+from engine.event.created import Created
+from engine.event.updated import Updated
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.journal.journal_home import JournalHome

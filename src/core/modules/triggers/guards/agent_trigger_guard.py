@@ -2,8 +2,8 @@ from engine.guard.guard import Guard
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.triggers.models.trigger import Trigger
 from core.modules.triggers.support.trigger_approval import TriggerApproval
-from engine.change.changed import Changed
-from engine.change.deleted import Deleted
+from engine.event.changed import Changed
+from engine.event.deleted import Deleted
 from engine.command.context import Context
 
 ACTING_FIELDS = ("phrases", "action", "text", "conditions", "extra_actions", "watch_places", "match_mode", "interval_minutes", "cron_line")

@@ -2,9 +2,9 @@ from collections.abc import Sequence
 from typing import cast
 
 from engine.enums.actor_type import ActorType
-from engine.change.change import Change
-from engine.change.changed import Changed
-from engine.change.event_log import EventLog
+from engine.event.change import Change
+from engine.event.changed import Changed
+from engine.event.event_log import EventLog
 from engine.cli.caller_stream import CallerStream
 from engine.command.bus import Bus
 from engine.command.context import Context

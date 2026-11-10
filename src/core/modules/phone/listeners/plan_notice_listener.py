@@ -1,5 +1,5 @@
 from core.modules.phone.listeners.phone_notice_listener import PhoneNoticeListener
-from engine.change.moved import Moved
+from engine.event.moved import Moved
 from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 from core.modules.plans.models.plan import Plan
 

@@ -1,7 +1,7 @@
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from suites.coding.modules.checks.support.check_run_record import CheckRunRecord
 
 CHECK_RUN_FIELD = "last_run_at"

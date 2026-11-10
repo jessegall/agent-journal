@@ -15,8 +15,8 @@ from core.modules.processes.models.process_part import ProcessPart
 from engine.setting.setting_values import SettingValues
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from suites.coding.modules.workers.support.test_limit_nudges import TEST_LIMIT_STOP, WORKER_TEST_LIMIT_SOURCE
-from engine.change.changed import Changed
-from engine.change.deleted import Deleted
+from engine.event.changed import Changed
+from engine.event.deleted import Deleted
 from engine.command.context import Context
 
 

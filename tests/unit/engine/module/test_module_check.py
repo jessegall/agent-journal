@@ -35,7 +35,7 @@ from engine.enums.event_form import EventForm
 from engine.registry.event_key_entry import EventKeyEntry
 from tests.unit.engine.model.test_lifecycle import ItemState
 from tests.unit.engine.model.test_model import Item
-from engine.change.moved import Moved
+from engine.event.moved import Moved
 from engine.command.context import Context
 from tests.unit.engine.model.test_lifecycle import ItemLifecycle
 

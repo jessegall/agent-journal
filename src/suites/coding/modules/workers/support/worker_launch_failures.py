@@ -1,4 +1,4 @@
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.model.tables import Tables
 from engine.provider.providers import Providers
 from engine.time.timestamp import Timestamp

@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.change.event_log import REGISTRY_SYNC_EVENT
-from engine.change.system_event import SystemEvent
+from engine.event.event_log import REGISTRY_SYNC_EVENT
+from engine.event.system_event import SystemEvent
 
 
 @dataclass(frozen=True)

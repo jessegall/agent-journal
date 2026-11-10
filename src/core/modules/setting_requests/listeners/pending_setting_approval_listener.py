@@ -1,5 +1,5 @@
-from engine.change.logged_event import LoggedEvent
-from engine.change.registry_synced import RegistrySynced
+from engine.event.logged_event import LoggedEvent
+from engine.event.registry_synced import RegistrySynced
 from engine.command.bus import Bus
 from engine.command.request_user_approval import RequestUserApproval
 from engine.listener.commit_listener import CommitListener

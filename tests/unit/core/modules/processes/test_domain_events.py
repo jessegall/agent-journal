@@ -1,4 +1,4 @@
-from engine.change.event_type import EventType
+from engine.event.event_type import EventType
 from core.modules.processes.events.output_ended import OutputEnded
 from core.modules.processes.events.process_ended import ProcessEnded
 

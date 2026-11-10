@@ -1,4 +1,4 @@
-from engine.change.created import Created
+from engine.event.created import Created
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.enums.hook_event_name import HookEventName

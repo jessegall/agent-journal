@@ -1,5 +1,5 @@
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
-from engine.change.moved import Moved
+from engine.event.moved import Moved
 from engine.listener.save_listener import SaveListener
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.run_slots import RunSlots

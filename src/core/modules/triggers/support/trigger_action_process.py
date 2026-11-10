@@ -1,5 +1,5 @@
 import subprocess
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries

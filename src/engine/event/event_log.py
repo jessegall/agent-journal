@@ -3,8 +3,8 @@ from collections.abc import Sequence
 from pathlib import Path
 from dataclasses import fields
 
-from engine.change.change import BOOKKEEPING_FIELDS, Change
-from engine.change.logged_event import CREATION, LoggedEvent
+from engine.event.change import BOOKKEEPING_FIELDS, Change
+from engine.event.logged_event import CREATION, LoggedEvent
 from engine.database.bookkeeping_table import BookkeepingTable
 from engine.database.database import Database
 from engine.command.context import Context

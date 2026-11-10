@@ -1,5 +1,5 @@
-from engine.change.logged_event import LoggedEvent
-from engine.change.event_log import EventLog
+from engine.event.logged_event import LoggedEvent
+from engine.event.event_log import EventLog
 from engine.command.bus import Bus
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries

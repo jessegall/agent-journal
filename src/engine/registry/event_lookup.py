@@ -1,4 +1,4 @@
-from engine.change.event_pattern import ALTERNATIVE, ANY
+from engine.event.event_pattern import ALTERNATIVE, ANY
 from engine.registry.guard_entry import GuardEntry
 from engine.registry.listener_entry import ListenerEntry
 from engine.enums.listener_timing import ListenerTiming

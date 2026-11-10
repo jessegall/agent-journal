@@ -1,6 +1,6 @@
 import pytest
 
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.provider.managed_hooks import ManagedHooks
 from engine.enums.managed_state import ManagedState
 from engine.provider.program_hooks import ProgramHooks

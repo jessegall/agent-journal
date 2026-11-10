@@ -1,4 +1,4 @@
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.database.actor_table import ActorTable
 from engine.model.model import Model
 from engine.model.tables import Tables

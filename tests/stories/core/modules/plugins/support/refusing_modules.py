@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from engine.command.bus import Bus
 from engine.command.command import Command
 from engine.command.context import Context
-from engine.change.created import Created
+from engine.event.created import Created
 from engine.command.handler import Handler
 from engine.guard.guard import Guard
 from engine.module.module import Module

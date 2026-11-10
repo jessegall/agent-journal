@@ -1,7 +1,7 @@
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 
 CREATED, UPDATED, DELETED = "created", "updated", "deleted"
 ACTION_LABELS = {"create": CREATED, "delete": DELETED}

@@ -1,7 +1,7 @@
 import json
 from types import MappingProxyType
 
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.time.timestamp import Timestamp
 from server.viewer.event_stream import EventStream
 

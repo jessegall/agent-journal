@@ -1,7 +1,7 @@
 from engine.guard.guard import Guard
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.merge_checks import MergeChecks
-from engine.change.moved import Moved
+from engine.event.moved import Moved
 from engine.command.context import Context
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 

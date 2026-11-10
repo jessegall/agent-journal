@@ -5,15 +5,15 @@ from types import MappingProxyType
 import pytest
 
 from engine.actor.actor import Actor
-from engine.change.change import Change
-from engine.change.changed import Changed
-from engine.change.created import Created
-from engine.change.deleted import Deleted
-from engine.change.event_type import EventType
-from engine.change.journal_booting import JournalBooting
-from engine.change.logged_event import LoggedEvent
-from engine.change.moved import Moved
-from engine.change.touched import Touched
+from engine.event.change import Change
+from engine.event.changed import Changed
+from engine.event.created import Created
+from engine.event.deleted import Deleted
+from engine.event.event_type import EventType
+from engine.event.journal_booting import JournalBooting
+from engine.event.logged_event import LoggedEvent
+from engine.event.moved import Moved
+from engine.event.touched import Touched
 from engine.listener.event_builder import EventBuilder
 from engine.listener.commit_listener import CommitListener
 from engine.command.context import Context
@@ -26,7 +26,7 @@ from engine.time.timestamp import Timestamp
 from tests.unit.engine.model.test_model import Item
 from tests.unit.engine.model.test_lifecycle import ItemState
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.engine.change.test_event_log import log
+from tests.unit.engine.event.test_event_log import log
 
 STAMP = Timestamp.parsed("2026-11-01T09:00:00+00:00")
 

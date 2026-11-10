@@ -1,11 +1,11 @@
 from engine.actor.actor import Actor
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
 from engine.query.queries import Queries
 from suites.coding.modules.checks.commands.record_check_progress.record_check_progress import RecordCheckProgress
 from suites.coding.modules.checks.models.check import Check
-from engine.change.journal_booting import JournalBooting
+from engine.event.journal_booting import JournalBooting
 
 
 class EndedCheckRunsListener(CommitListener[JournalBooting]):

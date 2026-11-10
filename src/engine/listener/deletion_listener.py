@@ -1,7 +1,7 @@
 from typing import ClassVar, TypeIs
 from collections.abc import Sequence
 
-from engine.change.event_subscriber import E, EventSubscriber
+from engine.event.event_subscriber import E, EventSubscriber
 from engine.command.context import Context
 
 

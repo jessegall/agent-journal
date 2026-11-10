@@ -1,6 +1,6 @@
 import pytest
 
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.database.database import Database
 from engine.database.listener_cursor_table import ListenerCursorTable
 from engine.database.statement import Statement

@@ -13,7 +13,7 @@ from core.modules.messages.models.message import Message
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_COMMENT, WORKER_COMMENT_COPY
-from engine.change.created import Created
+from engine.event.created import Created
 from engine.command.context import Context
 
 SOURCE = "workers.delegated-task-comment"

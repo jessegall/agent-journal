@@ -5,7 +5,7 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reader_request import ReaderRequest
-from engine.change.deleted import Deleted
+from engine.event.deleted import Deleted
 from engine.command.context import Context
 
 

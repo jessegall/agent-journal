@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.enums.tool_type import ToolType

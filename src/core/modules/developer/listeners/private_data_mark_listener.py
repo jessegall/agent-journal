@@ -1,5 +1,5 @@
-from engine.change.created import Created
-from engine.change.logged_event import LoggedEvent
+from engine.event.created import Created
+from engine.event.logged_event import LoggedEvent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.chat.models.enums.chat_mark_type import ChatMarkType
 from core.modules.chat.models.enums.private_data_mark_variant import PrivateDataMarkVariant

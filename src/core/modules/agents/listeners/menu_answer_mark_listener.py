@@ -1,13 +1,13 @@
 from engine.module.helper_type_check import AGENTS_MODULE
 from engine.enums.mark_outcome import MarkOutcome
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.enums.agent_mark_type import AgentMarkType
 from core.modules.agents.models.enums.agent_mark_variant import AgentMarkVariant
 from core.modules.agents.models.menu_answer import MenuAnswer
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.chat.listeners.mark_listener import MarkListener
-from engine.change.created import Created
+from engine.event.created import Created
 
 
 

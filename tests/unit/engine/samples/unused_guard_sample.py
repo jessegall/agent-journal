@@ -1,6 +1,6 @@
 from engine.guard.guard import Guard
 from engine.model.model import Model
-from engine.change.updated import Updated
+from engine.event.updated import Updated
 from engine.command.context import Context
 from tests.unit.engine.database.test_table_statements import Shelf
 

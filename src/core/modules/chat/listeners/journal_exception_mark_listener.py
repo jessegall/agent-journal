@@ -1,4 +1,4 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.time.clock import Clock
 from engine.log.exception_sink import CLOCK_TICK_SOURCE
 from engine.command.bus import Bus
@@ -12,7 +12,7 @@ from core.modules.chat.models.enums.chat_mark_variant import ChatMarkVariant
 from core.modules.chat.models.journal_exception import JournalException
 from core.modules.chat.support.chat_settings import EXCEPTION_MARK_SECONDS
 from engine.setting.setting_values import SettingValues
-from engine.change.created import Created
+from engine.event.created import Created
 
 LISTENER_SOURCE = "listener"
 

@@ -2,8 +2,8 @@ from collections.abc import Sequence
 from functools import cache
 from typing import ClassVar, Generic, TypeVar
 
-from engine.change.event_pattern import EventPattern
-from engine.change.event_type import EventType
+from engine.event.event_pattern import EventPattern
+from engine.event.event_type import EventType
 from engine.model.move import Move
 
 E = TypeVar("E", contravariant=True, default=object)

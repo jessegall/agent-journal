@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from engine.change.changed import Changed, M
-from engine.change.errors.missing_row_error import MissingRowError
+from engine.event.changed import Changed, M
+from engine.event.errors.missing_row_error import MissingRowError
 from engine.model.model import Model
 from engine.model.move import Move
 

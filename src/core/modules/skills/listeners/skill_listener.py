@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.command.command import Command
 from engine.listener.commit_listener import CommitListener
@@ -9,7 +9,7 @@ from engine.query.queries import Queries
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.drivers.support.suite_choice import SuiteChoice
-from engine.change.event_subscriber import E
+from engine.event.event_subscriber import E
 
 
 class SkillListener(CommitListener[E]):

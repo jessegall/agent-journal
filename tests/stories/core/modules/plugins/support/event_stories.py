@@ -11,8 +11,8 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.change.event_log import EventLog
-from engine.change.logged_event import LoggedEvent
+from engine.event.event_log import EventLog
+from engine.event.logged_event import LoggedEvent
 from engine.database.reported_findings import ReportedFindings
 from engine.query.queries import Queries
 from core.modules.pins.models.pin import Pin

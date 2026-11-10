@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.change.event_log import EventLog
+from engine.event.event_log import EventLog
 from engine.cli.row_links import RowLinks
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal

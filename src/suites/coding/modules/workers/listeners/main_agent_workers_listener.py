@@ -5,7 +5,7 @@ from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from engine.change.created import Created
+from engine.event.created import Created
 from engine.command.context import Context
 
 

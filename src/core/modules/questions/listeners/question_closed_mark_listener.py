@@ -1,8 +1,8 @@
-from engine.change.logged_event import LoggedEvent
+from engine.event.logged_event import LoggedEvent
 from core.modules.questions.listeners.question_mark_listener import QuestionMarkListener
 from core.modules.questions.models.enums.question_mark_type import QuestionMarkType
 from core.modules.questions.models.enums.question_mark_variant import QuestionMarkVariant
-from engine.change.moved import Moved
+from engine.event.moved import Moved
 from core.modules.questions.models.lifecycles.question_lifecycle import QuestionLifecycle
 from core.modules.questions.models.question import Question
 

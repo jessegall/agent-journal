@@ -4,7 +4,7 @@ from core.modules.dumps.support.dump_nudges import DUMP_ARRIVED
 from engine.listener.save_listener import SaveListener
 from core.modules.dumps.models.dump import Dump
 from core.modules.agents.support.agent_rows import AgentRows
-from engine.change.created import Created
+from engine.event.created import Created
 from engine.command.context import Context
 
 LINE_SOURCE = "dumps.arrival"

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from engine.change.event_pattern import EventPattern
+from engine.event.event_pattern import EventPattern
 from engine.dotted_path.dotted_path import DottedPath
 
 
