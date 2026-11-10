@@ -26,7 +26,7 @@ CALLER_FRAMES = 40
 SHOWN_CALLS = 3
 ACCESS_LAYERS = ("engine/database/", "engine/query/", "engine/repository/", "engine/file/file_access.py", "<")
 TEST_FOLDER = "../tests/"
-SOURCE_ROOT = Path(__file__).resolve().parents[3]
+SOURCE_ROOT = Path(__file__).resolve().parents[2]
 PLACEHOLDER_LIST = re.compile(r"\?(?:\s*,\s*\?)+")
 COMMAND_AUDIT_EVENT = "subprocess.Popen"
 OPEN_REQUEST: ContextVar["RepeatedWork | None"] = ContextVar("open_request", default=None)
