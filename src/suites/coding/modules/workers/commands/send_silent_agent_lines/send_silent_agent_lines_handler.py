@@ -29,29 +29,32 @@ from suites.coding.modules.workers.support.worker_nudges import IDLE_WORKER, SIL
 from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES, IDLE_WORKER_MINUTES, IDLE_WORKER_REPEAT_MINUTES, RESUME_SILENT_AGENTS
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from engine.enums.agent_role import AgentRole
+from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 RECOVERY_ATTEMPTS = 3
+CHECKED_AGENTS_REASON = "One activity row for each running agent and each worker that is not retired, which the agent limits bound."
 
 
 class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     """Sends a bounded sequence of waking lines to silent agents with work, excluding explicit waits and runs.
     The main agent has work to go on with when an open task has no worker and does not belong to a plan
-    that is not approved or started: such a plan cannot start before the person approves it."""
+    that is not approved or started: such a plan cannot start before the person approves it. It reads the
+    running agents and the workers that are not retired, never an agent that ended for good."""
 
     command = SendSilentAgentLines
     disabled_scopes = [ActorScope]
 
     def __init__(self, home: JournalHome, queries: Queries, settings: SettingValues,
-                 work: MainAgentWork, nudger: Nudger, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces, task_query: TaskQuery) -> None:
-        self.task_query = task_query
+                 work: MainAgentWork, nudger: Nudger, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces, task_query: TaskQuery, agent_rows: AgentRows) -> None:
+        self.task_query, self.agent_rows = task_query, agent_rows
         self.home, self.queries, self.settings = home, queries, settings
         self.work, self.nudger, self.bus, self.stop, self.main_line, self.places = work, nudger, bus, stop, main_line, places
 
     def handle(self, command: SendSilentAgentLines, context: Context) -> None:
-        agents = tuple(agent for agent in self.queries.query(Agent).all_rows() if agent.halted_at is None)
+        agents = tuple(agent for agent in self.checked_agents() if agent.halted_at is None)
         agent_ids = tuple(agent.id for agent in agents)
-        activities = {row.id: row for row in self.queries.query(AgentActivity).matching(Among("id", agent_ids)).all_rows()}
+        activities = {row.id: row for row in self.queries.query(AgentActivity).matching(Among("id", agent_ids)).full_table(CHECKED_AGENTS_REASON).all_rows()}
         working = set(self.work.unfinished_tasks(agent_ids))
         tasks_remain = self.task_query.open_tasks().matching(IsNull("delegated_to")).matching(self.task_query.unapproved_plan_exclusion()).exists()
         worktrees = tuple(self.queries.query(Worktree).all_rows())
@@ -110,6 +113,10 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
             if previous and previous[-1].creation_timestamp().elapsed_seconds(context.timestamp) < repeat:
                 continue
             self.main_line.send(line.text, IDLE_WORKER.key, context)
+
+    def checked_agents(self) -> tuple[Agent, ...]:
+        checked = {agent.id: agent for agent in (*self.agent_rows.running(), *self.places.kept_workers())}
+        return tuple(checked[agent_id] for agent_id in sorted(checked))
 
     def is_automatic(self, agent: Agent) -> bool:
         with self.bus.scopes.read_scope((), None, agent.environment_id):

@@ -16,8 +16,8 @@ from suites.coding.modules.workers.support.worker_settings import UNSTARTED_WORK
 
 
 class UnstartedWorkerRule(DriverRule):
-    """A tick tells the main agent of each worker whose program has made no hook call within the unstarted worker seconds
-    of its dispatch, so a program that was refused at its start is seen at once."""
+    """A tick tells the main agent of each worker whose program has made no hook call within the unstarted
+    worker seconds of its dispatch, so a program that was refused at its start is seen at once."""
 
     name = "workers.unstarted-worker"
     hook = HookEventName.TICK
@@ -30,7 +30,7 @@ class UnstartedWorkerRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         activities = self.activities.read(hook)
-        workers = [activities[worktree.session_agent_id] for worktree in self.worktrees.main_worktrees() if worktree.state is WorktreeState.CUT]
+        workers = [activities[worktree.session_agent_id] for worktree in self.worktrees.main_worktrees() if worktree.state is WorktreeState.CUT and worktree.session_agent_id in activities]
         limit = Interval(self.settings.seconds(UNSTARTED_WORKER_SECONDS))
         return RuleAnswer.with_nudges(*(WORKER_UNSTARTED.nudge(worker=worker.id, seconds=limit.seconds) for worker in workers if self.is_unstarted(worker, hook, limit)))
 

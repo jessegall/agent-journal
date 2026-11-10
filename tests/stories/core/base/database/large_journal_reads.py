@@ -11,14 +11,7 @@ from tests.stories.core.base.support.large_journal import EDIT, LargeJournal, Ta
 
 SESSIONS = ("s-1", "s-helper", "s-worker")
 
-OPEN_LARGE_READS = (
-    "FROM reminders WHERE ended_at IS NULL AND creator_id NOT IN",
-    "FROM agents WHERE ended_at IS NULL ORDER BY id ASC",
-    "FROM agent_activities WHERE id IN",
-    "FROM agents WHERE environment_id = ? LIMIT",
-    "FROM reader_requests WHERE completed_at IS NULL AND creator_id = ?",
-    "FROM memories WHERE id IN (?) AND environment_id = ? AND agent_id IS NULL",
-)
+OPEN_LARGE_READS: tuple[str, ...] = ()
 
 
 """The reads of OPEN_LARGE_READS loaded more than the limit when this test was written (task 8753). Each is

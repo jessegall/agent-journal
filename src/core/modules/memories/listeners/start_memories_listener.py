@@ -11,6 +11,7 @@ from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery
 from core.modules.drivers.events.session_started import SessionStarted
 
 MODULE_NAME = "journal.core.memories"
+START_MEMORIES_REASON = "A session start gives its agent every active memory it may read; memories fade at each compaction, which bounds them."
 
 
 class StartMemoriesListener(CommitListener[SessionStarted]):
@@ -28,6 +29,6 @@ class StartMemoriesListener(CommitListener[SessionStarted]):
         if self.agents.find(call.session_agent_id).role not in self.suites.agent_policy().prompt_roles:
             return
         with self.scopes.opened(call.session_agent_id):
-            memory_ids = tuple(row.memory_id for row in self.memories.absent_memories(call.session_agent_id).weight_order().all_rows())
+            memory_ids = tuple(row.memory_id for row in self.memories.absent_memories(call.session_agent_id).weight_order().full_table(START_MEMORIES_REASON).all_rows())
         if memory_ids:
             self.bus.run(GiveMemories(call.session_agent_id, memory_ids, DeliveryCause.START), self.actors.actor(MODULE_NAME), cause_id=logged.id)

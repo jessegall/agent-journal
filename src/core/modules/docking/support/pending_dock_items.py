@@ -5,6 +5,7 @@ from core.modules.docking.queries.dock_item_query import DockItemQuery
 
 WAITING_CONDITION = "state = ? AND kept = ? AND leaves_at IS NULL"
 WAITING_PARAMETERS = (DockItemState.DOCKED.value, False)
+WAITING_REASON = "The docked items whose row has not ended; each leaves the dock once its row ends, and every change reads them from this one kept load."
 
 
 class PendingDockItems:
@@ -14,7 +15,7 @@ class PendingDockItems:
         self.items, self.kept = items, kept
 
     def matching(self, model_name: str, row_id: int) -> list[DockItem]:
-        items = self.kept.read("dock_items", lambda: tuple(self.items.waiting().all_rows()), WAITING_CONDITION, WAITING_PARAMETERS, name="docking.pending_items")
+        items = self.kept.read("dock_items", lambda: tuple(self.items.waiting().full_table(WAITING_REASON).all_rows()), WAITING_CONDITION, WAITING_PARAMETERS, name="docking.pending_items")
         return [item for item in items if item.target_model == model_name and item.target_id == row_id]
 
     def remove(self, scheduled: DockItem) -> None:

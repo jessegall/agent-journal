@@ -11,6 +11,8 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.queries.agent_query import AgentQuery
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
+RUNNING_AGENTS_REASON = "The agents that have not ended, which the running programs bound; every reader of a request shares this one kept load."
+
 
 class AgentRows:
     """Shares agent lookups until the matching agent changes: running agents are one row set for every environment,
@@ -59,7 +61,7 @@ class AgentRows:
     def running(self, role: str | None = None, parent_id: int | None = None) -> tuple[Agent, ...]:
         environment_id = self.scopes.environment_id
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            agents = self.kept.read("agents", lambda: tuple(self.agents.running().oldest().all_rows()), "ended_at IS NULL", name="agents.running")
+            agents = self.kept.read("agents", lambda: tuple(self.agents.running().oldest().full_table(RUNNING_AGENTS_REASON).all_rows()), "ended_at IS NULL", name="agents.running")
         agents = tuple(agent for agent in agents if environment_id is None or agent.environment_id == environment_id)
         agents = tuple(agent for agent in agents if role is None or agent.role == role)
         return tuple(agent for agent in agents if parent_id is None or agent.parent_id == parent_id)

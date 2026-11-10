@@ -23,7 +23,6 @@ from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.models.helper_job import HelperJob
@@ -63,7 +62,8 @@ class InactiveHelperRule(DriverRule):
             return RuleAnswer.allowed()
         grace = self.settings.minutes(INACTIVE_HELPER_GRACE_MINUTES)
         activities = self.activities.read(hook)
-        inactive = [helper for helper in self.helpers(hook.agent_id) if helper.id in activities and self.is_inactive(helper, activities[helper.id], hook, grace)]
+        requesters = self.requests.active_requester_ids(hook.timestamp)
+        inactive = [helper for helper in self.helpers(hook.agent_id) if helper.id in activities and helper.id not in requesters and activities[helper.id].is_inactive(hook.timestamp, grace.count)]
         unstarted = self.unstarted(hook, grace)
         if not inactive and not unstarted:
             return RuleAnswer.allowed()
@@ -105,8 +105,4 @@ class InactiveHelperRule(DriverRule):
         helpers = [agent for agent in self.agents.running(parent_id=main_id) if agent.role in roles and agent.profile != MERGER_PROFILE]
         return sorted(helpers, key=lambda helper: roles.index(helper.role))
 
-    def is_inactive(self, helper: Agent, activity: AgentActivity, hook: AgentHook, span: Seconds) -> bool:
-        if self.requests.has_active_requests(helper.id, hook.timestamp):
-            return False
-        return activity.is_inactive(hook.timestamp, span.count)
 
