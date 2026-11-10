@@ -4,7 +4,7 @@ from engine.command.handler import Handler
 from engine.driver.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.processes.commands.send_readers_notice.send_readers_notice import SendReadersNotice
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.process_part import ProcessPart

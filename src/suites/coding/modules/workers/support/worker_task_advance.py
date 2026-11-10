@@ -6,7 +6,7 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.listener.event_rows import EventRows
 from engine.repository.repository import Repository
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
 from core.modules.tasks.support.task_brief_blocks import TaskBriefBlocks

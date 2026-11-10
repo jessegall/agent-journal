@@ -13,7 +13,7 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.drivers.models.agent_line import AgentLine
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from engine.setting.setting_values import SettingValues
 from core.modules.tasks.queries.task_query import TaskQuery

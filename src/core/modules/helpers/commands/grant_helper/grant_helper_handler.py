@@ -6,7 +6,7 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.helpers.commands.grant_helper.grant_helper import GrantHelper
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.helpers.models.helper_grant import HelperGrant
 from core.modules.helpers.support.helper_grant_policy import HelperGrantPolicy
 from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE

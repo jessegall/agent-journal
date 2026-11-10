@@ -3,7 +3,7 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 from core.modules.plans.models.plan import Plan

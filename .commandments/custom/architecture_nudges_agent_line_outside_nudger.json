@@ -13,7 +13,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(^|/)src/core/modules/drivers/support/nudger\\.py$"
+                "fileMatches": "(^|/)src/core/modules/drivers/bindings/agent_line_nudger\\.py$"
             }
         ]
     },

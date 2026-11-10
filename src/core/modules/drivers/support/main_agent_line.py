@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.driver.nudge import Nudge
 from engine.query.queries import Queries
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 
 
 class MainAgentLine:

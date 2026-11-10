@@ -1,7 +1,7 @@
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
 from core.modules.drivers.support.driver_settings import DRIVER_SETTINGS, SUITE_SETTING
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.models.setting import Setting
 from engine.change.changed import Changed

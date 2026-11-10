@@ -8,7 +8,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.pause_agent.pause_agent import PauseAgent
 from core.modules.drivers.listeners.typed_line_listener import PAUSE_SOURCE
 from core.modules.drivers.support.driver_nudges import PAUSED_REFUSAL
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 
 
 class PauseAgentHandler(Handler[PauseAgent, Agent]):

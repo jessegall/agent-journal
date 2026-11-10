@@ -8,7 +8,7 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.driver.rule_answers import RuleAnswers
 from engine.driver.rule_record import RuleRecord
 from unittest.mock import patch
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.drivers.support.line_typing import LineTyping
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.messages.commands.read_message.read_message import ReadMessage

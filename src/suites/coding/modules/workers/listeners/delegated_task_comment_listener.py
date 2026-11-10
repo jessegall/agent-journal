@@ -8,7 +8,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
 from core.modules.documents.support.row_link_writer import RowLinkWriter
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.messages.models.message import Message
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE

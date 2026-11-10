@@ -37,7 +37,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import DISPLAYED_MESSAGE_ID, DISPLAYED_PART, DISPLAYED_TEXT, MONITOR_DESCRIPTION, SUMMARY_CHARACTERS, HookCall
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from engine.driver.search_category import SearchCategory
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from engine.module.driver_entries import DRIVERS_MODULE

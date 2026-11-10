@@ -1,8 +1,8 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.modules.drivers.models.agent_line import AgentLine
+from engine.model.model import Model
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.messages.commands.record_waiting_message_line.record_waiting_message_line import RecordWaitingMessageLine
 from core.modules.messages.support.message_nudges import NEW_MESSAGE
 from core.modules.messages.support.waiting_message_lines import WAITING_MESSAGE_SOURCE, WaitingMessageLines
@@ -12,7 +12,7 @@ RETRY_SECONDS = 10
 MOST_WAITING_LINES = 3
 
 
-class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, AgentLine | None]):
+class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, Model | None]):
     """An idle main agent, paused or not, sends no hook that could carry a message, so a line for the first of
     the queue is typed to it; the rest reach it by the hooks that follow, once it wakes. The message counts as
     delivered only once its line was typed or a hook took it, so a line that could not be typed is made anew
@@ -24,7 +24,7 @@ class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, AgentLin
         self.nudger, self.hook_calls, self.lines = nudger, hook_calls, lines
         self.agents = agents
 
-    def handle(self, command: RecordWaitingMessageLine, context: Context) -> AgentLine | None:
+    def handle(self, command: RecordWaitingMessageLine, context: Context) -> Model | None:
         agent = self.agents.find(command.agent_id) if command.agent_id is not None else self.agents.main_agent()
         if agent is not None and agent.ended_at is not None:
             return None

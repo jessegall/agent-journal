@@ -1,4 +1,4 @@
-from core.modules.agents.support.person_check import PersonCheck
+from engine.actor.person_check import PersonCheck
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler

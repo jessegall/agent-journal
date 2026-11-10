@@ -4,7 +4,7 @@ from engine.change.moved import Moved
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
 from core.modules.waits.models.lifecycles.wait_lifecycle import WaitLifecycle
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.wait import Wait
 

@@ -11,7 +11,7 @@ from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.resume_agent.resume_agent import ResumeAgent
 from core.modules.drivers.listeners.typed_line_listener import RESUME_SOURCE
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 
 
 

@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery, WORKER_PROGRAM_UNAVAILABLE
 
 

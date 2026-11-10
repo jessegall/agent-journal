@@ -7,7 +7,7 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.commands.queue_worker_operation.queue_worker_operation import QueueWorkerOperation

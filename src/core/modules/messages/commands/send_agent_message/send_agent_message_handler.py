@@ -7,7 +7,7 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.receivers import Receivers
 from core.modules.agents.support.report_nudges import PARENT_REPORT, PARENT_REPORT_SOURCE
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.messages.commands.send_agent_message.send_agent_message import SendAgentMessage
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message

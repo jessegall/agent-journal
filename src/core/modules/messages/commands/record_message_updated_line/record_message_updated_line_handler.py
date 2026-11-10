@@ -3,7 +3,7 @@ from engine.command.handler import Handler
 from engine.query.queries import Queries
 from core.modules.drivers.listeners.typed_line_listener import IDLE_MESSAGE_SOURCE
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line import RecordMessageUpdatedLine
 from core.modules.messages.support.message_nudges import MESSAGE_UPDATED
 from core.modules.messages.models.message import Message

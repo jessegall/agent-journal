@@ -7,7 +7,7 @@ from core.modules.viewer.commands.support.window_allowances import WindowAllowan
 from core.modules.viewer.models.window_permission import WindowPermission
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType
 from core.modules.viewer.commands.trust_window.trust_window import TrustWindow
-from core.modules.agents.support.person_check import PersonCheck
+from engine.actor.person_check import PersonCheck
 
 
 class TrustWindowHandler(Handler[TrustWindow, WindowPermission]):

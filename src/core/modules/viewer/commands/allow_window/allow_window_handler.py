@@ -10,7 +10,7 @@ from core.modules.viewer.commands.allow_window.allow_window import AllowWindow
 from core.modules.viewer.commands.support.window_allowances import WindowAllowances
 from core.modules.viewer.models.window_permission import WindowPermission
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType
-from core.modules.agents.support.person_check import PersonCheck
+from engine.actor.person_check import PersonCheck
 
 
 class AllowWindowHandler(Handler[AllowWindow, WindowPermission]):

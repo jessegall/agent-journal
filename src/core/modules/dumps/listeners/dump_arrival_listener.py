@@ -1,5 +1,5 @@
 from engine.scope.actor_scope import ActorScope
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.dumps.support.dump_nudges import DUMP_ARRIVED
 from engine.listener.save_listener import SaveListener
 from core.modules.dumps.models.dump import Dump

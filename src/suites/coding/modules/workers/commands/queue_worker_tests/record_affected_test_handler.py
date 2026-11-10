@@ -7,7 +7,7 @@ from engine.command.handler import Handler
 from engine.driver.command_category import CommandCategory
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.tasks.models.enums.task_state import TaskState

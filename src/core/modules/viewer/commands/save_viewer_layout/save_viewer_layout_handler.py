@@ -5,7 +5,7 @@ from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.viewer.models.viewer_layout import ViewerLayout
 from core.modules.viewer.commands.save_viewer_layout.save_viewer_layout import SaveViewerLayout
-from core.modules.agents.support.person_check import PersonCheck
+from engine.actor.person_check import PersonCheck
 
 
 class SaveViewerLayoutHandler(Handler[SaveViewerLayout, ViewerLayout]):

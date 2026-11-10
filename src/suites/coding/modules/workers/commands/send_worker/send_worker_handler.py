@@ -13,8 +13,8 @@ from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.models.agent_line import AgentLine
-from core.modules.drivers.support.nudger import Nudger
+from engine.model.model import Model
+from engine.driver.nudger import Nudger
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.tasks.models.task import TASK_TITLE_LIMIT_CHARACTERS, Task
@@ -50,7 +50,7 @@ from suites.coding.modules.workers.bindings.worker_task_sources import WorkerTas
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
 
 
-class SendWorkerHandler(Handler[SendWorker, AgentLine]):
+class SendWorkerHandler(Handler[SendWorker, Model]):
     """Send a job to a worker and prepare its worktree."""
 
     command = SendWorker
@@ -151,7 +151,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
             self.bus.run(CancelWorkerOpening(opened.id, retain_agent=True), actor, environment_id=worker.environment_id)
             raise
 
-    def handle(self, command: SendWorker, context: Context) -> AgentLine:
+    def handle(self, command: SendWorker, context: Context) -> Model:
         if command.test_commands:
             self.bus.run_with_context(NameWorkerTests(command.worker_id, command.test_commands), context)
         worktree = self.worktrees.worker_worktree(command.worker_id)

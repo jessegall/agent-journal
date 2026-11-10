@@ -5,7 +5,7 @@ from engine.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.schedules.commands.stop_scheduled_job.stop_scheduled_job import StopScheduledJob
 from core.modules.schedules.models.scheduled_job import ScheduledJob
 

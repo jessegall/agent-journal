@@ -7,8 +7,8 @@ from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.models.agent_line import AgentLine
-from core.modules.drivers.support.nudger import Nudger
+from engine.model.model import Model
+from engine.driver.nudger import Nudger
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.messages.support.work_sources import WorkSources
 from core.modules.tasks.models.task import Task
@@ -68,7 +68,7 @@ class KeptWorkerTasks:
         if self.git.has_unmerged_branch(self.environments.find(worker.environment_id).folder, last):
             raise Refusal(f"worker {worker.id} has unmerged work on {last.branch}", f"journal worker merge {worker.id}, or merge the branch by hand")
 
-    def handed(self, worker: Agent, worktree: Worktree, task_ids: tuple[int, ...], job: str, context: Context) -> AgentLine:
+    def handed(self, worker: Agent, worktree: Worktree, task_ids: tuple[int, ...], job: str, context: Context) -> Model:
         tasks = AssignableTasks.open_first(self.read_tasks(task_ids))
         if worktree.state is WorktreeState.DELIVERED:
             return self.queued_after_delivery(worker, tasks, job, context)
@@ -80,12 +80,12 @@ class KeptWorkerTasks:
         first = tasks[0].id
         return self.nudger.send_text(worker.id, job or f"Task:{first} is yours next: journal task overview {first}", WORKER_JOB_SOURCE, context)
 
-    def queued_after_delivery(self, worker: Agent, tasks: list[Task], job: str, context: Context) -> AgentLine:
+    def queued_after_delivery(self, worker: Agent, tasks: list[Task], job: str, context: Context) -> Model:
         self.delegate(worker, tasks, context)
         queued = ", ".join(f"task:{task.id}" for task in tasks)
         return self.nudger.send_text(worker.id, job or f"{queued} are yours once your delivered work is merged: stay as you are until then", WAITING_TASKS_SOURCE, context)
 
-    def waiting(self, worker: Agent, task_ids: tuple[int, ...], context: Context) -> AgentLine:
+    def waiting(self, worker: Agent, task_ids: tuple[int, ...], context: Context) -> Model:
         tasks = self.read_tasks(task_ids)
         self.delegate(worker, tasks, context)
         waiting = ", ".join(f"task:{task.id}" for task in tasks)

@@ -5,7 +5,7 @@ from core.modules.agents.commands.end_agent_halt.end_agent_halt import EndAgentH
 from core.modules.agents.support.agent_rows import AgentRows
 from engine.repository.repository import Repository
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.helpers.commands.end_agent_lockdown.end_agent_lockdown import EndAgentLockdown
 from core.modules.helpers.support.helper_nudges import LOCKDOWN_ENDED
 

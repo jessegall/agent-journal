@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from core.modules.drivers.commands.send_journal_started_line.send_journal_started_line import SendJournalStartedLine
 from core.modules.drivers.support.driver_nudges import JOURNAL_STARTED
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 
 SOURCE = "drivers.journal-started"
 

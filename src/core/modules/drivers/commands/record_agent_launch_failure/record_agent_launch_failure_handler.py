@@ -10,7 +10,7 @@ from core.modules.agents.commands.record_agent_launch_failure.record_agent_launc
 from core.modules.agents.commands.record_agent_launch_failure.launch_nudges import AGENT_START_FAILED
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 
 SOURCE = "agents.launch-failed"
 

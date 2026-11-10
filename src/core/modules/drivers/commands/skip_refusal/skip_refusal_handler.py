@@ -20,7 +20,7 @@ from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.models.refusal_skip import RefusalSkip
 from core.modules.drivers.support.access_nudges import SKIPS_SPENT
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 
 MOST_SKIP_COUNT = 5
 SKIP_SOURCE = "drivers.refusal-skip"

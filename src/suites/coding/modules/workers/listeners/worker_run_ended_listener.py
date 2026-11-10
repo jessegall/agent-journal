@@ -14,7 +14,7 @@ from suites.coding.support.coding_helper_role import CodingHelperRole
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE

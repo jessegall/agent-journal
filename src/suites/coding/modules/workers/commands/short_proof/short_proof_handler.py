@@ -6,7 +6,7 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.errors.refusal import Refusal
 from engine.scope.actor_scope import ActorScope
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.agents.models.agent import Agent

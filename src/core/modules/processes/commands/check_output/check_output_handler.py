@@ -3,7 +3,7 @@ from engine.command.handler import Handler
 from engine.listener.event_rows import EventRows
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.processes.commands.check_output.check_output import CheckOutput
 from core.modules.processes.models.enums.process_state import RUNNING_STATES

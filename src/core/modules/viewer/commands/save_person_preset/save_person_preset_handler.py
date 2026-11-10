@@ -6,7 +6,7 @@ from engine.repository.repository import Repository
 from core.modules.viewer.commands.save_person_preset.save_person_preset import SavePersonPreset
 from core.modules.viewer.commands.support.layout_text import is_layout_text
 from core.modules.viewer.models.person_preset import PersonPreset
-from core.modules.agents.support.person_check import PersonCheck
+from engine.actor.person_check import PersonCheck
 
 
 class SavePersonPresetHandler(Handler[SavePersonPreset, PersonPreset]):

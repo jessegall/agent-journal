@@ -4,7 +4,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.driver.nudge_declaration import NudgeDeclaration
 from core.modules.drivers.commands.support.wake_agent import WakeAgent
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.drivers.support.waiting_line_typing import WaitingLineTyping
 
 WakeCommand = TypeVar("WakeCommand", bound=WakeAgent)

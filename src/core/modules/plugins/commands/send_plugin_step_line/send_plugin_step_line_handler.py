@@ -3,7 +3,7 @@ from engine.command.handler import Handler
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.driver_nudges import AGENT_NOTICE
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.plugins.commands.send_plugin_step_line.send_plugin_step_line import SendPluginStepLine
 
 STEP_LINE_SOURCE = "plugins.step"

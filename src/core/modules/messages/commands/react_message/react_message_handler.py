@@ -6,7 +6,7 @@ from engine.command.handler import Handler
 from engine.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from core.modules.messages.commands.react_message.react_message import ReactMessage
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_reactions import MessageReactions

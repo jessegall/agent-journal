@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from core.modules.tasks.support.task_nudges import TASK_REOPENED
 from engine.database.kept_rows import KeptRows
 from engine.command.context import Context
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries

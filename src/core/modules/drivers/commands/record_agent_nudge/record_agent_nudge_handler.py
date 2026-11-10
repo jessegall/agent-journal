@@ -1,7 +1,7 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
 from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge import RecordAgentNudge
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 
 
 class RecordAgentNudgeHandler(Handler[RecordAgentNudge, None]):

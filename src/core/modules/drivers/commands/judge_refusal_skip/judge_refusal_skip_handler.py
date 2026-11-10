@@ -8,7 +8,7 @@ from core.modules.drivers.commands.judge_refusal_skip.judge_refusal_skip import 
 from core.modules.drivers.commands.skip_refusal.skip_refusal_handler import SKIP_SOURCE
 from core.modules.drivers.models.refusal_skip import RefusalSkip
 from core.modules.drivers.support.access_nudges import SKIP_APPROVED, SKIP_DECLINED
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 
 
 class JudgeRefusalSkipHandler(Handler[JudgeRefusalSkip, RefusalSkip]):

@@ -6,7 +6,7 @@ from engine.scope.actor_scope import ActorScope
 from engine.scope.scopes import Scopes
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.main_agent_line import MainAgentLine
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from engine.query.conditions.minimum import Minimum
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support import worker_job

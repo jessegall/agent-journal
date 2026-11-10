@@ -3,7 +3,7 @@ from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.drivers.support.nudger import Nudger
+from engine.driver.nudger import Nudger
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
 from suites.coding.modules.workers.commands.recover_worker_libraries.recover_worker_libraries import RecoverWorkerLibraries
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
