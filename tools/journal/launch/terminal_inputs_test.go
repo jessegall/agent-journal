@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 )
 
 func shortSocket(t *testing.T) string {
@@ -147,5 +148,46 @@ func TestTwoLinesTypedTogetherAreEnteredOneAtATime(t *testing.T) {
 	typing.Wait()
 	if !(entered[0] == "first line" && entered[1] == "second line" || entered[0] == "second line" && entered[1] == "first line") {
 		t.Fatalf("entered %q", entered)
+	}
+}
+
+func TestTheEnterOfATypedLineWaitsUntilTheScreenHasShownTheLine(t *testing.T) {
+	inputs := NewTerminalInputs()
+	reader, _ := io.Pipe()
+	terminal := bufio.NewReader(inputs.Open(1, reader))
+	inputs.NoteOutput(1)
+	typed := make(chan bool)
+	go func() { typed <- inputs.TypeLine(1, "read the overview") }()
+	line := make([]byte, len("read the overview"))
+	if _, err := io.ReadFull(terminal, line); err != nil {
+		t.Fatal(err)
+	}
+	entered := make(chan byte)
+	go func() {
+		key, _ := terminal.ReadByte()
+		entered <- key
+	}()
+	select {
+	case <-entered:
+		t.Fatal("the Enter came before the screen showed the line")
+	case <-time.After(4 * keyPause):
+	}
+	shownAt := time.Now()
+	inputs.NoteOutput(1)
+	if key := <-entered; key != '\r' || time.Since(shownAt) < echoQuiet {
+		t.Fatalf("got %q %v after the line was shown", key, time.Since(shownAt))
+	}
+	if !<-typed {
+		t.Fatal("the line was not typed")
+	}
+	if watched, ok := inputs.EnteredLine(1); !ok || watched.MoreEnters != 0 {
+		t.Fatalf("the entered line is not watched: %+v %v", watched, ok)
+	}
+	go func() { _, _ = terminal.ReadByte() }()
+	if !inputs.EnterAgain(1) {
+		t.Fatal("the second Enter was not pressed")
+	}
+	if watched, _ := inputs.EnteredLine(1); watched.MoreEnters != 1 {
+		t.Fatalf("the second Enter was not counted: %+v", watched)
 	}
 }

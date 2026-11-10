@@ -16,7 +16,7 @@ const (
 	neverTyped = 1 << 30
 )
 
-// keyPause is how long a typed line waits before its Enter, because a program reading a terminal takes a line and its
+// keyPause is the least a typed line waits before its Enter, because a program reading a terminal takes a line and its
 // Enter sent at once as pasted text.
 const keyPause = 80 * time.Millisecond
 
@@ -34,6 +34,8 @@ type TerminalInputs struct {
 	writers  map[int]*io.PipeWriter
 	keyedAt  map[int]time.Time
 	typedAt  map[int]time.Time
+	outputAt map[int]time.Time
+	entered  map[int]EnteredLine
 	programs map[int]*exec.Cmd
 	starting map[int]bool
 	pending  map[int]*inputLine
@@ -57,7 +59,7 @@ func (reader keyboardReader) Read(buffer []byte) (int, error) {
 
 // NewTerminalInputs makes the inputs of no program yet.
 func NewTerminalInputs() *TerminalInputs {
-	return &TerminalInputs{writers: map[int]*io.PipeWriter{}, keyedAt: map[int]time.Time{}, typedAt: map[int]time.Time{}, programs: map[int]*exec.Cmd{}, starting: map[int]bool{}, pending: map[int]*inputLine{}, typing: map[int]*sync.Mutex{}}
+	return &TerminalInputs{writers: map[int]*io.PipeWriter{}, keyedAt: map[int]time.Time{}, typedAt: map[int]time.Time{}, outputAt: map[int]time.Time{}, entered: map[int]EnteredLine{}, programs: map[int]*exec.Cmd{}, starting: map[int]bool{}, pending: map[int]*inputLine{}, typing: map[int]*sync.Mutex{}}
 }
 
 // Open keeps an input for the agent, fed by the source as well, and returns what the program's terminal reads.
@@ -118,6 +120,8 @@ func (inputs *TerminalInputs) Close(agentID int) {
 	}
 	delete(inputs.programs, agentID)
 	delete(inputs.starting, agentID)
+	delete(inputs.outputAt, agentID)
+	delete(inputs.entered, agentID)
 }
 
 // Track keeps the agent's running program, so a request can stop it.
@@ -126,6 +130,8 @@ func (inputs *TerminalInputs) Track(agentID int, program *exec.Cmd) {
 	defer inputs.mutex.Unlock()
 	inputs.programs[agentID] = program
 	delete(inputs.starting, agentID)
+	delete(inputs.outputAt, agentID)
+	delete(inputs.entered, agentID)
 }
 
 // StopProgram asks the agent's program and the children in its process group to end, waits for them, then forces
@@ -184,7 +190,8 @@ func (inputs *TerminalInputs) waitForExit(agentID int, limit time.Duration) bool
 // TypeLine types the line and its Enter into the agent's terminal, and says whether the agent has one. Text the person
 // typed there and has not entered is cleared with one backspace for each character, never a key that could interrupt the
 // program, and typed again after the line, so the person goes on typing where they were. Lines for one agent go in one at
-// a time, with a pause after each Enter, so two that come together are entered as two.
+// a time, with a pause after each Enter, so two that come together are entered as two. The Enter waits until the screen
+// has shown the line, and the line is then watched until it is found sent.
 func (inputs *TerminalInputs) TypeLine(agentID int, line string) bool {
 	inputs.mutex.Lock()
 	writer, ok := inputs.writers[agentID]
@@ -205,13 +212,15 @@ func (inputs *TerminalInputs) TypeLine(agentID int, line string) bool {
 			return false
 		}
 	}
+	writtenAt := time.Now()
 	if _, err := io.WriteString(writer, line); err != nil {
 		return false
 	}
-	time.Sleep(keyPause)
+	inputs.waitForEcho(agentID, writtenAt)
 	if _, err := io.WriteString(writer, "\r"); err != nil {
 		return false
 	}
+	inputs.noteEntered(agentID, 0)
 	if stored == "" {
 		return true
 	}
