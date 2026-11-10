@@ -12,6 +12,11 @@ def listed(story: Story, environment: str = "main") -> dict[int, dict]:
     return {row["id"]: row for row in rows}
 
 
+def numbers_by_id(story: Story, environment: str = "main") -> dict[int, int]:
+    rows = json.loads(story.run(f"agent list --environment {environment} --json").output_text)["rows"]
+    return {row["id"]: row["number"] for row in rows}
+
+
 def worker_of(story: Story, environment: str) -> int:
     return next(agent_id for agent_id, row in listed(story, environment).items() if row["role"] == "worker")
 
