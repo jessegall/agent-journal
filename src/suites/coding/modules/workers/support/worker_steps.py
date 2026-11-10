@@ -30,7 +30,7 @@ class WorkerSteps:
         ready = tuple(self.tasks.ready_delegated(worker_id))
         conflict = None if worktree is None else self.conflict_line(worktree)
         group = None if worktree is None else self.phases.group(worktree, self.queries.query(Task).find(worktree.task_id))
-        return WorkerRound(worker_id, worktree, started, ready, self.next_task.first_ready(ready, started), self.stop.has_open_help_request(worker_id), conflict, group)
+        return WorkerRound(worker_id, worktree, started, ready, self.next_task.first_ready(worker_id, ready, started), self.stop.has_open_help_request(worker_id), conflict, group)
 
     def current_step(self, worker_id: int) -> WorkerStep:
         return self.step(self.round(worker_id))

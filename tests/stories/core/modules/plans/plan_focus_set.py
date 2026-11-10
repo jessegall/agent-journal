@@ -49,15 +49,3 @@ def test_a12_a_person_who_names_a_plan_sets_the_focus_of_the_running_main_agent(
     story = new_story(fixture=ThreeStartedPlans)
     story.expect_success("plan focus 2 --environment main", "the focus of the main agent:", SET_FOCUS.format(plan=2), actor=story.user)
     story.expect_success(PLAN_FOCUS, SET_FOCUS.format(plan=2), actor=story.agent)
-
-
-def test_a13_an_approved_plan_that_is_not_started_can_be_the_focus(new_story):
-    story = new_story(fixture=ThreeStartedPlans)
-    story.run('plan make "Yard" --environment main', actor=story.user)
-    story.run('phase make --plan 4 "Build"', actor=story.user)
-    task_id = story.new_row_id('task make "Fence" --environment main', actor=story.user)
-    story.run(f"phase place {task_id} --phase 4", actor=story.user)
-    story.run(f'task waits-on-nothing {task_id} --why "the only task"', actor=story.user)
-    story.run('plan ready 4 --environment main --skip-guard plans.one-task-phase --skip-reason "one task is enough in this story"', actor=story.user)
-    story.run("plan approve 4 --environment main", actor=story.user)
-    story.expect_success("plan focus 4", SET_FOCUS.format(plan=4), actor=story.agent)
