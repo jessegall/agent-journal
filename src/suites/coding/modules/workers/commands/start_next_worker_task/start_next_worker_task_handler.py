@@ -2,6 +2,7 @@ from engine.command.bus import Bus
 from engine.actor.actor import Actor
 from engine.command.context import Context
 from engine.command.handler import Handler
+from engine.scope.scopes import Scopes
 from engine.listener.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
@@ -40,7 +41,8 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
     command = StartNextWorkerTask
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: DeliveryDifferences, next_task: WorkerNextTask, compaction: WorkerCompaction, guidance: WorkerGuidance) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: DeliveryDifferences, next_task: WorkerNextTask, compaction: WorkerCompaction, guidance: WorkerGuidance, scopes: Scopes) -> None:
+        self.scopes = scopes
         self.next_task, self.guidance = next_task, guidance
         self.compaction = compaction
         self.rows, self.worktrees, self.tasks, self.task_commit, self.proof_queue, self.repository, self.bus = rows, worktrees, tasks, task_commit, proof_queue, repository, bus
@@ -62,7 +64,9 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         if worktree is None or worktree.state is not WorktreeState.CUT:
             return
         task = self.queries.query(Task).find(worktree.task_id)
-        if task.state is TaskState.STARTED and self.next_task.following(actor.id) is not None:
+        with self.scopes.opened(actor.id, None, self.disabled_scopes):
+            has_next_task = self.next_task.following(actor.id) is not None
+        if task.state is TaskState.STARTED and has_next_task:
             self.task_commit.check_proofs(worktree, task)
             self.task_commit.commit(worktree, task, actor, command.differences)
 
