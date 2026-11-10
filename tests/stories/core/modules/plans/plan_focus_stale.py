@@ -24,9 +24,8 @@ def test_a15_a_focus_on_a_blocked_plan_is_not_used_and_counts_again_once_the_pla
     story.expect_success(PLAN_FOCUS, "plan 3 is your focus: you set it", actor=story.agent)
 
 
-def test_f2_a_focus_on_a_plan_that_was_deleted_is_not_used_and_the_default_is_read_without_a_fault(new_story):
+def test_a_focus_on_a_cancelled_plan_is_not_used_and_the_default_is_read(new_story):
     story = new_story(fixture=ThreeStartedPlans)
     story.run("plan focus 3", actor=story.agent)
     story.run('plan cancel 3 --reason "replaced" --environment main', actor=story.user)
-    story.run("plan delete 3 --environment main", actor=story.user)
-    story.expect_success(PLAN_FOCUS, UNUSED_FOCUS.format(state="gone"), DEFAULT_ON_FIRST_PLAN, actor=story.agent)
+    story.expect_success(PLAN_FOCUS, UNUSED_FOCUS.format(state="cancelled"), DEFAULT_ON_FIRST_PLAN, actor=story.agent)

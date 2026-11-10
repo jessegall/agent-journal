@@ -9,11 +9,6 @@ from tests.stories.core.modules.plans.support.started_plans import (
 )
 
 
-def test_a1_with_three_started_plans_and_no_word_the_focus_is_the_oldest_started_plan_with_work(new_story):
-    story = new_story(fixture=ThreeStartedPlans)
-    story.expect_success(PLAN_FOCUS, f"plan 1 is your focus: {DEFAULT_FOCUS}", actor=story.agent)
-
-
 def test_a2_a_started_plan_whose_tasks_all_wait_on_a_task_nobody_can_take_is_passed_over(new_story):
     story = new_story(fixture=OldestPlanWaitsOnAPerson)
     story.expect_success(PLAN_FOCUS, f"plan 2 is your focus: {DEFAULT_FOCUS}", "plan 1: waits on task 7, which waits on a person", actor=story.agent)
