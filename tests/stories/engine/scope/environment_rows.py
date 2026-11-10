@@ -12,7 +12,7 @@ from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
 from engine.testing.examples.hook_samples import HookSamples
-from engine.testing.stories.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import NO_ENVIRONMENT, StoryFixture
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
@@ -35,6 +35,7 @@ class TwoWorkingEnvironments(StoryFixture):
     """Environment main with its main agent and task 1; environment staging with session s-2 and task 2."""
 
     parent = UserBuilder
+    environment = NO_ENVIRONMENT
 
     def steps(self, story):
         story.run("environment make staging /work/staging")

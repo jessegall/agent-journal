@@ -7,12 +7,15 @@ from typing import ClassVar
 from engine.file.file_access import FileAccess
 from engine.testing.stories.story import Story
 
+NO_ENVIRONMENT = ""
+
 
 class StoryFixture:
     """A named starting state for stories: the fixture it builds on, the steps that make its state, and what
     that state must be; it is built once per run and copied for every story that starts from it. Its source
     is read when the class is defined, so a file changed during a run does not ask for another template. The
-    environment it names is the one a person's line of a story on it runs in, unless the line names another."""
+    environment it names is the one a person's line of a story on it runs in, unless the line names another;
+    a fixture with several environments names NO_ENVIRONMENT, and each line names its own."""
 
     parent: ClassVar[type["StoryFixture"] | None] = None
     environment: ClassVar[str | None] = None
@@ -42,7 +45,7 @@ class StoryFixture:
 
     @classmethod
     def line_environment(cls) -> str | None:
-        return next((fixture.environment for fixture in reversed(cls.chain()) if fixture.environment is not None), None)
+        return next((fixture.environment for fixture in reversed(cls.chain()) if fixture.environment is not None), NO_ENVIRONMENT) or None
 
     @classmethod
     def chain(cls) -> tuple[type["StoryFixture"], ...]:
