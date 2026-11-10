@@ -14,7 +14,7 @@ from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.suites.coding.drivers.worker.worker_driver import WORKER_SESSION, WorkingAgent
 
 MAIN_TITLE = "Main agent"
-EARLIER_MAIN_TITLE = "Main agent, earlier session"
+ENDED_MAIN_TITLE = "Main agent, earlier session"
 NUMBER_REFUSAL = "numbers are only given"
 
 
@@ -46,13 +46,13 @@ def test_a_main_agent_reads_a_workers_report_by_the_workers_number_not_its_row_i
 
 def test_an_earlier_main_session_reads_as_earlier_and_only_the_current_main_reads_main_agent(new_story):
     story = new_story(fixture=MainEnvironment)
-    earlier_id = story.new_row_id("agent start s-1 claude main --environment main")
-    story.expect_success(f"agent end {earlier_id}", actor=story.user)
+    ended_id = story.new_row_id("agent start s-1 claude main --environment main")
+    story.expect_success(f"agent end {ended_id}", actor=story.user)
     current_id = story.new_row_id("agent start s-2 claude main --environment main")
-    story.expect_text(f"agent show {earlier_id}", f"display_name: {EARLIER_MAIN_TITLE}", actor=story.user)
+    story.expect_text(f"agent show {ended_id}", f"display_name: {ENDED_MAIN_TITLE}", actor=story.user)
     story.expect_text(f"agent show {current_id}", f"display_name: {MAIN_TITLE}", actor=story.user)
     rows = listed(story)
-    story.expect_rows(rows[earlier_id]["display_name"] == EARLIER_MAIN_TITLE, rows[current_id]["display_name"] == MAIN_TITLE,
+    story.expect_rows(rows[ended_id]["display_name"] == ENDED_MAIN_TITLE, rows[current_id]["display_name"] == MAIN_TITLE,
                       [row["display_name"] for row in rows.values()].count(MAIN_TITLE) == 1)
 
 
@@ -80,7 +80,8 @@ def test_an_agent_changing_its_own_number_is_refused_and_nothing_is_written(new_
 
 
 class TwoEnvironments(StoryFixture):
-    """Main has its main agent, number 1, and a worker, number 2; shop has its own main, number 1, and worker, number 2."""
+    """Main has its main agent, number 1, and a worker, number 2; shop has its own main, number 1, and
+    worker, number 2."""
 
     parent = UserBuilder
 
@@ -119,4 +120,4 @@ def test_every_skill_and_hook_text_that_shows_worker_send_or_helper_send_names_a
         story.expect_rows(len(sends) > 0, all("send <number>" in line for line in sends), not any("send <n>" in line or "send <id>" in line for line in sends))
     raw_test_line = HookSamples.shell("pytest tests/cart.py", ShellPart("pytest", "test run", ["tests/cart.py"]))
     refusal = story.hook(WORKER_SESSION, raw_test_line).refusal
-    assert "journal worker send 2 --test-command" in refusal, refusal
+    story.expect_rows("journal worker send 2 --test-command" in refusal)

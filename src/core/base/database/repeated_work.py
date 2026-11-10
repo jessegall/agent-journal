@@ -154,7 +154,7 @@ class RepeatedWork(PointTally):
         raise RepeatedCallsError(finding.text)
 
     @staticmethod
-    def frame_above(levels: int) -> FrameType | None:
+    def caller_frame(levels: int) -> FrameType | None:
         frame = inspect.currentframe()
         for _ in range(levels + 1):
             frame = frame.f_back if frame is not None else None
@@ -162,7 +162,7 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def is_allowed_read() -> bool:
-        frame = RepeatedWork.frame_above(2)
+        frame = RepeatedWork.caller_frame(2)
         while frame is not None and frame.f_code.co_filename.endswith(READ_HELPERS):
             frame = frame.f_back
         if frame is None:
@@ -222,7 +222,7 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def caller_frames() -> list[traceback.FrameSummary]:
-        stack = traceback.StackSummary.extract(traceback.walk_stack(RepeatedWork.frame_above(1)), limit=CALLER_FRAMES, lookup_lines=False)
+        stack = traceback.StackSummary.extract(traceback.walk_stack(RepeatedWork.caller_frame(1)), limit=CALLER_FRAMES, lookup_lines=False)
         return [frame for frame in stack if not frame.filename.endswith(WATCH_FILES)]
 
     @staticmethod
@@ -264,7 +264,7 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def is_allowed_file_read() -> bool:
-        frame = RepeatedWork.frame_above(1)
+        frame = RepeatedWork.caller_frame(1)
         for _ in range(CALLER_FRAMES):
             if frame is None:
                 return False

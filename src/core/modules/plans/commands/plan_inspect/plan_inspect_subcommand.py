@@ -29,8 +29,8 @@ class PlanInspectSubcommand(ReadSubcommand[PlanInspection]):
         plan = self.queries.query(Plan).find(arguments.plan_id)
         assignee_id = PlanAssignee.agent_id(plan)
         assignee = self.queries.query(Agent).find(assignee_id) if assignee_id is not None else None
-        waits_on = tuple(wait.blocker_id for wait in self.waits.pending_for(plan.id))
-        return PlanInspection(plan, self.outlines.outline(arguments.plan_id), assignee, waits_on)
+        blocker_ids = tuple(wait.blocker_id for wait in self.waits.open_waits(plan.id))
+        return PlanInspection(plan, self.outlines.outline(arguments.plan_id), assignee, blocker_ids)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PlanInspection):

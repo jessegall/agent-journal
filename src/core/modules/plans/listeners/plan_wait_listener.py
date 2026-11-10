@@ -26,4 +26,4 @@ class PlanWaitListener(SaveListener[Changed[Plan]]):
         if plan.state in ENDED_STATES and old_row.state not in ENDED_STATES:
             self.waits.ended(plan, context)
         if old_row.state is PlanState.BLOCKED and plan.state is not PlanState.BLOCKED:
-            self.waits.left_blocked(plan, context)
+            self.waits.end_open_waits(plan, context)

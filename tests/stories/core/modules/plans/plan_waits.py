@@ -25,14 +25,14 @@ def inspected(story, plan_id: int) -> dict:
 def test_a_plan_blocked_on_two_plans_opens_when_the_second_ends_and_the_main_agent_is_told(new_story):
     story = new_story(fixture=ThreeStartedPlans)
     story.expect_success("plan block 1 --on plan:2 --on plan:3", "state: blocked", actor=story.user)
-    story.expect_rows(inspected(story, 1)["waits_on"] == [2, 3])
+    story.expect_rows(inspected(story, 1)["blocker_ids"] == [2, 3])
     story.expect_success('plan cancel 2 --reason "Not needed"', actor=story.user)
     story.expect_text("plan show 1", "state: blocked", actor=story.user)
-    story.expect_rows(inspected(story, 1)["waits_on"] == [3])
+    story.expect_rows(inspected(story, 1)["blocker_ids"] == [3])
     story.expect_absent(f"agent-line list --agent {story.agent.id}", "plan:1 is open again", actor=story.user)
     story.expect_success('plan cancel 3 --reason "Not needed either"', actor=story.user)
     story.expect_text("plan show 1", "state: started", actor=story.user)
-    story.expect_rows(inspected(story, 1)["waits_on"] == [])
+    story.expect_rows(inspected(story, 1)["blocker_ids"] == [])
     story.expect_text(f"agent-line list --agent {story.agent.id}", "plan:1 is open again", actor=story.user)
 
 
@@ -61,6 +61,6 @@ def test_ending_a_plan_unblocks_a_waiting_plan_that_the_person_unblocked_already
     story = new_story(fixture=ThreeStartedPlans)
     story.expect_success("plan block 1 --on plan:2", actor=story.user)
     story.expect_success("plan unblock 1", actor=story.user)
-    story.expect_rows(inspected(story, 1)["waits_on"] == [])
+    story.expect_rows(inspected(story, 1)["blocker_ids"] == [])
     story.expect_success('plan cancel 2 --reason "Not needed"', actor=story.user)
     story.expect_text("plan show 1", "state: started", actor=story.user)

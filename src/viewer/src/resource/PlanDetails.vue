@@ -24,8 +24,8 @@ defineProps({plan: {type: Object, required: true}, read: {type: Function, defaul
                 <p class="text">{{ plan.reason }}</p>
             </section>
         </template>
-        <template v-if="plan.waits_on?.length">
-            <p class="note" data-plan-waits-on>Opens by itself when {{ plan.waits_on.map((id) => `plan ${id}`).join(" and ") }} {{ plan.waits_on.length === 1 ? "ends" : "have ended" }}.</p>
+        <template v-if="plan.blocker_ids?.length">
+            <p class="note" data-plan-waits-on>Opens by itself when {{ plan.blocker_ids.map((id) => `plan ${id}`).join(" and ") }} {{ plan.blocker_ids.length === 1 ? "ends" : "have ended" }}.</p>
         </template>
         <template v-if="plan.total">
             <section class="part" data-plan-progress>
