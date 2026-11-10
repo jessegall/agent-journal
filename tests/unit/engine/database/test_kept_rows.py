@@ -202,13 +202,13 @@ def test_a_read_kept_for_its_owner_gives_each_scope_its_own_rows_and_loads_each_
     kept = KeptRows(database)
     loads = []
 
-    def owned_texts():
+    def texts_with_owner():
         loads.append(database.row_owner)
         return (*texts(database), str(database.row_owner))
 
     def read_as(owner):
         database.row_owner = owner
-        return kept.owner_read("notes", owned_texts, name="notes.owned")
+        return kept.owner_read("notes", texts_with_owner, name="notes.owned")
 
     worker, everyone = RowOwner(7, 1), None
     assert [read_as(owner)[-1] for owner in (worker, everyone, worker)] == [str(worker), "None", str(worker)]

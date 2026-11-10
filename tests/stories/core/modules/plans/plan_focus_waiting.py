@@ -47,7 +47,7 @@ def test_c3_a_task_reserved_for_another_agent_is_not_handed_out_and_the_read_nam
     task_id = outside_task(story, "Supplier contract")
     story.run(f"task assign {task_id} --to 2", actor=story.agent)
     story.run(f"task depend 2 --on {task_id}", actor=story.user)
-    story.expect_success(PLAN_FOCUS, FOCUS_ON_FIRST_PLAN, f"it waits on task {task_id}, which is reserved for agent 2", actor=story.agent)
+    story.expect_success(PLAN_FOCUS, FOCUS_ON_FIRST_PLAN, f"it waits on task {task_id}, which is reserved for worker 2", actor=story.agent)
 
 
 def test_c4_a_task_another_agent_started_is_not_handed_out_and_the_read_names_its_holder(new_story):
@@ -57,7 +57,7 @@ def test_c4_a_task_another_agent_started_is_not_handed_out_and_the_read_names_it
     story.run(f"task assign {task_id} --to 2", actor=story.agent)
     story.run(f"task start {task_id}", actor=holder)
     story.run(f"task depend 2 --on {task_id}", actor=story.user)
-    story.expect_success(PLAN_FOCUS, FOCUS_ON_FIRST_PLAN, f"it waits on task {task_id}, which agent 2 holds", actor=story.agent)
+    story.expect_success(PLAN_FOCUS, FOCUS_ON_FIRST_PLAN, f"it waits on task {task_id}, which worker 2 holds", actor=story.agent)
 
 
 def test_c5_a_task_that_waits_on_a_command_is_not_handed_out_and_the_read_says_what_it_waits_on(new_story):

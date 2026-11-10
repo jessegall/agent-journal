@@ -19,6 +19,8 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.conditions.task_tag_match import TaskTagMatch
+from core.modules.tasks.conditions.takeable_tasks import TakeableTasks
+from core.modules.agents.models.agent import MAIN_ROLE, Agent
 
 FOLLOWED_PLAN_STATES = ("approved", "started")
 
@@ -81,6 +83,9 @@ class TaskQuery(Query[Task]):
     def main_reserved(self, task_ids: Sequence[int]) -> Self:
         running_main_agents = Select("agents").matching(Among("role", [AgentRole.MAIN])).matching(IsNull("ended_at")).column("id")
         return self.matching(Among("id", task_ids)).matching(SubqueryMatch("delegated_to", running_main_agents)).matching(IsNull("holder_id")).matching(Among("state", [TaskState.OPEN, TaskState.BLOCKED]))
+
+    def takeable(self, agent: Agent) -> Self:
+        return self.matching(TakeableTasks(agent.id, agent.role == MAIN_ROLE))
 
     def open_tasks(self) -> Self:
         return self.filter(state=TaskState.OPEN)
