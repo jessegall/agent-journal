@@ -6,12 +6,12 @@ from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.profiles.support.profile_files import ProfileFiles
 
-SHOWN_FIELDS = ("name", "agent_type", "program", "model", "occupant", "access", "description")
+SHOWN_FIELDS = ("name", "agent_type", "program", "model", "occupant", "access", "description", "body")
 
 
 class ShowProfileSubcommand(ReadSubcommand[AgentProfile]):
     """`journal profile show <name>`: the effective profile, with a person's changes over the registered one:
-    its type, program, model, occupant, access and description."""
+    its type, program, model, occupant, access, description and body."""
 
     cli_name = "profile"
     name = "show"
