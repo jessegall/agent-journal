@@ -18,7 +18,7 @@ from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.guard_entry import GuardEntry
 from engine.registry.listener_entry import ListenerEntry
-from engine.registry.listener_timing import ListenerTiming
+from engine.enums.listener_timing import ListenerTiming
 from engine.registry.registry import Registry
 from engine.errors.refusal import Refusal
 from tests.unit.engine.samples.sample_container import sample_container

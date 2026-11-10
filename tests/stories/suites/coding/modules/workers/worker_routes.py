@@ -9,7 +9,7 @@ import pytest
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_folder, story_repository
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository, ENVIRONMENT_BRANCH

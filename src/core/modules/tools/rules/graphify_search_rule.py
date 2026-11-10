@@ -1,6 +1,6 @@
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.journal.journal_home import JournalHome
 from engine.enums.role_group import RoleGroup
@@ -9,7 +9,7 @@ from engine.driver.search_category import CODE, SearchCategory
 from engine.setting.setting_values import SettingValues
 from core.modules.tools.support.tool_catalogue import GRAPHIFY
 from core.modules.tools.support.tool_nudges import GRAPHIFY_FIRST, USE_GRAPHIFY
-from core.modules.tools.support.tool_setting import GRAPHIFY_BLOCK_AFTER, GRAPHIFY_NUDGE_AFTER
+from core.modules.tools.models.enums.tool_setting import GRAPHIFY_BLOCK_AFTER, GRAPHIFY_NUDGE_AFTER
 
 SCANNED_BLOCK_TOOL_USES = 3
 

@@ -6,7 +6,7 @@ from suites.coding.drivers.worker.rules.worker_command_type_rule import WorkerCo
 from suites.coding.drivers.worker.rules.worker_git_rule import WorkerGitRule
 from suites.coding.drivers.worker.rules.worker_full_test_run_rule import WorkerFullTestRunRule
 from suites.coding.drivers.worker.rules.worker_task_start_rule import WorkerTaskStartRule
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class WorkerDriver(Driver):

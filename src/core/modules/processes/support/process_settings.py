@@ -1,5 +1,5 @@
 from engine.driver.seconds import Seconds
-from core.modules.processes.models.support.process_setting import ProcessSetting
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 from engine.setting.setting_values import SettingValues
 
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from collections.abc import Sequence
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_mapping
 

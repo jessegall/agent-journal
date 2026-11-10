@@ -1,4 +1,4 @@
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from suites.coding.modules.workers.support.worker_settings import WORKER_BATCH_SIZE

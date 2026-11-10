@@ -26,7 +26,7 @@ from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.window_data_request import KEYS_HEADER, WINDOW_HEADER, WindowDataRequest
 from server.viewer.viewer_lines_request import ViewerLinesRequest
 from server.viewer.pair_request import PairRequest
-from server.viewer.session_type import SessionType
+from server.enums.session_type import SessionType
 from server.viewer.module_file_caching import ModuleFileCaching
 from server.viewer.share_sessions import ShareSessions
 from server.viewer.viewer_session import ViewerSession

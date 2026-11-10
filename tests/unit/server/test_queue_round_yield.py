@@ -1,7 +1,7 @@
 import threading
 import time
 
-from server.hook.queue_priority import QueuePriority
+from server.enums.queue_priority import QueuePriority
 from server.hook.queue_round_yield import QueueRoundYield
 from server.hook.server_queue import ServerQueue
 

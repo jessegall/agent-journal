@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 
 from engine.database.database import Database
 from engine.query.queries import Queries

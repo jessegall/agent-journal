@@ -5,7 +5,7 @@ from time import perf_counter
 from engine.testing.examples.hook_samples import HookSamples
 from server.endpoints.cli_endpoint import CliEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
-from server.hook.queue_priority import QueuePriority
+from server.enums.queue_priority import QueuePriority
 from server.hook.queue_request import QueueRequest
 from server.work.journal_round import JournalRound
 from server.work.round_work import RoundWork

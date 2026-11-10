@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.modules.developer.support.private_data_category import PrivateDataCategory
+from core.modules.developer.models.enums.private_data_category import PrivateDataCategory
 
 
 @dataclass(frozen=True)

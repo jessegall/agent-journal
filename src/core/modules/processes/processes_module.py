@@ -58,14 +58,14 @@ from engine.driver.watched_runs import WatchedRuns
 from core.modules.processes.support.monitored_runs import MonitoredRuns
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from engine.viewer.auto_scroll import AutoScroll
+from engine.enums.auto_scroll import AutoScroll
 from engine.viewer.window_search import WindowSearch
 from core.modules.processes.support.process_searcher import ProcessSearcher
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
-from engine.viewer.key_loading import KeyLoading
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
+from engine.enums.key_loading import KeyLoading
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
 from core.modules.processes.upgrade.processes_move import ProcessesMove
 from core.modules.processes.commands.end_process.end_process_handler import EndProcessHandler
 from core.modules.processes.commands.end_process_part.end_process_part_handler import EndProcessPartHandler
@@ -214,7 +214,7 @@ from core.modules.processes.models.watch import Watch
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.watch_query import WatchQuery
-from core.modules.processes.models.support.process_setting import PROCESS_SETTINGS
+from core.modules.processes.models.enums.process_setting import PROCESS_SETTINGS
 from core.modules.processes.seeders.processes_seeder import ProcessesSeeder
 from core.modules.processes.support.block_conditions.output_ended import OutputEnded
 from core.modules.processes.support.block_conditions.output_monitored import OutputMonitored
@@ -227,7 +227,7 @@ WINDOW_EVENTS = ["process.*", "output.*"]
 
 
 from core.modules.processes.support.queue_inspector import QUEUE_INSPECTOR
-from engine.viewer.window_place import WindowPlace
+from engine.enums.window_place import WindowPlace
 from engine.viewer.skeleton_part import SkeletonPart
 
 

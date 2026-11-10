@@ -1,7 +1,7 @@
 from core.modules.tasks.support.task_nudges import MISSED_LOG, CURRENT_TASK
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 from engine.enums.agent_role import AgentRole

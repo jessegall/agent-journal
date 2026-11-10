@@ -4,9 +4,9 @@ from dataclasses import dataclass, replace
 from datetime import timedelta
 
 from engine.actor.actor import Actor
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.driver.hook_reply import HookReply
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.models.process import Process

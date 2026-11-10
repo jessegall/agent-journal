@@ -2,8 +2,8 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.driver.command_category import CommandCategory
-from engine.driver.command_effect import CommandEffect
+from engine.enums.command_category import CommandCategory
+from engine.enums.command_effect import CommandEffect
 from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart

@@ -7,7 +7,7 @@ from engine.module.layer import Layer
 from engine.module.layer_check import LayerCheck
 from engine.module.layer_rules import LayerRules
 from engine.module.layer_table import LayerTable
-from engine.module.layer_tier import LayerTier
+from engine.enums.layer_tier import LayerTier
 from engine.module.module import Module
 
 

@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.subcommand.output import Output as CommandOutput
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.processes.queries.output_query import OutputQuery

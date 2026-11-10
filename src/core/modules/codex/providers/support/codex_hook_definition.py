@@ -4,7 +4,7 @@ import os
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from core.modules.codex.providers.support.codex_hook_event import CodexHookEvent
+from core.modules.codex.models.enums.codex_hook_event import CodexHookEvent
 from core.modules.codex.providers.support.codex_command_identity import CodexCommandIdentity
 from core.modules.codex.providers.support.codex_hook_identity import CodexHookIdentity
 

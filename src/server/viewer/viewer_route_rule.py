@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from server.viewer.route_audience import RouteAudience
+from server.enums.route_audience import RouteAudience
 
 
 @dataclass(frozen=True)

@@ -1,5 +1,5 @@
 from engine.setting.ruled_settings import ruled_settings
-from engine.setting.setting_type import SettingType
+from engine.enums.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
 from engine.setting.list_rule import ListRule
 from engine.setting.number_rule import NumberRule

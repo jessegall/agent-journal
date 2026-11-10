@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from engine.driver.tool import Tool
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from engine.driver.search_category import CODE, SearchCategory
 
 PROJECT = Path("/work/project")

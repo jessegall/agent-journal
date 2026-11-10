@@ -1,4 +1,4 @@
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 import json
 import os
 from pathlib import Path

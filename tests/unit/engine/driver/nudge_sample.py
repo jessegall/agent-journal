@@ -1,5 +1,5 @@
 from engine.driver.nudge import Nudge
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 
 
 def sample_nudge(text: str, type: NudgeType = NudgeType.STEERING) -> Nudge:

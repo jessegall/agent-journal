@@ -1,8 +1,8 @@
 import json
 
 from engine.query.queries import Queries
-from engine.driver.command_category import CommandCategory
-from engine.driver.tool_type import ToolType
+from engine.enums.command_category import CommandCategory
+from engine.enums.tool_type import ToolType
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.stories.story_fixture import StoryFixture

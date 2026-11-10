@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.modules.voices.support.address_form import AddressForm
+from core.modules.voices.models.enums.address_form import AddressForm
 
 PLAIN_VOCABULARY = ("The voice shapes only your tone and how you address me. Keep the normal names of agents, tasks and environments in every voice. "
                     "Code, commit messages, docs, reports and briefs are always in plain language.")

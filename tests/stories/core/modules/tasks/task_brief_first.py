@@ -13,7 +13,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from engine.database.database import Database
 from datetime import timedelta
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart

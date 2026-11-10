@@ -7,11 +7,11 @@ import tomllib
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
-from engine.provider.hook_trust import HookTrust
+from engine.enums.hook_trust import HookTrust
 from engine.provider.program_hooks import ProgramHooks
 from engine.types.type_guards import is_list, is_mapping, is_text_mapping
 from core.modules.codex.providers.support.codex_hook_definition import CodexHookDefinition
-from core.modules.codex.providers.support.codex_hook_event import CodexHookEvent
+from core.modules.codex.models.enums.codex_hook_event import CodexHookEvent
 
 CAPITAL = re.compile(r"(?<!^)(?=[A-Z])")
 STATE_TABLE = re.compile(r'''(?ms)^\[hooks\.state\.(?:"(?:[^"\\]|\\.)*"|'[^']*')\][ \t]*(?:\r?\n|$).*?(?=^\[|\Z)''')

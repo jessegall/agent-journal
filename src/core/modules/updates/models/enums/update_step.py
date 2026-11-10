@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from engine.chat.mark_outcome import MarkOutcome
+from engine.enums.mark_outcome import MarkOutcome
 
 RUNNING_STEP_COUNT = 4
 

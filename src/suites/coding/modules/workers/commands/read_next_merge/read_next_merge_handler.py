@@ -3,7 +3,7 @@ from dataclasses import replace
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.driver.nudge import Nudge
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.query.queries import Queries
 from engine.repository.repository import Repository

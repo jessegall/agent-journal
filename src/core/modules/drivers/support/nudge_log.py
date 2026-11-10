@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from engine.command.context import Context
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.nudge import Nudge
 from engine.driver.rule_answers import RuleAnswers
 from engine.driver.span_queries import SpanQueries

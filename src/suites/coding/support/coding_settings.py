@@ -1,7 +1,7 @@
-from engine.driver.command_category import CommandCategory
-from engine.setting.setting_scope import SettingScope
+from engine.enums.command_category import CommandCategory
+from engine.enums.setting_scope import SettingScope
 from engine.setting.ruled_settings import ruled_settings
-from engine.setting.setting_type import SettingType
+from engine.enums.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
 from engine.setting.list_rule import ListRule
 

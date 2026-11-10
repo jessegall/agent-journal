@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.driver.hook_event import HookEvent
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.enums.agent_role import AgentRole
 from engine.driver.open_row import OpenRow
 from engine.time.timestamp import Timestamp

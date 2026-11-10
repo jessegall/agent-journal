@@ -15,7 +15,7 @@ from engine.query.queries import Queries
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.drivers.models.agent_line import AgentLine
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry

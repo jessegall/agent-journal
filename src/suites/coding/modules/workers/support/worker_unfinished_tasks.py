@@ -1,4 +1,4 @@
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.tasks.models.task import Task

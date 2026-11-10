@@ -10,7 +10,7 @@ from core.modules.environments.models.environment import Environment
 from core.modules.plugins.models.enums.plugin_mark_type import PluginMarkType
 from core.modules.plugins.models.enums.plugin_mark_variant import PluginMarkVariant
 from core.modules.plugins.support.plugin_event_rows import PluginEventRows
-from core.modules.plugins.support.plugin_event_state import PluginEventState
+from core.modules.plugins.models.enums.plugin_event_state import PluginEventState
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins

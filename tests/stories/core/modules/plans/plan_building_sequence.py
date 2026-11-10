@@ -2,7 +2,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.sequences.models.sequence_run import SequenceRun
 from engine.testing.examples.hook_samples import HookSamples

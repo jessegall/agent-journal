@@ -6,7 +6,7 @@ from engine.database.migration import Migration
 from engine.model.model import Model
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from engine.setting.setting_type import SettingType
+from engine.enums.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
 from engine.database.database import Database
 from engine.database.statement import Statement

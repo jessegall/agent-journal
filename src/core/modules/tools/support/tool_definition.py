@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.setting.setting_group import SettingGroup
-from core.modules.tools.support.tool_setting import MODULE_KEY
+from core.modules.tools.models.enums.tool_setting import MODULE_KEY
 
 
 @dataclass(frozen=True)

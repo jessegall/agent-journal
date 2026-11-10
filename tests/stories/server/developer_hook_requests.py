@@ -3,11 +3,11 @@ import sqlite3
 from concurrent.futures import ThreadPoolExecutor
 from time import perf_counter
 
-from server.hook.queue_priority import QueuePriority
+from server.enums.queue_priority import QueuePriority
 
 import pytest
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from engine.enums.hook_answer import HookAnswer
 from engine.testing.examples.hook_samples import HookSamples

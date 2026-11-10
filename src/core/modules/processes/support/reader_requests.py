@@ -15,7 +15,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader_request import ReaderRequest
-from core.modules.processes.models.support.process_setting import ProcessSetting
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope

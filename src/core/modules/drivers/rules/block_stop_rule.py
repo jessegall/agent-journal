@@ -2,9 +2,9 @@ from engine.container.container import Container
 from engine.enums.role_group import RoleGroup
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.nudge import Nudge
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 from engine.driver.rule_answer import RuleAnswer
 from engine.module.block_conditions import BlockConditions
 from engine.query.conditions.is_null import IsNull

@@ -1,6 +1,6 @@
 from engine.module.module import Module
 from engine.viewer.button_declaration import ButtonDeclaration
-from engine.viewer.window_icon import WindowIcon
+from engine.enums.window_icon import WindowIcon
 
 PATH = "tests.stories.engine.viewer.support.button_icon_modules"
 DEPENDENCIES = ["journal.core.tasks", "journal.core.plans", "journal.core.viewer"]

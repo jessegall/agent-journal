@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from engine.caller.caller import Caller
-from engine.provider.hook_trust import HookTrust
+from engine.enums.hook_trust import HookTrust
 from engine.provider.providers import Providers
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand

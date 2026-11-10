@@ -3,12 +3,12 @@ from dataclasses import replace
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.registry.registry import Registry
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, ManifestListener
 from core.modules.plugins.support.plugin_event_row import PluginEventRow
-from core.modules.plugins.support.plugin_event_state import PluginEventState
+from core.modules.plugins.models.enums.plugin_event_state import PluginEventState
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_event_entry import CEILING_SETTING
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME

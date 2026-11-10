@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from engine.change.event_type import EventType
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.events.agent_compacted import AgentCompacted
 from core.modules.drivers.events.prompt_submitted import PromptSubmitted
 from core.modules.drivers.events.session_started import SessionStarted

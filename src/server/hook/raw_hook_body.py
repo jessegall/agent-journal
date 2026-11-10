@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from engine.types.type_guards import is_mapping
 from engine.driver.hook_event import HookEvent
 from engine.driver.errors.hook_event_error import HookEventError
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.hook_fields import mapping, text
 from engine.driver.tool import Tool
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from server.hook.hook_headers import HookHeaders
 
 RAW_BODY_VERSION = 0

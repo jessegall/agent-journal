@@ -1,5 +1,5 @@
-from engine.setting.setting_scope import SettingScope
-from engine.setting.setting_type import SettingType
+from engine.enums.setting_scope import SettingScope
+from engine.enums.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
 from core.modules.voices.support.builtin_catalogue import BuiltinCatalogue
 

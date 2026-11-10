@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from server.hook.queue_priority import QueuePriority
+from server.enums.queue_priority import QueuePriority
 from server.viewer.line_route import LineRoute
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.server.support.server_client import server_story, viewer_answer

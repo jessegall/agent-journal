@@ -1,10 +1,10 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from engine.testing.examples.hook_samples import HookSamples
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment

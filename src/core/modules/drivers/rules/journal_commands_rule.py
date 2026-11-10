@@ -1,5 +1,5 @@
-from engine.driver.command_category import CommandCategory
-from engine.driver.tool_type import ToolType
+from engine.enums.command_category import CommandCategory
+from engine.enums.tool_type import ToolType
 from core.modules.drivers.rules.allowed_tools_rule import AllowedToolsRule
 from core.modules.drivers.support.access_nudges import JOURNAL_RESTRICTION
 

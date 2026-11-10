@@ -1,5 +1,5 @@
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 from suites.coding.models.enums.ask_topic import AskTopic
 
 WORKER_TEST_LIMIT_SOURCE = "processes.worker-test-limit"

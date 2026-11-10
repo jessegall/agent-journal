@@ -9,7 +9,7 @@ from engine.errors.refusal import Refusal
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.environments.models.environment import Environment
 from server.viewer.viewer_key import ViewerKey
-from server.viewer.session_type import SessionType
+from server.enums.session_type import SessionType
 from server.viewer.viewer_login import ViewerLogin
 
 

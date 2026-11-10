@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
 from engine.driver.classification import Classification
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.driver.part import Part
 from engine.driver.shell_line import ShellLine
-from core.modules.processes.models.support.process_setting import ProcessSetting
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.support.foreground_limit import ForegroundLimit
 from core.modules.processes.support.part_command import PartCommand
 from core.modules.processes.support.run_waits import RunWaits

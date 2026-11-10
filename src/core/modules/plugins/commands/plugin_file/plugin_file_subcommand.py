@@ -6,7 +6,7 @@ from engine.scope.environment_scope import EnvironmentScope
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plugins.support.plugin_call_access import PluginCallAccess
-from core.modules.plugins.support.plugin_file_place import PluginFilePlace
+from core.modules.plugins.models.enums.plugin_file_place import PluginFilePlace
 from core.modules.plugins.support.plugin_file_text import PluginFileText
 
 

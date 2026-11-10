@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from core.modules.developer.support.private_data_category import PrivateDataCategory
+from core.modules.developer.models.enums.private_data_category import PrivateDataCategory
 from core.modules.developer.support.private_data_scan import PrivateDataScan
 
 # the private shapes are put together here, so this file holds none of them whole

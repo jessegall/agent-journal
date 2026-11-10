@@ -1,5 +1,5 @@
 from engine.driver.agent_hook import AgentHook
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.tool import Tool
 from core.modules.plugins.support.plugin_event import PluginEvent
 

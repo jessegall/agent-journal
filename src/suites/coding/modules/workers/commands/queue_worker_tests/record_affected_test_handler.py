@@ -4,7 +4,7 @@ from dataclasses import replace
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.driver.nudger import Nudger

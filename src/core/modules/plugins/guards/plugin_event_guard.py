@@ -2,7 +2,7 @@ from engine.change.changed import Changed
 from engine.guard.errors.guard_refusal import SKIP_ALLOWED_CASE
 from engine.command.context import Context
 from engine.guard.guard import Guard
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.model.model import Model
 from engine.errors.refusal import Refusal
 from core.modules.plugins.support.plugin_event_scripts import GUARD_NAME, PluginEventScripts

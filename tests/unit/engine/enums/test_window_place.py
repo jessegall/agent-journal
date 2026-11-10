@@ -1,4 +1,4 @@
-from engine.viewer.window_place import WindowPlace
+from engine.enums.window_place import WindowPlace
 
 
 def test_existing_pane_and_page_place_keeps_its_value():

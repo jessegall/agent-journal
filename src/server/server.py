@@ -53,7 +53,7 @@ from server.work.program_stop_listener_work import ProgramStopListenerWork
 from server.work.urgent_listener_work import UrgentListenerWork
 from server.tick.ticker import Ticker
 from server.viewer.session_file import SessionFile
-from server.viewer.closed_service import ClosedService
+from server.enums.closed_service import ClosedService
 from server.viewer.viewer_listener import ViewerListener
 from server.viewer.viewer_socket_listener import ViewerSocketListener
 from server.viewer.phone_sessions import PhoneSessions

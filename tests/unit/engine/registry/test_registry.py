@@ -14,9 +14,9 @@ from engine.model.tables import Tables
 from engine.dotted_path.dotted_path import DottedPath
 from engine.dotted_path.errors.dotted_path_error import DottedPathError
 from engine.database.registry_table import RegistryTable
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.registry.event_key_entry import EventKeyEntry
-from engine.registry.listener_timing import ListenerTiming
+from engine.enums.listener_timing import ListenerTiming
 from engine.registry.registry import Registry
 from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.profile.agent_profile import AgentProfile

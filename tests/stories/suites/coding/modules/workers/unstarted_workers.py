@@ -2,7 +2,7 @@ import pytest
 
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID, start_launcher, worker_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH
 from tests.stories.support.story_checks import expect_value

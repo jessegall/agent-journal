@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 
 from engine.testing.examples.hook_samples import HookSamples
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.shell_part import ShellPart
 from engine.repository.repository import Repository
 from engine.registry.registry import Registry

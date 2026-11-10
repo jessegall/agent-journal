@@ -5,7 +5,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.commands.end_gone_worker.end_gone_worker import EndGoneWorker
 from suites.coding.modules.workers.support.gone_agents import GoneAgents
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class GoneWorkerRecovery:

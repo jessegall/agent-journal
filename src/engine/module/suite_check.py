@@ -1,6 +1,6 @@
 from collections.abc import Iterator, Mapping, Sequence
 
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.suite import Suite
 from engine.module.module import Module
 from engine.module.name_groups import NameGroups

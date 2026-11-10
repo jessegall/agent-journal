@@ -1,7 +1,7 @@
 from engine.driver.interval import Interval
 from engine.driver.seconds import Seconds
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 
 CHECK_FAILED = NudgeDeclaration("checks.check_failed", NudgeType.NOTICE, 'check:{check} failed', turn_limited=False)
 

@@ -8,7 +8,7 @@ from engine.model.view_model import ViewModel
 from engine.viewer.button_declaration import ButtonDeclaration
 from engine.viewer.inspector_component import InspectorComponent
 from engine.viewer.inspector_links import InspectorLinks
-from engine.viewer.inspector_width import InspectorWidth
+from engine.enums.inspector_width import InspectorWidth
 
 
 @dataclass(frozen=True)

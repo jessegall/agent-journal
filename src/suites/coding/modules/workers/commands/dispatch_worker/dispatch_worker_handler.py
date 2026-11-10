@@ -15,7 +15,7 @@ from engine.errors.refusal import Refusal
 from core.modules.profiles.support.profile_files import ProfileFiles
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.environments.models.environment import Environment
 from core.modules.environments.support.environment_rows import EnvironmentRows

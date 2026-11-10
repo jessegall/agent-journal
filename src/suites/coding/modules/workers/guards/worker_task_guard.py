@@ -2,7 +2,7 @@ from engine.guard.guard import Guard
 from engine.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from core.modules.tasks.queries.task_query import TaskQuery
 from engine.change.moved import Moved
 from engine.command.context import Context

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from engine.driver.command_category import CommandCategory
-from engine.driver.command_effect import CommandEffect
+from engine.enums.command_category import CommandCategory
+from engine.enums.command_effect import CommandEffect
 from engine.driver.errors.hook_event_error import HookEventError
 from engine.driver.hook_fields import mapping, text, texts
 

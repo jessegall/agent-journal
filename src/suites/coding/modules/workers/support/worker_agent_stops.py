@@ -1,7 +1,7 @@
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_stops import AgentStops
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class WorkerAgentStops(AgentStops):

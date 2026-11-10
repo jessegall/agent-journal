@@ -4,7 +4,7 @@ import pytest
 
 from engine.time.timestamp import Timestamp
 
-from server.viewer.session_type import SessionType
+from server.enums.session_type import SessionType
 from server.viewer.share_link_session import ShareLinkSession
 from server.viewer.shared_row import SharedRow
 from server.errors.share_session_error import ShareSessionError

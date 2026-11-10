@@ -2,16 +2,16 @@ from engine.driver.suite import Suite
 from engine.guard.guard import Guard
 from engine.model.model import Model
 from engine.module.module import Module
-from engine.viewer.auto_scroll import AutoScroll
+from engine.enums.auto_scroll import AutoScroll
 from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.window_tab import WindowTab
 from engine.viewer.layout_shape import split, tabs
 from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_icon import WindowIcon
+from engine.enums.window_icon import WindowIcon
 from engine.viewer.choice_option import ChoiceOption
 from engine.viewer.toggle_option import ToggleOption
 from engine.viewer.window_size import WindowSize
-from engine.viewer.window_loading import WindowLoading
+from engine.enums.window_loading import WindowLoading
 from engine.viewer.skeleton_part import SkeletonPart
 from engine.change.moved import Moved
 from engine.command.context import Context

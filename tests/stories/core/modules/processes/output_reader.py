@@ -13,7 +13,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.reader_step import ReaderStep
 from core.modules.processes.ticks.output_reading import OutputReading
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import BYTES_LONG, install_runner, start_process, tick

@@ -2,7 +2,7 @@ import pytest
 
 from engine.journal.journal_home import JournalHome
 from server.hook.hook_database import HookDatabase
-from server.hook.queue_priority import QueuePriority
+from server.enums.queue_priority import QueuePriority
 
 
 @pytest.mark.parametrize("seconds", [0.125, 5.0])

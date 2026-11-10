@@ -29,9 +29,9 @@ from core.modules.documents.support.doc_searcher import DocSearcher
 from core.modules.documents.support.document_nudges import DOCUMENT_OPEN, DOCUMENT_STOP_REFUSAL
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
-from engine.viewer.window_place import WindowPlace
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
+from engine.enums.window_place import WindowPlace
 from core.modules.documents.commands.comment_text.comment_text_handler import CommentTextHandler
 from core.modules.documents.commands.comment_doc.comment_doc_subcommand import CommentDocSubcommand
 from core.modules.documents.commands.report_comment.report_comment_subcommand import ReportCommentSubcommand

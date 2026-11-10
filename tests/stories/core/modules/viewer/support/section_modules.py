@@ -3,8 +3,8 @@ from engine.module.module import Module
 from engine.viewer.button_declaration import ButtonDeclaration
 from engine.viewer.skeleton_part import SkeletonPart
 from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_loading import WindowLoading
-from engine.viewer.window_place import WindowPlace
+from engine.enums.window_loading import WindowLoading
+from engine.enums.window_place import WindowPlace
 
 MODULE_FILE = "tests.stories.core.modules.viewer.support.section_modules"
 UNKNOWN_SLOT = f"{MODULE_FILE}:UnknownSlotModule"

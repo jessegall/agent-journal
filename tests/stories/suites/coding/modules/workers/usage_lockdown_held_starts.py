@@ -8,7 +8,7 @@ from engine.provider.launch_command import LaunchCommand
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launcher import AgentLauncher
-from core.modules.agents.support.launch_answer import LaunchAnswer
+from core.modules.agents.models.enums.launch_answer import LaunchAnswer
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState

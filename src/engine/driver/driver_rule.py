@@ -2,10 +2,10 @@ from collections.abc import Sequence
 from typing import ClassVar
 
 from engine.driver.agent_hook import AgentHook
-from engine.driver.hook_wildcard import HookWildcard
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_wildcard import HookWildcard
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from engine.enums.role_group import RoleGroup
 from engine.scope.scopes import WholeScopes
 

@@ -4,7 +4,7 @@ from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from engine.registry.registry import Registry
-from engine.registry.button_window import ButtonWindow
+from engine.enums.button_window import ButtonWindow
 from core.modules.drivers.support.active_modules import ActiveModules
 from core.modules.viewer.commands.support.window_allowances import WindowAllowances
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType

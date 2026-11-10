@@ -5,7 +5,7 @@ from engine.change.event_log import EventLog
 from engine.change.logged_event import LoggedEvent
 from engine.command.context import Context
 from engine.model.environment_scoped import EnvironmentScoped
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.model.model import Model
 
 

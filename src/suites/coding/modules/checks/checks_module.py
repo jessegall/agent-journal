@@ -13,12 +13,12 @@ from suites.coding.modules.checks.support.check_searcher import CheckSearcher
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
 from engine.viewer.window_extension import WindowExtension
-from engine.viewer.window_icon import WindowIcon
+from engine.enums.window_icon import WindowIcon
 from engine.check.periodic_checks import PeriodicChecks
 from engine.check.step_checks import StepChecks
 from suites.coding.modules.checks.support.passed_checks import PassedChecks
-from engine.viewer.window_loading import WindowLoading
-from engine.viewer.window_place import WindowPlace
+from engine.enums.window_loading import WindowLoading
+from engine.enums.window_place import WindowPlace
 from suites.coding.modules.checks.commands.check_list.check_list_subcommand import CheckListSubcommand
 from suites.coding.modules.checks.commands.check_show.check_show_subcommand import CheckShowSubcommand
 from suites.coding.modules.checks.commands.edit_check.edit_check_handler import EditCheckHandler

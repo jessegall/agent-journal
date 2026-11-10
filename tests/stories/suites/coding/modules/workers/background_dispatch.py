@@ -1,5 +1,5 @@
 from engine.database.database import Database
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.registry.registry import Registry
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart

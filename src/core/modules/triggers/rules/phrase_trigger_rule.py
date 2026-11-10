@@ -8,8 +8,8 @@ from core.modules.triggers.support.trigger_nudges import TRIGGER_DENIES, TRIGGER
 from engine.enums.role_group import RoleGroup
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
-from engine.driver.hook_wildcard import HookWildcard
+from engine.enums.hook_event_name import HookEventName
+from engine.enums.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.triggers.commands.fire_trigger.fire_trigger import FireTrigger
 from core.modules.triggers.models.enums.trigger_action import TriggerAction

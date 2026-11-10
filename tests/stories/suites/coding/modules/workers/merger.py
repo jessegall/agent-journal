@@ -31,7 +31,7 @@ from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from core.modules.profiles.support.profile_files import ProfileFiles
 from suites.coding.modules.workers.commands.start_merger.start_merger_handler import StartMergerHandler
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, UserBuilder
 from tests.stories.engine.driver.support.hook_agents import hook_agent

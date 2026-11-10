@@ -6,7 +6,7 @@ from engine.container.container import Container
 from engine.errors.refusal import Refusal
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from core.modules.processes.models.process import Process
-from core.modules.processes.models.support.process_setting import ProcessSetting
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.rules.support.run_folder_ends import RunFolderEnds
 from core.modules.processes.support.output_folder import OutputFolder

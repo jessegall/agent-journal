@@ -1,4 +1,4 @@
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.command.context import Context
 from engine.database.database import Database
 from engine.query.queries import Queries

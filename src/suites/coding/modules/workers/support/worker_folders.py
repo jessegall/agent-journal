@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from core.modules.agents.models.agent import Agent
 from engine.journal.journal_home import JournalHome
 from engine.query.conditions.among import Among

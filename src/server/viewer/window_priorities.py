@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from functools import cached_property
 from engine.module.module_finder import ModuleFinder
 from engine.module.window_extensions import WindowExtensions
-from engine.viewer.window_priority import WindowPriority
+from engine.enums.window_priority import WindowPriority
 from engine.viewer.window_declaration import WindowDeclaration
 
 

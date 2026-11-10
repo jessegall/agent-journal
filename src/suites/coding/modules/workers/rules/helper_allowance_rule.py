@@ -3,9 +3,9 @@ from suites.coding.support.coding_nudges import MAIN_HELPER_BAN
 from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
 from suites.coding.support.auto_advice import AutoAdvice
 from engine.driver.agent_hook import AgentHook
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.setting.setting_values import SettingValues
 

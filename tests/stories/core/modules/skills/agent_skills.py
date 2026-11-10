@@ -4,8 +4,8 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.database.database import Database
-from engine.driver.command_category import CommandCategory
-from engine.driver.tool_type import ToolType
+from engine.enums.command_category import CommandCategory
+from engine.enums.tool_type import ToolType
 from engine.skill.skill_digest import SkillDigest
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from engine.testing.examples.hook_samples import HookSamples

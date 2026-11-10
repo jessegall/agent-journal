@@ -9,8 +9,8 @@ from core.modules.environments.models.environment import Environment
 from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure import RecordAgentLaunchFailure
 from core.modules.agents.commands.record_agent_process.record_agent_process import RecordAgentProcess
 from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
-from core.modules.agents.support.agent_session_state import AgentSessionState
-from core.modules.agents.support.launch_answer import LaunchAnswer
+from core.modules.agents.models.enums.agent_session_state import AgentSessionState
+from core.modules.agents.models.enums.launch_answer import LaunchAnswer
 
 FAILED_ANSWER = b"failed\n"
 RUNNING_ANSWER = b"running\n"

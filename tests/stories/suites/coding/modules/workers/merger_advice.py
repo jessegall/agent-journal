@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 import suites.coding.modules.workers as workers_package
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from engine.testing.examples.hook_samples import HookSamples

@@ -1,5 +1,5 @@
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 
 PARENT_REPORT_SOURCE = "agents.report"
 REPORT_FIELD = "last_assistant_message"

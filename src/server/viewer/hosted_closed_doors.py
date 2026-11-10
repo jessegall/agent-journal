@@ -1,7 +1,7 @@
 from collections.abc import Mapping, Sequence
 
 from server.viewer.closed_doors import ClosedDoors
-from server.viewer.closed_service import ClosedService
+from server.enums.closed_service import ClosedService
 from server.viewer.viewer_request_handler import LOGIN_LINK_ROUTE, NOTICES_ROUTE, PAIRING_PAGE, PAIRING_ROUTE, PHONE_FILES, SHARE_COMMENTS_ROUTE, SHARE_ROUTE, VIEWER_ROOT
 
 CLOSED_PATHS = frozenset({LOGIN_LINK_ROUTE, PAIRING_PAGE, PAIRING_ROUTE, NOTICES_ROUTE, SHARE_COMMENTS_ROUTE})

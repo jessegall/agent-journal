@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import pytest
 
 from engine.enums.agent_role import AgentRole
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.query.queries import Queries
 from engine.registry.registry import Registry
 from engine.scope.scopes import Scopes

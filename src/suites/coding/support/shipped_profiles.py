@@ -1,4 +1,4 @@
-from engine.profile.model_tier import ModelTier
+from engine.enums.model_tier import ModelTier
 from engine.profile.agent_profile import AgentProfile
 from suites.coding.support.profile_commands import READ_COMMANDS, DOCUMENT_COMMANDS, PLAN_COMMANDS, PLAN_REVIEW_COMMANDS, WORKER_COMMANDS
 

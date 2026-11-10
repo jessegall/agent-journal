@@ -1,5 +1,5 @@
-from engine.driver.command_category import CommandCategory
-from engine.driver.command_effect import CommandEffect
+from engine.enums.command_category import CommandCategory
+from engine.enums.command_effect import CommandEffect
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.engine.driver.support.fixtures import LeadLocked, LeadStarted

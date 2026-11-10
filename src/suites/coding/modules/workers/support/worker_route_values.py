@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from engine.profile.model_tier import ModelTier
+from engine.enums.model_tier import ModelTier
 from core.modules.tasks.models.support.task_complexity import TaskComplexity
 
 

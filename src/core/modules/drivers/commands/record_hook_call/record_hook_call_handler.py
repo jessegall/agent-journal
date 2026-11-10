@@ -11,7 +11,7 @@ from engine.listener.event_rows import EventRows
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
 from engine.driver.agent_hook import AgentHook
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.hook_reply import HookReply
 from engine.driver.project_paths import ProjectPaths
 from engine.journal.journal_home import JournalHome

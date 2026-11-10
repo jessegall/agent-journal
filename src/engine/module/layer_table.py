@@ -2,7 +2,7 @@ import re
 
 from engine.module.layer import Layer
 from engine.module.layer_pattern import LayerPattern
-from engine.module.layer_tier import LayerTier
+from engine.enums.layer_tier import LayerTier
 
 LAYER_PATTERNS = (
     LayerPattern(re.compile(r"src/engine/testing/"), LayerTier.TEST_KIT),

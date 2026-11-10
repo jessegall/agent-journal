@@ -8,7 +8,7 @@ from engine.enums.role_group import RoleGroup
 from engine.command.command import Command
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_wildcard import HookWildcard
+from engine.enums.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
@@ -30,7 +30,7 @@ from core.modules.plugins.support.plugin_run import PluginRun
 from core.modules.plugins.support.plugin_run_request import PluginRunRequest
 from core.modules.plugins.support.runnable_plugin import RunnablePlugin
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.setting.setting_values import SettingValues
 
 

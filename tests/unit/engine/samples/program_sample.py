@@ -1,16 +1,16 @@
 from collections.abc import Sequence
 from pathlib import Path
 
-from engine.driver.hook_event_name import HookEventName
-from engine.driver.tool_type import ToolType
+from engine.enums.hook_event_name import HookEventName
+from engine.enums.tool_type import ToolType
 from engine.provider.helper_launch import HelperLaunch
 from engine.provider.helper_outcome import HelperOutcome
 from engine.provider.hook_file import HookFile
-from engine.provider.hook_trust import HookTrust
+from engine.enums.hook_trust import HookTrust
 from engine.provider.launch import Launch
 from engine.provider.launch_command import LaunchCommand
 from engine.provider.provider import Provider
-from engine.driver.refusal_style import RefusalStyle
+from engine.enums.refusal_style import RefusalStyle
 from engine.provider.transcript_row import TranscriptRow
 
 HOOK_FILE = Path(".sample/hooks.json")

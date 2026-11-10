@@ -1,10 +1,10 @@
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.driver.shell_line import ShellLine
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.background_commands import BackgroundCommands
 from core.modules.processes.support.foreground_run import ForegroundRun
-from core.modules.processes.models.support.process_setting import ProcessSetting
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.run_waits import RunWaits
 

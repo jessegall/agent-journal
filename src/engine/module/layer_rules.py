@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from engine.module.layer import Layer
 from engine.module.layer_table import LayerTable
-from engine.module.layer_tier import LayerTier
+from engine.enums.layer_tier import LayerTier
 from engine.module.module import Module
 
 ENGINE_LAYER = Layer(LayerTier.ENGINE, LayerTier.ENGINE.value)

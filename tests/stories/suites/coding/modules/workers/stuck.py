@@ -5,7 +5,7 @@ import json
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.merger_line import MergerLine

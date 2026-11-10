@@ -1,6 +1,6 @@
 from collections.abc import Mapping, Sequence
 
-from server.viewer.closed_service import ClosedService
+from server.enums.closed_service import ClosedService
 
 
 class ClosedDoors:

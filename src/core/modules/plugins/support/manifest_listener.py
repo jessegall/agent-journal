@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.types.type_guards import is_mapping
 
 

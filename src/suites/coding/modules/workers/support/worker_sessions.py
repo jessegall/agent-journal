@@ -14,7 +14,7 @@ from engine.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
 from core.modules.agents.support.agent_program import AgentProgram
-from core.modules.agents.support.agent_session_state import AgentSessionState
+from core.modules.agents.models.enums.agent_session_state import AgentSessionState
 from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.processes.queries.process_query import ProcessQuery
 from engine.setting.setting_values import SettingValues

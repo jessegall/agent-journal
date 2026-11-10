@@ -3,7 +3,7 @@ import shlex
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.model.model import Model
 from engine.errors.refusal import Refusal
 from engine.time.timestamp import Timestamp

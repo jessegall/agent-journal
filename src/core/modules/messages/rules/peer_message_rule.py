@@ -3,8 +3,8 @@ from collections.abc import Sequence
 from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
-from engine.driver.hook_wildcard import HookWildcard
+from engine.enums.hook_event_name import HookEventName
+from engine.enums.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
 from engine.provider.peer_note import PeerNote
 from engine.provider.providers import Providers

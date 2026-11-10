@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from engine.time.timestamp import Timestamp
 from server.viewer.shared_row import SharedRow
-from server.viewer.session_type import SessionType
+from server.enums.session_type import SessionType
 
 
 @dataclass(frozen=True)

@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from engine.change.logged_event import LoggedEvent
-from engine.chat.mark_outcome import MarkOutcome
+from engine.enums.mark_outcome import MarkOutcome
 from engine.command.bus import Bus
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries

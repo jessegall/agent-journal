@@ -1,5 +1,5 @@
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 
 OVERVIEW_COMMAND = "journal overview"
 OVERVIEW_REFUSAL = NudgeDeclaration("overview.overview_first", NudgeType.REFUSAL, "read the overview first")

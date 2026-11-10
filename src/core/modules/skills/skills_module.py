@@ -10,10 +10,10 @@ from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
-from engine.viewer.key_loading import KeyLoading
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
-from engine.viewer.window_place import WindowPlace
+from engine.enums.key_loading import KeyLoading
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
+from engine.enums.window_place import WindowPlace
 from core.modules.skills.commands.agent_skill_unread.agent_skill_unread_subcommand import AgentSkillUnreadSubcommand
 from core.modules.skills.commands.load_agent_skill.load_agent_skill import LoadAgentSkill
 from core.modules.skills.commands.load_skill.load_skill_handler import LoadSkillHandler

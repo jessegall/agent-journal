@@ -1,6 +1,6 @@
 import re
 
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.agent_hook import AgentHook
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.hook_call import HookCall

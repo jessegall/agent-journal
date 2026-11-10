@@ -1,5 +1,5 @@
 from engine.tunnel.tunnel import Tunnel
-from engine.tunnel.tunnel_state import TunnelState
+from engine.enums.tunnel_state import TunnelState
 
 
 class NoTunnel(Tunnel):

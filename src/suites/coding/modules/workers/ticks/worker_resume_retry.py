@@ -3,7 +3,7 @@ from engine.connection.internet_connection import InternetConnection
 from engine.journal.journal_home import JournalHome
 from engine.time.clock import Clock
 from engine.actor.actor import Actor
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.container.container import Container
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries

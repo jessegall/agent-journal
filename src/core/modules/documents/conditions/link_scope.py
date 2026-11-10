@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from engine.database.statement import Statement
 from core.modules.documents.models.link import Link
 from core.modules.documents.references.row_ref import RowRef
-from core.modules.documents.conditions.link_side import LinkSide
+from core.modules.documents.models.enums.link_side import LinkSide
 
 
 @dataclass(frozen=True)

@@ -8,7 +8,7 @@ from engine.errors.missing_file_refusal import MissingFileRefusal
 from engine.file.project_reads import ProjectReads
 from engine.errors.refusal import Refusal
 from core.modules.plugins.support.plugin_call_access import PluginCallAccess
-from core.modules.plugins.support.plugin_file_place import PluginFilePlace
+from core.modules.plugins.models.enums.plugin_file_place import PluginFilePlace
 
 READ_HINT = "a limited agent reads its own checkout, and in the project only the folders plugins declare in project_reads"
 

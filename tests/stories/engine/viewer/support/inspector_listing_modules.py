@@ -1,10 +1,10 @@
 from engine.module.module import Module
 from engine.viewer.inspector_component import InspectorComponent
 from engine.viewer.inspector_declaration import InspectorDeclaration
-from engine.viewer.inspector_width import InspectorWidth
+from engine.enums.inspector_width import InspectorWidth
 from core.modules.reminders.models.reminder import Reminder
 from tests.stories.engine.viewer.support.inspector_faults import DEPENDENCIES, window
-from engine.viewer.window_place import WindowPlace
+from engine.enums.window_place import WindowPlace
 
 PATH = "tests.stories.engine.viewer.support.inspector_listing_modules"
 

@@ -3,7 +3,7 @@ from dataclasses import dataclass, replace
 
 from engine.driver.interval import Interval
 from engine.driver.nudge import Nudge
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 from engine.driver.stored_nudge import StoredNudge
 
 LONGEST_LINE_CHARACTERS = 120

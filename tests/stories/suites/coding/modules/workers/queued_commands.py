@@ -10,7 +10,7 @@ import pytest
 from engine.caller.caller_request import CallerRequest, SESSION_VARIABLE
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.query.queries import Queries

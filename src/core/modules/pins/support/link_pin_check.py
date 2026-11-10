@@ -7,7 +7,7 @@ from engine.time.clock import Clock
 from engine.database.kept_rows import KeptRows
 from engine.driver.nudge import Nudge
 from engine.driver.tool import Tool
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from engine.query.conditions.among import Among
 from engine.query.conditions.greater import Greater
 from engine.query.conditions.is_null import IsNull

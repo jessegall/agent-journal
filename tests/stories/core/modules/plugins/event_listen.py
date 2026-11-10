@@ -5,7 +5,7 @@ import subprocess
 from engine.caller.caller_request import SESSION_VARIABLE, CallerRequest
 from engine.caller.caller_resolver import CallerResolver
 from engine.caller.process_row import ProcessRow
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.query.queries import Queries
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.drivers.models.agent_line import AgentLine

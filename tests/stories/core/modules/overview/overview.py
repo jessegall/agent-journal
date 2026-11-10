@@ -2,7 +2,7 @@ import pytest
 
 import json
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.overview.support.overview_first import OverviewFirst
 from core.modules.skills.support.main_agent_skills import MainAgentSkills

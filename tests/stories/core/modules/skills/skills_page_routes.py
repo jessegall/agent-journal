@@ -3,7 +3,7 @@ import pytest
 from concurrent.futures import ThreadPoolExecutor
 
 from engine.command.bus import Bus
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.start_skills import StartSkills

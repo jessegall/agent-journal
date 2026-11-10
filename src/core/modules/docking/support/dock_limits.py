@@ -1,7 +1,7 @@
 from engine.listener.event_rows import EventRows
 from engine.registry.registry import Registry
 from engine.setting.setting_values import SettingValues
-from engine.setting.setting_type import SettingType
+from engine.enums.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
 
 MODULE_KEY = "journal.core.docking"

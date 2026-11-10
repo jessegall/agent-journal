@@ -2,7 +2,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.agent_session_state import AgentSessionState
+from core.modules.agents.models.enums.agent_session_state import AgentSessionState
 
 
 class AgentLaunchGuard:

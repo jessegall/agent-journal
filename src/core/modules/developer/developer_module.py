@@ -12,11 +12,11 @@ from engine.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.developer_route_cost_tool import DeveloperRouteCostTool
 from core.modules.developer.support.slow_tick_tool import SlowTickTool
 from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
 from engine.viewer.window_key import WindowKey
-from engine.viewer.key_loading import KeyLoading
-from engine.viewer.window_place import WindowPlace
+from engine.enums.key_loading import KeyLoading
+from engine.enums.window_place import WindowPlace
 from core.modules.developer.commands.hook_numbers.hook_numbers_subcommand import HookNumbersSubcommand
 from core.modules.developer.commands.hook_requests.hook_requests_subcommand import HookRequestsSubcommand
 from core.modules.developer.commands.system_logs.system_logs_subcommand import SystemLogsSubcommand

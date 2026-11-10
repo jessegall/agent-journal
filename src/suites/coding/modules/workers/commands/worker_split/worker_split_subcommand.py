@@ -8,7 +8,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.tasks.models.task import Task
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
 from suites.coding.modules.workers.support.worker_routing import WorkerRouting
 from suites.coding.modules.workers.support.worker_split_preview import WorkerSplitPreview

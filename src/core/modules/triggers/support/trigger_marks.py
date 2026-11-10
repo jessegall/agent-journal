@@ -1,8 +1,8 @@
 from engine.chat.mark_button import MarkButton
-from engine.chat.mark_click import MarkClick
+from engine.enums.mark_click import MarkClick
 from engine.chat.mark_declaration import MarkDeclaration
 from engine.chat.mark_family import MarkFamily
-from engine.chat.mark_group import MarkGroup
+from engine.enums.mark_group import MarkGroup
 from core.modules.triggers.models.enums.trigger_mark_type import TriggerMarkType
 from core.modules.triggers.models.enums.trigger_mark_variant import TriggerMarkVariant
 

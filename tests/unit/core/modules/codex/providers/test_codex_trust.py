@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from engine.provider.hook_trust import HookTrust
+from engine.enums.hook_trust import HookTrust
 from core.modules.codex.providers.support.codex_trust import CodexTrust
 
 FIXTURES = Path(__file__).parent / "fixtures"

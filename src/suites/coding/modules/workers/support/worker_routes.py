@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import replace
 
 from engine.database.kept_rows import KeptRows
-from engine.profile.model_tier import ModelTier
+from engine.enums.model_tier import ModelTier
 from engine.provider.providers import Providers
 from engine.query.conditions.among import Among
 from engine.query.conditions.minimum import Minimum

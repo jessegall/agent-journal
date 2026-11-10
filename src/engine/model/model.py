@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 from typing import ClassVar, Self
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.row.metadata import Metadata
 from engine.model.added_state import StateValue
 from engine.model.lifecycle import Lifecycle

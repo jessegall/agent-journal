@@ -8,7 +8,7 @@ import pytest
 from engine.journal.journal_home import JournalHome
 from engine.provider.managed_hook import ManagedHook
 from engine.provider.managed_hooks import ManagedHooks
-from engine.provider.managed_state import ManagedState
+from engine.enums.managed_state import ManagedState
 
 
 def sample_hook(command: str = "check") -> ManagedHook:

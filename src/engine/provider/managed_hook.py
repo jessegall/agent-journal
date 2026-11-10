@@ -2,8 +2,8 @@ import hashlib
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
-from engine.provider.managed_state import ManagedState
-from engine.provider.hook_effect import HookEffect
+from engine.enums.managed_state import ManagedState
+from engine.enums.hook_effect import HookEffect
 from engine.provider.hook_source import HookSource
 
 DEFAULT_TIMEOUT_SECONDS = 30

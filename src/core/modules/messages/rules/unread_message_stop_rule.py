@@ -1,7 +1,7 @@
 from core.modules.messages.support.message_nudges import UNREAD_MESSAGE_STOP
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.messages.queries.message_query import MessageQuery
 

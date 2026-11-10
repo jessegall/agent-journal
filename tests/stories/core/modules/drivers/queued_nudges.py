@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.command.context import Context
 from engine.database.database import Database
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 from engine.driver.driver_rules import DriverRules
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.rule_answers import RuleAnswers

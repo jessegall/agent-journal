@@ -1,4 +1,4 @@
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.time.duration import Duration

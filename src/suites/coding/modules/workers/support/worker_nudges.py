@@ -6,7 +6,7 @@ from suites.coding.modules.workers.commands.report_worker_program_recovery.repor
 from engine.driver.interval import Interval
 from engine.driver.seconds import Seconds
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 
 APPROVED_PLAN_WAIT = NudgeDeclaration("workers.approved_plan_wait", NudgeType.REFUSAL, 'plan:{plan} is approved and a worker place is free: start it, then assign its work')
 

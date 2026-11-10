@@ -1,4 +1,4 @@
-from engine.viewer.window_icon import WindowIcon
+from engine.enums.window_icon import WindowIcon
 
 
 class DeclarationNames:

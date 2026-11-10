@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-from engine.viewer.window_icon import WindowIcon
+from engine.enums.window_icon import WindowIcon
 
 KIT_FOLDER = Path(__file__).resolve().parents[4] / "src" / "viewer" / "src" / "kit"
 ICON_FILES = (KIT_FOLDER / "markIcons.js", KIT_FOLDER / "Icon.vue")

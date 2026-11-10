@@ -3,22 +3,22 @@ from dataclasses import field, dataclass
 from pathlib import Path
 
 from engine.module.declaration_names import DeclarationNames
-from engine.viewer.auto_scroll import AutoScroll
+from engine.enums.auto_scroll import AutoScroll
 from engine.viewer.choice_option import ChoiceOption
 from engine.viewer.registry_lines import RegistryLines
 from engine.viewer.skeleton_part import SkeletonPart
 from engine.viewer.toggle_option import ToggleOption
-from engine.viewer.window_icon import WindowIcon
+from engine.enums.window_icon import WindowIcon
 from engine.viewer.window_key import WindowKey
 from engine.viewer.window_size import WindowSize
 from engine.viewer.window_search import WindowSearch
 from engine.viewer.window_read_search import WindowReadSearch
 from engine.viewer.window_tab import WindowTab
 from engine.viewer.window_source import WindowSource
-from engine.viewer.window_loading import WindowLoading
-from engine.viewer.window_priority import WindowPriority
-from engine.viewer.window_place import WindowPlace
-from engine.viewer.window_shows import WindowShows
+from engine.enums.window_loading import WindowLoading
+from engine.enums.window_priority import WindowPriority
+from engine.enums.window_place import WindowPlace
+from engine.enums.window_shows import WindowShows
 
 DEFAULT_FLOAT_SIZE = WindowSize(400, 340)
 

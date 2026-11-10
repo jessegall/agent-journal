@@ -17,7 +17,7 @@ from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from core.modules.agents.support.agent_rows import AgentRows
 
 AGENT_LINES_TABLE = "agent_lines"

@@ -4,7 +4,7 @@ from engine.agent.agent_checkouts import AgentCheckouts
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.helpers.commands.run_granted_command.run_granted_command import RunGrantedCommand

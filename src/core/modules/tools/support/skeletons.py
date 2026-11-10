@@ -1,5 +1,5 @@
 from engine.viewer.skeleton_part import SkeletonPart
-from engine.viewer.skeleton_size import SkeletonSize
+from engine.enums.skeleton_size import SkeletonSize
 
 TOOLS_TOOLS_SKELETON = [SkeletonPart.stack([
     SkeletonPart.stack([

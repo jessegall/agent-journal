@@ -13,7 +13,7 @@ from core.modules.processes.support.reader_judge import COUNTED, ReaderJudge
 from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.stock_reader import STOCK_READERS
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 
 NEAREST_LINES = 8
 

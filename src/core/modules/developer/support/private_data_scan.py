@@ -3,7 +3,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from core.modules.developer.support.private_data_finding import PrivateDataFinding
-from core.modules.developer.support.private_data_category import PrivateDataCategory
+from core.modules.developer.models.enums.private_data_category import PrivateDataCategory
 
 PLACEHOLDER_NAMES = frozenset({"user", "username", "you", "name", "me", "example", "someone", "person", "runner", "yourname", "your-name", "shared", "home", "a", "ada", "alice", "bob", "carol", "ci", "test",
                                "processes"})

@@ -1,4 +1,4 @@
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.journal.journal_home import JournalHome
 from engine.provider.managed_hook import ManagedHook
 from engine.provider.managed_hooks import ManagedHooks

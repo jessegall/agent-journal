@@ -5,7 +5,7 @@ from typing import Self
 import re
 
 from engine.driver.agent_hook import AgentHook
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.errors.refusal import Refusal
 
 

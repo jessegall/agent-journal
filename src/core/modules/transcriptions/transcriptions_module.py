@@ -5,10 +5,10 @@ from core.modules.transcriptions.support.transcription_searcher import Transcrip
 from engine.skill.skill_declaration import SkillDeclaration
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
-from engine.viewer.key_loading import KeyLoading
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
-from engine.viewer.window_place import WindowPlace
+from engine.enums.key_loading import KeyLoading
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
+from engine.enums.window_place import WindowPlace
 from core.modules.transcriptions.commands.request_transcription_fetch.request_transcription_fetch_handler import RequestTranscriptionFetchHandler
 from core.modules.transcriptions.commands.request_transcription_fetch.request_transcription_fetch_subcommand import RequestTranscriptionFetchSubcommand
 from core.modules.transcriptions.commands.add_transcription_link.add_transcription_link_handler import AddTranscriptionLinkHandler

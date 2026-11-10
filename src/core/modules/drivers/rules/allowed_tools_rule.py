@@ -3,7 +3,7 @@ from typing import ClassVar
 
 from engine.driver.agent_hook import AgentHook
 from engine.driver.rule_answer import RuleAnswer
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from engine.provider.providers import Providers
 from core.modules.drivers.rules.allowed_command_types_rule import AllowedCommandTypesRule
 from core.modules.drivers.support.access_nudges import TOOL_RESTRICTION

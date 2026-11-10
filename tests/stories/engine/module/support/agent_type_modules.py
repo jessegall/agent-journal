@@ -8,7 +8,7 @@ from engine.enums.role_group import RoleGroup
 from engine.helper_type.helper_type import HelperType
 from engine.driver.driver import Driver
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.suite import Suite
 from engine.module.module import Module
 

@@ -1,7 +1,7 @@
 from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
 from engine.tunnel.tunnel import Tunnel
-from engine.tunnel.tunnel_state import TunnelState
+from engine.enums.tunnel_state import TunnelState
 from engine.setting.setting_values import SettingValues
 from tunnels.tunler.support.tunler_client import TunlerClient
 

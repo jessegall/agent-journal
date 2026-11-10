@@ -1,6 +1,6 @@
 from engine.driver.count_down import CountDown
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 
 SKILL_TOOL_USES = 3

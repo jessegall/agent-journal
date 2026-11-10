@@ -5,9 +5,9 @@ from engine.viewer.window_search import WindowSearch
 from core.modules.sharing.support.share_searcher import ShareSearcher
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
-from engine.viewer.key_loading import KeyLoading
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
+from engine.enums.key_loading import KeyLoading
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
 from core.modules.sharing.commands.make_share_link.make_share_link_handler import MakeShareLinkHandler
 from core.modules.sharing.commands.make_share_link.make_share_link_subcommand import MakeShareLinkSubcommand
 from core.modules.sharing.commands.revoke_share_link.revoke_share_link import RevokeShareLink

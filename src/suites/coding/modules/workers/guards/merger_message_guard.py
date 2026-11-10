@@ -7,7 +7,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.messages.commands.send_agent_message.send_agent_message import SendAgentMessage
 from core.modules.messages.models.message import Message
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class MergerMessageGuard(Guard[Created[Message]]):

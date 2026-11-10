@@ -4,7 +4,7 @@ from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.block_until import BlockUntil
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.span_queries import SpanQueries
 from engine.query.conditions.is_null import IsNull

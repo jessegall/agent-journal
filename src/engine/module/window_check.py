@@ -10,11 +10,11 @@ from engine.module.name_groups import NameGroups
 from engine.module.subcommand_line import subcommand_line
 from engine.module.version_requirement import VersionRequirement
 from engine.registry.button_line import ButtonLine
-from engine.registry.button_window import ButtonWindow
+from engine.enums.button_window import ButtonWindow
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.viewer.viewer_kit import VIEWER_KIT
 from engine.viewer.registry_lines import RegistryLines
-from engine.viewer.window_place import WindowPlace
+from engine.enums.window_place import WindowPlace
 from engine.module.window_extensions import WindowExtensions
 from engine.module.button_command_check import ButtonCommandCheck
 

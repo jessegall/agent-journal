@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.span import Span
 from engine.driver.span_queries import SpanQueries
 from engine.time.timestamp import Timestamp

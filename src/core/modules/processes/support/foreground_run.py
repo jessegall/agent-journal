@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.processes.support.part_command import PartCommand
 
 

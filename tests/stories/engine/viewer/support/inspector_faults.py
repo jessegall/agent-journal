@@ -4,8 +4,8 @@ from engine.viewer.inspector_component import InspectorComponent
 from engine.viewer.inspector_declaration import InspectorDeclaration
 from engine.viewer.skeleton_part import SkeletonPart
 from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_loading import WindowLoading
-from engine.viewer.window_place import WindowPlace
+from engine.enums.window_loading import WindowLoading
+from engine.enums.window_place import WindowPlace
 from core.modules.reminders.models.reminder import Reminder
 
 PATH = "tests.stories.engine.viewer.support.inspector_faults"

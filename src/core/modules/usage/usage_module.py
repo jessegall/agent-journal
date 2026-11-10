@@ -10,10 +10,10 @@ from core.modules.usage.commands.set_profile_limits.set_profile_limits_subcomman
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
-from engine.viewer.window_place import WindowPlace
-from engine.viewer.window_shows import WindowShows
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
+from engine.enums.window_place import WindowPlace
+from engine.enums.window_shows import WindowShows
 from core.modules.usage.commands.usage_agents.usage_agents_subcommand import UsageAgentsSubcommand
 from core.modules.usage.commands.statistic_list.statistic_list_subcommand import StatisticListSubcommand
 from core.modules.usage.commands.usage_bars.usage_bars_subcommand import UsageBarsSubcommand

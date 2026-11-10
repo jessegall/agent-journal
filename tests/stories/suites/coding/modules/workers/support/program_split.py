@@ -11,9 +11,9 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.journal.journal_home import JournalHome
 from engine.module.module import Module
-from engine.provider.hook_trust import HookTrust
+from engine.enums.hook_trust import HookTrust
 from engine.provider.managed_hooks import ManagedHooks
-from engine.profile.model_tier import ModelTier
+from engine.enums.model_tier import ModelTier
 from engine.provider.program_model import ProgramModel
 from engine.provider.providers import Providers
 from core.modules.helpers.support.helper_programs import HelperPrograms

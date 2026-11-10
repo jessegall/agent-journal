@@ -1,8 +1,8 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from engine.viewer.skeleton_shape import SkeletonShape
-from engine.viewer.skeleton_size import SkeletonSize
+from engine.enums.skeleton_shape import SkeletonShape
+from engine.enums.skeleton_size import SkeletonSize
 
 
 @dataclass(frozen=True)

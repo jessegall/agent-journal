@@ -1,5 +1,5 @@
 from engine.viewer.skeleton_part import SkeletonPart
-from engine.viewer.skeleton_size import SkeletonSize
+from engine.enums.skeleton_size import SkeletonSize
 
 PROFILES_PROFILES_SKELETON = [
     SkeletonPart.row([SkeletonPart.block(32, "280px"), SkeletonPart.block(26, "100px"), SkeletonPart.grow(), SkeletonPart.line(SkeletonSize.SMALL, "150px")], spacing=12, padding="8px 14px 8px 22px"),

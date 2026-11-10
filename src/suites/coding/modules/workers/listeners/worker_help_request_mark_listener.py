@@ -1,4 +1,4 @@
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.change.logged_event import LoggedEvent
 from core.modules.agents.models.agent import Agent
 from core.modules.waits.models.enums.wait_type import WaitType

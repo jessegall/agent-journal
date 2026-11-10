@@ -26,7 +26,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.support.test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from core.modules.agents.support.launch_answer import LaunchAnswer
+from core.modules.agents.models.enums.launch_answer import LaunchAnswer
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES, UNFINISHED_TASKS_SOURCE

@@ -15,7 +15,7 @@ from engine.listener.round_yield import RoundYield
 from engine.listener.commit_listener import is_commit_listener_class
 from engine.database.listener_cursor_table import ListenerCursorTable
 from engine.registry.listener_entry import ListenerEntry
-from engine.registry.listener_timing import ListenerTiming
+from engine.enums.listener_timing import ListenerTiming
 from engine.registry.registry import Registry
 from engine.scope.scopes import Scopes
 from engine.listener.errors.commit_listener_error import CommitListenerError

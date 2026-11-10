@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from suites.coding.modules.workers.support.test_command_entry import TestCommandEntry
 
-from engine.profile.model_tier import ModelTier
+from engine.enums.model_tier import ModelTier
 
 from engine.command.command import Command
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch

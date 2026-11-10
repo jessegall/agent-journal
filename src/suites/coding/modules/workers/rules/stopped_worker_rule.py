@@ -3,7 +3,7 @@ from dataclasses import replace
 from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.nudge import Nudge
 from engine.driver.rule_answer import RuleAnswer
 from engine.query.conditions.among import Among
@@ -19,7 +19,7 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_WAIT_MI
 from suites.coding.modules.workers.support.worker_started_work import WorkerStartedWork
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class StoppedWorkerRule(DriverRule):

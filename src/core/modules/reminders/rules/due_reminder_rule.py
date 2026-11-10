@@ -4,7 +4,7 @@ from core.modules.reminders.conditions.non_helper_rows import NonHelperRows
 from engine.driver.agent_hook import AgentHook
 from engine.driver.block_until import BlockUntil
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_wildcard import HookWildcard
+from engine.enums.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
 from engine.module.block_conditions import BlockConditions
 from engine.query.conditions.is_null import IsNull

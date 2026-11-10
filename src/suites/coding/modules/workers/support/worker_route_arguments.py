@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, BooleanOptionalAction, Namespace
 
-from engine.profile.model_tier import ModelTier
+from engine.enums.model_tier import ModelTier
 from core.modules.tasks.models.support.task_complexity import TaskComplexity
 from suites.coding.modules.workers.support.worker_route_values import WorkerRouteValues
 

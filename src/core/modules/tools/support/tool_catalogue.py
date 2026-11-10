@@ -1,6 +1,6 @@
 from engine.errors.refusal import Refusal
 from core.modules.tools.support.tool_definition import ToolDefinition
-from core.modules.tools.support.tool_setting import GRAPHIFY_SETTINGS
+from core.modules.tools.models.enums.tool_setting import GRAPHIFY_SETTINGS
 
 GRAPHIFY = ToolDefinition("graphify", "Graphify", "Keeps a graph of the project's code in graphify-out, refreshed after each new commit without an LLM, so agents read it warm.",
                           GRAPHIFY_SETTINGS)

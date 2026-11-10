@@ -1,4 +1,4 @@
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.file.file_access import FileAccess
 from engine.file.file_version import FileVersion
 import json

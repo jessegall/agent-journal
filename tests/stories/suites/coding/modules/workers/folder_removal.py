@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from engine.command.bus import Bus
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.process.leftover_process import LeftoverProcess
 from core.modules.agents.commands.record_agent_process.record_agent_process import RecordAgentProcess
 from core.modules.processes.models.process import Process

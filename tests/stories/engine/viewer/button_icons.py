@@ -2,7 +2,7 @@ import re
 
 from engine.database.database import Database
 from engine.registry.registry import Registry
-from engine.viewer.window_icon import WindowIcon
+from engine.enums.window_icon import WindowIcon
 from tests.stories.engine.viewer.support.button_icon_modules import PATH
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.support.story_checks import expect_value

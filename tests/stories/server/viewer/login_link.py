@@ -3,7 +3,7 @@ from urllib.parse import urlsplit
 
 import pytest
 
-from server.viewer.session_type import SessionType
+from server.enums.session_type import SessionType
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story, viewer_answer
 

@@ -8,7 +8,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from suites.coding.modules.workers.support.worker_job import SILENT_AGENT_SOURCE
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class SilentWorkerLineListener(CommitListener[Created[AgentLine]]):

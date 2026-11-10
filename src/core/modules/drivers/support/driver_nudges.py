@@ -5,7 +5,7 @@ from core.modules.drivers.support.access_nudges import ACCESS_NUDGES
 from engine.driver.seconds import Seconds
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 from engine.driver.rule_outcome import RULE_FAILED
 
 REPEATED_STOP = NudgeDeclaration("drivers.repeated_stop", NudgeType.STEERING, 'your stop was refused five times in a row: report what held it')

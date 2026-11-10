@@ -6,7 +6,7 @@ from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 from engine.testing.examples.hook_samples import HookSamples
 from engine.serving.server_files import ServerFiles

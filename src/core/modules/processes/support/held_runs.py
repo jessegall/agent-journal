@@ -1,6 +1,6 @@
 from engine.time.timestamp import Timestamp
 from core.modules.processes.models.process import Process
-from core.modules.processes.models.support.process_setting import ProcessSetting
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.held_run import HeldRun
 from core.modules.processes.support.output_folder import OutputFolder

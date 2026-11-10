@@ -1,6 +1,6 @@
 import pytest
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.drivers.support.block_conditions.all_conditions import AllConditions
 from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
 from engine.driver.conditions.ran_command import RanCommand
@@ -13,7 +13,7 @@ from engine.command.bus import Bus
 from engine.actor.actor import Actor
 from engine.driver.block_until import BlockUntil
 from engine.driver.nudge import Nudge
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 
 READ = ShellPart("cat", CommandCategory.READ, ["notes"])
 JOURNAL = ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"], subcommand="task")

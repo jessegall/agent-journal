@@ -1,5 +1,5 @@
 from engine.viewer.skeleton_part import SkeletonPart
-from engine.viewer.skeleton_size import SkeletonSize
+from engine.enums.skeleton_size import SkeletonSize
 
 AGENTS_AGENTS_SKELETON = [
 SkeletonPart.row([SkeletonPart.block(32), SkeletonPart.block(30, "170px"), SkeletonPart.block(26, "96px")], spacing=10, padding="8px 12px"),

@@ -14,7 +14,7 @@ from engine.module.window_check import WindowCheck
 from engine.registry.button_line import BLANK
 from engine.viewer.button_declaration import ButtonDeclaration
 from engine.viewer.button_field import ButtonField
-from engine.viewer.panel_labels import PanelLabels
+from engine.enums.panel_labels import PanelLabels
 from engine.viewer.text_field import TextField
 
 ROW_PLACEHOLDER = "row_id"

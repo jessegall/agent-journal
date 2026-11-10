@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.driver.shell_line import JOURNAL_PROGRAM
 from engine.model.model import Model
 from engine.time.timestamp import Timestamp

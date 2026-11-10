@@ -1,9 +1,9 @@
 import pytest
 
 from engine.driver.hook_event import HookEvent
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from server.hook.hook_sender import HookSender
-from server.hook.queue_priority import QueuePriority
+from server.enums.queue_priority import QueuePriority
 
 
 @pytest.mark.parametrize("role", ["main", "worker", "helper", ""])

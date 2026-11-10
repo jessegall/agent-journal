@@ -3,7 +3,7 @@ from pathlib import Path
 from engine.journal.journal_home import JournalHome
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.program_hooks import ProgramHooks
-from engine.provider.managed_state import ManagedState
+from engine.enums.managed_state import ManagedState
 from install.hook.hook_switch import HookSwitch
 from install.hook.hook_writer import HookWriter
 from install.version_four.restore_version_four import RestoreVersionFour

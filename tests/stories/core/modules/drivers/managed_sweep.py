@@ -1,7 +1,7 @@
 import pytest
 
 from engine.provider.managed_hooks import ManagedHooks
-from engine.provider.hook_effect import HookEffect
+from engine.enums.hook_effect import HookEffect
 from engine.provider.program_hooks import ProgramHooks
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import MainEnvironment

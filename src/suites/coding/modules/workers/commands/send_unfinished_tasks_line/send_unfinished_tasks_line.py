@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from engine.command.command import Command
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 from core.modules.drivers.models.agent_line import AgentLine
 
 UNFINISHED_TASKS_SOURCE = "workers.unfinished-tasks"

@@ -3,7 +3,7 @@ from collections.abc import Mapping
 
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.time.timestamp import Timestamp
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event import DeliverPluginEvent

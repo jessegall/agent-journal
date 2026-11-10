@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.view_model import ViewModel
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.time.timestamp import Timestamp
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.enums.queue_section import QueueSection

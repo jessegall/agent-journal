@@ -8,7 +8,7 @@ from engine.driver.hook_event import HookEvent
 from engine.enums.log_level import LogLevel
 from engine.request.request_values import RequestValues
 from engine.log.system_log_writer import SystemLogWriter
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.hook_reply import HookReply
 from engine.driver.hook_route import HookRoute
 from engine.driver.lockdown import Lockdown

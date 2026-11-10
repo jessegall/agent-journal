@@ -1,7 +1,7 @@
 from core.modules.tasks.support.task_nudges import STOP_TASK, STOP_TASKS
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.watched_runs import WatchedRuns
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks

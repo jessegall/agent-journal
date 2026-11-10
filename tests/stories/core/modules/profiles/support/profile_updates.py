@@ -4,7 +4,7 @@ from engine.helper_type.helper_type import HelperType
 from engine.module.module import Module
 from engine.profile.agent_profile import AgentProfile
 from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_loading import WindowLoading
+from engine.enums.window_loading import WindowLoading
 from engine.viewer.skeleton_part import SkeletonPart
 
 BASE_PROFILE = AgentProfile("module-reader", "Reads one question", "Read the files.", model="haiku")

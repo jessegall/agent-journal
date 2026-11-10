@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from engine.module.layer_tier import LayerTier
+from engine.enums.layer_tier import LayerTier
 
 
 @dataclass(frozen=True)

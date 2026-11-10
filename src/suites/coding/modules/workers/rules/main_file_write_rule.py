@@ -1,9 +1,9 @@
 from pathlib import Path
 
 from engine.driver.agent_hook import AgentHook
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.search_category import JOURNAL_FOLDER
 from engine.listener.event_rows import EventRows

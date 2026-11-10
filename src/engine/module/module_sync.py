@@ -39,7 +39,7 @@ from engine.dotted_path.dotted_path import DottedPath
 from engine.change.event_pattern import EventPattern
 from engine.registry.guard_entry import GuardEntry
 from engine.registry.listener_entry import ListenerEntry
-from engine.registry.listener_timing import ListenerTiming
+from engine.enums.listener_timing import ListenerTiming
 from engine.registry.model_entry import ModelEntry
 from engine.registry.registry import Registry
 from engine.registry.dock_entry import DockEntry

@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from engine.driver.hook_event import HookEvent
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answers import RuleAnswers
 from engine.driver.nudge import Nudge
 from core.modules.drivers.models.agent_line import AgentLine

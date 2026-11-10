@@ -2,7 +2,7 @@ from engine.module.module import Module
 from engine.module.window_extensions import WindowExtensions
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_extension import WindowExtension
-from engine.viewer.window_loading import WindowLoading
+from engine.enums.window_loading import WindowLoading
 from engine.viewer.window_source import WindowSource
 from engine.viewer.window_tab import WindowTab
 from engine.viewer.window_key import WindowKey

@@ -1,5 +1,5 @@
 from engine.viewer.skeleton_part import SkeletonPart
-from engine.viewer.skeleton_size import SkeletonSize
+from engine.enums.skeleton_size import SkeletonSize
 
 SUGGESTIONS_SUGGESTIONS_SKELETON = [
     SkeletonPart.stack([SkeletonPart.block(32), SkeletonPart.row(

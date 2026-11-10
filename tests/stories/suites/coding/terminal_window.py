@@ -1,4 +1,4 @@
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder

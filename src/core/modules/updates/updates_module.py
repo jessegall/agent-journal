@@ -6,9 +6,9 @@ from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
-from engine.viewer.window_place import WindowPlace
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
+from engine.enums.window_place import WindowPlace
 from core.modules.updates.commands.install_release.install_release_handler import InstallReleaseHandler
 from core.modules.updates.commands.show_update_step.show_update_step_handler import ShowUpdateStepHandler
 from core.modules.updates.commands.show_update_step.show_update_step_subcommand import ShowUpdateStepSubcommand
@@ -17,7 +17,7 @@ from core.modules.updates.commands.update_check.update_check_subcommand import U
 from core.modules.updates.commands.install_release.install_release_subcommand import InstallReleaseSubcommand
 from core.modules.updates.commands.update_notes.update_notes_subcommand import UpdateNotesSubcommand
 from core.modules.updates.migrations.m001_releases import ReleasesTableMigration
-from core.modules.updates.models.support.update_setting import UPDATE_SETTINGS
+from core.modules.updates.models.enums.update_setting import UPDATE_SETTINGS
 from core.modules.updates.models.release import Release
 from core.modules.updates.upgrade.updates_move import UpdatesMove
 from core.modules.updates.support.skeletons import UPDATES_UPDATES_SKELETON

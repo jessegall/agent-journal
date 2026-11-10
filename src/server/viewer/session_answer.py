@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from engine.version.journal_version import JOURNAL_VERSION
-from server.viewer.session_type import SessionType
+from server.enums.session_type import SessionType
 from server.viewer.share_answer import ShareAnswer
 
 

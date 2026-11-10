@@ -3,7 +3,7 @@ import json
 from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 
-from engine.tunnel.tunnel_state import TunnelState
+from engine.enums.tunnel_state import TunnelState
 from engine.setting.setting_values import SettingValues
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined

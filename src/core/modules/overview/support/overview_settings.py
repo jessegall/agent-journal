@@ -1,4 +1,4 @@
-from engine.setting.setting_type import SettingType
+from engine.enums.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
 
 MODULE_KEY = "journal.core.overview"

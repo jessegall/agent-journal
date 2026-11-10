@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from engine.chat.mark_colouring import MarkColouring
-from engine.chat.mark_group import MarkGroup
+from engine.enums.mark_colouring import MarkColouring
+from engine.enums.mark_group import MarkGroup
 
 
 @dataclass(frozen=True)

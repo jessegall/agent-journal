@@ -4,8 +4,8 @@ from engine.viewer.window_search import WindowSearch
 from core.modules.suggestions.support.suggestion_searcher import SuggestionSearcher
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
 from core.modules.suggestions.commands.answer_suggestion.answer_suggestion_handler import AnswerSuggestionHandler
 from core.modules.suggestions.commands.answer_suggestion.answer_suggestion_subcommand import AnswerSuggestionSubcommand
 from core.modules.suggestions.commands.suggestion_list.suggestion_list_subcommand import SuggestionListSubcommand

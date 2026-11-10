@@ -5,7 +5,7 @@ import pytest
 
 from engine.enums.agent_role import AgentRole
 from engine.driver.classification import Classification
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.driver.part import Part
 from core.modules.aliases.rules.saved_command_rule import SavedCommandRule
 from core.modules.processes.support.runner_line import READ_FLAGS_VARIABLE

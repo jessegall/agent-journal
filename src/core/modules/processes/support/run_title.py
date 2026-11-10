@@ -7,7 +7,7 @@ from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.enums.process_state import ProcessState
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.processes.support.reader_judge import ReaderJudge
 
 TOPIC = "{topic}"

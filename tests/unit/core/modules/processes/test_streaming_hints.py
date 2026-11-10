@@ -1,6 +1,6 @@
 import pytest
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.silent_runs import SilentRuns
 from engine.driver.nudge_declaration import LONGEST_FIELD_CHARACTERS

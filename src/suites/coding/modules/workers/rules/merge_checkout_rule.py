@@ -2,7 +2,7 @@ from engine.driver.nudge import Nudge
 from suites.coding.modules.workers.support.worker_nudges import MERGE_WAITS
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.hook_history import HookHistory
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.seconds import Seconds

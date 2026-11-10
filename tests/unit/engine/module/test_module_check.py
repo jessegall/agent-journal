@@ -31,7 +31,7 @@ from engine.module.state_check import StateCheck
 from engine.module.helper_type_check import HelperTypeCheck
 from engine.module.profile_check import ProfileCheck
 from engine.module.template_check import TemplateCheck
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.registry.event_key_entry import EventKeyEntry
 from tests.unit.engine.model.test_lifecycle import ItemState
 from tests.unit.engine.model.test_model import Item

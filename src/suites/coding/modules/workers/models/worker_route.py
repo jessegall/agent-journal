@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.positioned import Positioned
-from engine.profile.model_tier import ModelTier
+from engine.enums.model_tier import ModelTier
 from core.modules.tasks.models.support.task_complexity import TaskComplexity
 from core.modules.tasks.support.task_match import has_tags, matches_complexity_range
 

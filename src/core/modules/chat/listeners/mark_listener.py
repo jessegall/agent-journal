@@ -4,7 +4,7 @@ from typing import ClassVar
 
 from engine.enums.actor_type import ActorType
 from engine.change.logged_event import LoggedEvent
-from engine.chat.mark_outcome import MarkOutcome
+from engine.enums.mark_outcome import MarkOutcome
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors

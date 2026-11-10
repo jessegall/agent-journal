@@ -4,7 +4,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.caller.caller_request import CallerRequest
 from engine.caller.process_row import ProcessRow
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.shell_part import ShellPart
 from core.modules.processes.models.output import Output
 from suites.coding.modules.workers.models.worktree import Worktree

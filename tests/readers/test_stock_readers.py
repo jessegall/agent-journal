@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.process_part_query import ProcessPartQuery

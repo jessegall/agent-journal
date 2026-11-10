@@ -6,9 +6,9 @@ from engine.viewer.window_search import WindowSearch
 from core.modules.dumps.support.dump_searcher import DumpSearcher
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
-from engine.viewer.window_place import WindowPlace
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
+from engine.enums.window_place import WindowPlace
 from core.modules.dumps.commands.dump_board.dump_board_subcommand import DumpBoardSubcommand
 from core.modules.dumps.commands.dump_board.dump_item_board_subcommand import DumpItemBoardSubcommand
 from core.modules.dumps.commands.dump_items.dump_items_subcommand import DumpItemsSubcommand

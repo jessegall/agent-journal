@@ -1,6 +1,6 @@
 from engine.chat.mark_declaration import MarkDeclaration
 from engine.chat.mark_family import MarkFamily
-from engine.chat.mark_group import MarkGroup
+from engine.enums.mark_group import MarkGroup
 from core.modules.reviews.models.enums.review_mark_type import ReviewMarkType
 from core.modules.reviews.models.enums.review_mark_variant import ReviewMarkVariant
 

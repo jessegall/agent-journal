@@ -1,7 +1,7 @@
 from engine.driver.interval import Interval
 from engine.driver.seconds import Seconds
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 
 DUMP_OPEN = NudgeDeclaration("dumps.dump_open", NudgeType.STEERING, "dump {dump} is not filed", interval=Interval(Seconds(900)))
 

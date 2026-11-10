@@ -1,4 +1,4 @@
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.row.page import Page
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries

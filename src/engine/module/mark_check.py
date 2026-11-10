@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from engine.module.declaration_names import DeclarationNames
-from engine.chat.mark_click import MarkClick
+from engine.enums.mark_click import MarkClick
 from engine.chat.mark_family import MarkFamily
 from engine.module.button_check import ButtonCheck
 from engine.module.module import Module

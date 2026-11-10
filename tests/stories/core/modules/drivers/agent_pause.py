@@ -1,12 +1,12 @@
 import pytest
 
-from engine.driver.command_category import CommandCategory
-from engine.driver.command_effect import CommandEffect
+from engine.enums.command_category import CommandCategory
+from engine.enums.command_effect import CommandEffect
 from engine.testing.examples.shell_part import ShellPart
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from engine.testing.examples.hook_samples import HookSamples
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.shell_part import ShellPart
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType

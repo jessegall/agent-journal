@@ -11,7 +11,7 @@ from engine.errors.refusal import Refusal
 from engine.setting.setting_values import SettingValues
 from core.modules.tools.support.graph_files import FAILED_FILE, RUNNING_FILE, GraphFiles
 from core.modules.tools.support.graph_status import GraphStatus
-from core.modules.tools.support.tool_setting import ToolSetting
+from core.modules.tools.models.enums.tool_setting import ToolSetting
 
 INSTALL_LIMIT_SECONDS = 600
 # Runs Graphify's incremental update, which re-extracts code with no LLM, then stamps the commit it ran for; the

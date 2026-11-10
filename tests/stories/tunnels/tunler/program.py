@@ -7,7 +7,7 @@ import pytest
 
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from engine.tunnel.tunnel_state import TunnelState
+from engine.enums.tunnel_state import TunnelState
 from tests.stories.tunnels.tunler.support.real_tunler import real_client
 from tunnels.tunler.support.tunler_installer import TunlerInstaller
 from engine.testing.expectations.expect_row import expect_row

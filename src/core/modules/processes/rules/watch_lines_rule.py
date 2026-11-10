@@ -1,7 +1,7 @@
 from core.modules.processes.support.process_nudges import OUTPUT_PROGRESS, OUTPUT_RUNNING
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.processes.commands.record_given_percent.record_given_percent import RecordGivenPercent
 from core.modules.processes.models.watch import UNANNOUNCED_PERCENT, Watch

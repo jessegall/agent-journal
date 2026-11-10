@@ -2,7 +2,7 @@ from argparse import ArgumentParser, BooleanOptionalAction, Namespace
 from dataclasses import replace
 
 from engine.enums.access import Access
-from engine.profile.model_tier import ModelTier
+from engine.enums.model_tier import ModelTier
 from engine.caller.caller import Caller
 from engine.profile.agent_profile import AgentProfile
 from engine.provider.providers import Providers

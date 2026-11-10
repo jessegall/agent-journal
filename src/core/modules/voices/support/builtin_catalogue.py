@@ -1,4 +1,4 @@
-from core.modules.voices.support.address_form import AddressForm
+from core.modules.voices.models.enums.address_form import AddressForm
 from core.modules.voices.support.voice import Voice
 
 HISTORICAL = "name it after a distinguished historical figure with a gentle twist on their trade, such as Dr. Einstein for a profiler or Lady Lovelace for a programmer."

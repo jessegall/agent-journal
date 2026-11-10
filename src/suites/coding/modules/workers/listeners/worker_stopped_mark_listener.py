@@ -1,5 +1,5 @@
 from core.modules.agents.events.agent_ended import AgentEnded
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.change.logged_event import LoggedEvent
 from suites.coding.modules.workers.listeners.worker_stop_mark_listener import WorkerStopMarkListener
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant

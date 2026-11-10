@@ -5,7 +5,7 @@ from core.modules.processes.support.process_nudges import RUN_NAME
 from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_wildcard import HookWildcard
+from engine.enums.hook_wildcard import HookWildcard
 from engine.driver.interval import Interval
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.span_queries import SpanQueries
@@ -17,7 +17,7 @@ from core.modules.docking.support.dock_room import DockRoom
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.processes.models.enums.process_dock_type import ProcessDockType
 from core.modules.processes.models.process import Process
-from core.modules.processes.models.support.process_setting import ProcessSetting
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.output import Output
 from core.modules.processes.queries.output_query import OutputQuery

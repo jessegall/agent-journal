@@ -1,5 +1,5 @@
 from core.modules.processes.support.process_card_json_record import ProcessCardJsonRecord
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from dataclasses import dataclass
 
 from core.modules.processes.models.output import Output

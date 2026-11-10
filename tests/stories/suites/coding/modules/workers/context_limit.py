@@ -7,7 +7,7 @@ from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE
 from core.modules.overview.support.overview_first import OverviewFirst
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from engine.testing.examples.shell_part import ShellPart
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.usage.support.status_files import save_status_file

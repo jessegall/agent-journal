@@ -8,8 +8,8 @@ from engine.viewer.window_search import WindowSearch
 from core.modules.phone.support.phone_searcher import PhoneSearcher
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
 from core.modules.phone.commands.pair_phone.pair_phone_handler import PairPhoneHandler
 from core.modules.phone.commands.pair_phone.pair_phone_subcommand import PairPhoneSubcommand
 from core.modules.phone.commands.phone_session.phone_session_subcommand import PhoneSessionSubcommand
@@ -23,8 +23,8 @@ from core.modules.phone.guards.phone_row_guard import PhoneRowGuard
 from core.modules.phone.guards.phone_code_row_guard import PhoneCodeRowGuard
 from core.modules.phone.upgrade.phone_move import PhoneMove
 from core.modules.phone.seeders.phone_seeder import PhoneSeeder
-from engine.setting.setting_scope import SettingScope
-from engine.setting.setting_type import SettingType
+from engine.enums.setting_scope import SettingScope
+from engine.enums.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
 from core.modules.phone.commands.ensure_push_keys.ensure_push_keys_handler import EnsurePushKeysHandler
 from core.modules.phone.commands.ensure_push_keys.ensure_push_keys_subcommand import EnsurePushKeysSubcommand

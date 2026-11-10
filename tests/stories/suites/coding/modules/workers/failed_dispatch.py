@@ -13,7 +13,7 @@ from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree_ha
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut_handler import RecordWorktreeCutHandler
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, repository_environment
 

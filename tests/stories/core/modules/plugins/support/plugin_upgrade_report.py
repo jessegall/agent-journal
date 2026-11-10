@@ -1,7 +1,7 @@
 import json
 
 from engine.query.queries import Queries
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_setting import PluginSetting
 from engine.testing.examples.hook_samples import HookSamples

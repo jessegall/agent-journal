@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from engine.provider.hook_trust import HookTrust
+from engine.enums.hook_trust import HookTrust
 from engine.provider.errors.unknown_program_error import UnknownProgramError
 from engine.errors.refusal import Refusal
 from engine.time.timestamp import Timestamp

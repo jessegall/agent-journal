@@ -3,7 +3,7 @@ from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
 from engine.testing.stories.story import Story

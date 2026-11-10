@@ -1,9 +1,9 @@
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_icon import WindowIcon
+from engine.enums.window_icon import WindowIcon
 from engine.viewer.window_key import WindowKey
-from engine.viewer.window_loading import WindowLoading
-from engine.viewer.window_place import WindowPlace
+from engine.enums.window_loading import WindowLoading
+from engine.enums.window_place import WindowPlace
 from core.modules.tools.commands.install_tool.install_tool_handler import InstallToolHandler
 from core.modules.tools.commands.install_tool.install_tool_subcommand import InstallToolSubcommand
 from core.modules.tools.commands.refresh_tool.refresh_tool_handler import RefreshToolHandler
@@ -20,7 +20,7 @@ from core.modules.tools.support.tool_catalogue import GRAPHIFY
 from core.modules.tools.support.skeletons import TOOLS_TOOLS_SKELETON
 from core.modules.tools.support.tool_catalogue import ToolCatalogue
 from core.modules.tools.support.tool_nudges import TOOL_NUDGES
-from core.modules.tools.support.tool_setting import TOOL_SETTINGS
+from core.modules.tools.models.enums.tool_setting import TOOL_SETTINGS
 
 
 class ToolsModule(Module):

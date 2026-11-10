@@ -3,7 +3,7 @@ import pytest
 from server.door.hosted_journal_door import OWNER_REASON
 from server.viewer import viewer_request_handler
 from server.viewer.viewer_request_handler import CLOSED_DOOR_REASON, EVENTS_ROUTE, SERVER_STATE_ROUTE
-from server.viewer.route_audience import RouteAudience
+from server.enums.route_audience import RouteAudience
 from server.viewer.viewer_route_rule import ViewerRouteRule
 from server.viewer.viewer_route_rules import VIEWER_ROUTE_RULES
 from tests.stories.server.support.hosted_viewer import PUBLIC_ORIGIN, agent_server, hosted_server, session_cookie, socket_answer, socket_path

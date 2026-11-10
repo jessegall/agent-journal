@@ -2,7 +2,7 @@ from dataclasses import dataclass, field, replace
 from collections.abc import Mapping, Sequence
 from typing import Any
 from engine.enums.access import Access
-from engine.profile.model_tier import ModelTier
+from engine.enums.model_tier import ModelTier
 
 
 @dataclass(frozen=True)

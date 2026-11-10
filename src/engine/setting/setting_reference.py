@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from engine.setting.setting_declaration import REFERENCE_TYPE, SettingDeclaration
 from engine.setting.setting_node import SettingNode
-from engine.setting.setting_scope import SettingScope
+from engine.enums.setting_scope import SettingScope
 
 
 @dataclass(frozen=True)

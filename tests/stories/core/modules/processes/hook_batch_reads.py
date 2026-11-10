@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from engine.database.database import Database
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process

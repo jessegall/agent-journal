@@ -3,10 +3,10 @@ from core.modules.viewer.migrations.m003_helpers_window_key import HelpersWindow
 from core.modules.viewer.migrations.m004_person_row_indexes import PersonRowIndexesMigration
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
 from engine.viewer.window_key import WindowKey
-from engine.viewer.key_loading import KeyLoading
+from engine.enums.key_loading import KeyLoading
 from core.modules.viewer.migrations.m001_viewer import ViewerTablesMigration
 from core.modules.viewer.migrations.m002_person_presets import PersonPresetsMigration
 from core.modules.viewer.commands.person_preset_list.person_preset_list_subcommand import PersonPresetListSubcommand

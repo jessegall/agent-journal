@@ -3,7 +3,7 @@ from contextlib import contextmanager
 
 from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
-from server.hook.queue_priority import QueuePriority
+from server.enums.queue_priority import QueuePriority
 from server.hook.queue_request import QueueRequest
 from server.hook.server_queue import RUNNING_HOOKS_COUNT, ServerQueue
 

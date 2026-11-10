@@ -1,6 +1,6 @@
 import json
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.search.support.row_search import RowSearch
 from engine.testing.examples.shell_part import ShellPart

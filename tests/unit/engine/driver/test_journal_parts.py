@@ -1,5 +1,5 @@
 from engine.driver.classification import Classification
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.driver.part import Part
 from engine.driver.shell_line import ShellLine
 

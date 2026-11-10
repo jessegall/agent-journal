@@ -1,5 +1,5 @@
 from engine.viewer.skeleton_part import SkeletonPart
-from engine.viewer.skeleton_size import SkeletonSize
+from engine.enums.skeleton_size import SkeletonSize
 
 SECRETS_SECRETS_SKELETON = [
     SkeletonPart.row([SkeletonPart.line(SkeletonSize.SMALL, "70px"), SkeletonPart.grow(), SkeletonPart.block(28, "110px")], padding="8px 14px 8px 22px"),

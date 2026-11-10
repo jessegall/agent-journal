@@ -4,7 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from server.viewer.session_type import SessionType
+from server.enums.session_type import SessionType
 from server.viewer.viewer_session import ViewerSession
 
 KEPT_TYPES = (SessionType.PERSON, SessionType.AGENT)

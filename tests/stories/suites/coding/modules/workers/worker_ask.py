@@ -6,7 +6,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from engine.query.queries import Queries
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from engine.testing.examples.hook_samples import HookSamples
@@ -14,7 +14,7 @@ from engine.testing.expectations.line_outcome import LineOutcome
 from engine.testing.stories.story import Story
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.merger import merger_agent

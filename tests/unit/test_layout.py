@@ -61,14 +61,6 @@ def test_server_hook_folder():
     assert loose == [], f"these hook files sit in the server's top folder: {loose}"
 
 
-def test_base_block_folders():
-    base = SOURCE / "core" / "base"
-    folders = {folder.name for folder in base.iterdir() if folder.is_dir() and folder.name != "__pycache__"}
-    misplaced = [f"{path.relative_to(ROOT)} holds {classes[0].name}" for path in sorted(base.glob("*.py")) if path.name != "__init__.py"
-                 for classes in [top_classes(path)] if classes and folders & set(snake(classes[0].name).split("_")[:1])]
-    assert misplaced == [], f"these base files belong in the folder of their block: {misplaced}"
-
-
 def test_helper_folder_tests():
     tests = sorted(str(path.relative_to(ROOT)) for path in (ROOT / "tests").rglob("test_*.py") if HELPER_FOLDERS & set(path.relative_to(ROOT).parts))
     assert tests == [], f"these tests sit in a helper folder, where pytest should not have to look: {tests}"

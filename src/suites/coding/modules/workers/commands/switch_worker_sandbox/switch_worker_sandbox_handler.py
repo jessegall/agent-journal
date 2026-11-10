@@ -8,7 +8,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.commands.switch_worker_sandbox.switch_worker_sandbox import SwitchWorkerSandbox
 from suites.coding.modules.workers.support.worker_sandbox_choice import SANDBOX_KEY
 from suites.coding.modules.workers.support.worker_settings import MODULE_KEY
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class SwitchWorkerSandboxHandler(Handler[SwitchWorkerSandbox, Agent]):

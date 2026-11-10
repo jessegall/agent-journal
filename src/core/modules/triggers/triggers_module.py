@@ -14,8 +14,8 @@ from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
 from core.modules.triggers.commands.fire_trigger.fire_trigger_handler import FireTriggerHandler
 from core.modules.triggers.commands.make_trigger.make_trigger_handler import MakeTriggerHandler
 from core.modules.triggers.commands.make_trigger.make_trigger_subcommand import MakeTriggerSubcommand

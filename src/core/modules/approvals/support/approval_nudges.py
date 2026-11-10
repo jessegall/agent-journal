@@ -1,5 +1,5 @@
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 
 APPROVAL_PENDING = NudgeDeclaration("approvals.asked", NudgeType.NOTICE, "A person was asked: approval {approval}",
                                    plural_text="A person was asked for {count} approvals",

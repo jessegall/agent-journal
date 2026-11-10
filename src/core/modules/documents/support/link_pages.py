@@ -11,7 +11,7 @@ from engine.subcommand.output import Output
 from core.modules.documents.conditions.first_link_counterpart import FirstLinkCounterpart
 from core.modules.documents.conditions.link_counterparts import LinkCounterparts
 from core.modules.documents.conditions.link_scope import LinkScope
-from core.modules.documents.conditions.link_side import LinkSide
+from core.modules.documents.models.enums.link_side import LinkSide
 from core.modules.documents.conditions.link_target import LinkTarget
 from core.modules.documents.conditions.link_target_counts import LinkTargetCounts
 from core.modules.documents.conditions.excludes_plan import ExcludesPlan

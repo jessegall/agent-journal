@@ -1,4 +1,4 @@
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.runner_line import RunnerLine
 from engine.testing.examples.hook_samples import HookSamples

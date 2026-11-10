@@ -10,7 +10,7 @@ from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.environments.models.environment import Environment
-from core.modules.processes.models.support.process_setting import ProcessSetting
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.process_queue_row import ProcessQueueRow
 from core.modules.processes.models.enums.queue_section import QueueSection
 from core.modules.processes.support.active_queue_runs import ActiveQueueRuns

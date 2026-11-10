@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from engine.driver.hook_event import HOOK_EVENT_VERSION
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_sample import HookSample
 from engine.testing.examples.shell_part import ShellPart
 

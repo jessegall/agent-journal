@@ -7,7 +7,7 @@ from engine.subcommand.subcommand import Subcommand
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.commands.ask_merger.ask_merger import AskMerger
 from suites.coding.models.enums.ask_topic import AskTopic
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class AskMergerSubcommand(Subcommand[AskMerger, str]):

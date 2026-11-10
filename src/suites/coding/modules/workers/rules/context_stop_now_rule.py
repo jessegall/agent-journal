@@ -1,6 +1,6 @@
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.hook_history import HookHistory
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.seconds import Seconds
@@ -8,7 +8,7 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
 from suites.coding.modules.workers.support.worker_nudges import CONTEXT_STOP_AFTER_TASK, CONTEXT_STOP_IMMEDIATE
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.enums.agent_role import AgentRole
 from suites.coding.support.context_limit_check import ContextLimitCheck
 

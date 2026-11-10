@@ -1,6 +1,6 @@
 import pytest
 
-from server.viewer.closed_service import ClosedService
+from server.enums.closed_service import ClosedService
 from tests.stories.server.support.hosted_viewer import PUBLIC_ORIGIN, hosted_server, local_server, socket_answer, socket_path
 from tests.stories.server.support.server_client import viewer_answer
 from tests.stories.support.story_checks import expect_value

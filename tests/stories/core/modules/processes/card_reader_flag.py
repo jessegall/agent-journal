@@ -1,6 +1,6 @@
 import json
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from tests.stories.core.modules.processes.support.process_samples import moved_run
 from tests.stories.core.support.coding_fixtures import UserBuilder
 

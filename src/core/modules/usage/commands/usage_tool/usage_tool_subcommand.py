@@ -3,7 +3,7 @@ from collections.abc import Sequence
 
 from engine.caller.caller import Caller
 from engine.time.clock import Clock
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.project_paths import ProjectPaths
 from engine.provider.transcript_author import MONITOR_OPENINGS
 from engine.query.conditions.among import Among

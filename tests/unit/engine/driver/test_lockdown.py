@@ -1,4 +1,4 @@
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.lockdown import Lockdown
 from engine.driver.program_lockdown import ProgramLockdown
 from engine.time.timestamp import Timestamp

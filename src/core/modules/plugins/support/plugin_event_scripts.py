@@ -10,7 +10,7 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.model.model import Model
 from engine.registry.registry import Registry
 from engine.process.plugin_script_processes import PluginScriptProcesses

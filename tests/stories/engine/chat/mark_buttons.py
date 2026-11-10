@@ -1,6 +1,6 @@
 from engine.database.database import Database
 from engine.registry.button_line import ButtonLine
-from engine.registry.button_window import ButtonWindow
+from engine.enums.button_window import ButtonWindow
 from engine.registry.registry import Registry
 from tests.stories.engine.chat.support.mark_faults import PATH
 from tests.stories.core.support.fixtures import MainEnvironment

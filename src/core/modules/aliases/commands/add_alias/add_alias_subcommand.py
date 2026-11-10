@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.registry.registry import Registry
 from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand

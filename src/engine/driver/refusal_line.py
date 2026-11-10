@@ -2,7 +2,7 @@ import shlex
 from collections.abc import Mapping, Sequence
 
 from engine.driver.hook_event import HookEvent
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 
 COMMAND_PREFIX = "printf '%s\\n' "
 

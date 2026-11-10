@@ -6,7 +6,7 @@ from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import WORKERS_START_HELPERS
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class WorkerHelperGuard(Guard[Created[Agent]]):

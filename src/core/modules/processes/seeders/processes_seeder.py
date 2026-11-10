@@ -1,4 +1,4 @@
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.seed.demo import Demo
 from engine.seed.seeder import Seeder
 from core.modules.processes.commands.end_process.end_process import EndProcess

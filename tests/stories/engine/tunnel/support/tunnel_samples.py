@@ -1,6 +1,6 @@
 from engine.module.module import Module
 from engine.tunnel.tunnel import Tunnel
-from engine.tunnel.tunnel_state import TunnelState
+from engine.enums.tunnel_state import TunnelState
 
 PATH = "tests.stories.engine.tunnel.support.tunnel_samples"
 SAMPLE_ADDRESS = "https://sample.tunnel.example"

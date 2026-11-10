@@ -1,5 +1,5 @@
 from engine.command.bus import Bus
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from engine.testing.examples.hook_samples import HookSamples

@@ -1,7 +1,7 @@
 import re
 from argparse import ArgumentParser, Namespace
 
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal

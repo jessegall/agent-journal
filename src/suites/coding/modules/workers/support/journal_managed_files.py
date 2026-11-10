@@ -5,7 +5,7 @@ from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.support.worker_settings import WORKER_INSTRUCTION_FILES_SETTING
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_instruction_files import ORIGINAL_SUFFIX
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.support.managed_files import ManagedFiles
 
 ORIGINAL_FILES = tuple(f"{Path(name).stem}{ORIGINAL_SUFFIX}{Path(name).suffix}" for name in INSTRUCTION_FILES)

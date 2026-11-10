@@ -2,8 +2,8 @@ from datetime import timedelta
 
 import pytest
 
-from engine.driver.command_category import CommandCategory
-from engine.driver.tool_type import ToolType
+from engine.enums.command_category import CommandCategory
+from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.fixtures import UserJoined

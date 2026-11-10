@@ -63,10 +63,10 @@ from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_extension import WindowExtension
 from engine.viewer.window_key import WindowKey
-from engine.viewer.key_loading import KeyLoading
+from engine.enums.key_loading import KeyLoading
 from engine.viewer.window_tab import WindowTab
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
 from engine.module.model_declaration import ModelDeclaration
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.phase_task import PhaseTask
@@ -94,7 +94,7 @@ from core.modules.plans.support.plan_inspector import PLAN_INSPECTOR
 from core.modules.plans.commands.assign_plan.assign_plan_handler import AssignPlanHandler
 from core.modules.plans.commands.assign_plan.assign_plan_subcommand import AssignPlanSubcommand
 from engine.viewer.skeleton_part import SkeletonPart
-from engine.viewer.window_place import WindowPlace
+from engine.enums.window_place import WindowPlace
 
 
 class PlansModule(Module):

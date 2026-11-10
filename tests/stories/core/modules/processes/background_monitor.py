@@ -3,7 +3,7 @@ from datetime import timedelta
 import pytest
 
 from engine.command.bus import Bus
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart

@@ -4,13 +4,13 @@ from dataclasses import dataclass
 from engine.enums.agent_role import AgentRole
 from engine.driver.foreign_run import ForeignRun
 from engine.driver.errors.hook_event_error import HookEventError
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.errors.hook_event_version_error import HookEventVersionError
 from engine.driver.errors.old_hook_runner_error import OldHookRunnerError
 from engine.driver.hook_fields import boolean, mapping, mappings, number, text
 from engine.driver.hook_transcript import HookTranscript
 from engine.driver.tool import Tool
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 
 HOOK_EVENT_VERSION = 3
 RESUME_SOURCE = "resume"

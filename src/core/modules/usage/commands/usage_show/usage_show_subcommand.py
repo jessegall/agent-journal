@@ -15,7 +15,7 @@ from engine.query.queries import Queries
 from engine.query.query import Query
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.usage.support.compaction import Compaction

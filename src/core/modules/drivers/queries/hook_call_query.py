@@ -7,7 +7,7 @@ from engine.database.kept_rows import KeptRows
 from engine.database.statement import Statement
 from engine.time.timestamp import Timestamp
 from engine.driver.hook_event import HookEvent
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.model.tables import Tables
 from engine.query.conditions.less import Less
 from engine.query.conditions.among import Among

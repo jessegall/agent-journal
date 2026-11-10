@@ -4,8 +4,8 @@ from datetime import timedelta
 from engine.database.database import Database
 from engine.registry.registry import Registry
 from core.modules.drivers.support.hook_cost_tool import HOOK_LIMIT_POINTS
-from engine.driver.command_category import CommandCategory
-from engine.driver.tool_type import ToolType
+from engine.enums.command_category import CommandCategory
+from engine.enums.tool_type import ToolType
 from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.checks.support.due_check_runs import DueCheckRuns
 from engine.testing.examples.hook_samples import HookSamples

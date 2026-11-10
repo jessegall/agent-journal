@@ -3,7 +3,7 @@ from enum import StrEnum
 from engine.chat.mark_button import MarkButton
 from engine.chat.mark_declaration import MarkDeclaration
 from engine.chat.mark_family import MarkFamily
-from engine.chat.mark_group import MarkGroup
+from engine.enums.mark_group import MarkGroup
 from engine.module.module import Module
 from engine.viewer.button_declaration import ButtonDeclaration
 

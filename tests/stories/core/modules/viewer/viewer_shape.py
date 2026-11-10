@@ -7,7 +7,7 @@ from core.modules.viewer.viewer_module import ViewerModule
 from core.modules import DEFAULT_MODULES
 from suites import DEFAULT_SUITES
 from engine.module.window_extensions import WindowExtensions
-from engine.viewer.window_place import WindowPlace
+from engine.enums.window_place import WindowPlace
 from tests.stories.support.story_checks import expect_absent_value
 
 ROOT = Path(__file__).resolve().parents[5]

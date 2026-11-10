@@ -1,5 +1,5 @@
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.driver.shell_line import JOURNAL_PROGRAM
 from engine.query.conditions.prefix import Prefix
 from core.modules.processes.queries.output_query import OutputQuery

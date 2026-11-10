@@ -5,7 +5,7 @@ from engine.module.window_check import WindowCheck
 from engine.viewer.inspector_declaration import InspectorDeclaration
 from engine.viewer.registry_lines import RegistryLines
 from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_place import WindowPlace
+from engine.enums.window_place import WindowPlace
 
 
 class InspectorCheck:

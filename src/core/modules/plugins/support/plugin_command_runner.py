@@ -8,8 +8,8 @@ from engine.checkout.checkout import Checkout
 from engine.enums.checkout_type import CheckoutType
 from engine.command.bus import Bus
 from engine.command.context import Context
-from engine.driver.command_category import CommandCategory
-from engine.model.event_form import EventForm
+from engine.enums.command_category import CommandCategory
+from engine.enums.event_form import EventForm
 from engine.file.project_reads import ProjectReads
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal

@@ -3,9 +3,9 @@ from engine.module.module import Module
 from engine.skill.skill_declaration import SkillDeclaration
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
-from engine.viewer.window_place import WindowPlace
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
+from engine.enums.window_place import WindowPlace
 from core.modules.project_rules.commands.make_rule.make_rule_handler import MakeRuleHandler
 from core.modules.project_rules.commands.make_rule.make_rule_subcommand import MakeRuleSubcommand
 from core.modules.project_rules.listeners.rule_dock_listener import RuleDockListener

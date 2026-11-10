@@ -2,7 +2,7 @@ from enum import StrEnum
 
 from engine.driver.nudge import Nudge
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 
 WORKER_OPERATION_NEXT = NudgeDeclaration("workers.operation_next", NudgeType.STEERING,
     'task:{task} is yours next; output {output}', turn_limited=False, wakes_agent=True)

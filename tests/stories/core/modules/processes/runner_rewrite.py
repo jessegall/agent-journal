@@ -7,8 +7,8 @@ import pytest
 from engine.command.bus import Bus
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
-from engine.driver.command_category import CommandCategory
-from engine.driver.command_effect import CommandEffect
+from engine.enums.command_category import CommandCategory
+from engine.enums.command_effect import CommandEffect
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.engine.driver.support.samples import SAMPLES

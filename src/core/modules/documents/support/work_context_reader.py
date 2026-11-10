@@ -32,7 +32,7 @@ from core.modules.documents.support.work_context_text import WorkContextText
 from core.modules.documents.support.work_context_attachment_page import WorkContextAttachmentPage
 from core.modules.documents.support.work_context_file import WorkContextFile
 from core.modules.documents.support.work_context_file_content import WorkContextFileContent
-from core.modules.documents.support.work_context_order import WorkContextOrder
+from core.modules.documents.models.enums.work_context_order import WorkContextOrder
 from core.modules.messages.models.enums.message_type import MessageType, PERSON_MESSAGE_TYPES
 from core.modules.messages.support.assigned_work_sources import AssignedWorkSources
 from core.modules.messages.support.work_source_copy import WorkSourceCopy

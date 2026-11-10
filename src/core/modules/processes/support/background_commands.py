@@ -1,6 +1,6 @@
 from engine.cli.alias_options import AliasOptions
 from engine.cli.shell_aliases import ShellAliases
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.driver.part import Part
 from engine.driver.shell_line import ShellLine
 from engine.registry.registry import Registry

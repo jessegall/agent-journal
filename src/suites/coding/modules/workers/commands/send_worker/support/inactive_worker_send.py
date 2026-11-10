@@ -18,7 +18,7 @@ from suites.coding.modules.workers.queries.worker_operation_query import WorkerO
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class InactiveWorkerSend:

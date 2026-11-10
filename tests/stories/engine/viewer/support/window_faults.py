@@ -4,7 +4,7 @@ from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.layout_shape import tabs
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_extension import WindowExtension
-from engine.viewer.window_loading import WindowLoading
+from engine.enums.window_loading import WindowLoading
 from engine.viewer.choice_option import ChoiceOption
 from engine.viewer.toggle_option import ToggleOption
 from engine.viewer.window_size import WindowSize

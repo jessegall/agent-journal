@@ -1,6 +1,6 @@
 import pytest
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.file.file_access import FileAccess
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from engine.testing.examples.hook_samples import HookSamples

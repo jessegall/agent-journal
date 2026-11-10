@@ -6,8 +6,8 @@ from engine.setting.setting_node import SettingNode
 from engine.setting.setting_limits import length_problems
 from engine.setting.setting_rule import SettingRule
 from engine.setting.setting_rule_text import SettingRuleText
-from engine.setting.setting_scope import SettingScope
-from engine.setting.setting_type import SettingType
+from engine.enums.setting_scope import SettingScope
+from engine.enums.setting_type import SettingType
 from engine.types.type_guards import is_list, is_text_list, is_tuple
 
 

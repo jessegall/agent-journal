@@ -2,7 +2,7 @@ import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 
-from engine.viewer.key_loading import KeyLoading
+from engine.enums.key_loading import KeyLoading
 
 ID_SUFFIX = ".*"
 ID_TOKEN = "{id}"

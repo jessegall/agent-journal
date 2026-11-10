@@ -1,5 +1,5 @@
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import AgentStarted

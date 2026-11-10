@@ -5,14 +5,14 @@ import pytest
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.database.database import Database
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.registry.registry import Registry
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.skills.support.profile_skills import ProfileSkills
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.support.shipped_profiles import DESIGN_SKILLS, HELPER_PROFILES, HELPER_SKILLS, PLANNER_SKILLS, PLAN_REVIEW_SKILLS, WORKER_PROFILES, WORKER_SKILLS
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.support.story_checks import expect_absent_value

@@ -10,26 +10,26 @@ import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
-from engine.driver.hook_event_name import HookEventName
-from engine.driver.tool_type import ToolType
+from engine.enums.hook_event_name import HookEventName
+from engine.enums.tool_type import ToolType
 from engine.file.file_access import FileAccess
 from engine.instruction.instruction_imports import JOURNAL_FILE
 from engine.journal.journal_home import JournalHome
 from engine.provider.helper_launch import HelperLaunch
 from engine.provider.helper_outcome import HelperOutcome
-from engine.provider.hook_decoder import HookDecoder
+from engine.enums.hook_decoder import HookDecoder
 from engine.provider.hook_file import HookFile
-from engine.provider.hook_trust import HookTrust
+from engine.enums.hook_trust import HookTrust
 from engine.provider.launch import Launch
 from engine.provider.launch_command import LaunchCommand
-from engine.profile.model_tier import ModelTier
+from engine.enums.model_tier import ModelTier
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.program_folders import ProgramFolders
 from engine.profile.agent_profile import AgentProfile
 from engine.provider.program_model import ProgramModel
 from engine.provider.provider import Provider
 from engine.enums.halt_style import HaltStyle
-from engine.driver.refusal_style import RefusalStyle
+from engine.enums.refusal_style import RefusalStyle
 from engine.provider.transcript_author import JOURNAL_AUTHOR, TRANSCRIPT_AUTHORS, TranscriptAuthor
 from engine.provider.transcript_row import TranscriptRow
 from engine.provider.transcript_tail import TranscriptTail
@@ -39,7 +39,7 @@ from core.modules.codex.providers.support.codex_token_count import CodexTokenCou
 from core.modules.codex.providers.support.codex_session_effort import CodexSessionEffort
 from core.modules.codex.providers.support.codex_event import CodexEvent
 from core.modules.codex.providers.support.codex_trust import CodexTrust
-from core.modules.codex.providers.support.codex_hook_event import CodexHookEvent
+from core.modules.codex.models.enums.codex_hook_event import CodexHookEvent
 
 HOME_VARIABLE = "CODEX_HOME"
 DEVELOPER_ROLE = "developer"

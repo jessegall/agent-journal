@@ -3,7 +3,7 @@ from pathlib import Path
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository

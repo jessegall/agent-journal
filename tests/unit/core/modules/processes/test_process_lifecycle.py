@@ -1,4 +1,4 @@
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.processes.models.enums.output_state import OutputState
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.lifecycles.output_lifecycle import OutputLifecycle

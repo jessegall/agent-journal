@@ -1,9 +1,9 @@
 import re
 
 from engine.driver.agent_hook import AgentHook
-from engine.driver.command_effect import CommandEffect
+from engine.enums.command_effect import CommandEffect
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.claude_code.support.claude_code_nudges import NATIVE_MEMORY_BAN
 

@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from engine.chat.mark_outcome import MarkOutcome
+from engine.enums.mark_outcome import MarkOutcome
 from engine.command.bus import Bus
 from engine.container.container import Container
 from engine.file.file_access import FileAccess

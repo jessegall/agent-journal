@@ -1,7 +1,7 @@
 import pytest
 
-from engine.viewer.inspector_width import InspectorWidth
-from engine.viewer.panel_labels import PanelLabels
+from engine.enums.inspector_width import InspectorWidth
+from engine.enums.panel_labels import PanelLabels
 from engine.database.database import Database
 from engine.registry.registry import Registry
 from core.modules.reminders.models.reminder import Reminder

@@ -1,5 +1,5 @@
 from engine.module.helper_type_check import AGENTS_MODULE
-from engine.chat.mark_outcome import MarkOutcome
+from engine.enums.mark_outcome import MarkOutcome
 from engine.change.logged_event import LoggedEvent
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.enums.agent_mark_type import AgentMarkType

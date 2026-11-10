@@ -3,13 +3,13 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.skills.support.profile_skills import ProfileSkills
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from engine.testing.examples.hook_samples import HookSamples
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.support.story_checks import expect_value

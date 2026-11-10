@@ -3,7 +3,7 @@ from core.modules.skills.support.skill_nudges import READ_SKILL_FIRST
 from engine.enums.role_group import RoleGroup
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.skills.commands.load_skill.support.kept_skills import KeptSkills
 from core.modules.skills.support.skill_block import SkillBlock

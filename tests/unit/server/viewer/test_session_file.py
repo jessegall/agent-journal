@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from server.viewer.session_file import SessionFile
-from server.viewer.session_type import SessionType
+from server.enums.session_type import SessionType
 from server.viewer.viewer_login import ViewerLogin
 
 

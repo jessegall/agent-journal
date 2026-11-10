@@ -4,10 +4,10 @@ from pathlib import Path
 
 from engine.chat.dock_declaration import DockDeclaration
 from engine.chat.mark_button import MarkButton
-from engine.chat.mark_colouring import MarkColouring
+from engine.enums.mark_colouring import MarkColouring
 from engine.chat.mark_declaration import MarkDeclaration
 from engine.chat.mark_family import MarkFamily
-from engine.chat.mark_group import MarkGroup
+from engine.enums.mark_group import MarkGroup
 from tests.unit.source_tree import source_tree
 
 

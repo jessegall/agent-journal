@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.modules.plugins.support.plugin_event_state import PluginEventState
+from core.modules.plugins.models.enums.plugin_event_state import PluginEventState
 
 
 @dataclass(frozen=True)

@@ -3,7 +3,7 @@ from core.modules.processes.models.reader import Reader
 from engine.query.queries import Queries
 import pytest
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.database.database import Database
 from engine.database.statement import Statement
 from core.modules.processes.commands.support.part_spec import PartSpec

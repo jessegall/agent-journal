@@ -1,7 +1,7 @@
-from engine.chat.mark_click import MarkClick
+from engine.enums.mark_click import MarkClick
 from engine.chat.mark_declaration import MarkDeclaration
 from engine.chat.mark_family import MarkFamily
-from engine.chat.mark_group import MarkGroup
+from engine.enums.mark_group import MarkGroup
 from core.modules.skills.models.enums.skill_mark_type import SkillMarkType
 from core.modules.skills.models.enums.skill_mark_variant import SkillMarkVariant
 

@@ -5,7 +5,7 @@ import pytest
 from engine.change.event_log import EventLog
 from engine.database.database import Database
 from engine.database.statement import Statement
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from server.viewer.event_stream import EventStream

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 from engine.driver.rule_answer import RuleAnswer
 
 RULE_FAILED = NudgeDeclaration("drivers.rule_failed", NudgeType.NOTICE, "{text}")

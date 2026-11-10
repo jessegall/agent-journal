@@ -14,7 +14,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from server.endpoints.hook_endpoint import HookEndpoint
 from server.hook.hook_delivery_retries import HookDeliveryRetries
-from server.hook.queue_priority import QueuePriority
+from server.enums.queue_priority import QueuePriority
 
 AGENT_TEXT = "Loading the nudge records takes 10.5 seconds, so I am reading the query code now."
 TOOL_FINISHED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")

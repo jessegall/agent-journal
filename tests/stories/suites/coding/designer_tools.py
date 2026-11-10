@@ -1,4 +1,4 @@
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from engine.testing.expectations.expect_reply import expect_reply_allowed
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples

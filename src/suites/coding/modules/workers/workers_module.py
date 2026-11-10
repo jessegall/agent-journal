@@ -182,7 +182,7 @@ from suites.coding.modules.workers.ticks.unlaunched_worker_test_runs import Unla
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from suites.coding.modules.workers.commands.queue_worker_tests.queue_stalled_tests_handler import QueueStalledTestsHandler
-from engine.viewer.window_icon import WindowIcon
+from engine.enums.window_icon import WindowIcon
 from engine.module.model_declaration import ModelDeclaration, ALL_SUBCOMMANDS
 from core.modules.messages.support.assigned_work_sources import AssignedWorkSources
 from suites.coding.modules.workers.bindings.worker_task_sources import WorkerTaskSources
@@ -226,9 +226,9 @@ from engine.viewer.window_tab import WindowTab
 from engine.viewer.window_extension import WindowExtension
 from engine.viewer.window_key import WindowKey
 from engine.viewer.window_source import WindowSource
-from engine.viewer.window_loading import WindowLoading
-from engine.viewer.window_place import WindowPlace
-from engine.viewer.window_shows import WindowShows
+from engine.enums.window_loading import WindowLoading
+from engine.enums.window_place import WindowPlace
+from engine.enums.window_shows import WindowShows
 from suites.coding.modules.workers.commands.record_todo_list.record_todo_list_handler import RecordTodoListHandler
 from suites.coding.modules.workers.migrations.m002_todo_items import TodoItemsTableMigration
 from suites.coding.modules.workers.models.todo_item import TodoItem

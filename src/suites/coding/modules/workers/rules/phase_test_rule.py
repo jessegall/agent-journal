@@ -6,9 +6,9 @@ from suites.coding.modules.workers.commands.record_worker_test_run.record_worker
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 
 from engine.driver.agent_hook import AgentHook
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.part import Part
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.shell_line import ShellLine
@@ -19,7 +19,7 @@ from core.modules.processes.support.reader_demands import ASKING_FLAGS
 from suites.coding.modules.workers.support.worker_nudges import PHASE_TEST_REFUSED, PHASE_TEST_RUN_ALLOWED
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class PhaseTestRule(DriverRule):

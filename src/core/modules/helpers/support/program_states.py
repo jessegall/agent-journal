@@ -3,7 +3,7 @@ from pathlib import Path
 
 from engine.time.clock import Clock
 from engine.database.kept_rows import KeptRows
-from engine.provider.hook_trust import HookTrust
+from engine.enums.hook_trust import HookTrust
 from engine.provider.providers import Providers
 from engine.provider.errors.unknown_program_error import UnknownProgramError
 from engine.query.queries import Queries

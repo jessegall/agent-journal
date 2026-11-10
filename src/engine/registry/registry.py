@@ -25,9 +25,9 @@ from engine.registry.event_key_entry import EventKeyEntry
 from engine.registry.event_lookup import EventLookup
 from engine.registry.guard_entry import GuardEntry
 from engine.registry.listener_entry import ListenerEntry
-from engine.registry.listener_timing import ListenerTiming
+from engine.enums.listener_timing import ListenerTiming
 from engine.registry.button_line import ButtonLine
-from engine.registry.button_window import ButtonWindow
+from engine.enums.button_window import ButtonWindow
 from engine.registry.dock_entry import DockEntry
 from engine.registry.template_entry import TemplateEntry
 from engine.registry.button_entry import ButtonEntry
@@ -48,7 +48,7 @@ from engine.registry.suite_entry import SuiteEntry
 from engine.registry.window_entry import WindowEntry
 from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.window_declaration import DEFAULT_FLOAT_SIZE
-from engine.viewer.window_icon import WindowIcon
+from engine.enums.window_icon import WindowIcon
 from engine.viewer.layout_shape import loaded_layout, stored_layout
 
 

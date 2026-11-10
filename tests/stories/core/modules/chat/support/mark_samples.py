@@ -13,7 +13,7 @@ from core.modules.chat.models.chat_mark import ChatMark
 from engine.chat.mark_button import MarkButton
 from engine.chat.mark_declaration import MarkDeclaration
 from engine.chat.mark_family import MarkFamily
-from engine.chat.mark_group import MarkGroup
+from engine.enums.mark_group import MarkGroup
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.module.module import Module

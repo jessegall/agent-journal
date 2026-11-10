@@ -7,7 +7,7 @@ from engine.change.upgrade_finished import UpgradeFinished
 from engine.change.upgrade_moved import UpgradeMoved
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.registry.registry import Registry

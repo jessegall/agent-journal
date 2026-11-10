@@ -9,7 +9,7 @@ from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text

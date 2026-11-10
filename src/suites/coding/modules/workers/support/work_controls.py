@@ -3,8 +3,8 @@ import hashlib
 from engine.command.context import Context
 from engine.errors.refusal import Refusal
 from engine.registry.setting_entry import SettingEntry
-from engine.setting.setting_scope import SettingScope
-from engine.setting.setting_type import SettingType
+from engine.enums.setting_scope import SettingScope
+from engine.enums.setting_type import SettingType
 from core.modules.settings.commands.set_setting.set_setting_handler import SetSettingHandler
 from core.modules.settings.commands.support.setting_store import SettingStore
 from core.modules.settings.support.checked_setting_value import CheckedSettingValue

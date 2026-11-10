@@ -4,8 +4,8 @@ import time
 import pytest
 
 from server.errors.hook_database_busy_error import HookDatabaseBusyError
-from engine.viewer.window_priority import WindowPriority
-from server.hook.queue_priority import QueuePriority
+from engine.enums.window_priority import WindowPriority
+from server.enums.queue_priority import QueuePriority
 from server.hook.server_queue import ServerQueue
 
 WAIT_SECONDS = 5.0

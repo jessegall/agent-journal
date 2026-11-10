@@ -1,4 +1,4 @@
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.secrets.support.private_home import REPLACEMENT_VALUE, VALUE, filled_story, private_folder
 from tests.stories.core.support.coding_fixtures import BuilderStarted

@@ -1,6 +1,6 @@
 import os
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.log.exception_sink import CLOCK_TICK_SOURCE
 from engine.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException

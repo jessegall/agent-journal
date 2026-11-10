@@ -8,7 +8,7 @@ from engine.enums.actor_type import ActorType
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launcher import AgentLauncher
-from core.modules.agents.support.launch_answer import LaunchAnswer
+from core.modules.agents.models.enums.launch_answer import LaunchAnswer
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.helpers.testing.story_helper_programs import StoryHelperPrograms

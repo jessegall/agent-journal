@@ -1,6 +1,6 @@
 from engine.chat.mark_declaration import MarkDeclaration
 from engine.chat.mark_family import MarkFamily
-from engine.chat.mark_group import MarkGroup
+from engine.enums.mark_group import MarkGroup
 from core.modules.drivers.models.enums.bypass_mark_type import BypassMarkType
 from core.modules.drivers.models.enums.required_command_mark_type import RequiredCommandMarkType
 from core.modules.drivers.models.enums.required_command_mark_variant import RequiredCommandMarkVariant

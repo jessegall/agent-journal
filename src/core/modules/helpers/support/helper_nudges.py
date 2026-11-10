@@ -1,5 +1,5 @@
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 
 HELPER_LIMIT_WARNING = NudgeDeclaration("helpers.limit_warning", NudgeType.STEERING, "agent:{agent} is near its {limit} limit: stop it, or let it run out", turn_limited=False)
 HELPER_PROGRAM_FAULT = NudgeDeclaration("helpers.program_fault", NudgeType.STEERING, "agent:{agent} program exited with code {code}", turn_limited=False)

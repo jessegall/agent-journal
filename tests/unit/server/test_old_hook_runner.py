@@ -6,7 +6,7 @@ import pytest
 
 from engine.driver.errors.old_hook_runner_error import OldHookRunnerError
 from server.endpoints.hook_endpoint import HookEndpoint
-from server.hook.queue_priority import QueuePriority
+from server.enums.queue_priority import QueuePriority
 
 
 @pytest.mark.parametrize("event,refused", [("stop", True), ("pre_tool_use", False)])

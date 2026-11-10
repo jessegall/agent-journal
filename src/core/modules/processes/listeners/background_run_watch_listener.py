@@ -5,7 +5,7 @@ from dataclasses import replace
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from engine.command.bus import Bus
 from engine.driver.block_until import BlockUntil
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from engine.listener.save_listener import SaveListener
 from engine.provider.providers import Providers
 from engine.query.queries import Queries

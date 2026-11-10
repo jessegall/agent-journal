@@ -1,5 +1,5 @@
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 
 PLAN_FINISHED = NudgeDeclaration("plans.plan_finished", NudgeType.STEERING, "plan {plan} done: run the final suite; merging to main and releasing wait for the user's word", turn_limited=False)
 PHASE_FINISHED = NudgeDeclaration("plans.phase_finished", NudgeType.STEERING, "plan {plan}: phase {phase} done", turn_limited=False)

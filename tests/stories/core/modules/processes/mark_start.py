@@ -1,7 +1,7 @@
 import pytest
 
 from engine.command.bus import Bus
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.modules.processes.models.process import Process
 from engine.testing.stories.story import Story

@@ -2,7 +2,7 @@ from engine.enums.access import Access
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver import Driver
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.helper_type.helper_type import HelperType
 from engine.driver.suite import Suite

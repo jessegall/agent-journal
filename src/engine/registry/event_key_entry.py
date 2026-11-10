@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.model.table import indefinite_article
 from engine.types.type_guards import is_list
 

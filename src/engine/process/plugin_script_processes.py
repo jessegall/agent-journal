@@ -11,7 +11,7 @@ from engine.caller.process_row import ProcessRow
 from engine.journal.journal_home import JournalHome
 from engine.file.file_access import FileAccess
 from engine.process.leftover_process import LeftoverProcess
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.process.plugin_script_process import PluginScriptProcess
 from engine.script.script_skip import ScriptSkip
 from engine.enums.script_stop import ScriptStop

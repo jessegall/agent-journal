@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
 

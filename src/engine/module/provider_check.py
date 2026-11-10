@@ -1,7 +1,7 @@
 import re
 from collections.abc import Sequence
 
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.module.module import Module
 from engine.provider.provider import Provider
 

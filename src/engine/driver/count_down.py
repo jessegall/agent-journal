@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from engine.driver.nudge import Nudge
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 from engine.driver.span import Span
 from engine.driver.times_span import TimesSpan
 

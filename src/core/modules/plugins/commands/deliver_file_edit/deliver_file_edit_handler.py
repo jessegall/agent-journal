@@ -4,7 +4,7 @@ from pathlib import Path
 from engine.agent.agent_checkouts import AgentCheckouts
 from engine.enums.agent_role import AgentRole
 from engine.checkout.checkout_file import CheckoutFile
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler

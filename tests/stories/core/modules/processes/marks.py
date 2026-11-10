@@ -15,7 +15,7 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, expect_mark_count
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, monitor, moved_run, parts_started, start_process, started_run, tick
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.viewer.support.window_story import WindowStory

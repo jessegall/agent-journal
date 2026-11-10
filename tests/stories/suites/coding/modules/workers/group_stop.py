@@ -3,7 +3,7 @@ import pytest
 from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.models.enums.ask_topic import AskTopic
 from tests.stories.core.modules.processes.support.process_samples import start_process
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, PLAN_DISPATCH, SECOND_TEST_LINE, TEST_LINE, start_planned_worker, unplanned_worker

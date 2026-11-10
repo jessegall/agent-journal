@@ -1,11 +1,11 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.foreign_run import ForeignRun
 from engine.driver.hook_transcript import HookTranscript
 from engine.model.environment_scoped import EnvironmentScoped
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.row.metadata import Metadata
 from engine.types.type_guards import is_list, is_text_mapping
 from engine.model.model import Model

@@ -1,5 +1,5 @@
 from engine.driver.tool import Tool
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from engine.cli.alias_options import AliasOptions
 
 

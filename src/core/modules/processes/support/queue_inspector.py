@@ -2,7 +2,7 @@ from engine.viewer.button_condition import ButtonCondition
 from engine.viewer.button_declaration import ButtonDeclaration
 from engine.viewer.inspector_component import InspectorComponent
 from engine.viewer.inspector_declaration import InspectorDeclaration
-from engine.viewer.inspector_width import InspectorWidth
+from engine.enums.inspector_width import InspectorWidth
 from engine.viewer.text_field import TextField
 from core.modules.processes.models.process_queue_row import ProcessQueueRow
 

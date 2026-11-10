@@ -4,9 +4,9 @@ from enum import StrEnum
 from string import Formatter
 
 from engine.chat.mark_button import MarkButton
-from engine.chat.mark_click import MarkClick
+from engine.enums.mark_click import MarkClick
 from engine.chat.mark_family import MarkFamily
-from engine.chat.mark_grouping import MarkGrouping
+from engine.enums.mark_grouping import MarkGrouping
 
 GROUP_LABEL_FIELDS = ("family", "type", "count")
 

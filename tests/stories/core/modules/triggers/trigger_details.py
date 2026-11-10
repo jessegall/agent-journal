@@ -2,7 +2,7 @@ import os
 import select
 
 from engine.testing.examples.hook_samples import HookSamples
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.triggers.support.trigger_settings import AGENTS_ENABLE_SETTING
 from core.modules.triggers.support.trigger_nudges import TRIGGER_DENIES, TRIGGER_LINE
 from engine.testing.examples.shell_part import ShellPart

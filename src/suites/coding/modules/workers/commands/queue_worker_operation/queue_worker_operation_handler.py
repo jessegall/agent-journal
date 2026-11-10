@@ -3,7 +3,7 @@ from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.listener.event_rows import EventRows
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope

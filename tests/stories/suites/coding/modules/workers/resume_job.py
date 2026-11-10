@@ -12,7 +12,7 @@ from core.modules.agents.commands.record_agent_process.record_agent_process impo
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from core.modules.agents.support.launch_answer import LaunchAnswer
+from core.modules.agents.models.enums.launch_answer import LaunchAnswer
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

@@ -26,12 +26,12 @@ from core.modules.questions.listeners.question_closed_mark_listener import Quest
 from core.modules.questions.listeners.question_edited_mark_listener import QuestionEditedMarkListener
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
-from engine.viewer.key_loading import KeyLoading
+from engine.enums.key_loading import KeyLoading
 from engine.viewer.window_search import WindowSearch
 from core.modules.questions.support.question_searcher import QuestionSearcher
-from engine.viewer.window_place import WindowPlace
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
+from engine.enums.window_place import WindowPlace
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
 from core.modules.questions.migrations.m001_questions import QuestionsTablesMigration
 from core.modules.questions.migrations.m002_answer_message import AnswerMessageMigration
 from core.modules.questions.migrations.m004_question_place import QuestionPlaceMigration

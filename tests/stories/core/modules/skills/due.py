@@ -5,7 +5,7 @@ import pytest
 from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.registry.registry import Registry
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill

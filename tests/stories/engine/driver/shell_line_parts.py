@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 
 from engine.driver.classification import Classification
-from engine.driver.command_category import CommandCategory
-from engine.driver.command_effect import CommandEffect
+from engine.enums.command_category import CommandCategory
+from engine.enums.command_effect import CommandEffect
 from engine.driver.part import Part
 from engine.driver.shell_line import ShellLine
 from engine.driver.tool import Tool

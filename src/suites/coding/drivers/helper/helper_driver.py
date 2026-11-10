@@ -1,4 +1,4 @@
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.driver.driver import Driver
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.support.context_line import CONTEXT_LINE

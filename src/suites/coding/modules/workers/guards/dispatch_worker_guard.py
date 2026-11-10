@@ -2,7 +2,7 @@ from engine.guard.guard import Guard
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
-from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.change.created import Created
 from engine.command.context import Context
 from suites.coding.modules.workers.models.worktree import Worktree

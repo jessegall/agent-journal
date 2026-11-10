@@ -2,7 +2,7 @@ import re
 
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.plugins.support.plugin_nudges import PLUGIN_PROGRAM_OFF

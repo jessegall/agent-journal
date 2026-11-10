@@ -2,7 +2,7 @@ import pytest
 
 from engine.change.event_log import EventLog
 from engine.provider.managed_hooks import ManagedHooks
-from engine.provider.managed_state import ManagedState
+from engine.enums.managed_state import ManagedState
 from engine.provider.program_hooks import ProgramHooks
 from tests.stories.core.support.fixtures import MainEnvironment
 from engine.testing.expectations.expect_row import expect_row

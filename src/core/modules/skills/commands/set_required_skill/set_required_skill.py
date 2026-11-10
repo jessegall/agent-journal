@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from core.modules.skills.support.required_agents import RequiredAgents
+from core.modules.skills.models.enums.required_agents import RequiredAgents
 from core.modules.skills.support.skill_requirements import SkillRequirements
 
 

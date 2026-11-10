@@ -4,7 +4,7 @@ import threading
 from server.viewer.share_route import COOKIE_SEPARATOR
 from server.viewer.phone_sessions import PhoneSessions
 from server.viewer.session_file import SessionFile
-from server.viewer.session_type import SessionType
+from server.enums.session_type import SessionType
 from server.viewer.share_sessions import ShareSessions
 from server.errors.share_session_error import ShareSessionError
 from server.errors.unknown_login_key_error import UnknownLoginKeyError

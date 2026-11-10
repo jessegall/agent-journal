@@ -6,7 +6,7 @@ from engine.command.bus import Bus
 from engine.driver.block_until import BlockUntil
 from engine.driver.conditions.ran_command import RanCommand
 from engine.driver.nudge import Nudge
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 from core.modules.drivers.support.driver_settings import BLOCK_CARD_SECONDS
 from tests.stories.engine.driver.support.fixtures import LeadStarted
 from tests.stories.engine.driver.support.samples import SAMPLES

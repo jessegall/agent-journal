@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
-from engine.provider.hook_trust import HookTrust
+from engine.enums.hook_trust import HookTrust
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.providers import Providers

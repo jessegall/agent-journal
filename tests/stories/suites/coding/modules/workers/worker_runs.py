@@ -8,7 +8,7 @@ from engine.enums.agent_role import AgentRole
 from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.driver.agent_hook import AgentHook
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.driver.hook_event import HookEvent
 from suites.coding.modules.workers.rules.stopped_worker_run_rule import StoppedWorkerRunRule
 from core.modules.processes.commands.end_process.end_process import EndProcess

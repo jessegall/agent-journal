@@ -3,7 +3,7 @@ import json
 from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.database.statement import Statement
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

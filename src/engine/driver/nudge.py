@@ -3,7 +3,7 @@ from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING
 
 from engine.driver.interval import Interval
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 from engine.driver.stored_nudge import StoredNudge
 
 if TYPE_CHECKING:

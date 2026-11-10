@@ -1,9 +1,9 @@
-from engine.viewer.window_priority import WindowPriority
+from engine.enums.window_priority import WindowPriority
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_extension import WindowExtension
 from engine.viewer.window_key import WindowKey
-from engine.viewer.window_loading import WindowLoading
+from engine.enums.window_loading import WindowLoading
 from types import SimpleNamespace
 from server.viewer.window_priorities import WindowPriorities
 

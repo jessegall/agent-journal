@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.hook_agents import hook_agent

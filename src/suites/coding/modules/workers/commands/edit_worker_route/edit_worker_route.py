@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.edit_command import EditCommand
-from engine.profile.model_tier import ModelTier
+from engine.enums.model_tier import ModelTier
 from core.modules.tasks.models.support.task_complexity import TaskComplexity
 from suites.coding.modules.workers.models.worker_route import WorkerRoute
 

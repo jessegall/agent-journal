@@ -1,6 +1,6 @@
 from engine.change.event_log import EventLog
 from engine.time.clock import Clock
-from engine.model.event_form import EventForm
+from engine.enums.event_form import EventForm
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.registry.registry import Registry

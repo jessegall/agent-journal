@@ -36,7 +36,7 @@ def test_agent_facts_and_filter_options_show_profile_titles_through_the_viewer(n
 
 def test_agents_window_picture(new_story):
     from pathlib import Path
-    from engine.driver.command_category import CommandCategory
+    from engine.enums.command_category import CommandCategory
     from engine.testing.examples.hook_samples import HookSamples
     from engine.testing.examples.shell_part import ShellPart
     from tests.stories.server.support.browser_story import expect_browser

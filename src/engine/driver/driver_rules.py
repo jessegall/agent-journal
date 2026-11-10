@@ -13,7 +13,7 @@ from engine.driver.hook_history import HookHistory
 from engine.driver.rule_history_key import RuleHistoryKey
 from engine.driver.layers import Layers
 from engine.driver.overlay import Overlay
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.refusal_skips import RefusalSkips
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.rule_answers import RuleAnswers

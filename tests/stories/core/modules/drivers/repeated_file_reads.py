@@ -2,7 +2,7 @@ import os
 from datetime import timedelta
 
 from engine.time.clock import Clock
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from engine.journal.journal_home import JournalHome
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture

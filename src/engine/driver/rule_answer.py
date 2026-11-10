@@ -7,7 +7,7 @@ from engine.driver.block_condition import BlockCondition
 from engine.driver.block_until import BlockUntil
 from engine.driver.interval import Interval
 from engine.driver.nudge import Nudge
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 
 
 @dataclass(frozen=True)

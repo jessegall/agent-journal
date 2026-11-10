@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.time.timestamp import Timestamp
 from engine.testing.expectations.expect_reply import expect_absent_reply_line, expect_reply_line
 from engine.testing.examples.hook_samples import HookSamples

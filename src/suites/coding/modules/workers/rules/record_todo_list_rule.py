@@ -1,6 +1,6 @@
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.types.type_guards import is_list, is_mapping
 from suites.coding.modules.workers.commands.record_todo_list.record_todo_list import RecordTodoList

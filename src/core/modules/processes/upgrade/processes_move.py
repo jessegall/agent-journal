@@ -5,7 +5,7 @@ from pathlib import Path
 from engine.database.actor_table import ActorTable
 from engine.database.database import Database
 from engine.database.row_insert import RowInsert
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.upgrade.creator_resolver import CreatorResolver
 from engine.upgrade.move_context import MoveContext
 from engine.upgrade.move_map import MoveMap

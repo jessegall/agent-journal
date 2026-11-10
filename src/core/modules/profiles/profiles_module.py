@@ -6,10 +6,10 @@ from engine.viewer.window_read_search import WindowReadSearch
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
-from engine.viewer.key_loading import KeyLoading
-from engine.viewer.window_icon import WindowIcon
-from engine.viewer.window_loading import WindowLoading
-from engine.viewer.window_place import WindowPlace
+from engine.enums.key_loading import KeyLoading
+from engine.enums.window_icon import WindowIcon
+from engine.enums.window_loading import WindowLoading
+from engine.enums.window_place import WindowPlace
 from core.modules.profiles.listeners.profile_publish_listener import ProfilePublishListener
 from core.modules.profiles.support.profile_settings import PROFILE_SETTINGS
 from core.modules.profiles.support.skeletons import PROFILES_PROFILES_SKELETON

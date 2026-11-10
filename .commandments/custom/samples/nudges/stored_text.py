@@ -1,6 +1,6 @@
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.driver.nudge_declaration import NudgeDeclaration as Declaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 
 # @sin architecture_nudges_stored_text
 REPORT = NudgeDeclaration("sample.report", NudgeType.STEERING, "worker:{worker}: {report}")

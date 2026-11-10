@@ -5,13 +5,13 @@ from datetime import timedelta
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.driver.block_until import BlockUntil
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.driver.conditions.ran_command import RanCommand
 from engine.driver.interval import Interval
 from engine.driver.nudge import Nudge
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
-from engine.driver.tool_type import ToolType
+from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text

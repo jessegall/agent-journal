@@ -4,7 +4,7 @@ from core.modules.memories.support.memory_nudges import WEIGH_COUNTDOWN, WEIGH_F
 from engine.driver.agent_hook import AgentHook
 from engine.driver.block_until import BlockUntil
 from engine.driver.driver_rule import DriverRule
-from engine.driver.hook_event_name import HookEventName
+from engine.enums.hook_event_name import HookEventName
 from engine.driver.interval import Interval
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan

@@ -3,7 +3,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 import json
 import shlex
 
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.fixtures import UserJoined

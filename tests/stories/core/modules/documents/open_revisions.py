@@ -3,8 +3,8 @@ from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.driver.tool_type import ToolType
-from engine.driver.command_category import CommandCategory
+from engine.enums.tool_type import ToolType
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture

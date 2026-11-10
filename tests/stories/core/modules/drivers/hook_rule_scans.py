@@ -6,7 +6,7 @@ import pytest
 from engine.database.database import Database
 from engine.driver import driver_rules
 from engine.testing.examples.hook_samples import HookSamples
-from engine.driver.command_category import CommandCategory
+from engine.enums.command_category import CommandCategory
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.drivers.hook_durations import UserBuilder
 from tests.stories.support.story_checks import expect_value

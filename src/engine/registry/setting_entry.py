@@ -4,7 +4,7 @@ from typing import Any
 
 from engine.setting.setting_declaration import GROUP_TYPE, SettingDefault
 from engine.setting.setting_rule_text import SettingRuleText
-from engine.setting.setting_type import SettingType
+from engine.enums.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
 
 

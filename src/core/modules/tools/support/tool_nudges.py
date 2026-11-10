@@ -1,6 +1,6 @@
 from engine.driver.interval import Interval
 from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge_type import NudgeType
+from engine.enums.nudge_type import NudgeType
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 
 NUDGE_TOOL_USES = 9  # the nine tool uses between two nudges make it the tenth search after one in a row of searches

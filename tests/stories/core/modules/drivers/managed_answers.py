@@ -1,5 +1,5 @@
-from engine.driver.command_category import CommandCategory
-from engine.driver.command_effect import CommandEffect
+from engine.enums.command_category import CommandCategory
+from engine.enums.command_effect import CommandEffect
 from engine.module.driver_entries import DRIVERS_MODULE
 from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall

@@ -8,7 +8,7 @@ from core.modules.documents.support.work_context_request import WorkContextReque
 from core.modules.documents.support.work_context_text import WorkContextText
 from core.modules.documents.support.work_context_attachment_page import WorkContextAttachmentPage
 from core.modules.documents.support.work_context_file import WorkContextFile
-from core.modules.documents.support.work_context_order import WorkContextOrder
+from core.modules.documents.models.enums.work_context_order import WorkContextOrder
 
 
 class WorkContextArguments:

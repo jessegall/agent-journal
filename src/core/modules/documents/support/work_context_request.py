@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.modules.documents.support.work_context_order import WorkContextOrder
+from core.modules.documents.models.enums.work_context_order import WorkContextOrder
 
 
 @dataclass(frozen=True)
