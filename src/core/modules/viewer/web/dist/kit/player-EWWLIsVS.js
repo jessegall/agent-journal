@@ -1,6 +1,6 @@
-import { Stage as U, SIDES as j, reachSide as q } from "./figure-CFMQIYwt.js";
-import { bg as Q, aM as V, c7 as R } from "./index-D4jIbwsD.js";
-import { t as X } from "./VoiceFigure-kfVFjUJP.js";
+import { Stage as U, SIDES as j, reachSide as q } from "./figure-BlJ04wLj.js";
+import { bg as Q, aM as V, c7 as R } from "./index-ad8wE_w4.js";
+import { t as X } from "./VoiceFigure-CzSayGZ8.js";
 const Y = 4, Z = (u) => u * u * (3 - 2 * u);
 class tt {
   constructor(t, s) {
