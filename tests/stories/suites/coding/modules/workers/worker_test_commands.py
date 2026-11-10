@@ -5,7 +5,7 @@ import pytest
 from engine.driver.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.missing_runner_error import MissingRunnerError
+from core.modules.processes.errors.missing_runner_error import MissingRunnerError
 from core.modules.processes.support.runner_binary import RunnerBinary
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

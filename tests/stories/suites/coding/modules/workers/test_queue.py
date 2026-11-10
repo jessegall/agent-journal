@@ -14,7 +14,7 @@ from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from core.modules.processes.support.runner_binary import RunnerBinary
-from core.modules.processes.support.missing_runner_error import MissingRunnerError
+from core.modules.processes.errors.missing_runner_error import MissingRunnerError
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

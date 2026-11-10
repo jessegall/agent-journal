@@ -2,7 +2,7 @@ from engine.log.refusal_log import RefusalLog
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.support.process_settings import ProcessSettings
-from core.modules.processes.support.reader_save_refusal import ReaderSaveRefusal
+from core.modules.processes.errors.reader_save_refusal import ReaderSaveRefusal
 
 
 class ReaderSaveAttempts:

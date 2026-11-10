@@ -5,7 +5,7 @@ from core.modules.processes.support.run_count_lines import RunCountLines
 from core.modules.processes.support.runner_binary import RunnerBinary
 from core.modules.processes.support.runner_line import RunnerLine
 from core.modules.processes.support.queued_process_start import QueuedProcessStart
-from core.modules.processes.support.missing_runner_error import MissingRunnerError
+from core.modules.processes.errors.missing_runner_error import MissingRunnerError
 
 
 class QueuedProcessLaunch:

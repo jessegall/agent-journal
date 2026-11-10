@@ -13,7 +13,7 @@ from core.modules.processes.queries.conditions.reader_sample_scope import Reader
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_judgement import ReaderJudgement
 from core.modules.processes.support.reader_writers import ReaderWriters
-from core.modules.processes.support.reader_save_refusal import ReaderSaveRefusal
+from core.modules.processes.errors.reader_save_refusal import ReaderSaveRefusal
 
 
 class AddReaderHandler(Handler[AddReader, Reader]):

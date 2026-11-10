@@ -19,12 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/core/modules/processes/support/missing_runner_error.py"
-            },
-            {
-                "file": "src/core/modules/processes/support/reader_save_refusal.py"
-            },
-            {
                 "file": "src/core/modules/settings/support/setting_type_error.py"
             },
             {

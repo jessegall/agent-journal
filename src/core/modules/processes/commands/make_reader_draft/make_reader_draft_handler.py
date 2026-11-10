@@ -10,7 +10,7 @@ from core.modules.processes.queries.reader_request_query import ReaderRequestQue
 from core.modules.processes.support.reader_draft import ReaderDraft
 from core.modules.processes.support.reader_drafting import ReaderDrafting
 from core.modules.processes.support.reader_writers import ReaderWriters
-from core.modules.processes.support.reader_save_refusal import ReaderSaveRefusal
+from core.modules.processes.errors.reader_save_refusal import ReaderSaveRefusal
 
 
 class MakeReaderDraftHandler(Handler[MakeReaderDraft, ReaderDraft]):
