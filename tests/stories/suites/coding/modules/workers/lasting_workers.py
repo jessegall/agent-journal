@@ -69,7 +69,7 @@ def worker_rows(story) -> list[Agent]:
 
 
 def worktree_rows(story, worker_id: int) -> list[Worktree]:
-    return sorted(story.container.get(Queries).query(Worktree).filter(session_agent_id=worker_id).all_rows(), key=lambda worktree: worktree.id)
+    return list(story.container.get(WorktreeQuery).worker_worktrees(worker_id))
 
 
 def report_full_window(story) -> None:
@@ -126,6 +126,8 @@ def test_a_job_sent_to_a_worker_whose_program_is_out_waits_and_says_so_and_the_w
     story = stopped_worker
     worker = story.row(Agent, story.worker.id)
     outage(story, worker.program, 2 * COLD_IDLE_SECONDS // 60)
+    story.expect_success(f"agent end {worker.id}", actor=story.user)
+    story.run_listeners()
     story.advance(timedelta(seconds=COLD_IDLE_SECONDS))
     launches.clear()
     answer = story.run(f'worker send --wait {worker.number} "{JOB}"', actor=story.agent)

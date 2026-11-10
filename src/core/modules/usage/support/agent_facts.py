@@ -31,14 +31,14 @@ class AgentFacts:
     last_activity: str = ""
     helper_job: str = ""
     helper_job_title: str = ""
-    helper_job_program: str = ""
-    occupant_launch: str = ""
     profile_title: str = ""
     blocked_reason: str = ""
     work_status: str | None = None
     is_sandbox_off: bool = False
     windows: tuple[PlanWindow, ...] = ()
     usage_limit_ends_at: str | None = None
+    helper_job_program: str = ""
+    occupant_launch: str = ""
     session_costs: tuple[SessionCost, ...] = ()
 
     def json(self) -> Mapping[str, object]:

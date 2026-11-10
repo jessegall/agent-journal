@@ -77,12 +77,13 @@ def test_a_later_launch_of_an_each_launch_profile_costs_what_its_first_did(new_s
 
 
 def test_a_person_who_sets_a_profile_to_each_launch_sees_its_next_job_marked_fresh_in_the_agents_list(steady, monkeypatch):
+    first_launch = launch_of_the_last_job(steady)
     resumable_session(steady, helper_agent(steady), monkeypatch)
     finished_job(steady)
     resumed = launch_of_the_last_job(steady)
     steady.expect_success(LAUNCH_ROTATION_SAVE, actor=steady.user)
     finished_job(steady)
-    steady.expect_rows((resumed, launch_of_the_last_job(steady)) == ("resumed", "fresh"), detail=resumed)
+    steady.expect_rows(first_launch != "resumed", (resumed, launch_of_the_last_job(steady)) == ("resumed", "fresh"), detail=f"{first_launch} / {resumed}")
 
 
 @pytest.mark.parametrize("fixture,minutes,new_session", [(EndedColdRotationHelper, 5, True), (EndedColdRotationHelper, 55, False), (EndedColdRotationHelper, 0, False),

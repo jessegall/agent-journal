@@ -103,7 +103,7 @@ class HelperLimits:
     def listed_model(self, program: str, model: str, names: list[str]) -> str:
         self.require_model(program, model)
         if model not in names:
-            raise Refusal(f"choose a model {program} may run: {', '.join(names)}", "add --model <model>")
+            raise Refusal(f"{model} cannot run on {program}; choose a model {program} may run: {', '.join(names)}", "add --model <model>")
         return model
 
     @staticmethod

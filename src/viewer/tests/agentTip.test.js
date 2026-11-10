@@ -14,7 +14,7 @@ const RETIRED = {...IDLE, retired: true};
 
 // each test asks for an agent of its own, since the tip's read is shared for a few seconds
 async function shown(tip, id) {
-    const window = context({[`agent tip ${id}`]: {ok: true, value: {...tip, id, role_label: `worker ${id}`}}});
+    const window = context({[`agent tip row:${id}`]: {ok: true, value: {...tip, id, role_label: `worker ${id}`}}});
     const element = await mounted({render: () => h(AgentTip, {agentId: id, label: `Worker ${id}`}, () => "icon")}, window);
     const tipped = element.querySelector("[data-agent-tip]");
     tipped.dispatchEvent(new Event("mouseenter"));
@@ -50,7 +50,7 @@ test("the tip of a retired agent shows a ring", async () => {
 });
 
 test("an agent is read when it is first hovered, never when it is drawn, and a second hover reads nothing more", async () => {
-    const window = context({"agent tip 737": {ok: true, value: WORKING}});
+    const window = context({"agent tip row:737": {ok: true, value: WORKING}});
     const element = await mounted({render: () => h("div", [h(AgentTip, {agentId: 737, label: "A"}, () => "a"), h(AgentTip, {agentId: 737, label: "B"}, () => "b")])}, window);
     expect(window.reads).toEqual([]);
     const [first, second] = element.querySelectorAll("[data-agent-tip]");
@@ -59,7 +59,7 @@ test("an agent is read when it is first hovered, never when it is drawn, and a s
     await settle();
     first.dispatchEvent(new Event("mouseenter"));
     await settle();
-    expect(window.reads).toEqual(["agent tip 737"]);
+    expect(window.reads).toEqual(["agent tip row:737"]);
 });
 
 test("a tip whose read failed says the agent's label and why", async () => {
@@ -68,7 +68,7 @@ test("a tip whose read failed says the agent's label and why", async () => {
     element.querySelector("[data-agent-tip]").dispatchEvent(new Event("mouseenter"));
     await settle();
     expect(text(element, "head")).toBe("Worker 9");
-    expect(text(element, "failure")).toContain("agent tip 9");
+    expect(text(element, "failure")).toContain("agent tip row:9");
 });
 
 const SOURCES = ["../../core", "../src", "../kit"].map((folder) => resolve(__dirname, folder));

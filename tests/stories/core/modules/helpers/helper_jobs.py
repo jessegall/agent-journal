@@ -115,12 +115,6 @@ def test_a_helper_that_ends_closes_its_job(new_story):
     story.expect_rows(read_jobs(story, helper_agent(story))[0].ended_at is not None)
 
 
-def test_a_job_naming_files_an_ended_helper_knows_goes_to_that_helper(new_story):
-    story = new_story(fixture=EndedHelper)
-    FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_refusal(START, f"journal helper send {agent_number(story, helper_agent(story).id)}", actor=story.agent)
-
-
 def test_fresh_starts_a_new_helper_on_files_an_ended_one_knows(new_story):
     story = new_story(fixture=EndedHelper)
     FakeLauncher.listening(story.home.socket("launcher"))

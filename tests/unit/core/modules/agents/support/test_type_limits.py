@@ -19,5 +19,5 @@ def test_a_helper_is_named_as_a_helper():
     assert TypeLimits.kept_limit_suggestion([kept_agent(5, "helper", ENDED_AT)]) == "send the job to idle helper 5, or ask the person to retire one"
 
 
-def test_at_the_kept_limit_with_every_agent_running_only_the_person_is_named():
-    assert TypeLimits.kept_limit_suggestion([kept_agent(3, "worker", None), kept_agent(4, "worker", None)]) == "ask the person to retire one"
+def test_at_the_kept_limit_with_every_agent_running_the_text_names_a_report_and_the_person():
+    assert TypeLimits.kept_limit_suggestion([kept_agent(3, "worker", None), kept_agent(4, "worker", None)]) == "wait for a report, or ask the person to retire one"

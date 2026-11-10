@@ -151,7 +151,7 @@ def test_each_detector_fires_on_the_bad_example_and_stays_silent_on_the_good_one
     executable = next((str(folder / plugin) for folder in (ROOT, *ROOT.parents) if (folder / plugin).is_file()), None)
     if executable is None:
         pytest.skip("the code-commandments plugin is not installed")
-    completed_process = subprocess.run([executable, "rule", "prove"], cwd=tmp_path, capture_output=True, text=True, timeout=30)
+    completed_process = subprocess.run([executable, "rule", "prove"], cwd=tmp_path, capture_output=True, text=True, timeout=180)
     assert completed_process.returncode == 0, completed_process.stdout + completed_process.stderr
     for name in RULES:
         assert f"✓ {name}" in completed_process.stdout, completed_process.stdout

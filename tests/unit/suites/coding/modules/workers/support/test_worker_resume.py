@@ -41,7 +41,7 @@ class WorkerLaunch:
 
     def answer_name(self) -> str:
         answer = self.resume.launch_job(WORKER, WORKTREE, JOB, SimpleNamespace())
-        return answer if isinstance(answer, str) else answer.name
+        return str(answer)
 
 
 def test_a_new_session_of_a_cold_worker_is_launched_in_the_folder_and_branch_of_its_open_worktree():
@@ -52,11 +52,11 @@ def test_a_new_session_of_a_cold_worker_is_launched_in_the_folder_and_branch_of_
 
 def test_a_worker_of_a_program_at_its_usage_limit_is_not_launched_and_keeps_its_session():
     launch = WorkerLaunch(locked_down=True)
-    assert launch.answer_name() == "SKIPPED"
+    assert launch.answer_name() == "skipped"
     assert (launch.replaced, launch.handed) == ([], [])
 
 
 def test_a_worker_whose_program_is_out_is_not_launched_and_keeps_its_session():
     launch = WorkerLaunch(program_ready=False)
-    assert launch.answer_name() == "SKIPPED"
+    assert launch.answer_name() == "skipped"
     assert (launch.replaced, launch.handed) == ([], [])

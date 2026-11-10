@@ -25,7 +25,8 @@ class DriverChange:
         fields = {"id": 7, "number": 4, "role": "helper", "profile": "journal-researcher", "program": "claude", "program_model": "sonnet", "ended_at": ENDED_AT, "retired_at": None}
         self.agent = SimpleNamespace(**{**fields, **agent_changes})
         self.handler = ChangeAgentDriverHandler(SimpleNamespace(required=lambda model, row_id: self.agent), SimpleNamespace(run_with_context=self.run),
-                                                SimpleNamespace(checked_model=self.checked_model), SimpleNamespace(check_driver_change=lambda actor, agent: None))
+                                                SimpleNamespace(checked_model=self.checked_model), SimpleNamespace(check_driver_change=lambda actor, agent: None),
+                                                SimpleNamespace(checked_model=lambda program, model: model))
 
     def run(self, command, context) -> SimpleNamespace:
         self.commands.append(command)
