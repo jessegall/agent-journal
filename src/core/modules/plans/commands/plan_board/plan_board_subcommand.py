@@ -2,7 +2,7 @@ from engine.query.conditions.less import Less
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.model.state_book import StateBook
+from engine.model.state_book import StateBook
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.query.query import PAGE_SIZE_ROWS

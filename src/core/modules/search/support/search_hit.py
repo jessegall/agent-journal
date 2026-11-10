@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from collections.abc import Sequence
 from typing import Any
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.text.search_term import SearchTerm
 from engine.time.timestamp import Timestamp
 from core.base.driver.nudge_declaration import CUT_MARK

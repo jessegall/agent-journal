@@ -8,10 +8,10 @@ from engine.change.deleted import Deleted
 from engine.change.event_type import EventType
 from engine.change.logged_event import LoggedEvent
 from engine.change.updated import Updated
-from core.base.model.model import Model
-from core.base.model.move import Move
-from core.base.model.state_book import StateBook
-from core.base.model.tables import Tables
+from engine.model.model import Model
+from engine.model.move import Move
+from engine.model.state_book import StateBook
+from engine.model.tables import Tables
 from core.base.listener.event_rows import EventRows
 
 M = TypeVar("M", bound=Model)

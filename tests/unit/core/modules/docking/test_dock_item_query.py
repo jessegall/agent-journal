@@ -4,7 +4,7 @@ import pytest
 
 from core.base.database.database import Database
 from engine.journal.journal_home import JournalHome
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.time.timestamp import Timestamp
 from core.modules.docking.docking_module import DockingModule
 from core.modules.docking.queries.dock_item_query import DockItemQuery

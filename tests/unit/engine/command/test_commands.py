@@ -9,8 +9,8 @@ from engine.command.edit_command import EditCommand
 from engine.command.make_command import MakeCommand
 from engine.command.move_command import MoveCommand
 from engine.time.timestamp import Timestamp
-from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle
+from tests.unit.engine.model.test_model import Item
 
 FIXED_TIME = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 

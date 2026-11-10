@@ -8,11 +8,11 @@ from enum import StrEnum
 from functools import cached_property
 from typing import Any, Generic, TypeVar, Union, get_args, get_origin, get_type_hints
 from engine.row.metadata import Metadata
-from core.base.model.added_state import AddedState
-from core.base.model.model import Model, STATE
-from core.base.model.view_model import ViewModel
+from engine.model.added_state import AddedState
+from engine.model.model import Model, STATE
+from engine.model.view_model import ViewModel
 from engine.time.timestamp import Timestamp
-from core.base.model.unsupported_column_type_error import UnsupportedColumnTypeError
+from engine.model.unsupported_column_type_error import UnsupportedColumnTypeError
 
 R = TypeVar("R", bound=Model | ViewModel, covariant=True)
 T = TypeVar("T", bound=Model | ViewModel)

@@ -9,7 +9,7 @@ from engine.checkout.checkout_file import CheckoutFile
 from engine.time.clock import Clock
 from engine.command.bus import Bus
 from engine.command.script_policy import DELIVERY_LIMIT_MS, ScriptPolicy
-from core.base.model.event_form import EventForm
+from engine.model.event_form import EventForm
 from core.base.listener.commit_listener_runner import PLUGIN_RUN_ORDER
 from engine.command.command import Command
 from core.base.listener.commit_listener import CommitListener

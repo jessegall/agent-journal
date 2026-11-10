@@ -1,6 +1,6 @@
 from typing import Any
 
-from core.base.model.table import T, Table
+from engine.model.table import T, Table
 
 
 class Tables:

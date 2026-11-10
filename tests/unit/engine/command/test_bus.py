@@ -23,7 +23,7 @@ from engine.command.move_command import MoveCommand
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
@@ -32,8 +32,8 @@ from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from tests.unit.core.base.sample_container import sample_container
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle
+from tests.unit.engine.model.test_model import Item
 from engine.change.created import Created
 
 AGENT = Actor(7, ActorType.AGENT)

@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import TypeVar
 
-from core.base.model.model import Model
+from engine.model.model import Model
 
 M = TypeVar("M", bound=Model)
 

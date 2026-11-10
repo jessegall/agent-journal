@@ -1,5 +1,5 @@
-from core.base.model.model import Model
-from core.base.model.state_book import StateBook
+from engine.model.model import Model
+from engine.model.state_book import StateBook
 from core.base.listener.event_rows import EventRows
 from engine.errors.missing_rows_error import MissingRowsError
 from core.base.registry.registry import Registry

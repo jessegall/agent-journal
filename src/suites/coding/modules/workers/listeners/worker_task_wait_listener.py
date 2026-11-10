@@ -3,7 +3,7 @@ from functools import singledispatchmethod
 
 from engine.command.context import Context
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.base.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.models.proof import Proof

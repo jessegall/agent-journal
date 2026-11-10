@@ -8,7 +8,7 @@ from core.base.database.statement import Statement
 from engine.time.timestamp import Timestamp
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_name import HookEventName
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.query.conditions.less import Less
 from engine.query.conditions.among import Among
 from engine.query.conditions.greater import Greater

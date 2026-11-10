@@ -4,9 +4,9 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from engine.journal.journal_home import JournalHome
 from core.base.listener.event_rows import EventRows
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.query.queries import Queries
-from tests.unit.core.base.model.test_table import LogEntry
+from tests.unit.engine.model.test_table import LogEntry
 from tests.unit.engine.query.test_query import entries
 
 __all__ = ["entries"]

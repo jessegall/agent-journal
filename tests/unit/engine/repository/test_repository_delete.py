@@ -6,7 +6,7 @@ from engine.container.container import Container
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.listener.deletion_listener import DeletionListener
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
@@ -15,7 +15,7 @@ from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from tests.unit.core.base.sample_container import context, empty_registry, sample_container
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_model import Item
 from engine.change.deleted import Deleted
 from engine.command.context import Context
 

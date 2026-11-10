@@ -4,7 +4,7 @@ from typing import ClassVar, Generic, TypeVar
 
 from engine.change.event_pattern import EventPattern
 from engine.change.event_type import EventType
-from core.base.model.move import Move
+from engine.model.move import Move
 
 E = TypeVar("E", contravariant=True, default=object)
 

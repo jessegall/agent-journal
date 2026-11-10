@@ -4,10 +4,10 @@ from enum import StrEnum
 from core.base.database.constraint_refusals import RULE_PREFIX
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.model.model import STATE, Model
-from core.base.model.state_book import StateBook
-from core.base.model.table import indefinite_article
-from core.base.model.tables import Tables
+from engine.model.model import STATE, Model
+from engine.model.state_book import StateBook
+from engine.model.table import indefinite_article
+from engine.model.tables import Tables
 
 RULE_TRIGGERS = Statement("SELECT name FROM sqlite_master WHERE type = 'trigger' AND name LIKE '%\\_rule\\_%' ESCAPE '\\'", scan_reason="Schema maintenance reads SQLite's trigger catalogue; SQLite does not allow indexing sqlite_master.")
 

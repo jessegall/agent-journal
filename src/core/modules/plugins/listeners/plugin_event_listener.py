@@ -10,9 +10,9 @@ from engine.command.context import Context
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
 from core.base.listener.save_listener import SaveListener
-from core.base.model.event_form import EventForm
-from core.base.model.model import Model
-from core.base.model.tables import Tables
+from engine.model.event_form import EventForm
+from engine.model.model import Model
+from engine.model.tables import Tables
 from core.base.registry.registry import Registry
 from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event import DeliverPluginEvent
 from core.modules.plugins.support.plugin_code_faults import PLUGIN_CODE_FAULTS

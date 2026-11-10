@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.change.domain_event import DomainEvent
-from core.base.model.model import END_CHANGE
+from engine.model.model import END_CHANGE
 from core.modules.agents.models.agent import Agent
 
 

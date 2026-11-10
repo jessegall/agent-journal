@@ -3,8 +3,8 @@ from datetime import timedelta
 from engine.change.event_log import EventLog
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.model.model import Model
-from core.base.model.tables import Tables
+from engine.model.model import Model
+from engine.model.tables import Tables
 from core.base.registry.registry import Registry
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.commands.prune_events.prune_events import PruneEvents

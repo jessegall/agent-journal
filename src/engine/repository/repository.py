@@ -13,9 +13,9 @@ from engine.guard.guards import Guards
 from core.base.listener.listeners import Listeners
 from core.base.listener.event_rows import EventRows
 from engine.row.metadata import Metadata
-from core.base.model.model import Model
-from core.base.model.table import Table
-from core.base.model.tables import Tables
+from engine.model.model import Model
+from engine.model.table import Table
+from engine.model.tables import Tables
 from engine.query.queries import Queries
 from engine.repository.stale_row_error import StaleRowError
 from engine.scope.scopes import Scopes

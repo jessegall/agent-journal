@@ -5,7 +5,7 @@ from engine.listener.event_listeners import EventListeners
 from engine.guard.guard import Guard
 from engine.guard.guard_switches import GuardSwitches
 from engine.guard.guard_refusal import GuardRefusal
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry

@@ -1,7 +1,7 @@
 from typing import Self
 
 from core.base.database.database import Database
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.query.query import Query
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question

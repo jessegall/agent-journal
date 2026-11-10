@@ -3,7 +3,7 @@ from engine.change.created import Created
 from engine.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.query.queries import Queries
 
 

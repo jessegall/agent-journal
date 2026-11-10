@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.view_model import ViewModel
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.view_model import ViewModel
 from core.modules.usage.models.support.views import AGENT_COUNTS_SELECT
 
 

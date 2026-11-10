@@ -1,7 +1,7 @@
 from typing import Self
 
 from core.base.database.database import Database
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.query.conditions.among import Among
 from engine.query.query import Query
 from core.modules.reviews.models.enums.review_state import ReviewState

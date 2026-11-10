@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import ClassVar
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.row.page import Page
 from engine.query.conditions.contains_every import ContainsEvery
 from engine.query.queries import Queries

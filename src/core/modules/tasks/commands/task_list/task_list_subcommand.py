@@ -1,9 +1,9 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.cli.list_subcommand import ListSubcommand
-from core.base.model.model import Model
-from core.base.model.state_book import StateBook
-from core.base.model.tables import Tables
+from engine.model.model import Model
+from engine.model.state_book import StateBook
+from engine.model.tables import Tables
 from engine.query.queries import Queries
 from engine.query.query import Query
 from core.modules.tasks.conditions.task_tag_match import TaskTagMatch

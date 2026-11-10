@@ -6,11 +6,11 @@ from engine.command.context import Context
 from engine.command.completed_command_error import CompletedCommandError
 from engine.guard.guard import Guard
 from engine.guard.guards import LIFECYCLE_GUARD
-from core.base.model.full_lifecycle import FullLifecycle
-from core.base.model.model import Model
-from core.base.model.state_book import StateBook
-from core.base.model.table import indefinite_article
-from core.base.model.unknown_state_error import UnknownStateError
+from engine.model.full_lifecycle import FullLifecycle
+from engine.model.model import Model
+from engine.model.state_book import StateBook
+from engine.model.table import indefinite_article
+from engine.model.unknown_state_error import UnknownStateError
 from engine.errors.refusal import Refusal
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 

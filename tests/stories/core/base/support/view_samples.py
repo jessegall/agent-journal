@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.model.view_model import ViewModel
+from engine.model.view_model import ViewModel
 from core.base.module.module import Module
 
 MISSING_COLUMN = "tests.stories.core.base.support.view_samples:MissingColumnModule"

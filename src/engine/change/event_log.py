@@ -9,10 +9,10 @@ from core.base.database.bookkeeping_table import BookkeepingTable
 from core.base.database.database import Database
 from engine.command.context import Context
 from engine.row.page import Page
-from core.base.model.table import stored
-from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.model import Model
-from core.base.model.tables import Tables
+from engine.model.table import stored
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.model import Model
+from engine.model.tables import Tables
 
 HIDDEN = "hidden"
 

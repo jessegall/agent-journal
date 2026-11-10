@@ -5,7 +5,7 @@ from core.modules.tasks.conditions.planless_task import PlanlessTask
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.model.state_book import StateBook
+from engine.model.state_book import StateBook
 from engine.query.query import PAGE_SIZE_ROWS, Query
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand

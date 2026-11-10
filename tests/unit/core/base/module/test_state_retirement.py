@@ -1,5 +1,5 @@
 from core.base.database.table_statements import TableStatements
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from tests.unit.core.base.module.test_state_check import Item
 
 

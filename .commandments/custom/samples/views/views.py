@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.model.view_model import ViewModel
+from engine.model.view_model import ViewModel
 
 
 # @sin architecture_views_view_model_without_select

@@ -8,7 +8,7 @@ from engine.process.leftover_process import LeftoverProcess
 from engine.cli.caller_stream import CallerStream
 from engine.command.bus import Bus
 from engine.container.journal_container import synced_container
-from core.base.model.event_form import EventForm
+from engine.model.event_form import EventForm
 from engine.query.queries import Queries
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault

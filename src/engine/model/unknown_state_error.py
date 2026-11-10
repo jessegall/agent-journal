@@ -1,4 +1,4 @@
-from core.base.model.model_error import ModelError
+from engine.model.model_error import ModelError
 
 
 class UnknownStateError(ModelError):

@@ -4,8 +4,8 @@ from engine.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from engine.command.delete_command import DeleteCommand
 from core.base.subcommand.output import Output
-from core.base.model.model import Model
-from core.base.model.table import Table
+from engine.model.model import Model
+from engine.model.table import Table
 
 
 class DeleteSubcommand(Subcommand[DeleteCommand, None]):

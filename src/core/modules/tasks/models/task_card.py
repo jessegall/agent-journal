@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.view_model import ViewModel
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.view_model import ViewModel
 from core.modules.tasks.models.support.task_priority import TaskPriority
 from core.modules.tasks.models.support.task_complexity import TaskComplexity
 from core.modules.tasks.models.enums.task_state import TaskState

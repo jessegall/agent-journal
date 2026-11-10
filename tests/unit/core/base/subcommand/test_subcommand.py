@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_model import Item
 
 CALLER = Caller(Actor(7, ActorType.AGENT), environment_id=2)
 

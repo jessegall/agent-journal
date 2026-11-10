@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from typing import TypeVar
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.base.subcommand.output import Output
 from engine.types.type_guards import is_tuple
 

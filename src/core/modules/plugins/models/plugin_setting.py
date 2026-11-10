@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.base.model.event_form import EventForm
-from core.base.model.model import Model
+from engine.model.event_form import EventForm
+from engine.model.model import Model
 
 
 @dataclass(frozen=True, kw_only=True)

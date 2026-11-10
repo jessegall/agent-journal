@@ -6,7 +6,7 @@ from core.base.database.database import Database
 from core.base.database.schema import Schema
 from core.base.database.statement import Statement
 from engine.journal.journal_home import JournalHome
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 
 
 @pytest.fixture

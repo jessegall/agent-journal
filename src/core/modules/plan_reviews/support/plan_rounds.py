@@ -3,8 +3,8 @@ import re
 
 from engine.change.event_log import EventLog
 from engine.change.logged_event import LoggedEvent
-from core.base.model.model import Model
-from core.base.model.tables import Tables
+from engine.model.model import Model
+from engine.model.tables import Tables
 from engine.query.conditions.minimum import Minimum
 from engine.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord

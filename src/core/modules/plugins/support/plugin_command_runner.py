@@ -9,7 +9,7 @@ from engine.enums.checkout_type import CheckoutType
 from engine.command.bus import Bus
 from engine.command.context import Context
 from core.base.driver.command_category import CommandCategory
-from core.base.model.event_form import EventForm
+from engine.model.event_form import EventForm
 from engine.file.project_reads import ProjectReads
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal

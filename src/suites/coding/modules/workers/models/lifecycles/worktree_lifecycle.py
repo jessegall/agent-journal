@@ -1,5 +1,5 @@
-from core.base.model.lifecycle import Lifecycle
-from core.base.model.move import Move
+from engine.model.lifecycle import Lifecycle
+from engine.model.move import Move
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 
 

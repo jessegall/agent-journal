@@ -1,7 +1,7 @@
 from engine.command.context import Context
 from engine.command.edit_command import EditCommand
 from engine.command.handler import Handler
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.base.listener.event_rows import EventRows
 from engine.repository.repository import Repository
 

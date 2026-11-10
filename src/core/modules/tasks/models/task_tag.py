@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.errors.refusal import Refusal
 
 TAG_WORD = re.compile(r"[a-z0-9-]+")

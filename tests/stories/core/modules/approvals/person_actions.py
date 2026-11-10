@@ -2,7 +2,7 @@ from typing import NamedTuple
 
 import pytest
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.phone.models.phone_code import PhoneCode

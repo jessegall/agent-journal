@@ -5,9 +5,9 @@ from engine.command.move_command import MoveCommand
 from core.base.database.migration import Migration
 from engine.guard.guard import Guard
 from core.base.listener.deletion_listener import DeletionListener
-from core.base.model.lifecycle import Lifecycle
-from core.base.model.model import Model
-from core.base.model.move import Move
+from engine.model.lifecycle import Lifecycle
+from engine.model.model import Model
+from engine.model.move import Move
 from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
 from engine.query.queries import Queries

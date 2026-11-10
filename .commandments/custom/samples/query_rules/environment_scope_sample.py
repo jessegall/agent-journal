@@ -1,4 +1,4 @@
-from core.base.model.model import Model
+from engine.model.model import Model
 
 
 # @sin architecture_scopes_model_without_environment_scope

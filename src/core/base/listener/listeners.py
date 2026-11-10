@@ -3,7 +3,7 @@ from engine.container.container import Container
 from engine.guard.change_filter import ChangeFilter
 from core.base.listener.deletion_listener import is_deletion_listener_class
 from core.base.listener.save_listener import is_save_listener_class
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from engine.scope.scopes import Scopes

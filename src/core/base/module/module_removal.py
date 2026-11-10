@@ -10,7 +10,7 @@ from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.database.schema import Schema
 from core.base.database.table_statements import TableStatements
 from engine.journal.journal_home import JournalHome
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.module.module import Module
 from core.base.module.module_check import ModuleCheck

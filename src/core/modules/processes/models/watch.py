@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.actor.actor import Actor
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.time.timestamp import Timestamp
 from core.modules.processes.models.enums.watch_state import WatchState
 from core.modules.processes.models.lifecycles.watch_lifecycle import WatchLifecycle

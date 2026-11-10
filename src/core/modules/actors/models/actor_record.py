@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.enums.actor_type import ActorType
-from core.base.model.model import Model
+from engine.model.model import Model
 
 
 @dataclass(frozen=True, kw_only=True)

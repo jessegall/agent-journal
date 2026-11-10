@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.modules.mcp.models.enums.server_auth import ServerAuth
 
 STDIO = "stdio"

@@ -6,7 +6,7 @@ from core.base.database.constraint_refusals import ConstraintRefusals
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from engine.journal.journal_home import JournalHome
-from core.base.model.table import Table
+from engine.model.table import Table
 
 
 @pytest.fixture

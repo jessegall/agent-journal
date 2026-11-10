@@ -3,8 +3,8 @@ from dataclasses import asdict, dataclass, fields, replace
 from typing import Any
 
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.model.model import Model
-from core.base.model.view_model import ViewModel
+from engine.model.model import Model
+from engine.model.view_model import ViewModel
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.base.viewer.inspector_component import InspectorComponent
 from core.base.viewer.inspector_links import InspectorLinks

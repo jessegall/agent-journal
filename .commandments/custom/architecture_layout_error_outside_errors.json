@@ -115,13 +115,13 @@
                 "file": "src/core/base/listener/listener_class_error.py"
             },
             {
-                "file": "src/core/base/model/model_error.py"
+                "file": "src/engine/model/model_error.py"
             },
             {
-                "file": "src/core/base/model/unknown_state_error.py"
+                "file": "src/engine/model/unknown_state_error.py"
             },
             {
-                "file": "src/core/base/model/unsupported_column_type_error.py"
+                "file": "src/engine/model/unsupported_column_type_error.py"
             },
             {
                 "file": "src/core/base/module/module_error.py"

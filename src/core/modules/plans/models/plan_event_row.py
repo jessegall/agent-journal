@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.model.view_model import ViewModel
+from engine.model.view_model import ViewModel
 from core.modules.plans.models.support.views import PLAN_EVENT_ROWS_SELECT
 
 

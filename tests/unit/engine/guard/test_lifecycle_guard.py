@@ -13,21 +13,21 @@ from engine.guard.change_filter import ChangeFilter
 from engine.guard.guard_switches import GuardSwitches
 from engine.guard.guards import Guards
 from engine.guard.lifecycle_guard import LifecycleGuard
-from core.base.model.added_state import AddedState
-from core.base.model.move import Move
-from core.base.model.state_book import StateBook
-from core.base.model.unknown_state_error import UnknownStateError
+from engine.model.added_state import AddedState
+from engine.model.move import Move
+from engine.model.state_book import StateBook
+from engine.model.unknown_state_error import UnknownStateError
 from engine.guard.guard_refusal import GuardRefusal
 from engine.row.metadata import Metadata
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.registry import Registry
 from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle, ItemState
+from tests.unit.engine.model.test_model import Item
 
 
 def checked(old_row: Item | None, new_row: Item | None) -> None:

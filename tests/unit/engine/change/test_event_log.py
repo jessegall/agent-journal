@@ -14,11 +14,11 @@ from core.base.database.database import Database
 from core.base.database.schema import Schema
 from engine.journal.journal_home import JournalHome
 from engine.errors.missing_rows_error import MissingRowsError
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.time.timestamp import Timestamp
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle
+from tests.unit.engine.model.test_model import Item
 
 FIXED_TIME = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 CONTEXT = Context(Actor(7, ActorType.AGENT), FIXED_TIME, MakeItem(title="Dune"), environment_id=2, cause_id=11)

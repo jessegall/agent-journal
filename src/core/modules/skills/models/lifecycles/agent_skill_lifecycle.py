@@ -1,5 +1,5 @@
-from core.base.model.lifecycle import Lifecycle
-from core.base.model.move import Move
+from engine.model.lifecycle import Lifecycle
+from engine.model.move import Move
 from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
 
 

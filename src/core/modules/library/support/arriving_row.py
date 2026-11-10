@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from engine.command.context import Context
 from core.base.library.library_share import LibraryShare
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.modules.library.support.copy_source import CopySource
 from core.modules.library.support.kept_row import KeptRow
 

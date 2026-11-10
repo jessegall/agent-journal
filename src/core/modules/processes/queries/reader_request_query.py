@@ -3,7 +3,7 @@ from typing import Self
 from engine.query.conditions.greater import Greater
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.query.query import Query
 from engine.time.timestamp import Timestamp
 from core.modules.processes.models.reader_request import ReaderRequest

@@ -7,10 +7,10 @@ from engine.command.context import Context
 from engine.container.container import Container
 from engine.guard.change_filter import ChangeFilter
 from engine.guard.guard_switches import GuardSwitches
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.time.timestamp import Timestamp
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_model import Item
 
 CHANGE = Change(None, Item(title="Dune"), Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), MakeItem(title="Dune")))
 

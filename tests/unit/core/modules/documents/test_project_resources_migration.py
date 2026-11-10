@@ -4,7 +4,7 @@ import sqlite3
 from core.base.database.database import Database
 from core.base.database.module_migrations import ModuleMigrations
 from core.base.database.schema import Schema
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from core.modules.documents.migrations.m001_documents import DocumentsTablesMigration
 from core.modules.documents.migrations.m005_project_documents import ProjectDocumentsMigration
 from core.modules.dumps.migrations.m001_dumps import DumpsTablesMigration

@@ -1,7 +1,7 @@
 from core.base.viewer.menu_item import MenuItem
 from core.base.viewer.window_search import WindowSearch
 from core.base.viewer.model_searcher import ModelSearcher
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_model import Item
 
 
 class SampleSearcher(ModelSearcher):

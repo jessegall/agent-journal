@@ -2,7 +2,7 @@ from typing import Self
 
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.query.conditions.among import Among
 from engine.query.query import Query
 from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES, ProofState

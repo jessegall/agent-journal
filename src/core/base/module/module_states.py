@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.model.state_book import StateBook
+from engine.model.state_book import StateBook
 from core.base.module.module import Module
 
 

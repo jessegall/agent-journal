@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
-from core.base.model.agent_scoped import AgentScoped
-from core.base.model.removable import Removable
-from core.base.model.environment_scoped import EnvironmentScoped
+from engine.model.agent_scoped import AgentScoped
+from engine.model.removable import Removable
+from engine.model.environment_scoped import EnvironmentScoped
 
 from engine.actor.actor import Actor
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.errors.refusal import Refusal
 from engine.time.timestamp import Timestamp
 from core.modules.memories.models.lifecycles.memory_lifecycle import MemoryLifecycle

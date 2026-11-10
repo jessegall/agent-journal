@@ -7,8 +7,8 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.database.table_statements import TableStatements
 from engine.journal.journal_home import JournalHome
-from core.base.model.model import Model
-from core.base.model.table import Table
+from engine.model.model import Model
+from engine.model.table import Table
 from engine.time.timestamp import Timestamp
 
 FIXED_TIME = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))

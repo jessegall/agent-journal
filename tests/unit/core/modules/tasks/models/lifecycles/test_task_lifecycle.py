@@ -7,8 +7,8 @@ from engine.enums.actor_type import ActorType
 from engine.change.change import Change
 from engine.command.context import Context
 from engine.guard.lifecycle_guard import LifecycleGuard
-from core.base.model.state_book import StateBook
-from core.base.model.model import Model
+from engine.model.state_book import StateBook
+from engine.model.model import Model
 from engine.errors.refusal import Refusal
 from engine.time.timestamp import Timestamp
 from core.modules.tasks.models.task import Task

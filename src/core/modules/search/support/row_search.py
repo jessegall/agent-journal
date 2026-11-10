@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.query.conditions.contains_every import ContainsEvery
 from engine.query.conditions.contains_most import ContainsMost
 from engine.query.conditions.excluding import Excluding

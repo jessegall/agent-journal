@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.view_model import ViewModel
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.view_model import ViewModel
 from core.base.driver.command_category import CommandCategory
 from engine.time.timestamp import Timestamp
 from core.modules.processes.models.enums.process_state import ProcessState

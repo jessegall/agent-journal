@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.actor.actor import CORE_ACTOR_ID
 from engine.template.template_declaration import TemplateDeclaration
 

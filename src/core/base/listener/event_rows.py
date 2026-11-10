@@ -2,8 +2,8 @@ from collections.abc import Sequence
 from typing import TypeVar, cast
 
 from core.base.database.kept_rows import KEPT_ROW_COUNT
-from core.base.model.model import Model
-from core.base.model.view_model import ViewModel
+from engine.model.model import Model
+from engine.model.view_model import ViewModel
 from engine.errors.missing_rows_error import MissingRowsError
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among

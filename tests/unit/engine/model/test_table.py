@@ -5,11 +5,11 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from engine.journal.journal_home import JournalHome
 from engine.row.metadata import Metadata
-from core.base.model.model import Model
-from core.base.model.table import Table, plural
-from core.base.model.tables import Tables
+from engine.model.model import Model
+from engine.model.table import Table, plural
+from engine.model.tables import Tables
 from engine.time.timestamp import Timestamp
-from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle, ItemState
 
 FIXED_TIME = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 

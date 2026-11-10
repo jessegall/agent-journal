@@ -12,7 +12,7 @@ from engine.checkout.checkout import Checkout
 from core.base.driver.command_category import CommandCategory
 from engine.change.event_log import HIDDEN
 from engine.journal.journal_home import JournalHome
-from core.base.model.event_form import EventForm
+from engine.model.event_form import EventForm
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from engine.scope.environment_scope import EnvironmentScope
 from engine.scope.scopes import Scopes

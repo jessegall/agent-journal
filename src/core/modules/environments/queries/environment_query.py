@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from core.base.database.database import Database
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.query.query import Query
 from core.modules.environments.models.environment import Environment
 from core.modules.environments.support.environment_activity import EnvironmentActivity

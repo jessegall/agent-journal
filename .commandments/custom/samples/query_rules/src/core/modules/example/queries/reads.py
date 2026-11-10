@@ -1,4 +1,4 @@
-from core.base.model.table import loaded
+from engine.model.table import loaded
 
 
 def read_rows(query, ids):

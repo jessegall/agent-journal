@@ -6,8 +6,8 @@ from typing import TypeIs, TypeVar, Union, get_args, get_origin
 from engine.change.changed import Changed
 from engine.change.system_event import SystemEvent
 from engine.change.touched import Touched
-from core.base.model.model import Model
-from core.base.model.move import Move
+from engine.model.model import Model
+from engine.model.move import Move
 
 
 @dataclass(frozen=True)

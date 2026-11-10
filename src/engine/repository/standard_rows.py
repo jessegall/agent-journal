@@ -4,7 +4,7 @@ from collections.abc import Callable, Sequence
 from engine.actor.actor import CORE_ACTOR_ID, Actor
 from engine.command.context import Context
 from core.base.database.kept_rows import KeptRows
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository

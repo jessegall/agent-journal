@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.positioned import Positioned
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.positioned import Positioned
 from core.modules.assign_rules.models.enums.rule_target import RuleTarget
 
 

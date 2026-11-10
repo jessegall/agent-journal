@@ -11,7 +11,7 @@ from engine.cli.write_flags import WriteFlags
 from core.base.database.database import Database
 from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from core.base.module.module_error import ModuleError
 from core.base.module.module_removal import ModuleRemoval
 from engine.errors.refusal import Refusal

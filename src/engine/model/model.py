@@ -1,13 +1,13 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 from typing import ClassVar, Self
-from core.base.model.event_form import EventForm
+from engine.model.event_form import EventForm
 from engine.row.metadata import Metadata
-from core.base.model.added_state import StateValue
-from core.base.model.lifecycle import Lifecycle
-from core.base.model.move import Move
+from engine.model.added_state import StateValue
+from engine.model.lifecycle import Lifecycle
+from engine.model.move import Move
 from engine.time.timestamp import Timestamp
-from core.base.model.model_error import ModelError
+from engine.model.model_error import ModelError
 from engine.text.search_term import SearchTerm
 
 

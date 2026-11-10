@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from typing import Self
 
 from core.base.database.database import Database
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.query.conditions.among import Among
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.subquery_match import SubqueryMatch

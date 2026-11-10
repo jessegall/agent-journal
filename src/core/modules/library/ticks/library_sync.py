@@ -2,7 +2,7 @@ from engine.time.clock import Clock
 from engine.command.bus import Bus
 from engine.command.command import Command
 from core.base.library.library_item import LibraryItem
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal

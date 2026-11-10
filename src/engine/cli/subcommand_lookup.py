@@ -6,7 +6,7 @@ from core.base.subcommand.subcommand import Subcommand, is_subcommand_class
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from engine.command.command import Command
 from engine.container.container import Container
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.base.registry.registry import Registry
 from engine.cli.usage_error import UsageError
 

@@ -3,7 +3,7 @@ from core.base.database.kept_rows import KeptRows
 from engine.enums.hook_answer import HookAnswer
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.watched_runs import WatchedRuns
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.processes.models.process import Process

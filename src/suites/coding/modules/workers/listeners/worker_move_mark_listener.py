@@ -14,7 +14,7 @@ from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMa
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.models.worktree import Worktree
 from engine.change.moved import Moved
-from core.base.model.move import Move
+from engine.model.move import Move
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 
 MOVE_TEXTS = {

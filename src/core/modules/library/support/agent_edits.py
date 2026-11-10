@@ -1,7 +1,7 @@
 from engine.change.event_log import EventLog
 from core.base.database.actor_table import ActorTable
-from core.base.model.model import Model
-from core.base.model.tables import Tables
+from engine.model.model import Model
+from engine.model.tables import Tables
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 AGENT_EDITS_WAIT_SETTING = "journal.core.library.agent-edits-wait"

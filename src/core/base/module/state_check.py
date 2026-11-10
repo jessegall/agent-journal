@@ -1,9 +1,9 @@
 import re
 from collections.abc import Sequence
 
-from core.base.model.model import Model
-from core.base.model.state_addition import StateAddition
-from core.base.model.state_holder import StateHolder
+from engine.model.model import Model
+from engine.model.state_addition import StateAddition
+from engine.model.state_holder import StateHolder
 from core.base.module.module import Module
 
 STATE_WORD = re.compile(r"^[a-z]+(-[a-z]+)*$")

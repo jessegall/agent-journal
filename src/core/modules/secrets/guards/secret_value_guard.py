@@ -1,5 +1,5 @@
 from engine.guard.guard import Guard
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_tuple
 from engine.private.secret_values import SecretValues

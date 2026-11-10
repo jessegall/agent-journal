@@ -2,12 +2,12 @@ from collections.abc import Sequence
 import dataclasses
 from typing import TypeIs
 from engine.command.move_command import MoveCommand
-from core.base.model.model import Model
-from core.base.model.move import Move
-from core.base.model.state_book import StateBook
-from core.base.model.table import Table
+from engine.model.model import Model
+from engine.model.move import Move
+from engine.model.state_book import StateBook
+from engine.model.table import Table
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.query.queries import Queries
 from engine.cli.make_subcommand import MakeSubcommand
 from engine.cli.row_links import RowLinks

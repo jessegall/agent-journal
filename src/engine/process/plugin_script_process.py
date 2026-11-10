@@ -1,7 +1,7 @@
 import subprocess
 from dataclasses import dataclass
 
-from core.base.model.event_form import EventForm
+from engine.model.event_form import EventForm
 from engine.time.timestamp import Timestamp
 
 

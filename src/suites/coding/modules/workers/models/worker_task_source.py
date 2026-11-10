@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.model import Model
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.model import Model
 from engine.time.timestamp import Timestamp
 
 

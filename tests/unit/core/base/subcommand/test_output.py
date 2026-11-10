@@ -3,10 +3,10 @@ import json
 
 from core.base.subcommand.output import Output
 from engine.guard.guard_refusal import GuardRefusal
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.row.page import Page
 from engine.errors.refusal import Refusal
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_model import Item
 
 ITEM = Item(id=3, version=1, title="Dune")
 REFUSAL = GuardRefusal("items.paused-only", Refusal("the item is not paused", "journal item pause 3"), "--skip-guard items.paused-only")

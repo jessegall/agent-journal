@@ -3,11 +3,11 @@ from datetime import datetime, timezone
 
 import pytest
 
-from core.base.model.model import Model
-from core.base.model.model_error import ModelError
-from core.base.model.move import Move
+from engine.model.model import Model
+from engine.model.model_error import ModelError
+from engine.model.move import Move
 from engine.time.timestamp import Timestamp
-from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle, ItemState
 
 FIXED_TIME = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 

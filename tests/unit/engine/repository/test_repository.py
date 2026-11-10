@@ -8,7 +8,7 @@ from engine.container.container import Container
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from engine.guard.guard_refusal import GuardRefusal
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry
@@ -23,8 +23,8 @@ from engine.guard.guard import Guard
 from core.base.listener.save_listener import SaveListener
 from tests.unit.core.base.sample_container import context, empty_registry, sample_container
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle
+from tests.unit.engine.model.test_model import Item
 from engine.change.updated import Updated
 from engine.command.context import Context
 from engine.change.changed import Changed

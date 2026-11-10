@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.model.event_form import EventForm
+from engine.model.event_form import EventForm
 
 
 CEILING_SETTING = "journal.core.plugins.hold_window_ms"

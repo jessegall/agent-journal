@@ -11,9 +11,9 @@ from core.base.database.schema import Schema
 from core.base.database.module_migrations import ModuleMigrations
 from core.base.database.statement import Statement
 from core.base.database.schema_mismatch_error import SchemaMismatchError
-from core.base.model.view_model import ViewModel
+from engine.model.view_model import ViewModel
 from engine.journal.journal_home import JournalHome
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from tests.unit.core.base.database.test_table_statements import Shelf
 
 

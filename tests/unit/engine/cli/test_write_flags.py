@@ -14,7 +14,7 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from engine.guard.guard import Guard
 from engine.guard.guard_refusal import GuardRefusal
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry
@@ -26,7 +26,7 @@ from tests.unit.core.base.samples.listener_sample import ShelfCounter
 from tests.unit.engine.command.test_commands import MakeItem
 from engine.change.created import Created
 from engine.command.context import Context
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_model import Item
 from engine.change.changed import Changed
 
 AGENT = Actor(7, ActorType.AGENT)

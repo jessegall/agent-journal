@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from engine.actor.actor import Actor
-from core.base.model.model import Model
-from core.base.model.session_bound import SessionBound
+from engine.model.model import Model
+from engine.model.session_bound import SessionBound
 from engine.time.timestamp import Timestamp
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.docking.models.lifecycles.dock_item_lifecycle import DockItemLifecycle

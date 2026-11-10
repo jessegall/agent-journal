@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from core.base.model.agent_scoped import AgentScoped
-from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.view_model import ViewModel
+from engine.model.agent_scoped import AgentScoped
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.view_model import ViewModel
 from core.modules.memories.models.support.views import KEYWORD_MEMORIES_SELECT
 
 

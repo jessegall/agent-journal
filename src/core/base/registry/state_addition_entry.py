@@ -4,12 +4,12 @@ from enum import StrEnum
 from typing import Any
 
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.model.added_state import AddedState, StateValue
-from core.base.model.model import Model
-from core.base.model.model_error import ModelError
-from core.base.model.move import Move
-from core.base.model.state_addition import StateAddition
-from core.base.model.state_holder import StateHolder
+from engine.model.added_state import AddedState, StateValue
+from engine.model.model import Model
+from engine.model.model_error import ModelError
+from engine.model.move import Move
+from engine.model.state_addition import StateAddition
+from engine.model.state_holder import StateHolder
 from core.base.registry.state_move_entry import StateMoveEntry
 
 

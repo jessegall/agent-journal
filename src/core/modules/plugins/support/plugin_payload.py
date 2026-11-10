@@ -4,9 +4,9 @@ from engine.change.change import Change
 from engine.change.event_log import EventLog
 from engine.change.logged_event import LoggedEvent
 from engine.command.context import Context
-from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.event_form import EventForm
-from core.base.model.model import Model
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.event_form import EventForm
+from engine.model.model import Model
 
 
 class PluginPayload:

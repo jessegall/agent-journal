@@ -3,7 +3,7 @@ from core.modules.skills.commands.require_skill.require_skill import RequireSkil
 from core.modules.skills.listeners.skill_listener import SkillListener
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from engine.change.touched import Touched
-from core.base.model.model import Model
+from engine.model.model import Model
 
 
 class SkillEventListener(SkillListener[Touched[Model]]):

@@ -7,7 +7,7 @@ from engine.command.outside_runs import OutsideRuns
 from engine.command.outside_turn import OutsideTurn
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
-from core.base.model.event_form import EventForm
+from engine.model.event_form import EventForm
 from core.modules.plugins.support.plugin_code_faults import PLUGIN_CODE_FAULTS
 from core.modules.plugins.support.plugin_event_answer import PluginEventAnswer
 from core.modules.plugins.support.plugin_event_runner import PluginEventRunner

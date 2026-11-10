@@ -2,7 +2,7 @@ from tests.unit.core.base.samples.listener_sample import ShelfCounter
 from tests.unit.core.base.samples.unused_guard_sample import ShelfGuard
 from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_model import Item
 
 
 class ItemsModule(Module):

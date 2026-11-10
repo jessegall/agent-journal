@@ -2,7 +2,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.time.timestamp import Timestamp
 
 

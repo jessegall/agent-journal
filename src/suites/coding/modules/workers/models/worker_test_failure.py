@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from suites.coding.modules.workers.models.enums.test_failure_source import TestFailureSource
 
 

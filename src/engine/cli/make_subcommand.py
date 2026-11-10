@@ -5,8 +5,8 @@ from typing import TypeVar, get_type_hints
 from engine.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from engine.command.make_command import MakeCommand
-from core.base.model.model import Model
-from core.base.model.table import Table
+from engine.model.model import Model
+from engine.model.table import Table
 from engine.cli.subcommand_columns import generic_base, argument_columns, flag_columns, switch_columns, copied_default, parser_argument
 
 

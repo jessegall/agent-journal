@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.actor.actor import Actor
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.time.timestamp import Timestamp
 from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
 from core.modules.skills.models.lifecycles.agent_skill_lifecycle import AgentSkillLifecycle

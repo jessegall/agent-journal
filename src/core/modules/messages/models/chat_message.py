@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.view_model import ViewModel
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.view_model import ViewModel
 from engine.time.timestamp import Timestamp
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.support.views import CHAT_MESSAGES_SELECT

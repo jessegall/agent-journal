@@ -22,9 +22,9 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.suite import Suite
 from core.base.driver.tool_type import ToolType
 from engine.guard.guard import Guard
-from core.base.model.lifecycle import Lifecycle
-from core.base.model.model import Model
-from core.base.model.move import Move
+from engine.model.lifecycle import Lifecycle
+from engine.model.model import Model
+from engine.model.move import Move
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from engine.query.queries import Queries

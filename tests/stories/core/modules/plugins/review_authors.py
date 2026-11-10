@@ -3,7 +3,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from engine.command.bus import Bus
-from core.base.model.event_form import EventForm
+from engine.model.event_form import EventForm
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveries import PrunePluginDeliveries
 from core.modules.plugins.support.plugin_folders import PluginFolders

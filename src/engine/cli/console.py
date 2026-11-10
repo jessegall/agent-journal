@@ -30,7 +30,7 @@ from engine.errors.deadline_passed_error import DeadlinePassedError
 from engine.environment.environment_names import EnvironmentNames
 from engine.log.error_log import ErrorLog
 from core.base.listener.commit_listener_runner import CommitListenerRunner
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from core.base.registry.registry import Registry

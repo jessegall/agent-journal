@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.time.timestamp import Timestamp
 from core.modules.accounts.models.enums.person_factor_type import PersonFactorType
 

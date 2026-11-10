@@ -2,8 +2,8 @@ from collections.abc import Sequence
 from enum import StrEnum
 from typing import ClassVar
 
-from core.base.model.added_state import StateValue
-from core.base.model.move import Move
+from engine.model.added_state import StateValue
+from engine.model.move import Move
 
 
 def outgoing(moves: Sequence[Move], state: StateValue) -> tuple[Move, ...]:

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.driver.command_category import CommandCategory
-from core.base.model.view_model import ViewModel
+from engine.model.view_model import ViewModel
 from core.modules.aliases.models.support.views import SAVED_COMMANDS_SELECT
 
 

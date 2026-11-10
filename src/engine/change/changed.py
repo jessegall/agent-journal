@@ -2,8 +2,8 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Generic, TypeIs, TypeVar
 
-from core.base.model.model import Model
-from core.base.model.move import Move
+from engine.model.model import Model
+from engine.model.move import Move
 
 M = TypeVar("M", bound=Model, covariant=True)
 

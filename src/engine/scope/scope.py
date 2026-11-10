@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 from engine.change.change import Change
 from engine.change.logged_event import LoggedEvent
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.scope.scope_opening import ScopeOpening
 
 

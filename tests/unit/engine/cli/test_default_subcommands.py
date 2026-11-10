@@ -17,11 +17,11 @@ from engine.command.move_command import MoveCommand
 from engine.errors.missing_rows_error import MissingRowsError
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.model.model import Model
+from engine.model.model import Model
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.core.base.listener.test_commit_listener_runner import container_with
-from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle, ItemState
+from tests.unit.engine.model.test_model import Item
 
 CALLER = Caller(Actor(7, ActorType.AGENT))
 NOTES = ("CREATE TABLE notes (id INTEGER PRIMARY KEY, item_id INTEGER NOT NULL REFERENCES items(id), amount INTEGER NOT NULL, version INTEGER NOT NULL,"

@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from engine.command.context import Context
 from core.base.library.library_share import LibraryShare
-from core.base.model.model import Model
+from engine.model.model import Model
 
 if TYPE_CHECKING:
     from core.modules.library.support.kept_row import KeptRow

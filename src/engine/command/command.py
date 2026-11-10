@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, fields
 from typing import ClassVar, Generic, TypeIs, TypeVar, get_args
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.command.command_error import CommandError
 
 

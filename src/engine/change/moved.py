@@ -5,8 +5,8 @@ from typing import ClassVar
 from engine.change.changed import M
 from engine.change.missing_move_error import MissingMoveError
 from engine.change.updated import Updated
-from core.base.model.model import Model
-from core.base.model.move import Move
+from engine.model.model import Model
+from engine.model.move import Move
 
 
 @dataclass(frozen=True)

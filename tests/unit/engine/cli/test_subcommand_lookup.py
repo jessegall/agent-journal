@@ -16,7 +16,7 @@ UNUSED = "tests.unit.core.base.samples.lookup_unused_sample"
 
 def lookup(tmp_path) -> SubcommandLookup:
     subcommands = {"item make": DottedPath("tests.unit.core.base.samples.lookup_sample:ItemMakeOwn"), "item archive": DottedPath(f"{UNUSED}:ItemArchiveOwn")}
-    models = {"item": ModelEntry("items", DottedPath("tests.unit.core.base.model.test_model:Item"), ())}
+    models = {"item": ModelEntry("items", DottedPath("tests.unit.engine.model.test_model:Item"), ())}
     return sample_container(tmp_path, Registry("abc", models, {}, subcommands, (), ())).get(SubcommandLookup)
 
 

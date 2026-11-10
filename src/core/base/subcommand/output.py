@@ -6,9 +6,9 @@ from typing import TextIO
 from engine.text.explanation import Explanation
 from engine.guard.guard_refusal import GuardRefusal
 from engine.row.metadata import Metadata
-from core.base.model.model import Model
-from core.base.model.table import stored
-from core.base.model.tables import Tables
+from engine.model.model import Model
+from engine.model.table import stored
+from engine.model.tables import Tables
 from engine.row.page import Page
 from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_frozenset, is_mapping, is_tuple

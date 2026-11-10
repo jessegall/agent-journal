@@ -3,7 +3,7 @@ from typing import TypeIs, TypeVar
 
 from engine.command.command import Command
 from engine.command.move_command import ROW_ID
-from core.base.model.model import Model
+from engine.model.model import Model
 
 M = TypeVar("M", bound=Model, covariant=True)
 

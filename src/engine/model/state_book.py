@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 
-from core.base.model.full_lifecycle import FullLifecycle
-from core.base.model.model import Model
-from core.base.model.state_addition import StateAddition
+from engine.model.full_lifecycle import FullLifecycle
+from engine.model.model import Model
+from engine.model.state_addition import StateAddition
 
 
 class StateBook:

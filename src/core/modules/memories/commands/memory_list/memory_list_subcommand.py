@@ -1,9 +1,9 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.cli.list_subcommand import ListSubcommand
-from core.base.model.model import Model
-from core.base.model.state_book import StateBook
-from core.base.model.tables import Tables
+from engine.model.model import Model
+from engine.model.state_book import StateBook
+from engine.model.tables import Tables
 from engine.query.conditions.contains_every import ContainsEvery
 from engine.query.conditions.has_value import HasValue
 from engine.query.conditions.is_null import IsNull

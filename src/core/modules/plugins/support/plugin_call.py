@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from engine.checkout.checkout import Checkout
-from core.base.model.event_form import EventForm
+from engine.model.event_form import EventForm
 from engine.time.timestamp import Timestamp
 from core.modules.plugins.support.agent_facts import AgentFacts
 from core.modules.plugins.support.plugin_event import PluginEvent

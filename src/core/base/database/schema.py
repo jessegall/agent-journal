@@ -5,10 +5,10 @@ from core.base.database.database import Database
 from core.base.database.migration import Migration
 from core.base.database.rebuild_migration import RebuildMigration
 from core.base.database.schema_mismatch_error import SchemaMismatchError
-from core.base.model.view_model import ViewModel
+from engine.model.view_model import ViewModel
 from core.base.database.statement import Statement
-from core.base.model.model import Model
-from core.base.model.tables import Tables
+from engine.model.model import Model
+from engine.model.tables import Tables
 from core.base.database.module_migrations import ModuleMigrations
 
 

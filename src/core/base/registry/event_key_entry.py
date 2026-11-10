@@ -1,8 +1,8 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from core.base.model.event_form import EventForm
-from core.base.model.table import indefinite_article
+from engine.model.event_form import EventForm
+from engine.model.table import indefinite_article
 from engine.types.type_guards import is_list
 
 MODULE_NAME_PREFIX = "journal."

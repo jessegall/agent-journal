@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.modules.assign_rules.models.enums.decision_outcome import DecisionOutcome
 
 

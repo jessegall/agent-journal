@@ -11,7 +11,7 @@ from core.base.subcommand.subcommand import Subcommand
 from core.base.viewer.button_declaration import ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TemplateField, TextField
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_loading import WindowLoading
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_model import Item
 
 BUTTON = ButtonDeclaration("review.run", tuple(["row.item"]), "Review", "note review {row_id}")
 SHIPPED = frozenset({"journal.core.notes"})

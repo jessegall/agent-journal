@@ -8,10 +8,10 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.database.triggers import Triggers
 from engine.journal.journal_home import JournalHome
-from core.base.model.model import Model
-from core.base.model.state_book import StateBook
-from core.base.model.tables import Tables
-from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
+from engine.model.model import Model
+from engine.model.state_book import StateBook
+from engine.model.tables import Tables
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle, ItemState
 
 
 class ItemLength(StrEnum):

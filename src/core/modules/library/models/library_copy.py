@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.modules.library.models.enums.copy_state import CopyState
 from core.modules.library.models.enums.library_role import LibraryRole
 

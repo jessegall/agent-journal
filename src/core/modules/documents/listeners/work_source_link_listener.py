@@ -6,7 +6,7 @@ from engine.command.edit_command import EditCommand
 from engine.command.make_command import MakeCommand
 from core.base.library.library_lookup import LibraryLookup
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.modules.documents.commands.edit_text.edit_text import EditText
 from core.modules.documents.commands.make_text.make_text import MakeText
 from core.modules.documents.models.doc import Doc

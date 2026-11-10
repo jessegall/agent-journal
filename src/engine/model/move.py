@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.base.model.added_state import StateValue
+from engine.model.added_state import StateValue
 
 
 @dataclass(frozen=True)

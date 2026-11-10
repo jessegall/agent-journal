@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.enums.actor_type import ActorType
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.time.timestamp import Timestamp
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
 from core.modules.messages.support.work_source_copy import WorkSourceCopy

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.model.view_model import ViewModel
+from engine.model.view_model import ViewModel
 from core.modules.plans.models.support.views import PLAN_OUTLINE_TASKS_SELECT
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.support.task_complexity import TaskComplexity

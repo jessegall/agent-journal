@@ -9,8 +9,8 @@ from engine.change.event_subscriber import EventSubscriber
 from engine.change.moved import Moved
 from engine.change.updated import Updated
 from engine.command.context import Context
-from core.base.model.model import Model
-from core.base.model.move import Move
+from engine.model.model import Model
+from engine.model.move import Move
 from engine.change.missing_row_error import MissingRowError
 
 

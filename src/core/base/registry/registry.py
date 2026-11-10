@@ -41,7 +41,7 @@ from core.base.registry.move_entry import MoveEntry
 from core.base.registry.overlay_entry import OverlayEntry
 from core.base.registry.provider_entry import ProviderEntry
 from core.base.registry.skill_entry import SkillEntry
-from core.base.model.state_book import StateBook
+from engine.model.state_book import StateBook
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.registry.state_addition_entry import StateAdditionEntry
 from core.base.registry.suite_entry import SuiteEntry

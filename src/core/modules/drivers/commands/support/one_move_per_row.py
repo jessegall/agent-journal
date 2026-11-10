@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from engine.command.command import Command
 from engine.command.move_command import MoveCommand
-from core.base.model.model import Model
+from engine.model.model import Model
 
 
 @dataclass(frozen=True)

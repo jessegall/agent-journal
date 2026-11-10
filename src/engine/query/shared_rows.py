@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import ClassVar
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.query.model_row_ids import ModelRowIds
 
 

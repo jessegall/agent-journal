@@ -10,8 +10,8 @@ from engine.command.context import Context
 from engine.time.timestamp import Timestamp
 from engine.row.metadata import Metadata
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle, ItemState
+from tests.unit.engine.model.test_model import Item
 
 FIXED_TIME = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 CONTEXT = Context(Actor(7, ActorType.AGENT), FIXED_TIME, MakeItem(title="Dune"))

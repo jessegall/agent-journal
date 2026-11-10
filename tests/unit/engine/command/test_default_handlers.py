@@ -18,8 +18,8 @@ from core.base.registry.registry import Registry
 from engine.repository.repository import Repository
 from tests.unit.core.base.sample_container import context, sample_container
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle, ItemState
+from tests.unit.engine.model.test_model import Item
 
 
 @dataclass(frozen=True)

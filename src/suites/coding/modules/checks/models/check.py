@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.base.model.model import Model
-from core.base.model.removable import Removable
+from engine.model.model import Model
+from engine.model.removable import Removable
 from engine.errors.refusal import Refusal
 from engine.time.timestamp import Timestamp
 

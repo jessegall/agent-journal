@@ -5,8 +5,8 @@ from typing import get_type_hints
 from engine.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from engine.command.edit_command import EditCommand
-from core.base.model.model import Model
-from core.base.model.table import Table
+from engine.model.model import Model
+from engine.model.table import Table
 from engine.cli.subcommand_columns import generic_base, editable_columns, parser_argument
 
 

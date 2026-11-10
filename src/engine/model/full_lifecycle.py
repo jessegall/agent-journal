@@ -1,12 +1,12 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
 
-from core.base.model.added_state import AddedState, StateValue
-from core.base.model.lifecycle import Lifecycle, outgoing, next_moves_text
-from core.base.model.model import Model
-from core.base.model.move import Move
-from core.base.model.state_addition import StateAddition
-from core.base.model.state_holder import StateHolder
+from engine.model.added_state import AddedState, StateValue
+from engine.model.lifecycle import Lifecycle, outgoing, next_moves_text
+from engine.model.model import Model
+from engine.model.move import Move
+from engine.model.state_addition import StateAddition
+from engine.model.state_holder import StateHolder
 
 
 @dataclass(frozen=True)

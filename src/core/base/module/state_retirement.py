@@ -4,10 +4,10 @@ from collections.abc import Sequence
 from core.base.database.database import Database
 from core.base.database.registry_table import RegistryTable
 from core.base.database.table_statements import TableStatements
-from core.base.model.added_state import AddedState
-from core.base.model.model import Model
-from core.base.model.state_book import StateBook
-from core.base.model.tables import Tables
+from engine.model.added_state import AddedState
+from engine.model.model import Model
+from engine.model.state_book import StateBook
+from engine.model.tables import Tables
 from core.base.registry.state_addition_entry import StateAdditionEntry
 
 

@@ -1,6 +1,6 @@
 from core.base.driver.suite import Suite
 from engine.guard.guard import Guard
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.base.module.module import Module
 from core.base.viewer.auto_scroll import AutoScroll
 from core.base.viewer.layout_preset import LayoutPreset

@@ -12,7 +12,7 @@ from core.modules.sequences.support.sequence_events import SequenceEvents
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from engine.change.touched import Touched
-from core.base.model.model import Model
+from engine.model.model import Model
 
 
 class SequenceRowTriggerListener(CommitListener[Touched[Model]]):

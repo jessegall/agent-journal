@@ -14,10 +14,10 @@ import pytest
 
 from engine.command.handlers.make_handler import MakeHandler
 from engine.guard.guard import Guard
-from core.base.model.lifecycle import Lifecycle
-from core.base.model.model import Model
-from core.base.model.move import Move
-from core.base.model.tables import Tables
+from engine.model.lifecycle import Lifecycle
+from engine.model.model import Model
+from engine.model.move import Move
+from engine.model.tables import Tables
 from core.base.module.module import Module
 from core.base.module.driver_entries import DriverEntries
 from core.base.module.inspector_check import InspectorCheck
@@ -31,13 +31,13 @@ from core.base.module.state_check import StateCheck
 from core.base.module.helper_type_check import HelperTypeCheck
 from core.base.module.profile_check import ProfileCheck
 from core.base.module.template_check import TemplateCheck
-from core.base.model.event_form import EventForm
+from engine.model.event_form import EventForm
 from core.base.registry.event_key_entry import EventKeyEntry
-from tests.unit.core.base.model.test_lifecycle import ItemState
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_lifecycle import ItemState
+from tests.unit.engine.model.test_model import Item
 from engine.change.moved import Moved
 from engine.command.context import Context
-from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle
 
 
 class PausedItemGuard(Guard[Moved[Item]]):

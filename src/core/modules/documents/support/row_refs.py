@@ -1,8 +1,8 @@
 import re
 from collections.abc import Sequence
 
-from core.base.model.model import Model
-from core.base.model.tables import Tables
+from engine.model.model import Model
+from engine.model.tables import Tables
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among
 from engine.errors.refusal import Refusal

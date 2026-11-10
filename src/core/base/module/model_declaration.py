@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from engine.command.move_command import MoveCommand
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.query.query import Query
 
 ALL_SUBCOMMANDS = ["make", "edit", "show", "list", "delete"]

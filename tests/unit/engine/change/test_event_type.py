@@ -14,9 +14,9 @@ from engine.change.registry_synced import RegistrySynced
 from engine.change.touched import Touched
 from engine.change.updated import Updated
 from engine.change.upgrade_finished import UpgradeFinished
-from core.base.model.model import Model
-from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
-from tests.unit.core.base.model.test_model import Item
+from engine.model.model import Model
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle
+from tests.unit.engine.model.test_model import Item
 
 F = TypeVar("F")
 

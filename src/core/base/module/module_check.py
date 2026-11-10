@@ -1,11 +1,11 @@
 from collections.abc import Sequence
 from engine.change.change import METADATA
-from core.base.model.event_form import EventForm
+from engine.model.event_form import EventForm
 from engine.change.event_log import JOURNAL_BOOTING_EVENT, REGISTRY_SYNC_EVENT, UPGRADE_FINISHED_EVENT, UPGRADE_MOVED_EVENT
 from engine.change.event_pattern import EventPattern
-from core.base.model.model import Model
-from core.base.model.state_book import StateBook
-from core.base.model.tables import Tables
+from engine.model.model import Model
+from engine.model.state_book import StateBook
+from engine.model.tables import Tables
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.module.module import Module
 from core.base.module.module_error import ModuleError

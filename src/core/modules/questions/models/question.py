@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.model import Model
-from core.base.model.state_holder import StateHolder
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.model import Model
+from engine.model.state_holder import StateHolder
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.lifecycles.question_lifecycle import QuestionLifecycle
 from core.modules.documents.models.enums.comment_selection_type import CommentSelectionType

@@ -5,7 +5,7 @@ from core.base.hosting.hosting import Hosting
 from core.base.database.database import Database
 from core.base.database.shared_tables import SharedTables
 from engine.journal.journal_home import JournalHome
-from core.base.model.state_book import StateBook
+from engine.model.state_book import StateBook
 from core.base.module.module_sync import ModuleSync
 from core.base.registry.registry import Registry
 from engine.process.plugin_script_processes import PluginScriptProcesses

@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.foreign_run import ForeignRun
 from core.base.driver.hook_transcript import HookTranscript
-from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.event_form import EventForm
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.event_form import EventForm
 from engine.row.metadata import Metadata
 from engine.types.type_guards import is_list, is_text_mapping
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.base.module.driver_entries import DRIVERS_MODULE
 from engine.types.type_guards import is_list, is_mapping
 from engine.enums.hook_answer import HookAnswer

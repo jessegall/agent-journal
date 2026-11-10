@@ -3,7 +3,7 @@ from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from typing import TypeVar
-from core.base.model.positioned import Positioned
+from engine.model.positioned import Positioned
 from engine.errors.refusal import Refusal
 
 P = TypeVar("P", bound=Positioned)

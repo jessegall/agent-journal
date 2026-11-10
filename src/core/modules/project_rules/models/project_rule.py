@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.modules.project_rules.models.enums.rule_state import RuleState
 from core.modules.project_rules.models.lifecycles.rule_lifecycle import RuleLifecycle
 

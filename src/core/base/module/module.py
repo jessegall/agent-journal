@@ -21,8 +21,8 @@ from engine.guard.guard import Guard
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.deletion_listener import DeletionListener
 from core.base.listener.save_listener import SaveListener
-from core.base.model.state_addition import StateAddition
-from core.base.model.view_model import ViewModel
+from engine.model.state_addition import StateAddition
+from engine.model.view_model import ViewModel
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.provider.provider import Provider
 from engine.skill.skill_declaration import SkillDeclaration

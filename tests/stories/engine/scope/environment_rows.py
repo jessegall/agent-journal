@@ -4,9 +4,9 @@ from dataclasses import fields
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.change.event_log import EventLog
-from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.model import Model
-from core.base.model.view_model import ViewModel
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.model import Model
+from engine.model.view_model import ViewModel
 from core.base.module.module_finder import ModuleFinder
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent

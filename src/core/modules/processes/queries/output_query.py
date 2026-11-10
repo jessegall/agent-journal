@@ -2,7 +2,7 @@ from typing import Self
 
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.query.conditions.greater import Greater
 from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.equal import Equal

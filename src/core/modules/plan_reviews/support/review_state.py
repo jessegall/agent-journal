@@ -1,6 +1,6 @@
-from core.base.model.added_state import AddedState
-from core.base.model.move import Move
-from core.base.model.state_addition import StateAddition
+from engine.model.added_state import AddedState
+from engine.model.move import Move
+from engine.model.state_addition import StateAddition
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 

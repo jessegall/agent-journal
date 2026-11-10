@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import ClassVar
 
-from core.base.model.move import Move
+from engine.model.move import Move
 
 
 class StateHolder:

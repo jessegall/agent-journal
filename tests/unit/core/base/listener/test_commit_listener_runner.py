@@ -28,8 +28,8 @@ from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from tests.unit.core.base.sample_container import sample_container
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle
+from tests.unit.engine.model.test_model import Item
 from engine.change.created import Created
 from engine.change.moved import Moved
 

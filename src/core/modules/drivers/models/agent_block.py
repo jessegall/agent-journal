@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from core.base.driver.count_down import COUNTDOWN_LINE_LIMIT
 from core.base.driver.interval import Interval
 from core.base.driver.seconds import Seconds
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 

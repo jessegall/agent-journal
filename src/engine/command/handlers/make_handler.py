@@ -4,8 +4,8 @@ from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.command.make_command import MakeCommand
-from core.base.model.model import Model
-from core.base.model.tables import Tables
+from engine.model.model import Model
+from engine.model.tables import Tables
 from engine.repository.repository import Repository
 
 CREATOR_COLUMN = "creator_id"

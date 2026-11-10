@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.container.container import Container
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.row.page import Page
 from engine.errors.refusal import Refusal
 from engine.dotted_path.dotted_path import DottedPath

@@ -1,6 +1,6 @@
 from engine.change.event_log import EventLog
 from engine.time.clock import Clock
-from core.base.model.event_form import EventForm
+from engine.model.event_form import EventForm
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry

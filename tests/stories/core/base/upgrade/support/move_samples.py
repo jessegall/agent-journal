@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from core.base.database.migration import Migration
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.setting.setting_type import SettingType

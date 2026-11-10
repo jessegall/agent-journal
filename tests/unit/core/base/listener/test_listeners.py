@@ -14,14 +14,14 @@ from engine.guard.change_filter import ChangeFilter
 from core.base.listener.deletion_listener import DeletionListener
 from core.base.listener.listeners import Listeners
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from engine.time.timestamp import Timestamp
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_model import Item
 from engine.change.changed import Changed
 from engine.change.created import Created
 from engine.change.deleted import Deleted

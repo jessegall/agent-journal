@@ -3,8 +3,8 @@ from collections.abc import Sequence
 from engine.enums.actor_type import ActorType
 from engine.change.event_log import EventLog
 from core.base.database.kept_rows import KeptRows
-from core.base.model.model import Model
-from core.base.model.tables import Tables
+from engine.model.model import Model
+from engine.model.tables import Tables
 from engine.time.timestamp import Timestamp
 from engine.query.conditions.among import Among
 from engine.query.conditions.minimum import Minimum

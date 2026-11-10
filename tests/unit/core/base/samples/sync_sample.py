@@ -4,7 +4,7 @@ from core.base.database.migration import Migration
 from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
 from tests.unit.core.base.sample_container import ITEMS
-from tests.unit.core.base.model.test_model import Item
+from tests.unit.engine.model.test_model import Item
 
 
 class ItemsTable(Migration):

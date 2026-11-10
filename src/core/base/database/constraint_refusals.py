@@ -4,8 +4,8 @@ from dataclasses import replace
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.model.model import Model
-from core.base.model.table import Table, indefinite_article
+from engine.model.model import Model
+from engine.model.table import Table, indefinite_article
 from engine.errors.refusal import Refusal
 
 RULE_PREFIX = "rule: "

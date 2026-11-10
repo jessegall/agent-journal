@@ -7,7 +7,7 @@ from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.database.schema import Schema
 from core.base.database.statement import Statement
 from engine.journal.journal_home import JournalHome
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 
 
 @pytest.mark.parametrize("present", [[], ["present"]], ids=["no-listeners", "one-listener"])

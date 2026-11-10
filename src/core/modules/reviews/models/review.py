@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
 from engine.actor.actor import Actor
-from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.model import Model
-from core.base.model.state_holder import StateHolder
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.model import Model
+from engine.model.state_holder import StateHolder
 from engine.time.timestamp import Timestamp
 from core.modules.reviews.models.enums.review_state import ReviewState
 from core.modules.reviews.models.lifecycles.review_lifecycle import ReviewLifecycle

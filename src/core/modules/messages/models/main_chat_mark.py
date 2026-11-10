@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from engine.chat.mark_outcome import MarkOutcome
-from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.view_model import ViewModel
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.view_model import ViewModel
 from engine.time.timestamp import Timestamp
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
 from core.modules.messages.models.support.views import MAIN_CHAT_MARKS_SELECT

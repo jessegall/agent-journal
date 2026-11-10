@@ -29,10 +29,10 @@ from engine.container.journal_container import synced_container
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.hosting.hosting import Hosting
 from engine.journal.journal_home import JournalHome
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.modules import DEFAULT_MODULES
 from core.base.module.module import Module
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from core.base.subcommand.output import Output
 from engine.query.queries import Queries
 from engine.log.refusal_log import RefusalLog

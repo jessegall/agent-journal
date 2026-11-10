@@ -1,6 +1,6 @@
 from collections import deque
-from core.base.model.added_state import StateValue
-from core.base.model.lifecycle import Lifecycle
+from engine.model.added_state import StateValue
+from engine.model.lifecycle import Lifecycle
 
 
 class StateWalk:

@@ -9,7 +9,7 @@ from core.modules.sequences.commands.move_sequence_run.move_sequence_run import 
 from core.modules.sequences.support.sequence_events import SequenceEvents
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from engine.change.touched import Touched
-from core.base.model.model import Model
+from engine.model.model import Model
 
 
 class SequenceEndListener(CommitListener[Touched[Model]]):

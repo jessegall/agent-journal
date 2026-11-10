@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import TypeVar
 
 from engine.command.command import Command
-from core.base.model.model import Model
+from engine.model.model import Model
 
 M = TypeVar("M", bound=Model, covariant=True)
 

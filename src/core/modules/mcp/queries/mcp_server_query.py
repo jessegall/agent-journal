@@ -1,5 +1,5 @@
 from core.base.database.database import Database
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.query.query import Query
 from engine.errors.refusal import Refusal
 from core.modules.mcp.models.mcp_server import McpServer

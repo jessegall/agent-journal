@@ -1,7 +1,7 @@
 from enum import StrEnum
 
-from core.base.model.added_state import AddedState
-from core.base.model.table import loaded_state
+from engine.model.added_state import AddedState
+from engine.model.table import loaded_state
 
 
 class SampleState(StrEnum):

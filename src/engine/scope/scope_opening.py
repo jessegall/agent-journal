@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from engine.change.change import Change
 from engine.change.logged_event import LoggedEvent
-from core.base.model.model import Model
+from engine.model.model import Model
 
 
 @dataclass(frozen=True)

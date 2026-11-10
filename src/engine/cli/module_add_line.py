@@ -4,7 +4,7 @@ from typing import TextIO
 
 from engine.cli.console import REFUSED_CODE, SUCCESS_CODE, USAGE_CODE
 from core.base.database.schema_mismatch_error import SchemaMismatchError
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from core.base.module.module_addition import ModuleAddition
 from core.base.module.module_error import ModuleError
 from core.base.subcommand.output import Output

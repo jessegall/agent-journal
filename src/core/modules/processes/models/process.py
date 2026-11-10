@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from engine.actor.actor import Actor
 from engine.enums.sandbox_level import SandboxLevel
 from core.base.driver.command_category import CommandCategory
-from core.base.model.environment_scoped import EnvironmentScoped
-from core.base.model.model import Model
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.model import Model
 from engine.time.timestamp import MINUTE_SECONDS, Timestamp
 from engine.time.duration import Duration
 from core.modules.processes.models.enums.process_state import ProcessState

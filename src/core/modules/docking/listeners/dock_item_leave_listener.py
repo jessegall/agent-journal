@@ -11,7 +11,7 @@ from core.modules.docking.models.dock import Dock
 from core.modules.docking.support.pending_dock_items import PendingDockItems
 from core.modules.docking.support.leave_time import LeaveTime
 from engine.change.touched import Touched
-from core.base.model.model import Model
+from engine.model.model import Model
 
 
 class DockItemLeaveListener(CommitListener[Touched[Model]]):

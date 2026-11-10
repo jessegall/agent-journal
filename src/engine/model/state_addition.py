@@ -2,9 +2,9 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 
-from core.base.model.added_state import AddedState
-from core.base.model.model import Model
-from core.base.model.move import Move
+from engine.model.added_state import AddedState
+from engine.model.model import Model
+from engine.model.move import Move
 
 
 @dataclass(frozen=True)

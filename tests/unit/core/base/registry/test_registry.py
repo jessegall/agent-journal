@@ -10,11 +10,11 @@ from core.base.database.database import Database
 from core.base.database.schema import Schema
 from core.base.database.statement import Statement
 from engine.journal.journal_home import JournalHome
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from engine.dotted_path.dotted_path import DottedPath
 from engine.dotted_path.dotted_path_error import DottedPathError
 from core.base.database.registry_table import RegistryTable
-from core.base.model.event_form import EventForm
+from engine.model.event_form import EventForm
 from core.base.registry.event_key_entry import EventKeyEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
@@ -34,7 +34,7 @@ from tests.unit.engine.command.test_commands import MakeItem
 
 SAMPLE = "tests.unit.core.base.samples.registry_sample:SampleGuard"
 ENTRIES = {
-    "models": {"item": {"module": "items", "model": "tests.unit.core.base.model.test_model:Item", "commands": [], "excluded_subcommands": []}},
+    "models": {"item": {"module": "items", "model": "tests.unit.engine.model.test_model:Item", "commands": [], "excluded_subcommands": []}},
     "handlers": {DottedPath.class_path(MakeItem).text: "tests.unit.engine.command.test_commands:MakeItem"},
     "subcommands": {"item make": "tests.unit.engine.command.test_commands:MakeItem"},
     "guards": [

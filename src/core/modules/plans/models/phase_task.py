@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.model.positioned import Positioned
+from engine.model.positioned import Positioned
 
 
 @dataclass(frozen=True, kw_only=True)

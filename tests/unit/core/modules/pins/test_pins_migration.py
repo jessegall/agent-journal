@@ -5,7 +5,7 @@ from core.base.database.module_migrations import ModuleMigrations
 from core.base.database.schema import Schema
 from core.base.database.statement import Statement
 from engine.journal.journal_home import JournalHome
-from core.base.model.tables import Tables
+from engine.model.tables import Tables
 from core.modules.pins.migrations.m001_pins import PinsTableMigration
 
 OLD_TABLE = (

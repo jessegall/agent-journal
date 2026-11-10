@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 from engine.dotted_path.dotted_path import DottedPath
 from engine.dotted_path.wrong_base_error import WrongBaseError
-from core.base.model.model import Model
-from core.base.model.view_model import ViewModel
+from engine.model.model import Model
+from engine.model.view_model import ViewModel
 
 
 @dataclass(frozen=True)

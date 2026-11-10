@@ -3,8 +3,8 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.command.move_row import MoveRow
-from core.base.model.model import Model
-from core.base.model.state_book import StateBook
+from engine.model.model import Model
+from engine.model.state_book import StateBook
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.documents.commands.comment_text.comment_text import CommentText

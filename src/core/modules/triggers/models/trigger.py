@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from engine.errors.refusal import Refusal
 from engine.time.timestamp import Timestamp
 from core.modules.triggers.models.enums.trigger_action import TriggerAction

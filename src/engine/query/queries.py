@@ -1,9 +1,9 @@
 from typing import TypeVar
 
 from core.base.database.database import Database
-from core.base.model.model import Model
-from core.base.model.tables import Tables
-from core.base.model.view_model import ViewModel
+from engine.model.model import Model
+from engine.model.tables import Tables
+from engine.model.view_model import ViewModel
 from engine.query.query import Query
 
 M = TypeVar("M", bound=Model | ViewModel)

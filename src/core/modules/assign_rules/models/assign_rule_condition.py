@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.model.model import Model
+from engine.model.model import Model
 from core.modules.assign_rules.models.enums.condition_field import ConditionField
 from core.modules.assign_rules.models.enums.condition_operator import ConditionOperator
 from core.modules.assign_rules.models.support.condition_checks import check_condition

@@ -17,14 +17,14 @@ from engine.change.touched import Touched
 from core.base.listener.event_builder import EventBuilder
 from core.base.listener.commit_listener import CommitListener
 from engine.command.context import Context
-from core.base.model.added_state import AddedState
-from core.base.model.move import Move
-from core.base.model.state_addition import StateAddition
-from core.base.model.state_book import StateBook
-from core.base.model.tables import Tables
+from engine.model.added_state import AddedState
+from engine.model.move import Move
+from engine.model.state_addition import StateAddition
+from engine.model.state_book import StateBook
+from engine.model.tables import Tables
 from engine.time.timestamp import Timestamp
-from tests.unit.core.base.model.test_model import Item
-from tests.unit.core.base.model.test_lifecycle import ItemState
+from tests.unit.engine.model.test_model import Item
+from tests.unit.engine.model.test_lifecycle import ItemState
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.engine.change.test_event_log import log
 
