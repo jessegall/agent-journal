@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from engine.change.updated import Updated
 from engine.command.context import Context
-from core.base.listener.save_listener import SaveListener
+from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope

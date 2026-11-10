@@ -1,5 +1,5 @@
 from engine.enums.agent_role import AgentRole
-from core.base.listener.save_listener import SaveListener
+from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from engine.scope.actor_scope import ActorScope

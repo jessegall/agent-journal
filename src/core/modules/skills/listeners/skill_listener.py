@@ -3,7 +3,7 @@ from typing import ClassVar
 from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.command.command import Command
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from core.modules.agents.support.agent_rows import AgentRows

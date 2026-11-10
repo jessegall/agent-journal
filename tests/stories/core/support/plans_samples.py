@@ -1,6 +1,6 @@
 from engine.change.logged_event import LoggedEvent
 from engine.guard.guard import Guard
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from engine.model.model import Model
 from core.base.module.module import Module
 from engine.errors.refusal import Refusal

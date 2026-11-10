@@ -1,4 +1,4 @@
-from core.base.listener.round_yield import RoundYield
+from engine.listener.round_yield import RoundYield
 from server.hook.server_queue import ServerQueue
 
 PAUSE_LIMIT_SECONDS = 0.25

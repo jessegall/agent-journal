@@ -5,7 +5,7 @@ from core.base.driver.command_category import CommandCategory
 from engine.query.queries import Queries
 from engine.command.bus import Bus
 from engine.command.context import Context
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process

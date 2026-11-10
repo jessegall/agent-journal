@@ -10,8 +10,8 @@ from core.base.database.constraint_refusals import ConstraintRefusals
 from core.base.database.database import Database
 from core.base.database.table_statements import TableStatements
 from engine.guard.guards import Guards
-from core.base.listener.listeners import Listeners
-from core.base.listener.event_rows import EventRows
+from engine.listener.listeners import Listeners
+from engine.listener.event_rows import EventRows
 from engine.row.metadata import Metadata
 from engine.model.model import Model
 from engine.model.table import Table

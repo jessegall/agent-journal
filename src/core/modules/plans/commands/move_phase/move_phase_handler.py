@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.commands.move_phase.move_phase import MovePhase
 from core.modules.plans.support.positions import Positions

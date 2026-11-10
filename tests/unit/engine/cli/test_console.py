@@ -9,7 +9,7 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from engine.journal.journal_home import JournalHome
 from core.base.module.code_fingerprint import CodeFingerprint
-from core.base.listener.commit_listener_runner import CommitListenerRunner
+from engine.listener.commit_listener_runner import CommitListenerRunner
 from core.base.registry.registry import Registry
 from tests.unit.core.base.samples.module_copy import items_module_copy
 from tests.unit.core.base.module.test_module_sync import ITEMS, synced

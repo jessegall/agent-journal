@@ -3,7 +3,7 @@ from engine.change.event_log import EventLog
 from engine.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from core.modules.chat.listeners.mark_listener import MarkListener
 from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMarkType
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant

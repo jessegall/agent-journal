@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from engine.repository.repository import Repository
 from core.modules.helpers.support.program_change_access import ProgramChangeAccess
 from suites.coding.modules.workers.commands.edit_worker_route.edit_worker_route import EditWorkerRoute

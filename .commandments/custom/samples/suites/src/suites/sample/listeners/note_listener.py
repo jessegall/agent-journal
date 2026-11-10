@@ -1,4 +1,4 @@
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 
 
 # @righteous architecture_layout_suite_listener_outside_listeners

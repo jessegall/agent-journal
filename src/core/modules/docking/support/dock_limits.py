@@ -1,4 +1,4 @@
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from core.base.registry.registry import Registry
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from engine.setting.setting_type import SettingType

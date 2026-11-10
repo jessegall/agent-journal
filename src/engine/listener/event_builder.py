@@ -12,7 +12,7 @@ from engine.model.model import Model
 from engine.model.move import Move
 from engine.model.state_book import StateBook
 from engine.model.tables import Tables
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 
 M = TypeVar("M", bound=Model)
 

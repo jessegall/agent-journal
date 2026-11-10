@@ -2,7 +2,7 @@ from core.base.driver.command_category import CommandCategory
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.time.duration import Duration
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.commands.start_process.start_process import StartProcess

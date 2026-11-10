@@ -8,7 +8,7 @@ from core.base.database.statement import Statement
 from engine.cli.console import Console
 from engine.caller.caller import Caller
 from engine.actor.actor import Actor
-from core.base.listener.commit_listener_runner import CommitListenerRunner
+from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.query.queries import Queries
 from core.modules.environments.models.environment import Environment
 from core.base.database.repeated_calls_error import RepeatedCallsError

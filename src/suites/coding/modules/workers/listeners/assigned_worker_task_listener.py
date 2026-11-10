@@ -1,6 +1,6 @@
 from engine.change.updated import Updated
 from engine.command.context import Context
-from core.base.listener.save_listener import SaveListener
+from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
 from core.base.tasks.tasks_changed_together import TasksChangedTogether
 from core.modules.tasks.models.enums.task_state import TaskState

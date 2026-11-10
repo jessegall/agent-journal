@@ -20,7 +20,7 @@ from engine.repository.stale_row_error import StaleRowError
 from engine.row.metadata import Metadata
 from engine.query.queries import Queries
 from engine.guard.guard import Guard
-from core.base.listener.save_listener import SaveListener
+from engine.listener.save_listener import SaveListener
 from tests.unit.core.base.sample_container import context, empty_registry, sample_container
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.engine.model.test_lifecycle import ItemLifecycle

@@ -7,7 +7,7 @@ from engine.model.view_model import ViewModel
 from engine.errors.missing_rows_error import MissingRowsError
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among
-from core.base.listener.cached_event_row import CachedEventRow
+from engine.listener.cached_event_row import CachedEventRow
 
 M = TypeVar("M", bound=Model | ViewModel)
 

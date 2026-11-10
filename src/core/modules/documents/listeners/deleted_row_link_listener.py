@@ -1,6 +1,6 @@
 from engine.change.changed import Changed
 from engine.command.context import Context
-from core.base.listener.deletion_listener import DeletionListener
+from engine.listener.deletion_listener import DeletionListener
 from engine.model.model import Model
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among

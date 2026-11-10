@@ -4,7 +4,7 @@ from engine.command.bus import Bus
 from engine.command.request_user_approval import RequestUserApproval
 from engine.command.close_user_approval import CloseUserApproval
 from engine.errors.user_approval_refusal import UserApprovalRefusal
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope

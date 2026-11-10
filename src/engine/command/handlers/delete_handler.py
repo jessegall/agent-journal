@@ -1,7 +1,7 @@
 from engine.command.context import Context
 from engine.command.delete_command import DeleteCommand
 from engine.command.handler import Handler
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from engine.repository.repository import Repository
 
 

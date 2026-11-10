@@ -1,4 +1,4 @@
-from core.base.listener.save_listener import SaveListener
+from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from core.modules.tasks.models.task_wait import TaskWait

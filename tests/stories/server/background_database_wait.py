@@ -5,7 +5,7 @@ from threading import Event
 import pytest
 
 from core.base.database.listener_cursor_table import ListenerCursorTable
-from core.base.listener.commit_listener_runner import CommitListenerRunner
+from engine.listener.commit_listener_runner import CommitListenerRunner
 from server.journal_round import JournalRound
 from server.ordinary_listener_work import OrdinaryListenerWork
 from server.round_work import RoundWork

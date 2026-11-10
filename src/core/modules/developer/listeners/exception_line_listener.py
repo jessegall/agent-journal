@@ -3,7 +3,7 @@ from engine.change.created import Created
 from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.log.exception_sink import CLOCK_TICK_SOURCE
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.chat.models.journal_exception import JournalException

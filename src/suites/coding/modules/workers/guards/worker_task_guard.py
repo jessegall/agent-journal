@@ -1,5 +1,5 @@
 from engine.guard.guard import Guard
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from suites.coding.support.coding_helper_role import CodingHelperRole

@@ -3,7 +3,7 @@ from engine.enums.actor_type import ActorType
 from engine.change.created import Created
 from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from engine.query.queries import Queries
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.messages.models.enums.message_type import MessageType

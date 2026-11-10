@@ -9,7 +9,7 @@ from engine.caller.caller_request_error import CallerRequestError
 from engine.cli.line_run import LineRun
 from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
-from core.base.listener.commit_listener_runner import CommitListenerRunner
+from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.time.timing import Timing
 from tests.unit.core.base.module.test_module_sync import ITEMS
 

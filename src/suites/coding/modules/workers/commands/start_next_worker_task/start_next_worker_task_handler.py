@@ -2,7 +2,7 @@ from engine.command.bus import Bus
 from engine.actor.actor import Actor
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository

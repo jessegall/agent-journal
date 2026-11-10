@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.base.listener.save_listener import SaveListener
+from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.tasks.models.task_wait import TaskWait

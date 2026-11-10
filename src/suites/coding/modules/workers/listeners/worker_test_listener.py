@@ -7,8 +7,8 @@ from engine.change.created import Created
 from engine.change.moved import Moved
 from engine.change.updated import Updated
 from engine.command.bus import Bus
-from core.base.listener.commit_listener import CommitListener
-from core.base.listener.event_rows import EventRows
+from engine.listener.commit_listener import CommitListener
+from engine.listener.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among
 from core.modules.agents.models.agent import Agent

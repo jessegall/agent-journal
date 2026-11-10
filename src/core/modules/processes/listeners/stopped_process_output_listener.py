@@ -2,7 +2,7 @@ from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLi
 from engine.change.moved import Moved
 from dataclasses import replace
 
-from core.base.listener.save_listener import SaveListener
+from engine.listener.save_listener import SaveListener
 from engine.repository.repository import Repository
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.output_query import OutputQuery

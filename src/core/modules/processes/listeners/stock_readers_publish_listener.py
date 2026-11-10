@@ -1,7 +1,7 @@
 from engine.actor.actor import Actor
 from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from core.modules.processes.commands.update_stock_readers.update_stock_readers import UpdateStockReaders
 from engine.change.file_publishing import FilePublishing
 

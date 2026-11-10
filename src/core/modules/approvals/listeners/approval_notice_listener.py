@@ -2,9 +2,9 @@ from engine.change.changed import Changed
 from engine.change.created import Created
 from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from engine.scope.actor_scope import ActorScope
 from engine.scope.environment_scope import EnvironmentScope
 from core.modules.agents.models.agent import Agent

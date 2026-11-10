@@ -7,7 +7,7 @@ from engine.enums.actor_type import ActorType
 from engine.caller.process_row import ProcessRow
 from engine.command.bus import Bus
 from engine.process.leftover_process import LeftoverProcess
-from core.base.listener.commit_listener_runner import CommitListenerRunner
+from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.time.timestamp import Timestamp
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent

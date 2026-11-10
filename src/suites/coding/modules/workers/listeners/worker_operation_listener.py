@@ -2,8 +2,8 @@ from engine.change.created import Created
 from engine.change.logged_event import LoggedEvent
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
-from core.base.listener.commit_listener import CommitListener
-from core.base.listener.event_rows import EventRows
+from engine.listener.commit_listener import CommitListener
+from engine.listener.event_rows import EventRows
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process

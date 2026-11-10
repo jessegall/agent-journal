@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.commands.record_worker_refusal.record_worker_refusal import RecordWorkerRefusal
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_refusals import WorkerRefusals
 

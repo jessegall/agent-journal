@@ -1,5 +1,5 @@
 from engine.change.logged_event import LoggedEvent
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from core.modules.plugins.support.login_path import LoginPath
 from engine.change.file_publishing import FilePublishing
 

@@ -1,7 +1,7 @@
 from pathlib import PurePath
 
 from engine.command.bus import Bus
-from core.base.listener.save_listener import SaveListener
+from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.skill.skill_declaration import SKILL_FILE
 from core.modules.processes.models.process import Process

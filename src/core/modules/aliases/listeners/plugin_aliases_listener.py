@@ -4,7 +4,7 @@ from pathlib import Path
 from engine.change.created import Created
 from engine.change.updated import Updated
 from engine.command.context import Context
-from core.base.listener.save_listener import SaveListener
+from engine.listener.save_listener import SaveListener
 from engine.repository.repository import Repository
 from core.base.registry.registry import Registry
 from core.modules.aliases.models.alias import Alias

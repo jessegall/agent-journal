@@ -4,7 +4,7 @@ from enum import StrEnum
 from engine.command.move_command import MoveCommand
 from core.base.database.migration import Migration
 from engine.guard.guard import Guard
-from core.base.listener.deletion_listener import DeletionListener
+from engine.listener.deletion_listener import DeletionListener
 from engine.model.lifecycle import Lifecycle
 from engine.model.model import Model
 from engine.model.move import Move

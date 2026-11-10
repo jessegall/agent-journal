@@ -1,7 +1,7 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 

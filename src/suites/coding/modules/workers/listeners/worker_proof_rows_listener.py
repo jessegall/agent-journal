@@ -1,7 +1,7 @@
 from engine.change.changed import Changed
 from engine.change.deleted import Deleted
 from engine.command.context import Context
-from core.base.listener.save_listener import SaveListener
+from engine.listener.save_listener import SaveListener
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 

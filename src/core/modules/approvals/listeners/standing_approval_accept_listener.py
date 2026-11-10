@@ -4,8 +4,8 @@ from engine.change.changed import Changed
 from engine.change.created import Created
 from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
-from core.base.listener.commit_listener import CommitListener
-from core.base.listener.event_rows import EventRows
+from engine.listener.commit_listener import CommitListener
+from engine.listener.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from core.modules.approvals.commands.answer_approval.answer_approval import AnswerApproval

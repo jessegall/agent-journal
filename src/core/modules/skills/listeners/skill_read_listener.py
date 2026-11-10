@@ -1,7 +1,7 @@
 from pathlib import PurePath
 
 from engine.command.bus import Bus
-from core.base.listener.save_listener import SaveListener
+from engine.listener.save_listener import SaveListener
 from engine.skill.skill_declaration import SKILL_FILE
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill

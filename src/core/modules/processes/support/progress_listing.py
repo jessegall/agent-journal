@@ -1,5 +1,5 @@
 from core.base.driver.command_category import CommandCategory
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.count_command import CountCommand

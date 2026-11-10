@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.base.listener.save_listener import SaveListener
+from engine.listener.save_listener import SaveListener
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from core.modules.tasks.models.task import Task

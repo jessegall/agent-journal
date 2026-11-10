@@ -1,5 +1,5 @@
 from engine.command.bus import Bus
-from core.base.listener.save_listener import SaveListener
+from engine.listener.save_listener import SaveListener
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
 from core.modules.tasks.support.task_brief_blocks import TaskBriefBlocks
 from core.modules.drivers.events.agent_compacted import AgentCompacted

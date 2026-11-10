@@ -7,7 +7,7 @@ from engine.command.context import Context
 from engine.file.conflict_files import ConflictFiles
 from pathlib import Path
 from engine.command.handler import Handler
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from engine.scope.actor_scope import ActorScope
 from core.modules.environments.models.environment import Environment

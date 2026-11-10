@@ -2,7 +2,7 @@ from engine.change.logged_event import LoggedEvent
 from engine.change.registry_synced import RegistrySynced
 from engine.command.bus import Bus
 from engine.command.request_user_approval import RequestUserApproval
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope

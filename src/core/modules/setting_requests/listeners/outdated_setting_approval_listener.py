@@ -3,7 +3,7 @@ from engine.change.logged_event import LoggedEvent
 from engine.change.updated import Updated
 from engine.command.bus import Bus
 from engine.command.close_user_approval import CloseUserApproval
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope

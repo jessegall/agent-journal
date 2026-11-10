@@ -22,7 +22,7 @@ from engine.command.make_command import MakeCommand
 from engine.command.move_command import MoveCommand
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.listener.save_listener import SaveListener
+from engine.listener.save_listener import SaveListener
 from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.listener_entry import ListenerEntry

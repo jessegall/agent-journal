@@ -1,4 +1,4 @@
-from core.base.listener.deletion_listener import DeletionListener
+from engine.listener.deletion_listener import DeletionListener
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.plans.models.phase_task import PhaseTask

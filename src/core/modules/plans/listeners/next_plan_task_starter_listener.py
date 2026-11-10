@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.support.next_plan_tasks import NextPlanTasks
 from core.modules.plans.support.task_plans import TaskPlans

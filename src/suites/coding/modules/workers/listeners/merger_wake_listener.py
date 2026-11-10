@@ -3,7 +3,7 @@ from engine.change.logged_event import LoggedEvent
 from engine.change.created import Created
 from engine.command.bus import Bus
 from core.base.driver.nudge_declaration import NudgeDeclaration
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 from suites.coding.modules.workers.models.merger_line import MergerLine

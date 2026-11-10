@@ -19,7 +19,7 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.model.model import Model
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.core.base.listener.test_commit_listener_runner import container_with
+from tests.unit.engine.listener.test_commit_listener_runner import container_with
 from tests.unit.engine.model.test_lifecycle import ItemLifecycle, ItemState
 from tests.unit.engine.model.test_model import Item
 

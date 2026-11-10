@@ -1,5 +1,5 @@
 from engine.change.logged_event import LoggedEvent
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_row_deleted import ProcessRowDeleted
 

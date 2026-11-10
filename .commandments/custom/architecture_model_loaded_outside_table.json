@@ -9,7 +9,7 @@
         ],
         "reject": [
             {"fileMatches": "(^|/)(core/base|engine)/(model/table\\.py$|database/)"},
-            {"fileMatches": "(^|/)core/base/listener/event_builder\\.py$"},
+            {"fileMatches": "(^|/)engine/listener/event_builder\\.py$"},
             {"testCode": true}
         ]
     },

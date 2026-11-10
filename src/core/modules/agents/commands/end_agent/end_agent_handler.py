@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from engine.command.completed_command_error import CompletedCommandError
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent

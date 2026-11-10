@@ -1,6 +1,6 @@
 from engine.change.logged_event import LoggedEvent
 from engine.change.moved import Moved
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.lifecycles.agent_line_lifecycle import AgentLineLifecycle
 from core.modules.messages.support.waiting_message_lines import WAITING_MESSAGE_SOURCE, WaitingMessageLines

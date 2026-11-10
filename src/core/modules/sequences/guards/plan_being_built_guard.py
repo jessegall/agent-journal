@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from engine.change.moved import Moved
 from engine.command.context import Context
 from engine.guard.guard import Guard
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from engine.query.conditions.is_null import IsNull
 from engine.errors.refusal import Refusal
 from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle

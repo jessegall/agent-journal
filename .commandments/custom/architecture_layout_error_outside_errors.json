@@ -109,10 +109,10 @@
                 "file": "src/engine/hosting/wrong_socket_mode_refusal.py"
             },
             {
-                "file": "src/core/base/listener/commit_listener_error.py"
+                "file": "src/engine/listener/commit_listener_error.py"
             },
             {
-                "file": "src/core/base/listener/listener_class_error.py"
+                "file": "src/engine/listener/listener_class_error.py"
             },
             {
                 "file": "src/engine/model/model_error.py"

@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.tasks.commands.record_task_independence.record_task_independence import RecordTaskIndependence

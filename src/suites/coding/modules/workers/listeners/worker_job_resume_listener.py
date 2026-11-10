@@ -3,7 +3,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from engine.change.logged_event import LoggedEvent
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent

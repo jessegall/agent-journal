@@ -1,5 +1,5 @@
 from engine.change.touched import Touched
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 
 
 # @righteous architecture_listeners_every_model

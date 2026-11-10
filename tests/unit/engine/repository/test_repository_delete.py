@@ -5,7 +5,7 @@ from engine.change.event_pattern import EventPattern
 from engine.container.container import Container
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.listener.deletion_listener import DeletionListener
+from engine.listener.deletion_listener import DeletionListener
 from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.listener_entry import ListenerEntry

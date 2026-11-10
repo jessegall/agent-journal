@@ -3,7 +3,7 @@ from engine.change.registry_synced import RegistrySynced
 from engine.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from engine.scope.scopes import Scopes
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.environments.models.environment import Environment

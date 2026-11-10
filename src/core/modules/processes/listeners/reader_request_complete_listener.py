@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from engine.time.clock import Clock
 from engine.command.bus import Bus
-from core.base.listener.save_listener import SaveListener
+from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope

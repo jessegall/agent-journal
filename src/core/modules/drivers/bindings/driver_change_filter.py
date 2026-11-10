@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from engine.change.change import Change
 from engine.guard.change_filter import ChangeFilter
 from engine.model.model import Model
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from core.base.registry.registry import Registry
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice

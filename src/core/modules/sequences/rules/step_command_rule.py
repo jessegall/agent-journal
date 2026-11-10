@@ -2,7 +2,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.support.sequence_guards import SequenceGuards
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery

@@ -6,7 +6,7 @@ from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reader import Reader
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from core.modules.processes.support.colour_codes import ColourCodes
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.output_page import NEWLINE

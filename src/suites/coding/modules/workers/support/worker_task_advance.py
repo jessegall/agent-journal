@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.command.context import Context
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from engine.repository.repository import Repository
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.tasks.commands.start_task.start_task import StartTask

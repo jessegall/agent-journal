@@ -4,7 +4,7 @@ from engine.change.logged_event import LoggedEvent
 from engine.version.code_versions import CodeVersions
 from engine.command.bus import Bus
 from engine.journal.journal_home import JournalHome
-from core.base.listener.commit_listener import CommitListener
+from engine.listener.commit_listener import CommitListener
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.updates.commands.record_release_install.record_release_install import RecordReleaseInstall

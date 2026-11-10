@@ -4,7 +4,7 @@ from engine.change.moved import Moved
 from engine.change.updated import Updated
 from engine.command.context import Context
 from engine.guard.guard import Guard
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task

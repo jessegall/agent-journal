@@ -3,7 +3,7 @@ from engine.change.event_log import EventLog
 from engine.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
-from core.base.listener.event_rows import EventRows
+from engine.listener.event_rows import EventRows
 from core.modules.memories.listeners.memory_mark_listener import MemoryMarkListener
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
 from core.modules.memories.models.memory import LOWEST_WEIGHT

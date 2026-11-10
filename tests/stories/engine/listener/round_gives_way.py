@@ -1,4 +1,4 @@
-from core.base.listener.round_yield import RoundYield
+from engine.listener.round_yield import RoundYield
 from tests.stories.core.support.fixtures import UserJoined
 
 

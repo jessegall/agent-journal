@@ -1,8 +1,8 @@
 from engine.change.journal_booting import JournalBooting
 from engine.change.logged_event import LoggedEvent
 from engine.command.context import Context
-from core.base.listener.commit_listener import CommitListener
-from core.base.listener.save_listener import SaveListener
+from engine.listener.commit_listener import CommitListener
+from engine.listener.save_listener import SaveListener
 from core.base.module.module import Module
 
 PATH = "tests.stories.core.base.module.support.listener_changes:ListenerChangesModule"
