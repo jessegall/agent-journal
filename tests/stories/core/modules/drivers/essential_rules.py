@@ -7,7 +7,7 @@ from tests.stories.core.support import story_lines as lines
 
 def test_the_main_agents_stop_is_refused_every_time_however_often_it_was_refused_before(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
-    story.run("setting make samples.refuse-stops true")
+    story.run("setting set samples.refuse-stops true --project")
     for _ in range(8):
         story.expect_hook_refusal("s-1", HookSamples.stop(), "the sample lead may not stop yet")
 

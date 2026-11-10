@@ -11,7 +11,7 @@ LISTING = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.SEARCH, 
 
 def test_a_hook_sent_twice_is_answered_with_the_same_new_input(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
-    story.run("setting make samples.rewrite-after true")
+    story.run("setting set samples.rewrite-after true --project")
     repeated_listing = LISTING.with_fields(firing="sent-twice")
     first = story.hook("s-1", repeated_listing)
     expect_updated_input_hook_2(story, "s-1", repeated_listing, first, "command", "sample-run --process 7 -- ls build")

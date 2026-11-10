@@ -29,6 +29,7 @@ def test_a_person_s_request_may_name_the_environment_by_its_number(new_story):
 
 def test_a_person_s_request_with_no_environment_reads_every_environment(new_story):
     story = new_story(fixture=TwoEnvironments)
+    story.use_fixture_environment(None)
     story.expect_text("memory list", MAIN_FACT, "Staging has no queue", actor=story.user)
 
 

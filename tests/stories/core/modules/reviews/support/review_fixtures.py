@@ -6,8 +6,8 @@ from tests.stories.core.support.fixtures import ThreeTasks
 
 REVIEW_REQUEST = "review request task 1 --points 2 --environment main"
 REVIEWER_START = "agent start s-2 claude reviewer --environment main"
-REVIEWERS_ENABLED = "setting make journal.core.reviews.reviewer true"
-EMPTY_REVIEWERS = "setting make journal.core.reviews.reviewers-most 0"
+REVIEWERS_ENABLED = "setting set journal.core.reviews.reviewer true --project"
+EMPTY_REVIEWERS = "setting set journal.core.reviews.reviewers-most 0 --project"
 REVIEW_DETAILS = "review show 1"
 REVIEW_POINTS = "review-point list --review 1"
 
@@ -47,7 +47,7 @@ class OneReviewerAllowed(StoryFixture):
     parent = ReviewersEnabled
 
     def steps(self, story: Story) -> None:
-        story.run("setting make journal.core.reviews.reviewers-most 1")
+        story.run("setting set journal.core.reviews.reviewers-most 1 --project")
 
     def expect(self, story: Story) -> None:
         story.expect_text("setting list", "reviews.reviewers-most  1")

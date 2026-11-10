@@ -88,7 +88,7 @@ def test_a_worker_gets_none_of_the_messages_the_person_wrote_to_the_main_agent(n
 def test_a_started_task_taken_from_a_worker_goes_back_open_and_the_worker_goes_on_with_its_next(new_story):
     story, _, worker = delegated_story(new_story)
     story.expect_text(f"task assign 1 --to {agent_number(story, story.agent.id)}", "task:1", actor=story.agent)
-    story.expect_text("task show 1", "state: open", "reason: assigned to agent", f"delegated_to: {story.agent.id}", actor=story.agent)
+    story.expect_text("task show 1", "state: open", "reason: assigned to main agent", f"delegated_to: {story.agent.id}", actor=story.agent)
     story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
     story.expect_text("worker-worktree show 1", "task_id: 2", actor=story.agent)
     story.expect_text(f"agent-line list --agent {worker.id}", "task:1 was taken from you: leave it", "your next task is task:2")

@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -22,4 +21,4 @@ def test_an_edit_shows_in_the_file_list_of_the_agent_the_home_page_reads(new_sto
     story = new_story(fixture=BuilderStarted)
     scanned_edit(story, "s-1", "src/cart.py")
     story.run_listeners()
-    story.expect_text(f"file-edit list --agent {agent_number(story, story.agent.id)}", "src/cart.py")
+    story.expect_text(f"file-edit list --agent {story.agent.id}", "src/cart.py")

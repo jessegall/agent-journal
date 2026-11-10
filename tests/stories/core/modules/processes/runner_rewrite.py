@@ -82,7 +82,7 @@ def test_a_line_with_a_parse_error_is_let_through(new_story):
 
 def test_a_second_rule_that_rewrites_the_hook_is_refused_and_no_process_is_kept(new_story):
     story = install_runner(new_story(SAMPLES, fixture=BuilderStarted))
-    story.run("setting make samples.rewrite-coding true")
+    story.run("setting set samples.rewrite-coding true --project")
     story.expect_hook_refusal("s-1", SERVER, "processes.runner-rewrite")
     story.expect_refusal("process show 1", "no process 1")
 

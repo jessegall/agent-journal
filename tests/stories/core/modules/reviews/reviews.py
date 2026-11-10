@@ -27,7 +27,7 @@ def test_a_point_short_sends_the_review_back_with_the_reason(new_story):
 
 def test_a_report_from_an_agent_that_is_not_the_reviewer_is_refused(new_story):
     story = new_story(fixture=ProgressReview)
-    story.expect_refusal('review record "1 passed\n2 passed" --environment main', "not the reviewer", actor=story.agent)
+    story.expect_refusal('review record "1 passed\n2 passed" --environment main', "has another reviewer", actor=story.agent)
     story.expect_success(REVIEW_DETAILS, "state: reviewing")
 
 

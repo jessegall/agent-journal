@@ -31,7 +31,7 @@ def test_a_project_hook_refuses_a_stop(new_story):
 
 def test_two_rewriters_are_refused_by_name(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
-    story.run("setting make samples.rewrite true")
+    story.run("setting set samples.rewrite true --project")
     reply = story.hook("s-1", managed(LISTING, {"updated_input": {"command": "safe"}}))
     expect_reply_refusal(reply, "samples.shell-rewrite")
     expect_reply_refusal(reply, "project-check")
