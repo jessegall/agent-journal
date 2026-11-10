@@ -21,14 +21,14 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from suites.coding.modules.workers.support.worker_status import WorkerStatus, WorkerStatusPhase
-from suites.coding.modules.workers.support.worker_without_worktree import WorkerWithoutWorktree
+from suites.coding.modules.workers.support.kept_worker_status import KeptWorkerStatus
 from suites.coding.modules.workers.support.worker_status_page_json import WorkerStatusPageJson
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
 
 
-class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | WorkerWithoutWorktree | Refusal]):
+class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Refusal]):
     cli_name = "worker"
     name = "status"
 
@@ -43,7 +43,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | WorkerWithoutWorktree
         parser.add_argument("--page", type=int, default=1)
         parser.add_argument("--limit", type=int, default=25)
 
-    def read(self, arguments: Namespace, caller: Caller) -> WorkerStatus | WorkerWithoutWorktree | Refusal:
+    def read(self, arguments: Namespace, caller: Caller) -> WorkerStatus | KeptWorkerStatus | Refusal:
         if arguments.page < 1 or not 1 <= arguments.limit <= 100:
             return Refusal("status needs a positive page and a limit from 1 to 100")
         if arguments.worker_id is None and caller.actor.type != ActorType.AGENT:
@@ -51,7 +51,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | WorkerWithoutWorktree
         worker_id = arguments.worker_id if arguments.worker_id is not None else caller.actor.id
         worktree = self.worktrees.worker_worktree(worker_id)
         if worktree is None:
-            return self.without_worktree(worker_id)
+            return self.kept_status(worker_id)
         tests = self.proofs.worktree_proofs(worktree.id).matching(Among("state", TEST_WAITING_STATES)).oldest().page(arguments.page, arguments.limit)
         assignments = self.queries.query(Task).filter(delegated_to=worker_id).matching(Among("state", (TaskState.OPEN, TaskState.BLOCKED))).oldest().page(arguments.page, arguments.limit)
         worker = self.queries.query(Agent).find(worker_id)
@@ -63,16 +63,16 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | WorkerWithoutWorktree
         phase = self.phases.phase(task)
         return None if phase is None else WorkerStatusPhase(phase, len(self.phases.advanced(worker_id)))
 
-    def without_worktree(self, worker_id: int) -> WorkerWithoutWorktree | Refusal:
+    def kept_status(self, worker_id: int) -> KeptWorkerStatus | Refusal:
         if self.worktrees.newest_worktree(worker_id) is None:
             return Refusal(f"{AgentLabel.from_row_id(worker_id, self.numbers).text} has no worker worktree")
         worker = self.queries.query(Agent).find(worker_id)
         if worker.retired_at is not None:
             return Refusal(f"{AgentLabel.from_agent(worker).text} is retired")
-        return WorkerWithoutWorktree(worker)
+        return KeptWorkerStatus(worker)
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, WorkerWithoutWorktree):
+        if isinstance(value, KeptWorkerStatus):
             output.write(value.line, value.listed())
             return
         if not isinstance(value, WorkerStatus):

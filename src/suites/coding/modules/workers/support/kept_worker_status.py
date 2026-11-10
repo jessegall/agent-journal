@@ -5,7 +5,7 @@ from core.modules.agents.support.agent_label import AgentLabel
 
 
 @dataclass(frozen=True)
-class WorkerWithoutWorktree:
+class KeptWorkerStatus:
     """A kept worker whose last worktree was merged or released: it stays idle until a job cuts it a new one."""
 
     worker: Agent
