@@ -2,7 +2,12 @@
 import {computed} from "vue";
 import {TimeAgo} from "@journal/window-kit";
 
-const END_REASONS = {cache_passed: "its cache had passed", each_launch: "each job starts a new one", driver_changed: "its driver was changed", replaced_by_person: "a person replaced it", launch_rotation: "its program was changed for the job"};
+// why the session before the current one ended, for each reason word of the session history
+const END_REASONS = {
+    finished: "its work was finished", cache_passed: "its cache had passed", context_limit: "its context was full", replaced_by_person: "a person replaced it",
+    driver_changed: "its driver was changed", each_launch: "each job starts a new one", launch_rotation: "its program was changed for the job",
+    conversation_missing: "its conversation was gone", never_started: "it never started", unknown: "the reason is not known",
+};
 const props = defineProps({row: {type: Object, required: true}});
 const programName = computed(() => (props.row.program ? props.row.program.slice(0, 1).toUpperCase() + props.row.program.slice(1) : ""));
 const driver = computed(() => [programName.value, props.row.program_model].filter(Boolean).join(" "));
