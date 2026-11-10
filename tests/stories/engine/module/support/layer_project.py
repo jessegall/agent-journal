@@ -4,7 +4,7 @@ from engine.module.layer_check import LayerCheck
 from engine.module.layer_table import LayerTable
 from engine.module.layer_table_printer import LayerTablePrinter
 from engine.module.module import Module
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 
 
 class LayerProject:

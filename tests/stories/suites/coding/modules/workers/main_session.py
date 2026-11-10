@@ -1,7 +1,7 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 import pytest
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK
 from tests.stories.suites.coding.modules.workers.report import REPORT, MergerOffOrchestrator, stop_with_text
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, repository_environment, worker_session

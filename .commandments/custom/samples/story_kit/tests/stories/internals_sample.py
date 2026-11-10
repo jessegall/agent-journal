@@ -2,7 +2,7 @@
 from engine.database.database import Database
 
 # @righteous testing_story_imports_journal_internals
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 # @righteous testing_story_imports_journal_internals
 from tests.stories.core.support.fixtures import UserJoined

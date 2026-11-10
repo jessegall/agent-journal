@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import patch
 
-from core.testing.expect_reply import expect_reply_allowed, expect_reply_refusal
-from core.testing.hook_samples import HookSamples
+from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_refusal
+from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.listeners.worker_test_listener import WorkerTestListener
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.queries.proof_query import ProofQuery

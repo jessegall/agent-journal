@@ -4,8 +4,8 @@ from datetime import timedelta
 from engine.time.clock import Clock
 from engine.driver.tool_type import ToolType
 from engine.journal.journal_home import JournalHome
-from core.testing.hook_samples import HookSamples
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.fixtures import UserJoined
 

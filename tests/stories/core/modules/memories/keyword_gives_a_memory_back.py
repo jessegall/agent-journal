@@ -1,9 +1,9 @@
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 from datetime import timedelta
 
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_count_shown, expect_value_without
 

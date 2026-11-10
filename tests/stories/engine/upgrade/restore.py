@@ -2,7 +2,7 @@ from engine.database.database import Database
 from install.restore_version_four import RestoreVersionFour
 from tests.stories.engine.upgrade.upgrade import expect_upgrade, upgrading
 from tests.stories.engine.upgrade.support.move_samples import PATH
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_code_outcome, expect_outcome_with
 
 NOTES, TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule"

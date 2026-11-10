@@ -2,7 +2,7 @@ import pytest
 
 from datetime import timedelta
 
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 
 INACTIVE_MINUTES = 15

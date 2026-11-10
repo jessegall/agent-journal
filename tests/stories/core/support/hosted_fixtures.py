@@ -6,7 +6,7 @@ from engine.file.file_access import FileAccess
 from engine.hosting.host_probe import HostProbe
 from engine.hosting.hosted_file import HostedFile
 from engine.hosting.hosting import Hosting
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from server.socket_peer import SocketPeer
 from tests.stories.engine.hosting.support.fake_host import FakeHost
 

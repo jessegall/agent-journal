@@ -2,7 +2,7 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.queries.task_query import TaskQuery
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 
 def test_releasing_the_first_worker_leaves_the_second_workers_started_task_unchanged(new_story):

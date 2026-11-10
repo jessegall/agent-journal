@@ -1,6 +1,6 @@
 import pytest
 
-from core.testing.expect_reply import expect_absent_reply_refusal, expect_reply_allowed, expect_reply_refusal
+from engine.testing.expectations.expect_reply import expect_absent_reply_refusal, expect_reply_allowed, expect_reply_refusal
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_ALIAS, TEST_LINE, shell_test_part, start_planned_worker, unplanned_worker
 
 FLAG = "No test runs left"

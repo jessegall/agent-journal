@@ -7,8 +7,8 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.database.database import Database
 from engine.row.row_owner import RowOwner
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 

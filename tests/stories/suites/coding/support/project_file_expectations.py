@@ -1,4 +1,4 @@
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 
 
 def expect_project_files(story: Story) -> None:

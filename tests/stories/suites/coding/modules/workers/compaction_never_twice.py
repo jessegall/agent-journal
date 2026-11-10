@@ -7,8 +7,8 @@ from engine.errors.refusal import Refusal
 from core.modules.agents.support.terminal_typing import LAUNCHER_MISSING, TerminalTyping
 from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE as COMPACT
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_HARD_TOKENS
-from core.testing.hook_samples import HookSamples
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.suites.coding.modules.workers.context_limit import COMPACTION_START, HARD, LIMIT_TOKENS, PRE_COMPACT, SESSION, LimitEnabled, RecordedTyping, has_context, set_value, stops, typing_recorded
 

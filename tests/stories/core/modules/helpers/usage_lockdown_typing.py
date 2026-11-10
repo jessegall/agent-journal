@@ -3,8 +3,8 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker
 from core.modules.messages.models.message import Message
-from core.testing.hook_samples import HookSamples
-from core.testing.story import Story
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story import Story
 from tests.stories.core.modules.helpers.usage_limits import report
 from tests.stories.core.modules.helpers.usage_lockdown import lockdown_story
 

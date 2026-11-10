@@ -1,8 +1,8 @@
 import json
 
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story

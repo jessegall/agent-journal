@@ -1,7 +1,7 @@
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 import json
 
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.support.available_work import AvailableWork
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment

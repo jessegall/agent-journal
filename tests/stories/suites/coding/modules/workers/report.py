@@ -3,11 +3,11 @@ from datetime import timedelta
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment, worker_session

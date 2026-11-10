@@ -6,9 +6,9 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.ticks.interrupted_agent_wake import InterruptedAgentWake
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.hook_samples import HookSamples
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 WAKE = "you were interrupted: go on with your work"

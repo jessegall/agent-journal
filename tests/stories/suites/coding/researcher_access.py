@@ -4,8 +4,8 @@ from engine.database.database import Database
 from engine.driver.command_category import CommandCategory
 from engine.driver.tool_type import ToolType
 from engine.registry.registry import Registry
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 
 READ_FILE = HookSamples.shell("cat src/cart.py", ShellPart("cat", CommandCategory.READ, ["src/cart.py"]))

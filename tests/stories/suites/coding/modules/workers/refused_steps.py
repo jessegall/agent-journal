@@ -3,7 +3,7 @@ from datetime import timedelta
 import pytest
 
 from core.modules.plugins.support.plugin_step_check import PluginStepCheck
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.support.story_checks import expect_count_output_2

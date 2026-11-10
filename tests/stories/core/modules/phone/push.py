@@ -12,7 +12,7 @@ from core.modules.phone.support.push_transport import PushTransport
 from core.modules.phone.support.p256 import P256
 from tests.stories.core.modules.phone.phone_rows import TOKEN_DIGEST, paired_story
 from tests.stories.core.support.fixtures import UserJoined
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_endswith_authorization, expect_value
 
 ENDPOINT = "https://fcm.googleapis.com/fcm/send/abc"

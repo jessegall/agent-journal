@@ -1,5 +1,5 @@
-from core.testing.hook_samples import HookSamples
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.available_work import AvailableWork
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line

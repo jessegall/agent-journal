@@ -3,8 +3,8 @@ from core.modules.processes.models.process import Process
 from core.modules.triggers.models.trigger_action_run import TriggerActionRun
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, install_runner
 from tests.stories.core.modules.triggers.trigger_details import AgentsEnableTriggers
-from core.testing.hook_samples import HookSamples
-from core.testing.expect_row import expect_row
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.expectations.expect_row import expect_row
 
 
 def test_saved_words_can_start_with_dashes(new_story):

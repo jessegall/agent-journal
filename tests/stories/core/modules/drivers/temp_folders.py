@@ -4,7 +4,7 @@ import time
 from engine.command.bus import Bus
 from core.modules.claude_code.providers import claude_code_provider
 from core.modules.drivers.commands.prune_temp_folders.prune_temp_folders import PruneTempFolders
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 

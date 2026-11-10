@@ -6,8 +6,8 @@ import venv
 import pytest
 
 from engine.caller.caller_request import CallerRequest
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskOrchestrator
 from tests.stories.server.support.go_build import GoBuild
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session

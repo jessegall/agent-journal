@@ -1,10 +1,10 @@
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from core.testing.story import Story
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story import Story
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder

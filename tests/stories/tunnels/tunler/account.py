@@ -11,7 +11,7 @@ from tests.stories.tunnels.tunler.support.fake_tunler_client import ACCOUNT, TUN
 from tests.stories.tunnels.tunler.support.set_clock import SetClock
 from tunnels.tunler.support.tunler_client import TunlerClient
 from tunnels.tunler.support.tunler_tunnel import TunlerTunnel
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_value
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 

@@ -14,7 +14,7 @@ from engine.module.module_removal import ModuleRemoval
 from engine.errors.refusal import Refusal
 from engine.registry.registry import Registry
 from core.modules.viewer.commands.support.window_lines import WindowLines
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 
 ENVIRONMENT = "main"
 SAMPLES_MODULE = "tests.stories.core.modules.viewer.support.window_samples"

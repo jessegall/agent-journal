@@ -17,7 +17,7 @@ from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.output_reading import OutputReading
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.support.story_checks import expect_value
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session, repository_environment
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator

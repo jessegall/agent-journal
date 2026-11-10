@@ -6,8 +6,8 @@ from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.registry.registry import Registry
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from tests.stories.engine.driver.support.hook_agents import hook_agent

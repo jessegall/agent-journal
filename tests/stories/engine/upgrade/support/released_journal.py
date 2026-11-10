@@ -4,7 +4,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.install.support import TIMEOUT_SECONDS, Scratch
 from tests.install.test_release_archive import downloaded_script, release_with_archive
 from tests.install.test_upgrade_script import version_four_project

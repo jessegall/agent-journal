@@ -3,7 +3,7 @@ import pytest
 from engine.process.leftover_process import LeftoverProcess
 from core.modules.drivers.support.access_nudges import ENDED_AGENT
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.engine.driver.support.samples import SAMPLES

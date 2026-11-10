@@ -10,7 +10,7 @@ from engine.caller.caller_request import CallerRequest
 from engine.cli.line_run import LineRun
 from engine.database.database import Database
 from engine.registry.registry import Registry
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.core.support.fixtures import MainEnvironment
 
 SAMPLE = Path(__file__).parent / "support" / "folder_sample"

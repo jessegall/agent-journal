@@ -7,8 +7,8 @@ from engine.driver.command_category import CommandCategory
 from engine.database.database import Database
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
-from core.testing.hook_samples import HookSamples
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, resumable_session
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE

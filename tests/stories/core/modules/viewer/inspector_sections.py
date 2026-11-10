@@ -3,7 +3,7 @@ from pathlib import Path
 
 from engine.database.database import Database
 from engine.registry.registry import Registry
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.core.modules.viewer.support import section_modules
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.fixtures.third_party import plan_notes, plan_notes_cookie, viewer_body

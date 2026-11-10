@@ -1,12 +1,12 @@
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 from engine.driver.command_category import CommandCategory
 from datetime import timedelta
 
 from core.modules.tasks.rules.unlogged_write_rule import UNLOGGED_WRITES_CEILING
 from core.modules.tasks.rules.log_request_rule import LOG_REQUEST_WRITES
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 
 CART_EDIT = HookSamples.edit("src/cart.py")

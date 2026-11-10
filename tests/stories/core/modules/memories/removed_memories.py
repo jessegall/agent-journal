@@ -1,5 +1,5 @@
 from engine.query.queries import Queries
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.memories.models.memory import Memory
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from tests.stories.support.story_checks import expect_value

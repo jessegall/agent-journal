@@ -7,8 +7,8 @@ import pytest
 from engine.file.file_access import FileAccess
 from engine.errors.refusal import Refusal
 from core.modules.profiles.support.profile_files import ProfileFiles
-from core.testing.hook_samples import HookSamples
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story_fixture import StoryFixture
 from server.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story

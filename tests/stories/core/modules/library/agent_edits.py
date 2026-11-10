@@ -6,7 +6,7 @@ from core.modules.library.models.enums.copy_state import CopyState
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.support.agent_edits import AGENT_EDITS_WAIT_SETTING
 from core.modules.library.support.library_client import LibraryClient
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.core.modules.library.support.copy_stories import connected, copy_line, made_copy, shared_server
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.server.support.shared_server_binary import SharedServerBinary

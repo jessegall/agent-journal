@@ -8,8 +8,8 @@ from core.modules.drivers.commands.resume_agent.resume_agent import ResumeAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 

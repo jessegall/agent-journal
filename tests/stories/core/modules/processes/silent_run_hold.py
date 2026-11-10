@@ -9,14 +9,14 @@ from core.modules.processes.commands.move_process.move_process import MoveProces
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.modules.processes.commands.support.part_spec import PartSpec
-from core.testing.expect_reply import expect_reply_allowed
+from engine.testing.expectations.expect_reply import expect_reply_allowed
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.group_cpu_time import GroupCpuTime
 from core.modules.processes.support.output_folder import OutputFolder
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from core.testing.story import Story
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story import Story
 from tests.stories.core.modules.processes.hang_watch import ActiveBuild, started_tree, watch_tick
 from tests.stories.core.modules.processes.support.process_samples import end_run
 

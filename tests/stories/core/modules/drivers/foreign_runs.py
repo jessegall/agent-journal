@@ -1,7 +1,7 @@
 from engine.module.driver_entries import DRIVERS_MODULE
 from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import LeadStarted
 from tests.stories.engine.driver.support.samples import SAMPLES
 

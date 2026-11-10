@@ -5,7 +5,7 @@ from engine.query.queries import Queries
 from core.modules.drivers.commands.support.rule_history_writer import RuleHistoryWriter
 from core.modules.drivers.models.enums.rule_due_outcome import RuleDueOutcome
 from core.modules.drivers.models.rule_history import RuleHistory
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import LeadLocked
 from tests.stories.engine.driver.support.samples import SAMPLES
 

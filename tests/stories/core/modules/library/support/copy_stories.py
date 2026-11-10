@@ -10,8 +10,8 @@ from engine.repository.repository import Repository
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.messages.commands.read_message.read_message import ReadMessage
-from core.testing.story import Story
-from core.testing.template_databases import TemplateDatabases
+from engine.testing.stories.story import Story
+from engine.testing.templates.template_databases import TemplateDatabases
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
 

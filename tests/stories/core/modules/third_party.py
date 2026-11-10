@@ -2,7 +2,7 @@ import json
 
 from engine.database.database import Database
 from engine.registry.registry import Registry
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.fixtures.third_party import third_party, third_party_cookie, viewer_body
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import request_answer

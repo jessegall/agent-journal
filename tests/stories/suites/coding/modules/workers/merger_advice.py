@@ -7,8 +7,8 @@ import suites.coding.modules.workers as workers_package
 from engine.driver.tool_type import ToolType
 from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
-from core.testing.hook_samples import HookSamples
-from core.testing.line_outcome import LineOutcome
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.expectations.line_outcome import LineOutcome
 from suites.coding.modules.workers.models.merger_advice import MergerAdvice
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.support.shipped_profiles import HELPER_PROFILES

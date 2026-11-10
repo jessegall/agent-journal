@@ -2,8 +2,8 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.provider.managed_hook import ManagedHook
 from engine.provider.managed_hooks import ManagedHooks
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value

@@ -3,8 +3,8 @@ import json
 import pytest
 
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import UserBuilder

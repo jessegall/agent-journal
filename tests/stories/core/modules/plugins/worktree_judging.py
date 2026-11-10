@@ -10,7 +10,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 SIN = "def total(items=[]):\n    return len(items)\n"
 

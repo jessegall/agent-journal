@@ -9,8 +9,8 @@ from engine.driver.command_category import CommandCategory
 from engine.driver.part import Part
 from core.modules.aliases.rules.saved_command_rule import SavedCommandRule
 from core.modules.processes.support.runner_line import READ_FLAGS_VARIABLE
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.server.support.alias_hook import AliasHook

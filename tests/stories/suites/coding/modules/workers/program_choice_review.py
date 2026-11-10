@@ -28,8 +28,8 @@ from engine.driver.command_category import CommandCategory
 from engine.provider.hook_trust import HookTrust
 from engine.provider.providers import Providers
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.helpers.start_helper import START, started
 from tests.stories.core.modules.helpers.helper_jobs import resumable_session
 from tests.stories.core.modules.usage.support.status_files import save_status_file

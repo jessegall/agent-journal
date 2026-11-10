@@ -7,7 +7,7 @@ from engine.driver.command_category import CommandCategory
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import parts_started, install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 

@@ -1,6 +1,6 @@
 import pytest
 
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.documents.support.trail_fixtures import viewer
 from core.modules.agents.support.terminal_typing import TerminalTyping

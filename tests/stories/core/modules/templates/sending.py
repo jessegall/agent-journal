@@ -8,7 +8,7 @@ from engine.query.queries import Queries
 from core.modules.documents.models.link import Link
 from core.modules.messages.models.message import Message
 from core.modules.templates.models.template import Template
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.core.modules.templates.support.sending_templates import SendingTemplates
 from tests.stories.server.support.server_client import server_story
 from tests.stories.core.modules.templates.support.active_template_fixture import installed_review

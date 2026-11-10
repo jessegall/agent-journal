@@ -3,8 +3,8 @@ from datetime import timedelta
 
 import pytest
 
-from core.testing.hook_samples import HookSamples
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story_fixture import StoryFixture
 from engine.query.queries import Queries
 from core.modules.tasks.models.task_block_review import TaskBlockReview
 from tests.stories.core.modules.tasks.task_waits import posted

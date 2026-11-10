@@ -5,10 +5,10 @@ from engine.driver.command_category import CommandCategory
 from engine.driver.tool_type import ToolType
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
-from core.testing.story_fixture import StoryFixture
-from core.testing.hook_samples import HookSamples
-from core.testing.expect_reply import expect_reply_allowed
-from core.testing.shell_part import ShellPart
+from engine.testing.stories.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.expectations.expect_reply import expect_reply_allowed
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
 from tests.stories.core.support.coding_fixtures import UserBuilder

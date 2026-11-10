@@ -6,7 +6,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.query.queries import Queries
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.suites.coding.modules.workers.support.program_split import (

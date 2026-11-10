@@ -9,12 +9,12 @@ from core.modules.processes.commands.end_process_part.end_process_part import En
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from engine.driver.command_category import CommandCategory
 from engine.driver.command_effect import CommandEffect
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.processes.support.process_samples import expect_rewritten, install_runner, runner_line, user_waits, with_parse_error
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderHelper
-from core.testing.expect_reply import expect_reply_allowed
+from engine.testing.expectations.expect_reply import expect_reply_allowed
 from tests.stories.support.story_checks import expect_lines_reply_line, expect_refusal_hook_rule, expect_updated_input_hook, expect_updated_input_reply
 from tests.stories.core.modules.documents.support.trail_fixtures import viewer
 

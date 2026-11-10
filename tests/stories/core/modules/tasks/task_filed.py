@@ -1,6 +1,6 @@
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 TASK_MADE = HookSamples.shell('journal task make "Fix the cart"', ShellPart("journal", CommandCategory.JOURNAL, ["task", "make", "Fix the cart"])).with_fields(event="post_tool_use")

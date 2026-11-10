@@ -1,7 +1,7 @@
 import json
 
 from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text, expect_upgrade_without_text
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 
 def test_the_work_of_an_agent_names_its_new_actor(new_story):

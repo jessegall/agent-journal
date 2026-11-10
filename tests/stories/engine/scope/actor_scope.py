@@ -1,4 +1,4 @@
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 from datetime import timedelta
 
@@ -12,11 +12,11 @@ from engine.scope.scopes import Scopes
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import ended_run
 from tests.stories.core.modules.processes.worker_outputs import worker_run
 from tests.stories.core.support.coding_fixtures import BuilderHelper
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 TASK_LINE = 'task make "Fix the cart" --environment main'
 MAIN_CHAT = "chat-mark main --environment main"

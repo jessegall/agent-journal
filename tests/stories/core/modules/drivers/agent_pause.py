@@ -2,12 +2,12 @@ import pytest
 
 from engine.driver.command_category import CommandCategory
 from engine.driver.command_effect import CommandEffect
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.shell_part import ShellPart
 from engine.driver.tool_type import ToolType
 from core.modules.agents.support.terminal_typing import TerminalTyping
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from engine.driver.command_category import CommandCategory
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.shell_part import ShellPart
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.database.database import Database

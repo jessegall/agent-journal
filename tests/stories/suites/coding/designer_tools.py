@@ -1,8 +1,8 @@
 from engine.driver.tool_type import ToolType
-from core.testing.expect_reply import expect_reply_allowed
+from engine.testing.expectations.expect_reply import expect_reply_allowed
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.hook_samples import HookSamples
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.support.coding_fixtures import UserBuilder
 

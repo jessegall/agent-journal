@@ -8,8 +8,8 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.runner_binary import RunnerBinary
 from core.modules.processes.support.runner_line import QUEUE_WAIT_VARIABLE, COUNTED_QUEUE_VARIABLE
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_WAIT
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from tests.stories.core.support.coding_fixtures import BuilderHelper, OpenTaskOrchestrator

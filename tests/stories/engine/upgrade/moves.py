@@ -7,7 +7,7 @@ from engine.upgrade.errors.upgrade_failed_error import UpgradeFailedError
 from engine.upgrade.move_runner import MoveRunner
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.engine.upgrade.support.move_samples import ORDER, PATH, version_four_database
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_bytes_database_home, expect_bytes_source, expect_changed_value, expect_value, expect_value_2, expect_value_line, expect_value_without
 from tests.stories.engine.upgrade.upgrade import expect_table_counts
 

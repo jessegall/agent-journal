@@ -4,8 +4,8 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.helper_started import HELPER_LAUNCH_NAME, HelperStarted
-from core.testing.hook_samples import HookSamples
+from engine.testing.stories.helper_started import HELPER_LAUNCH_NAME, HelperStarted
+from engine.testing.examples.hook_samples import HookSamples
 
 
 def test_a_helper_keeps_the_session_the_journal_chose_when_another_comes_under_its_launch_name(new_story):

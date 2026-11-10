@@ -9,11 +9,11 @@ from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.processes.support.output_folder import OutputFolder
-from core.testing.expect_reply import expect_absent_reply_line, expect_absent_reply_refusal, expect_reply_line, expect_reply_refusal
-from core.testing.expect_row import expect_row
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from core.testing.story_fixture import StoryFixture
+from engine.testing.expectations.expect_reply import expect_absent_reply_line, expect_absent_reply_refusal, expect_reply_line, expect_reply_refusal
+from engine.testing.expectations.expect_row import expect_row
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.messages.delivery import KeptTyping, READ_MESSAGE_HOOK
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

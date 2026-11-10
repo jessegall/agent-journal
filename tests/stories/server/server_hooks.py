@@ -11,14 +11,14 @@ from engine.driver.hook_event import HOOK_EVENT_VERSION
 from core.modules.drivers.bindings.agent_hook_route import AgentHookRoute
 from engine.time.timing import TIMING_HEADER
 from core.modules.developer.support.hook_request_log import HookRequestLog
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import LeadStarted
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from tests.stories.core.support.fixtures import ThreeTasks, UserJoined
 from tests.stories.server.support.server_client import expect_timing_lines, server_story
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 RAW_HEADERS = {"X-Journal-Request-At": "1793395000123", "X-Journal-Hook-Id": "7731-1793395000123", "X-Journal-Actor": "agent", "X-Journal-Env": "main"}
 SCHEMA_EXAMPLES = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "event" / "testdata" / "schema"

@@ -1,4 +1,4 @@
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.messages.messages_module import MessagesModule
 from tests.stories.core.support.fixtures import UserJoined
 

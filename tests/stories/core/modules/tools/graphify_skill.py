@@ -2,7 +2,7 @@ from pathlib import Path
 
 from engine.provider.managed_hook import ManagedHook
 from engine.provider.managed_hooks import ManagedHooks
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.modules.tools.graphify_searches import graphify_enabled
 from tests.stories.core.support.fixtures import UserJoined

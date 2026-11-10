@@ -1,4 +1,4 @@
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.suites.coding.modules.workers.support.program_split import dispatch, expect_program
 
 

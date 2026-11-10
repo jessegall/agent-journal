@@ -5,9 +5,9 @@ from engine.enums.actor_type import ActorType
 from engine.driver.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.sequences.models.sequence_run import SequenceRun
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story_fixture import StoryFixture
 from server.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value

@@ -10,7 +10,7 @@ import time
 from unittest.mock import patch
 from engine.caller.process_table import ProcessTable
 from engine.time.clock import Clock
-from core.testing.fixed_process_table import FixedProcessTable
+from engine.testing.fakes.fixed_process_table import FixedProcessTable
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -25,10 +25,10 @@ from server.endpoints.cli_endpoint import CliEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
 from engine.time.timing import TIMING_HEADER, Timing
 from engine.time.timing_log import TimingLog
-from core.testing.hook_samples import HookSamples
-from core.testing.story import Story
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story import Story
 from tests.stories.server.support.story_line_route import StoryLineRoute
-from core.testing.line_outcome import LineOutcome
+from engine.testing.expectations.line_outcome import LineOutcome
 from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.models.agent_skill import AgentSkill

@@ -8,8 +8,8 @@ from engine.driver.command_category import CommandCategory
 from engine.driver.tool_type import ToolType
 from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.checks.support.due_check_runs import DueCheckRuns
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.drivers.hook_durations import UserBuilder
 from tests.stories.core.modules.processes.support.process_samples import moved_run
 from tests.stories.support.story_checks import expect_absent_value, expect_total_cost_less, expect_greater

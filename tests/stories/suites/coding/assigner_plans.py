@@ -1,10 +1,10 @@
 import pytest
 
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 from datetime import timedelta
 
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder, StartedTaskBuilder
 from tests.stories.suites.coding.support.task_expectations import expect_started_task_count
 from tests.stories.core.support.fixtures import UserJoined

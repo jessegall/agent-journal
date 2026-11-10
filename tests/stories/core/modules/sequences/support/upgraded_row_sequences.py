@@ -1,9 +1,9 @@
 from engine.query.queries import Queries
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.testing.hook_samples import HookSamples
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from install.upgrade_journal import UpgradeJournal
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.fixtures.row_sequences import ROW_SEQUENCES, prepare_row_sequences

@@ -1,6 +1,6 @@
 import pytest
 
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 import json
 import shlex
@@ -10,7 +10,7 @@ from engine.enums.actor_type import ActorType
 from engine.database.database import Database
 from engine.query.queries import Queries
 from core.modules.sequences.models.sequence_run import SequenceRun
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value
 

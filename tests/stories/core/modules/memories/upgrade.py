@@ -1,7 +1,7 @@
 import re
 
 from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text, expect_upgrade_without_text
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_value_4, expect_value_with
 
 

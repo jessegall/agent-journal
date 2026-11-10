@@ -1,4 +1,4 @@
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 SESSION_START = HookSamples.session_start()

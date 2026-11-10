@@ -10,15 +10,15 @@ from engine.driver.tool_type import ToolType
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.modules.usage.support.status_files import StatusFiles
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.modules.usage.support.status_files import FIVE_HOURS_RESET, SEVEN_DAYS_RESET, full_status, save_status_file
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, BuilderHelper
 from tests.stories.core.support.fixtures import UserJoined
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 HELPER_START = "agent start s-2 claude worker --parent {parent} --environment main"
 

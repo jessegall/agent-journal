@@ -1,6 +1,6 @@
 import pytest
 from core.modules.skills.support.skill_requirement import SkillRequirement
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from server.booting_work import BootingWork
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
 from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story

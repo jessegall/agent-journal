@@ -8,7 +8,7 @@ from engine.database.database import Database
 from engine.query.queries import Queries
 from engine.registry.registry import Registry
 from core.modules.chat.models.chat_mark import ChatMark
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.documents.support.read_marks import ReadableTexts
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.support.story_checks import expect_value

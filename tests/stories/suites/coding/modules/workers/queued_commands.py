@@ -24,7 +24,7 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
 from core.modules.processes.support.queued_process_start import QueuedProcessStart
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource

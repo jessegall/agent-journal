@@ -1,4 +1,4 @@
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from datetime import timedelta
 
 import pytest
@@ -6,13 +6,13 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.engine.driver.support.samples import SAMPLES
-from core.testing.expect_reply import expect_reply_line
+from engine.testing.expectations.expect_reply import expect_reply_line
 from tests.stories.support.story_checks import expect_lines_reply_line
 
 

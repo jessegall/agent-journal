@@ -5,9 +5,9 @@ from unittest.mock import patch
 
 import pytest
 
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from engine.driver.command_category import CommandCategory
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.shell_part import ShellPart
 from engine.repository.repository import Repository
 from engine.registry.registry import Registry
 from core.modules.tasks.models.task import Task

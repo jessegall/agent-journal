@@ -4,7 +4,7 @@ from datetime import timedelta
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.worker_context_limit import JOB, LIMIT, compacting_worker, ended_worker, has_context
 from tests.stories.suites.coding.modules.workers.context_limit import typing_recorded

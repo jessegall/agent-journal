@@ -15,7 +15,7 @@ from core.modules.sharing.commands.leave_share_comment.leave_share_comment impor
 from core.modules.sharing.models.share_link import ShareLink
 from core.modules.sharing.support.share_password import SharePassword
 from tests.stories.core.support.fixtures import PhasesPlan
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_value_with, expect_value_without
 
 LINK_DAYS = 7

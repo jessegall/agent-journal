@@ -1,13 +1,13 @@
 import json
 
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from core.modules.search.support.row_search import RowSearch
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_total_closed, expect_value
 
 

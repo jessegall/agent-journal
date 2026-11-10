@@ -37,7 +37,7 @@ Each test body starts with the action that distinguishes its case.
 
 Drive state changes through the public command or hook that owns them. Do not write a command's rows directly to make
 its test pass. Use the existing `Story` methods; there is no `@story` decorator, `story.agents` collection or
-`story.agent_runs` API in this checkout. A helper belongs in the relevant support module or in `core.testing` when it
+`story.agent_runs` API in this checkout. A helper belongs in the relevant support module or in `engine.testing` when it
 serves all stories. Unit tests cover individual building blocks, rather than replacing stories of agent behaviour.
 
 ## Run the affected stories

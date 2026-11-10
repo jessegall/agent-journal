@@ -5,11 +5,11 @@ import pytest
 from engine.command.bus import Bus
 from engine.driver.command_category import CommandCategory
 from core.modules.processes.commands.move_process.move_process import MoveProcess
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, monitor, moved_run, started_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.testing.expect_reply import expect_absent_reply_refusal, expect_reply_allowed
+from engine.testing.expectations.expect_reply import expect_absent_reply_refusal, expect_reply_allowed
 
 BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.UNKNOWN, ["build"]))
 

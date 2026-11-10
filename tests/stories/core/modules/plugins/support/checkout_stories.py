@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import cast
 
 from engine.model.tables import Tables
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from suites.coding.modules.workers.models.worktree import Worktree
 from tests.stories.core.modules.plugins.support.event_stories import EventWorkerStarted, event_data, event_plugin_story, script_calls
 from tests.stories.core.modules.processes.support.process_samples import install_runner

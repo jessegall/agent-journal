@@ -5,8 +5,8 @@ from engine.database.database import Database
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.ticks.agent_ticks import AgentTicks
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderHelper
 
 RUNNING_READ = "ended_at IS NULL"

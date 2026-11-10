@@ -1,12 +1,12 @@
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 import pytest
 
 from datetime import timedelta
 
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from suites.coding.modules.checks.support.due_check_runs import DueCheckRuns
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 

@@ -1,7 +1,7 @@
 from engine.actor.actor import Actor
 from engine.query.queries import Queries
 from core.modules.plans.models.plan_task import PlanTask
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.core.modules.drivers.support.confirmed_skips import confirmed_skip
 
 

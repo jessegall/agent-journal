@@ -3,8 +3,8 @@ import pytest
 from engine.driver.command_category import CommandCategory
 from engine.file.file_access import FileAccess
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.skills.due import environment, start
 from tests.stories.server.support.server_client import without_start_skills
 

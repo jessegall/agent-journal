@@ -7,7 +7,7 @@ from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.reader_run import ReaderRun
 from suites.coding.modules.workers.support.test_listing import TestListing as PartListing
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 PROJECT = Path(__file__).resolve().parents[5]
 

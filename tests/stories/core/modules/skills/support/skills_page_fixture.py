@@ -3,7 +3,7 @@ from contextlib import contextmanager
 
 from tests.stories.server.support.server_client import started_server, ServerStory
 from engine.file.file_access import FileAccess
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import UserJoined
 
 

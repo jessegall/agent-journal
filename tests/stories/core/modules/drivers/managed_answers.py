@@ -3,11 +3,11 @@ from engine.driver.command_effect import CommandEffect
 from engine.module.driver_entries import DRIVERS_MODULE
 from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.engine.driver.support.fixtures import LeadStarted
 from tests.stories.engine.driver.support.samples import REMOVAL, SAMPLES
-from core.testing.expect_reply import expect_absent_reply_line, expect_reply_line, expect_reply_refusal
+from engine.testing.expectations.expect_reply import expect_absent_reply_line, expect_reply_line, expect_reply_refusal
 LISTING = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.SEARCH, ["build"], effects=[CommandEffect.READS_FILES]))
 
 

@@ -1,4 +1,4 @@
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 from tests.stories.core.modules.reviews.support.review_fixtures import ProgressReview, read_reviewer
 

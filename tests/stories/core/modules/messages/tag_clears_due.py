@@ -10,8 +10,8 @@ from core.modules.memories.commands.open_memory_mark.open_memory_mark import Ope
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_captions import MessageCaptions
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 

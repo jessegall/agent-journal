@@ -1,7 +1,7 @@
 import pytest
 
 from core.modules.processes.support.output_folder import OutputFolder
-from core.testing.expect_reply import expect_reply_allowed, expect_reply_refusal
+from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_refusal
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, PHASE_DISPATCH, TEST_LINE, start_planned_worker
 
 

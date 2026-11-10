@@ -13,7 +13,7 @@ from core.modules.library.errors.library_stale_error import LibraryStaleError
 from core.modules.library.errors.library_stopped_error import LibraryStoppedError
 from core.modules.library.errors.library_unreachable_error import LibraryUnreachableError
 from core.modules.messages.commands.read_message.read_message import ReadMessage
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.core.modules.library.support.saved_connection import saved_connection
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.core.support.fixtures import UserJoined

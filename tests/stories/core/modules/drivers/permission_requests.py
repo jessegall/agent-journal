@@ -4,7 +4,7 @@ from engine.driver.tool_type import ToolType
 from engine.query.queries import Queries
 from core.modules.drivers.models.enums.permission_state import PermissionState
 from core.modules.drivers.models.permission_request import PermissionRequest
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 
 DESIGN = "docs/designs/cart/page.html"

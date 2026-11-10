@@ -6,7 +6,7 @@ from install.restore_version_four import RestoreVersionFour
 from install.upgrade_journal import UpgradeJournal
 from tests.stories.fixtures.version_four import version_four_fixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_output_2
 
 

@@ -7,9 +7,9 @@ import pytest
 from engine.database.reported_findings import ReportedFindings
 from engine.registry.registry import Registry
 from engine.query.queries import Queries
-from core.testing.hook_samples import HookSamples
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from server.listener_thread import ListenerThread
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.story_line_route import StoryLineRoute

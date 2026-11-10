@@ -1,4 +1,4 @@
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 
 
 def test_with_no_drivers_module_every_hook_is_let_through_with_no_lines(new_story):

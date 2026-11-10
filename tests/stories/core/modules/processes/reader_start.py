@@ -1,6 +1,6 @@
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 NOTICE = "readers need required fields"

@@ -5,7 +5,7 @@ from engine.actor.actor import Actor
 from engine.caller.caller_request import CallerRequest
 from engine.caller.process_row import ProcessRow
 from engine.driver.command_category import CommandCategory
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.shell_part import ShellPart
 from core.modules.processes.models.output import Output
 from suites.coding.modules.workers.models.worktree import Worktree
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
@@ -14,7 +14,7 @@ from datetime import timedelta
 
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session

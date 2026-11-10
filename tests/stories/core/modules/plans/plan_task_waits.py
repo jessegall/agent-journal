@@ -1,6 +1,6 @@
 import pytest
 
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import PlanTaskWaiting, PlanTasksWaitingOutside

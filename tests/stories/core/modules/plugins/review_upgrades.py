@@ -1,8 +1,8 @@
 import json
 
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.support.runner_line import READ_FOLDERS_VARIABLE, RunnerLine
 from tests.stories.core.modules.plugins.support.event_stories import SECOND_JOB, TASK_CREATED, event_page, event_plugin_story, install_event_plugin, script_calls

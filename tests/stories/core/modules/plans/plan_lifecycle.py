@@ -1,6 +1,6 @@
 import pytest
 
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.fixtures import PlanFirstTaskClosed, UserJoined
 from tests.stories.core.support import story_lines as lines

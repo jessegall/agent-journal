@@ -2,7 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 from time import perf_counter
 
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from server.endpoints.cli_endpoint import CliEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
 from server.hook.queue_priority import QueuePriority

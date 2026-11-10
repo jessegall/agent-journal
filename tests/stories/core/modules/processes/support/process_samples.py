@@ -18,9 +18,9 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
-from core.testing.hook_sample import HookSample
-from core.testing.hook_samples import HookSamples
-from core.testing.story import Story
+from engine.testing.examples.hook_sample import HookSample
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story import Story
 from core.modules.processes.ticks.output_reading import OutputReading
 
 BYTES_LONG = 5000

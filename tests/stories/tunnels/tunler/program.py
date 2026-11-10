@@ -10,7 +10,7 @@ from engine.errors.refusal import Refusal
 from engine.tunnel.tunnel_state import TunnelState
 from tests.stories.tunnels.tunler.support.real_tunler import real_client
 from tunnels.tunler.support.tunler_installer import TunlerInstaller
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_absent_exists_with_log, expect_file_2
 
 SCRIPT = """#!/bin/sh

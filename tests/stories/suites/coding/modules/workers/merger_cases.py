@@ -10,7 +10,7 @@ from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from suites.coding.modules.workers.commands.record_worker_refusal.record_worker_refusal import RecordWorkerRefusal
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.worktree import Worktree

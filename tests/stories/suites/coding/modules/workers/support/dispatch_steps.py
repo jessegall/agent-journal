@@ -6,7 +6,7 @@ from engine.container.container import UNBUILT_MODULES, needed_values
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from engine.enums.actor_type import ActorType
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.core.support import story_lines as lines
 from suites.coding.modules.workers.support.worker_folder_runs import WorkerFolderRuns
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit

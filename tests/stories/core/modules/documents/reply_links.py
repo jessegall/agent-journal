@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from engine.query.query import Query
 from core.modules.messages.models.message import Message
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 from datetime import timedelta
 

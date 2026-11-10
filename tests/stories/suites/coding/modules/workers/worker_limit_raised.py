@@ -1,9 +1,9 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 

@@ -1,4 +1,4 @@
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.fixtures.started_sequence import StartedSequence
 from tests.stories.core.modules.sequences.support.step_blocks import run_with_hook, expect_tools_allowed, repair_legacy_blocks
 

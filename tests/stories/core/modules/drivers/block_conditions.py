@@ -11,7 +11,7 @@ from core.modules.tasks.support.block_conditions.started_task_exists import Star
 from core.modules.tasks.support.block_conditions.task_closed import TaskClosed
 from core.modules.tasks.support.block_conditions.task_logged import TaskLogged
 from core.modules.tasks.support.block_conditions.task_started import TaskStarted
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.checks.support.block_conditions.check_passed import CheckPassed
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 

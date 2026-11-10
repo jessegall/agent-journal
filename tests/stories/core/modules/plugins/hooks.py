@@ -13,9 +13,9 @@ from engine.driver.command_effect import CommandEffect
 from core.modules.plugins.support.login_path import LoginPath
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
-from core.testing.expect_reply import expect_reply_allowed, expect_absent_reply_line
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_absent_reply_line
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.core.modules.plugins.support.event_stories import event_plugin_story, install_event_plugin
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder

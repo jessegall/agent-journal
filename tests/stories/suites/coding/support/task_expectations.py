@@ -1,4 +1,4 @@
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 
 
 def expect_started_task_count(story: Story, task_ids: tuple[int, ...], count: int) -> None:

@@ -1,7 +1,7 @@
 import json
 
 from engine.driver.tool_type import ToolType
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_count_shown, expect_value_with
 

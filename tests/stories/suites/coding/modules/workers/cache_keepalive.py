@@ -2,7 +2,7 @@ from datetime import timedelta
 
 import pytest
 
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.context_limit import typing_recorded
 

@@ -9,9 +9,9 @@ from engine.database.database import Database
 from engine.database.statement import Statement
 from core.modules.drivers.commands.prune_events import prune_events_handler
 from core.modules.drivers.commands.prune_events.prune_events import PruneEvents
-from core.testing.hook_samples import HookSamples
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value
 

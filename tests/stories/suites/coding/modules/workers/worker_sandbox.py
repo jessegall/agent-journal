@@ -4,9 +4,9 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.driver.command_category import CommandCategory
 from engine.sandbox.shell_sandbox import ShellSandbox
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from core.testing.story import Story
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story import Story
 from tests.stories.core.modules.processes.support.process_samples import expect_rewritten, install_runner, runner_line
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session

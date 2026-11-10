@@ -9,8 +9,8 @@ from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.skills.support.skill_requirement import SkillRequirement
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.skills.agent_skills import read_row
 from tests.stories.core.modules.skills.due import drain_countdown
 from tests.stories.core.support.coding_fixtures import BuilderStarted

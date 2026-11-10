@@ -4,7 +4,7 @@ from engine.driver.nudge_type import NudgeType
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.rule_answers import RuleAnswers
 from engine.driver.rule_record import RuleRecord
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 QUEUED = NudgeDeclaration("shop.queued", NudgeType.STEERING, "task {task} is still queued for worker {worker}", plural_text="tasks {task} are still queued for worker {worker}")
 STALE = NudgeDeclaration("shop.stale", NudgeType.STEERING, "cart {cart} is stale")

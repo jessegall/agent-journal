@@ -1,8 +1,8 @@
 import json
 
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 
 def test_a_document_naming_a_task_by_its_number_links_to_it_once(new_story):

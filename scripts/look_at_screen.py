@@ -15,7 +15,7 @@ from pathlib import Path
 CHECKOUT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(CHECKOUT / "src"), str(CHECKOUT)]
 
-from core.testing.template_databases import TemplateDatabases  # noqa: E402
+from engine.testing.templates.template_databases import TemplateDatabases  # noqa: E402
 from tests.stories.server.support.server_client import server_story  # noqa: E402
 
 VIEWER_FOLDER = CHECKOUT / "src" / "viewer"

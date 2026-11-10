@@ -8,7 +8,7 @@ from engine.file.file_access import FileAccess
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
 from core.modules.profiles.support.profile_folder_move import ProfileFolderMove
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from server.request_log import RequestLog
 from server.request_log_settings import RequestLogSettings
 from core.base.serving.server_files import ServerFiles

@@ -1,6 +1,6 @@
 import pytest
 
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.models.enums.ask_topic import AskTopic
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from engine.driver.command_category import CommandCategory

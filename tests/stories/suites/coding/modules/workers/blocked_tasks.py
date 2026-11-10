@@ -1,8 +1,8 @@
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
-from core.testing.expect_reply import expect_reply_allowed, expect_reply_line
+from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_line
 
 
 def test_a_worker_blocking_its_task_tells_the_main_agent_with_the_reason(new_story):

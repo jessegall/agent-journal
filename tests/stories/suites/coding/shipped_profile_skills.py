@@ -10,8 +10,8 @@ from engine.registry.registry import Registry
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.skills.support.profile_skills import ProfileSkills
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from suites.coding.support.shipped_profiles import DESIGN_SKILLS, HELPER_PROFILES, HELPER_SKILLS, PLANNER_SKILLS, PLAN_REVIEW_SKILLS, WORKER_PROFILES, WORKER_SKILLS
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

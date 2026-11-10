@@ -1,5 +1,5 @@
-from core.testing.hook_samples import HookSamples
-from core.testing.story import Story
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story import Story
 from suites.coding.support.context_line import CONTEXT_LINE
 from tests.stories.core.support.coding_fixtures import BuilderHelper, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session

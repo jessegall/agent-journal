@@ -1,6 +1,6 @@
 import json
 import shlex
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.triggers.trigger_details import AgentsEnableTriggers, RunSignal, extra_command_runner
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story

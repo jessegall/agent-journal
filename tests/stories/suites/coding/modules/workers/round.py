@@ -1,7 +1,7 @@
 import pytest
 
 from engine.driver.command_category import CommandCategory
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.suites.coding.modules.workers.support.judge_plugin import SINFUL_TEXT, judge_plugin_folder, PLUGIN_NAME
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN_DISPATCH, start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_with

@@ -1,6 +1,6 @@
 import pytest
 
-from core.testing.expect_reply import expect_reply_allowed, expect_reply_line, expect_reply_refusal
+from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_line, expect_reply_refusal
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story

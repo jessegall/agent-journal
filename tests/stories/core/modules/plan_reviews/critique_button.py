@@ -3,7 +3,7 @@ from unittest.mock import patch
 from engine.registry.registry import Registry
 from core.modules import DEFAULT_MODULES
 from core.modules.plan_reviews.plan_reviews_module import PlanReviewsModule
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.core.modules.plan_reviews.review_state import CRITIQUE_COMMAND, ReviewPlan
 from tests.stories.core.support.fixtures import UserJoined
 

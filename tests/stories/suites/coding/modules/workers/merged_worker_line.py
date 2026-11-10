@@ -4,7 +4,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, merged_worker_lines, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository

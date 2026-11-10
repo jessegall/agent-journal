@@ -1,7 +1,7 @@
 import pytest
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, expect_clean_environment, repository_environment
 from tests.stories.support.story_checks import expect_command_file, expect_value_without

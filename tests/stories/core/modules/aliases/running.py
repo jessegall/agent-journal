@@ -11,12 +11,12 @@ from engine.command.bus import Bus
 from engine.driver.command_category import CommandCategory
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, runner_line
 from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_updated_input_hook
 
 ALIAS_LINE = HookSamples.shell("journal sins --changes", ShellPart("journal", CommandCategory.PROCESS, ["sins", "--changes"], subcommand="sins"))

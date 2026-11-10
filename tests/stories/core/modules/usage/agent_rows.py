@@ -5,7 +5,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.provider.status_file_fields import STATUS_CACHE_SIZE
 from core.modules.agents.models.agent import UPGRADE_RETIREMENT_REASON
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, helper_agent, resumable_session
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.browser_story import expect_browser

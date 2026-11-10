@@ -11,7 +11,7 @@ from tests.stories.core.modules.messages.peer_messages import ENVELOPE, hook_wit
 from tests.stories.suites.coding.modules.workers.worker_context import worker_scenario, dispatch
 from tests.stories.core.modules.documents.support.trail_fixtures import attach_image
 from tests.stories.server.support.server_client import server_story, viewer_answer as http_answer
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.documents.support.trail_fixtures import LinkedTrail, Scenario
 from tests.stories.core.modules.documents.support.trail_fixtures import ImageScenario
 from tests.stories.server.viewer.attachments import uploaded

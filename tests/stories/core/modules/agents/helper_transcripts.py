@@ -1,5 +1,5 @@
 from engine.enums.actor_type import ActorType
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 import json
 

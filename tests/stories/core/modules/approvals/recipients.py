@@ -10,7 +10,7 @@ from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.phone.models.phone_code import PhoneCode
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 

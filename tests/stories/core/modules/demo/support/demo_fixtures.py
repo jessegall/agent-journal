@@ -1,5 +1,5 @@
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 
 
 class Demonstrated(StoryFixture):

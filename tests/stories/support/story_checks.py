@@ -2,7 +2,7 @@ from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.program_hooks import ProgramHooks
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.upgrade.support.fixture_upgrade import repeated_upgrade
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
 import json

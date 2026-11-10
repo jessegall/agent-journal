@@ -1,8 +1,8 @@
 from tests.stories.core.support import story_lines as lines
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.plan_steps import ready_plan
 
 

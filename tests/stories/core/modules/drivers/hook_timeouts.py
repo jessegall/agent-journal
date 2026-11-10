@@ -5,9 +5,9 @@ from engine.driver import driver_rules
 from engine.driver.driver_rules import DriverRules
 from engine.driver.hook_event import HookEvent
 from engine.driver.hook_route import HookRoute
-from core.testing.hook_samples import HookSamples
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 

@@ -11,11 +11,11 @@ from engine.driver.tool_type import ToolType
 from core.modules.drivers.support.access_nudges import ENDED_AGENT, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, UNJUDGED_LINE
 from engine.query.queries import Queries
 from core.modules.documents.models.report import Report
-from core.testing.expect_reply import expect_reply_allowed
+from engine.testing.expectations.expect_reply import expect_reply_allowed
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.support.coding_fixtures import UserBuilder
 

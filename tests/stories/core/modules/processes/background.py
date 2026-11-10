@@ -21,11 +21,11 @@ from core.modules.processes.rules.silent_run_rule import STALLED_SECONDS
 
 from engine.driver.command_category import CommandCategory
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
-from core.testing.expect_reply import expect_absent_reply_line, expect_reply_line
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.expectations.expect_reply import expect_absent_reply_line, expect_reply_line
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, install_runner, moved_run, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from tests.stories.support.story_checks import expect_value_line, expect_value_with, expect_value_without_line

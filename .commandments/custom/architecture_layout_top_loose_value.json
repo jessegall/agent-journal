@@ -22,54 +22,6 @@
                 "file": "src/core/testing/fake_launcher.py"
             },
             {
-                "file": "src/core/testing/full_run_records.py"
-            },
-            {
-                "file": "src/core/testing/heavy_run_gate.py"
-            },
-            {
-                "file": "src/core/testing/helper_started.py"
-            },
-            {
-                "file": "src/core/testing/hook_samples.py"
-            },
-            {
-                "file": "src/core/testing/manual_clock.py"
-            },
-            {
-                "file": "src/core/testing/pytest_plugin.py"
-            },
-            {
-                "file": "src/core/testing/run_size.py"
-            },
-            {
-                "file": "src/core/testing/story.py"
-            },
-            {
-                "file": "src/core/testing/story_body.py"
-            },
-            {
-                "file": "src/core/testing/story_budget.py"
-            },
-            {
-                "file": "src/core/testing/story_overlap.py"
-            },
-            {
-                "file": "src/core/testing/story_path.py"
-            },
-            {
-                "file": "src/core/testing/temp_folders.py"
-            },
-            {
-                "file": "src/core/testing/template_adaptation.py"
-            },
-            {
-                "file": "src/core/testing/template_cache.py"
-            },
-            {
-                "file": "src/core/testing/working_journal.py"
-            },
-            {
                 "file": "src/install/built_bundle.py"
             },
             {

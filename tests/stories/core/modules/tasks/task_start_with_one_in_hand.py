@@ -1,6 +1,6 @@
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.tasks.support.task_start_fixtures import TwoOpenTasks
 
 START_TAX_TASK = HookSamples.shell("journal task start 2", ShellPart("journal", CommandCategory.JOURNAL, ["task", "start", "2"]))

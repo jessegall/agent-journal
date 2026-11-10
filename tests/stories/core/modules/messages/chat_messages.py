@@ -2,8 +2,8 @@ from engine.command.bus import Bus
 from engine.driver.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.support.fixtures import UnansweredMessage

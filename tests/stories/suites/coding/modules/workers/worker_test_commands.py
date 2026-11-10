@@ -7,7 +7,7 @@ from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.errors.missing_runner_error import MissingRunnerError
 from core.modules.processes.support.runner_binary import RunnerBinary
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment

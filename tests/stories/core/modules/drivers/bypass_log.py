@@ -6,7 +6,7 @@ from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.setting_rows import SettingRows
 from engine.journal.journal_home import JournalHome
 from core.modules.drivers.listeners.hook_wait_file_listener import HookWaitFileListener
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderHelper
 from tests.stories.core.support.fixtures import UserJoined

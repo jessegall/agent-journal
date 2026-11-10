@@ -9,9 +9,9 @@ from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.plans.support.plan_nudges import PLAN_APPROVED, PLAN_APPROVED_WITH_MESSAGE, PLAN_WAITING
 from core.modules.plans.support.plan_approval import PlanApproval
 from core.modules.plans.models.plan import Plan
-from core.testing.expect_reply import expect_reply_allowed
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.expectations.expect_reply import expect_reply_allowed
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.plans.support.approval_fixtures import ReadyApprovalPlan
 from tests.stories.core.support.fixtures import UserJoined
 

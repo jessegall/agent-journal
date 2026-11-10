@@ -23,10 +23,10 @@ from core.modules.drivers.models.nudge_record import NudgeRecord
 from core.modules.drivers.support.nudge_records import NudgeRecords
 from core.modules.processes.support.reader_request_notices import ReaderRequestNotices
 from core.modules.processes.support.process_nudges import READER_REQUEST, RUN_NAME
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from tests.stories.core.support.fixtures import UserJoined
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_answers, expect_outcome_with, expect_value, expect_value_with
 
 

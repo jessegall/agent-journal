@@ -12,8 +12,8 @@ from core.modules.agents.support.launch_answer import LaunchAnswer
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.testing.story_helper_programs import StoryHelperPrograms
-from core.testing.story_shell_sandbox import StoryShellSandbox
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
+from engine.testing.stories.story_fixture import StoryFixture
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story

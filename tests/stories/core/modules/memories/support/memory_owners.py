@@ -3,7 +3,7 @@ from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.memories.models.memory import Memory
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 MAIN_MEMORY = 1

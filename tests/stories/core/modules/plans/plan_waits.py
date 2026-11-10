@@ -2,7 +2,7 @@ import json
 
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.plan_steps import started_plan
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 
 class ThreeStartedPlans(StoryFixture):

@@ -1,7 +1,7 @@
 import pytest
 
 from engine.change.event_log import EventLog
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story

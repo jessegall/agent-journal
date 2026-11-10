@@ -2,8 +2,8 @@ from core.modules.messages.models.message import Message
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.hook_samples import HookSamples
-from core.testing.expect_reply import expect_reply_allowed
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.expectations.expect_reply import expect_reply_allowed
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 

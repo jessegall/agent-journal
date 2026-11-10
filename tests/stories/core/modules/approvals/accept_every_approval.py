@@ -1,8 +1,8 @@
 from core.modules.agents.models.agent import Agent
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.drivers.support.driver_settings import AUTOMATIC_APPROVAL
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.approvals.standing_approvals import REQUESTED, requests, save_preset, standing_yeses
 from tests.stories.core.modules.viewer.support.window_samples import NOTES
 from tests.stories.core.support.fixtures import UserJoined

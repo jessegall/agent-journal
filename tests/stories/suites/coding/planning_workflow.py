@@ -9,7 +9,7 @@ from engine.registry.registry import Registry
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from server.booting_work import BootingWork
 from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
 from tests.stories.core.support import story_lines as lines

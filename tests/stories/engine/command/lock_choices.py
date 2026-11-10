@@ -7,7 +7,7 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.pins.models.pin import Pin
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.command.support.lock_commands import ReadUnlockedPinsHandler
 from tests.stories.core.support.fixtures import UserJoined
 

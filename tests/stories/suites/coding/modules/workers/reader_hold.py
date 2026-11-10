@@ -1,6 +1,6 @@
 from datetime import timedelta
 import pytest
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.shell_part import ShellPart
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.drivers.models.agent_line import AgentLine
@@ -27,9 +27,9 @@ from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.support.ended_output_text import EndedOutputText
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_nudges import OUTPUT_ENDED
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.testing.expect_reply import expect_reply_line
+from engine.testing.expectations.expect_reply import expect_reply_line
 
 
 @pytest.fixture

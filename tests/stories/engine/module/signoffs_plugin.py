@@ -2,8 +2,8 @@ from tests.stories.core.support import story_lines as lines
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
 from tests.stories.core.support.signoffs_samples import Signoff, SignoffState
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import AssignedTask
 
 SIGNOFFS = "tests.stories.core.support.signoffs_samples:SignoffsModule"

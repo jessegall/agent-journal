@@ -16,14 +16,14 @@
                 "fileMatches": "_browser\\.py$"
             },
             {
-                "textMatches": "^\\s*(from|import)\\s+core\\.testing\\b"
+                "textMatches": "^\\s*(from|import)\\s+(engine\\.testing|core\\.modules\\.[a-z_]+\\.testing)\\b"
             }
         ]
     },
     "sin": {
         "name": "story-imports-journal-internals",
-        "description": "A story imports a package of the journal other than core.testing.",
-        "rule": "A story imports only core.testing and tests.stories support code; add what it needs to core.testing so every story can use it.",
+        "description": "A story imports a package of the journal other than engine.testing.",
+        "rule": "A story imports only engine.testing and tests.stories support code; add what it needs to engine.testing so every story can use it.",
         "skill": "stories-stay-in-the-story-kit"
     }
 }

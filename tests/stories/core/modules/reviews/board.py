@@ -1,7 +1,7 @@
 import json
 
 from tests.stories.core.modules.reviews.support.review_fixtures import ProgressReview, read_reviewer
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 
 def board(story) -> dict:

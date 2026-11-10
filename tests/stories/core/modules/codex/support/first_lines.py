@@ -11,7 +11,7 @@ from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.modules.processes.support.process_nudges import SILENT_RUN
 from core.modules.processes.support.streaming_hints import StreamingHints
 from core.modules.drivers.models.hook_call import HookCall
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.server_client import server_story

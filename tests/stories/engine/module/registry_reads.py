@@ -2,8 +2,8 @@ from engine.database.database import Database
 from engine.container.journal_container import synced_database_container
 from engine.registry.registry import Registry
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_total_cost_less, expect_value, expect_value_without
 

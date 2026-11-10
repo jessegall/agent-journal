@@ -24,7 +24,7 @@
         "reject": [
             {"testCode": true},
             {"fileMatches": "(^|/)src/engine/time/clock\\.py$"},
-            {"fileMatches": "(^|/)src/core/testing/"},
+            {"fileMatches": "(^|/)src/(engine/testing|core/modules/[^/]+/testing)/"},
             {"fileMatches": "(^|/)src/install/restore_version_four\\.py$"}
         ]
     },

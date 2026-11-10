@@ -2,9 +2,9 @@ from datetime import timedelta
 
 from engine.driver.command_category import CommandCategory
 from engine.time.timestamp import Timestamp
-from core.testing.expect_reply import expect_absent_reply_line, expect_reply_line
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.expectations.expect_reply import expect_absent_reply_line, expect_reply_line
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 EDIT = HookSamples.edit("src/cart.py")

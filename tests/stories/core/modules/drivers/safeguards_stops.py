@@ -5,8 +5,8 @@ from core.modules.drivers.commands.wake_safeguards_stopped_agent.wake_safeguards
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
-from core.testing.hook_samples import HookSamples
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.messages.reply_teaching import ReplySession
 

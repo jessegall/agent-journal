@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH

@@ -1,7 +1,7 @@
 import json
 
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_changed_code_outcome
 
 

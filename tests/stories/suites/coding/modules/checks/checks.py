@@ -1,13 +1,13 @@
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 import json
 from datetime import timedelta
 
 from engine.check.periodic_checks import PeriodicChecks
 from engine.registry.registry import Registry
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 
 def test_a_check_is_made_run_by_hand_and_listed_with_its_verdict(new_story):

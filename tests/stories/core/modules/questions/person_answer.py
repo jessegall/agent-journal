@@ -1,7 +1,7 @@
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.models.message import Message
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.chat.support.mark_samples import expect_mark_count
 from tests.stories.core.modules.questions.marks import PersonQuestion
 

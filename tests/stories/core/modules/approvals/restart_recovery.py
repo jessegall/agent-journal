@@ -5,8 +5,8 @@ import pytest
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.query.queries import Queries
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.approvals.commands.answer_approval.answer_approval_handler import AnswerApprovalHandler
 from core.modules.approvals.commands.move_approval.move_approval import MoveApproval
 from core.modules.approvals.commands.recover_approvals.recover_approvals import RecoverApprovals

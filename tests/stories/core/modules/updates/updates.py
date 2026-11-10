@@ -9,7 +9,7 @@ import pytest
 from core.modules.updates.support.release_notes import PAGE_SIZE
 from core.modules.updates.support.release_source import ReleaseSource
 from tests.stories.core.modules.updates.support.release_folder import ARCHIVE, installed_marker, published, released_story
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_absent_last, expect_answers
 from core.base.serving.code_handover import CodeHandover
 from core.base.serving.server_files import ServerFiles

@@ -11,8 +11,8 @@ from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
 from core.modules.sequences.sequences_module import SequencesModule
 from core.modules.sequences.support.sequence_nudges import STEP_WAITS, STEP_EDIT_BAN
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 
 
 def run_with_hook(story, command: str) -> None:

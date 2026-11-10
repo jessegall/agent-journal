@@ -6,8 +6,8 @@ from engine.driver.command_effect import CommandEffect
 from engine.driver.part import Part
 from engine.driver.shell_line import ShellLine
 from engine.driver.tool import Tool
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.support.story_checks import expect_value
 
 LISTING = ShellPart("cat", CommandCategory.READ, ["notes"])

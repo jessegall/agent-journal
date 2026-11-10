@@ -8,8 +8,8 @@ from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 from tests.stories.core.support import story_lines as lines
-from core.testing.story_fixture import StoryFixture
-from core.testing.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
 from tests.stories.core.support.fixtures import TasksPlan
 from tests.stories.server.support.server_client import ServerStory, server_story, viewer_answer
 from tests.stories.support.story_checks import expect_id_cancelled, expect_value_line, expect_value_without

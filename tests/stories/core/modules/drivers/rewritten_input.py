@@ -1,7 +1,7 @@
 from engine.driver.command_category import CommandCategory
 from engine.driver.command_effect import CommandEffect
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.engine.driver.support.fixtures import LeadLocked, LeadStarted
 from tests.stories.engine.driver.support.samples import REMOVAL, SAMPLES
 from tests.stories.support.story_checks import expect_refusal_reply, expect_updated_input_hook, expect_updated_input_reply

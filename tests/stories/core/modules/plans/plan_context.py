@@ -3,11 +3,11 @@ import shlex
 import pytest
 from datetime import timedelta
 
-from core.testing.hook_samples import HookSamples
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story_fixture import StoryFixture
 from engine.driver.tool_type import ToolType
 from engine.driver.command_category import CommandCategory
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.documents.support.trail_fixtures import ApprovedTrailPlan, StartedTrailPlan, Scenario, feature, viewer_answer
 
 

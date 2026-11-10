@@ -2,7 +2,7 @@ from engine.database.database import Database
 from engine.registry.registry import Registry
 from tests.stories.core.modules.viewer.support.button_module import PATH, NotesButtonsModule
 from tests.stories.core.support.fixtures import MainEnvironment
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 
 def test_the_registry_lists_slots_for_the_shipped_models_and_docks(new_story):

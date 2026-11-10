@@ -9,7 +9,7 @@ import pytest
 from tests.stories.core.modules.documents.delegated_sources import PlannerStarted
 from tests.stories.core.modules.documents.support.trail_fixtures import Scenario, viewer_answer, LinkedTrail
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.documents.support.trail_fixtures import SelectedTrail
 from tests.stories.core.modules.documents.support.trail_fixtures import feature, selected_scenario as scenario
 

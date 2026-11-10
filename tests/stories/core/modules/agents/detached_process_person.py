@@ -3,7 +3,7 @@ from engine.enums.actor_type import ActorType
 from engine.caller.caller_request import CallerRequest
 from engine.caller.process_row import ProcessRow
 from engine.time.timestamp import Timestamp
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import ProcessAgent
 
 DETACHED_START_TIME = Timestamp.parsed("2026-10-31T11:00:00+00:00")

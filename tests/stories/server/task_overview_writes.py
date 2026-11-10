@@ -4,8 +4,8 @@ from threading import Event, Lock
 from engine.query.queries import Queries
 from core.modules.documents.support.work_context_reader import WorkContextReader
 from core.modules.tasks.models.task_read import TaskRead
-from core.testing.hook_samples import HookSamples
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.server.support.server_client import request_answer, server_story
 

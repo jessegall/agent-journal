@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNMERGED
 from suites.coding.modules.workers.listeners.worker_merge_block_listener import WorkerMergeBlockListener
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

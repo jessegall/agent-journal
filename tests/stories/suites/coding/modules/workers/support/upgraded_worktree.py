@@ -1,4 +1,4 @@
-from core.testing.story import Story, story_container
+from engine.testing.stories.story import Story, story_container
 from install.upgrade_journal import UpgradeJournal
 from server.booting_work import BootingWork
 from tests.stories.fixtures.worktree_upgrade import LEGACY_BRANCH, prepare_worktree_upgrade

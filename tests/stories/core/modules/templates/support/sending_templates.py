@@ -1,4 +1,4 @@
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.plans.support.approval_fixtures import ReadyApprovalPlan
 
 

@@ -4,10 +4,10 @@ from engine.provider.managed_hook import ManagedHook
 from core.modules.drivers.conditions.foreign_hook import ForeignHook
 from engine.driver.foreign_outcome import ForeignOutcome
 from core.modules.drivers.queries.managed_hook_history_query import ManagedHookHistoryQuery
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import LeadStarted
 from tests.stories.engine.driver.support.samples import SAMPLES
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_value
 
 

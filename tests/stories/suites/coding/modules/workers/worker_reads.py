@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from engine.driver.tool_type import ToolType
-from core.testing.expect_reply import expect_reply_allowed
-from core.testing.hook_samples import HookSamples
+from engine.testing.expectations.expect_reply import expect_reply_allowed
+from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worker_nudges import WORKER_READ_REFUSAL
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session

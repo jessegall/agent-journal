@@ -1,7 +1,7 @@
 import json
 
 from tests.stories.core.support.fixtures import UserJoined
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 
 def test_a_flowchart_is_a_message_with_its_title_and_its_arrows(new_story):

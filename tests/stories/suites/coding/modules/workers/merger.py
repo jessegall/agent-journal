@@ -3,7 +3,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 import pytest
 from datetime import timedelta
 
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from engine.enums.access import Access
 from engine.caller.caller_request import CallerRequest
 from suites.coding.modules.workers.models.merger_line import MergerLine
@@ -27,12 +27,12 @@ from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_helper_programs import StoryHelperPrograms
-from core.testing.story_shell_sandbox import StoryShellSandbox
+from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from core.modules.profiles.support.profile_files import ProfileFiles
 from suites.coding.modules.workers.commands.start_merger.start_merger_handler import StartMergerHandler
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from engine.driver.command_category import CommandCategory
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, UserBuilder
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, merged_worker_lines, repository_environment, worker_session

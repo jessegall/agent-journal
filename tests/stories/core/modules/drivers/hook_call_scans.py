@@ -5,7 +5,7 @@ from engine.database.database import Database
 from engine.driver.tool_type import ToolType
 from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import SUMMARY_CHARACTERS, HookCall
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from tests.stories.core.support.fixtures import UserJoined
 

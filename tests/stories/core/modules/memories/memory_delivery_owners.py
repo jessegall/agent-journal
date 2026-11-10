@@ -6,7 +6,7 @@ from engine.query.queries import Queries
 from engine.scope.scopes import Scopes
 from core.modules.memories.migrations.m006_memory_owner import MemoryOwnerMigration
 from core.modules.memories.models.memory import Memory
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.memories.support.memory_owners import MAIN_FACT, MAIN_MEMORY, MainAndWorkerMemories, WORKER_FACT, WORKER_MEMORY, read_agent, stored_memory
 
 COMPACTION = HookSamples.sample("compact")

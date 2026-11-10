@@ -8,7 +8,7 @@ from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from engine.enums.actor_type import ActorType
 from tests.stories.core.base.support.large_journal import EDIT, HELPER_PROFILES, LargeJournal, TableCopies, required_arguments
 

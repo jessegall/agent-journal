@@ -8,7 +8,7 @@ from engine.database.statement import Statement
 from core.modules.processes.commands.add_reader.add_reader import AddReader
 from tests.stories.core.modules.processes.support.process_samples import ended_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 TESTS_READER = 'reader add tests --commands "pytest*" --lines "FAILED|passed|failed" --finished "passed" --failed "failed|error" --summary "([0-9]+ passed.*)"'
 

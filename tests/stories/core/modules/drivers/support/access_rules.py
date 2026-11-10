@@ -13,8 +13,8 @@ from core.modules.drivers.rules.no_git_rule import NoGitRule
 from core.modules.drivers.rules.no_shell_rule import NoShellRule
 from core.modules.drivers.rules.read_write_rule import ReadWriteRule
 from core.modules.drivers.rules.readonly_rule import ReadonlyRule
-from core.testing.hook_samples import HookSamples
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.fixtures import MainEnvironment
 

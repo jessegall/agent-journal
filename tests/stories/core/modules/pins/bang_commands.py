@@ -1,5 +1,5 @@
 from core.modules.pins.support.pin_nudges import BANG_BUTTON_REQUEST
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
 BUTTON_REQUEST = BANG_BUTTON_REQUEST.nudge().text
 

@@ -4,7 +4,7 @@
     "sin": {
         "name": "test-unit-test-crosses-its-boundary",
         "description": "A unit test imports a module of core/modules, the story builder or a story helper.",
-        "rule": "A unit test imports only its own unit, core.base, server and the standard library; behaviour of a module is proved by a story. The unit tests of core.testing import core.testing, their own unit.",
+        "rule": "A unit test imports only its own unit, engine, server and the standard library; behaviour of a module is proved by a story. The unit tests of engine.testing import engine.testing, their own unit.",
         "skill": "unit-tests-stay-in-their-unit"
     },
     "find": {
@@ -16,7 +16,7 @@
             {
                 "any": [
                     {
-                        "nameMatches": "^(core\\.modules|core\\.testing|tests\\.stories)(\\.|$)"
+                        "nameMatches": "^(core\\.modules|engine\\.testing|tests\\.stories)(\\.|$)"
                     },
                     {
                         "descendant": {
@@ -25,7 +25,7 @@
                                     "kind": "alias"
                                 },
                                 {
-                                    "nameMatches": "^(core\\.modules|core\\.testing|tests\\.stories)(\\.|$)"
+                                    "nameMatches": "^(core\\.modules|engine\\.testing|tests\\.stories)(\\.|$)"
                                 }
                             ]
                         }
@@ -37,12 +37,12 @@
             {
                 "all": [
                     {
-                        "fileMatches": "(^|/)tests/unit/core/testing/"
+                        "fileMatches": "(^|/)tests/unit/engine/testing/"
                     },
                     {
                         "any": [
                             {
-                                "nameMatches": "^core\\.testing(\\.|$)"
+                                "nameMatches": "^engine\\.testing(\\.|$)"
                             },
                             {
                                 "descendant": {
@@ -51,7 +51,7 @@
                                             "kind": "alias"
                                         },
                                         {
-                                            "nameMatches": "^core\\.testing(\\.|$)"
+                                            "nameMatches": "^engine\\.testing(\\.|$)"
                                         }
                                     ]
                                 }

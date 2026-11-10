@@ -3,10 +3,10 @@ import pytest
 from datetime import timedelta
 
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
-from core.testing.expect_reply import expect_reply_line
+from engine.testing.expectations.expect_reply import expect_reply_line
 def posted(line):
     sample = HookSamples.shell(line, ShellPart("journal", CommandCategory.JOURNAL, line.split()[1:], subcommand=line.split()[1]))
     return sample.with_fields(event="post_tool_use", raw={"tool_input": {"command": line}})

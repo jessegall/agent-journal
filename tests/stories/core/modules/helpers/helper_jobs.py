@@ -8,7 +8,7 @@ from core.modules.claude_code.providers.claude_code_provider import CONFIG_VARIA
 from core.modules.claude_code.providers.support.claude_folder_name import ClaudeFolderName
 from core.modules.drivers.models.helper_job import HelperJob
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 JOB = "Now read the listener side."

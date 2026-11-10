@@ -10,10 +10,10 @@ from engine.driver.tool_type import ToolType
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.models.process import Process
-from core.testing.hook_samples import HookSamples
-from core.testing.line_outcome import LineOutcome
-from core.testing.shell_part import ShellPart
-from core.testing.story import Story
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.expectations.line_outcome import LineOutcome
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story import Story
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.fixtures import UserJoined

@@ -8,7 +8,7 @@ from engine.driver.command_category import CommandCategory
 from engine.driver.tool_type import ToolType
 from engine.skill.skill_digest import SkillDigest
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.modules.skills.support.skill_samples import PATH
 from tests.stories.core.support.coding_fixtures import BuilderStarted

@@ -9,7 +9,7 @@ import pytest
 from engine.provider.transcript_entries import TranscriptEntries
 from engine.database.database import BUSY_TIMEOUT_SECONDS, Database
 from core.modules.messages.support.message_nudges import CLOSING_LINE_HIDDEN
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from server.endpoints.hook_endpoint import HookEndpoint

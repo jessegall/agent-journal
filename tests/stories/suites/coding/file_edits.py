@@ -2,9 +2,9 @@ import json
 
 from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.commands.record_file_edit import record_file_edit_handler
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskOrchestrator
 from tests.stories.core.support.scanned_edits import scanned_edit

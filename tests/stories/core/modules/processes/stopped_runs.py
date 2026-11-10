@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from engine.module.module_finder import ModuleFinder
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.core.modules.processes.support.process_samples import moved_run
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value

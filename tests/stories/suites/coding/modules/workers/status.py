@@ -5,8 +5,8 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from tests.stories.support.story_checks import expect_value
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

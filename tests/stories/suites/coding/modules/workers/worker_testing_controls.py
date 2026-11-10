@@ -10,11 +10,11 @@ from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_helper_programs import StoryHelperPrograms
-from core.testing.story_shell_sandbox import StoryShellSandbox
-from core.testing.expect_reply import expect_reply_allowed, expect_reply_refusal
-from core.testing.shell_part import ShellPart
+from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
+from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_refusal
+from engine.testing.examples.shell_part import ShellPart
 from engine.query.queries import Queries
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

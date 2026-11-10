@@ -7,7 +7,7 @@ from datetime import timedelta
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.documents.support.trail_fixtures import IMAGE_BYTES, SelectedTrail, Scenario, feature, attach_image
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment, worker_session

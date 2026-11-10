@@ -1,7 +1,7 @@
 from engine.query.queries import Queries
 from core.modules.documents.models.link import Link
 from core.modules.tasks.models.task_read import TaskRead
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import ReadTaskBuilder
 
 

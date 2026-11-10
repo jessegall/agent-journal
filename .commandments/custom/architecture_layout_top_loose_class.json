@@ -19,67 +19,7 @@
                 "file": "src/core/testing/fake_launcher.py"
             },
             {
-                "file": "src/core/testing/fixed_process_table.py"
-            },
-            {
-                "file": "src/core/testing/folder_stat.py"
-            },
-            {
-                "file": "src/core/testing/full_run_record.py"
-            },
-            {
-                "file": "src/core/testing/full_run_records.py"
-            },
-            {
-                "file": "src/core/testing/heavy_run_gate.py"
-            },
-            {
-                "file": "src/core/testing/helper_expectation.py"
-            },
-            {
-                "file": "src/core/testing/helper_started.py"
-            },
-            {
-                "file": "src/core/testing/hook_sample.py"
-            },
-            {
-                "file": "src/core/testing/hook_samples.py"
-            },
-            {
-                "file": "src/core/testing/line_outcome.py"
-            },
-            {
-                "file": "src/core/testing/manual_clock.py"
-            },
-            {
-                "file": "src/core/testing/run_cpu.py"
-            },
-            {
-                "file": "src/core/testing/run_size.py"
-            },
-            {
-                "file": "src/core/testing/shell_part.py"
-            },
-            {
-                "file": "src/core/testing/story.py"
-            },
-            {
-                "file": "src/core/testing/story_body.py"
-            },
-            {
-                "file": "src/core/testing/story_budget.py"
-            },
-            {
-                "file": "src/core/testing/story_fixture.py"
-            },
-            {
                 "file": "src/core/testing/story_helper_programs.py"
-            },
-            {
-                "file": "src/core/testing/story_journal.py"
-            },
-            {
-                "file": "src/core/testing/story_line_run.py"
             },
             {
                 "file": "src/core/testing/story_login_path.py"
@@ -88,46 +28,13 @@
                 "file": "src/core/testing/story_main_agent_skills.py"
             },
             {
-                "file": "src/core/testing/story_overlap.py"
-            },
-            {
                 "file": "src/core/testing/story_overview_first.py"
-            },
-            {
-                "file": "src/core/testing/story_path.py"
-            },
-            {
-                "file": "src/core/testing/story_shell_sandbox.py"
             },
             {
                 "file": "src/core/testing/story_skill_requirement.py"
             },
             {
-                "file": "src/core/testing/story_state.py"
-            },
-            {
-                "file": "src/core/testing/story_steps.py"
-            },
-            {
                 "file": "src/core/testing/story_task_brief_requirement.py"
-            },
-            {
-                "file": "src/core/testing/temp_folders.py"
-            },
-            {
-                "file": "src/core/testing/template.py"
-            },
-            {
-                "file": "src/core/testing/template_adaptation.py"
-            },
-            {
-                "file": "src/core/testing/template_cache.py"
-            },
-            {
-                "file": "src/core/testing/template_databases.py"
-            },
-            {
-                "file": "src/core/testing/working_journal.py"
             },
             {
                 "file": "src/install/backup_result.py"

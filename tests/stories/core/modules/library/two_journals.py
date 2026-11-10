@@ -7,7 +7,7 @@ import pytest
 from core.modules.documents.models.doc import Doc
 from core.modules.library.support.library_client import LibraryClient
 from core.modules.library.errors.library_unreachable_error import LibraryUnreachableError
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.core.modules.library.support.copy_stories import (server_change, connected, connected_second, item_copy, new_item, second_story, shared_server)
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.server.support.shared_server_binary import SharedServerBinary

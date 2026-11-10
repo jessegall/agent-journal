@@ -1,4 +1,4 @@
-from core.testing.sample_nudge import sample_nudge
+from engine.testing.examples.sample_nudge import sample_nudge
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
@@ -32,8 +32,8 @@ from engine.errors.refusal import Refusal
 from engine.setting.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from engine.change.created import Created
 
 SAMPLES = "tests.stories.engine.driver.support.samples:SamplesModule"

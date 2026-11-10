@@ -5,7 +5,7 @@
     "find": {
         "select": "function",
         "where": [
-            {"fileMatches": "(^|/)(tests/stories|src/core/testing)/"},
+            {"fileMatches": "(^|/)(tests/stories|src/engine/testing)/"},
             {"nameMatches": "^expect_"},
             {"duplicated": {"atLeast": 2}}
         ]

@@ -1,7 +1,7 @@
 from engine.enums.agent_role import AgentRole
 from core.modules.agents.models.agent import Agent
 from engine.query.queries import Queries
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import LeadStarted, SampleSuiteChoice
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.engine.driver.support.samples import SAMPLES

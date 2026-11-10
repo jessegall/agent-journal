@@ -1,6 +1,6 @@
 from engine.database.database import Database
 from engine.database.statement import Statement
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 
 
 def stored_texts(story: Story) -> str:

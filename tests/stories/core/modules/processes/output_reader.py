@@ -14,11 +14,11 @@ from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.reader_step import ReaderStep
 from core.modules.processes.ticks.output_reading import OutputReading
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import BYTES_LONG, install_runner, start_process, tick
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 AFTER = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])).with_fields(event="post_tool_use")
 READER = 'reader add steps --commands "make*" --lines "FAILED|error" --progress "\\[ *([0-9]+)%\\]" --summary "([0-9]+ failed)"'

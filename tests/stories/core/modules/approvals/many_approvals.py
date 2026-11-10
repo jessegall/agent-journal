@@ -5,7 +5,7 @@ from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from server.viewer.line_route import LineRoute
 from tests.stories.core.modules.approvals.support.legacy_setting_requests import UPGRADE
 from tests.stories.core.modules.approvals.recovery import phone_request, phone_viewer

@@ -1,4 +1,4 @@
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.fixtures.worker_recovery import CHECK_WAIT_COUNT, HISTORY_COUNTS, RECOVERY_HELPERS, UNMOVED_LINK_COUNT, backup_history_counts, recovery_brief
 
 

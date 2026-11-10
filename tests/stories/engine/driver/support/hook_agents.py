@@ -3,7 +3,7 @@ import re
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.driver.hook_reply import HookReply
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 
 
 def hook_agent(story: Story, reply: HookReply) -> Actor:

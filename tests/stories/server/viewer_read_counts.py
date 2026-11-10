@@ -17,7 +17,7 @@ from engine.database.point_tally import PointTally
 from engine.database.points import Points
 from engine.file.file_access import FileAccess
 from core.modules.processes.support.output_folder import OutputFolder
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import ended_run, moved_run, started_run
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story, viewer_answer

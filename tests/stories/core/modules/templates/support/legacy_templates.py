@@ -3,7 +3,7 @@ import shlex
 from engine.actor.actor import Actor
 from engine.query.queries import Queries
 from core.modules.templates.models.template import Template
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import UserJoined
 
 CODING_TITLES = ("Functional design", "Find what is wrong", "Find what is missing", "Challenge the approach",

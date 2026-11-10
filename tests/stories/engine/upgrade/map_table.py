@@ -2,7 +2,7 @@ from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.upgrade.move_map import MoveMap
 from tests.stories.core.support.fixtures import MainEnvironment
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_value, expect_version_four_map_limit
 
 

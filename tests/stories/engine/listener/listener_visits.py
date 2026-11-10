@@ -1,6 +1,6 @@
 from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.database.database import Database
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value_without, expect_visited_limit

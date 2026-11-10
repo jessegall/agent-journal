@@ -12,7 +12,7 @@ from engine.caller.caller_request import SESSION_VARIABLE
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.go_build import GoBuild

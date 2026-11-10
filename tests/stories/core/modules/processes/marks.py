@@ -16,12 +16,12 @@ from tests.stories.core.modules.chat.support.mark_samples import mark_count, exp
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, monitor, moved_run, parts_started, start_process, started_run, tick
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from tests.stories.core.support.fixtures import UserJoined
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 MARKS = "chat-mark list --environment 1 --oldest"
 AFTER = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])).with_fields(event="post_tool_use")

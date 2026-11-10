@@ -1,6 +1,6 @@
-from core.testing.template_databases import TemplateDatabases
+from engine.testing.templates.template_databases import TemplateDatabases
 from tests.stories.core.support.fixtures import UserJoined
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_answers
 
 

@@ -7,9 +7,9 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.support.usage_lockdown import UsageLockdown
-from core.testing.hook_samples import HookSamples
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.helpers.usage_limits import WEEK_SECONDS, report
 

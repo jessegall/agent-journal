@@ -6,7 +6,7 @@ from engine.database.statement import Statement
 from install.upgrade_journal import UpgradeJournal
 from install.upgrade_outcome import UpgradeOutcome
 from tests.stories.engine.upgrade.support.move_samples import FAILURES, ORDER, PATH, version_four_database
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_absent_exists_version_four, expect_answers, expect_bytes_database_home, expect_changed_code_outcome, expect_outcome_with, expect_value
 
 NOTES, TAGS, RETRYABLE_TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:RetryableTagsModule"

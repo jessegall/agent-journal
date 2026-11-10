@@ -8,7 +8,7 @@ from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from server.ticker import Ticker
 from tests.stories.core.support.fixtures import UserJoined
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_answers, expect_system_log_with, expect_value, expect_wait_arrived
 
 JOIN_SECONDS = 5.0

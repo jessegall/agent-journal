@@ -6,12 +6,12 @@ import pytest
 
 from engine.driver.command_category import CommandCategory
 from engine.driver.tool_type import ToolType
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.testing.expect_reply import expect_reply_line
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_reply import expect_reply_line
+from engine.testing.expectations.expect_row import expect_row
 
 CHAIN = "rm -rf /tmp/example && python3 - <<'PY'\nprint('private script')\nPY"
 READ = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])).with_fields(event="post_tool_use")

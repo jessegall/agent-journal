@@ -1,5 +1,5 @@
 from engine.skill.skill_digest import SkillDigest
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.skills.agent_skills import NOTES_FILE, read_row, started
 
 

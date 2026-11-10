@@ -4,7 +4,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
-from core.testing.temp_folders import USER_FOLDER_LIMIT_BYTES, TempFolders  # noqa: E402
+from engine.testing.templates.temp_folders import USER_FOLDER_LIMIT_BYTES, TempFolders  # noqa: E402
 
 
 def main(limit: int) -> int:

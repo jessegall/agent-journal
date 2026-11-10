@@ -9,7 +9,7 @@ from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
 from core.modules.library.support.library_address import ADDRESS_SETTING
 from core.modules.library.support.library_client import TOKEN_VARIABLE, LibraryClient
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.core.modules.library.support.stored_text import stored_texts
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.core.support.coding_fixtures import UserBuilder

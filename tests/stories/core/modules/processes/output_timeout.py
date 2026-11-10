@@ -6,8 +6,8 @@ from engine.module.module_finder import ModuleFinder
 from engine.query.queries import Queries
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.run_queue import queued
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, install_runner, moved_run, start_process
 from tests.stories.core.modules.processes.support.queue_fixtures import QueueAgents

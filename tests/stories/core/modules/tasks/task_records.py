@@ -3,7 +3,7 @@ import json
 from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.modules.tasks.task_lifecycle import started_story
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 
 def test_a_task_is_shown_whole(new_story):

@@ -5,7 +5,7 @@ from engine.file.file_access import FileAccess
 from core.modules.agents.models.agent import Agent
 from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 WINDOW_SECONDS = 5 * 3600

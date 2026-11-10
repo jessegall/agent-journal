@@ -6,9 +6,9 @@ import pytest
 from engine.command.bus import Bus
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
-from core.testing.hook_samples import HookSamples
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from tests.stories.core.support.coding_fixtures import BriefedTaskBuilder, UnreadTaskBuilder, UserBuilder
 

@@ -17,8 +17,8 @@ from core.modules.documents.conditions.work_context_seeds import WorkContextSeed
 from core.modules.documents.support.work_context_request import WorkContextRequest
 from core.modules.documents.support.work_context_reader import WorkContextReader
 
-from core.testing.hook_samples import HookSamples
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from tests.stories.core.modules.documents.support.trail_fixtures import feature, linked_scenario, LinkedTrail, Scenario
 from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing

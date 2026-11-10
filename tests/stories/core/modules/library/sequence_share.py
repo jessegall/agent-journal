@@ -12,7 +12,7 @@ from core.modules.library.models.enums.copy_state import CopyState
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.sequences.models.sequence import Sequence
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.core.modules.library.support.copy_stories import connected, shared_server
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.server.support.shared_server_binary import SharedServerBinary

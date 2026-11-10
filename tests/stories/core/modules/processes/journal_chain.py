@@ -3,8 +3,8 @@ from pathlib import Path
 
 from engine.driver.command_category import CommandCategory
 from engine.driver.part import Part
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 JOURNAL_PART = ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"], subcommand="task")

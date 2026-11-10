@@ -15,8 +15,8 @@ from tests.stories.core.modules.processes.support.process_samples import moved_r
 from engine.driver.command_category import CommandCategory
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.reader_query import ReaderQuery
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value_line

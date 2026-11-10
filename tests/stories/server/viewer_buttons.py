@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.core.modules.drivers.support.module_memberships import PATH as SUITES
 from tests.stories.core.modules.viewer.support.coding_acme_buttons_module import PATH as BUTTONS
 from tests.stories.core.modules.viewer.support.acme_buttons_module import RUNS

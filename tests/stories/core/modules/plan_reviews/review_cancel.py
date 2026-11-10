@@ -1,6 +1,6 @@
 from engine.database.database import Database
 from engine.database.statement import Statement
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text
 from tests.stories.core.modules.plan_reviews.review_state import ReviewPlan
 

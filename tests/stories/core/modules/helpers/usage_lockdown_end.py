@@ -8,7 +8,7 @@ from core.modules.agents.models.enums.agent_activity import AgentActivity
 from core.modules.drivers.commands.end_silent_helpers.end_silent_helpers import EndSilentHelpers
 from core.modules.helpers.commands.end_helpers_past_limits.end_helpers_past_limits import EndHelpersPastLimits
 from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, read_jobs
 from tests.stories.core.modules.helpers.usage_limits import report
 from tests.stories.core.modules.helpers.usage_lockdown import EDIT, LIFT, LIMIT, STOP_LINE, lockdown_story

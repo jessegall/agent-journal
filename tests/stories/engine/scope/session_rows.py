@@ -2,8 +2,8 @@ from engine.database.database import Database
 from engine.database.statement import Statement
 from core.modules.messages.migrations.m015_main_message_targets import MainMessageTargetsMigration
 from core.modules.messages.models.message import Message
-from core.testing.hook_samples import HookSamples
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.scope.environment_rows import TwoWorkingEnvironments, staging_agent
 from tests.stories.core.modules.memories.support.memory_owners import MainAndWorkerMemories, read_agent, started_agent
 

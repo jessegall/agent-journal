@@ -7,8 +7,8 @@ from engine.driver.command_category import CommandCategory
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.start_skills import StartSkills
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.skills.support.skills_page_fixture import SkillsPageReady, SkillTriggerReady, skills_server, skills_page_story
 
 

@@ -7,10 +7,10 @@ import tempfile
 import time
 from pathlib import Path
 
-from core.testing.hook_samples import HookSamples
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
-from core.testing.template_databases import TemplateDatabases
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
+from engine.testing.templates.template_databases import TemplateDatabases
 from tests.stories.engine.driver.support.fixtures import LeadLocked
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask

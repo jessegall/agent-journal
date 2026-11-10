@@ -8,11 +8,11 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.messages.commands.read_message.read_message import ReadMessage
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.testing.expect_reply import expect_absent_reply_refusal, expect_reply_allowed
+from engine.testing.expectations.expect_reply import expect_absent_reply_refusal, expect_reply_allowed
 BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.UNKNOWN, ["build"])).with_fields(program="codex")
 STOP = HookSamples.stop().with_fields(program="codex")
 

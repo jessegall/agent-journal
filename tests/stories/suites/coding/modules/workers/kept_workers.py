@@ -4,7 +4,7 @@ from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.drivers.support.nudger import Nudger
 from engine.command.context import Context
 from core.modules.tasks.models.task import Task
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from datetime import timedelta
 from pathlib import Path

@@ -8,7 +8,7 @@ from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.skills.support.profile_skills import ProfileSkills
 from core.modules.skills.support.skill_requirement import SkillRequirement
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

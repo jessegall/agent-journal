@@ -3,7 +3,7 @@ from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.driver.tool_type import ToolType
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

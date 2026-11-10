@@ -1,4 +1,4 @@
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 from tests.stories.engine.setting.support.setting_samples import PATH
 from tests.stories.core.support.fixtures import UserJoined

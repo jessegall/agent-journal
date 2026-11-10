@@ -12,13 +12,13 @@ from engine.driver.nudge import Nudge
 from engine.driver.nudge_type import NudgeType
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 from engine.driver.tool_type import ToolType
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.testing.expect_reply import expect_reply_allowed
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_reply import expect_reply_allowed
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_value_with
 
 EDIT_HOOK = HookSamples.sample("pre_tool_use", {"name": "Write", "category": ToolType.NEW_FILE, "files": ["a.py"], "shell": None, "diff": None})

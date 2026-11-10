@@ -1,5 +1,5 @@
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import BuilderStarted, StartedTaskBuilder
 

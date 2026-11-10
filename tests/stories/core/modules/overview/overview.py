@@ -7,9 +7,9 @@ from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.overview.support.overview_first import OverviewFirst
 from core.modules.skills.support.main_agent_skills import MainAgentSkills
 from tests.stories.engine.driver.support.hook_agents import hook_agent
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.messages.delivery import KeptTyping, MessagingSession

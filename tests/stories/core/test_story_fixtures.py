@@ -1,7 +1,7 @@
 import pytest
 
-from core.testing.story_fixture import StoryFixture
-from core.testing.template_databases import TemplateDatabases
+from engine.testing.stories.story_fixture import StoryFixture
+from engine.testing.templates.template_databases import TemplateDatabases
 from tests.stories.core.support import fixtures
 
 FIXTURES = tuple(fixture for fixture in StoryFixture.declared() if fixture.__module__ == fixtures.__name__)

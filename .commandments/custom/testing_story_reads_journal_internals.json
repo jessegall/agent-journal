@@ -23,7 +23,7 @@
     "sin": {
         "name": "story-reads-journal-internals",
         "description": "A story reads .container or .database, which are the journal's own classes and tables.",
-        "rule": "Drive the journal with story.run, story.hook and story.advance, and check it with expect_success, expect_text, expect_refusal or expect_rows; when the kit lacks what you need, add it to core.testing.",
+        "rule": "Drive the journal with story.run, story.hook and story.advance, and check it with expect_success, expect_text, expect_refusal or expect_rows; when the kit lacks what you need, add it to engine.testing.",
         "skill": "stories-stay-in-the-story-kit"
     }
 }

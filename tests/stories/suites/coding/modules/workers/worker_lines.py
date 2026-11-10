@@ -5,7 +5,7 @@ from core.modules.drivers.models.nudge_record import NudgeRecord
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LOG_DUE
 from datetime import timedelta
 
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery

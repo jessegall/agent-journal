@@ -7,7 +7,7 @@ from engine.database.statement import Statement
 from engine.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
 from core.modules.developer.support.developer_settings import READ_LIMIT_SETTING, TOOLS_SETTING
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from engine.enums.actor_type import ActorType
 from tests.stories.core.support.fixtures import UserJoined
 

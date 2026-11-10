@@ -7,7 +7,7 @@ from engine.cli.line_run import LineRun
 from engine.database.database import Database
 from engine.registry.registry import Registry
 from engine.caller.process_table import ProcessTable
-from core.testing.fixed_process_table import FixedProcessTable
+from engine.testing.fakes.fixed_process_table import FixedProcessTable
 from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client

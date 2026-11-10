@@ -4,7 +4,7 @@ from engine.cli.line_run import ignore_completed
 from engine.database.database import Database
 from engine.database.reported_findings import ReportedFindings
 from engine.journal.journal_home import JournalHome
-from core.testing.story_line_run import StoryLineRun
+from engine.testing.stories.story_line_run import StoryLineRun
 from engine.database.repeated_work import RepeatedWork
 from server.listener_thread import ListenerThread
 from server.listener_wake import ListenerWake

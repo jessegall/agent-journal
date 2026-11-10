@@ -7,7 +7,7 @@ from core.modules.processes.commands.stop_process.stop_process import StopProces
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from tests.stories.core.modules.processes.support.process_samples import BYTES_LONG, BYTES_SHORT, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 PROCESS = "process show 1"
 PARTS = "process-part list --process 1 --oldest"

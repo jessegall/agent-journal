@@ -7,7 +7,7 @@ from core.modules.memories.models.enums.memory_mark_type import MemoryMarkType
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
 from core.modules.memories.models.enums.memory_state import MemoryState
 from core.modules.memories.models.memory import Memory
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import ServerStory
 

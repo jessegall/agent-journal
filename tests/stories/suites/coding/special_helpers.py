@@ -6,7 +6,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_helper_programs import StoryHelperPrograms
-from core.testing.story_shell_sandbox import StoryShellSandbox
+from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from tests.stories.core.modules.helpers.start_helper import started
 from tests.stories.core.support.coding_fixtures import UserBuilder, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment

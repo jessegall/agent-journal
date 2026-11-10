@@ -1,7 +1,7 @@
 from install.upgrade_journal import UpgradeJournal
 from tests.stories.engine.upgrade.upgrade import upgrade, upgrading
 from tests.stories.engine.upgrade.support.move_samples import PATH
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_code_outcome, expect_lines, expect_value_with, expect_value_without
 
 NOTES, TAGS, RETRYABLE_TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:RetryableTagsModule"

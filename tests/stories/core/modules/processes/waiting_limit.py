@@ -3,8 +3,8 @@ from engine.enums.actor_type import ActorType
 from engine.driver.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value

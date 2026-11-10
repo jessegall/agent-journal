@@ -10,9 +10,9 @@ from core.modules.agents.models.agent import Agent
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.messages.models.message import Message
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from core.testing.story_helper_programs import StoryHelperPrograms
-from core.testing.story_shell_sandbox import StoryShellSandbox
+from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment

@@ -5,8 +5,8 @@ from engine.enums.actor_type import ActorType
 from engine.driver.command_category import CommandCategory
 from engine.driver.command_effect import CommandEffect
 from engine.query.queries import Queries
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, FIRST_PROOF, dispatched_worker, repository_environment, worker_session

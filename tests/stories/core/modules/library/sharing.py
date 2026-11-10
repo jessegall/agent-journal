@@ -7,7 +7,7 @@ from engine.query.queries import Queries
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.support.doc_library_share import DocLibraryShare
 from core.modules.library.models.library_copy import LibraryCopy
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.core.modules.library.support.memo_share import INTERNAL_REASON, PATH
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.core.support.coding_fixtures import UserBuilder

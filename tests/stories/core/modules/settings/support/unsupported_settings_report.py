@@ -2,7 +2,7 @@ import json
 
 from engine.query.queries import Queries
 from core.modules.settings.models.setting import Setting
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.fixtures.unsupported_settings import UNSUPPORTED_SETTINGS
 
 EXPLANATION_TERMS = {

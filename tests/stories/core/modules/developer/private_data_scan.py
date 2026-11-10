@@ -1,7 +1,7 @@
 import subprocess
 
 from core.modules.developer.ticks.private_data_tick import PrivateDataTick
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value
 

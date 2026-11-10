@@ -17,8 +17,8 @@ from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.support.usage_lockdown import UsageLockdown
 from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.hook_samples import HookSamples
-from core.testing.story import Story
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story import Story
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 LIMIT_SECONDS = 3600

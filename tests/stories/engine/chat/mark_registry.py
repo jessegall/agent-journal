@@ -2,7 +2,7 @@ from engine.database.database import Database
 from engine.registry.registry import Registry
 from tests.stories.engine.chat.support.mark_faults import PATH
 from tests.stories.core.support.fixtures import MainEnvironment
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 
 def test_a_synced_mark_is_registered_with_every_field_it_declares(new_story):

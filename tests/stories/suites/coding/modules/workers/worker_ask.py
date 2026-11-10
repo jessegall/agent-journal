@@ -9,9 +9,9 @@ from engine.command.bus import Bus
 from engine.driver.tool_type import ToolType
 from engine.query.queries import Queries
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
-from core.testing.hook_samples import HookSamples
-from core.testing.line_outcome import LineOutcome
-from core.testing.story import Story
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.expectations.line_outcome import LineOutcome
+from engine.testing.stories.story import Story
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.support.coding_helper_role import CodingHelperRole

@@ -4,10 +4,10 @@ from datetime import timedelta
 
 from engine.database.database import Database
 from engine.registry.registry import Registry
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, expect_mark_count
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text, marks_text
 
 FACT = 'memory make "The cart total is in cents" --environment main'

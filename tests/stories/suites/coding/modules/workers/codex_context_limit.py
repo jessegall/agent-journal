@@ -5,7 +5,7 @@ import pytest
 from engine.provider.context_window import ContextWindow
 from core.modules.codex.providers.codex_provider import CodexProvider
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.suites.coding.modules.workers.context_limit import LIMIT_TOKENS, CLEAR_START, LimitEnabled, set_value, typing_recorded
 
 CODEX_SESSION = "s-codex"

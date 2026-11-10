@@ -1,7 +1,7 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.driver.command_category import CommandCategory
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.process_queue_read import queue_page
 from tests.stories.core.modules.processes.support.process_samples import end_run, start_process
 from tests.stories.core.support.coding_fixtures import UserBuilder

@@ -4,7 +4,7 @@ from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.hook_event import HookEvent
 from core.modules.drivers.support.agent_activities import AgentActivities
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.rules.inactive_helper_rule import InactiveHelperRule
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment

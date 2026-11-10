@@ -6,8 +6,8 @@ from datetime import datetime, timezone
 import pytest
 
 from engine.driver.command_category import CommandCategory
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.library.support.saved_connection import saved_connection
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.modules.secrets.support.private_home import private_folder

@@ -15,8 +15,8 @@ from datetime import timedelta
 
 from engine.driver.command_category import CommandCategory
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted, ReadTaskBuilder, UnreadTaskBuilder, BriefedTaskBuilder
 
 EDIT = HookSamples.edit("src/cart.py")

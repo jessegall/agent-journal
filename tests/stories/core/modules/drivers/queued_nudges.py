@@ -12,7 +12,7 @@ from core.modules.drivers.support.nudger import Nudger
 from core.modules.drivers.support.line_typing import LineTyping
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.messages.commands.read_message.read_message import ReadMessage
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 
 QUEUED = NudgeDeclaration("sample.queued", NudgeType.NOTICE, "task {task} is queued for worker {worker}",

@@ -13,7 +13,7 @@ from engine.query.queries import Queries
 from core.modules.environments.models.environment import Environment
 from engine.database.errors.repeated_calls_error import RepeatedCallsError
 from engine.database.repeated_work import COMMAND_LIMIT_REPEATS, READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS
-from core.testing.story_line_run import StoryLineRun
+from engine.testing.stories.story_line_run import StoryLineRun
 
 REPEATED_READ = Statement("SELECT 1")
 

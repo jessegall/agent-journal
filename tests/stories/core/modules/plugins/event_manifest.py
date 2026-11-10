@@ -9,7 +9,7 @@ from engine.model.event_form import EventForm
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_subscription import PluginSubscription
 from core.modules.plugins.support.plugin_subscriptions import PluginSubscriptions
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from server.booting_work import BootingWork
 from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE
 from tests.stories.core.modules.processes.support.process_samples import install_runner

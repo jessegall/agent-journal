@@ -15,7 +15,7 @@ from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
 from engine.journal.journal_home import LAUNCHER_SOCKET
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from core.testing.fake_launcher import FakeLauncher
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry

@@ -1,6 +1,6 @@
 import pytest
 
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 
 from server.booting_work import BootingWork
 from tests.stories.core.support.fixtures import UserJoined

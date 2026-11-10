@@ -13,7 +13,7 @@ from core.modules.documents.models.doc import Doc
 from core.modules.sequences.models.sequence import Sequence
 from suites.coding.modules.checks.models.check import Check
 from core.modules.library.models.library_copy import LibraryCopy
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from tests.stories.core.modules.library.support.copy_stories import (Tokens, server_change, connected, connection_with, item_copy, made_copy, new_item)
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.server.support.browser_story import expect_browser

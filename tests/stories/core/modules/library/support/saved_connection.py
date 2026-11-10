@@ -6,8 +6,8 @@ from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.support.library_address import ADDRESS_SETTING, LibraryAddress
 from core.modules.library.support.library_client import TOKEN_VARIABLE
 from core.modules.messages.commands.read_message.read_message import ReadMessage
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import UserJoined
 
 

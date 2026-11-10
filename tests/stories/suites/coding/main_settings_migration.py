@@ -1,7 +1,7 @@
 import json
 import shlex
 
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder, UserBuilder
 from tests.stories.suites.coding.main_file_permissions import MAIN_SESSION, PROJECT_FILE
 from tests.stories.support.story_checks import expect_value

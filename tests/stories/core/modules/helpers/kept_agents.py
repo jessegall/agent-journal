@@ -4,7 +4,7 @@ from engine.query.queries import Queries
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from engine.sandbox.shell_sandbox import ShellSandbox
-from core.testing.story_shell_sandbox import StoryShellSandbox
+from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.testing.story_helper_programs import StoryHelperPrograms
 import pytest
@@ -14,7 +14,7 @@ from core.modules.usage.support.agent_type_limits import AgentTypeLimits
 from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, resumable_session
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper as ReportedHelper

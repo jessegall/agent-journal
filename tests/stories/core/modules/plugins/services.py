@@ -28,8 +28,8 @@ from core.modules.plugins.support.plugin_services import PluginServices
 from core.modules.plugins.support.service_processes import ServiceProcesses
 from engine.driver.command_category import CommandCategory
 from engine.driver.command_effect import CommandEffect
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.plugins.support.event_stories import plugin_row
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE, start_counter

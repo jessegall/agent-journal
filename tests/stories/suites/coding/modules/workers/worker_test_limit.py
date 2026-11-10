@@ -17,10 +17,10 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.output_reading import OutputReading
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
@@ -28,7 +28,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from core.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTestListings
-from core.testing.expect_reply import expect_reply_refusal
+from engine.testing.expectations.expect_reply import expect_reply_refusal
 
 
 class TestLimitSetup(StoryFixture):

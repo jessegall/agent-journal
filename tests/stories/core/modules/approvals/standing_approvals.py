@@ -4,11 +4,11 @@ from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.approvals.models.enums.standing_scope import StandingScope
 from core.modules.approvals.models.standing_approval import StandingApproval
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from core.modules.approvals.models.enums.approval_dock_type import ApprovalDockType
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.viewer.support.window_samples import NOTES
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client

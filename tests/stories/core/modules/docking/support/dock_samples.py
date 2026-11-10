@@ -7,7 +7,7 @@ from engine.module.module import Module
 from engine.module.module_finder import ModuleFinder
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.models.dock_item import DockItem
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 
 SAMPLE = "tests.stories.core.modules.docking.support.dock_samples:DockSampleModule"
 TIMEOUT_SECONDS = 10

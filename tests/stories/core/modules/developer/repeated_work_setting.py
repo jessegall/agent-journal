@@ -18,8 +18,8 @@ from engine.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
 from core.modules.developer.support.developer_settings import REPEATED_WORK_SETTING, TOOLS_SETTING
 from core.modules.drivers.bindings.agent_hook_route import AgentHookRoute
-from core.testing.hook_samples import HookSamples
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story
 

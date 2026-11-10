@@ -11,8 +11,8 @@ from engine.driver.command_category import CommandCategory
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.skill_requirement import SkillRequirement
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
 from engine.query.queries import Queries
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from core.modules.drivers.models.agent_line import AgentLine

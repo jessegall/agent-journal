@@ -4,8 +4,8 @@ from engine.command.bus import Bus
 from engine.driver.command_category import CommandCategory
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.modules.processes.models.process import Process
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.support.coding_fixtures import UserBuilder
 

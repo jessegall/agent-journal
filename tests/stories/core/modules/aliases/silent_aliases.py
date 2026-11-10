@@ -10,9 +10,9 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from core.testing.story import Story
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story import Story
 from tests.stories.core.modules.aliases.saved_commands import BuildSaved, read_hook
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, parts_started
 from tests.stories.support.story_checks import expect_value

@@ -4,7 +4,7 @@ from engine.skill.skill_digest import SkillDigest
 from tests.stories.core.modules.skills.support.skill_samples import PATH
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 MODULES = (f"{PATH}:GoodSkillsModule", f"{PATH}:PlanSkillsModule")
 

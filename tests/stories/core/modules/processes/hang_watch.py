@@ -5,8 +5,8 @@ from engine.driver.command_category import CommandCategory
 from engine.module.module_finder import ModuleFinder
 from core.modules.processes.support.group_cpu_time import GroupCpuTime
 from core.modules.processes.support.output_folder import OutputFolder
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 

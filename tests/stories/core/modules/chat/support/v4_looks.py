@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from engine.database.database import Database
 from engine.registry.registry import Registry
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 
 
 @dataclass(frozen=True)

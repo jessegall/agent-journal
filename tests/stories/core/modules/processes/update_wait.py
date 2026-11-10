@@ -8,9 +8,9 @@ from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.driver.command_category import CommandCategory
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from core.base.serving.server_files import ServerFiles
-from core.testing.shell_part import ShellPart
+from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.run_queue import expect_absent_slot, expect_slot, expect_waits, queued
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_hook_lines, install_runner
 from tests.stories.core.modules.processes.support.queue_fixtures import QueueAgents

@@ -5,9 +5,9 @@ from engine.driver.command_category import CommandCategory
 from engine.skill.skill_contents import SkillContents
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.skill_requirement import SkillRequirement
-from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from core.testing.story_fixture import StoryFixture
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.skills.due import DUE, expect_due, expect_skills_absent, start
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
 

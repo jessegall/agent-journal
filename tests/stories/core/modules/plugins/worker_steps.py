@@ -3,7 +3,7 @@ import pytest
 import json
 
 from core.modules.plugins.support.plugin_folders import PluginFolders
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.plugins.support.worker_step_samples import step_plugin_folder

@@ -4,9 +4,9 @@ from contextlib import contextmanager
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.story import Story
+from engine.testing.stories.story import Story
 from core.testing.story_helper_programs import StoryHelperPrograms
-from core.testing.story_shell_sandbox import StoryShellSandbox
+from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 
 
 def merger_can_start(monkeypatch) -> None:

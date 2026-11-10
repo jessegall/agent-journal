@@ -3,7 +3,7 @@ from datetime import timedelta
 from engine.enums.hook_answer import HookAnswer
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 HEADERS = {"X-Journal-Hook-Id": "firing-1", "X-Journal-Env": "main"}
 

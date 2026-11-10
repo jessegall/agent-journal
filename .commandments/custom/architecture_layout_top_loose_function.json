@@ -19,27 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/core/testing/expect_reply.py"
-            },
-            {
-                "file": "src/core/testing/expect_row.py"
-            },
-            {
-                "file": "src/core/testing/full_run_records.py"
-            },
-            {
-                "file": "src/core/testing/pytest_plugin.py"
-            },
-            {
-                "file": "src/core/testing/sample_nudge.py"
-            },
-            {
-                "file": "src/core/testing/story.py"
-            },
-            {
-                "file": "src/core/testing/template_cache.py"
-            },
-            {
                 "file": "src/server/client_disconnected.py"
             },
             {

@@ -7,8 +7,8 @@ from engine.actor.actor import Actor
 from engine.query.queries import Queries
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
-from core.testing.hook_samples import HookSamples
-from core.testing.story import Story
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story import Story
 from suites.coding.modules.workers.bindings.worker_agent_work import WorkerAgentWork
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story

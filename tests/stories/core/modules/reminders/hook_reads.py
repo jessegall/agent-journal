@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from engine.database.database import Database
-from core.testing.hook_samples import HookSamples
+from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from tests.stories.support.story_checks import expect_count_shown, expect_value, expect_greater, expect_visited_limit
 

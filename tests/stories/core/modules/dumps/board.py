@@ -1,7 +1,7 @@
 import json
 
 from tests.stories.core.modules.dumps.dumps import dump_story
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 
 
 def board(story, line: str = "dump board") -> dict:

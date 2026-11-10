@@ -1,6 +1,6 @@
 from engine.query.queries import Queries
 from core.modules.templates.models.template import Template
-from core.testing.expect_row import expect_row
+from engine.testing.expectations.expect_row import expect_row
 from tests.stories.core.modules.templates.support.template_modules import PATH, REVIEW
 from tests.stories.core.support.fixtures import UserJoined
 

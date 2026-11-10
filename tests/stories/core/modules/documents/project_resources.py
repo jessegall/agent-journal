@@ -3,9 +3,9 @@ import pytest
 from engine.database.database import Database
 from engine.registry.registry import Registry
 from engine.viewer.window_place import WindowPlace
-from core.testing.story import Story
-from core.testing.story_fixture import StoryFixture
-from core.testing.line_outcome import LineOutcome
+from engine.testing.stories.story import Story
+from engine.testing.stories.story_fixture import StoryFixture
+from engine.testing.expectations.line_outcome import LineOutcome
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
