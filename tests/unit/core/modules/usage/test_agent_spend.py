@@ -20,7 +20,7 @@ def test_two_sessions_on_two_programs_are_two_costs_each_with_its_program():
     assert sum(cost.dollars for cost in costs[AGENT_ID]) == 1.75
 
 
-def test_a_session_with_no_status_file_costs_nothing_and_an_agent_with_no_history_has_no_costs():
+def test_a_session_with_no_status_file_reports_no_cost_and_an_agent_with_no_history_has_no_costs():
     costs = session_costs({"s-claude": 1.5})
-    assert [cost.dollars for cost in costs[AGENT_ID]] == [0.0, 1.5]
+    assert [cost.dollars for cost in costs[AGENT_ID]] == [None, 1.5]
     assert costs[9] == ()
