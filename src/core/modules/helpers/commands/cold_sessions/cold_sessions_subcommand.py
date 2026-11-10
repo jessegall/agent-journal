@@ -12,8 +12,9 @@ from core.modules.helpers.commands.cold_sessions.support.cold_session import Col
 
 
 class ColdSessionsSubcommand(ReadSubcommand[tuple[ColdSession, ...]]):
-    """`journal helper cold-sessions <program> --environment <name>`: the program's main sessions in the environment
-    whose prompt cache has gone cold and whose context is large, for the boot menu to offer a fresh start."""
+    """`journal helper cold-sessions <program> --environment <name>`: the session of the environment's main agent
+    when it runs that program, its prompt cache has gone cold and its context is large, for the boot menu to
+    offer a fresh start."""
 
     cli_name = "helper"
     name = "cold-sessions"
@@ -26,8 +27,10 @@ class ColdSessionsSubcommand(ReadSubcommand[tuple[ColdSession, ...]]):
         parser.add_argument("program")
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[ColdSession, ...]:
-        return tuple(ColdSession(agent.session, self.share.percent(arguments.program, agent.session))
-                     for agent in MainAgentFinder.sessions(self.queries, arguments.program) if self.cold.is_cold(agent))
+        main = MainAgentFinder.numbered_one(self.queries)
+        if main is None or main.program != arguments.program or not self.cold.is_cold(main):
+            return ()
+        return tuple([ColdSession(main.session, self.share.percent(main.program, main.session))])
 
     def write_output(self, value: object, output: Output) -> None:
         if is_tuple(value):

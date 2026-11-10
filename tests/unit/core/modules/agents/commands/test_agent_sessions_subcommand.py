@@ -43,5 +43,10 @@ def test_an_agent_with_one_session_prints_one_line():
     assert len(sessions_output([RUNNING_SESSION]).text.splitlines()) == 1
 
 
+def test_a_session_with_no_start_says_not_started():
+    unstarted = AgentSession(session_agent_id=4, session="s-3", program="claude")
+    assert sessions_output([unstarted]).text == "s-3  claude  not started"
+
+
 def test_an_agent_with_no_session_says_so():
     assert sessions_output([]).text == EMPTY_HISTORY_TEXT

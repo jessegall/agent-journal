@@ -13,6 +13,7 @@ ENDED_FIELD = "ended_at"
 UPGRADE_RETIREMENT_REASON = "Over the kept limit at the upgrade to kept agents"
 PID_FIELD = "pid"
 MAIN_ROLE = "main"
+LAUNCH_CHANGE = "launch"
 MAIN_TITLE = "Main agent"
 ENDED_MAIN_TITLE = "Main agent, earlier session"
 MAIN_NUMBER = 1
@@ -24,7 +25,7 @@ class Agent(EnvironmentScoped, Model):
     number in every row and every event. The pid and start time of the agent program's process identify it
     among a command's ancestor processes while the session is open."""
 
-    change_names = tuple([END_CHANGE])
+    change_names = (END_CHANGE, LAUNCH_CHANGE)
     model_name = "agent"
     numbered = True
     cli_name = "agent"
@@ -62,8 +63,11 @@ class Agent(EnvironmentScoped, Model):
         return self.role == MAIN_ROLE
 
     def change_name(self, old_row: Model | None) -> str | None:
-        newly_ended = isinstance(old_row, Agent) and old_row.ended_at is None and self.ended_at is not None
-        return END_CHANGE if newly_ended else None
+        if not isinstance(old_row, Agent):
+            return None
+        if old_row.ended_at is None and self.ended_at is not None:
+            return END_CHANGE
+        return LAUNCH_CHANGE if self.launched_at is not None and self.launched_at != old_row.launched_at else None
 
     def ended_timestamp(self) -> Timestamp:
         if self.ended_at is None:

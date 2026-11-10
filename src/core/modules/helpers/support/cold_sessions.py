@@ -14,6 +14,7 @@ from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PE
 from core.modules.helpers.errors.stale_session_error import StaleSessionError
 from engine.setting.setting_values import SettingValues
 from core.modules.agents.support.agent_label import AgentLabel
+from core.modules.agents.support.agent_sessions import AgentSessions
 from core.modules.agents.models.enums.end_reason import EndReason
 
 STALE_SESSION_SECONDS = 3600
@@ -24,17 +25,23 @@ class ColdSessions:
     replied for longer than the cache lasts, and its context is large enough that writing it to the cache
     again costs more than starting over; such an agent gets a new program session under the same journal
     agent, which keeps its number, memories, tasks and worktree. A limit of 0 turns the check off. An agent
-    past the context limit starts over the same way."""
+    past the context limit starts over the same way. An agent whose current session replaced another and never
+    started keeps that session: it is launched, not replaced again."""
 
-    def __init__(self, queries: Queries, clock: Clock, providers: Providers, home: JournalHome, settings: SettingValues, bus: Bus, share: ContextShare, rows: EventRows) -> None:
+    def __init__(self, queries: Queries, clock: Clock, providers: Providers, home: JournalHome, settings: SettingValues, bus: Bus, share: ContextShare, rows: EventRows, sessions: AgentSessions) -> None:
         self.queries, self.clock, self.providers, self.home, self.settings, self.bus, self.share, self.rows = queries, clock, providers, home, settings, bus, share, rows
+        self.sessions = sessions
 
     def replaced(self, agent: Agent) -> Agent:
+        if self.sessions.unstarted(agent):
+            return self.rows.required(Agent, agent.id)
         if not self.is_cold(agent) and not self.exceeds_context_limit(agent):
             return agent
         return self.bus.run(ReplaceAgentSession(agent.id, self.end_reason(agent)), Actor.core(), environment_id=agent.environment_id)
 
     def replaced_silent(self, agent: Agent) -> Agent:
+        if self.sessions.unstarted(agent):
+            return self.rows.required(Agent, agent.id)
         if not self.is_silent(agent) and not self.exceeds_context_limit(agent):
             return agent
         replaced = self.bus.run(ReplaceAgentSession(agent.id, self.end_reason(agent)), Actor.core(), environment_id=agent.environment_id)

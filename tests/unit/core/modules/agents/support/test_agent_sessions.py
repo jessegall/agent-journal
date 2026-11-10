@@ -57,6 +57,13 @@ class FakeScopes:
         yield
 
 
+class UnkeptRows:
+    """Reads every row anew."""
+
+    def read_newest(self, table: str, loader, condition: str, parameters: list, *, name: str):
+        return loader()
+
+
 class FakeClock:
     def __init__(self) -> None:
         self.ticks = 0
@@ -72,7 +79,7 @@ def agent(session: str, program: str = "claude") -> SimpleNamespace:
 
 def sessions_with_store() -> tuple[AgentSessions, FakeStore]:
     store = FakeStore()
-    return AgentSessions(store, store, FakeScopes(), FakeClock()), store
+    return AgentSessions(store, store, FakeScopes(), FakeClock(), UnkeptRows()), store
 
 
 def test_a_started_agent_has_one_open_row_for_its_session():
