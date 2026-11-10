@@ -40,6 +40,7 @@ from tests.stories.suites.coding.modules.workers.merge import expect_marks_text
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended, queued_story, recording_launch
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
+from tests.stories.core.support.agent_labels import agent_label
 
 
 
@@ -141,7 +142,7 @@ def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_
     if merger_enabled:
         merger = merger_agent(story)
         story.expect_rows(merger is not None)
-        story.expect_text("merger next", f"worker {worker.id}", actor=Actor(merger.id, ActorType.AGENT))
+        story.expect_text("merger next", agent_label(story, worker.id), actor=Actor(merger.id, ActorType.AGENT))
     else:
         story.expect_rows(merger_agent(story) is None)
         story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{worker.id} all pass", actor=story.agent)
@@ -167,7 +168,7 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     merger = merger_agent(story)
     story.expect_rows(merger is not None, merger.access == Access.READ)
     actor = Actor(merger.id, ActorType.AGENT)
-    story.expect_text("merger next", f"worker {worker.id}", "brief:", "proof 1", actor=actor)
+    story.expect_text("merger next", agent_label(story, worker.id), "brief:", "proof 1", actor=actor)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success('setting set journal.suites.coding.workers.merger-commands \'["journal sins --branch={commit}"]\' --project', actor=story.user)
     story.expect_text(f"merger merge {worker.id}", f"worker {worker.id} merged into", "run: journal sins --branch=", actor=actor)
@@ -265,7 +266,7 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
         merger = merger_agent(story)
         actor = Actor(merger.id, ActorType.AGENT)
         repository.checkout(ENVIRONMENT_BRANCH)
-        story.expect_text("merger next", f"worker {worker.id}", actor=actor)
+        story.expect_text("merger next", agent_label(story, worker.id), actor=actor)
         (repository.folder / "cart.py").chmod(0o755)
         story.expect_refusal(f"merger merge {worker.id}", "uncommitted changes to cart.py", actor=actor)
         story.expect_success('merger tell "The merge waits for cart.py to be committed" --tried "Read the checkout" --option "Commit it" --option "Wait" --recommend "Commit it"', actor=actor)
@@ -289,7 +290,7 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
         story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count + 1)
         MergerRetry()(story.container)
         story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count + 1)
-        story.expect_text("merger next", f"worker {worker.id}", actor=actor)
+        story.expect_text("merger next", agent_label(story, worker.id), actor=actor)
         story.expect_success(f"merger merge {worker.id}", actor=actor)
         story.expect_text("task show 1", "state: completed", actor=story.agent)
     finally:
@@ -412,7 +413,7 @@ def test_a_merge_the_merger_starts_runs_in_the_foreground_and_is_reported_once_a
     rewritten = str(reply.updated_input)
     story.expect_rows("--limit 0" in rewritten, "--queue" not in rewritten, "--background" not in rewritten)
     actor = Actor(merger.id, ActorType.AGENT)
-    story.expect_text("merger next", f"worker {worker.id}", actor=actor)
+    story.expect_text("merger next", agent_label(story, worker.id), actor=actor)
     story.expect_text(f"merger merge {worker.id}", f"worker {worker.id} merged into", actor=actor)
     story.expect_text("merger next", "no worker waits", actor=actor)
     story.expect_rows(len(merged_worker_lines(story, worker)) == 1, not any("could not be confirmed" in row.text for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows()))
@@ -431,7 +432,7 @@ def test_explaining_a_merge_runs_the_merge_inside_the_explanation_without_the_tr
         story.home.socket("launcher").unlink(missing_ok=True)
     actor = Actor(merger_agent(story).id, ActorType.AGENT)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_text("merger next", f"worker {worker.id}", actor=actor)
+    story.expect_text("merger next", agent_label(story, worker.id), actor=actor)
     story.expect_success(f"merger merge {worker.id} --explain", actor=actor)
     story.expect_rows(len(merged_worker_lines(story, worker)) == 0)
 

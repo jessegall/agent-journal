@@ -12,6 +12,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder, OpenTaskOrch
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, recording_launch
 from tests.stories.support.story_checks import expect_value
+from tests.stories.core.support.agent_labels import agent_label
 
 DESIGNER = "journal.suites.coding.designer-enabled"
 HELPERS = "journal.suites.coding.main-starts-read-only-helpers"
@@ -50,7 +51,7 @@ def test_s05_the_merger_takes_in_workers_while_ordinary_helpers_are_off(new_stor
     worker = merger_delivery(story, monkeypatch)
     merger = read_merger(story)
     story.expect_rows(merger is not None)
-    story.expect_text("merger next", f"worker {worker.id}", actor=Actor(merger.id, ActorType.AGENT))
+    story.expect_text("merger next", agent_label(story, worker.id), actor=Actor(merger.id, ActorType.AGENT))
 
 
 def test_s07_the_designer_starts_only_once_a_person_turns_it_on_and_reads_without_writing(new_story):
@@ -70,4 +71,4 @@ def test_s48_the_merger_keeps_its_claim_after_the_merger_setting_is_turned_off(n
     merger = read_merger(story)
     story.expect_success(f"setting set {MERGER} off --project", actor=story.user)
     expect_value(read_merger(story).id, merger.id)
-    story.expect_text("merger next", f"worker {worker.id}", actor=Actor(merger.id, ActorType.AGENT))
+    story.expect_text("merger next", agent_label(story, worker.id), actor=Actor(merger.id, ActorType.AGENT))

@@ -22,6 +22,7 @@ from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, delivered_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended, recording_launch
+from tests.stories.core.support.agent_labels import agent_label
 
 
 class PersonOrchestrator(StoryFixture):
@@ -100,7 +101,7 @@ def test_delivery_holds_the_place_while_tests_and_the_merger_run_then_merge_free
     if merger_enabled:
         story.expect_rows(merger is not None, story.row(Agent, merger.id).ended_at is None)
         actor = Actor(merger.id, ActorType.AGENT)
-        story.expect_text("merger next", f"worker {first.id}", actor=actor)
+        story.expect_text("merger next", agent_label(story, first.id), actor=actor)
         repository.checkout(ENVIRONMENT_BRANCH)
         story.expect_success(f"merger merge {first.id}", actor=actor)
     else:

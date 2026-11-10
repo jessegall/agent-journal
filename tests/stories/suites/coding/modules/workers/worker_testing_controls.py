@@ -26,6 +26,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker as plan_worker, unplanned_worker as solo_worker
 from tests.stories.suites.coding.modules.workers.test_batches import BATCH, PHASE, configure
 from tests.stories.suites.coding.modules.workers.test_queue import affected_test_story, ended, queued_story
+from tests.stories.core.support.agent_labels import agent_label
 def test_s32_the_phase_setting_off_tests_each_plan_task_whatever_the_outside_batch_size(new_story, monkeypatch):
     worker = plan_worker(new_story, monkeypatch, build_test="pytest tests/phase.py")
     configure(worker, PHASE, "off")
@@ -114,7 +115,7 @@ def merged_work(new_story, monkeypatch):
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)
     merger = Actor(merger_agent(story).id, ActorType.AGENT)
-    story.expect_text("merger next", f"worker {worker.id}", actor=merger)
+    story.expect_text("merger next", agent_label(story, worker.id), actor=merger)
     repository.checkout(ENVIRONMENT_BRANCH)
     return MergedWork(story, worker, merger)
 
