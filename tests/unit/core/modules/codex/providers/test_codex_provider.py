@@ -6,7 +6,7 @@ import pytest
 from core.base.provider.session_line import SessionLine
 from core.base.provider.helper_launch import HelperLaunch
 from core.base.provider.launch import Launch
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.resumed_session import ResumedSession

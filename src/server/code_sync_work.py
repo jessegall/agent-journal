@@ -1,4 +1,4 @@
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.database.database import Database
 from core.base.database.registry_table import RegistryTable
 from core.base.module.code_fingerprint import CodeFingerprint

@@ -1,4 +1,4 @@
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.testing.story_fixture import StoryFixture
 from server.booting_work import BootingWork
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder

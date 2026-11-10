@@ -1,4 +1,4 @@
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from tunnels.tunler.support.tunler_client import TunlerClient
 
 

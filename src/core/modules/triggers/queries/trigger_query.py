@@ -3,7 +3,7 @@ from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.query import Query
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.triggers.models.trigger import Trigger
 
 

@@ -1,7 +1,7 @@
 import sqlite3
 
 from core.base.database.database import Database
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.modules.plugins.migrations.m001_plugins import ROW_COLUMNS
 from core.modules.plugins.migrations.m005_plugin_event_deliveries import PluginEventDeliveriesMigration
 

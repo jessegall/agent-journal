@@ -5,7 +5,7 @@ from core.base.driver.interval import Interval
 from core.base.driver.seconds import Seconds
 from core.base.driver.span import Span
 from core.base.query.queries import Queries
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 def test_each_start_uses_the_first_span_that_passes():

@@ -6,7 +6,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.has_value import HasValue
 from core.base.query.conditions.maximum import Maximum
 from core.base.query.query import Query
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.docking.conditions.same_chat import SameChat

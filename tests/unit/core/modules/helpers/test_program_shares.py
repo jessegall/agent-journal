@@ -3,7 +3,7 @@ from collections import Counter
 from types import SimpleNamespace
 from datetime import datetime, timezone
 from unittest.mock import Mock
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 MODULE = 'core.modules.helpers.support.program_shares'

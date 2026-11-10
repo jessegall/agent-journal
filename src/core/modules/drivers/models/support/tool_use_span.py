@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from core.base.driver.span import Span
 
 from core.base.driver.span_queries import SpanQueries
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.support.tool_use_count import ToolUseCount
 
 

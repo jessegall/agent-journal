@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery

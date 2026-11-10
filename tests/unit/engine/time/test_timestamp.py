@@ -2,8 +2,8 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from core.base.clock import Clock
-from core.base.timestamp import Timestamp
+from engine.time.clock import Clock
+from engine.time.timestamp import Timestamp
 
 AMSTERDAM = timezone(timedelta(hours=1))
 

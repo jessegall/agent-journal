@@ -2,7 +2,7 @@ from pathlib import Path
 
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.modules.agents.models.agent import Agent
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.query.conditions.among import Among
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.agents.support.agent_rows import AgentRows

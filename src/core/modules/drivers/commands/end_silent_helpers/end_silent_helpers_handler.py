@@ -7,7 +7,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.end_silent_helpers.end_silent_helpers import EndSilentHelpers

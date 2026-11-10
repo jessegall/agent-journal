@@ -9,7 +9,7 @@ from pathlib import Path
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 
 HOOKS = 200
 READS_PER_HOOK = 10

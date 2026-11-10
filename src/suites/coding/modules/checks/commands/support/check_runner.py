@@ -4,7 +4,7 @@ import subprocess
 import threading
 from collections.abc import Callable
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from suites.coding.modules.checks.commands.support.check_result import CheckResult
 
 CHECK_LIMIT_SECONDS = 300

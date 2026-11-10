@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from dataclasses import fields
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.database.database import Database
 from core.base.database.migration import Migration
 from core.base.database.rebuild_migration import RebuildMigration

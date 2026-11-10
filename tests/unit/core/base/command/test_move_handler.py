@@ -11,7 +11,7 @@ from core.base.guard.guard_refusal import GuardRefusal
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.registry import Registry
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.base.repository.repository import Repository
 from tests.unit.core.base.sample_container import context, sample_container
 from tests.unit.core.base.command.test_commands import MakeItem

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from engine.actor.actor import Actor
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.reviews.models.enums.reviewer_state import ReviewerState
 from core.modules.reviews.models.lifecycles.reviewer_lifecycle import ReviewerLifecycle
 

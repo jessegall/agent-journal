@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.helper_type_book import HelperTypeBook
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.memories.models.memory_holder import MemoryHolder
 
 

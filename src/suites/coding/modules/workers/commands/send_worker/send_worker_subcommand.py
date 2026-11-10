@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.cli.write_flags import WriteFlags
 from core.base.scope.scopes import Scopes
-from core.base.journal_home import LAUNCHER_SOCKET, JournalHome
+from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.base.subcommand.output import Output

@@ -1,4 +1,4 @@
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.base.agent_policy import AgentPolicy
 from core.modules.usage.models.agent_card import AgentCard
 

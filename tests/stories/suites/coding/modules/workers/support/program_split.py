@@ -2,14 +2,14 @@ import json
 import shutil
 from contextlib import contextmanager, nullcontext
 from unittest.mock import patch
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from datetime import timedelta
 
 import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.module.module import Module
 from core.base.provider.hook_trust import HookTrust
 from core.base.provider.managed_hooks import ManagedHooks

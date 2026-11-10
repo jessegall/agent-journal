@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.command.bus import Bus
 from core.base.listener.save_listener import SaveListener
 from core.base.query.queries import Queries

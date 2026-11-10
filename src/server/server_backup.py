@@ -1,13 +1,13 @@
 import sqlite3
 from pathlib import Path
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.database.database import Database
-from core.base.journal_container import synced_container
-from core.base.journal_home import JournalHome
+from engine.container.journal_container import synced_container
+from engine.journal.journal_home import JournalHome
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.settings.support.settings_tree import BACKUP_COUNT_SETTING, BACKUP_MINUTES_SETTING
-from core.base.timestamp import MINUTE_SECONDS
+from engine.time.timestamp import MINUTE_SECONDS
 
 BACKUP_FOLDER = "backups-watch"
 COPY_PREFIX = "version-5-"

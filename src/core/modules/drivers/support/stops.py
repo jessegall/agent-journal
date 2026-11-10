@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.span import Span
 from core.base.driver.span_queries import SpanQueries
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 
 

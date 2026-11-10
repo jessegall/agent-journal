@@ -1,6 +1,6 @@
 from core.base.file_access import FileAccess
 from core.base.provider.status_file_fields import StatusFileFields
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from engine.types.type_guards import is_mapping
 from dataclasses import dataclass
 from pathlib import Path

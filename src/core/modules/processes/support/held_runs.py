@@ -1,4 +1,4 @@
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.queries.process_query import ProcessQuery

@@ -4,11 +4,11 @@ import pytest
 
 from core.base.caller.process_row import ProcessRow
 from core.base.database.database import Database
-from core.base.journal_container import database_container
-from core.base.journal_home import JournalHome
+from engine.container.journal_container import database_container
+from engine.journal.journal_home import JournalHome
 from core.base.model.event_form import EventForm
 from core.base.plugin_script_processes import PluginScriptProcesses
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 STARTED_AT = Timestamp.parsed("2026-11-06T09:00:00+00:00")
 KEY = "core.tasks.task.created"

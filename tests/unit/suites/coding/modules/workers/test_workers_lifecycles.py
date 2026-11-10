@@ -11,7 +11,7 @@ from core.base.guard.lifecycle_guard import LifecycleGuard
 from core.base.model.state_book import StateBook
 from core.base.model.model import Model
 from engine.errors.refusal import Refusal
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree

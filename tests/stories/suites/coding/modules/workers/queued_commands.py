@@ -11,7 +11,7 @@ from core.base.caller.caller_request import CallerRequest, SESSION_VARIABLE
 from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
-from core.base.journal_home import LAUNCHER_SOCKET
+from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal

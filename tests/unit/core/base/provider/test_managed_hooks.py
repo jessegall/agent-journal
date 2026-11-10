@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.managed_hook import ManagedHook
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.managed_state import ManagedState

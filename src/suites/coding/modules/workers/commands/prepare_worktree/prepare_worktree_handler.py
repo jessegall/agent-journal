@@ -4,7 +4,7 @@ from core.base.provider.program_hooks import ProgramHooks
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.environment_names import EnvironmentNames
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.hook_manager import HookManager
 from core.base.driver.driver_rule import DriverRule
 from core.base.provider.managed_hooks import ManagedHooks

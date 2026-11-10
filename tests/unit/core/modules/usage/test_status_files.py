@@ -1,10 +1,10 @@
-from core.base.clock import Clock
+from engine.time.clock import Clock
 import json
 import os
 from datetime import datetime, timezone
 
-from core.base.journal_home import JournalHome
-from core.base.timestamp import Timestamp
+from engine.journal.journal_home import JournalHome
+from engine.time.timestamp import Timestamp
 from core.modules.usage.support.status_files import StatusFiles
 
 

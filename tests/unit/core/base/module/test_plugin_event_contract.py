@@ -4,7 +4,7 @@ from dataclasses import fields
 from pathlib import Path
 
 from core.base.change.change import BOOKKEEPING_FIELDS
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.module.module import Module
 from core.base.module.module_check import ModuleCheck
 from core.base.module.module_finder import ModuleFinder

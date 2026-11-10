@@ -5,10 +5,10 @@ import os
 import shutil
 from pathlib import Path
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.code_copy import IGNORED, CodeCopy
 from engine.errors.code_version_missing_error import CodeVersionMissingError
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 
 PARTIAL_VERSION = ".partial"
 FIRST_VERSION = "first"

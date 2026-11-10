@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.module.layer_rules import LayerRules
 from core.base.module.layer_table import LayerTable
 from core.base.module.module_finder import ModuleFinder

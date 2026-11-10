@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from engine.errors.refusal import Refusal
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 SEARCH_DAYS = 366
 FIELD_LIMITS = ((0, 59), (0, 23), (1, 31), (1, 12), (0, 6))

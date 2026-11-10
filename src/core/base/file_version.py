@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from core.base.file_changes import FileChanges
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 NANOSECONDS = 1_000_000_000
 

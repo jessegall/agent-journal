@@ -15,7 +15,7 @@ from core.base.database.moved_row import MovedRow
 from core.base.module.move_check import MoveCheck
 from core.base.module.module_finder import ModuleFinder
 from core.base.registry.registry import Registry
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.documents.documents_module import DocumentsModule
 from core.modules.documents.upgrade.documents_move import DocumentsMove
 from core.modules.questions.questions_module import QuestionsModule

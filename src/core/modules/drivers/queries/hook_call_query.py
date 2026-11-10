@@ -5,7 +5,7 @@ from typing import Self
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.database.statement import Statement
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_name import HookEventName
 from core.base.model.tables import Tables

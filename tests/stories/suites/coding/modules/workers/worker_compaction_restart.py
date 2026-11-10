@@ -1,7 +1,7 @@
 import json
 from datetime import timedelta
 
-from core.base.journal_home import LAUNCHER_SOCKET
+from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples

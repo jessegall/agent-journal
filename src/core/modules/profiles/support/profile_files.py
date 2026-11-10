@@ -6,7 +6,7 @@ from pathlib import Path
 from engine.enums.access import Access
 from core.base.file_access import FileAccess
 from core.base.kept_file_text import KeptFileText
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.profile.agent_profile import AgentProfile
 from core.base.profile.profile_name import PROFILE_NAME
 from engine.errors.refusal import Refusal

@@ -5,7 +5,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from core.base.file_version import FileVersion
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 
 FALLBACK_FOLDERS = ("/usr/local/bin", "/opt/homebrew/bin", "/usr/bin", "/bin")
 PATH_PREFIX = "journal-path-begin:"

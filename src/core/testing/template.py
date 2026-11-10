@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.testing.story_state import StoryState
 
 

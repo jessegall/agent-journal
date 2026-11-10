@@ -2,8 +2,8 @@ import mimetypes
 
 from core.base.database.database import Database
 from core.base.file_access import FileAccess
-from core.base.journal_container import synced_container
-from core.base.journal_home import JournalHome
+from engine.container.journal_container import synced_container
+from engine.journal.journal_home import JournalHome
 from core.base.module.module_finder import ModuleFinder
 from core.base.registry.registry import Registry
 from core.base.viewer.window_loading import WindowLoading

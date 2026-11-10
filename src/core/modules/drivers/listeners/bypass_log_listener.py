@@ -3,7 +3,7 @@ from engine.enums.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent
 from core.base.chat.mark_outcome import MarkOutcome
 from core.base.command.bus import Bus
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource

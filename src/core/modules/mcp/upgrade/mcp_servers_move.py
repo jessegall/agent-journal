@@ -5,7 +5,7 @@ from pathlib import Path
 
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.upgrade.creator_resolver import CreatorResolver
 from core.base.upgrade.move_context import MoveContext
 from core.base.upgrade.move_map import MoveMap

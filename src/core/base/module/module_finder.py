@@ -5,12 +5,12 @@ import sys
 
 from core.base.dotted_path.dotted_path_error import DottedPathError
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.module.module import Module
 from core.base.module.module_error import ModuleError
 from core.base.module.version_requirement import VersionRequirement
-from core.base.version import CORE_VERSION
+from engine.version.version import CORE_VERSION
 from engine.types.type_guards import is_list, is_tuple
 
 DEFAULT_MODULE_LISTS = [DottedPath("core.modules:DEFAULT_MODULES"), DottedPath("suites:DEFAULT_SUITES"), DottedPath("tunnels:DEFAULT_TUNNELS")]

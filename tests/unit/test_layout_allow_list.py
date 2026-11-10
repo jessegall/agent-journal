@@ -24,18 +24,18 @@ def sample_rule(*entries):
 
 def test_a_listed_file_that_is_loose_is_a_valid_entry(tmp_path):
     (tmp_path / "src/core/base").mkdir(parents=True)
-    (tmp_path / "src/core/base/clock.py").write_text("")
-    assert stale_entries(sample_rule("src/core/base/clock.py"), tmp_path) == []
+    (tmp_path / "src/core/base/sample_clock.py").write_text("")
+    assert stale_entries(sample_rule("src/core/base/sample_clock.py"), tmp_path) == []
 
 
 def test_a_listed_file_that_moved_is_a_stale_entry(tmp_path):
-    assert stale_entries(sample_rule("src/core/base/clock.py"), tmp_path) == ["src/core/base/clock.py"]
+    assert stale_entries(sample_rule("src/core/base/sample_clock.py"), tmp_path) == ["src/core/base/sample_clock.py"]
 
 
 def test_a_listed_file_in_a_folder_of_its_sort_is_a_stale_entry(tmp_path):
     (tmp_path / "src/core/base/time").mkdir(parents=True)
-    (tmp_path / "src/core/base/time/clock.py").write_text("")
-    assert stale_entries(sample_rule("src/core/base/time/clock.py"), tmp_path) == ["src/core/base/time/clock.py"]
+    (tmp_path / "src/core/base/time/sample_clock.py").write_text("")
+    assert stale_entries(sample_rule("src/core/base/time/sample_clock.py"), tmp_path) == ["src/core/base/time/sample_clock.py"]
 
 
 def test_the_allow_lists_of_the_layout_rules_name_only_loose_files():

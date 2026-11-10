@@ -17,7 +17,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from core.base.caller.caller import Caller
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.subcommand.row_list import RowList

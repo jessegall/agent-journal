@@ -5,7 +5,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.file_version import NANOSECONDS
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.file_access import FileAccess
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.query.queries import Queries
 from core.base.instruction_imports import InstructionImports
 from core.modules.drivers.models.hook_call import HookCall

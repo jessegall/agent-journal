@@ -1,7 +1,7 @@
 from contextlib import ExitStack
 from types import TracebackType
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from install.run_drain import RunDrain
 from install.server_stop import ServerStop
 from install.server_wont_stop_error import ServerWontStopError

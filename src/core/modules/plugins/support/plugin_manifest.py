@@ -7,7 +7,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from functools import lru_cache
 
-from core.base.journal_version import JOURNAL_VERSION
+from engine.version.journal_version import JOURNAL_VERSION
 from engine.errors.refusal import Refusal
 from core.modules.plugins.support.plugin_manifest_files import PluginManifestFiles
 from engine.types.type_guards import is_list, is_mapping, is_object_mapping

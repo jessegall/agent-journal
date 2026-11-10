@@ -1,8 +1,8 @@
 from core.base.file_access import FileAccess
 import os
 
-from core.base.clock import Clock
-from core.base.journal_home import JournalHome
+from engine.time.clock import Clock
+from engine.journal.journal_home import JournalHome
 
 MAINTENANCE_FILE = "maintenance"
 MAINTENANCE_LIMIT_SECONDS = 600

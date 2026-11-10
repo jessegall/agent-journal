@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 

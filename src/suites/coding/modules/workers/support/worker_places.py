@@ -2,10 +2,10 @@ from core.modules.helpers.support.agent_use import AgentUse
 from core.base.agent_work import AgentWork
 from datetime import timedelta
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.database.kept_rows import KeptRows
 from core.base.query.conditions.greater import Greater
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal

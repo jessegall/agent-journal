@@ -7,7 +7,7 @@ from core.base.subcommand.subcommand import Subcommand
 import shlex
 import stat
 
-from core.base.journal_home import LAUNCHER_SOCKET, JournalHome
+from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
 from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output

@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.command.bus import Bus
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.agent_rows import AgentRows

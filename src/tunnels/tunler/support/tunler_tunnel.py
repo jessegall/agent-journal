@@ -1,5 +1,5 @@
-from core.base.clock import Clock
-from core.base.timestamp import Timestamp
+from engine.time.clock import Clock
+from engine.time.timestamp import Timestamp
 from core.base.tunnel.tunnel import Tunnel
 from core.base.tunnel.tunnel_state import TunnelState
 from core.modules.settings.bindings.support.setting_values import SettingValues

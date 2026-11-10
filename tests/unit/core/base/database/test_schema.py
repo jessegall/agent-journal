@@ -1,4 +1,4 @@
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from dataclasses import dataclass
 import sqlite3
 
@@ -12,7 +12,7 @@ from core.base.database.module_migrations import ModuleMigrations
 from core.base.database.statement import Statement
 from core.base.database.schema_mismatch_error import SchemaMismatchError
 from core.base.model.view_model import ViewModel
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.model.tables import Tables
 from tests.unit.core.base.database.test_table_statements import Shelf
 

@@ -1,8 +1,8 @@
 from dataclasses import asdict
 
 from core.base.database.database import Database
-from core.base.journal_container import synced_container
-from core.base.journal_home import JournalHome
+from engine.container.journal_container import synced_container
+from engine.journal.journal_home import JournalHome
 from core.base.registry.registry import Registry
 
 

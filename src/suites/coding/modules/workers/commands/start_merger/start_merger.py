@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from core.base.command.command import Command
 from core.base.driver.nudge import Nudge
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 @dataclass(frozen=True)

@@ -6,7 +6,7 @@ from typing import TypeVar, cast
 from core.base.database.database import Database
 from core.base.database.kept_rows import Signature
 from core.base.database.kept_value import KeptValue
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 
 T = TypeVar("T")
 

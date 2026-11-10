@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
-from core.base.timestamp import MINUTE_SECONDS, Timestamp
+from engine.time.timestamp import MINUTE_SECONDS, Timestamp
 from core.modules.reminders.commands.make_reminder.make_reminder import MakeReminder
 from core.modules.reminders.models.reminder import Reminder
 

@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from core.base.driver.command_category import CommandCategory
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.testing.expect_reply import expect_absent_reply_line, expect_reply_line
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart

@@ -1,7 +1,7 @@
 import re
 
 from core.base.file_access import FileAccess
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.modules.agents.models.agent import Agent
 

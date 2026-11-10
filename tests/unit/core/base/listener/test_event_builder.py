@@ -22,7 +22,7 @@ from core.base.model.move import Move
 from core.base.model.state_addition import StateAddition
 from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from tests.unit.core.base.model.test_model import Item
 from tests.unit.core.base.model.test_lifecycle import ItemState
 from tests.unit.core.base.command.test_commands import MakeItem

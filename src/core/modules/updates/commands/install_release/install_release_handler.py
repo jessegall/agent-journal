@@ -1,12 +1,12 @@
 import tempfile
 from pathlib import Path
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.command.context import Context
 from core.base.command.bus import Bus
-from core.base.code_versions import CodeVersions
+from engine.version.code_versions import CodeVersions
 from core.base.command.handler import Handler
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.repository.repository import Repository
 from core.modules.updates.commands.install_release.install_release import InstallRelease
 from core.modules.updates.models.release_install import ReleaseInstall

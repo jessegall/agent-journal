@@ -10,10 +10,10 @@ from argparse import ArgumentParser, Namespace
 from core.base.agent_sandbox_choice import AgentSandboxChoice
 from core.base.helper_type_book import HelperTypeBook
 from core.base.caller.caller import Caller
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.context_window import ContextWindow
 from core.base.provider.providers import Providers
 from core.base.query.conditions.greater import Greater

@@ -3,10 +3,10 @@ from typing import TextIO
 
 from core.base.caller.caller import Caller
 from core.base.cli.line_run import LineRun
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.database.database import Database
-from core.base.deadline import Deadline
-from core.base.timing import Timing
+from engine.time.deadline import Deadline
+from engine.time.timing import Timing
 from core.base.database.repeated_work import OPEN_REQUEST, RepeatedWork
 
 

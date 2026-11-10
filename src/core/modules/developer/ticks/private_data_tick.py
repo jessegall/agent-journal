@@ -1,5 +1,5 @@
 from core.base.command.bus import Bus
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.modules.developer.commands.record_private_data_finding.record_private_data_finding import RecordPrivateDataFinding

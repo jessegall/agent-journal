@@ -1,4 +1,4 @@
-from core.base.container import Container
+from engine.container.container import Container
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_instruction_files import WorkerInstructionFiles
 

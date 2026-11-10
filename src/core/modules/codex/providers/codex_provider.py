@@ -14,7 +14,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.tool_type import ToolType
 from core.base.file_access import FileAccess
 from core.base.instruction_imports import JOURNAL_FILE
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.helper_launch import HelperLaunch
 from core.base.provider.helper_outcome import HelperOutcome
 from core.base.provider.hook_decoder import HookDecoder

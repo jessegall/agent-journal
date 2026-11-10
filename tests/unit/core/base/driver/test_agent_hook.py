@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.open_row import OpenRow
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 TIMESTAMP = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 EVENT = HookEvent(1, "claude", "stop", "s1", "f1", 1, "agent", "main", None, None, {})

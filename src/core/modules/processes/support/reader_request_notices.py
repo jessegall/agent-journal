@@ -1,5 +1,5 @@
 from core.base.query.queries import Queries
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.nudge_records import NudgeRecords
 from core.modules.processes.support.process_nudges import READER_REQUEST, READER_REQUEST_REMINDER

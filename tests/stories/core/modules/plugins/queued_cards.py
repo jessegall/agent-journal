@@ -6,7 +6,7 @@ import pytest
 
 from core.base.command.bus import Bus
 from core.base.database.database import Database
-from core.base.journal_container import synced_container
+from engine.container.journal_container import synced_container
 from core.base.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput

@@ -1,9 +1,9 @@
 from core.base.file_access import FileAccess
 import json
 
-from core.base.clock import Clock
-from core.base.journal_home import JournalHome
-from core.base.timestamp import Timestamp
+from engine.time.clock import Clock
+from engine.journal.journal_home import JournalHome
+from engine.time.timestamp import Timestamp
 
 KEPT_SECONDS = 60
 

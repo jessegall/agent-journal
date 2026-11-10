@@ -5,8 +5,8 @@ from collections.abc import Generator
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from typing import IO
-from core.base.clock import Clock
-from core.base.journal_home import SERVER_SOCKET, JournalHome
+from engine.time.clock import Clock
+from engine.journal.journal_home import SERVER_SOCKET, JournalHome
 from core.base.file_access import FileAccess
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource

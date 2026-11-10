@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from core.base.tunnel.tunnel_state import TunnelState
 from tests.stories.tunnels.tunler.support.real_tunler import real_client

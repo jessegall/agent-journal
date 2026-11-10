@@ -1,4 +1,4 @@
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.testing.hook_samples import HookSamples

@@ -4,7 +4,7 @@ from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.database.shared_tables import SharedTables
 from core.base.database.statement import Statement
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 
 TABLE = "CREATE TABLE notes (id INTEGER PRIMARY KEY, version INTEGER NOT NULL, updated_at TEXT NOT NULL, text TEXT NOT NULL)"
 

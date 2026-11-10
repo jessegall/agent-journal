@@ -1,6 +1,6 @@
 from core.testing.story_fixture import StoryFixture
 
-from core.base.timing import Timing
+from engine.time.timing import Timing
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.testing.expect_reply import expect_absent_reply_line

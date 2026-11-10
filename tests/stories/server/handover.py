@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 from core.base.code_copy import IGNORED
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from core.testing.expect_row import expect_row
 from core.base.serving.code_handover import CodeHandover

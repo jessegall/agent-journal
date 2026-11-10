@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from pathlib import Path
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.database.kept_rows import KeptRows
 from core.base.provider.hook_trust import HookTrust
 from core.base.provider.providers import Providers
@@ -10,7 +10,7 @@ from core.base.query.queries import Queries
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.scope.scopes import Scopes
 from engine.errors.refusal import Refusal
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.agents.queries.agent_query import AgentQuery
 from core.modules.helpers.models.provider_outage import ProviderOutage
 from core.modules.helpers.support.helper_programs import HelperPrograms

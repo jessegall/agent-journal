@@ -1,6 +1,6 @@
 from core.base.change.deleted import Deleted
 from core.base.change.logged_event import LoggedEvent
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound
 from core.modules.plugins.models.plugin import Plugin

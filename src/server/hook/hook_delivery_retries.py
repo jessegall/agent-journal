@@ -3,9 +3,9 @@ from pathlib import Path
 
 from engine.actor.actor import Actor
 from core.base.command.bus import Bus
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.file_access import FileAccess
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel
 from core.base.query.queries import Queries
 from core.base.system_log_writer import SystemLogWriter

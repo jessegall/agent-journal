@@ -5,7 +5,7 @@ import subprocess
 from dataclasses import replace
 from pathlib import Path
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.git.hook_files_git import GIT_LIMIT_SECONDS
 from engine.errors.refusal import Refusal
 from core.modules.settings.bindings.support.setting_values import SettingValues

@@ -3,11 +3,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.code_copy import CodeCopy
-from core.base.code_versions import CodeVersions
+from engine.version.code_versions import CodeVersions
 from engine.errors.refusal import Refusal
-from core.base.journal_home import HOME_VARIABLE, JournalHome
+from engine.journal.journal_home import HOME_VARIABLE, JournalHome
 from install.code_replacement import CodeReplacement
 from install.version_four import ANSWER, VersionFour
 

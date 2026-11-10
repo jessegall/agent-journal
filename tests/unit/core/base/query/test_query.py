@@ -2,14 +2,14 @@ from datetime import datetime, timezone
 
 import pytest
 
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.database.table_statements import TableStatements
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.errors.missing_rows_error import MissingRowsError
 from core.base.model.tables import Tables
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.less import Less
 from core.base.query.queries import Queries

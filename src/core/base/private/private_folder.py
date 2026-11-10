@@ -3,7 +3,7 @@ from core.base.file_version import FileVersion
 import os
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 
 FOLDER_VARIABLE = "AGENT_JOURNAL_SECRETS"
 PROJECT_ID_FILE = "project-id"

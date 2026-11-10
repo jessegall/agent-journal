@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.plan_reviews.support.round_report import RoundReport
 from core.modules.plan_reviews.support.round_reviewer import RoundReviewer
 

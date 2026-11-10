@@ -11,7 +11,7 @@ from core.base.agent_checkouts import AgentCheckouts
 from core.base.checkout import Checkout
 from core.base.driver.command_category import CommandCategory
 from core.base.change.event_log import HIDDEN
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.model.event_form import EventForm
 from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.scope.environment_scope import EnvironmentScope

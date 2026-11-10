@@ -1,6 +1,6 @@
 import subprocess
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.voices.support.builtin_catalogue import BuiltinCatalogue
 from core.modules.voices.support.voice import Voice

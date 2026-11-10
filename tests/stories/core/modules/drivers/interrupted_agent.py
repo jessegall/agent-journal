@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.base.journal_home import LAUNCHER_SOCKET
+from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine

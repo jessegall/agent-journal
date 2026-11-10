@@ -9,8 +9,8 @@ from core.base.cli.console import Console, REFUSED_CODE, SUCCESS_CODE, USAGE_COD
 from core.base.cli.usage_error import UsageError
 from core.base.cli.write_flags import WriteFlags
 from core.base.database.database import Database
-from core.base.journal_container import synced_container
-from core.base.journal_home import JournalHome
+from engine.container.journal_container import synced_container
+from engine.journal.journal_home import JournalHome
 from core.base.model.tables import Tables
 from core.base.module.module_error import ModuleError
 from core.base.module.module_removal import ModuleRemoval

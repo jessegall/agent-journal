@@ -1,7 +1,7 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.seconds import Seconds
 from core.base.driver.rule_history_key import RuleHistoryKey
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 class HookHistory:

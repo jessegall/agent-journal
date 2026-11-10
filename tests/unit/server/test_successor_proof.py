@@ -1,10 +1,10 @@
-from core.base.clock import Clock
+from engine.time.clock import Clock
 import json
 import sqlite3
 
 import pytest
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.module.module_error import ModuleError
 from server.server_backup import ServerBackup
 from server.successor_proof import SuccessorProof

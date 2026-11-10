@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.process_row import ProcessRow
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import ProcessAgent
 

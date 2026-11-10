@@ -1,4 +1,4 @@
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.registry import Registry
 from core.modules.drivers.support.suite_choice import SuiteChoice

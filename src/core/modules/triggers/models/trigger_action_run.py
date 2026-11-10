@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from core.base.model.model import Model
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 @dataclass(frozen=True, kw_only=True)

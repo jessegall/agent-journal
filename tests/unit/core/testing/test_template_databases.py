@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.testing.story_state import StoryState
 from core.testing.template import Template
 from core.testing.template_databases import STATE_FILE, TemplateDatabases

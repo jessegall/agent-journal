@@ -3,9 +3,9 @@ from unittest.mock import patch
 import pytest
 
 from core.base.database.database import Database
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.model.tables import Tables
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.docking.docking_module import DockingModule
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 

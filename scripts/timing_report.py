@@ -7,8 +7,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from core.base.timing import Timing
-from core.base.journal_home import JournalHome
+from engine.time.timing import Timing
+from engine.journal.journal_home import JournalHome
 from core.base.performance.performance_state import PerformanceState
 
 LINE_LIMIT = 1000

@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.command.bus import Bus
 from core.base.driver.block_until import BlockUntil
 from core.base.driver.conditions.time_reached import TimeReached

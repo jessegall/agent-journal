@@ -1,11 +1,11 @@
 from datetime import timedelta
 
 from core.modules.agents.support.person_check import PersonCheck
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.repository.repository import Repository
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.phone.commands.pair_phone.pair_phone import PairPhone
 from core.modules.phone.commands.support.phone_code_maker import PhoneCodeMaker
 from core.modules.phone.commands.support.phone_invitation import PhoneInvitation

@@ -6,7 +6,7 @@ from engine.actor.actor import Actor
 from core.base.command.context import Context
 from core.base.database.database import Database
 from core.base.driver.driver_rules import DriverRules
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.driver.interval import Interval
 from core.base.driver.seconds import Seconds
 from core.base.driver.nudge import Nudge

@@ -35,7 +35,7 @@ def failures(project, *modules, allow_list=()):
 
 
 @pytest.mark.parametrize("path,layer", [
-    ("src/core/base/clock.py", Layer(LayerTier.ENGINE, "engine")),
+    ("src/engine/time/clock.py", Layer(LayerTier.ENGINE, "engine")),
     ("src/core/modules/tasks/models/task.py", Layer(LayerTier.CORE_MODULE, "tasks")),
     ("src/suites/coding/coding_module.py", Layer(LayerTier.SUITE, "coding")),
     ("src/suites/coding/modules/workers/workers_module.py", Layer(LayerTier.SUITE_MODULE, "coding/workers")),

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from core.base.query.queries import Queries
 from core.base.database.kept_rows import KeptRows
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.base.provider.program_server_file import ProgramServerFile
 from core.modules.mcp.models.mcp_server import McpServer

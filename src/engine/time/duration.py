@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from engine.errors.duration_error import DurationError
 from engine.enums.duration_unit import DurationUnit
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 @dataclass(frozen=True)

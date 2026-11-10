@@ -2,7 +2,7 @@ from pathlib import Path
 
 from core.base.file_access import FileAccess
 from core.base.instruction_imports import INSTRUCTION_FILES
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.drivers.support.suite_choice import SuiteChoice

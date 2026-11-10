@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.skills.support.agent_profile_skills import AgentProfileSkills
 from core.modules.skills.support.skill_projects import SkillProjects

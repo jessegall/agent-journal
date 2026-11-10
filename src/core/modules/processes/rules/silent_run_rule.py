@@ -4,7 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.nudge import Nudge
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder

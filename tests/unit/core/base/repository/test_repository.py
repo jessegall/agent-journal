@@ -4,7 +4,7 @@ import pytest
 
 from core.base.change.event_log import EventLog
 from core.base.change.event_pattern import EventPattern
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.guard.guard_refusal import GuardRefusal

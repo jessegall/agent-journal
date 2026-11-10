@@ -3,7 +3,7 @@ import json
 
 from engine.actor.actor import Actor
 from core.modules.phone.ticks.phone_notices import PhoneNotices
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.command.bus import Bus
 from core.modules.phone.support.push_keys import PushKeys
 from core.modules.tunnel.support.tunnels import Tunnels

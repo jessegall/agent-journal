@@ -1,7 +1,7 @@
 from core.base.file_access import FileAccess
 import json
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.modules.developer.support.hook_number import HookNumber
 
 NUMBERS_FILE = "hook-numbers.json"

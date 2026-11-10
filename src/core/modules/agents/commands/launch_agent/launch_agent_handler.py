@@ -6,7 +6,7 @@ from core.base.driver.program_lockdown import ProgramLockdown
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.launch import Launch
 from core.base.provider.providers import Providers
 from core.base.provider.session_start import SessionStart

@@ -2,7 +2,7 @@ import json
 from collections.abc import Mapping
 from datetime import timedelta
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.database.hook_requests_table import HookRequestsTable
 from core.base.query.queries import Queries
 from core.base.query.conditions.among import Among

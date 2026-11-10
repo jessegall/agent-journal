@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 SILENT_FAILURE_SOURCE = "workers.silent-agent-failed"
 

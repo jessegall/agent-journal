@@ -1,7 +1,7 @@
 import time
 from datetime import datetime, timezone
 
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 class Clock:

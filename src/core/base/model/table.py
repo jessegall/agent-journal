@@ -11,7 +11,7 @@ from engine.row.metadata import Metadata
 from core.base.model.added_state import AddedState
 from core.base.model.model import Model, STATE
 from core.base.model.view_model import ViewModel
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.base.model.unsupported_column_type_error import UnsupportedColumnTypeError
 
 R = TypeVar("R", bound=Model | ViewModel, covariant=True)

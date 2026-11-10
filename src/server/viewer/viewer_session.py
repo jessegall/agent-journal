@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from server.viewer.shared_row import SharedRow
 from server.viewer.session_type import SessionType
 

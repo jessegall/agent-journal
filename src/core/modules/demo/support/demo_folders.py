@@ -1,4 +1,4 @@
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.file_access import FileAccess
 import os
 import shutil

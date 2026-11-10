@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from engine.enums.role_group import RoleGroup
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.driver.agent_hook import AgentHook
 from core.base.module.block_conditions import BlockConditions
 from core.base.driver.driver_rule import DriverRule

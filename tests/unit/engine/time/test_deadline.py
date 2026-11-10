@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.deadline import Deadline
+from engine.time.deadline import Deadline
 from engine.errors.deadline_passed_error import DeadlinePassedError
 
 

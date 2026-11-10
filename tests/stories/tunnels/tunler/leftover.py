@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from tests.stories.tunnels.tunler.support.real_tunler import real_client
 from tests.stories.support.story_checks import expect_absent_exists_folder_repository, expect_poll_second
 

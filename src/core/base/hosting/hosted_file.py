@@ -9,7 +9,7 @@ from core.base.file_access import FileAccess
 from core.base.hosting.hosted_file_refusal import HostedFileRefusal
 from core.base.hosting.hosted_mode import HostedMode
 from core.base.hosting.hosting import Hosting
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 
 HOSTED_FILE_PATH = Path("/etc/journal/hosted.toml")
 

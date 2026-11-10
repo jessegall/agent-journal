@@ -3,7 +3,7 @@ from pathlib import Path
 from core.base.database.database import Database
 from core.base.database.migration import Migration
 from core.base.database.statement import Statement
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.modules.processes.support.output_folder import OutputFolder
 
 READ_SIZE = 200

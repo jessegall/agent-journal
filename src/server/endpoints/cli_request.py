@@ -1,6 +1,6 @@
 from core.base.caller.caller_request import CallerRequest
-from core.base.deadline import Deadline
-from core.base.timing import Timing
+from engine.time.deadline import Deadline
+from engine.time.timing import Timing
 from engine.types.type_guards import is_mapping, is_text_list
 from dataclasses import dataclass, field
 from server.endpoints.cli_request_error import CliRequestError

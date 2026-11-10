@@ -3,14 +3,14 @@ import secrets
 from datetime import timedelta
 
 from engine.enums.actor_type import ActorType
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.scope.scopes import Scopes
 from engine.text.text_digest import TextDigest
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.report import Report
 from core.modules.plans.models.plan import Plan

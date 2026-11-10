@@ -2,9 +2,9 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from core.base.duration import Duration
+from engine.time.duration import Duration
 from engine.errors.duration_error import DurationError
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 @pytest.mark.parametrize("text, seconds", [("30", 30), ("30s", 30), ("5m", 300), ("2h", 7200), ("1d", 86400), (" 2M ", 120)])

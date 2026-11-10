@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.query.queries import Queries
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.agent_line import AgentLine

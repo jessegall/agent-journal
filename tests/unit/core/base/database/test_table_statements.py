@@ -6,10 +6,10 @@ import pytest
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.database.table_statements import TableStatements
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.model.model import Model
 from core.base.model.table import Table
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 FIXED_TIME = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 

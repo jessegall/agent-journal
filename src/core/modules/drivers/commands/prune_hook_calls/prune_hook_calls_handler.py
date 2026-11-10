@@ -5,7 +5,7 @@ from core.base.command.handler import Handler
 from core.base.query.conditions.less import Less
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.commands.prune_hook_calls.prune_hook_calls import PruneHookCalls

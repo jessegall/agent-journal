@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from core.base.registry.registry import Registry
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.support.row_end import RowEnd
 

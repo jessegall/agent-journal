@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.queries.process_part_query import ProcessPartQuery

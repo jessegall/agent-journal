@@ -8,14 +8,14 @@ from functools import cache
 from pathlib import Path
 
 from core.base.caller.process_row import ProcessRow
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.file_access import FileAccess
 from core.base.leftover_process import LeftoverProcess
 from core.base.model.event_form import EventForm
 from core.base.plugin_script_process import PluginScriptProcess
 from engine.script.script_skip import ScriptSkip
 from engine.enums.script_stop import ScriptStop
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 KEPT_LINE_COUNT = 50

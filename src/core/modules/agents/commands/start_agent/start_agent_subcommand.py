@@ -5,7 +5,7 @@ from core.base.registry.registry import Registry
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.base.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 class StartAgentSubcommand(Subcommand[StartAgent, Agent]):

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.driver.hook_event_name import HookEventName
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
 
 

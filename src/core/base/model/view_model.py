@@ -2,7 +2,7 @@ from dataclasses import dataclass, fields
 from enum import StrEnum
 from typing import ClassVar
 
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from engine.types.type_guards import is_tuple
 
 

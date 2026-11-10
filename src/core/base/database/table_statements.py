@@ -1,7 +1,7 @@
 from core.base.database.statement import Statement
 from core.base.model.model import Model
 from core.base.model.table import Table
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 FIRST_VERSION = 1
 

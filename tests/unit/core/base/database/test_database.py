@@ -6,7 +6,7 @@ import pytest
 from core.base.database.database import BUSY_TIMEOUT_SECONDS, NESTING_LIMIT_LEVELS, Database
 from core.base.database.nesting_error import NestingError
 from core.base.database.statement import Statement
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 
 
 @pytest.fixture

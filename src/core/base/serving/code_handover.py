@@ -2,10 +2,10 @@ import threading
 import time
 from pathlib import Path
 
-from core.base.clock import Clock
-from core.base.code_versions import CodeVersions
+from engine.time.clock import Clock
+from engine.version.code_versions import CodeVersions
 from core.base.file_access import FileAccess
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from core.base.unix_connection import UnixConnection
 from engine.enums.log_level import LogLevel

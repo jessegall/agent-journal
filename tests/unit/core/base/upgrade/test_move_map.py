@@ -1,7 +1,7 @@
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.database.version_four_map_migration import VersionFourMapMigration
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.upgrade.move_map import MoveMap
 from core.base.database.moved_row import MovedRow
 

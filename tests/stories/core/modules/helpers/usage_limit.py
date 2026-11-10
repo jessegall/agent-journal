@@ -4,7 +4,7 @@ from datetime import timedelta
 from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.base.file_access import FileAccess
-from core.base.journal_home import LAUNCHER_SOCKET
+from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.enums.agent_activity import AgentActivity

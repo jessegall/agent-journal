@@ -1,7 +1,7 @@
 from types import MappingProxyType
 
 from core.base.change.logged_event import LoggedEvent
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.support.worker_test_round import WorkerTestRound
 

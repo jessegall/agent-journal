@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from core.base.driver.driver_rule import DriverRule
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.hook_manager import HookManager
 from core.base.provider.managed_hook_history_reader import ManagedHookHistoryReader
 from core.base.provider.managed_hooks import ManagedHooks

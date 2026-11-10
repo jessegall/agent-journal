@@ -2,7 +2,7 @@ from engine.actor.actor import CORE_ACTOR_ID
 from core.base.caller.caller_request import CallerRequest
 from core.base.cli.console import REFUSED_CODE, USAGE_CODE
 from core.base.caller.process_row import ProcessRow
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from tests.stories.core.support.fixtures import ProcessAgent, MainEnvironment
 from tests.stories.core.modules.agents.support.caller_fixtures import LoginUser
 

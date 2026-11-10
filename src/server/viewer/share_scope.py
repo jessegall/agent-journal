@@ -1,6 +1,6 @@
 from core.base.cli.usage_error import UsageError
 from core.base.environment_names import EnvironmentNames
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.query.shared_rows import SharedRows
 from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry

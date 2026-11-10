@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
 from core.modules.developer.support.log_file_lines import BLOCK_BYTES, LogFileLines

@@ -4,7 +4,7 @@ from datetime import timedelta
 from core.base.driver.span import Span
 
 from core.base.driver.span_queries import SpanQueries
-from core.base.timestamp import MINUTE_SECONDS, Timestamp
+from engine.time.timestamp import MINUTE_SECONDS, Timestamp
 
 @dataclass(frozen=True)
 class Seconds(Span):

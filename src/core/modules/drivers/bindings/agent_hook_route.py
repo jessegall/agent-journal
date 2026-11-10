@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.command.bus import Bus
 from core.base.driver.hook_event import HookEvent
 from engine.enums.log_level import LogLevel

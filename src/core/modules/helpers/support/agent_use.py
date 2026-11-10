@@ -2,7 +2,7 @@ from engine.enums.duration_unit import DurationUnit
 from collections import defaultdict
 from datetime import timedelta
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.query.conditions.equal import Equal
 from core.base.query.conditions.excluding import Excluding
 from core.base.query.conditions.is_null import IsNull

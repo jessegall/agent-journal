@@ -16,7 +16,7 @@ from core.base.database.database import Database
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.commands.end_inactive_worker.end_inactive_worker import EndInactiveWorker
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from core.base.journal_home import LAUNCHER_SOCKET
+from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from engine.actor.actor import Actor

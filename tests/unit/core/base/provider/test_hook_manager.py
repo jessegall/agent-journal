@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.hook_effect import HookEffect

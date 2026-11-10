@@ -1,7 +1,7 @@
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.database.performance_costs import PerformanceCosts
 from core.base.database.points import Points
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.module.module_finder import ModuleFinder
 from core.base.performance.performance_tool import PerformanceTool
 from core.base.performance.performance_state import PerformanceState, TESTS_RUNNING_FILE

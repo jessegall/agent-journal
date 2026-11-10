@@ -1,5 +1,5 @@
 from core.base.change.event_log import EventLog
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal

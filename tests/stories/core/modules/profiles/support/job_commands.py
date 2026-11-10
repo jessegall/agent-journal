@@ -3,7 +3,7 @@ import tomllib
 from pathlib import Path
 
 from core.base.driver.command_category import CommandCategory
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from engine.text.text_digest import TextDigest
 from core.base.registry.registry import Registry

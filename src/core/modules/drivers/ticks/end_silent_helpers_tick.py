@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from core.base.command.bus import Bus
-from core.base.container import Container
+from engine.container.container import Container
 from core.modules.drivers.commands.end_silent_helpers.end_silent_helpers import EndSilentHelpers
 
 

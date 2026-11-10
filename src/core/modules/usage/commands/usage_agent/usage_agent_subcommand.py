@@ -7,7 +7,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent

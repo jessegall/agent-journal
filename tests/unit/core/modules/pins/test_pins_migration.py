@@ -1,10 +1,10 @@
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.database.core_tables_migration import CORE_MIGRATIONS
 from core.base.database.database import Database
 from core.base.database.module_migrations import ModuleMigrations
 from core.base.database.schema import Schema
 from core.base.database.statement import Statement
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.model.tables import Tables
 from core.modules.pins.migrations.m001_pins import PinsTableMigration
 

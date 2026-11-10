@@ -3,10 +3,10 @@ import hashlib
 from collections.abc import Generator
 from contextlib import contextmanager
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.command.bus import Bus
 from core.base.file_access import FileAccess
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.leftover_process import LeftoverProcess
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries

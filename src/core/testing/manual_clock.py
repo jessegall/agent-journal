@@ -1,8 +1,8 @@
 from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 
-from core.base.clock import Clock
-from core.base.timestamp import Timestamp
+from engine.time.clock import Clock
+from engine.time.timestamp import Timestamp
 
 STORY_START = datetime(2026, 10, 31, 9, tzinfo=timezone.utc)
 

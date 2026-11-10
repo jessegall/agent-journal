@@ -4,7 +4,7 @@ from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.core.support.coding_fixtures import UserBuilder
 import shlex
 import subprocess
-from core.base.journal_home import LAUNCHER_SOCKET
+from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.base.provider.program_hooks import ProgramHooks
 from core.base.query.queries import Queries
 from core.modules.codex.providers.codex_provider import CodexProvider

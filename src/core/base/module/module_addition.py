@@ -8,7 +8,7 @@ from pathlib import Path
 
 from core.base.database.schema_mismatch_error import SchemaMismatchError
 from core.base.dotted_path.dotted_path import DottedPath
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.module.module import Module
 from core.base.module.module_error import ModuleError
 from core.base.module.module_finder import ModuleFinder

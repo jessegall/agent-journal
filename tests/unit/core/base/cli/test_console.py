@@ -4,10 +4,10 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.caller.caller import Caller
 from core.base.cli.console import Console
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.registry.registry import Registry

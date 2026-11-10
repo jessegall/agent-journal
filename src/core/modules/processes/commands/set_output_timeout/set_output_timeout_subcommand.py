@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.duration import Duration
+from engine.time.duration import Duration
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.processes.commands.set_output_timeout.set_output_timeout import SetOutputTimeout
 from core.modules.processes.models.process import Process

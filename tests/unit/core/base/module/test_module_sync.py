@@ -2,12 +2,12 @@ import json
 
 import pytest
 
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.database.database import Database
 from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.database.statement import Statement
-from core.base.journal import Journal
-from core.base.journal_home import JournalHome
+from engine.journal.journal import Journal
+from engine.journal.journal_home import JournalHome
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_sync import ModuleSync

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.view_model import ViewModel
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.sequences.models.support.views import SEQUENCE_RUN_ROWS_SELECT
 
 

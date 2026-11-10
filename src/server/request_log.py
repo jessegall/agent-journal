@@ -2,16 +2,16 @@ import sqlite3
 from contextlib import contextmanager
 from dataclasses import asdict
 from collections.abc import Callable, Sequence
-from core.base.clock import Clock
-from core.base.container import Container
+from engine.time.clock import Clock
+from engine.container.container import Container
 from threading import RLock
 from uuid import uuid4
 from time import perf_counter
 
 from core.base.database.database import Database
 from core.base.database.hook_requests_table import HookRequestsTable
-from core.base.journal_container import synced_database_container
-from core.base.journal_home import JournalHome
+from engine.container.journal_container import synced_database_container
+from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
 from core.base.system_log_writer import SystemLogWriter

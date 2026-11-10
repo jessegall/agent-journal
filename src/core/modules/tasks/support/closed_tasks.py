@@ -5,7 +5,7 @@ from core.base.driver.span import Span
 
 from core.base.query.conditions.greater import Greater
 from core.base.driver.span_queries import SpanQueries
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.tasks.queries.task_query import TaskQuery
 
 

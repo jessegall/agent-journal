@@ -2,8 +2,8 @@ import os
 import socket
 from pathlib import Path
 
-from core.base.code_versions import CodeVersions
-from core.base.journal_home import JournalHome
+from engine.version.code_versions import CodeVersions
+from engine.journal.journal_home import JournalHome
 from server.handover_descriptors import READY_BYTE, HandoverDescriptors
 from server.successor_proof import SuccessorProof
 

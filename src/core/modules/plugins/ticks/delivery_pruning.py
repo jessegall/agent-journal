@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from core.base.command.bus import Bus
-from core.base.container import Container
+from engine.container.container import Container
 from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveries import PrunePluginDeliveries
 
 

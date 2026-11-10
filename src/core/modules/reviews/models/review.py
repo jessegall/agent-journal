@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.model.state_holder import StateHolder
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.reviews.models.enums.review_state import ReviewState
 from core.modules.reviews.models.lifecycles.review_lifecycle import ReviewLifecycle
 

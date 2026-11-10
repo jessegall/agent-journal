@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
-from core.base.timestamp import Timestamp
+from engine.journal.journal_home import JournalHome
+from engine.time.timestamp import Timestamp
 from core.modules.processes.support.output_folder import OutputFolder
 
 

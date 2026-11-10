@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from typing import ClassVar, Protocol
 
 from core.base.driver.span_queries import SpanQueries
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 class Span(Protocol):

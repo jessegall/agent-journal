@@ -1,4 +1,4 @@
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from contextlib import nullcontext
 from types import SimpleNamespace
 import json
@@ -11,9 +11,9 @@ from unittest.mock import Mock
 import pytest
 
 from core.base.agent_checkouts import AgentCheckouts
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.plugin_script_processes import PluginScriptProcesses
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_event import PluginEvent
 from core.modules.plugins.support.plugin_fault_error import PluginFaultError

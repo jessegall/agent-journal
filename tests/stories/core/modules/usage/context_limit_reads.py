@@ -1,7 +1,7 @@
 import json
 import os
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, ContextShare
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.fixtures import UserJoined

@@ -2,7 +2,7 @@ import os
 from dataclasses import replace
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.model.event_form import EventForm
 from core.base.registry.registry import Registry
 from core.base.plugin_script_processes import PluginScriptProcesses

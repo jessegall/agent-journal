@@ -5,7 +5,7 @@ from core.base.change.event_log import EventLog
 from core.base.database.kept_rows import KeptRows
 from core.base.model.model import Model
 from core.base.model.tables import Tables
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.minimum import Minimum
 from core.base.query.queries import Queries

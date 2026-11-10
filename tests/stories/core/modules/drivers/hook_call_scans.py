@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.database.database import Database
 from core.base.driver.tool_type import ToolType
 from core.base.query.queries import Queries

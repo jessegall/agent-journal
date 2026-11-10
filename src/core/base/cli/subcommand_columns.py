@@ -7,7 +7,7 @@ from core.base.command.handlers.make_handler import CREATOR_COLUMN
 from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
 from core.base.model.model import Model
 from core.base.model.table import Table
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 FOREIGN_KEY_SUFFIX = "_id"

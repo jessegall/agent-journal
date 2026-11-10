@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.model.model import Model
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.phone.models.enums.phone_code_state import PhoneCodeState
 from core.modules.phone.models.lifecycles.phone_code_lifecycle import PhoneCodeLifecycle
 

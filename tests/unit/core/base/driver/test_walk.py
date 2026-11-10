@@ -1,4 +1,4 @@
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.driver.rule_timings import RuleTimings
 from core.base.driver.refusal_skips import RefusalSkips
 from tests.unit.core.base.driver.nudge_sample import sample_nudge
@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from core.base.command.command import Command
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.rule_history_key import RuleHistoryKey
@@ -25,12 +25,12 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.error_log import ErrorLog
 from core.base.system_log_writer import SystemLogWriter
 from core.base.guard.guard_switches import GuardSwitches
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.dotted_path.wrong_base_error import WrongBaseError
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.overlay_entry import OverlayEntry
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from tests.unit.core.base.sample_container import empty_registry
 
 START = datetime(2026, 10, 31, 9, tzinfo=timezone.utc)

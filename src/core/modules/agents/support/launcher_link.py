@@ -3,7 +3,7 @@ import socket
 import time
 from collections.abc import Mapping
 
-from core.base.journal_home import LAUNCHER_SOCKET, JournalHome
+from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
 from core.modules.agents.support.launcher_service import LauncherService
 
 ANSWER_LIMIT_SECONDS = 9

@@ -1,4 +1,4 @@
-from core.base.clock import Clock
+from engine.time.clock import Clock
 import sqlite3
 
 from core.base.database.database import Database

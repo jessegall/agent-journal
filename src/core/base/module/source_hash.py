@@ -6,7 +6,7 @@ from functools import cache
 from pathlib import Path
 
 from core.base.code_copy import IGNORED
-from core.base.version import CORE_VERSION
+from engine.version.version import CORE_VERSION
 
 
 class SourceHash:

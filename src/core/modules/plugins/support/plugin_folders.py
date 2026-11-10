@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from core.base.clock import Clock
-from core.base.journal_home import JournalHome
+from engine.time.clock import Clock
+from engine.journal.journal_home import JournalHome
 
 UPGRADE_MARK_SUFFIX = ".upgrading"
 UPGRADE_MARK_SECONDS = 300

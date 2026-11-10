@@ -1,8 +1,8 @@
 import os
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.file_access import FileAccess
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
 from core.base.rotated_file import RotatedFile

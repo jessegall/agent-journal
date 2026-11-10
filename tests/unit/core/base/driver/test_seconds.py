@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from core.base.driver.seconds import Seconds
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 MOMENT = Timestamp(datetime(2026, 11, 9, 12, tzinfo=timezone.utc))
 

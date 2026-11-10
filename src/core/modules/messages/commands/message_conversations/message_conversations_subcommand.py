@@ -2,12 +2,12 @@ from argparse import ArgumentParser, Namespace
 from datetime import timedelta
 
 from core.base.caller.caller import Caller
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.minimum import Minimum
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from engine.types.type_guards import is_tuple
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES, MessageType
 from core.modules.messages.models.message import Message

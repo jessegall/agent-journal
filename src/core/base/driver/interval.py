@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from core.base.driver.span import Span
 from core.base.driver.seconds import Seconds
 from core.base.driver.span_queries import SpanQueries
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 class Interval:

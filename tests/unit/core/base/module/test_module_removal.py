@@ -4,7 +4,7 @@ import pytest
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.module.module_error import ModuleError
 from core.base.module.module_removal import ModuleRemoval
 from tests.unit.core.base.module.test_module_sync import ITEM_COUNT, ITEMS, synced

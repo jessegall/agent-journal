@@ -3,7 +3,7 @@ from core.base.file_access import FileAccess
 from core.base.file_version import FileVersion
 from functools import lru_cache
 from pathlib import Path
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.base.registry.registry import Registry
 from core.base.registry.skill_entry import SkillEntry

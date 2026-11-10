@@ -2,7 +2,7 @@ from core.base.skill.skill_contents import SkillContents
 from core.base.file_access import FileAccess
 from collections.abc import Sequence
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.registry.agent_group_entry import AgentGroupEntry
 from core.base.registry.helper_type_entry import HelperTypeEntry
 from core.base.registry.profile_entry import ProfileEntry
@@ -66,7 +66,7 @@ from core.base.performance.performance_state import PerformanceState
 from core.base.module.module_order import ModuleOrder
 from core.base.module.sync_notes import SyncNotes
 from core.base.module.sync_report import SyncReport
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.program_table import ProgramTable
 from core.base.registry.setting_tree import SettingTree
 from core.base.registry.tunnel_entry import TunnelEntry

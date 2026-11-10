@@ -1,7 +1,7 @@
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.lockdown import Lockdown
 from core.base.driver.program_lockdown import ProgramLockdown
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 ACTIVE = Lockdown(Timestamp.parsed("2026-11-10T14:00:00+00:00"), "[journal] stopped", "Claude is at your usage limit until 14:00", "wait until it ends")
 

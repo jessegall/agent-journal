@@ -8,7 +8,7 @@ from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.scope.scopes import Scopes
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.sharing.commands.leave_share_comment.leave_share_comment import LeaveShareComment

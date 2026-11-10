@@ -4,7 +4,7 @@ import threading
 import time
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from install.run_drain import RunDrain
 from core.base.serving.server_files import ServerFiles

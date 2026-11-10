@@ -4,7 +4,7 @@ from core.base.change.deleted import Deleted
 from core.modules.drivers.support.driver_settings import HOOK_WAIT_SECONDS
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.setting_rows import SettingRows
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.modules.drivers.listeners.hook_wait_file_listener import HookWaitFileListener
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text

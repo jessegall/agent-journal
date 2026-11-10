@@ -80,7 +80,7 @@ def allow_listed(rule_name, entry):
 
 
 def test_the_name_of_a_moved_file_left_in_the_allow_list_is_reported(tmp_path):
-    assert stale_entries(allow_listed(CLASS_RULE, "src/core/base/clock.py"), tmp_path) == ["src/core/base/clock.py"]
+    assert stale_entries(allow_listed(CLASS_RULE, "src/core/base/sample_clock.py"), tmp_path) == ["src/core/base/sample_clock.py"]
 
 
 def test_an_allow_listed_file_that_stopped_being_loose_is_reported(tmp_path):

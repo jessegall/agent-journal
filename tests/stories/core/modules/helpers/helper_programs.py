@@ -2,7 +2,7 @@ import shutil
 
 import pytest
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.providers import Providers
 from engine.errors.refusal import Refusal

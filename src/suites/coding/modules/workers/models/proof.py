@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from engine.actor.actor import Actor
 from core.base.model.model import Model
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 

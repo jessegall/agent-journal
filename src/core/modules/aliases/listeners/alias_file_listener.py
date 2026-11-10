@@ -4,7 +4,7 @@ import json
 import shlex
 
 from core.base.change.logged_event import LoggedEvent
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.models.alias import ARGS_MARK, Alias

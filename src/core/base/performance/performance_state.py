@@ -3,8 +3,8 @@ from core.base.file_version import FileVersion
 from collections.abc import Generator
 from contextlib import contextmanager
 
-from core.base.clock import Clock
-from core.base.journal_home import JournalHome
+from engine.time.clock import Clock
+from engine.journal.journal_home import JournalHome
 from core.base.server_restart_state import ServerRestartState
 
 TESTS_RUNNING_FILE = "tests-running"

@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from engine.enums.actor_type import ActorType
-from core.base.container import Container
+from engine.container.container import Container
 from engine.errors.refusal import Refusal
 from core.base.seed.demo import Demo
 from core.base.subcommand.read_subcommand import ReadSubcommand

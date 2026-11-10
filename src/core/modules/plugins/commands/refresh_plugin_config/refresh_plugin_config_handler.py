@@ -6,7 +6,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.file_access import FileAccess
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.json.json_pointer import JsonPointer
 from engine.json.json_schema import JsonSchema
 from core.base.query.queries import Queries

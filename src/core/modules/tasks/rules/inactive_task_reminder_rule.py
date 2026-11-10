@@ -6,7 +6,7 @@ from core.base.driver.hook_history import HookHistory
 from core.base.driver.interval import Interval
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.span_queries import SpanQueries
-from core.base.timestamp import MINUTE_SECONDS
+from engine.time.timestamp import MINUTE_SECONDS
 from core.modules.drivers.support.agent_activities import AgentActivities
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks

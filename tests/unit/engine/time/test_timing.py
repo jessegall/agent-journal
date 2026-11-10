@@ -10,9 +10,9 @@ from core.base.cli.line_run import LineRun
 from core.base.command.bus import Bus
 from core.base.command.handlers.make_handler import MakeHandler
 from core.base.command.make_command import MakeCommand
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.registry.registry import Registry
-from core.base.timing import Timing
+from engine.time.timing import Timing
 from tests.unit.core.base.command.test_bus import handlers
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.module.test_module_sync import ITEMS

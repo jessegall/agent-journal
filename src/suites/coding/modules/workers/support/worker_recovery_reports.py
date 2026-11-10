@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 
 

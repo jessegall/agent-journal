@@ -1,5 +1,5 @@
-from core.base.clock import Clock
-from core.base.container import Container
+from engine.time.clock import Clock
+from engine.container.container import Container
 from core.modules.demo.support.demo_folders import DemoFolders
 
 

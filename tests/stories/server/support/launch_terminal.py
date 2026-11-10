@@ -8,7 +8,7 @@ import termios
 import threading
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from tests.stories.server.support.go_build import GoBuild
 
 ROOT = Path(__file__).resolve().parents[4]

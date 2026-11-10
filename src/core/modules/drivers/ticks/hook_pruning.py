@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from core.base.command.bus import Bus
-from core.base.container import Container
+from engine.container.container import Container
 from core.modules.drivers.commands.prune_hook_calls.prune_hook_calls import PruneHookCalls
 from core.modules.drivers.commands.prune_temp_folders.prune_temp_folders import PruneTempFolders
 

@@ -5,8 +5,8 @@ import secrets
 from engine.actor.actor import Actor
 from core.base.caller.caller import Caller
 from core.base.cli.line_run import LineRun
-from core.base.container import Container
-from core.base.journal_home import JournalHome
+from engine.container.container import Container
+from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS
 from server.listener_thread import ListenerThread

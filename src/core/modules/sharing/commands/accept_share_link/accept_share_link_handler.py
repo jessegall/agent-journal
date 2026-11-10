@@ -5,7 +5,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from engine.text.text_digest import TextDigest
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.agents.support.person_check import PersonCheck
 from core.modules.sharing.commands.accept_share_link.accept_share_link import AcceptShareLink
 from core.modules.sharing.commands.make_share_link.make_share_link_handler import LINK_PATH, TOKEN_BYTES

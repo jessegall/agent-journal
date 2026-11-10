@@ -1,7 +1,7 @@
 from core.base.change.event_log import EventLog
 from core.base.model.tables import Tables
 from core.base.provider.providers import Providers
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.helpers.support.exit_reasons import ExitReasons
 

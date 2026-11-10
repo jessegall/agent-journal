@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from core.base.command.bus import Bus
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.module.performance_tools import PerformanceTools
 from core.base.repository.stale_row_error import StaleRowError
 from core.base.scope.scopes import Scopes

@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.model.model import Model
 from engine.row.page import Page
 from engine.errors.refusal import Refusal

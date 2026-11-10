@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from core.base.file_access import FileAccess
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 
 FINGERPRINT_FILE = "file-fingerprints.json"
 BIGGEST_FILE_BYTES = 1_000_000

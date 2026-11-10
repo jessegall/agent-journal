@@ -1,6 +1,6 @@
 from core.base.file_access import FileAccess
 from core.base.change.logged_event import LoggedEvent
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
 from core.modules.drivers.support.driver_settings import HOOK_WAIT_SECONDS
 from core.modules.settings.models.setting import Setting

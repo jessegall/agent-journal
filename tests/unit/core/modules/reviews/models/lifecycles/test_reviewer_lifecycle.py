@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.reviews.models.enums.reviewer_state import ReviewerState
 from core.modules.reviews.models.lifecycles.reviewer_lifecycle import ReviewerLifecycle
 from core.modules.reviews.models.reviewer import Reviewer

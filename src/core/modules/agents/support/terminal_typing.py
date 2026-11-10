@@ -1,4 +1,4 @@
-from core.base.journal_home import LAUNCHER_SOCKET, JournalHome
+from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
 from engine.errors.refusal import Refusal
 from core.base.driver.program_lockdown import ProgramLockdown
 from core.modules.agents.models.agent import Agent

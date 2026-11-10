@@ -4,7 +4,7 @@ from functools import partial
 
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.base.upgrade.creator_resolver import CreatorResolver
 from core.base.upgrade.move_context import MoveContext
 from core.base.upgrade.move_map import MoveMap

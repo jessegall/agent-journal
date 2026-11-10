@@ -9,10 +9,10 @@ from http import HTTPStatus
 from pathlib import Path
 from urllib.error import HTTPError
 
-from core.base.clock import Clock
-from core.base.journal_home import JournalHome
+from engine.time.clock import Clock
+from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.updates.models.support.update_setting import UpdateSetting
 from core.modules.updates.support.published_release import PublishedRelease

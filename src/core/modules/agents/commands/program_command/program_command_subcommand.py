@@ -3,7 +3,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from core.base.caller.caller import Caller
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.launch import Launch
 from core.base.provider.providers import Providers
 from core.base.provider.resumed_session import ResumedSession

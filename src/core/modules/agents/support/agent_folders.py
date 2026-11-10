@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from engine.enums.helper_role import HelperRole
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.environments.support.environment_rows import EnvironmentRows

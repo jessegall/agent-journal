@@ -1,6 +1,6 @@
 import subprocess
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from engine.enums.sandbox_level import SandboxLevel
 

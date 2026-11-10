@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from core.base.version_numbers import VersionNumbers
+from engine.version.version_numbers import VersionNumbers
 from engine.errors.refusal import Refusal
 
 MANIFEST_FILE = "journal-plugin.json"

@@ -6,11 +6,11 @@ from pathlib import Path
 
 from engine.actor.actor import CORE_ACTOR_ID
 from core.base.change.event_log import EventLog
-from core.base.clock import Clock
-from core.base.container import Container
+from engine.time.clock import Clock
+from engine.container.container import Container
 from core.base.database.database import Database
-from core.base.journal_container import sync_modules, synced_container
-from core.base.journal_home import JournalHome
+from engine.container.journal_container import sync_modules, synced_container
+from engine.journal.journal_home import JournalHome
 from core.base.registry.registry import Registry
 from core.base.upgrade.move_map import MoveMap
 from core.base.upgrade.move_runner import MoveRunner

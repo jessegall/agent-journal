@@ -12,7 +12,7 @@ from core.base.provider.providers import Providers
 from core.base.provider.transcript_entry import TranscriptEntry
 from core.base.provider.transcript_entries import TranscriptEntries
 from core.base.query.queries import Queries
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.record_missing_prompt.record_missing_prompt import RecordMissingPrompt
 from core.modules.drivers.models.hook_call import HookCall

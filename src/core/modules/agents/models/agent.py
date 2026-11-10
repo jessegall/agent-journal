@@ -4,7 +4,7 @@ from engine.enums.actor_type import ActorType
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import END_CHANGE, Model
 from core.base.model.model_error import ModelError
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.base.agent_policy import AgentPolicy
 from core.modules.agents.models.enums.agent_activity import AgentActivity
 

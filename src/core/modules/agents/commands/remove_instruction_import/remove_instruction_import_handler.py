@@ -3,7 +3,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.file_access import FileAccess
 from core.base.instruction_imports import INSTRUCTION_FILES, InstructionImports
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.commands.remove_instruction_import.remove_instruction_import import RemoveInstructionImport

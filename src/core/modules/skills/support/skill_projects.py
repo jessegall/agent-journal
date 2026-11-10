@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.modules.environments.support.environment_rows import EnvironmentRows
 
 

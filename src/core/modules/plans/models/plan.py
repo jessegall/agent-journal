@@ -3,7 +3,7 @@ from engine.actor.actor import Actor
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.model.state_holder import StateHolder
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.tasks.models.task import check_title
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle

@@ -5,7 +5,7 @@ from core.base.provider.peer_note import PeerNote
 from core.base.provider.provider import Provider
 from core.base.provider.transcript_growth import TranscriptGrowth
 from core.base.provider.transcript_entry import TranscriptEntry
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 class TranscriptEntries:

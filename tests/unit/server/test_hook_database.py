@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from server.hook.hook_database import HookDatabase
 from server.hook.queue_priority import QueuePriority
 

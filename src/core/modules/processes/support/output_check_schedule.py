@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.timestamp import MINUTE_SECONDS, Timestamp
+from engine.time.timestamp import MINUTE_SECONDS, Timestamp
 from core.modules.processes.models.watch import Watch
 
 STEP_MINUTES = (5, 10, 15)

@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from core.base.database.reported_findings import ReportedFindings
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.transcript_entries import TranscriptEntries
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from server.code_version import CodeVersion
 from server.hook.hook_database import HookDatabase
 from server.journal_door import JournalDoor

@@ -13,7 +13,7 @@ from core.base.query.select import Select
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.base.query.conditions.maximum import Maximum
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.processes.queries.conditions.long_run_candidate import LongRunCandidate
 from core.modules.processes.queries.conditions.part_run_seconds import PartRunSeconds
 

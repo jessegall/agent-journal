@@ -7,7 +7,7 @@ from core.base.change.created import Created
 from core.base.change.deleted import Deleted
 from core.base.change.moved import Moved
 from core.base.command.context import Context
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from engine.row.metadata import Metadata
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState

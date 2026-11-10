@@ -7,7 +7,7 @@ from core.base.module.button_check import ButtonCheck
 from dataclasses import dataclass
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.module.module_finder import ModuleFinder
 
 import pytest

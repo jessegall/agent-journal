@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from core.base.journal_home import LAUNCHER_SOCKET
+from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.commands.record_worktree_removal.record_worktree_removal_handler import RecordWorktreeRemovalHandler
 from engine.actor.actor import Actor

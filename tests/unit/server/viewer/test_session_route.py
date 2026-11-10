@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from server.viewer.session_type import SessionType
 from server.viewer.session_route import SessionRoute
 from server.viewer.viewer_login import ViewerLogin

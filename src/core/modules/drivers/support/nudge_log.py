@@ -7,7 +7,7 @@ from core.base.driver.rule_answers import RuleAnswers
 from core.base.driver.span_queries import SpanQueries
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.models.nudge_record import NudgeRecord
 from core.modules.drivers.support.nudge_records import NudgeRecords

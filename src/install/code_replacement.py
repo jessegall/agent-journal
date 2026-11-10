@@ -1,6 +1,6 @@
 from collections.abc import Callable, Sequence
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from install.server_lock import ServerLock
 
 

@@ -1,6 +1,6 @@
 import stat
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.modules.plugins.support.login_path import FALLBACK_FOLDERS, LoginPath
 
 

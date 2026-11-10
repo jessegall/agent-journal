@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.command.context import Context
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.reviews.commands.add_reviewer.add_reviewer import AddReviewer
 from core.modules.reviews.commands.add_reviewer.add_reviewer_handler import AddReviewerHandler
 

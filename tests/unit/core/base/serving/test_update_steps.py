@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from core.base.clock import Clock
-from core.base.journal_home import JournalHome
+from engine.time.clock import Clock
+from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from core.base.serving.code_handover import CodeHandover
 from core.base.serving.update_steps import UpdateSteps

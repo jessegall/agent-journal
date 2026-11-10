@@ -6,7 +6,7 @@ from engine.row.metadata import Metadata
 from core.base.model.added_state import StateValue
 from core.base.model.lifecycle import Lifecycle
 from core.base.model.move import Move
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.base.model.model_error import ModelError
 from engine.text.search_term import SearchTerm
 

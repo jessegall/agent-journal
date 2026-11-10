@@ -7,7 +7,7 @@ from core.base.query.query import Query
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.less import Less
 from core.base.query.conditions.minimum import Minimum
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.replaced_rows import replaced_rows

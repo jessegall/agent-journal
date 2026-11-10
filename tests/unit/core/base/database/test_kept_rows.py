@@ -3,7 +3,7 @@ import pytest
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.database.statement import Statement
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.row.row_owner import RowOwner
 
 

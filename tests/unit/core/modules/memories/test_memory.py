@@ -2,7 +2,7 @@ import pytest
 
 from engine.errors.refusal import Refusal
 from engine.actor.actor import Actor
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.memories.models.memory import HIGHEST_WEIGHT, LOWEST_WEIGHT, TEXT_LIMIT_CHARACTERS, Memory
 
 

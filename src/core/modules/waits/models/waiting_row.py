@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.model.view_model import ViewModel
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.support.views import WAITING_ROWS_SELECT
 

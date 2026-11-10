@@ -1,4 +1,4 @@
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.modules.processes.support.output_folder import PAGE_BYTES, OutputFolder
 
 

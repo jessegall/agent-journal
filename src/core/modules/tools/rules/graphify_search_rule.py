@@ -2,7 +2,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.enums.role_group import RoleGroup
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.base.driver.search_category import CODE, SearchCategory

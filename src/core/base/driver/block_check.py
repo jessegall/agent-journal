@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.driver.agent_hook import AgentHook
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 @dataclass(frozen=True)

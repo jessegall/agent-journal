@@ -5,8 +5,8 @@ from engine.enums.sandbox_level import SandboxLevel
 from core.base.driver.command_category import CommandCategory
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
-from core.base.timestamp import MINUTE_SECONDS, Timestamp
-from core.base.duration import Duration
+from engine.time.timestamp import MINUTE_SECONDS, Timestamp
+from engine.time.duration import Duration
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 

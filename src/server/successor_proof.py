@@ -3,10 +3,10 @@ import sqlite3
 import tempfile
 from pathlib import Path
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.database.database import Database
-from core.base.journal_container import opened_container, sync_modules
-from core.base.journal_home import JournalHome
+from engine.container.journal_container import opened_container, sync_modules
+from engine.journal.journal_home import JournalHome
 from core.base.module.module_sync import ModuleSync
 from server.server_backup import ServerBackup
 

@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from dataclasses import asdict, replace
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.hook_source import HookSource
 from core.base.provider.managed_hook import ManagedHook
 from core.base.provider.managed_state import ManagedState

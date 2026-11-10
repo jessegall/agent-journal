@@ -1,4 +1,4 @@
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 NOTICE_TIMEOUT_COUNT = 3
 SPAN_SECONDS = 600

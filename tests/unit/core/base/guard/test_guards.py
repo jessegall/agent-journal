@@ -8,7 +8,7 @@ from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.change.event_pattern import EventPattern
 from core.base.command.context import Context
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.guard.change_filter import ChangeFilter
 from core.base.guard.guard import Guard
 from core.base.guard.guard_switches import GuardSwitches
@@ -18,7 +18,7 @@ from core.base.model.model import Model
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.registry import Registry
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_model import Item

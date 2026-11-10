@@ -5,7 +5,7 @@ from core.base.chat.mark_outcome import MarkOutcome
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.session_bound import SessionBound
 from core.base.model.model import Model
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
 from core.modules.chat.models.lifecycles.chat_mark_lifecycle import ChatMarkLifecycle
 

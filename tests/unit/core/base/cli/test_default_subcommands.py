@@ -10,7 +10,7 @@ from core.base.cli.default_subcommands import DefaultSubcommands
 from core.base.subcommand.subcommand import Subcommand
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.command.bus import Bus
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.command.move_command import MoveCommand

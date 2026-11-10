@@ -1,7 +1,7 @@
 from dataclasses import replace
 from time import perf_counter
 
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.guard.guard_refusal import SKIP_ALLOWED_CASE
 from core.base.driver.rule_call import RuleCall
 from core.base.driver.rule_record import RuleRecord

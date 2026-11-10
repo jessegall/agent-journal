@@ -1,6 +1,6 @@
 from core.base.caller.process_row import ProcessRow
 from core.base.caller.process_table import ProcessTable
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 CHAIN_LIMIT_STEPS = 32

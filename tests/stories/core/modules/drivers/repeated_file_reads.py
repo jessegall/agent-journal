@@ -1,9 +1,9 @@
 import os
 from datetime import timedelta
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.driver.tool_type import ToolType
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.base.driver.support.hook_agents import hook_agent

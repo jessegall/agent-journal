@@ -6,7 +6,7 @@ from pathlib import Path
 
 from core.base.adopted_process import AdoptedProcess
 from core.base.child_process import ChildProcess
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.leftover_process import LeftoverProcess
 from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.system_log_writer import SystemLogWriter

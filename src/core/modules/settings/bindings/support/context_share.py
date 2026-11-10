@@ -1,4 +1,4 @@
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.context_window import ContextWindow
 from core.base.provider.providers import Providers
 from core.modules.settings.bindings.support.setting_values import SettingValues

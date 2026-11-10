@@ -3,7 +3,7 @@ from datetime import timedelta
 
 import pytest
 
-from core.base.journal_home import LAUNCHER_SOCKET
+from engine.journal.journal_home import LAUNCHER_SOCKET
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry

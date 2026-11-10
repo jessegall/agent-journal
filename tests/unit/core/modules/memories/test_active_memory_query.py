@@ -1,5 +1,5 @@
 from core.base.database.statement import Statement
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery
 from tests.unit.core.modules.memories.support.memory_journal import FIXED_TIME, MemoryJournal
 

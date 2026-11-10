@@ -8,7 +8,7 @@ from core.base.command.delete_command import DeleteCommand
 from core.base.command.edit_command import EditCommand
 from core.base.command.make_command import MakeCommand
 from core.base.command.move_command import MoveCommand
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 from tests.unit.core.base.model.test_model import Item
 

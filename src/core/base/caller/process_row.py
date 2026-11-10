@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 @dataclass(frozen=True)

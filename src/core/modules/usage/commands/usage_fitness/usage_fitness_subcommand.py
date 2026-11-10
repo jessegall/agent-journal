@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.base.subcommand.output import Output

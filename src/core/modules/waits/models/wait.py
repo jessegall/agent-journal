@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from engine.actor.actor import Actor
 from core.base.model.model import Model
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.waits.models.lifecycles.wait_lifecycle import WaitLifecycle
 from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.enums.wait_type import WaitType

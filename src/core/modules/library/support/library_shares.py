@@ -1,4 +1,4 @@
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.library.library_share import LibraryShare
 from core.base.model.model import Model
 from engine.errors.refusal import Refusal

@@ -9,7 +9,7 @@ from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.change.event_pattern import EventPattern
 from core.base.command.context import Context
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.guard.change_filter import ChangeFilter
 from core.base.listener.deletion_listener import DeletionListener
 from core.base.listener.listeners import Listeners
@@ -19,7 +19,7 @@ from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_model import Item
 from core.base.change.changed import Changed

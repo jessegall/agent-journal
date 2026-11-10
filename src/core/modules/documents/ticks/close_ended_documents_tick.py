@@ -1,4 +1,4 @@
-from core.base.container import Container
+from engine.container.container import Container
 from core.modules.documents.actions.ended_documents import EndedDocuments
 
 

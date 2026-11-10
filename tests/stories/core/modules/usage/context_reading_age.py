@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from tests.stories.core.modules.usage.support.status_files import keep_status_file, rewrite_status_file, save_status_file
 from tests.stories.core.support.fixtures import MainEnvironment

@@ -5,7 +5,7 @@ import sys
 from contextlib import suppress
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from install.built_bundles import BuiltBundles
 from core.base.serving.code_handover import CodeHandover
 from install.code_replacement import CodeReplacement

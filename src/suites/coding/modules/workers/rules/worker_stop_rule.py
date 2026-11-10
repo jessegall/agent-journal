@@ -1,5 +1,5 @@
 from suites.coding.support.coding_helper_role import CodingHelperRole
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from suites.coding.support.coding_nudges import WORKER_TASK_STARTED
 from core.base.driver.agent_hook import AgentHook

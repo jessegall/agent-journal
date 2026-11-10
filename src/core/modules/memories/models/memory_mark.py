@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from engine.actor.actor import Actor
 from core.base.model.model import Model
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.memories.models.lifecycles.mark_lifecycle import MarkLifecycle
 from core.modules.memories.models.enums.mark_state import MarkState
 

@@ -9,7 +9,7 @@ from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.tool_type import ToolType
 from core.base.profile.agent_profile import AgentProfile
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.control_group import ControlGroup
 from core.base.provider.helper_launch import HelperLaunch
 from core.base.provider.helper_outcome import HelperOutcome
@@ -30,7 +30,7 @@ from core.base.provider.transcript_author import AGENT_AUTHOR, USER_AUTHOR
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.provider.transcript_tail import TranscriptTail
 from core.base.provider.transcript_entry import TranscriptEntry
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
 
 

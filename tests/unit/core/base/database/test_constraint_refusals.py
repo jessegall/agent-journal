@@ -5,7 +5,7 @@ import pytest
 from core.base.database.constraint_refusals import ConstraintRefusals
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.model.table import Table
 
 

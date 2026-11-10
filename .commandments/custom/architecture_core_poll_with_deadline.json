@@ -10,7 +10,7 @@
         ],
         "reject": [
             {"testCode": true},
-            {"fileMatches": "(^|/)src/core/base/clock\\.py$"},
+            {"fileMatches": "(^|/)src/engine/time/clock\\.py$"},
             {"fileMatches": "(^|/)src/core/testing/"}
         ]
     },

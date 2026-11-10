@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from core.base.serving.code_handover import CodeHandover
 from core.base.serving.launcher_replacement import LauncherReplacement

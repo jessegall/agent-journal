@@ -2,8 +2,8 @@ import pytest
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.journal_container import opened_container
-from core.base.journal_home import JournalHome
+from engine.container.journal_container import opened_container
+from engine.journal.journal_home import JournalHome
 from core.base.module.module_sync import ModuleSync
 from core.modules.tasks.models.support.views import closed_task_counts_select
 

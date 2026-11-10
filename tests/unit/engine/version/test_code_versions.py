@@ -1,11 +1,11 @@
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from pathlib import Path
 
 import pytest
 
 from engine.errors.code_version_missing_error import CodeVersionMissingError
-from core.base.code_versions import FIRST_VERSION, CodeVersions
-from core.base.journal_home import JournalHome
+from engine.version.code_versions import FIRST_VERSION, CodeVersions
+from engine.journal.journal_home import JournalHome
 
 
 def source(folder: Path, text: str) -> Path:

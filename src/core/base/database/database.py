@@ -6,7 +6,7 @@ from core.base.database.nesting_error import NestingError
 from core.base.database.point_tally import PointTally
 from core.base.database.statement import Statement
 from engine.errors.read_limit_error import ReadLimitError
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.row.row_owner import RowOwner
 
 if TYPE_CHECKING:

@@ -1,10 +1,10 @@
 import shutil
 from pathlib import Path
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent

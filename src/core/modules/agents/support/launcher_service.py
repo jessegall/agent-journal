@@ -3,7 +3,7 @@ import socket
 import subprocess
 import time
 
-from core.base.journal_home import LAUNCHER_SOCKET, JournalHome
+from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
 
 SERVICE_ARGUMENT = "launcher-service"
 STANDALONE_ARGUMENT = "--standalone"

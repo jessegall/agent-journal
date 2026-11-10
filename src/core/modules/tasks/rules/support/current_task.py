@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_log import TaskLog
 

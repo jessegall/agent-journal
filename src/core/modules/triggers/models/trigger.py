@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from core.base.model.model import Model
 from engine.errors.refusal import Refusal
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.triggers.models.enums.trigger_action import TriggerAction
 from core.modules.triggers.models.enums.trigger_match import TriggerMatch
 from core.modules.triggers.models.support.trigger_condition import TriggerCondition

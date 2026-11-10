@@ -4,7 +4,7 @@ from core.base.model.tables import Tables
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.less import Less
 from core.base.query.query import Query
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from datetime import timedelta
 from suites.coding.modules.checks.models.check import Check
 from suites.coding.modules.checks.conditions.interval_passed import IntervalPassed

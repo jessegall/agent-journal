@@ -8,10 +8,10 @@ import tempfile
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.database.database import Database
-from core.base.journal_container import opened_container
-from core.base.journal_home import JournalHome
+from engine.container.journal_container import opened_container
+from engine.journal.journal_home import JournalHome
 from core.base.module.code_fingerprint import CORE_FOLDER
 from core.base.module.module_sync import ModuleSync
 from core.testing.manual_clock import ManualClock

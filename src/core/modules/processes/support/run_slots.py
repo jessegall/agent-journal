@@ -2,7 +2,7 @@ from core.modules.processes.support.run_counts import RunCounts
 from dataclasses import replace
 
 from core.base.command.context import Context
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.listener.event_rows import EventRows
 from core.base.database.kept_rows import KeptRows
 from core.base.query.conditions.among import Among

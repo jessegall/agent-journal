@@ -15,11 +15,11 @@ from core.base.cli.line_run import LineRun, ignore_completed
 from collections.abc import Callable
 from core.base.cli.subcommand_lookup import SubcommandLookup
 from core.base.cli.usage_error import UsageError
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.database.database import Database
 from core.base.database.reported_findings import ReportedFindings
 from core.base.environment_names import EnvironmentNames
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from core.base.caller.caller import Caller
 from core.base.registry.stale_registry_error import StaleRegistryError

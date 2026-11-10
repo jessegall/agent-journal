@@ -3,7 +3,7 @@ import threading
 import time
 from collections.abc import Callable, Sequence
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.module.module_finder import ModuleFinder
 from core.base.ticker.tick_handler import TickHandler
 from server.journal_round import JournalRound

@@ -17,12 +17,6 @@
             },
             {
                 "testCode": true
-            },
-            {
-                "file": "src/core/base/container.py"
-            },
-            {
-                "file": "src/core/base/journal_container.py"
             }
         ]
     },

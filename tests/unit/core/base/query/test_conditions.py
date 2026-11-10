@@ -2,7 +2,7 @@ import pytest
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.equal import Equal
 from core.base.query.conditions.greater import Greater

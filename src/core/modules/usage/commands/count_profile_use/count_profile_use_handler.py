@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries

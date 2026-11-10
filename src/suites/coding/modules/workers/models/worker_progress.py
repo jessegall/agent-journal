@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.view_model import ViewModel
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from suites.coding.modules.workers.models.support.views import WORKER_PROGRESS_SELECT
 
 

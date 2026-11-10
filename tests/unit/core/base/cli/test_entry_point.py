@@ -5,7 +5,7 @@ import sys
 import time
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from tests.unit.core.base.module.test_module_sync import ITEMS, synced
 
 ROOT = Path(__file__).resolve().parents[5]

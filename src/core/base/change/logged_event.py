@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
 
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 CREATION = ".create"
 

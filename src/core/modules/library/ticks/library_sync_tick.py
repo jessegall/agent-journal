@@ -1,7 +1,7 @@
 import time
 from collections.abc import Callable
 
-from core.base.container import Container
+from engine.container.container import Container
 from core.modules.library.support.round_memory import RoundMemory
 from core.modules.library.ticks.library_sync import LibrarySync
 

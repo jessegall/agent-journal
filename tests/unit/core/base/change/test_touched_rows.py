@@ -1,6 +1,6 @@
 from core.base.change.logged_event import LoggedEvent
 from core.base.change.touched_rows import TouchedRows
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 def logged(name: str, row_id: int) -> LoggedEvent:

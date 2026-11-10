@@ -2,7 +2,7 @@ from core.base.change.event_log import EventLog
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.driver.driver_rule import DriverRule
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.providers import Providers
 from core.base.provider.hook_manager import HookManager

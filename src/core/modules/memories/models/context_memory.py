@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.model.view_model import ViewModel
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.memories.models.enums.delivery_cause import DeliveryCause
 from core.modules.memories.models.support.views import CONTEXT_MEMORIES_SELECT
 

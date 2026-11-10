@@ -1,4 +1,4 @@
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.command.bus import Bus
 from core.base.command.command import Command
 from core.base.library.library_item import LibraryItem

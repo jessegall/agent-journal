@@ -7,7 +7,7 @@ from server.booting_work import BootingWork
 from core.base.leftover_process import LeftoverProcess
 from core.base.cli.caller_stream import CallerStream
 from core.base.command.bus import Bus
-from core.base.journal_container import synced_container
+from engine.container.journal_container import synced_container
 from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
 from core.base.plugin_script_processes import PluginScriptProcesses

@@ -1,13 +1,13 @@
 from collections.abc import Sequence
 from datetime import datetime, timedelta, timezone
 
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.driver.layers import Layers
 from core.base.driver.open_row import OpenRow
 from core.base.driver.overlay import Overlay
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.overlay_entry import OverlayEntry
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from tests.unit.core.base.sample_container import empty_registry
 
 START = datetime(2026, 10, 31, 9, tzinfo=timezone.utc)

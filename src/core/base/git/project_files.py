@@ -1,7 +1,7 @@
 import subprocess
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 
 LISTING_SECONDS = 30
 

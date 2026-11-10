@@ -25,16 +25,10 @@
                 "file": "src/core/base/code_copy.py"
             },
             {
-                "file": "src/core/base/code_versions.py"
-            },
-            {
                 "file": "src/core/base/conflict_files.py"
             },
             {
                 "file": "src/core/base/connection_probe.py"
-            },
-            {
-                "file": "src/core/base/container.py"
             },
             {
                 "file": "src/core/base/exception_sink.py"
@@ -58,15 +52,6 @@
                 "file": "src/core/base/internet_connection.py"
             },
             {
-                "file": "src/core/base/journal.py"
-            },
-            {
-                "file": "src/core/base/journal_home.py"
-            },
-            {
-                "file": "src/core/base/journal_version.py"
-            },
-            {
                 "file": "src/core/base/leftover_process.py"
             },
             {
@@ -83,18 +68,6 @@
             },
             {
                 "file": "src/core/base/system_log_writer.py"
-            },
-            {
-                "file": "src/core/base/timestamp.py"
-            },
-            {
-                "file": "src/core/base/timing.py"
-            },
-            {
-                "file": "src/core/base/timing_log.py"
-            },
-            {
-                "file": "src/core/base/version.py"
             }
         ]
     },

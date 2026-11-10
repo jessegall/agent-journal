@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.model.view_model import ViewModel
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.documents.models.support.views import DOCUMENT_ROWS_SELECT
 
 

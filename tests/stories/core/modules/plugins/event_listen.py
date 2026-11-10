@@ -9,7 +9,7 @@ from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
 from core.base.plugin_script_processes import PluginScriptProcesses
 from core.modules.drivers.models.agent_line import AgentLine
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.core.modules.plugins.support.event_stories import (

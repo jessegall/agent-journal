@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from core.base.command.bus import Bus
-from core.base.container import Container
+from engine.container.container import Container
 from suites.coding.modules.workers.commands.queue_worker_tests.queue_stalled_tests import QueueStalledTests
 from suites.coding.modules.workers.commands.queue_worker_tests.start_worker_tests import StartWorkerTests
 from suites.coding.modules.workers.models.enums.proof_state import ProofState

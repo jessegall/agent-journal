@@ -27,7 +27,7 @@ while True:
 LOCK_HOLDER_SCRIPT = """
 import sys, time
 from pathlib import Path
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from install.server_lock import ServerLock
 with ServerLock(JournalHome(Path(sys.argv[1]))):
     print("held", flush=True)

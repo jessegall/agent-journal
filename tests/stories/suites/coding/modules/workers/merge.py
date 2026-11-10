@@ -20,7 +20,7 @@ from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResume
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
 import subprocess
 
-from core.base.journal_home import LAUNCHER_SOCKET
+from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.testing.fake_launcher import FakeLauncher
 from datetime import timedelta
 

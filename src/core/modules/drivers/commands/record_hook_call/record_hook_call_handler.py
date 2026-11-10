@@ -14,7 +14,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.project_paths import ProjectPaths
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.driver.refusal_line import RefusalLine
 from core.base.driver.rule_answers import RuleAnswers
 from engine.errors.refusal import Refusal
@@ -22,7 +22,7 @@ from engine.row.metadata import Metadata
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.base.timing import Timing
+from engine.time.timing import Timing
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import DeliverAgentLine
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall

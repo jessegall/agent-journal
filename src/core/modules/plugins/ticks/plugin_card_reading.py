@@ -2,7 +2,7 @@ from contextlib import closing
 
 from engine.actor.actor import Actor
 from core.base.command.bus import Bus
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput

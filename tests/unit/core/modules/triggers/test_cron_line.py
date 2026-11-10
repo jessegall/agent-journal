@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import pytest
 
 from engine.errors.refusal import Refusal
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.triggers.commands.support.cron_line import CronLine
 
 MONDAY_START = Timestamp(datetime(2026, 11, 2, 8, 30, tzinfo=timezone.utc))

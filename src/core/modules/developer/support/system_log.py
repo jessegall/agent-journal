@@ -1,6 +1,6 @@
 from itertools import chain
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.row.page import Page
 from core.modules.developer.support.log_file_lines import LogFileLines
 from core.modules.developer.support.log_filter import LogFilter

@@ -1,4 +1,4 @@
-from core.base.container import Container
+from engine.container.container import Container
 from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.base.tunnel.tunnel import Tunnel

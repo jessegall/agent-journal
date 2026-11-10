@@ -1,6 +1,6 @@
 from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_history_key import RuleHistoryKey
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.rule_history import RuleHistory
 from core.modules.drivers.models.enums.rule_due_outcome import RuleDueOutcome
 from core.modules.drivers.support.hook_rule_histories import HookRuleHistories

@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.removable import Removable
 from core.base.model.model import Model
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 

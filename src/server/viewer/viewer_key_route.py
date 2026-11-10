@@ -2,8 +2,8 @@ from engine.enums.actor_type import ActorType
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.database.database import Database
-from core.base.journal_container import synced_container
-from core.base.journal_home import JournalHome
+from engine.container.journal_container import synced_container
+from engine.journal.journal_home import JournalHome
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.main_agent_finder import MainAgentFinder

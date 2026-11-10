@@ -1,6 +1,6 @@
 import time
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from install.server_wont_stop_error import ServerWontStopError
 from core.base.unix_connection import UnixConnection
 from core.base.serving.server_limits import DRAIN_LIMIT_SECONDS

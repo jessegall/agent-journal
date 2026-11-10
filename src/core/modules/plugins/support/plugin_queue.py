@@ -8,7 +8,7 @@ from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from typing import IO
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from engine.types.type_guards import is_mapping
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_card_answer import PluginCardAnswer

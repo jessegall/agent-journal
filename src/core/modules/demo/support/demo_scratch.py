@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 
 from core.base.code_copy import CodeCopy
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from core.base.seed.demo import DEMO_ENVIRONMENT
 from core.base.seed.demo_link import DemoLink

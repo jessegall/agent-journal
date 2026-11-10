@@ -2,10 +2,10 @@ import json
 from collections.abc import Sequence
 from pathlib import Path
 
-from core.base.clock import Clock
+from engine.time.clock import Clock
 from core.base.file_access import FileAccess
-from core.base.journal_home import JournalHome
-from core.base.timestamp import Timestamp
+from engine.journal.journal_home import JournalHome
+from engine.time.timestamp import Timestamp
 from core.modules.search.support.search_result import SearchResult
 
 KEPT_SECONDS = 30

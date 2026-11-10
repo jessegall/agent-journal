@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from core.base.driver.command_category import CommandCategory
 from core.base.model.model import Model
 from engine.errors.refusal import Refusal
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 ARGS_MARK = "{args}"
 NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")

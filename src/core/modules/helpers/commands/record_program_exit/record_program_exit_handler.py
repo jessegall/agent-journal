@@ -2,8 +2,8 @@ from core.base.profile.agent_profile import AgentProfile
 from engine.enums.log_level import LogLevel
 from datetime import timedelta
 
-from core.base.clock import Clock
-from core.base.timestamp import Timestamp
+from engine.time.clock import Clock
+from engine.time.timestamp import Timestamp
 from core.base.system_log_writer import SystemLogWriter
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType

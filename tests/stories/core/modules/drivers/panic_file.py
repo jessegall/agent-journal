@@ -1,4 +1,4 @@
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.modules.drivers.ticks.panic_watch import PanicWatch
 from core.testing.hook_samples import HookSamples
 from core.base.driver.command_category import CommandCategory

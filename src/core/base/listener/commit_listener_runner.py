@@ -6,7 +6,7 @@ from core.base.change.event_log import EventLog
 from core.base.change.changed import Changed
 from core.base.change.event_type import EventType
 from core.base.change.logged_event import LoggedEvent
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.error_log import ErrorLog
 from engine.enums.log_level import LogLevel
 from core.base.system_log_writer import SystemLogWriter

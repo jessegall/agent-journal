@@ -1,4 +1,4 @@
-from core.base.container import Container
+from engine.container.container import Container
 from engine.enums.role_group import RoleGroup
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule

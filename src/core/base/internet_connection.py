@@ -3,8 +3,8 @@ from threading import RLock
 
 from core.base.connection_probe import ConnectionProbe
 from engine.enums.connection_status import ConnectionStatus
-from core.base.journal_home import JournalHome
-from core.base.timestamp import Timestamp
+from engine.journal.journal_home import JournalHome
+from engine.time.timestamp import Timestamp
 
 CHECK_INTERVAL_SECONDS = 10
 

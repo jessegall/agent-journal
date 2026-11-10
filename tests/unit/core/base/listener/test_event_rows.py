@@ -2,7 +2,7 @@ import pytest
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.listener.event_rows import EventRows
 from core.base.model.tables import Tables
 from core.base.query.queries import Queries

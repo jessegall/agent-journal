@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.module.layer_allow_list import LayerAllowList
 from core.base.module.layer_check import LayerCheck
 from core.base.module.layer_table import LayerTable

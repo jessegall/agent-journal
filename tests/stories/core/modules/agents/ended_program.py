@@ -8,7 +8,7 @@ from core.base.caller.process_row import ProcessRow
 from core.base.command.bus import Bus
 from core.base.leftover_process import LeftoverProcess
 from core.base.listener.commit_listener_runner import CommitListenerRunner
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
 from core.testing.fake_launcher import FakeLauncher

@@ -3,8 +3,8 @@ from contextlib import contextmanager
 
 from core.base.database.database import Database
 from core.base.environment_names import EnvironmentNames
-from core.base.journal_container import synced_container
-from core.base.journal_home import JournalHome
+from engine.container.journal_container import synced_container
+from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from core.base.registry.inspector_defaults import InspectorDefaults
 from core.base.registry.inspector_listing import InspectorListing
@@ -15,7 +15,7 @@ from core.modules.drivers.support.active_modules import ActiveModules
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.base.scope.scopes import Scopes
-from core.base.container import Container
+from engine.container.container import Container
 from server.viewer.unknown_environment_error import UnknownEnvironmentError
 from core.base.registry.window_listing import WindowListing
 

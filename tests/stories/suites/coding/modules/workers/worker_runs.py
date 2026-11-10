@@ -14,7 +14,7 @@ from suites.coding.modules.workers.rules.stopped_worker_run_rule import StoppedW
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
-from core.base.journal_home import LAUNCHER_SOCKET
+from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.testing.hook_samples import HookSamples
 from core.testing.fake_launcher import FakeLauncher
 from core.modules.agents.support.agent_launcher import AgentLauncher

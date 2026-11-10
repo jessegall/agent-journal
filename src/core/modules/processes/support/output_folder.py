@@ -4,8 +4,8 @@ import shutil
 import os
 from collections.abc import Iterator
 from pathlib import Path
-from core.base.journal_home import JournalHome
-from core.base.timestamp import Timestamp
+from engine.journal.journal_home import JournalHome
+from engine.time.timestamp import Timestamp
 from core.modules.processes.support.colour_codes import ColourCodes
 from core.modules.processes.support.output_page import NEWLINE, OutputPage
 

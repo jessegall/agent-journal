@@ -3,7 +3,7 @@ from datetime import timedelta
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.base.query.conditions.among import Among
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES, MessageType

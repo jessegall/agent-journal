@@ -9,7 +9,7 @@ import sys
 import time
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 
 INSTALL = Path(__file__).resolve().parents[2] / "install.sh"
 TIMEOUT_SECONDS = 120

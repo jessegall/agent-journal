@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from core.base.container import Container
-from core.base.journal_home import JournalHome
+from engine.container.container import Container
+from engine.journal.journal_home import JournalHome
 from engine.errors.missing_hint_error import MissingHintError
 from engine.errors.unbound_value_error import UnboundValueError
 from engine.errors.wrong_instance_error import WrongInstanceError

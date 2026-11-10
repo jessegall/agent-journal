@@ -2,7 +2,7 @@ from collections.abc import Mapping, Sequence
 
 from core.base.provider.providers import Providers
 from core.base.scope.scopes import Scopes
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.helpers.support.helper_settings import PROGRAM_SPLIT
 from core.modules.helpers.support.program_share import ProgramShare
 from core.modules.settings.bindings.support.setting_values import SettingValues

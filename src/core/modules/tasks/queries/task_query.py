@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from engine.enums.agent_role import AgentRole
 from core.base.database.statement import Statement
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.tasks.models.support.views import closed_task_counts_select
 from typing import Self
 

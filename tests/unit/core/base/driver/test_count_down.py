@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from core.base.driver.count_down import CountDown
 from core.base.driver.seconds import Seconds
 from core.base.query.queries import Queries
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 @dataclass(frozen=True)

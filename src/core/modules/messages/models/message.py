@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.messages.models.enums.message_type import MessageType
 
 TITLE_CHARACTERS = 60

@@ -1,4 +1,4 @@
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from collections.abc import Sequence
 from functools import cached_property
 from core.base.module.module_finder import ModuleFinder

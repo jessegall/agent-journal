@@ -2,7 +2,7 @@ import re
 
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.agent_hook import AgentHook
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.queries.hook_call_query import HookCallQuery, TOOL_HOOKS
 from core.modules.messages.queries.message_query import MessageQuery

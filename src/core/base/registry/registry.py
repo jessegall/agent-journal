@@ -15,7 +15,7 @@ from core.base.registry.parsed_registries import ParsedRegistries
 
 from core.base.change.event_pattern import EventPattern
 from core.base.database.database import Database
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.database.registry_table import RegistryTable
 from core.base.database.registry_version import RegistryVersion
 from core.base.dotted_path.dotted_path import DottedPath

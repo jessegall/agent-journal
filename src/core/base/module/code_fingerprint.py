@@ -4,11 +4,11 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import ClassVar
 
-from core.base.journal import Journal
+from engine.journal.journal import Journal
 from core.base.module.folder_listing import FolderListing
 from core.base.module.module import Module
 from core.base.module.source_hash import SourceHash
-from core.base.version import CORE_VERSION
+from engine.version.version import CORE_VERSION
 
 CORE_FOLDER = Path(__file__).resolve().parents[2]
 BUILT_WINDOWS_FOLDER = Path("web") / "dist"

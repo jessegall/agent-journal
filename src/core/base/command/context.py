@@ -5,7 +5,7 @@ from core.base.command.command import Command
 from core.base.command.outside_runs import OutsideRuns
 from engine.text.explanation import Explanation
 from engine.errors.refusal import Refusal
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 
 
 @dataclass(frozen=True)

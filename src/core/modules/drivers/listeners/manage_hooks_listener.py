@@ -1,6 +1,6 @@
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.driver_entries import DRIVERS_MODULE
 from core.base.module.module_actors import ModuleActors

@@ -2,7 +2,7 @@ import threading
 
 import pytest
 
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.module.module_finder import ModuleFinder
 from core.base.ticker.tick_handler import TickHandler
 from core.base.ticker.tick_interval import TickInterval

@@ -5,7 +5,7 @@ from core.base.cli.move_subcommand import MoveSubcommand
 from core.base.subcommand.subcommand import Subcommand, is_subcommand_class
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.command.command import Command
-from core.base.container import Container
+from engine.container.container import Container
 from core.base.model.model import Model
 from core.base.registry.registry import Registry
 from core.base.cli.usage_error import UsageError

@@ -4,7 +4,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.reviews.models.enums.review_state import ReviewState
 from core.modules.reviews.models.lifecycles.review_lifecycle import ReviewLifecycle
 from core.modules.reviews.models.review import Review

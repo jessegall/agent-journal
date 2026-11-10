@@ -5,7 +5,7 @@ from core.base.exception_sink import CLOCK_TICK_SOURCE
 from core.base.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
 from core.base.module.performance_tools import PerformanceTools
-from core.base.timing import Timing
+from engine.time.timing import Timing
 from core.modules.drivers.support.hook_cost_tool import HOOK_LIMIT_POINTS
 from core.modules.developer.support.slow_tick_tool import SlowTickTool
 from install.code_replacement import CodeReplacement

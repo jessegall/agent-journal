@@ -7,7 +7,7 @@ import pytest
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.database.triggers import Triggers
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables

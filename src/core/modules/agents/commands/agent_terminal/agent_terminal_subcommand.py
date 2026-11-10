@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.journal_home import JournalHome
+from engine.journal.journal_home import JournalHome
 from core.base.provider.transcript_tail import TranscriptTail
 from core.base.query.queries import Queries
 from engine.row.page import Page

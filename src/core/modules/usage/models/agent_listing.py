@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.usage.models.agent_card import AgentCard
 from core.modules.usage.models.support.views import AGENT_LISTING_SELECT
 

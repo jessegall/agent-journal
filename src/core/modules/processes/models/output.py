@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.model.model import END_CHANGE, Model
-from core.base.timestamp import Timestamp
+from engine.time.timestamp import Timestamp
 from core.modules.processes.models.enums.output_state import OutputState
 from core.modules.processes.models.lifecycles.output_lifecycle import OutputLifecycle
 

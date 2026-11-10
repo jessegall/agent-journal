@@ -7,7 +7,7 @@ if __name__ == "__main__":
 
 from core.base.caller.caller_request import CallerRequest
 from core.base.cli.line_run import LineRun
-from core.base.journal_home import HOME_VARIABLE, JournalHome
+from engine.journal.journal_home import HOME_VARIABLE, JournalHome
 
 
 def main(argv: list[str]) -> int:
