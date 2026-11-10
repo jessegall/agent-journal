@@ -1,13 +1,23 @@
 from types import SimpleNamespace
 
 from core.modules.plans.models.enums.focus_source import FocusSource
+from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.support.focus.plan_focus import PlanFocus
 from core.modules.plans.support.focus.unblocker import Unblocker
 from core.modules.plans.support.focus.unblockers import Unblockers
 
-MAIN = SimpleNamespace(id=1, role="main")
-HELPER = SimpleNamespace(id=2, role="helper")
-STARTED_PLANS = [SimpleNamespace(id=plan_id) for plan_id in (3, 5, 8)]
+PLANS_MODULE = "journal.core.plans"
+
+
+def agent(agent_id, role, named_plan_id=None):
+    part = {} if named_plan_id is None else {"focus_plan": named_plan_id}
+    return SimpleNamespace(id=agent_id, role=role, metadata=SimpleNamespace(module_part=lambda module: part if module == PLANS_MODULE else {}))
+
+
+MAIN = agent(1, "main")
+HELPER = agent(2, "helper")
+STARTED_PLANS = [SimpleNamespace(id=plan_id, state=PlanState.STARTED) for plan_id in (3, 5, 8)]
+STORED_PLANS = [*STARTED_PLANS, SimpleNamespace(id=9, state=PlanState.APPROVED), SimpleNamespace(id=10, state=PlanState.BLOCKED)]
 
 
 class StartedPlanRows:
@@ -18,7 +28,10 @@ class StartedPlanRows:
         return self
 
     def filter(self, **fields):
-        return self
+        return StartedPlanRows([plan for plan in STORED_PLANS if plan.id == fields["id"]]) if "id" in fields else self
+
+    def first(self):
+        return self.plans[0] if self.plans else None
 
     def ordered(self, *columns):
         return self
@@ -31,7 +44,7 @@ def focus(ready=(), unblocked=(), plans=STARTED_PLANS):
     next_tasks = SimpleNamespace(ready=lambda plan_id, agent: tuple(["a place"]) if (plan_id, agent.id) in ready else ())
     unblockers = SimpleNamespace(plan_unblockers=lambda plan_ids, agent: {
         plan_id: Unblockers(tuple([Unblocker(40, 2)])) if (plan_id, agent.id) in unblocked else Unblockers() for plan_id in plan_ids})
-    return PlanFocus(StartedPlanRows(plans), next_tasks, unblockers)
+    return PlanFocus(StartedPlanRows(plans), SimpleNamespace(), next_tasks, unblockers)
 
 
 def test_the_oldest_started_plan_with_a_ready_task_is_the_default_focus():
@@ -61,3 +74,20 @@ def test_the_overview_holds_the_work_of_every_started_plan_and_the_plans_beside_
     overview = focus(ready={(5, 1)}).overview(MAIN)
     assert [work.plan.id for work in overview.started] == [3, 5, 8]
     assert (overview.focus_work.plan.id, [work.plan.id for work in overview.remaining]) == (5, [3, 8])
+
+
+def test_a_started_plan_the_agent_named_is_the_focus_whatever_the_default_would_be():
+    current = focus(ready={(3, 1)}).current(agent(1, "main", 8))
+    assert (current.plan.id, current.source) == (8, FocusSource.EXPLICIT)
+
+
+def test_an_approved_plan_the_agent_named_is_the_focus_and_its_work_is_read_with_the_started_plans():
+    overview = focus(ready={(3, 1)}).overview(agent(1, "main", 9))
+    assert (overview.current.plan.id, [work.plan.id for work in overview.started]) == (9, [3, 5, 8, 9])
+
+
+def test_a_named_plan_that_is_blocked_or_gone_is_not_used_and_the_default_is_the_focus():
+    blocked = focus(ready={(3, 1)}).overview(agent(1, "main", 10))
+    deleted = focus(ready={(3, 1)}).overview(agent(1, "main", 77))
+    assert (blocked.current.plan.id, blocked.unused.line) == (3, "your focus on plan 10 is not used: the plan is blocked")
+    assert (deleted.current.source, deleted.unused.line) == (FocusSource.DEFAULT, "your focus on plan 77 is not used: the plan is gone")

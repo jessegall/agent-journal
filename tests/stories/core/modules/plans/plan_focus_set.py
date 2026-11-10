@@ -4,7 +4,7 @@ from tests.stories.core.modules.plans.support.started_plans import DEFAULT_FOCUS
 
 SET_FOCUS = "plan {plan} is your focus: you set it"
 DEFAULT_ON_FIRST_PLAN = f"plan 1 is your focus: {DEFAULT_FOCUS}"
-NO_SUCH_PLAN = "no such plan"
+MISSING_PLAN_REFUSAL = "no such plan"
 
 
 def test_a4_a5_naming_a_plan_sets_the_focus_and_naming_another_replaces_it_with_nothing_kept_of_the_first(new_story):
@@ -41,7 +41,7 @@ def test_a10_a_number_that_is_no_plan_and_a_plan_of_another_environment_are_refu
     story.run("environment make shop /work/shop")
     story.run('plan make "Shop front" --environment shop', actor=story.user)
     for plan_id in (99, 4):
-        story.expect_refusal(f"plan focus {plan_id}", NO_SUCH_PLAN, actor=story.agent)
+        story.expect_refusal(f"plan focus {plan_id}", MISSING_PLAN_REFUSAL, actor=story.agent)
     story.expect_success(PLAN_FOCUS, DEFAULT_ON_FIRST_PLAN, actor=story.agent)
 
 

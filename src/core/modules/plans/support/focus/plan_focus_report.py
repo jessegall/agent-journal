@@ -17,8 +17,9 @@ class PlanFocusReport:
     def lines(self, agent: Agent) -> list[str]:
         overview = self.focus.overview(agent)
         focus_work = overview.focus_work
-        lines = [FOCUS_MISSING_TEXT] if overview.current is None or focus_work is None else [
-            f"plan {focus_work.plan.id} is your focus: {SOURCE_TEXTS[overview.current.source]}", *focus_work.focus_lines()]
+        unused_lines = [] if overview.unused is None else [overview.unused.line]
+        lines = [*unused_lines, FOCUS_MISSING_TEXT] if overview.current is None or focus_work is None else [
+            *unused_lines, f"plan {focus_work.plan.id} is your focus: {SOURCE_TEXTS[overview.current.source]}", *focus_work.focus_lines()]
         if overview.remaining:
             lines.append(REMAINING_PLANS_HEADING)
         return [*lines, *(line for work in overview.remaining for line in work.summary_lines())]

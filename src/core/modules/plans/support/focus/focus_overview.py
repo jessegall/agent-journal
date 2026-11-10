@@ -2,15 +2,17 @@ from dataclasses import dataclass
 
 from core.modules.plans.support.focus.focused_plan import FocusedPlan
 from core.modules.plans.support.focus.plan_work import PlanWork
+from core.modules.plans.support.focus.unused_focus import UnusedFocus
 
 
 @dataclass(frozen=True)
 class FocusOverview:
-    """The plan focus of one agent, read once: the plan in focus, if any, and the work of every started plan,
-    oldest first."""
+    """The plan focus of one agent, read once: the plan in focus, if any, the work of every started plan,
+    oldest first, and a focus the agent named that is not used now."""
 
     current: FocusedPlan | None
     started: tuple[PlanWork, ...]
+    unused: UnusedFocus | None = None
 
     @property
     def focus_work(self) -> PlanWork | None:
