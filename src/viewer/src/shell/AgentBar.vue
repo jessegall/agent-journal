@@ -45,7 +45,9 @@ const word = computed(() => (pendingWork.value ? `Status: ${pendingWork.value}` 
                 <SkeletonLine :bars="LOADING_BARS" data-agent-bar-loading />
             </template>
             <template v-else>
-                <strong>No agent</strong>
+                <span class="dot" data-agent-placeholder-dot />
+                <strong class="agent-placeholder" data-agent-placeholder>Agent 1</strong>
+                <span class="agent-placeholder" data-agent-word>No session yet</span>
             </template>
             <span class="agent-space" />
         </template>
@@ -123,6 +125,15 @@ const word = computed(() => (pendingWork.value ? `Status: ${pendingWork.value}` 
 
 .dot.running {
     background: var(--accent);
+}
+
+.agent-placeholder {
+    color: var(--text-4);
+    font-weight: 400;
+}
+
+.agent-placeholder:first-of-type {
+    font-weight: 600;
 }
 
 .detail {

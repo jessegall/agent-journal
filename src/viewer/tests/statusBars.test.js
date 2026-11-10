@@ -76,9 +76,14 @@ test("the agent bar shows its state and an icon button with the helpers count, a
     expect(element.textContent).toContain("Working");
 });
 
-test("the agent bar says nothing until it knows, then No agent when there is none", () => {
-    expect(mounted(AgentBar, {agent: null, loading: true}).textContent).not.toContain("No agent");
-    expect(mounted(AgentBar, {agent: null}).textContent).toContain("No agent");
+test("the agent bar says nothing until it knows, then shows a greyed agent 1 with no session yet and no pause button when there is none", () => {
+    expect(mounted(AgentBar, {agent: null, loading: true}).textContent).not.toContain("No session yet");
+    const empty = mounted(AgentBar, {agent: null});
+    expect(empty.querySelector("[data-agent-placeholder]").textContent).toBe("Agent 1");
+    expect(empty.querySelector("[data-agent-word]").textContent).toBe("No session yet");
+    expect(empty.querySelector(".dot").classList.contains("running")).toBe(false);
+    expect(empty.querySelector("[data-agent-pause]")).toBeNull();
+    expect(empty.querySelector("[data-agent-task]")).toBeNull();
 });
 
 test("the top bar holds the breadcrumb, the activity and the full screen buttons, the second the status and the mode bar, and the third the facts and the view controls", async () => {
