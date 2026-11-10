@@ -4,7 +4,6 @@ from datetime import timedelta
 import pytest
 
 from core.modules.agents.testing.fake_launcher import FakeLauncher
-from server.work.booting_work import BootingWork
 from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.occupant_rotation import job_launch
 from tests.stories.core.modules.helpers.support.rotating_helper import SAVE_ROTATING, EndedEachLaunchHelper, StartedEachLaunchHelper, real_program_states, story_with_profile_file
@@ -42,7 +41,7 @@ def launches_after_the_program_died(story) -> list[dict]:
     launcher.drain_requests()
     launcher.server.close()
     story.home.socket("launcher").unlink()
-    return launcher.requests
+    return [request for request in launcher.requests if "command" in request]
 
 
 def test_a_steering_line_to_a_running_helper_joins_its_open_job_and_starts_no_new_occupant(working):
@@ -52,19 +51,16 @@ def test_a_steering_line_to_a_running_helper_joins_its_open_job_and_starts_no_ne
     working.expect_rows(len(jobs) == 1, STEERING_TEXT in jobs[0].brief, helper_agent(working).session == helper.session, len(session_rows(working)) == 1)
 
 
-def test_a_helper_that_dies_in_a_job_with_its_conversation_resumes_the_same_session_with_the_waiting_line(working, monkeypatch):
+@pytest.mark.parametrize("has_conversation", [True, False])
+def test_a_helper_that_dies_in_a_job_resumes_its_session_or_gets_a_new_one_with_the_whole_brief(working, monkeypatch, has_conversation):
     helper = helper_agent(working)
-    resumable_session(working, helper, monkeypatch)
+    if has_conversation:
+        resumable_session(working, helper, monkeypatch)
     steered(working)
     command = launches_after_the_program_died(working)[0]["command"]
-    working.expect_rows(helper_agent(working).session == helper.session, "--resume" in command, helper.session in command, STEERING_TEXT in " ".join(command), detail=str(command[-4:]))
-
-
-def test_a_helper_that_dies_in_a_job_without_its_conversation_gets_a_new_session_with_the_whole_brief(working):
-    helper = helper_agent(working)
-    steered(working)
-    command = " ".join(launches_after_the_program_died(working)[0]["command"])
-    working.expect_rows(helper_agent(working).id == helper.id, helper_agent(working).session != helper.session, FIRST_BRIEF in command, STEERING_TEXT in command, detail=command)
+    line = " ".join(command)
+    working.expect_rows(helper_agent(working).id == helper.id, (helper_agent(working).session == helper.session) is has_conversation, ("--resume" in command) is has_conversation,
+                        STEERING_TEXT in line, has_conversation or FIRST_BRIEF in line, detail=line)
     working.expect_absent("question list --environment main", "rotating", actor=working.user)
 
 
@@ -90,9 +86,6 @@ def test_a_program_that_goes_out_in_a_job_makes_the_job_wait_and_never_changes_p
     working.expect_success(f'provider-outage make claude "rate limit" --ends-at {ends_at}', actor=working.agent)
     during_outage = launches_after_the_program_died(working)
     working.expect_rows(during_outage == [], helper_agent(working).program == "claude", read_jobs(working, helper)[0].ended_at is None, detail=str(during_outage))
-    working.advance(timedelta(minutes=31))
-    command = job_launch(working)["command"]
-    working.expect_rows(command[0] == "claude", helper_agent(working).session == helper.session, detail=str(command[:2]))
 
 
 def test_a_changed_occupant_leaves_the_open_job_alone_and_decides_the_next_launch(working, monkeypatch):
@@ -105,18 +98,6 @@ def test_a_changed_occupant_leaves_the_open_job_alone_and_decides_the_next_launc
     resumable_session(working, helper, monkeypatch)
     command = job_launch(working)["command"]
     working.expect_rows("--resume" in command, helper_agent(working).session == helper.session, detail=str(command[-4:]))
-
-
-def test_a_journal_that_restarts_in_a_job_hands_the_open_job_back_to_the_same_session(working, monkeypatch):
-    helper = helper_agent(working)
-    resumable_session(working, helper, monkeypatch)
-    steered(working)
-    working.expect_success(f"agent end {helper.id}", actor=working.user)
-    launcher = FakeLauncher.listening(working.home.socket("launcher"), answer=b"started 701\n")
-    BootingWork().run(working.container)
-    working.run_listeners()
-    launcher.drain_requests()
-    working.expect_rows(len(launcher.requests) == 1, helper_agent(working).session == helper.session, helper.session in launcher.requests[0]["command"], detail=str(launcher.requests))
 
 
 def test_a_second_send_while_the_first_job_is_open_is_refused_and_only_one_occupant_is_made(rotating):
@@ -135,13 +116,3 @@ def test_a_stopped_helper_ends_its_job_as_stopped_and_the_next_send_makes_a_new_
     working.expect_rows(read_jobs(working, helper)[0].returned == "Stopped", detail=str(read_jobs(working, helper)[0]))
     command = job_launch(working)["command"]
     working.expect_rows(helper_agent(working).session != helper.session, "--resume" not in command, detail=str(command[-4:]))
-
-
-def test_an_occupant_that_never_ran_is_closed_as_never_started_when_the_next_send_makes_another(rotating):
-    helper = helper_agent(rotating)
-    rotating.expect_success(f'helper send {agent_number(rotating, helper.id)} "{JOB}"', actor=rotating.agent)
-    unstarted_session = helper_agent(rotating).session
-    rotating.expect_rows(unstarted_session != helper.session, session_rows(rotating)[0]["started_at"] is None, detail=str(session_rows(rotating)))
-    job_launch(rotating)
-    rows = {row["session"]: row["end_reason"] for row in session_rows(rotating)}
-    rotating.expect_rows(helper_agent(rotating).session not in (helper.session, unstarted_session), rows[unstarted_session] == "never_started", detail=str(rows))

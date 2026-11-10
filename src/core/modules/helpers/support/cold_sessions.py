@@ -1,6 +1,7 @@
 from core.modules.processes.support.output_check_schedule import MINUTE_SECONDS
 from core.modules.settings.bindings.support.context_share import ContextShare
 from engine.actor.actor import Actor
+from engine.enums.occupant import Occupant
 from engine.time.clock import Clock
 from engine.command.bus import Bus
 from engine.journal.journal_home import JournalHome
@@ -25,8 +26,9 @@ class ColdSessions:
     """Says whether resuming an agent would be wasteful: its prompt cache has gone cold because it has not
     replied for longer than the cache lasts, and its context is large enough that writing it to the cache
     again costs more than starting over; such an agent gets a new program session under the same journal
-    agent, which keeps its number, memories, tasks and worktree. A limit of 0 turns the check off. An agent
-    past the context limit starts over the same way. An agent whose current session replaced another and never
+    agent, which keeps its number, memories, tasks and worktree. A limit of 0 turns the check off. The occupant
+    of a helper's profile decides whether a cold session is replaced: one that continues keeps it. An agent
+    past the context limit starts over the same way, whatever its occupant. An agent whose current session replaced another and never
     started keeps that session: it is launched, not replaced again. A helper whose conversation is missing from
     its folder starts over too, and its new session is told the earlier conversation is unavailable."""
 
@@ -35,10 +37,10 @@ class ColdSessions:
         self.queries, self.clock, self.providers, self.home, self.settings, self.bus, self.share, self.rows = queries, clock, providers, home, settings, bus, share, rows
         self.sessions = sessions
 
-    def replaced(self, agent: Agent) -> Agent:
+    def replaced(self, agent: Agent, occupant: Occupant) -> Agent:
         if self.sessions.unstarted(agent):
             return self.rows.required(Agent, agent.id)
-        if not self.is_cold(agent) and not self.exceeds_context_limit(agent) and self.conversations.exists(agent):
+        if not occupant.replaces(self.is_cold(agent)) and not self.exceeds_context_limit(agent) and self.conversations.exists(agent):
             return agent
         return self.bus.run(ReplaceAgentSession(agent.id, self.end_reason(agent)), Actor.core(), environment_id=agent.environment_id)
 

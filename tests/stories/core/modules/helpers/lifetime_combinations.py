@@ -37,11 +37,6 @@ def launched_job(story) -> dict:
     return launcher.requests[0]
 
 
-def test_a_continue_helper_is_resumed_though_its_cache_is_cold_and_its_context_large(steady, monkeypatch):
-    helper, request = with_job(steady, monkeypatch, 300, 80)
-    steady.expect_rows(helper_agent(steady).session == helper.session, "--resume" in request["command"], helper.session in request["command"], detail=str(request["command"][-4:]))
-
-
 def test_a_continue_helper_whose_conversation_is_missing_starts_a_new_session_and_is_told_so(steady):
     helper = helper_agent(steady)
     command = " ".join(launched_job(steady)["command"])
@@ -58,10 +53,11 @@ def test_a_continue_helper_past_the_context_limit_still_gets_a_new_session(stead
     steady.expect_rows(helper_agent(steady).session != helper.session, "--resume" not in request["command"], detail=str(request["command"][-4:]))
 
 
-@pytest.mark.parametrize("minutes,percent", [(1, 100), (54, 80), (300, 19)])
-def test_a_when_cold_helper_that_is_warm_or_small_is_resumed(cooling, monkeypatch, minutes, percent):
-    helper, request = with_job(cooling, monkeypatch, minutes, percent)
-    cooling.expect_rows(helper_agent(cooling).session == helper.session, "--resume" in request["command"], detail=str(request["command"][-4:]))
+@pytest.mark.parametrize("fixture,minutes,percent", [(EndedColdRotationHelper, 1, 100), (EndedColdRotationHelper, 54, 80), (EndedColdRotationHelper, 300, 19), (EndedContinueHelper, 300, 80)])
+def test_a_when_cold_helper_that_is_warm_or_small_and_a_continue_helper_that_is_cold_and_large_are_resumed(new_story, monkeypatch, fixture, minutes, percent):
+    story = story_with_profile_file(new_story, fixture)
+    helper, request = with_job(story, monkeypatch, minutes, percent)
+    story.expect_rows(helper_agent(story).session == helper.session, "--resume" in request["command"], helper.session in request["command"], detail=str(request["command"][-4:]))
 
 
 def test_a_when_cold_helper_that_is_cold_and_large_gets_a_new_session_on_its_program_and_number(cooling, monkeypatch):
