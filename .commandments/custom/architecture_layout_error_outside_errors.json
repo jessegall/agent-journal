@@ -19,6 +19,9 @@
                 "testCode": true
             },
             {
+                "file": "src/core/modules/drivers/commands/skip_refusal/skip_refusal.py"
+            },
+            {
                 "file": "src/install/backup_mismatch_error.py"
             },
             {
