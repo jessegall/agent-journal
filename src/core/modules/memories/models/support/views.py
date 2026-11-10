@@ -14,6 +14,8 @@ CONTEXT_MEMORIES_SELECT = (
     " memory_deliveries.created_at AS delivered_at FROM memory_deliveries"
     " WHERE memory_deliveries.created_at > coalesce((SELECT max(hook_calls.created_at) FROM hook_calls"
     " WHERE hook_calls.session_agent_id = memory_deliveries.session_agent_id AND hook_calls.hook = 'compact'), '')"
+    " AND memory_deliveries.created_at >= coalesce((SELECT coalesce(agent_sessions.started_at, agent_sessions.created_at) FROM agent_sessions"
+    " WHERE agent_sessions.session_agent_id = memory_deliveries.session_agent_id ORDER BY agent_sessions.id DESC LIMIT 1), '')"
 )
 
 KEYWORD_MEMORIES_SELECT = (

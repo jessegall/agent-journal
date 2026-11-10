@@ -1,4 +1,5 @@
 import json
+from datetime import timedelta
 
 import pytest
 
@@ -26,6 +27,7 @@ def start_deliveries(story) -> list[int]:
 
 
 def test_an_agent_whose_session_was_replaced_is_given_its_memories_again_at_its_next_start(remembering):
+    remembering.advance(timedelta(minutes=1))
     replaced_id = remembering.new_row_id("agent start s-2 claude main --environment main")
     remembering.hook("s-2", SESSION_START)
     remembering.run_listeners()
