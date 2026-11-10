@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -15,7 +16,7 @@ class ResumeAgentSubcommand(Subcommand[ResumeAgent, Agent]):
     outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=int)
+        parser.add_argument("agent_id", type=AgentNumber)
 
     def command(self, arguments: Namespace, caller: Caller) -> ResumeAgent:
         return ResumeAgent(arguments.agent_id)

@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from core.modules.agents.support.agent_rows import RUNNING_AGENTS_REASON
 from core.modules.settings.bindings.support.context_share import ContextShare
 from core.modules.agents.models.agent import Agent
@@ -54,7 +55,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--closed", action="store_true", help="also the agents that ended most recently")
-        parser.add_argument("--agent", type=int, dest="agent_id", help="show only this agent")
+        parser.add_argument("--agent", type=AgentNumber, dest="agent_id", help="show only this agent")
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentFactsList:
         return self.listing(arguments.closed, arguments.agent_id, ())

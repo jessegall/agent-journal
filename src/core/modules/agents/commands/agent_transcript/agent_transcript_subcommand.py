@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 from dataclasses import replace
 from pathlib import Path
@@ -26,7 +27,7 @@ class AgentTranscriptSubcommand(ReadSubcommand[Page[TranscriptRow]]):
         self.queries, self.providers, self.index, self.authors = queries, providers, index, authors
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=int)
+        parser.add_argument("agent_id", type=AgentNumber)
         page_arguments(parser)
         parser.add_argument("--before-id", type=int, default=None)
 

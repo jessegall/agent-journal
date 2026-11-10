@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.enums.actor_type import ActorType
@@ -43,7 +44,7 @@ class UsageAgentSubcommand(ReadSubcommand[AgentInspection]):
         self.queries, self.processes = queries, processes
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=int)
+        parser.add_argument("agent_id", type=AgentNumber)
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentInspection:
         agent = self.queries.query(Agent).find(arguments.agent_id)
