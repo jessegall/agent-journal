@@ -8,7 +8,7 @@ from engine.model.state_book import StateBook
 from engine.model.tables import Tables
 from engine.dotted_path.dotted_path import DottedPath
 from engine.module.module import Module
-from engine.module.module_error import ModuleError
+from engine.module.errors.module_error import ModuleError
 from engine.module.module_states import modules_book
 from engine.module.state_check import StateCheck
 from engine.module.helper_type_check import HelperTypeCheck

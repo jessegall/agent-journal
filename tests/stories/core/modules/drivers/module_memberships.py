@@ -1,7 +1,7 @@
 import pytest
 
 from engine.database.database import Database
-from engine.module.module_error import ModuleError
+from engine.module.errors.module_error import ModuleError
 from engine.module.module_removal import ModuleRemoval
 from engine.registry.registry import Registry
 from tests.stories.core.modules.drivers.support.module_memberships import PATH

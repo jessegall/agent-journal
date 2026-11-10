@@ -1,7 +1,7 @@
 from collections.abc import Mapping, Sequence
 
 from engine.module.module import Module
-from engine.module.module_error import ModuleError
+from engine.module.errors.module_error import ModuleError
 
 
 class ModuleOrder:

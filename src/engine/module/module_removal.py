@@ -14,7 +14,7 @@ from engine.model.tables import Tables
 from engine.dotted_path.dotted_path import DottedPath
 from engine.module.module import Module
 from engine.module.module_check import ModuleCheck
-from engine.module.module_error import ModuleError
+from engine.module.errors.module_error import ModuleError
 from engine.module.module_finder import ModuleFinder
 from engine.module.module_order import ModuleOrder
 from engine.module.module_sync import ModuleSync

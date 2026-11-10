@@ -8,7 +8,7 @@ from engine.module.layer import Layer
 from engine.module.layer_rules import LayerRules
 from engine.module.layer_table import LayerTable
 from engine.module.module import Module
-from engine.module.module_error import ModuleError
+from engine.module.errors.module_error import ModuleError
 from engine.module.module_order import ModuleOrder
 
 SKIPPED_FOLDERS = {"__pycache__", "node_modules"}

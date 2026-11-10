@@ -5,7 +5,7 @@ import pytest
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.journal.journal_home import JournalHome
-from engine.module.module_error import ModuleError
+from engine.module.errors.module_error import ModuleError
 from engine.module.module_removal import ModuleRemoval
 from tests.unit.engine.module.test_module_sync import ITEM_COUNT, ITEMS, synced
 

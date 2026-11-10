@@ -4,7 +4,7 @@ from engine.cli.console import REFUSED_CODE, SUCCESS_CODE
 from engine.subcommand.output import Output
 from engine.model.tables import Tables
 from engine.database.errors.schema_mismatch_error import SchemaMismatchError
-from engine.module.module_error import ModuleError
+from engine.module.errors.module_error import ModuleError
 from engine.module.module_sync import ModuleSync
 
 SYNC_ARGV = ["module", "sync"]

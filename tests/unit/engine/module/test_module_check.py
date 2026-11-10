@@ -24,7 +24,7 @@ from engine.module.inspector_check import InspectorCheck
 from engine.module.module_check import ModuleCheck
 from engine.module.provider_check import ProviderCheck
 from engine.module.suite_check import SuiteCheck
-from engine.module.module_error import ModuleError
+from engine.module.errors.module_error import ModuleError
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.setting_check import SettingCheck
 from engine.module.state_check import StateCheck

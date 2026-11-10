@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 
-from engine.module.module_error import ModuleError
+from engine.module.errors.module_error import ModuleError
 
 BOUND = re.compile(r"^(>=|<=|>|<|==)(\d+(?:\.\d+){0,2})$")
 

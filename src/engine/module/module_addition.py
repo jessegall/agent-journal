@@ -10,7 +10,7 @@ from engine.database.errors.schema_mismatch_error import SchemaMismatchError
 from engine.dotted_path.dotted_path import DottedPath
 from engine.journal.journal_home import JournalHome
 from engine.module.module import Module
-from engine.module.module_error import ModuleError
+from engine.module.errors.module_error import ModuleError
 from engine.module.module_finder import ModuleFinder
 from engine.module.module_sync import ModuleSync
 from engine.module.sync_report import SyncReport

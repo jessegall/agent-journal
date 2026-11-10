@@ -4,7 +4,7 @@ import pytest
 
 from engine.journal.journal_home import JournalHome
 from engine.module.module import Module
-from engine.module.module_error import ModuleError
+from engine.module.errors.module_error import ModuleError
 from engine.module.module_finder import ModuleFinder
 from engine.module.module_order import ModuleOrder
 from engine.module.version_requirement import VersionRequirement

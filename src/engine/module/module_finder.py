@@ -8,7 +8,7 @@ from engine.dotted_path.errors.dotted_path_error import DottedPathError
 from engine.journal.journal_home import JournalHome
 from engine.dotted_path.dotted_path import DottedPath
 from engine.module.module import Module
-from engine.module.module_error import ModuleError
+from engine.module.errors.module_error import ModuleError
 from engine.module.version_requirement import VersionRequirement
 from engine.version.version import CORE_VERSION
 from engine.types.type_guards import is_list, is_tuple
