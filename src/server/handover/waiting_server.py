@@ -28,4 +28,4 @@ class WaitingServer:
         os.close(self.descriptors.ready_pipe)
         os.read(self.descriptors.exit_pipe, len(READY_BYTE))
         os.close(self.descriptors.exit_pipe)
-        CodeVersions(self.home).switch(Path(__file__).resolve().parents[1].name)
+        CodeVersions(self.home).switch(Path(__file__).resolve().parents[2].name)

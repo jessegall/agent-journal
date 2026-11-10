@@ -68,9 +68,6 @@
             },
             {
                 "file": "src/server/server.py"
-            },
-            {
-                "file": "src/server/server_backup.py"
             }
         ]
     },

@@ -2,7 +2,7 @@ from engine.module.module_finder import ModuleFinder
 from engine.module.performance_tools import PerformanceTools
 from core.modules.developer.support.slow_tick_tool import SlowTickTool
 from core.modules.processes.ticks.output_reading import OutputReading
-from server.ticker import Ticker
+from server.tick.ticker import Ticker
 from tests.stories.engine.driver.support.fixtures import LeadLocked
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.support.coding_fixtures import UserBuilder

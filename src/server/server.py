@@ -40,8 +40,8 @@ from server.door.local_journal_door import LocalJournalDoor
 from server.request.journal_server import JournalServer
 from core.base.serving.server_limits import DRAIN_LIMIT_SECONDS
 from server.request.server_context import ServerContext
-from server.server_plugin_services import ServerPluginServices
-from server.server_tunnel import ServerTunnel
+from server.tick.server_plugin_services import ServerPluginServices
+from server.tick.server_tunnel import ServerTunnel
 from server.hook.hook_database import HookDatabase
 from server.request.request_log import SETTINGS_REFRESH_SECONDS
 from server.work.journal_round import JournalRound
@@ -51,7 +51,7 @@ from server.work.ordinary_listener_work import OrdinaryListenerWork
 from server.work.plugin_listener_work import PluginListenerWork
 from server.work.program_stop_listener_work import ProgramStopListenerWork
 from server.work.urgent_listener_work import UrgentListenerWork
-from server.ticker import Ticker
+from server.tick.ticker import Ticker
 from server.viewer.session_file import SessionFile
 from server.viewer.closed_service import ClosedService
 from server.viewer.viewer_listener import ViewerListener
@@ -61,7 +61,7 @@ from server.viewer.share_sessions import ShareSessions
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
 from server.request.request_handler import RequestHandler
-from server.server_backup import ServerBackup
+from server.tick.server_backup import ServerBackup
 from core.base.serving.server_files import ServerFiles
 from server.handover.waiting_server import WaitingServer
 

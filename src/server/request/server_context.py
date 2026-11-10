@@ -8,7 +8,7 @@ from server.hook.hook_database import HookDatabase
 from server.door.journal_door import JournalDoor
 from server.work.listener_thread import ListenerThread
 from core.base.serving.server_files import ServerFiles
-from server.server_tunnel import ServerTunnel
+from server.tick.server_tunnel import ServerTunnel
 from server.viewer.viewer_endpoint import ViewerEndpoint
 from server.request.request_log import RequestLog
 

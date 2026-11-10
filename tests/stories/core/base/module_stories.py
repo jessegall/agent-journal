@@ -7,7 +7,7 @@ from suites import DEFAULT_SUITES
 ROOT = Path(__file__).resolve().parents[4]
 STORIES = ROOT / "tests" / "stories"
 # a module whose stories sit outside its own story folder, with the path they are at
-MOVED_STORIES = {"journal.core.tunnel": "tests/stories/server/server_tunnel.py", "journal.core.claude_code": "tests/unit/core/modules/claude_code"}
+MOVED_STORIES = {"journal.core.tunnel": "tests/stories/server/tick/server_tunnel.py", "journal.core.claude_code": "tests/unit/core/modules/claude_code"}
 
 
 def stories_path(module) -> Path:

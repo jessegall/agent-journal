@@ -4,7 +4,7 @@ import pytest
 
 import os
 import sqlite3
-from server.server_backup import ServerBackup
+from server.tick.server_backup import ServerBackup
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_answers, expect_exists_version_four, expect_lines_2
 

@@ -53,7 +53,7 @@ from server.viewer.viewer_endpoint import ViewerEndpoint
 from server.viewer.viewer_listener import ViewerListener
 from server.viewer.phone_sessions import PhoneSessions
 from server.viewer.share_sessions import ShareSessions
-from server.server_tunnel import ServerTunnel
+from server.tick.server_tunnel import ServerTunnel
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
 from scripts.timing_report import logged_timings, report

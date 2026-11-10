@@ -74,21 +74,6 @@
             },
             {
                 "file": "src/install/working_tree_install.py"
-            },
-            {
-                "file": "src/server/server_backup.py"
-            },
-            {
-                "file": "src/server/server_plugin_services.py"
-            },
-            {
-                "file": "src/server/server_tunnel.py"
-            },
-            {
-                "file": "src/server/tick_handler_work.py"
-            },
-            {
-                "file": "src/server/ticker.py"
             }
         ]
     },

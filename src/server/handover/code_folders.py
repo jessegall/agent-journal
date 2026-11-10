@@ -4,7 +4,7 @@ from engine.module.code_fingerprint import CORE_FOLDER, ENGINE_FOLDER
 from engine.module.module_finder import ModuleFinder
 
 
-SERVER_FOLDER = Path(__file__).resolve().parent
+SERVER_FOLDER = Path(__file__).resolve().parents[1]
 
 
 class CodeFolders:
