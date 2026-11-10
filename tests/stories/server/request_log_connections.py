@@ -136,16 +136,16 @@ def test_the_status_never_shows_a_request_that_is_attempted_and_not_yet_recorded
     writing, release = Event(), Event()
 
     @contextmanager
-    def held():
+    def paused_connection():
         writing.set()
         server.story.expect_rows(release.wait(3), detail="the status read was not held until the write ended")
         with connected() as container:
             yield container
 
     monkeypatch.setattr(log, "connected", paused_connection)
-    seen = []
+    statuses = []
     writer = Thread(target=log.record, args=(["task", "list"], "cli", 1.0, 0.0, 0))
-    reader = Thread(target=lambda: seen.append(log.status()))
+    reader = Thread(target=lambda: statuses.append(log.status()))
     writer.start()
     server.story.expect_rows(writing.wait(3))
     reader.start()
@@ -153,5 +153,5 @@ def test_the_status_never_shows_a_request_that_is_attempted_and_not_yet_recorded
     release.set()
     writer.join()
     reader.join()
-    status = seen[0]
+    status = statuses[0]
     server.story.expect_rows(status["attempted"] == status["recorded"] + status["dropped"] + status["disabled"])
