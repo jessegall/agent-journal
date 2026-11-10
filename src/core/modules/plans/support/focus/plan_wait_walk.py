@@ -45,7 +45,7 @@ class PlanWaitWalk:
         for end_id in sorted(self.waiting_tasks):
             line = facts.waiting_line(end_tasks[end_id])
             if line is None:
-                candidates.append(Unblocker(end_id, len(self.waiting_tasks[end_id])))
+                candidates.append(Unblocker(end_id, len(self.waiting_tasks[end_id]), end_tasks[end_id].priority))
             else:
                 lines[end_id] = line
         return Unblockers(tuple(candidates), tuple(lines[task_id] for task_id in sorted(lines)))

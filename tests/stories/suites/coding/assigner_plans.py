@@ -27,10 +27,10 @@ def planned_tasks(story, *, started: bool) -> None:
             story.run(f"{move} --environment main", actor=story.user)
 
 
-def test_a_task_leaving_the_hands_is_followed_by_the_started_plans_lowest_id_at_one_priority(next_plan_task):
+def test_a_task_leaving_the_hands_is_followed_by_the_started_plans_first_task_in_the_order_of_its_phase(next_plan_task):
     story = next_plan_task
-    story.expect_text("task show 2", "state: started", actor=story.agent)
-    story.expect_text("task show 3", "state: open", actor=story.agent)
+    story.expect_text("task show 3", "state: started", actor=story.agent)
+    story.expect_text("task show 2", "state: open", actor=story.agent)
     story.expect_text("task show 4", "state: open", actor=story.agent)
 
 

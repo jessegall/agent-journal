@@ -10,16 +10,6 @@ def outside_task(story: Story, title: str) -> int:
     return story.new_row_id(f'task make "{title}" --environment main', actor=story.user)
 
 
-def test_c1_a_task_of_a_plan_nobody_approved_is_not_handed_out_and_the_read_names_that_plan(new_story):
-    story = new_story(fixture=ThreeStartedPlans)
-    story.run('plan make "Yard" --environment main', actor=story.user)
-    story.run('phase make --plan 4 "Build"', actor=story.user)
-    task_id = outside_task(story, "Fence")
-    story.run(f"phase place {task_id} --phase 4", actor=story.user)
-    story.run(f"task depend 2 --on {task_id}", actor=story.user)
-    story.expect_success(PLAN_FOCUS, FOCUS_ON_FIRST_PLAN, f"it waits on task {task_id}, which is in plan 4, a plan nobody approved", actor=story.agent)
-
-
 def test_c2_a_task_behind_the_checkpoint_of_another_plan_is_not_handed_out_and_the_read_names_the_checkpoint(new_story):
     story = new_story(fixture=ThreeStartedPlans)
     story.run('plan make "Yard" --environment main', actor=story.user)

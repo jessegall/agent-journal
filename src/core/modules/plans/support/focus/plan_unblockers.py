@@ -42,7 +42,7 @@ class PlanUnblockers:
         graph = self.wait_graph()
         walks = {plan_id: PlanWaitWalk.walked(unfinished_ids[plan_id], graph) for plan_id in plan_ids}
         end_ids = sorted({task_id for walk in walks.values() for task_id in walk.waiting_tasks})
-        end_tasks = {task.id: task for task in self.tasks.matching(Among("id", end_ids)).all_rows()} if end_ids else {}
+        end_tasks = {task.id: task for task in self.tasks.unclosed().matching(Among("id", end_ids)).all_rows()} if end_ids else {}
         facts = self.facts(tuple(end_tasks.values()), agent)
         return {plan_id: walk.unblockers(end_tasks, facts) for plan_id, walk in walks.items()}
 

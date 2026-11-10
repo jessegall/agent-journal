@@ -24,19 +24,17 @@ class FocusedPlanTasks:
 
     def first(self, agent: Agent, excluded_id: int | None = None) -> Task | None:
         with self.scopes.opened(agent.id, agent.environment_id, [ActorScope]):
-            return self.focus_task(agent, self.focus.overview(agent), excluded_id)
+            return self.focus_task(self.focus.overview(agent), excluded_id)
 
     def first_started(self, agent: Agent, excluded_id: int | None = None) -> Task | None:
         with self.scopes.opened(agent.id, agent.environment_id, [ActorScope]):
             overview = self.focus.overview(agent)
-            return self.focus_task(agent, overview, excluded_id) or self.free_task(overview.remaining, excluded_id)
+            return self.focus_task(overview, excluded_id) or self.free_task(overview.remaining, excluded_id)
 
-    def focus_task(self, agent: Agent, overview: FocusOverview, excluded_id: int | None) -> Task | None:
+    def focus_task(self, overview: FocusOverview, excluded_id: int | None) -> Task | None:
         work = overview.focus_work
-        task_ids = [] if work is None else [task_id for task_id in work.task_ids() if task_id != excluded_id]
-        if work is None or not task_ids:
-            return None
-        return work.first(self.tasks.takeable(agent).matching(Among("id", task_ids)).all_rows())
+        task_id = None if work is None else work.first_task_id(excluded_id)
+        return None if task_id is None else self.tasks.find(task_id)
 
     def free_task(self, plans: Sequence[PlanWork], excluded_id: int | None) -> Task | None:
         for work in plans:

@@ -62,12 +62,14 @@ def test_b18_a_task_the_agent_released_just_now_is_not_handed_to_it_again(new_st
     story.expect_rows(next_task_id(story, 1) == 2)
 
 
-def test_a13_the_first_task_handed_out_of_a_focused_approved_plan_starts_that_plan(new_story):
+def test_c1_a13_a_task_of_a_plan_nobody_approved_is_not_handed_out_and_once_approved_and_focused_its_first_task_starts_the_plan(new_story):
     story = new_story(fixture=ThreeStartedPlans)
     story.run('plan make "Yard" --environment main', actor=story.user)
     story.expect_success('phase make --plan 4 "Build"', actor=story.user)
     fence = outside_task(story, "Yard fence")
     story.run(f"phase place {fence} --phase 4", actor=story.user)
+    story.run(f"task depend 2 --on {fence}", actor=story.user)
+    story.expect_success("plan focus", f"it waits on task {fence}, which is in plan 4, a plan nobody approved", actor=story.agent)
     story.run(f'task waits-on-nothing {fence} --why "the order does not matter in this story"', actor=story.user)
     story.run('plan ready 4 --environment main --skip-guard plans.one-task-phase --skip-reason "one task is enough in this story"', actor=story.user)
     story.run("plan approve 4 --environment main", actor=story.user)

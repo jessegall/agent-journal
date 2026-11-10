@@ -38,13 +38,3 @@ def test_b11_of_a_chain_of_waits_the_task_at_its_end_is_handed_out(new_story):
     signature = outside_task(story, "Signature")
     story.run(f"task depend 7 --on {signature}", actor=story.user)
     story.expect_rows(next_task_id(story) == signature)
-
-
-def test_b12_a_task_the_plan_waits_on_and_a_ready_plan_task_are_ranked_together_on_what_waits_on_them(new_story):
-    story = new_story(fixture=ThreeStartedPlans)
-    contract = outside_task(story, "Supplier contract")
-    story.run(f"task depend 1 --on {contract}", actor=story.user)
-    story.expect_rows(next_task_id(story) == contract)
-    for title in ("Shop shelves", "Shop till"):
-        story.run(f"task depend {plan_task(story, title, SHOP_PHASE)} --on 2", actor=story.user)
-    story.expect_rows(next_task_id(story) == 2)

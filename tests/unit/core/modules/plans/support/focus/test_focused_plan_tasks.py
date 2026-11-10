@@ -29,8 +29,8 @@ class TaskRows:
     def __init__(self, tasks=None):
         self.tasks = tuple(TASKS.values()) if tasks is None else tasks
 
-    def takeable(self, agent):
-        return self
+    def find(self, task_id):
+        return TASKS[task_id]
 
     def matching(self, condition):
         if isinstance(condition, IsNull):
@@ -47,12 +47,12 @@ def picker(focus_work, scopes=None, remaining=()):
 
 
 def work():
-    places = tuple(SimpleNamespace(task_id=task_id, position=position) for task_id, position in ((1, 1), (2, 2)))
-    return PlanWork(SimpleNamespace(id=1), places, Unblockers(tuple([Unblocker(9, 2)])))
+    places = tuple(SimpleNamespace(task_id=task_id, position=position, priority=100) for task_id, position in ((1, 1), (2, 2)))
+    return PlanWork(SimpleNamespace(id=1), places, Unblockers(tuple([Unblocker(9, 2, 100)])))
 
 
 def plan_with_ready(*task_ids):
-    return PlanWork(SimpleNamespace(id=2), tuple(SimpleNamespace(task_id=task_id, position=1) for task_id in task_ids), Unblockers())
+    return PlanWork(SimpleNamespace(id=2), tuple(SimpleNamespace(task_id=task_id, position=1, priority=100) for task_id in task_ids), Unblockers())
 
 
 def test_with_nothing_in_the_focus_the_oldest_plan_with_a_task_reserved_for_nobody_gives_its_most_urgent_one():

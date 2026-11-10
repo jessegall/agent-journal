@@ -28,7 +28,7 @@ def test_the_default_focus_and_a_focus_the_agent_set_read_differently():
 
 
 def test_the_focus_names_the_tasks_it_waits_on_the_ones_to_take_first_by_how_many_wait_on_them():
-    unblockers = {3: Unblockers((Unblocker(41, 1), Unblocker(42, 2)), tuple([PERSON_WAIT]))}
+    unblockers = {3: Unblockers((Unblocker(41, 1, 100), Unblocker(42, 2, 100)), tuple([PERSON_WAIT]))}
     assert report(3, unblockers=unblockers, plans=PLANS[:1])[1:] == [
         "task 42 holds back 2 tasks of plan 3: you can take it", "task 41 holds back 1 task of plan 3: you can take it", "it waits on task 40, which waits on a person"]
 

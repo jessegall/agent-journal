@@ -22,18 +22,12 @@ class PlanWork:
     def is_workable(self) -> bool:
         return bool(self.ready_places) or bool(self.unblockers.candidates)
 
-    def task_ids(self) -> tuple[int, ...]:
-        return tuple(sorted({place.task_id for place in self.ready_places} | {candidate.task_id for candidate in self.unblockers.candidates}))
-
-    def first(self, tasks: Sequence[Task]) -> Task | None:
-        places = {place.task_id: place for place in self.ready_places}
+    def first_task_id(self, excluded_id: int | None = None) -> int | None:
         unlocks = {candidate.task_id: candidate.unlocks for candidate in self.unblockers.candidates}
-
-        def rank(task: Task) -> tuple[int, int, bool, int, int]:
-            place = places.get(task.id)
-            return (-unlocks.get(task.id, 0), -task.priority, place is None, 0 if place is None else place.position, task.id)
-
-        return min(tasks, key=rank, default=None)
+        ranks = {place.task_id: (-unlocks.get(place.task_id, 0), -place.priority, False, place.position, place.task_id) for place in self.ready_places}
+        for candidate in self.unblockers.candidates:
+            ranks.setdefault(candidate.task_id, (-candidate.unlocks, -candidate.priority, True, 0, candidate.task_id))
+        return min((task_id for task_id in ranks if task_id != excluded_id), key=ranks.__getitem__, default=None)
 
     def ready_task_ids(self) -> tuple[int, ...]:
         return tuple(place.task_id for place in self.ready_places)
