@@ -332,6 +332,7 @@
       "interrupted_at",
       "launch_agent_id",
       "launch_name",
+      "launched_at",
       "parent_id",
       "paused_at",
       "pid",
@@ -362,6 +363,7 @@
       "interrupted_at",
       "launch_agent_id",
       "launch_name",
+      "launched_at",
       "parent_id",
       "paused_at",
       "pid",
@@ -392,6 +394,7 @@
       "interrupted_at",
       "launch_agent_id",
       "launch_name",
+      "launched_at",
       "parent_id",
       "paused_at",
       "pid",
@@ -422,6 +425,7 @@
       "interrupted_at",
       "launch_agent_id",
       "launch_name",
+      "launched_at",
       "parent_id",
       "paused_at",
       "pid",
@@ -710,6 +714,33 @@
       "why"
     ]
   },
+  "core.approvals.approval.recover": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "arguments",
+      "command_json",
+      "continued_arguments",
+      "creator_id",
+      "environment_id",
+      "recipient_agent_id",
+      "refused_arguments",
+      "relayer_id",
+      "requester_id",
+      "required_person_id",
+      "responder_id",
+      "returns_output",
+      "review_answer",
+      "source_version",
+      "standing_id",
+      "state",
+      "text",
+      "why"
+    ]
+  },
   "core.approvals.approval.refuse": {
     "forms": [
       "commit",
@@ -837,6 +868,141 @@
       "scope",
       "target",
       "text"
+    ]
+  },
+  "core.assign_rules.assign_decision.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "actor_id",
+      "outcome",
+      "reason",
+      "rule_id",
+      "task_id"
+    ]
+  },
+  "core.assign_rules.assign_decision.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "actor_id",
+      "outcome",
+      "reason",
+      "rule_id",
+      "task_id"
+    ]
+  },
+  "core.assign_rules.assign_decision.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "actor_id",
+      "outcome",
+      "reason",
+      "rule_id",
+      "task_id"
+    ]
+  },
+  "core.assign_rules.assign_rule.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_id",
+      "creator_id",
+      "enabled",
+      "environment_id",
+      "position",
+      "program",
+      "program_model",
+      "queue_limit",
+      "target"
+    ]
+  },
+  "core.assign_rules.assign_rule.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_id",
+      "creator_id",
+      "enabled",
+      "environment_id",
+      "position",
+      "program",
+      "program_model",
+      "queue_limit",
+      "target"
+    ]
+  },
+  "core.assign_rules.assign_rule.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_id",
+      "creator_id",
+      "enabled",
+      "environment_id",
+      "position",
+      "program",
+      "program_model",
+      "queue_limit",
+      "target"
+    ]
+  },
+  "core.assign_rules.assign_rule_condition.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "field",
+      "operator",
+      "rule_id",
+      "value"
+    ]
+  },
+  "core.assign_rules.assign_rule_condition.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "field",
+      "operator",
+      "rule_id",
+      "value"
+    ]
+  },
+  "core.assign_rules.assign_rule_condition.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "field",
+      "operator",
+      "rule_id",
+      "value"
     ]
   },
   "core.chat.chat_mark.created": {
@@ -1492,8 +1658,8 @@
       "closed_at",
       "condition_name",
       "condition_text",
-      "countdown_from",
       "countdown_key",
+      "countdown_limit",
       "countdown_text",
       "creator_id",
       "grace_seconds",
@@ -1517,8 +1683,8 @@
       "closed_at",
       "condition_name",
       "condition_text",
-      "countdown_from",
       "countdown_key",
+      "countdown_limit",
       "countdown_text",
       "creator_id",
       "grace_seconds",
@@ -1542,8 +1708,8 @@
       "closed_at",
       "condition_name",
       "condition_text",
-      "countdown_from",
       "countdown_key",
+      "countdown_limit",
       "countdown_text",
       "creator_id",
       "grace_seconds",
@@ -3711,6 +3877,45 @@
       "plan_id",
       "session_agent_id",
       "start_event_id"
+    ]
+  },
+  "core.plans.plan_wait.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "blocker_id",
+      "creator_id",
+      "ended_at",
+      "plan_id"
+    ]
+  },
+  "core.plans.plan_wait.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "blocker_id",
+      "creator_id",
+      "ended_at",
+      "plan_id"
+    ]
+  },
+  "core.plans.plan_wait.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "blocker_id",
+      "creator_id",
+      "ended_at",
+      "plan_id"
     ]
   },
   "core.plugins.command_starting": {
@@ -7722,7 +7927,6 @@
       "listen"
     ],
     "fields": [
-      "count",
       "creator_id",
       "notice_at",
       "refusal_text",
@@ -7736,7 +7940,6 @@
       "listen"
     ],
     "fields": [
-      "count",
       "creator_id",
       "notice_at",
       "refusal_text",
@@ -7750,7 +7953,6 @@
       "listen"
     ],
     "fields": [
-      "count",
       "creator_id",
       "notice_at",
       "refusal_text",
