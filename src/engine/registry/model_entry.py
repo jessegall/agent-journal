@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from engine.dotted_path.dotted_path import DottedPath
-from engine.dotted_path.wrong_base_error import WrongBaseError
+from engine.dotted_path.errors.wrong_base_error import WrongBaseError
 from engine.model.model import Model
 from engine.model.view_model import ViewModel
 

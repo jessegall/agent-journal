@@ -19,12 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/engine/dotted_path/dotted_path_error.py"
-            },
-            {
-                "file": "src/engine/dotted_path/wrong_base_error.py"
-            },
-            {
                 "file": "src/engine/driver/hook_event_error.py"
             },
             {

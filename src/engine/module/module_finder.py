@@ -3,7 +3,7 @@ from engine.file.file_version import FileVersion
 import json
 import sys
 
-from engine.dotted_path.dotted_path_error import DottedPathError
+from engine.dotted_path.errors.dotted_path_error import DottedPathError
 
 from engine.journal.journal_home import JournalHome
 from engine.dotted_path.dotted_path import DottedPath

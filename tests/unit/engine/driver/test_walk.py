@@ -27,7 +27,7 @@ from engine.log.system_log_writer import SystemLogWriter
 from engine.guard.guard_switches import GuardSwitches
 from engine.journal.journal_home import JournalHome
 from engine.dotted_path.dotted_path import DottedPath
-from engine.dotted_path.wrong_base_error import WrongBaseError
+from engine.dotted_path.errors.wrong_base_error import WrongBaseError
 from engine.registry.driver_rule_entry import DriverRuleEntry
 from engine.registry.overlay_entry import OverlayEntry
 from engine.time.timestamp import Timestamp
