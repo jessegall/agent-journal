@@ -2,8 +2,8 @@ from contextlib import ExitStack
 from types import TracebackType
 
 from engine.journal.journal_home import JournalHome
-from install.run_drain import RunDrain
-from install.server_stop import ServerStop
+from install.update.run_drain import RunDrain
+from install.update.server_stop import ServerStop
 from install.errors.server_wont_stop_error import ServerWontStopError
 from core.base.serving.server_limits import DRAIN_LIMIT_SECONDS
 from core.base.serving.server_files import ServerFiles

@@ -19,7 +19,7 @@ from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from engine.testing.expectations.expect_row import expect_row
 from core.base.serving.code_handover import CodeHandover
-from install.install_journal import InstallJournal
+from install.update.install_journal import InstallJournal
 from engine.connection.unix_connection import UnixConnection
 from core.base.serving.server_files import ServerFiles
 from tests.stories.support.story_checks import expect_value_4

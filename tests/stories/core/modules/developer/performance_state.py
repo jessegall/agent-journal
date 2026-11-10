@@ -8,7 +8,7 @@ from engine.module.performance_tools import PerformanceTools
 from engine.time.timing import Timing
 from core.modules.drivers.support.hook_cost_tool import HOOK_LIMIT_POINTS
 from core.modules.developer.support.slow_tick_tool import SlowTickTool
-from install.code_replacement import CodeReplacement
+from install.update.code_replacement import CodeReplacement
 from server.work.booting_work import BootingWork
 from core.base.serving.server_files import ServerFiles
 from engine.performance.performance_state import PerformanceState

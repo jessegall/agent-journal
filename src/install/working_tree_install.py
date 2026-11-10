@@ -6,11 +6,11 @@ from contextlib import suppress
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
-from install.built_bundles import BuiltBundles
+from install.update.built_bundles import BuiltBundles
 from core.base.serving.code_handover import CodeHandover
-from install.code_replacement import CodeReplacement
-from install.run_drain import RunDrain
-from install.chat_update_steps import ChatUpdateSteps
+from install.update.code_replacement import CodeReplacement
+from install.update.run_drain import RunDrain
+from install.update.chat_update_steps import ChatUpdateSteps
 
 HANDOVER_STATUS = 200
 OLD_SERVER_STATUS = 404

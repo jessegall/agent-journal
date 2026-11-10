@@ -8,7 +8,7 @@ from engine.file.code_copy import CodeCopy
 from engine.version.code_versions import CodeVersions
 from engine.errors.refusal import Refusal
 from engine.journal.journal_home import HOME_VARIABLE, JournalHome
-from install.code_replacement import CodeReplacement
+from install.update.code_replacement import CodeReplacement
 from install.version_four.version_four import ANSWER, VersionFour
 
 INSTALLED = 3

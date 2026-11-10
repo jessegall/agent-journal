@@ -5,7 +5,7 @@ import time
 
 import pytest
 
-from install.server_lock import ServerLock, ServerWontStopError
+from install.update.server_lock import ServerLock, ServerWontStopError
 from core.base.serving.server_files import ServerFiles
 from tests.install.support import SERVER_SOURCE, TIMEOUT_SECONDS
 
@@ -28,7 +28,7 @@ LOCK_HOLDER_SCRIPT = """
 import sys, time
 from pathlib import Path
 from engine.journal.journal_home import JournalHome
-from install.server_lock import ServerLock
+from install.update.server_lock import ServerLock
 with ServerLock(JournalHome(Path(sys.argv[1]))):
     print("held", flush=True)
     time.sleep(120)

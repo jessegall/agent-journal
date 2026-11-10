@@ -19,9 +19,9 @@ from engine.upgrade.upgrade_report import UpgradeReport
 from engine.upgrade.version_four_move import VersionFourMove
 from install.errors.backup_mismatch_error import BackupMismatchError
 from install.errors.backup_write_error import BackupWriteError
-from install.code_replacement import CodeReplacement
+from install.update.code_replacement import CodeReplacement
 from install.hook_switch import HookSwitch
-from install.install_journal import InstallJournal
+from install.update.install_journal import InstallJournal
 from install.version_four.restore_version_four import RestoreVersionFour
 from install.errors.stray_version_four_error import StrayVersionFourError
 from install.errors.server_wont_stop_error import ServerWontStopError
@@ -166,6 +166,6 @@ if __name__ == "__main__":
         agreed = "--yes" in flags or input(RESTORE_QUESTION).strip().lower() in ACCEPTED_INPUTS
         outcome = RestoreVersionFour(journal).run() if agreed else UpgradeOutcome(0, UNCHANGED_LINE)
     else:
-        outcome = UpgradeJournal(journal, source=Path(__file__).resolve().parents[1]).run("--dry-run" in flags, "--yes" in flags)
+        outcome = UpgradeJournal(journal, source=Path(__file__).resolve().parents[2]).run("--dry-run" in flags, "--yes" in flags)
     print(outcome.text)
     sys.exit(outcome.code)

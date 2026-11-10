@@ -33,7 +33,7 @@ def test_two_parallel_upgrades_run_in_turn_the_second_finds_nothing_left_and_no_
 
 def test_a_second_upgrade_while_the_first_holds_the_lock_waits_for_it(new_story):
     story, version_four = upgrading(new_story, NOTES, TAGS)
-    from install.server_lock import ServerLock
+    from install.update.server_lock import ServerLock
 
     with ServerLock(story.home):
         answers: list[UpgradeOutcome] = []

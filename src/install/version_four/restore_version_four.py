@@ -6,7 +6,7 @@ from pathlib import Path
 from engine.journal.journal_home import JournalHome
 from engine.provider.hook_manager import HookManager
 from engine.provider.managed_hooks import ManagedHooks
-from install.code_replacement import CodeReplacement
+from install.update.code_replacement import CodeReplacement
 from install.hook_switch import HookSwitch
 from install.version_four.upgrade_outcome import UpgradeOutcome
 from install.backup.version_four_backup import DATABASE, VersionFourBackup

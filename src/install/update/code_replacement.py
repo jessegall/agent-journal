@@ -1,7 +1,7 @@
 from collections.abc import Callable, Sequence
 
 from engine.journal.journal_home import JournalHome
-from install.server_lock import ServerLock
+from install.update.server_lock import ServerLock
 
 
 class CodeReplacement:

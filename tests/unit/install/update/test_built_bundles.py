@@ -4,7 +4,7 @@ import pytest
 
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from install.built_bundles import BuiltBundles
+from install.update.built_bundles import BuiltBundles
 from install.working_tree_install import WorkingTreeInstall
 
 

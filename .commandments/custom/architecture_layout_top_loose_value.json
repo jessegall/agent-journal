@@ -19,28 +19,7 @@
                 "testCode": true
             },
             {
-                "file": "src/install/built_bundle.py"
-            },
-            {
-                "file": "src/install/built_bundles.py"
-            },
-            {
-                "file": "src/install/chat_update_steps.py"
-            },
-            {
                 "file": "src/install/hook_switch.py"
-            },
-            {
-                "file": "src/install/install_journal.py"
-            },
-            {
-                "file": "src/install/run_drain.py"
-            },
-            {
-                "file": "src/install/server_lock.py"
-            },
-            {
-                "file": "src/install/server_stop.py"
             },
             {
                 "file": "src/install/working_tree_install.py"

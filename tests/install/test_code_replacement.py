@@ -4,7 +4,7 @@ import time
 
 import pytest
 
-from install.code_replacement import CodeReplacement
+from install.update.code_replacement import CodeReplacement
 from tests.install.support import TIMEOUT_SECONDS
 
 

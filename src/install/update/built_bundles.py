@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 from engine.errors.refusal import Refusal
-from install.built_bundle import BuiltBundle, SKIPPED_FOLDERS
+from install.update.built_bundle import BuiltBundle, SKIPPED_FOLDERS
 
 MODULE_ROOTS = ("core", "suites", "tunnels")
 WINDOW_BUILD_SCRIPT = Path("viewer") / "kit" / "build.js"

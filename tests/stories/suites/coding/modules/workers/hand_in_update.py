@@ -6,7 +6,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
-from install.run_drain import RunDrain
+from install.update.run_drain import RunDrain
 from suites.coding.modules.workers.models.proof import Proof
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
