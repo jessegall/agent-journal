@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.support.agent_numbers import AgentNumbers
 from tests.stories.core.modules.agents.support.numbered_agents import listed, agent_numbers, started_worker
 from tests.stories.core.support.coding_fixtures import UserBuilder
@@ -16,7 +15,7 @@ def test_the_number_of_a_retired_agent_is_never_given_again(new_story):
     workers = [started_worker(story, f"s-{session}", "main", story.agent.id) for session in range(2, 8)]
     story.expect_rows([number_of(story, worker) for worker in workers] == [2, 3, 4, 5, 6, 7])
     story.expect_success(f"agent end {workers[-1]}", actor=story.user)
-    story.expect_success(f"agent retire {agent_number(story, workers[-1])} {RETIRE_REASON}", actor=story.user)
+    story.expect_success(f"agent retire {workers[-1]} {RETIRE_REASON}", actor=story.user)
     story.expect_rows(number_of(story, started_worker(story, "s-8", "main", story.agent.id)) == 8)
 
 

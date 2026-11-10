@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import json
 
 import pytest
@@ -40,23 +39,23 @@ def test_worker_send_reaches_the_worker_with_that_number_in_the_senders_environm
 def test_a_number_that_is_no_agent_here_gets_one_refusal_and_changes_nothing(new_story, number):
     story = new_story(fixture=ShopWithThreeAgents)
     agents = listed(story)
-    refused = story.run(f"agent show {agent_number(story, number)}", actor=story.agent).output_text
+    refused = story.run(f"agent show {number}", actor=story.agent).output_text
     story.expect_rows(absent_refusal(number, "main") in refused, LIST_HINT in refused, "shop" not in refused, listed(story) == agents, detail=refused)
-    story.expect_refusal(f'worker send {agent_number(story, number)} "Total the till"', absent_refusal(number, "main"), actor=story.agent)
+    story.expect_refusal(f'worker send {number} "Total the till"', absent_refusal(number, "main"), actor=story.agent)
 
 
 def test_an_agent_naming_another_environment_is_refused_before_any_number_is_read(new_story):
     story = new_story(fixture=TwoEnvironments)
     for number in (2, 9):
-        refused = story.run(f"agent show {agent_number(story, number)} --environment shop", actor=story.agent).output_text
+        refused = story.run(f"agent show {number} --environment shop", actor=story.agent).output_text
         story.expect_rows(OWN_ENVIRONMENT_REFUSAL in refused, "no agent" not in refused, detail=refused)
 
 
 @pytest.mark.parametrize("argument", ["0", "-3", "1e3", "12345678901234567890"])
 def test_a_number_that_is_no_positive_whole_number_is_a_usage_refusal(new_story, argument):
     story = new_story(fixture=TwoEnvironments)
-    story.expect_usage_error(f"agent show {agent_number(story, argument)}", actor=story.agent)
-    story.expect_usage_error(f'worker send {agent_number(story, argument)} "Total the till"', actor=story.agent)
+    story.expect_usage_error(f"agent show {argument}", actor=story.agent)
+    story.expect_usage_error(f'worker send {argument} "Total the till"', actor=story.agent)
 
 
 def test_a_message_to_agent_two_reaches_agent_two_of_the_senders_environment_and_agent_one_is_the_main(new_story):
@@ -70,6 +69,6 @@ def test_a_message_to_agent_two_reaches_agent_two_of_the_senders_environment_and
 
 def test_an_agent_probing_one_hundred_numbers_learns_only_its_own_environment(new_story):
     story = new_story(fixture=ShopWithThreeAgents)
-    answers = {number: story.run(f"agent show {agent_number(story, number)}", actor=story.agent).output_text for number in PROBED_NUMBERS}
+    answers = {number: story.run(f"agent show {number}", actor=story.agent).output_text for number in PROBED_NUMBERS}
     refusals = {number: text.replace(str(number), "N") for number, text in answers.items() if "no agent" in text}
     story.expect_rows(sorted(set(answers) - set(refusals)) == [1, 2], len(set(refusals.values())) == 1, not any("shop" in text for text in answers.values()))
