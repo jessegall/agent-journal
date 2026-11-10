@@ -14,6 +14,7 @@ UPGRADE_RETIREMENT_REASON = "Over the kept limit at the upgrade to kept agents"
 PID_FIELD = "pid"
 MAIN_ROLE = "main"
 MAIN_TITLE = "Main agent"
+ENDED_MAIN_TITLE = "Main agent, earlier session"
 MAIN_NUMBER = 1
 
 
@@ -93,7 +94,9 @@ class Agent(EnvironmentScoped, Model):
 
     @property
     def display_name(self) -> str:
-        return MAIN_TITLE if self.role == MAIN_ROLE else f"{self.role.capitalize()} {self.id}"
+        if self.role != MAIN_ROLE:
+            return f"{self.role.capitalize()} {self.number}"
+        return MAIN_TITLE if self.ended_at is None else ENDED_MAIN_TITLE
 
     @property
     def original_launch_name(self) -> str:
