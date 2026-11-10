@@ -16,7 +16,7 @@ from engine.enums.hook_answer import HookAnswer
 
 COMPACTION = "compact"
 SESSION_START = "session_start"
-PROGRAM_SESSION = "program_session"
+PROGRAM_SESSION = "session"
 PROMPT = "prompt"
 SUMMARY_CHARACTERS = 200
 DISPLAYED_TEXT = "displayed"

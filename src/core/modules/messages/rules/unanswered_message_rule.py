@@ -11,7 +11,7 @@ from engine.query.conditions.equal import Equal
 from engine.query.conditions.excluding import Excluding
 from core.modules.agents.conditions.active_agent_rows import ActiveAgentRows
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.agent_sessions import AgentSessions
+from core.modules.agents.conditions.current_session_rows import CurrentSessionRows
 from core.modules.messages.queries.message_query import MessageQuery
 from engine.driver.interval import Interval
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
@@ -30,15 +30,16 @@ class UnansweredMessageRule(DriverRule):
     since they are the answer; a prompt typed in the terminal is answered in the terminal. Only messages read since
     the agent's current session began or since its last message wait on it: earlier sessions handled the older ones. A
     message from an agent that has ended waits on no reply, and of the messages from running agents only the newest
-    50 are checked: an unanswered one holds the agent after ten tool calls, so older ones were answered."""
+    50 are checked: an unanswered one holds the agent after ten tool calls, so older ones were answered. The start of
+    the current session is compared inside the message read, so it costs no read of its own."""
 
     name = "messages.unanswered"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN, AgentRole.HELPER]
 
-    def __init__(self, messages: MessageQuery, queries: Queries, replies: MessageReplies, sessions: AgentSessions) -> None:
-        self.messages, self.queries, self.replies, self.sessions = messages, queries, replies, sessions
+    def __init__(self, messages: MessageQuery, queries: Queries, replies: MessageReplies) -> None:
+        self.messages, self.queries, self.replies = messages, queries, replies
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         unanswered = self.unanswered(hook.agent_id)
@@ -52,13 +53,13 @@ class UnansweredMessageRule(DriverRule):
 
     def unanswered(self, agent_id: int) -> tuple[Message, ...]:
         newest_agent_message = self.messages.addressed(agent_id).filter(type=MessageType.AGENT, creator_id=agent_id).newest().first()
-        session_start = self.sessions.current_started_at(self.queries.query(Agent).find(agent_id)).text
-        wait_start = max(session_start, newest_agent_message.creation_timestamp().text) if newest_agent_message is not None else session_start
+        agent_start = self.queries.query(Agent).find(agent_id).creation_timestamp().text
+        wait_start = max(agent_start, newest_agent_message.creation_timestamp().text) if newest_agent_message is not None else agent_start
         read_people = self.read_after(agent_id, PERSON_MESSAGE_TYPES, wait_start).all_rows()
-        read_agents = self.read_after(agent_id, tuple([MessageType.AGENT]), session_start).matching(ActiveAgentRows("creator_id")).matching(Excluding(Equal("creator_id", agent_id))).newest().limited(NEWEST_AGENT_MESSAGES)
+        read_agents = self.read_after(agent_id, tuple([MessageType.AGENT]), agent_start).matching(ActiveAgentRows("creator_id")).matching(Excluding(Equal("creator_id", agent_id))).newest().limited(NEWEST_AGENT_MESSAGES)
         candidates = tuple(sorted((*read_people, *read_agents), key=lambda message: message.id))
         answered = self.replies.answered_ids(agent_id, candidates)
         return tuple(message for message in candidates if message.id not in answered)
 
     def read_after(self, agent_id: int, types: tuple[MessageType, ...], timestamp: str) -> MessageQuery:
-        return self.messages.addressed(agent_id).filter(peer_key="").matching(Among("type", types)).matching(Greater("read_at", timestamp))
+        return self.messages.addressed(agent_id).filter(peer_key="").matching(Among("type", types)).matching(Greater("read_at", timestamp)).matching(CurrentSessionRows("read_at", agent_id))

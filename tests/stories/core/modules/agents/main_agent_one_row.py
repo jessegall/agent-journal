@@ -49,10 +49,10 @@ def test_a_codex_session_takes_agent_one_over_from_claude_and_the_claude_session
 def test_a_second_main_session_stops_the_first_and_is_agent_one(new_story):
     story = new_story(fixture=UserBuilder)
     launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"stopped\n")
-    started = hook_agent(story, story.hook("s-2", HookSamples.session_start()))
+    started_id = story.new_row_id("agent start s-2 claude main --environment main", actor=story.user)
     story.run_listeners()
     launcher.drain_requests()
-    story.expect_rows(started.id == story.agent.id, any(request.get("stop") for request in launcher.requests), detail=str(launcher.requests))
+    story.expect_rows(started_id == story.agent.id, any(request.get("stop") for request in launcher.requests), detail=str(launcher.requests))
     expect_single_main_row(story)
     story.expect_text("agent sessions 1 --environment main", "s-1", REPLACED_REASON, actor=story.user)
 

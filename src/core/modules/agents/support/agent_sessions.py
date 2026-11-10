@@ -6,7 +6,6 @@ from engine.repository.repository import Repository
 from engine.scope.environment_scope import EnvironmentScope
 from engine.scope.scopes import Scopes
 from engine.time.clock import Clock
-from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.agent_session import AgentSession
 from core.modules.agents.models.enums.end_reason import EndReason
@@ -66,12 +65,6 @@ class AgentSessions:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             return self.kept.read_newest("agent_sessions", lambda: self.queries.query(AgentSession).filter(session_agent_id=session_agent_id).descending("id").first(),
                                          "session_agent_id = ?", [session_agent_id], name="agent_sessions.current")
-
-    def current_started_at(self, agent: Agent) -> Timestamp:
-        current = self.current(agent.id)
-        if current is None or current.started_at is None:
-            return agent.creation_timestamp()
-        return current.started_at
 
     def earlier_session_count(self, session_agent_id: int) -> int:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):

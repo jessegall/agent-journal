@@ -11,6 +11,7 @@ SESSION_FIELD = "session"
 PROGRAM_FIELD = "program"
 from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
 from core.modules.agents.support.agent_program import AgentProgram
+from core.modules.agents.commands.start_agent.start_agent import StartAgent
 
 
 class EndedAgentProgramListener(CommitListener[AgentEnded]):
@@ -19,7 +20,9 @@ class EndedAgentProgramListener(CommitListener[AgentEnded]):
     StopAgent stopped its own. A resumed agent keeps its row ended until its first hook, so a process
     recorded after the end, or a launch that holds the session's lock, is a new program; the launch's
     own prepare step has dealt with the old one. A row that another session took over since keeps running
-    under the new session, so only the old session's own process is stopped, never the launcher's terminal."""
+    under the new session, so only the old session's own process is stopped. When the new session started in a
+    terminal of its own, the launcher's terminal of the agent can only hold the old session and is asked to stop;
+    after a launch it holds the new one and is left alone."""
 
     name = "agents.ended-agent-program"
     run_order = PROGRAM_STOP_RUN_ORDER
@@ -43,6 +46,8 @@ class EndedAgentProgramListener(CommitListener[AgentEnded]):
         new_session = next((later for later in later_events if SESSION_FIELD in later.data), None)
         if new_session is not None:
             self.program.stop_process(self.earlier_value(new_session, PID_FIELD, agent.pid), self.earlier_value(new_session, PROGRAM_FIELD, agent.program))
+            if new_session.command == StartAgent.label():
+                self.program.request_stop(agent)
         elif agent.ended_at is not None and not any(PID_FIELD in later.data for later in later_events):
             self.program.stop(agent)
 
