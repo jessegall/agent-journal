@@ -46,12 +46,21 @@ class StartedEachLaunchHelper(StoryFixture):
     """A helper of the personal profile rotating, whose occupant is each-launch, with its first job still open."""
 
     parent = UserBuilder
+    save_line = SAVE_ROTATING
 
     def steps(self, story):
-        story.expect_success(SAVE_ROTATING, actor=story.user)
+        story.expect_success(self.save_line, actor=story.user)
         launcher = FakeLauncher.listening(story.home.socket("launcher"))
         story.run(START_ROTATING, actor=story.agent)
         story.run_listeners()
         launcher.drain_requests()
         launcher.server.close()
         story.home.socket("launcher").unlink()
+
+
+def story_with_profile_file(new_story, fixture: type[EndedEachLaunchHelper] | type[StartedEachLaunchHelper]):
+    """A story on the fixture with its profile file saved again: a fixture's copy holds the database, and the
+    profile file its steps wrote is not in the story's folder."""
+    story = new_story(fixture=fixture)
+    story.expect_success(fixture.save_line, actor=story.user)
+    return story

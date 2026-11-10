@@ -7,7 +7,7 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from server.work.booting_work import BootingWork
 from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.occupant_rotation import job_launch
-from tests.stories.core.modules.helpers.support.rotating_helper import SAVE_ROTATING, EndedEachLaunchHelper, StartedEachLaunchHelper
+from tests.stories.core.modules.helpers.support.rotating_helper import SAVE_ROTATING, EndedEachLaunchHelper, StartedEachLaunchHelper, story_with_profile_file
 from tests.stories.core.support.agent_labels import agent_number
 
 STEERING_TEXT = "Also read src/tax.py."
@@ -16,12 +16,14 @@ FIRST_BRIEF = "Read src/cart.py"
 
 @pytest.fixture
 def working(new_story):
-    return new_story(fixture=StartedEachLaunchHelper)
+    return story_with_profile_file(new_story, StartedEachLaunchHelper)
 
 
 @pytest.fixture
-def rotating(new_story):
-    return new_story(fixture=EndedEachLaunchHelper)
+def rotating(new_story, monkeypatch):
+    story = story_with_profile_file(new_story, EndedEachLaunchHelper)
+    resumable_session(story, helper_agent(story), monkeypatch)
+    return story
 
 
 def session_rows(story) -> list[dict]:
@@ -124,8 +126,9 @@ def test_a_second_send_while_the_first_job_is_open_is_refused_and_only_one_occup
     rotating.expect_rows(len(rows) == 2, rows[1]["end_reason"] == "each_launch", rows[0]["session"] == helper_agent(rotating).session, detail=str(rows))
 
 
-def test_a_stopped_helper_ends_its_job_as_stopped_and_the_next_send_makes_a_new_occupant(working):
+def test_a_stopped_helper_ends_its_job_as_stopped_and_the_next_send_makes_a_new_occupant(working, monkeypatch):
     helper = helper_agent(working)
+    resumable_session(working, helper, monkeypatch)
     working.expect_success(f"helper stop {agent_number(working, helper.id)}", actor=working.user)
     working.run_listeners()
     working.expect_rows(read_jobs(working, helper)[0].returned == "Stopped", detail=str(read_jobs(working, helper)[0]))

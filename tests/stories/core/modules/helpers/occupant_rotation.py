@@ -9,10 +9,10 @@ from core.modules.memories.support.memory_nudges import START_MEMORIES
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, read_jobs
+from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.program_split import helper_split_story, helper_viewer
 from tests.stories.suites.coding.modules.workers.support.program_split import set_split
-from tests.stories.core.modules.helpers.support.rotating_helper import ROTATING_BODY, SAVE_ROTATING, START_ROTATING, EndedEachLaunchHelper
+from tests.stories.core.modules.helpers.support.rotating_helper import ROTATING_BODY, SAVE_ROTATING, START_ROTATING, EndedEachLaunchHelper, story_with_profile_file
 from tests.stories.core.support.agent_labels import agent_number
 
 REPORT_STEP_TEXT = "When the job is done, stop with your report as your last words."
@@ -22,8 +22,10 @@ MEMORY_TEXT = "The cart rounds each line before it adds them"
 
 
 @pytest.fixture
-def rotating(new_story):
-    return new_story(fixture=EndedEachLaunchHelper)
+def rotating(new_story, monkeypatch):
+    story = story_with_profile_file(new_story, EndedEachLaunchHelper)
+    resumable_session(story, helper_agent(story), monkeypatch)
+    return story
 
 
 def job_launch(story, actor=None) -> dict:
@@ -65,9 +67,10 @@ def test_the_new_occupant_starts_from_the_profile_body_and_the_job_and_never_as_
 def test_the_new_occupant_is_told_its_memories_and_reads_one_the_first_occupant_wrote(rotating):
     helper = Actor(helper_agent(rotating).id, ActorType.AGENT)
     rotating.expect_success(f'memory make "{MEMORY_TEXT}" --weight 5', actor=helper)
+    first_session = helper_agent(rotating).session
     job_launch(rotating)
     reply = rotating.hook(helper_agent(rotating).session, HookSamples.session_start())
-    rotating.expect_rows(START_MEMORIES.nudge(count=1).text in reply.lines, detail=str(reply.lines))
+    rotating.expect_rows(helper_agent(rotating).session != first_session, START_MEMORIES.nudge(count=1).text in reply.lines, detail=str(reply.lines))
     rotating.expect_text("memory list", MEMORY_TEXT, actor=helper)
 
 

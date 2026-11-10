@@ -3,9 +3,9 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.agents.agent_kind_controls import ALLOWED_MODELS, set_options
-from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, read_jobs
+from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.occupant_rotation import job_launch
-from tests.stories.core.modules.helpers.support.rotating_helper import EndedEachLaunchHelper
+from tests.stories.core.modules.helpers.support.rotating_helper import EndedEachLaunchHelper, story_with_profile_file
 from tests.stories.core.support.agent_labels import agent_number
 
 CODEX_MODELS = "codex gpt-6-luna,codex gpt-6.1-terra,codex gpt-6.1-sol,codex gpt-6-astra"
@@ -13,8 +13,10 @@ UNUSED_MODEL = "claude fable"
 
 
 @pytest.fixture
-def rotating(new_story):
-    return new_story(fixture=EndedEachLaunchHelper)
+def rotating(new_story, monkeypatch):
+    story = story_with_profile_file(new_story, EndedEachLaunchHelper)
+    resumable_session(story, helper_agent(story), monkeypatch)
+    return story
 
 
 def job_line(story) -> str:

@@ -7,8 +7,8 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.helpers.support.helper_settings import COLD_SESSION_MINUTES, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from engine.query.queries import Queries
 from tests.stories.core.modules.helpers.cold_sessions import with_job
-from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent
-from tests.stories.core.modules.helpers.support.rotating_helper import EndedColdRotationHelper, EndedContinueHelper, EndedEachLaunchHelper
+from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, resumable_session
+from tests.stories.core.modules.helpers.support.rotating_helper import EndedColdRotationHelper, EndedContinueHelper, EndedEachLaunchHelper, story_with_profile_file
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.agent_labels import agent_number
 
@@ -18,12 +18,12 @@ UNAVAILABLE_TEXT = "The earlier conversation is unavailable"
 
 @pytest.fixture
 def steady(new_story):
-    return new_story(fixture=EndedContinueHelper)
+    return story_with_profile_file(new_story, EndedContinueHelper)
 
 
 @pytest.fixture
 def cooling(new_story):
-    return new_story(fixture=EndedColdRotationHelper)
+    return story_with_profile_file(new_story, EndedColdRotationHelper)
 
 
 def launched_job(story) -> dict:
@@ -51,8 +51,10 @@ def test_a_continue_helper_whose_conversation_is_missing_starts_a_new_session_an
 def test_a_continue_helper_past_the_context_limit_still_gets_a_new_session(steady, monkeypatch):
     steady.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} true --project", actor=steady.user)
     steady.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} {LIMIT_TOKENS} --project", actor=steady.user)
-    save_status_file(steady, helper_agent(steady).session, {"context_window": {"total_input_tokens": LIMIT_TOKENS}})
-    helper, request = with_job(steady, monkeypatch, 1, 10)
+    helper = helper_agent(steady)
+    resumable_session(steady, helper, monkeypatch)
+    save_status_file(steady, helper.session, {"context_window": {"total_input_tokens": LIMIT_TOKENS}})
+    request = launched_job(steady)
     steady.expect_rows(helper_agent(steady).session != helper.session, "--resume" not in request["command"], detail=str(request["command"][-4:]))
 
 
@@ -88,14 +90,14 @@ def test_cold_minutes_at_zero_resumes_a_when_cold_helper_that_is_silent_and_larg
 
 
 def test_cold_minutes_at_zero_changes_nothing_for_an_each_launch_helper(new_story, monkeypatch):
-    story = new_story(fixture=EndedEachLaunchHelper)
+    story = story_with_profile_file(new_story, EndedEachLaunchHelper)
     story.expect_success(f"setting set {COLD_SESSION_MINUTES} 0 --project", actor=story.user)
     helper, request = with_job(story, monkeypatch, 1, 10)
     story.expect_rows(helper_agent(story).session != helper.session, "--resume" not in request["command"], detail=str(request["command"][-4:]))
 
 
 def test_an_each_launch_helper_sent_three_jobs_is_one_kept_agent(new_story):
-    story = new_story(fixture=EndedEachLaunchHelper)
+    story = story_with_profile_file(new_story, EndedEachLaunchHelper)
     helper = helper_agent(story)
     sessions = [helper.session]
     for _ in range(3):
