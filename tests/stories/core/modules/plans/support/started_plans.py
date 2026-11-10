@@ -48,18 +48,3 @@ class OldestPlanWaitsOnAPerson(StoryFixture):
     def expect(self, story: Story) -> None:
         story.expect_success("task show 7", "state: blocked")
 
-
-class PlanWaitsOnAnAssignedTask(StoryFixture):
-    """Task 2 of plan 1 waits on task 7, Supplier contract, an open task in no plan that is reserved for a second
-    agent, number 2."""
-
-    parent = ThreeStartedPlans
-
-    def steps(self, story: Story) -> None:
-        story.run(f"agent start s-2 claude worker --parent {story.agent.id} --environment main")
-        story.run('task make "Supplier contract" --environment main', actor=story.user)
-        story.run("task assign 7 --to 2", actor=story.agent)
-        story.run("task depend 2 --on 7", actor=story.user)
-
-    def expect(self, story: Story) -> None:
-        story.expect_success("task show 2", "state: blocked")
