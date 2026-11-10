@@ -36,6 +36,12 @@ const options = computed(() => ({open: `${share.value.row_model}:${share.value.r
 const isText = computed(() => share.value?.row_model !== "plan");
 const text = ref(null);
 const readProgress = ref(-1);
+
+function followReading(event) {
+    const text = event.currentTarget;
+    const hidden = text.scrollHeight - text.clientHeight;
+    readProgress.value = hidden > 0 ? text.scrollTop / hidden : -1;
+}
 const renderedText = computed(() => (text.value ? render(text.value.body, {env: "", rowNames: false}) : ""));
 
 const counted = (count, word) => `${count} ${word}${count === 1 ? "" : "s"}`;
@@ -90,7 +96,7 @@ watch(share, (shown) => shown && look.value && fetchFacts(), {immediate: true});
             </template>
             <ShareStrip :icon="look.icon" :term="look.term" :facts="facts" :ends="ends" :read="readProgress" />
             <template v-if="isText">
-                <main class="share-text" data-share-text>
+                <main class="share-text" data-share-text @scroll.passive="followReading">
                     <template v-if="text">
                         <h1>{{ text.title }}</h1>
                         <p class="share-abstract">{{ text.abstract }}</p>
@@ -116,9 +122,10 @@ watch(share, (shown) => shown && look.value && fetchFacts(), {immediate: true});
 
 <style scoped>
 .share-text {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 24px 16px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 24px max(16px, calc((100% - 760px) / 2));
 }
 
 .share-text h1 {
