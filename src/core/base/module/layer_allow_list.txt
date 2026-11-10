@@ -1,10 +1,6 @@
 src/core/__init__.py: the file is in no layer
 src/core/journal.py: the file is in no layer
 src/core/modules/__init__.py: the file is in no layer
-src/core/modules/chat/guards/agent_chat_guard.py imports core module agents, which core module chat may not use
-src/core/modules/drivers/commands/answer_refusal_skip/answer_refusal_skip_handler.py imports core module helpers, which core module drivers may not use
-src/core/modules/drivers/commands/report_safeguards_stop/report_safeguards_stop_handler.py imports core module messages, which core module drivers may not use
-src/core/modules/messages/commands/comment_message/comment_message_subcommand.py imports core module documents, which core module messages may not use
 src/core/modules/updates/commands/install_release/install_release_handler.py imports host install, which core module updates may not use
 src/core/modules/updates/support/release_install_steps.py imports host install, which core module updates may not use
 src/core/testing/__init__.py: the file is in no layer

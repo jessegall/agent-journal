@@ -23,7 +23,6 @@ UNSTARTED_HELPER_SECONDS = f"{MODULE_KEY}.unstarted-helper-seconds"
 COLD_SESSION_CONTEXT_PERCENT = f"{MODULE_KEY}.cold-session-context-percent"
 CONTEXT_LIMIT_FINISH_TASK = f"{MODULE_KEY}.context-limit-finish-task"
 CONTEXT_LIMIT_HARD_TOKENS = f"{MODULE_KEY}.context-limit-hard-tokens"
-SKIPS_NEED_APPROVAL = f"{MODULE_KEY}.skips-need-approval"
 CONTEXT_LIMIT_ACTION = f"{MODULE_KEY}.context-limit-action"
 CONTEXT_ACTIONS = ("compact", "clear")
 HELPER_SETTING_VALUES = [SettingValue("unstarted-helper-seconds", "Seconds before a helper counts as failed", "Seconds after a helper starts with no sign of its program before its launch counts as failed.", SettingType.NUMBER, default=60),

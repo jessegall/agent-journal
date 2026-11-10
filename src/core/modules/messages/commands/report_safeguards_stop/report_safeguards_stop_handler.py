@@ -9,7 +9,7 @@ from core.modules.messages.models.message import Message
 REPORT_TEXT = """{agent} stopped twice in a row on an API safeguards error, so it is not woken again.
 Details: {details}
 Request id: {request}"""
-NO_REQUEST_ID = "none in the error"
+MISSING_REQUEST_ID = "none in the error"
 
 
 class ReportSafeguardsStopHandler(Handler[ReportSafeguardsStop, None]):
@@ -21,5 +21,5 @@ class ReportSafeguardsStopHandler(Handler[ReportSafeguardsStop, None]):
         self.repository, self.agents = repository, agents
 
     def handle(self, command: ReportSafeguardsStop, context: Context) -> None:
-        text = REPORT_TEXT.format(agent=self.agents.find(command.agent_id).display_name, details=command.details, request=command.request_id or NO_REQUEST_ID)
+        text = REPORT_TEXT.format(agent=self.agents.find(command.agent_id).display_name, details=command.details, request=command.request_id or MISSING_REQUEST_ID)
         self.repository.save(Message(creator_id=context.actor.id, type=MessageType.JOURNAL, text=text), context)

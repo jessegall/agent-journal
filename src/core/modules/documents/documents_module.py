@@ -1,4 +1,5 @@
 from core.modules.documents.migrations.m008_message_link_paths import MessageLinkPathsMigration
+from core.modules.documents.commands.comment_message.comment_message_subcommand import CommentMessageSubcommand
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.documents.commands.plan_context_read.read_plan_context_subcommand import ReadPlanContextSubcommand
 from core.modules.documents.commands.plan_context.read_plan_context_handler import ReadPlanContextHandler
@@ -136,6 +137,6 @@ class DocumentsModule(Module):
     marks = TEXT_MARKS
     docks = TEXT_DOCKS
     bindings = {RowLinks: StoredRowLinks, TaskContextReader: WorkContextReader, TaskCommentReads: RowTaskCommentReads}
-    subcommands = [OpenDocSubcommand, CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
+    subcommands = [OpenDocSubcommand, CommentMessageSubcommand, CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
                    DocRevisionsSubcommand, DocRevisionSubcommand, ReportMakeSubcommand, ReportEditSubcommand, ReportShowSubcommand, ReportListSubcommand,
                    ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, LinkReceiptsSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand, RemoveLinkSubcommand, TaskContextSubcommand, CommentTaskSubcommand, TaskCommentsSubcommand, ReadPlanContextSubcommand, CommentPlanSubcommand, PlanCommentsSubcommand]

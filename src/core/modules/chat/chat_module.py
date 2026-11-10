@@ -14,7 +14,6 @@ from core.modules.chat.models.journal_exception import JournalException
 from core.modules.chat.migrations.m006_journal_exception_created_index import JournalExceptionCreatedIndexMigration
 from core.modules.chat.support.chat_exception_sink import ChatExceptionSink
 from core.modules.chat.commands.show_mark.show_mark_handler import ShowMarkHandler
-from core.modules.chat.guards.agent_chat_guard import AgentChatGuard
 from core.modules.chat.guards.mark_type_guard import MarkTypeGuard
 from core.modules.chat.migrations.m001_chat_marks import ChatMarkTableMigration
 from core.modules.chat.migrations.m008_chat_mark_all_key_index import ChatMarkAnyEnvironmentKeyIndexMigration
@@ -35,7 +34,7 @@ class ChatModule(Module):
     models = [ModelDeclaration(ChatMark, query=ChatMarkQuery), ModelDeclaration(JournalException, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [ChatMarkSessionMigration, JournalExceptionCreatedIndexMigration, ChatMarkAgentIndexMigration, ChatMarkTableMigration, JournalExceptionTableMigration, ChatMarkKeyIndexMigration, JournalExceptionRenameMigration, ChatMarkAnyEnvironmentKeyIndexMigration]
     handlers = [ShowMarkHandler, RecordJournalExceptionHandler]
-    guards = [MarkTypeGuard, AgentChatGuard]
+    guards = [MarkTypeGuard]
     marks = CHAT_MARKS
     listeners = [JournalExceptionMarkListener, UpgradeMarkListener]
     bindings = {ExceptionSink: ChatExceptionSink}

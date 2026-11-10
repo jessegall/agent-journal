@@ -10,7 +10,7 @@ from core.modules.drivers.commands.skip_refusal.skip_refusal_handler import SKIP
 from core.modules.drivers.models.refusal_skip import RefusalSkip
 from core.modules.drivers.support.access_nudges import SKIP_NEEDS_APPROVAL
 from core.modules.drivers.support.nudger import Nudger
-from core.modules.helpers.support.helper_settings import SKIPS_NEED_APPROVAL
+from core.modules.drivers.support.driver_settings import SKIPS_NEED_APPROVAL
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 

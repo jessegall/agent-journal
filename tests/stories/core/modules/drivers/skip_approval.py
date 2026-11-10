@@ -2,7 +2,7 @@ import pytest
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.modules.helpers.support.helper_settings import SKIPS_NEED_APPROVAL
+from core.modules.drivers.support.driver_settings import SKIPS_NEED_APPROVAL
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.drivers.support.confirmed_skips import TRIED
