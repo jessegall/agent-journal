@@ -37,7 +37,7 @@ test("an outage names its reason and end and Back now ends that program's outage
     const {view, element} = await split();
     const program = element.querySelector('[data-split-program="codex"]');
     expect(program.textContent).toContain("out of credit");
-    expect(program.textContent).toContain("2027-01-01");
+    expect(program.textContent).toContain("Jan 1, 2027");
     [...program.querySelectorAll("button")].find((button) => button.textContent === "Back now").click(); await settle();
     expect(view.run).toHaveBeenCalledWith(["provider-outage", "end", "codex"]);
     expect(element.textContent).toContain("5h 20% used");

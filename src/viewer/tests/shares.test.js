@@ -87,7 +87,7 @@ test("a link an agent asks for can be accepted or denied, and says what it holds
     const held = window();
     const element = await mounted(ShareRows, held);
     const row = element.querySelector("[data-share-waiting]");
-    expect(row.textContent).toContain("An agent asks to share plan 2, never ends, with a password, with comments");
+    expect(row.textContent).toContain("An agent asks to share Plan 2, never ends, with a password, with comments");
     row.querySelector("[data-share-deny]").click();
     await settle();
     expect(held.lines).toEqual([["share", "deny", "1"]]);

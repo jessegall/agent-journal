@@ -622,11 +622,11 @@ test("a worker shows its worktree task on its task line", async () => {
     }
 });
 
-test("the task button opens its task, and the row has no plan link", async () => {
+test("the task button opens its task, and the plan shows as its number after it, not as a link", async () => {
     const row = {id: 4, number: 4, role: "worker", state: "running", ended_at: null};
     const tasks = [{id: 1, title: "Add the tax", state: "started", plan_id: 7, plan_title: "Cart plan"}, {id: 2, title: "Later", state: "open", plan_id: 9}];
     const element = await mounted({render: () => h(AgentCard, {row, facts: {job_enabled: true, task_id: 1, task_title: "Add the tax", tasks}})}, context({}));
-    expect(element.querySelector("[data-agent-plan]")).toBeNull();
+    expect(element.querySelector("[data-agent-plan]").textContent.trim()).toBe("Plan 7");
     expect(element.querySelector("[data-agent-task]").dataset.peek).toBe("tasks:1");
 });
 
