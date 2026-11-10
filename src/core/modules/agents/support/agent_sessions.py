@@ -29,6 +29,11 @@ class AgentSessions:
         if current is not None and current.ended_at is None:
             self.repository.update(current, context, ended_at=self.clock.timestamp(), end_reason=reason.value)
 
+    def reopened(self, session_agent_id: int, context: Context) -> None:
+        current = self.current(session_agent_id)
+        if current is not None and current.ended_at is not None:
+            self.repository.update(current, context, ended_at=None, end_reason="")
+
     def bound(self, placeholder_session: str, real_session: str, context: Context) -> None:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             row = self.queries.query(AgentSession).filter(session=placeholder_session).first()

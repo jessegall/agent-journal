@@ -57,6 +57,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.queries.agent_query import AgentQuery
 from core.modules.agents.models.menu_answer import MenuAnswer
 from core.modules.agents.models.agent_session import AgentSession
+from core.modules.agents.listeners.session_end_listener import SessionEndListener
 from core.modules.agents.migrations.m023_agent_sessions import AgentSessionsMigration
 from core.modules.agents.upgrade.agents_move import AgentsMove
 from core.modules.agents.listeners.ended_agent_program_listener import EndedAgentProgramListener
@@ -147,6 +148,6 @@ class AgentsModule(Module):
                WindowDeclaration("agents.agent-detail", "Agent", "agent-detail.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.AGENT, skeleton=[SkeletonPart.line()],
                                  reads=["usage inspector", "agent list", "agent-skill list"], events=["agent.*"])]
     inspectors = [AGENT_INSPECTOR]
-    listeners = [MenuAnswerMarkListener, EndedAgentProgramListener, BootInstructionImportsListener]
+    listeners = [SessionEndListener, MenuAnswerMarkListener, EndedAgentProgramListener, BootInstructionImportsListener]
     marks = AGENT_MARKS
     seeders = [AgentsSeeder]

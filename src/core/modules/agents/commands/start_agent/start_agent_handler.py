@@ -53,6 +53,7 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
             raise Refusal(f"session {command.session} has started already", "journal agent list shows the agents")
         if started is not None:
             self.check_resume(started, command, context.environment_id)
+            self.sessions.reopened(started.id, context)
             if command.pid is None:
                 return self.repository.save(replace(started, ended_at=None), context)
             return self.repository.save(replace(started, ended_at=None, pid=command.pid,
