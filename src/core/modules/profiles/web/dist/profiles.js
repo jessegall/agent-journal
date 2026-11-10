@@ -1,32 +1,32 @@
-if (!document.getElementById("window-styles-5d737a926248")) { const style = document.createElement("style"); style.id = "window-styles-5d737a926248"; style.textContent = ".helper-start[data-v-382ed53a]{display:grid;gap:12px;padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--border-2)}h3[data-v-382ed53a]{margin:0;font-size:14px;font-weight:600}.field[data-v-382ed53a]{display:grid;gap:4px}.field>span[data-v-382ed53a]{color:var(--text-2);font-size:12px;font-weight:500}.reason[data-v-382ed53a],.notice[data-v-382ed53a]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5;overflow-wrap:anywhere}.idle-helper[data-v-382ed53a]{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-panel-tab[data-v-29dafd7a]{display:flex;flex-direction:column;gap:14px}.profile-panel-reason[data-v-29dafd7a]{margin:0;color:var(--text-3);font-size:12px}.profile-panel-tab[data-v-06548598]{display:flex;flex-direction:column;gap:14px}.profile-panel-models[data-v-06548598]{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.profile-skill[data-v-da955a19]{display:flex;gap:10px;align-items:flex-start;padding:10px 12px}.profile-skill+.profile-skill[data-v-da955a19]{border-top:1px solid var(--border)}.profile-skill-text[data-v-da955a19]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.profile-skill-head[data-v-da955a19]{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.profile-skill-name[data-v-da955a19]{color:var(--text);font-size:13px}.profile-skill.off .profile-skill-name[data-v-da955a19]{color:var(--text-3)}.profile-skill-own[data-v-da955a19]{padding:0 5px;border:1px solid var(--border-2);border-radius:5px;color:var(--text-3);font-size:10px}.profile-skill-about[data-v-da955a19]{display:-webkit-box;overflow:hidden;color:var(--text-3);font-size:12px;-webkit-box-orient:vertical;-webkit-line-clamp:2}.profile-skill-end[data-v-da955a19]{display:flex;flex:none;justify-content:flex-end;min-width:84px}.profile-skill-locked[data-v-da955a19]{max-width:130px;color:var(--text-3);font-size:11.5px;text-align:right}@media(max-width:640px){.profile-skill[data-v-da955a19]{flex-wrap:wrap}.profile-skill-end[data-v-da955a19]{justify-content:flex-start;width:100%;padding-left:38px}}.profile-skills[data-v-5fb78afd]{display:flex;flex-direction:column;gap:10px}.profile-skills-line[data-v-5fb78afd]{display:flex;gap:12px;align-items:baseline;justify-content:space-between}.profile-skills-help[data-v-5fb78afd],.profile-skills-count[data-v-5fb78afd],.profile-skills-note[data-v-5fb78afd]{margin:0;color:var(--text-3);font-size:12px}.profile-skills-card[data-v-5fb78afd]{border:1px solid var(--border);border-radius:8px;background:var(--bg-2)}.profile-skills-skeleton[data-v-5fb78afd],.profile-skills-note[data-v-5fb78afd]{padding:10px 12px}.profile-panel[data-v-a5586041],.profile-panel-tab[data-v-a5586041]{display:flex;flex-direction:column;gap:14px}.profile-panel-meta[data-v-a5586041]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}.profile-panel-name[data-v-a5586041]{color:var(--text-3);font-size:12px}.profile-panel-tag[data-v-a5586041]{padding:0 5px;border:1px solid var(--border-2);border-radius:5px;color:var(--text-3);font-size:10px}.profile-panel-changed[data-v-a5586041]{display:flex;gap:10px;align-items:center;justify-content:space-between}.profile-panel-reason[data-v-a5586041],.profile-panel-unsaved[data-v-a5586041]{margin:0;color:var(--text-3);font-size:12px}.profile-panel-grow[data-v-a5586041]{flex:1}.profiles[data-v-bd1b1e56]{padding:0 0 40px}.bar[data-v-bd1b1e56]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-bd1b1e56]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-bd1b1e56]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-bd1b1e56]{color:var(--danger)}.empty[data-v-bd1b1e56]{margin:40px auto;max-width:480px}.rows[data-v-bd1b1e56]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-bd1b1e56]{text-align:left}.profile-meta[data-v-bd1b1e56]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-bd1b1e56]{color:var(--text-2)}.profile-used[data-v-bd1b1e56]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-bd1b1e56]{color:var(--tone-warn)}.profile-used.never[data-v-bd1b1e56]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-bd1b1e56]{flex:1 1 100%}.profile-meta[data-v-bd1b1e56]{display:none}}\n"; document.head.appendChild(style); }
-import { ref as I, computed as C, watch as Q, openBlock as l, createElementBlock as i, withModifiers as ce, createElementVNode as y, createVNode as f, unref as e, withDirectives as H, Fragment as W, renderList as F, toDisplayString as T, vModelSelect as ve, withCtx as m, createTextVNode as M, createCommentVNode as _, useModel as ie, createBlock as q, mergeModels as ue, normalizeClass as de, renderSlot as me, vShow as K } from "vue";
-import { useWindow as ae, TextArea as oe, Btn as L, TextInput as X, FormField as O, Segmented as J, ModelPicker as ye, Switch as re, matchesSearch as pe, SearchBar as fe, Notice as Y, SkeletonLine as ke, SidePanel as ge, DiffCard as he, InnerTabs as be, EmptyState as te, ListRow as _e, ago as we } from "@journal/window-kit";
+if (!document.getElementById("window-styles-58a1176d0e7d")) { const style = document.createElement("style"); style.id = "window-styles-58a1176d0e7d"; style.textContent = ".helper-start[data-v-382ed53a]{display:grid;gap:12px;padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--border-2)}h3[data-v-382ed53a]{margin:0;font-size:14px;font-weight:600}.field[data-v-382ed53a]{display:grid;gap:4px}.field>span[data-v-382ed53a]{color:var(--text-2);font-size:12px;font-weight:500}.reason[data-v-382ed53a],.notice[data-v-382ed53a]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5;overflow-wrap:anywhere}.idle-helper[data-v-382ed53a]{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-panel-tab[data-v-29dafd7a]{display:flex;flex-direction:column;gap:14px}.profile-panel-reason[data-v-29dafd7a]{margin:0;color:var(--text-3);font-size:12px}.profile-panel-tab[data-v-06548598]{display:flex;flex-direction:column;gap:14px}.profile-panel-models[data-v-06548598]{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.profile-skill[data-v-da955a19]{display:flex;gap:10px;align-items:flex-start;padding:10px 12px}.profile-skill+.profile-skill[data-v-da955a19]{border-top:1px solid var(--border)}.profile-skill-text[data-v-da955a19]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.profile-skill-head[data-v-da955a19]{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.profile-skill-name[data-v-da955a19]{color:var(--text);font-size:13px}.profile-skill.off .profile-skill-name[data-v-da955a19]{color:var(--text-3)}.profile-skill-own[data-v-da955a19]{padding:0 5px;border:1px solid var(--border-2);border-radius:5px;color:var(--text-3);font-size:10px}.profile-skill-about[data-v-da955a19]{display:-webkit-box;overflow:hidden;color:var(--text-3);font-size:12px;-webkit-box-orient:vertical;-webkit-line-clamp:2}.profile-skill-end[data-v-da955a19]{display:flex;flex:none;justify-content:flex-end;min-width:84px}.profile-skill-locked[data-v-da955a19]{max-width:130px;color:var(--text-3);font-size:11.5px;text-align:right}@media(max-width:640px){.profile-skill[data-v-da955a19]{flex-wrap:wrap}.profile-skill-end[data-v-da955a19]{justify-content:flex-start;width:100%;padding-left:38px}}.profile-skills[data-v-5fb78afd]{display:flex;flex-direction:column;gap:10px}.profile-skills-line[data-v-5fb78afd]{display:flex;gap:12px;align-items:baseline;justify-content:space-between}.profile-skills-help[data-v-5fb78afd],.profile-skills-count[data-v-5fb78afd],.profile-skills-note[data-v-5fb78afd]{margin:0;color:var(--text-3);font-size:12px}.profile-skills-card[data-v-5fb78afd]{border:1px solid var(--border);border-radius:8px;background:var(--bg-2)}.profile-skills-skeleton[data-v-5fb78afd],.profile-skills-note[data-v-5fb78afd]{padding:10px 12px}.profile-panel[data-v-37c5760c],.profile-panel-tab[data-v-37c5760c]{display:flex;flex-direction:column;gap:14px}.profile-panel-meta[data-v-37c5760c]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}.profile-panel-name[data-v-37c5760c]{color:var(--text-3);font-size:12px}.profile-panel-tag[data-v-37c5760c]{padding:0 5px;border:1px solid var(--border-2);border-radius:5px;color:var(--text-3);font-size:10px}.profile-panel-changed[data-v-37c5760c]{display:flex;gap:10px;align-items:center;justify-content:space-between}.profile-panel-reason[data-v-37c5760c],.profile-panel-unsaved[data-v-37c5760c]{margin:0;color:var(--text-3);font-size:12px}.profile-panel-grow[data-v-37c5760c]{flex:1}.profiles[data-v-bd1b1e56]{padding:0 0 40px}.bar[data-v-bd1b1e56]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-bd1b1e56]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-bd1b1e56]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-bd1b1e56]{color:var(--danger)}.empty[data-v-bd1b1e56]{margin:40px auto;max-width:480px}.rows[data-v-bd1b1e56]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-bd1b1e56]{text-align:left}.profile-meta[data-v-bd1b1e56]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-bd1b1e56]{color:var(--text-2)}.profile-used[data-v-bd1b1e56]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-bd1b1e56]{color:var(--tone-warn)}.profile-used.never[data-v-bd1b1e56]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-bd1b1e56]{flex:1 1 100%}.profile-meta[data-v-bd1b1e56]{display:none}}\n"; document.head.appendChild(style); }
+import { ref as I, computed as C, watch as Q, openBlock as l, createElementBlock as i, withModifiers as ce, createElementVNode as y, createVNode as u, unref as e, withDirectives as H, Fragment as W, renderList as F, toDisplayString as T, vModelSelect as ve, withCtx as v, createTextVNode as M, createCommentVNode as _, useModel as ie, createBlock as q, mergeModels as ue, normalizeClass as de, renderSlot as me, vShow as K } from "vue";
+import { useWindow as ae, TextArea as oe, Btn as L, TextInput as X, FormField as O, Segmented as J, ModelPicker as ye, Switch as re, matchesSearch as pe, SearchBar as fe, Notice as Y, SkeletonLine as ke, SidePanel as ge, DiffCard as he, InnerTabs as be, TabBody as _e, EmptyState as te, ListRow as we, ago as $e } from "@journal/window-kit";
 const z = (t, x) => {
   const a = t.__vccOpts || t;
   for (const [k, r] of x)
     a[k] = r;
   return a;
-}, $e = { class: "field" }, Se = { class: "field" }, Te = ["disabled"], Ce = ["value"], qe = ["data-helper-idle"], Ie = {
+}, Se = { class: "field" }, Te = { class: "field" }, Ce = ["disabled"], qe = ["value"], Ie = ["data-helper-idle"], Pe = {
   key: 0,
   class: "field"
-}, Pe = {
+}, xe = {
   key: 1,
   class: "reason",
   "data-helper-fresh-blocked": ""
-}, xe = {
+}, Ae = {
   key: 2,
   class: "reason",
   "data-helper-start-reason": ""
-}, Ae = {
+}, je = {
   key: 3,
   class: "notice"
-}, je = {
+}, Re = {
   __name: "HelperStartForm",
   props: { profile: { type: String, required: !0 }, programs: { type: Array, required: !0 } },
   setup(t) {
-    const x = t, a = ae(), k = { can_start: !1, reason: "", programs: [], idle_helpers: [], can_start_fresh: !1, fresh_reason: "" }, r = I(k), u = I(""), s = I(""), P = I(""), A = I(""), c = I(!1), S = I(!0);
+    const x = t, a = ae(), k = { can_start: !1, reason: "", programs: [], idle_helpers: [], can_start_fresh: !1, fresh_reason: "" }, r = I(k), d = I(""), s = I(""), P = I(""), A = I(""), c = I(!1), S = I(!0);
     let R = 0;
-    const N = C(() => !c.value && !S.value && !!u.value.trim()), E = C(() => !N.value || !(r.value.can_start || r.value.can_start_fresh && A.value.trim()));
+    const N = C(() => !c.value && !S.value && !!d.value.trim()), E = C(() => !N.value || !(r.value.can_start || r.value.can_start_fresh && A.value.trim()));
     async function j() {
       const b = ++R;
       if (S.value = !0, a.state["availability.profile"] = x.profile, s.value ? a.state["availability.program"] = s.value : delete a.state["availability.program"], await a.reload("availability"), b !== R) return;
@@ -34,16 +34,16 @@ const z = (t, x) => {
       o.failure.value ? (r.value = k, P.value = o.failure.value) : r.value = o.data.value, S.value = !1;
     }
     async function B() {
-      E.value || await d(["helper", "start", x.profile, "--brief", u.value, ...s.value ? ["--program", s.value] : [], ...A.value.trim() ? ["--fresh", A.value.trim()] : []], "The read-only helper is starting.");
+      E.value || await p(["helper", "start", x.profile, "--brief", d.value, ...s.value ? ["--program", s.value] : [], ...A.value.trim() ? ["--fresh", A.value.trim()] : []], "The read-only helper is starting.");
     }
     async function V(b) {
-      N.value && await d(["helper", "send", String(b), u.value], "Job sent.");
+      N.value && await p(["helper", "send", String(b), d.value], "Job sent.");
     }
-    async function d(b, o) {
+    async function p(b, o) {
       c.value = !0;
       try {
         const h = await a.run(b);
-        P.value = h.ok ? o : h.error, h.ok && (u.value = "", A.value = ""), await j();
+        P.value = h.ok ? o : h.error, h.ok && (d.value = "", A.value = ""), await j();
       } finally {
         c.value = !1;
       }
@@ -54,17 +54,17 @@ const z = (t, x) => {
       onSubmit: ce(B, ["prevent"])
     }, [
       o[9] || (o[9] = y("h3", null, "Give a read-only helper a job", -1)),
-      y("label", $e, [
+      y("label", Se, [
         o[3] || (o[3] = y("span", null, "The job", -1)),
-        f(e(oe), {
-          value: u.value,
+        u(e(oe), {
+          value: d.value,
           rows: "3",
           disabled: c.value,
           "data-helper-brief": "",
-          onInput: o[0] || (o[0] = (h) => u.value = h.target.value)
+          onInput: o[0] || (o[0] = (h) => d.value = h.target.value)
         }, null, 8, ["value", "disabled"])
       ]),
-      y("label", Se, [
+      y("label", Te, [
         o[5] || (o[5] = y("span", null, "Program", -1)),
         H(y("select", {
           "onUpdate:modelValue": o[1] || (o[1] = (h) => s.value = h),
@@ -77,9 +77,9 @@ const z = (t, x) => {
             return l(), i("option", {
               key: h,
               value: h
-            }, T(((U = t.programs.find((G) => G.name === h)) == null ? void 0 : U.title) || h), 9, Ce);
+            }, T(((U = t.programs.find((G) => G.name === h)) == null ? void 0 : U.title) || h), 9, qe);
           }), 128))
-        ], 8, Te), [
+        ], 8, Ce), [
           [ve, s.value]
         ])
       ]),
@@ -89,55 +89,55 @@ const z = (t, x) => {
         "data-helper-idle": h.id
       }, [
         y("span", null, T(h.name) + " · Idle", 1),
-        f(e(L), {
+        u(e(L), {
           type: "button",
           disabled: !N.value,
           "data-helper-send": h.id,
           onClick: (U) => V(h.number)
         }, {
-          default: m(() => [...o[6] || (o[6] = [
+          default: v(() => [...o[6] || (o[6] = [
             M("Send the job", -1)
           ])]),
           _: 1
         }, 8, ["disabled", "data-helper-send", "onClick"])
-      ], 8, qe))), 128)),
-      r.value.idle_helpers.length ? (l(), i("label", Ie, [
+      ], 8, Ie))), 128)),
+      r.value.idle_helpers.length ? (l(), i("label", Pe, [
         o[7] || (o[7] = y("span", null, "Why start another helper?", -1)),
-        f(e(X), {
+        u(e(X), {
           modelValue: A.value,
           "onUpdate:modelValue": o[2] || (o[2] = (h) => A.value = h),
           disabled: c.value,
           "data-helper-fresh-reason": ""
         }, null, 8, ["modelValue", "disabled"])
       ])) : _("", !0),
-      f(e(L), {
+      u(e(L), {
         type: "submit",
         disabled: E.value,
         "data-helper-start-button": ""
       }, {
-        default: m(() => [...o[8] || (o[8] = [
+        default: v(() => [...o[8] || (o[8] = [
           M("Start a read-only helper", -1)
         ])]),
         _: 1
       }, 8, ["disabled"]),
-      r.value.fresh_reason ? (l(), i("p", Pe, T(r.value.fresh_reason), 1)) : _("", !0),
-      r.value.reason && r.value.reason !== r.value.fresh_reason ? (l(), i("p", xe, T(r.value.reason), 1)) : _("", !0),
-      P.value ? (l(), i("p", Ae, T(P.value), 1)) : _("", !0)
+      r.value.fresh_reason ? (l(), i("p", xe, T(r.value.fresh_reason), 1)) : _("", !0),
+      r.value.reason && r.value.reason !== r.value.fresh_reason ? (l(), i("p", Ae, T(r.value.reason), 1)) : _("", !0),
+      P.value ? (l(), i("p", je, T(P.value), 1)) : _("", !0)
     ], 32));
   }
-}, Re = /* @__PURE__ */ z(je, [["__scopeId", "data-v-382ed53a"]]), Ne = {
+}, Ne = /* @__PURE__ */ z(Re, [["__scopeId", "data-v-382ed53a"]]), Be = {
   class: "profile-panel-tab",
   "data-profile-tab": "about"
-}, Be = {
-  key: 0,
-  class: "profile-panel-reason"
 }, Oe = {
-  key: 1,
+  key: 0,
   class: "profile-panel-reason"
 }, Ee = {
+  key: 1,
+  class: "profile-panel-reason"
+}, Me = {
   key: 0,
   "data-profile-type-locked": ""
-}, Me = {
+}, We = {
   __name: "ProfileAboutTab",
   props: /* @__PURE__ */ ue({ profile: { type: Object, required: !0 }, choices: { type: Array, required: !0 }, accesses: { type: Array, required: !0 }, pickedType: { type: Object, default: null }, nameIsBad: Boolean, descriptionIsEmpty: Boolean }, {
     draft: { type: Object, required: !0 },
@@ -147,16 +147,16 @@ const z = (t, x) => {
   setup(t) {
     const x = [{ key: "continue", label: "Resume it" }, { key: "when-cold", label: "Start over after a long pause" }, { key: "each-launch", label: "New for each job" }], a = ie(t, "draft");
     return (k, r) => {
-      var u;
-      return l(), i("div", Ne, [
+      var d;
+      return l(), i("div", Be, [
         t.profile.name ? _("", !0) : (l(), i(W, { key: 0 }, [
-          f(e(O), {
+          u(e(O), {
             label: "Name",
             for: "profile-name",
             help: "Letters, digits and dashes; the agent starts it by this name."
           }, {
-            default: m(() => [
-              f(e(X), {
+            default: v(() => [
+              u(e(X), {
                 id: "profile-name",
                 value: a.value.name,
                 placeholder: "critic",
@@ -165,14 +165,14 @@ const z = (t, x) => {
             ]),
             _: 1
           }),
-          t.nameIsBad && a.value.name ? (l(), i("p", Be, "Use letters, digits and dashes.")) : _("", !0)
+          t.nameIsBad && a.value.name ? (l(), i("p", Oe, "Use letters, digits and dashes.")) : _("", !0)
         ], 64)),
-        f(e(O), {
+        u(e(O), {
           label: "Title",
           for: "profile-title"
         }, {
-          default: m(() => [
-            f(e(X), {
+          default: v(() => [
+            u(e(X), {
               id: "profile-title",
               value: a.value.title,
               onInput: r[1] || (r[1] = (s) => a.value.title = s.target.value)
@@ -180,13 +180,13 @@ const z = (t, x) => {
           ]),
           _: 1
         }),
-        f(e(O), {
+        u(e(O), {
           label: "When it is used",
           for: "profile-description",
           help: "The agent reads this to decide when to start it."
         }, {
-          default: m(() => [
-            f(e(oe), {
+          default: v(() => [
+            u(e(oe), {
               id: "profile-description",
               rows: "3",
               value: a.value.description,
@@ -195,16 +195,16 @@ const z = (t, x) => {
           ]),
           _: 1
         }),
-        t.descriptionIsEmpty ? (l(), i("p", Oe, "Describe when the agent should start it.")) : _("", !0),
-        f(e(O), {
+        t.descriptionIsEmpty ? (l(), i("p", Ee, "Describe when the agent should start it.")) : _("", !0),
+        u(e(O), {
           label: "Type",
           for: "profile-type",
           help: "The type of agent that runs this profile."
         }, {
-          default: m(() => {
+          default: v(() => {
             var s;
             return [
-              t.profile.shipped ? (l(), i("span", Ee, T((s = t.pickedType) == null ? void 0 : s.label), 1)) : (l(), q(e(J), {
+              t.profile.shipped ? (l(), i("span", Me, T((s = t.pickedType) == null ? void 0 : s.label), 1)) : (l(), q(e(J), {
                 key: 1,
                 "data-profile-type": "",
                 options: t.choices,
@@ -215,13 +215,13 @@ const z = (t, x) => {
           }),
           _: 1
         }),
-        f(e(O), {
+        u(e(O), {
           label: "Access",
           for: "profile-access",
           help: "Whether it may change files."
         }, {
-          default: m(() => [
-            f(e(J), {
+          default: v(() => [
+            u(e(J), {
               "data-profile-access": "",
               options: t.accesses,
               value: a.value.access,
@@ -230,14 +230,14 @@ const z = (t, x) => {
           ]),
           _: 1
         }),
-        (u = t.pickedType) != null && u.declares_occupant ? (l(), q(e(O), {
+        (d = t.pickedType) != null && d.declares_occupant ? (l(), q(e(O), {
           key: 2,
           label: "Conversation",
           for: "profile-occupant",
           help: "What the agent does with its conversation when it gets its next job. The agent itself is kept in each case."
         }, {
-          default: m(() => [
-            f(e(J), {
+          default: v(() => [
+            u(e(J), {
               "data-profile-occupant": "",
               options: x,
               value: a.value.occupant,
@@ -249,10 +249,10 @@ const z = (t, x) => {
       ]);
     };
   }
-}, We = /* @__PURE__ */ z(Me, [["__scopeId", "data-v-29dafd7a"]]), Ve = {
+}, Ve = /* @__PURE__ */ z(We, [["__scopeId", "data-v-29dafd7a"]]), Le = {
   class: "profile-panel-tab",
   "data-profile-tab": "model"
-}, Le = { class: "profile-panel-models" }, Ue = {
+}, Ue = { class: "profile-panel-models" }, Fe = {
   __name: "ProfileModelTab",
   props: /* @__PURE__ */ ue({ programs: { type: Array, required: !0 }, programChoices: { type: Array, required: !0 } }, {
     draft: { type: Object, required: !0 },
@@ -261,33 +261,33 @@ const z = (t, x) => {
   emits: ["update:draft"],
   setup(t) {
     const x = [{ key: "always", label: "Always this program" }, { key: "possible", label: "This program if possible" }], a = [{ key: "", label: "Profile models" }, { key: "fast", label: "Fast" }, { key: "general", label: "General" }, { key: "strongest", label: "Strongest" }], k = ie(t, "draft");
-    return (r, u) => (l(), i("div", Ve, [
-      f(e(O), {
+    return (r, d) => (l(), i("div", Le, [
+      u(e(O), {
         label: "Program",
         for: "profile-program",
         help: "A registered program, or the same program as the agent that starts it."
       }, {
-        default: m(() => [
-          f(e(J), {
+        default: v(() => [
+          u(e(J), {
             options: t.programChoices,
             value: k.value.program,
-            onPick: u[0] || (u[0] = (s) => k.value.program = s)
+            onPick: d[0] || (d[0] = (s) => k.value.program = s)
           }, null, 8, ["options", "value"])
         ]),
         _: 1
       }),
       k.value.program ? (l(), i(W, { key: 0 }, [
-        f(e(O), {
+        u(e(O), {
           label: "When it cannot start",
           for: "profile-program-choice",
           help: "If possible: a start uses the other program, on its model, when this one is not installed or not ready, and says so."
         }, {
-          default: m(() => [
-            f(e(J), {
+          default: v(() => [
+            u(e(J), {
               "data-profile-program-choice": "",
               options: x,
               value: k.value.preferred_program ? "possible" : "always",
-              onPick: u[1] || (u[1] = (s) => k.value.preferred_program = s === "possible")
+              onPick: d[1] || (d[1] = (s) => k.value.preferred_program = s === "possible")
             }, null, 8, ["value"])
           ]),
           _: 1
@@ -298,41 +298,41 @@ const z = (t, x) => {
           for: "profile-fallbacks",
           help: "Program names in the order to try them, separated by commas. Blank tries every other program."
         }, {
-          default: m(() => [
-            f(e(X), {
+          default: v(() => [
+            u(e(X), {
               id: "profile-fallbacks",
               value: k.value.fallback_programs,
               "data-profile-fallbacks": "",
-              onInput: u[2] || (u[2] = (s) => k.value.fallback_programs = s.target.value)
+              onInput: d[2] || (d[2] = (s) => k.value.fallback_programs = s.target.value)
             }, null, 8, ["value"])
           ]),
           _: 1
         })) : _("", !0)
       ], 64)) : _("", !0),
-      f(e(O), {
+      u(e(O), {
         label: "Model tier",
         for: "profile-tier",
         help: "Chooses a model when this profile has no named model for the program."
       }, {
-        default: m(() => [
-          f(e(J), {
+        default: v(() => [
+          u(e(J), {
             "data-profile-tier": "",
             options: a,
             value: k.value.tier || "",
-            onPick: u[3] || (u[3] = (s) => k.value.tier = s || null)
+            onPick: d[3] || (d[3] = (s) => k.value.tier = s || null)
           }, null, 8, ["value"])
         ]),
         _: 1
       }),
-      y("div", Le, [
+      y("div", Ue, [
         (l(!0), i(W, null, F(t.programs, (s) => (l(), q(e(O), {
           key: s.name,
           label: `Model on ${s.title}`,
           for: `profile-model-${s.name}`,
           help: "The least expensive model that reliably fits the work."
         }, {
-          default: m(() => [
-            f(e(ye), {
+          default: v(() => [
+            u(e(ye), {
               title: s.title,
               models: s.models,
               inherits: "",
@@ -346,15 +346,15 @@ const z = (t, x) => {
       ])
     ]));
   }
-}, Fe = /* @__PURE__ */ z(Ue, [["__scopeId", "data-v-06548598"]]), De = ["data-profile-skill"], ze = { class: "profile-skill-text" }, Ge = { class: "profile-skill-head" }, He = { class: "profile-skill-name" }, Je = {
+}, De = /* @__PURE__ */ z(Fe, [["__scopeId", "data-v-06548598"]]), ze = ["data-profile-skill"], Ge = { class: "profile-skill-text" }, He = { class: "profile-skill-head" }, Je = { class: "profile-skill-name" }, Ke = {
   key: 0,
   class: "profile-skill-own",
   "data-profile-skill-own": ""
-}, Ke = ["title"], Ye = { class: "profile-skill-end" }, Qe = {
+}, Ye = ["title"], Qe = { class: "profile-skill-end" }, Xe = {
   key: 0,
   class: "profile-skill-locked",
   "data-profile-skill-locked": ""
-}, Xe = {
+}, Ze = {
   __name: "ProfileSkillRow",
   props: { row: { type: Object, required: !0 }, on: Boolean, required: Boolean },
   emits: ["toggle", "require"],
@@ -364,25 +364,25 @@ const z = (t, x) => {
       class: de(["profile-skill", { off: !t.on }]),
       "data-profile-skill": t.row.key
     }, [
-      f(e(re), {
+      u(e(re), {
         on: t.on,
         disabled: t.row.locked,
         title: `Give ${t.row.key} to this profile's agents`,
         "data-profile-skill-switch": "",
-        onChange: r[0] || (r[0] = (u) => a("toggle", u))
+        onChange: r[0] || (r[0] = (d) => a("toggle", d))
       }, null, 8, ["on", "disabled", "title"]),
-      y("span", ze, [
-        y("span", Ge, [
-          y("span", He, T(t.row.key), 1),
-          t.row.own ? (l(), i("span", Je, "Made for this type")) : _("", !0)
+      y("span", Ge, [
+        y("span", He, [
+          y("span", Je, T(t.row.key), 1),
+          t.row.own ? (l(), i("span", Ke, "Made for this type")) : _("", !0)
         ]),
         y("span", {
           class: "profile-skill-about",
           title: t.row.description
-        }, T(t.row.description), 9, Ke)
+        }, T(t.row.description), 9, Ye)
       ]),
-      y("span", Ye, [
-        t.row.locked ? (l(), i("span", Qe, "Every agent reads this at the start")) : t.on ? (l(), q(e(re), {
+      y("span", Qe, [
+        t.row.locked ? (l(), i("span", Xe, "Every agent reads this at the start")) : t.on ? (l(), q(e(re), {
           key: 1,
           labelled: "",
           small: "",
@@ -390,56 +390,56 @@ const z = (t, x) => {
           on: t.required,
           title: `Require ${t.row.key} at the start`,
           "data-profile-skill-required": "",
-          onChange: r[1] || (r[1] = (u) => a("require", u))
+          onChange: r[1] || (r[1] = (d) => a("require", d))
         }, null, 8, ["on", "title"])) : _("", !0)
       ])
-    ], 10, De));
+    ], 10, ze));
   }
-}, Ze = /* @__PURE__ */ z(Xe, [["__scopeId", "data-v-da955a19"]]), el = {
+}, el = /* @__PURE__ */ z(Ze, [["__scopeId", "data-v-da955a19"]]), ll = {
   class: "profile-skills",
   "data-profile-skills": ""
-}, ll = { class: "profile-skills-line" }, tl = {
+}, tl = { class: "profile-skills-line" }, al = {
   key: 0,
   class: "profile-skills-count",
   "data-profile-skill-count": ""
-}, al = { role: "alert" }, ol = {
+}, ol = { role: "alert" }, sl = {
   key: 2,
   class: "profile-skills-card"
-}, sl = {
+}, rl = {
   key: 1,
   class: "profile-skills-note"
-}, rl = {
+}, nl = {
   key: 2,
   class: "profile-skills-note"
-}, nl = 8, il = 3, ul = {
+}, il = 8, ul = 3, dl = {
   __name: "ProfileSkillToggles",
   props: { profile: { type: String, required: !0 }, chosen: { type: Array, default: null }, requiredChosen: { type: Array, default: null } },
   emits: ["change", "change-required", "count"],
   setup(t, { emit: x }) {
-    const a = t, k = x, r = ae(), u = I([]), s = I(""), P = I(!1), A = I(""), c = C(() => new Set(a.chosen ?? u.value.filter((d) => d.state === "on").map((d) => d.key))), S = C(() => new Set(a.requiredChosen ?? u.value.filter((d) => d.required).map((d) => d.key))), R = C(() => {
-      const d = A.value.toLowerCase().split(/\s+/).filter(Boolean);
-      return u.value.filter((b) => d.every((o) => pe(b, o, ["key", "description"])));
-    }), N = C(() => `${c.value.size} of ${u.value.length} on${S.value.size ? `, ${S.value.size} required` : ""}`);
+    const a = t, k = x, r = ae(), d = I([]), s = I(""), P = I(!1), A = I(""), c = C(() => new Set(a.chosen ?? d.value.filter((p) => p.state === "on").map((p) => p.key))), S = C(() => new Set(a.requiredChosen ?? d.value.filter((p) => p.required).map((p) => p.key))), R = C(() => {
+      const p = A.value.toLowerCase().split(/\s+/).filter(Boolean);
+      return d.value.filter((b) => p.every((o) => pe(b, o, ["key", "description"])));
+    }), N = C(() => `${c.value.size} of ${d.value.length} on${S.value.size ? `, ${S.value.size} required` : ""}`);
     async function E() {
       P.value = !1, r.state["skills.profile"] = a.profile, await r.reload("skills");
-      const d = r.props.skills;
-      s.value = d.failure.value, u.value = s.value ? [] : d.data.value.rows, P.value = !0;
+      const p = r.props.skills;
+      s.value = p.failure.value, d.value = s.value ? [] : p.data.value.rows, P.value = !0;
     }
-    const j = (d) => u.value.filter((b) => d.has(b.key)).map((b) => b.key);
-    function B(d, b) {
+    const j = (p) => d.value.filter((b) => p.has(b.key)).map((b) => b.key);
+    function B(p, b) {
       const o = new Set(c.value);
-      b ? o.add(d.key) : o.delete(d.key), k("change", j(o)), !b && S.value.has(d.key) && V(d, !1);
+      b ? o.add(p.key) : o.delete(p.key), k("change", j(o)), !b && S.value.has(p.key) && V(p, !1);
     }
-    function V(d, b) {
+    function V(p, b) {
       const o = new Set(S.value);
-      b ? o.add(d.key) : o.delete(d.key), k("change-required", j(o));
+      b ? o.add(p.key) : o.delete(p.key), k("change-required", j(o));
     }
-    return Q(() => a.profile, E, { immediate: !0 }), Q(() => c.value.size, (d) => k("count", d), { immediate: !0 }), (d, b) => (l(), i("div", el, [
-      y("div", ll, [
+    return Q(() => a.profile, E, { immediate: !0 }), Q(() => c.value.size, (p) => k("count", p), { immediate: !0 }), (p, b) => (l(), i("div", ll, [
+      y("div", tl, [
         b[1] || (b[1] = y("span", { class: "profile-skills-help" }, "Changing a skill here saves the whole list.", -1)),
-        P.value && u.value.length ? (l(), i("span", tl, T(N.value), 1)) : _("", !0)
+        P.value && d.value.length ? (l(), i("span", al, T(N.value), 1)) : _("", !0)
       ]),
-      u.value.length > nl ? (l(), q(e(fe), {
+      d.value.length > il ? (l(), q(e(fe), {
         key: 0,
         modelValue: A.value,
         "onUpdate:modelValue": b[0] || (b[0] = (o) => A.value = o),
@@ -449,84 +449,84 @@ const z = (t, x) => {
         key: 1,
         tone: "danger"
       }, {
-        default: m(() => [
-          y("span", al, T(s.value), 1),
-          f(e(L), {
+        default: v(() => [
+          y("span", ol, T(s.value), 1),
+          u(e(L), {
             variant: "ghost",
             small: "",
             "data-profile-skills-retry": "",
             onClick: E
           }, {
-            default: m(() => [...b[2] || (b[2] = [
+            default: v(() => [...b[2] || (b[2] = [
               M("Try again", -1)
             ])]),
             _: 1
           })
         ]),
         _: 1
-      })) : (l(), i("div", ol, [
-        P.value ? u.value.length ? R.value.length ? (l(!0), i(W, { key: 3 }, F(R.value, (o) => (l(), q(Ze, {
+      })) : (l(), i("div", sl, [
+        P.value ? d.value.length ? R.value.length ? (l(!0), i(W, { key: 3 }, F(R.value, (o) => (l(), q(el, {
           key: o.key,
           row: o,
           on: c.value.has(o.key),
           required: S.value.has(o.key),
           onToggle: (h) => B(o, h),
           onRequire: (h) => V(o, h)
-        }, null, 8, ["row", "on", "required", "onToggle", "onRequire"]))), 128)) : (l(), i("p", rl, "No skill matches that.")) : (l(), i("p", sl, "No skills are installed.")) : (l(), i(W, { key: 0 }, F(il, (o) => y("div", {
+        }, null, 8, ["row", "on", "required", "onToggle", "onRequire"]))), 128)) : (l(), i("p", nl, "No skill matches that.")) : (l(), i("p", rl, "No skills are installed.")) : (l(), i(W, { key: 0 }, F(ul, (o) => y("div", {
           key: o,
           class: "profile-skills-skeleton"
         }, [
-          f(e(ke))
+          u(e(ke))
         ])), 64))
       ]))
     ]));
   }
-}, dl = /* @__PURE__ */ z(ul, [["__scopeId", "data-v-5fb78afd"]]), pl = {
+}, pl = /* @__PURE__ */ z(dl, [["__scopeId", "data-v-5fb78afd"]]), fl = {
   key: 0,
   class: "profile-panel-meta",
   "data-profile-meta": ""
-}, fl = { class: "profile-panel-name" }, cl = {
+}, cl = { class: "profile-panel-name" }, vl = {
   key: 0,
   class: "profile-panel-tag",
   title: "Your changes are kept through updates."
-}, vl = {
-  key: 1,
-  class: "profile-panel-tag"
 }, ml = {
-  key: 2,
+  key: 1,
   class: "profile-panel-tag"
 }, yl = {
+  key: 2,
+  class: "profile-panel-tag"
+}, kl = {
   class: "profile-panel",
   "data-profile-panel": ""
-}, kl = {
+}, gl = {
   role: "alert",
   "data-profile-panel-failure": ""
-}, gl = { "data-profile-panel-notice": "" }, hl = { class: "profile-panel-changed" }, bl = {
+}, hl = { "data-profile-panel-notice": "" }, bl = { class: "profile-panel-changed" }, _l = {
   class: "profile-panel-tab",
   "data-profile-tab": "instructions"
-}, _l = {
-  class: "profile-panel-tab",
-  "data-profile-tab": "tools"
 }, wl = {
   class: "profile-panel-tab",
-  "data-profile-tab": "skills"
+  "data-profile-tab": "tools"
 }, $l = {
+  class: "profile-panel-tab",
+  "data-profile-tab": "skills"
+}, Sl = {
   key: 1,
   class: "profile-panel-reason"
-}, Sl = {
+}, Tl = {
   key: 1,
   class: "profile-panel-unsaved",
   "data-profile-unsaved": ""
-}, ne = "writing", Tl = {
+}, ne = "writing", Cl = {
   __name: "ProfilePanel",
   props: { profile: { type: Object, required: !0 }, used: { type: String, default: "" }, types: { type: Array, default: () => [] }, programs: { type: Array, required: !0 }, notice: { type: String, default: "" }, failure: { type: String, default: "" } },
   emits: ["close", "save", "reset"],
   setup(t, { emit: x }) {
-    const a = t, k = x, r = /^[a-z0-9_-]+$/i, u = [{ key: "about", label: "About" }, { key: "model", label: "Model" }, { key: "instructions", label: "Instructions" }, { key: "tools", label: "Tools" }, { key: "skills", label: "Skills", count_field: "skills" }], s = C(() => [{ key: "", label: "The parent program" }, ...a.programs.map((w) => ({ key: w.name, label: w.title }))]), P = C(() => a.types.map((w) => ({ key: w.key, label: w.label }))), A = ["title", "description", "agent_type", "access", "program", "preferred_program", "fallback_programs", "occupant", "mcp_tools", "program_models", "tier", "body"], c = I({}), S = I(u[0]), R = I(null);
+    const a = t, k = x, r = /^[a-z0-9_-]+$/i, d = [{ key: "about", label: "About" }, { key: "model", label: "Model" }, { key: "instructions", label: "Instructions" }, { key: "tools", label: "Tools" }, { key: "skills", label: "Skills", count_field: "skills" }], s = C(() => [{ key: "", label: "The parent program" }, ...a.programs.map((w) => ({ key: w.name, label: w.title }))]), P = C(() => a.types.map((w) => ({ key: w.key, label: w.label }))), A = ["title", "description", "agent_type", "access", "program", "preferred_program", "fallback_programs", "occupant", "mcp_tools", "program_models", "tier", "body"], c = I({}), S = I(d[0]), R = I(null);
     Q(
       () => a.profile.name,
       () => {
-        c.value = { name: a.profile.name, ...Object.fromEntries(A.map((w) => [w, a.profile[w]])), mcp_tools: a.profile.mcp_tools.join(","), fallback_programs: a.profile.fallback_programs.join(","), program_models: { ...a.profile.program_models }, skills: null, required_skills: null }, S.value = u[0], R.value = null;
+        c.value = { name: a.profile.name, ...Object.fromEntries(A.map((w) => [w, a.profile[w]])), mcp_tools: a.profile.mcp_tools.join(","), fallback_programs: a.profile.fallback_programs.join(","), program_models: { ...a.profile.program_models }, skills: null, required_skills: null }, S.value = d[0], R.value = null;
       },
       { immediate: !0 }
     );
@@ -537,7 +537,7 @@ const z = (t, x) => {
     Q(E, (w) => {
       w || (c.value.access = "read-only");
     });
-    const B = I(!1), V = (w, n, g) => n.map((v, p) => ({ line_type: w, line: p + 1, text: v })).filter((v) => !g.includes(v.text)), d = C(() => {
+    const B = I(!1), V = (w, n, g) => n.map((m, f) => ({ line_type: w, line: f + 1, text: m })).filter((m) => !g.includes(m.text)), p = C(() => {
       const w = a.profile.body.split(`
 `), n = (a.profile.module_body || "").split(`
 `);
@@ -550,22 +550,22 @@ const z = (t, x) => {
       abstract: t.profile.name ? t.used : "Instructions, type and model for an agent",
       onClose: n[12] || (n[12] = (g) => k("close"))
     }, {
-      meta: m(() => [
-        t.profile.name ? (l(), i("div", pl, [
-          y("span", fl, T(t.profile.name), 1),
-          t.profile.shipped ? (l(), i("span", cl, "Comes with the journal")) : _("", !0),
-          t.profile.changed.length ? (l(), i("span", vl, "Changed")) : _("", !0),
-          t.profile.problem ? (l(), i("span", ml, "Problem")) : _("", !0)
+      meta: v(() => [
+        t.profile.name ? (l(), i("div", fl, [
+          y("span", cl, T(t.profile.name), 1),
+          t.profile.shipped ? (l(), i("span", vl, "Comes with the journal")) : _("", !0),
+          t.profile.changed.length ? (l(), i("span", ml, "Changed")) : _("", !0),
+          t.profile.problem ? (l(), i("span", yl, "Problem")) : _("", !0)
         ])) : _("", !0)
       ]),
-      foot: m(() => [
-        f(e(L), {
+      foot: v(() => [
+        u(e(L), {
           variant: "ghost",
           small: "",
           "data-profile-cancel": "",
           onClick: n[9] || (n[9] = (g) => k("close"))
         }, {
-          default: m(() => [...n[15] || (n[15] = [
+          default: v(() => [...n[15] || (n[15] = [
             M("Cancel", -1)
           ])]),
           _: 1
@@ -577,40 +577,40 @@ const z = (t, x) => {
           "data-profile-reset": "",
           onClick: n[10] || (n[10] = (g) => k("reset", t.profile))
         }, {
-          default: m(() => [...n[16] || (n[16] = [
+          default: v(() => [...n[16] || (n[16] = [
             M("Use the journal's version", -1)
           ])]),
           _: 1
         })) : _("", !0),
         n[18] || (n[18] = y("span", { class: "profile-panel-grow" }, null, -1)),
-        o.value && t.profile.name ? (l(), i("span", Sl, "Unsaved changes")) : _("", !0),
-        f(e(L), {
+        o.value && t.profile.name ? (l(), i("span", Tl, "Unsaved changes")) : _("", !0),
+        u(e(L), {
           variant: "primary",
           small: "",
           disabled: !G.value,
           "data-profile-save": "",
           onClick: n[11] || (n[11] = (g) => k("save", t.profile, c.value))
         }, {
-          default: m(() => [...n[17] || (n[17] = [
+          default: v(() => [...n[17] || (n[17] = [
             M("Save", -1)
           ])]),
           _: 1
         }, 8, ["disabled"])
       ]),
-      default: m(() => [
+      default: v(() => [
         me(w.$slots, "default", {}, void 0, !0),
-        y("div", yl, [
+        y("div", kl, [
           t.failure ? (l(), q(e(Y), {
             key: 0,
             tone: "danger"
           }, {
-            default: m(() => [
-              y("span", kl, T(t.failure), 1)
+            default: v(() => [
+              y("span", gl, T(t.failure), 1)
             ]),
             _: 1
           })) : t.notice ? (l(), q(e(Y), { key: 1 }, {
-            default: m(() => [
-              y("span", gl, T(t.notice), 1)
+            default: v(() => [
+              y("span", hl, T(t.notice), 1)
             ]),
             _: 1
           })) : _("", !0),
@@ -618,23 +618,23 @@ const z = (t, x) => {
             key: g,
             tone: "wait"
           }, {
-            default: m(() => [
+            default: v(() => [
               M(T(g), 1)
             ]),
             _: 2
           }, 1024))), 128)),
           t.profile.module_text_changed ? (l(), i(W, { key: 2 }, [
-            f(e(Y), null, {
-              default: m(() => [
-                y("span", hl, [
+            u(e(Y), null, {
+              default: v(() => [
+                y("span", bl, [
                   n[14] || (n[14] = y("span", null, "Text changed: the journal's instructions have a new version.", -1)),
-                  f(e(L), {
+                  u(e(L), {
                     variant: "ghost",
                     small: "",
                     "data-profile-compare": "",
                     onClick: n[0] || (n[0] = (g) => B.value = !B.value)
                   }, {
-                    default: m(() => [...n[13] || (n[13] = [
+                    default: v(() => [...n[13] || (n[13] = [
                       M("Compare", -1)
                     ])]),
                     _: 1
@@ -647,171 +647,176 @@ const z = (t, x) => {
               key: 0,
               path: "Instructions",
               change: "edit",
-              added: d.value.filter((g) => g.line_type === "add").length,
-              removed: d.value.filter((g) => g.line_type === "del").length,
+              added: p.value.filter((g) => g.line_type === "add").length,
+              removed: p.value.filter((g) => g.line_type === "del").length,
               at: "",
-              rows: d.value,
+              rows: p.value,
               "data-profile-diff": ""
             }, null, 8, ["added", "removed", "rows"])) : _("", !0)
           ], 64)) : _("", !0),
-          f(e(be), {
-            tabs: u,
+          u(e(be), {
+            tabs: d,
             active: S.value,
             answer: ee.value,
             onChoose: n[1] || (n[1] = (g) => S.value = g)
           }, null, 8, ["active", "answer"]),
-          H(f(We, {
-            draft: c.value,
-            "onUpdate:draft": n[2] || (n[2] = (g) => c.value = g),
-            profile: t.profile,
-            choices: P.value,
-            accesses: j.value,
-            "picked-type": N.value,
-            "name-is-bad": h.value,
-            "description-is-empty": U.value
-          }, null, 8, ["draft", "profile", "choices", "accesses", "picked-type", "name-is-bad", "description-is-empty"]), [
-            [K, S.value.key === "about"]
-          ]),
-          H(f(Fe, {
-            draft: c.value,
-            "onUpdate:draft": n[3] || (n[3] = (g) => c.value = g),
-            programs: t.programs,
-            "program-choices": s.value
-          }, null, 8, ["draft", "programs", "program-choices"]), [
-            [K, S.value.key === "model"]
-          ]),
-          H(y("div", bl, [
-            f(e(O), {
-              label: "Instructions",
-              for: "profile-body",
-              help: "What it is told each time it starts, after the brief."
-            }, {
-              default: m(() => [
-                f(e(oe), {
-                  id: "profile-body",
-                  rows: "16",
-                  value: c.value.body,
-                  onInput: n[4] || (n[4] = (g) => c.value.body = g.target.value)
-                }, null, 8, ["value"])
+          u(e(_e), { tab: S.value }, {
+            default: v(() => [
+              H(u(Ve, {
+                draft: c.value,
+                "onUpdate:draft": n[2] || (n[2] = (g) => c.value = g),
+                profile: t.profile,
+                choices: P.value,
+                accesses: j.value,
+                "picked-type": N.value,
+                "name-is-bad": h.value,
+                "description-is-empty": U.value
+              }, null, 8, ["draft", "profile", "choices", "accesses", "picked-type", "name-is-bad", "description-is-empty"]), [
+                [K, S.value.key === "about"]
               ]),
-              _: 1
-            })
-          ], 512), [
-            [K, S.value.key === "instructions"]
-          ]),
-          H(y("div", _l, [
-            f(e(O), {
-              label: "MCP tools this profile may call",
-              for: "profile-mcp",
-              help: "Separate the names with commas."
-            }, {
-              default: m(() => [
-                f(e(X), {
-                  id: "profile-mcp",
-                  value: c.value.mcp_tools,
-                  onInput: n[5] || (n[5] = (g) => c.value.mcp_tools = g.target.value)
-                }, null, 8, ["value"])
+              H(u(De, {
+                draft: c.value,
+                "onUpdate:draft": n[3] || (n[3] = (g) => c.value = g),
+                programs: t.programs,
+                "program-choices": s.value
+              }, null, 8, ["draft", "programs", "program-choices"]), [
+                [K, S.value.key === "model"]
               ]),
-              _: 1
-            })
-          ], 512), [
-            [K, S.value.key === "tools"]
-          ]),
-          H(y("div", wl, [
-            t.profile.name ? (l(), q(dl, {
-              key: 0,
-              profile: t.profile.name,
-              chosen: c.value.skills,
-              "required-chosen": c.value.required_skills,
-              onChange: n[6] || (n[6] = (g) => c.value.skills = g),
-              onChangeRequired: n[7] || (n[7] = (g) => c.value.required_skills = g),
-              onCount: n[8] || (n[8] = (g) => R.value = g)
-            }, null, 8, ["profile", "chosen", "required-chosen"])) : (l(), i("p", $l, "Save the profile first, then choose its skills."))
-          ], 512), [
-            [K, S.value.key === "skills"]
-          ])
+              H(y("div", _l, [
+                u(e(O), {
+                  label: "Instructions",
+                  for: "profile-body",
+                  help: "What it is told each time it starts, after the brief."
+                }, {
+                  default: v(() => [
+                    u(e(oe), {
+                      id: "profile-body",
+                      rows: "16",
+                      value: c.value.body,
+                      onInput: n[4] || (n[4] = (g) => c.value.body = g.target.value)
+                    }, null, 8, ["value"])
+                  ]),
+                  _: 1
+                })
+              ], 512), [
+                [K, S.value.key === "instructions"]
+              ]),
+              H(y("div", wl, [
+                u(e(O), {
+                  label: "MCP tools this profile may call",
+                  for: "profile-mcp",
+                  help: "Separate the names with commas."
+                }, {
+                  default: v(() => [
+                    u(e(X), {
+                      id: "profile-mcp",
+                      value: c.value.mcp_tools,
+                      onInput: n[5] || (n[5] = (g) => c.value.mcp_tools = g.target.value)
+                    }, null, 8, ["value"])
+                  ]),
+                  _: 1
+                })
+              ], 512), [
+                [K, S.value.key === "tools"]
+              ]),
+              H(y("div", $l, [
+                t.profile.name ? (l(), q(pl, {
+                  key: 0,
+                  profile: t.profile.name,
+                  chosen: c.value.skills,
+                  "required-chosen": c.value.required_skills,
+                  onChange: n[6] || (n[6] = (g) => c.value.skills = g),
+                  onChangeRequired: n[7] || (n[7] = (g) => c.value.required_skills = g),
+                  onCount: n[8] || (n[8] = (g) => R.value = g)
+                }, null, 8, ["profile", "chosen", "required-chosen"])) : (l(), i("p", Sl, "Save the profile first, then choose its skills."))
+              ], 512), [
+                [K, S.value.key === "skills"]
+              ])
+            ]),
+            _: 1
+          }, 8, ["tab"])
         ])
       ]),
       _: 3
     }, 8, ["title", "abstract"]));
   }
-}, Cl = /* @__PURE__ */ z(Tl, [["__scopeId", "data-v-a5586041"]]), ql = {
+}, ql = /* @__PURE__ */ z(Cl, [["__scopeId", "data-v-37c5760c"]]), Il = {
   class: "profiles",
   "data-profiles": ""
-}, Il = {
+}, Pl = {
   class: "count",
   "data-profile-count": ""
-}, Pl = {
+}, xl = {
   key: 0,
   class: "notice",
   "data-profile-notice": ""
-}, xl = {
+}, Al = {
   key: 1,
   class: "notice failed",
   role: "alert",
   "data-profile-failure": ""
-}, Al = {
+}, jl = {
   key: 3,
   class: "rows"
-}, jl = { class: "profile-meta" }, Rl = {
+}, Rl = { class: "profile-meta" }, Nl = {
   key: 0,
   class: "profile-model"
-}, Nl = { class: "profile-model" }, Bl = {
+}, Bl = { class: "profile-model" }, Ol = {
   __name: "ProfileRows",
   setup(t) {
-    const x = { name: "", title: "", description: "", agent_type: "helper", access: "read-only", program: "", occupant: "when-cold", mcp_tools: [], fallback_programs: [], changed: [], notes: [], problem: "", program_models: {}, tier: null, body: "", shipped: !1, uses: 0 }, a = { "read-only": "Read-only", writing: "Writing" }, k = ae(), { rows: r, listing: u, failure: s, loaded: P, act: A, actionFailure: c } = k.props.profiles, S = k.props.programs.rows, R = C(() => u.value ? u.value.types : []), N = I(""), E = I(""), j = I(""), B = I(!1), V = C(() => {
-      const v = E.value.toLowerCase().split(/\s+/).filter(Boolean);
-      return r.value.filter((p) => v.every(($) => {
+    const x = { name: "", title: "", description: "", agent_type: "helper", access: "read-only", program: "", occupant: "when-cold", mcp_tools: [], fallback_programs: [], changed: [], notes: [], problem: "", program_models: {}, tier: null, body: "", shipped: !1, uses: 0 }, a = { "read-only": "Read-only", writing: "Writing" }, k = ae(), { rows: r, listing: d, failure: s, loaded: P, act: A, actionFailure: c } = k.props.profiles, S = k.props.programs.rows, R = C(() => d.value ? d.value.types : []), N = I(""), E = I(""), j = I(""), B = I(!1), V = C(() => {
+      const m = E.value.toLowerCase().split(/\s+/).filter(Boolean);
+      return r.value.filter((f) => m.every(($) => {
         var D;
-        return pe(p, $, (D = k.search) == null ? void 0 : D.fields);
+        return pe(f, $, (D = k.search) == null ? void 0 : D.fields);
       }));
-    }), d = C(() => B.value ? x : r.value.find((v) => v.name === N.value) || null), b = (v) => {
-      var p;
-      return ((p = R.value.find(($) => $.key === v.agent_type)) == null ? void 0 : p.label) || v.agent_type;
-    }, o = (v) => v.shipped ? "Comes with the journal" : v.module, h = (v) => [`Type: ${b(v)}`, `Access: ${a[v.access]}`, ...S.value.map((p) => {
+    }), p = C(() => B.value ? x : r.value.find((m) => m.name === N.value) || null), b = (m) => {
+      var f;
+      return ((f = R.value.find(($) => $.key === m.agent_type)) == null ? void 0 : f.label) || m.agent_type;
+    }, o = (m) => m.shipped ? "Comes with the journal" : m.module, h = (m) => [`Type: ${b(m)}`, `Access: ${a[m.access]}`, ...S.value.map((f) => {
       var $;
-      return `${(($ = v.program_models) == null ? void 0 : $[p.name]) || "chosen at start"} on ${p.title}`;
-    }), v.changed.length ? "Changed" : "", o(v)].filter(Boolean).join(" · "), U = (v) => [v.problem, v.module_text_changed ? "Text changed: the journal's instructions have a new version" : "", ...v.notes].filter(Boolean), G = (v) => v.uses ? `Uses: ${v.uses} ${v.uses === 1 ? "time" : "times"}, last ${we(new Date(v.last_used * 1e3).toISOString())}` : "Uses: none";
+      return `${(($ = m.program_models) == null ? void 0 : $[f.name]) || "chosen at start"} on ${f.title}`;
+    }), m.changed.length ? "Changed" : "", o(m)].filter(Boolean).join(" · "), U = (m) => [m.problem, m.module_text_changed ? "Text changed: the journal's instructions have a new version" : "", ...m.notes].filter(Boolean), G = (m) => m.uses ? `Uses: ${m.uses} ${m.uses === 1 ? "time" : "times"}, last ${$e(new Date(m.last_used * 1e3).toISOString())}` : "Uses: none";
     function ee() {
       B.value = !0, N.value = "";
     }
-    function le(v) {
-      B.value = !1, N.value = v.name;
+    function le(m) {
+      B.value = !1, N.value = m.name;
     }
     function w() {
       B.value = !1, N.value = "";
     }
-    async function n(v) {
-      j.value = "", (await A(["profile", "reset", v.name])).ok && (j.value = `${v.name} is back to the journal's version.`);
+    async function n(m) {
+      j.value = "", (await A(["profile", "reset", m.name])).ok && (j.value = `${m.name} is back to the journal's version.`);
     }
-    async function g(v, p) {
+    async function g(m, f) {
       var se;
       j.value = "";
-      const $ = v.name || p.name;
-      (await A(["profile", "save", $, ...p.title ? ["--title", p.title] : [], "--description", p.description, "--type", p.agent_type, "--access", p.access, "--program", p.program, p.preferred_program ? "--program-if-possible" : "--no-program-if-possible", "--fallback-programs", p.fallback_programs, "--tier", p.tier || "", ...S.value.flatMap((Z) => [Z.model_option, p.program_models[Z.name] || ""]), "--mcp-tools", p.mcp_tools, ...(se = R.value.find((Z) => Z.key === p.agent_type)) != null && se.declares_occupant ? ["--occupant", p.occupant] : [], "--body", p.body, ...p.skills ? ["--skills", p.skills.join(",")] : [], ...p.required_skills ? ["--required-skills", p.required_skills.join(",")] : []])).ok && (B.value = !1, N.value = $, j.value = `${$} saved. The agent will use it the next time it starts a helper with this profile.`);
+      const $ = m.name || f.name;
+      (await A(["profile", "save", $, ...f.title ? ["--title", f.title] : [], "--description", f.description, "--type", f.agent_type, "--access", f.access, "--program", f.program, f.preferred_program ? "--program-if-possible" : "--no-program-if-possible", "--fallback-programs", f.fallback_programs, "--tier", f.tier || "", ...S.value.flatMap((Z) => [Z.model_option, f.program_models[Z.name] || ""]), "--mcp-tools", f.mcp_tools, ...(se = R.value.find((Z) => Z.key === f.agent_type)) != null && se.declares_occupant ? ["--occupant", f.occupant] : [], "--body", f.body, ...f.skills ? ["--skills", f.skills.join(",")] : [], ...f.required_skills ? ["--required-skills", f.required_skills.join(",")] : []])).ok && (B.value = !1, N.value = $, j.value = `${$} saved. The agent will use it the next time it starts a helper with this profile.`);
     }
-    return (v, p) => (l(), i("section", ql, [
-      f(e(fe), {
+    return (m, f) => (l(), i("section", Il, [
+      u(e(fe), {
         modelValue: E.value,
-        "onUpdate:modelValue": p[0] || (p[0] = ($) => E.value = $),
+        "onUpdate:modelValue": f[0] || (f[0] = ($) => E.value = $),
         class: "bar",
         "data-profile-find": ""
       }, {
-        default: m(() => [
-          f(e(L), {
+        default: v(() => [
+          u(e(L), {
             variant: "ghost",
             small: "",
             "data-profile-new": "",
             onClick: ee
           }, {
-            default: m(() => [...p[1] || (p[1] = [
+            default: v(() => [...f[1] || (f[1] = [
               M("New profile", -1)
             ])]),
             _: 1
           }),
-          y("span", Il, T(e(r).length) + " " + T(e(r).length === 1 ? "profile" : "profiles"), 1),
-          j.value ? (l(), i("span", Pl, T(j.value), 1)) : _("", !0),
-          e(c) ? (l(), i("span", xl, T(e(c)), 1)) : _("", !0)
+          y("span", Pl, T(e(r).length) + " " + T(e(r).length === 1 ? "profile" : "profiles"), 1),
+          j.value ? (l(), i("span", xl, T(j.value), 1)) : _("", !0),
+          e(c) ? (l(), i("span", Al, T(e(c)), 1)) : _("", !0)
         ]),
         _: 1
       }, 8, ["modelValue"]),
@@ -820,7 +825,7 @@ const z = (t, x) => {
         class: "empty",
         title: "The profiles could not be read"
       }, {
-        default: m(() => [
+        default: v(() => [
           M(T(e(s)), 1)
         ]),
         _: 1
@@ -830,11 +835,11 @@ const z = (t, x) => {
         loading: !e(P),
         title: "No profiles yet"
       }, {
-        default: m(() => [...p[2] || (p[2] = [
+        default: v(() => [...f[2] || (f[2] = [
           M(" A profile gives an agent its instructions, type and model. The journal includes standard profiles. ", -1)
         ])]),
         _: 1
-      }, 8, ["loading"])) : V.value.length ? (l(), i("div", Al, [
+      }, 8, ["loading"])) : V.value.length ? (l(), i("div", jl, [
         (l(!0), i(W, null, F(V.value, ($) => (l(), q(e(L), {
           key: $.name,
           variant: "text",
@@ -844,15 +849,15 @@ const z = (t, x) => {
           "data-profile": $.name,
           onClick: (D) => le($)
         }, {
-          default: m(() => [
-            f(e(_e), {
+          default: v(() => [
+            u(e(we), {
               title: $.title || $.name,
               text: $.description
             }, {
-              end: m(() => [
-                y("span", jl, [
-                  $.title ? (l(), i("span", Rl, T($.name), 1)) : _("", !0),
-                  y("span", Nl, T(h($)), 1),
+              end: v(() => [
+                y("span", Rl, [
+                  $.title ? (l(), i("span", Nl, T($.name), 1)) : _("", !0),
+                  y("span", Bl, T(h($)), 1),
                   (l(!0), i(W, null, F(U($), (D) => (l(), i("span", {
                     key: D,
                     class: "profile-warning",
@@ -873,35 +878,35 @@ const z = (t, x) => {
         class: "empty",
         title: "No profile matches"
       }, {
-        default: m(() => [...p[3] || (p[3] = [
+        default: v(() => [...f[3] || (f[3] = [
           M("Try other words.", -1)
         ])]),
         _: 1
       })),
-      d.value ? (l(), q(Cl, {
+      p.value ? (l(), q(ql, {
         key: 4,
         notice: j.value,
         failure: e(c),
         programs: e(S),
         types: R.value,
-        profile: d.value,
-        used: G(d.value),
+        profile: p.value,
+        used: G(p.value),
         onClose: w,
         onSave: g,
         onReset: n
       }, {
-        default: m(() => [
-          d.value.name && d.value.agent_type === "helper" ? (l(), q(Re, {
+        default: v(() => [
+          p.value.name && p.value.agent_type === "helper" ? (l(), q(Ne, {
             key: 0,
             programs: e(S),
-            profile: d.value.name
+            profile: p.value.name
           }, null, 8, ["programs", "profile"])) : _("", !0)
         ]),
         _: 1
       }, 8, ["notice", "failure", "programs", "types", "profile", "used"])) : _("", !0)
     ]));
   }
-}, Ml = /* @__PURE__ */ z(Bl, [["__scopeId", "data-v-bd1b1e56"]]);
+}, Wl = /* @__PURE__ */ z(Ol, [["__scopeId", "data-v-bd1b1e56"]]);
 export {
-  Ml as default
+  Wl as default
 };

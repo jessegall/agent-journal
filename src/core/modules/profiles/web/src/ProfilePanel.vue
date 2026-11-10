@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, DiffCard, FormField, InnerTabs, Notice, SidePanel, TextArea, TextInput} from "@journal/window-kit";
+import {Btn, DiffCard, FormField, InnerTabs, Notice, SidePanel, TabBody, TextArea, TextInput} from "@journal/window-kit";
 import ProfileAboutTab from "./ProfileAboutTab.vue";
 import ProfileModelTab from "./ProfileModelTab.vue";
 import ProfileSkillToggles from "./ProfileSkillToggles.vue";
@@ -84,6 +84,7 @@ const problems = computed(() => [props.profile.problem, ...props.profile.notes].
                 </template>
             </template>
             <InnerTabs :tabs="TABS" :active="tab" :answer="tabCounts" @choose="tab = $event" />
+            <TabBody :tab="tab">
             <ProfileAboutTab v-show="tab.key === 'about'" v-model:draft="draft" :profile="profile" :choices="choices" :accesses="accesses" :picked-type="pickedType" :name-is-bad="nameIsBad" :description-is-empty="descriptionIsEmpty" />
             <ProfileModelTab v-show="tab.key === 'model'" v-model:draft="draft" :programs="programs" :program-choices="programChoices" />
             <div v-show="tab.key === 'instructions'" class="profile-panel-tab" data-profile-tab="instructions">
@@ -104,6 +105,7 @@ const problems = computed(() => [props.profile.problem, ...props.profile.notes].
                     <p class="profile-panel-reason">Save the profile first, then choose its skills.</p>
                 </template>
             </div>
+            </TabBody>
         </div>
         <template #foot>
             <Btn variant="ghost" small data-profile-cancel @click="emit('close')">Cancel</Btn>

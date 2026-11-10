@@ -53,11 +53,11 @@ test("a dropdown opens under its button, and moves left only as far as its own w
     expect(roomy.style.top).toBe("96px");
 });
 
-test("a dropdown at rest shows its contents at the width it has", () => {
+test("a dropdown whose contents have one width is at rest at that width, with its contents showing", () => {
     const panel = opened();
     resized();
     expect(panel.hasAttribute("data-settling")).toBe(false);
-    expect(panel.style.width).toBe("");
+    expect(panel.style.width).toBe("320px");
 });
 
 test("when new contents change the width, the panel moves from the old width to the new one with its contents hidden", () => {
