@@ -128,7 +128,7 @@ def test_merger_scope_says_when_all_refused_files_are_the_workers(own_files):
 
 
 def test_merger_scope_of_a_worker_with_no_worktree_is_refused(case):
-    expect_refused_with(case.story, f"merger scope {agent_number(story, case.merger.id)}", "has no worktree", actor=case.merger)
+    expect_refused_with(case.story, f"merger scope {agent_number(case.story, case.merger.id)}", "has no worktree", actor=case.merger)
 
 
 def test_only_the_merger_runs_merger_scope(case):
@@ -163,7 +163,7 @@ def test_a_second_repair_finds_nothing_and_does_not_tell_the_worker_again(linked
 
 
 def test_repair_of_a_worker_with_no_worktree_is_refused(case):
-    expect_refused_with(case.story, f"merger repair {agent_number(story, case.merger.id)}", "has no worktree", actor=case.merger)
+    expect_refused_with(case.story, f"merger repair {agent_number(case.story, case.merger.id)}", "has no worktree", actor=case.merger)
 
 
 def test_only_the_merger_runs_merger_repair(case):

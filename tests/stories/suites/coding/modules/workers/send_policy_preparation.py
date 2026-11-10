@@ -16,7 +16,7 @@ def test_s55_refused_send_has_no_preparation_effects(split_story, split_viewer):
     worker, launcher = stopped_worker(split_story)
     viewer_options(split_viewer, "worker allow_resume=off")
     previous = (worktree_rows(split_story), task_rows(split_story))
-    split_story.expect_refusal(f'worker send {agent_number(story, worker.id)} "go on"', "may not resume", actor=split_story.agent)
+    split_story.expect_refusal(f'worker send {agent_number(split_story, worker.id)} "go on"', "may not resume", actor=split_story.agent)
     expect_value((worktree_rows(split_story), task_rows(split_story)), previous)
 
 
@@ -24,4 +24,4 @@ def test_s55_target_environment_controls_send(split_story, split_viewer):
     split_story.expect_success("environment show 1", actor=split_story.agent)
     worker, launcher = stopped_worker(split_story)
     viewer_options(split_viewer, "worker allowed_providers=codex")
-    split_story.expect_refusal(f'worker send {agent_number(story, worker.id)} "go on" --environment main', "worker may not use claude", actor=split_story.agent)
+    split_story.expect_refusal(f'worker send {agent_number(split_story, worker.id)} "go on" --environment main', "worker may not use claude", actor=split_story.agent)

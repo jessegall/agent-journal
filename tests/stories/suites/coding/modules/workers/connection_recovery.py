@@ -150,7 +150,7 @@ def nested_recovery(recovery):
     recovery.story.expect_success(f"agent end {recovery.worker.id}", actor=recovery.worker)
     recovery.launches.clear()
     recovery.launch_hook = lambda: recovery.story.expect_success(
-        f'worker send --wait {agent_number(story, recovery.worker.id)} "Continue the assigned task"', actor=recovery.story.agent)
+        f'worker send --wait {agent_number(recovery.story, recovery.worker.id)} "Continue the assigned task"', actor=recovery.story.agent)
     recovery.advance(SILENT_SECONDS)
     recovery.tick()
     return recovery

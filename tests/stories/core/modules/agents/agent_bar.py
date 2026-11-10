@@ -122,7 +122,7 @@ def stopped_main_agent(new_story, request):
 
 
 def test_a_main_with_no_process_and_no_launcher_that_answers_ends_when_stopped(stopped_main_agent):
-    stopped_main_agent.expect_text(f"agent show {agent_number(story, stopped_main_agent.agent.id)}", "ended_at:", actor=stopped_main_agent.user)
+    stopped_main_agent.expect_text(f"agent show {agent_number(stopped_main_agent, stopped_main_agent.agent.id)}", "ended_at:", actor=stopped_main_agent.user)
 
 
 def test_stopping_an_ended_agent_is_refused(new_story):
