@@ -1,17 +1,16 @@
 import subprocess
-import sys
 
 from engine.process.leftover_process import LeftoverProcess
 
 
 def test_a_leftover_that_ended_while_it_was_being_stopped_raises_nothing() -> None:
-    process = subprocess.Popen([sys.executable, "-c", "pass"])
+    process = subprocess.Popen(["true"])
     process.wait()
     LeftoverProcess.signal(process.pid, 15)
 
 
 def test_a_pid_that_runs_another_program_is_left_alone() -> None:
-    process = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(5)"])
+    process = subprocess.Popen(["sleep", "5"])
     try:
         LeftoverProcess.stop(process.pid, "no-such-program")
         assert process.poll() is None
