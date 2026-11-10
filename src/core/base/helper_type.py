@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.access import Access
+from engine.enums.access import Access
 
 
 @dataclass(frozen=True)

@@ -6,7 +6,7 @@ from collections.abc import Mapping, Sequence
 
 from core.base.driver.agent_hook import AgentHook
 from core.base.helper_type_book import HelperTypeBook
-from core.base.access import Access
+from engine.enums.access import Access
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.agent_sandbox_choice import AgentSandboxChoice
 from core.base.agent_write_folder import AgentWriteFolder

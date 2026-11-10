@@ -2,7 +2,7 @@ from functools import lru_cache
 from threading import RLock
 
 from core.base.connection_probe import ConnectionProbe
-from core.base.connection_status import ConnectionStatus
+from engine.enums.connection_status import ConnectionStatus
 from core.base.journal_home import JournalHome
 from core.base.timestamp import Timestamp
 

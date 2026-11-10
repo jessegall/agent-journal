@@ -6,7 +6,7 @@ from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.tool_type import ToolType
-from core.base.role_group import RoleGroup
+from engine.enums.role_group import RoleGroup
 from core.base.scope.scopes import WholeScopes
 
 

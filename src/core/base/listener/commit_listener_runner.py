@@ -8,7 +8,7 @@ from core.base.change.event_type import EventType
 from core.base.change.logged_event import LoggedEvent
 from core.base.container import Container
 from core.base.error_log import ErrorLog
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.base.system_log_writer import SystemLogWriter
 from core.base.exception_sink import ExceptionSink
 from core.base.listener.round_yield import RoundYield

@@ -2,9 +2,9 @@ from core.modules.plugins.support.plugin_nudges import PLUGIN_REFUSAL
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice
 import json
 
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.clock import Clock
-from core.base.role_group import RoleGroup
+from engine.enums.role_group import RoleGroup
 from core.base.command.command import Command
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule

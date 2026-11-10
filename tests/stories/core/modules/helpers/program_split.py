@@ -4,7 +4,7 @@ from datetime import timedelta
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.start_helper import START, started
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, START as FILE_START, helper_agent

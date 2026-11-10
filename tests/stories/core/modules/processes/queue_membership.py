@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.process_queue_read import queue_page

@@ -9,7 +9,7 @@ from core.testing.shell_part import ShellPart
 from core.modules.processes.models.output import Output
 from suites.coding.modules.workers.models.worktree import Worktree
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from datetime import timedelta
 
 from core.base.query.queries import Queries

@@ -4,7 +4,7 @@ from datetime import timedelta
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.shell_sandbox import ShellSandbox
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launcher import AgentLauncher

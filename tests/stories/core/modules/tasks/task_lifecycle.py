@@ -2,7 +2,7 @@ from tests.stories.core.support.fixtures import AssignedTask, OpenTask
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import AgentStarted
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 
 
 def started_story(new_story, *modules: str):

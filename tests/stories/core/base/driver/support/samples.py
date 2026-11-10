@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.command.handler import Handler

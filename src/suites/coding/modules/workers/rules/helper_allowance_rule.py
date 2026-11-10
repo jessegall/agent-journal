@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from suites.coding.support.coding_nudges import MAIN_HELPER_BAN
 from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
 from suites.coding.support.auto_advice import AutoAdvice

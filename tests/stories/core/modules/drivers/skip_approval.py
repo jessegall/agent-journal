@@ -1,7 +1,7 @@
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.modules.drivers.support.driver_settings import SKIPS_NEED_APPROVAL
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart

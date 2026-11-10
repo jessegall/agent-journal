@@ -2,7 +2,7 @@ import re
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import fields
 
-from core.base.access import Access
+from engine.enums.access import Access
 from core.base.agent_roster import AgentRoster
 from core.base.agent_group_book import AgentGroupBook
 from core.base.helper_type import HelperType

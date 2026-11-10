@@ -5,7 +5,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.tasks.queries.task_query import TaskQuery
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 
 BLOCKED_TASK_PAGE_SIZE = 10

@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.testing.hook_samples import HookSamples
 from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.support import story_lines as lines

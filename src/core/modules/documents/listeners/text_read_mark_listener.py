@@ -2,7 +2,7 @@ import shlex
 from argparse import ArgumentError
 from pathlib import PurePath
 
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.change.changed import Changed
 from core.base.change.logged_event import LoggedEvent
 from core.base.driver.hook_event_name import HookEventName

@@ -10,7 +10,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from core.modules.drivers.models.agent_line import AgentLine
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker

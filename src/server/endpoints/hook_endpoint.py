@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from core.base.database.database import Database
 from core.base.database.reported_findings import ReportedFindings
 from core.base.database.request_watch import RequestWatch
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.base.container import Container
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.old_hook_runner_error import OldHookRunnerError

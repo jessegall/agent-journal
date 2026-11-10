@@ -1,7 +1,7 @@
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from tests.stories.core.support.fixtures import AgentStarted
 
 UNANSWERABLE = "nobody can answer a question asked from here"

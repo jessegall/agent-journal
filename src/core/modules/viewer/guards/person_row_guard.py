@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.change.deleted import Deleted
 from core.base.change.event_subscriber import E
 from core.base.command.context import Context

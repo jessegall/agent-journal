@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 
 from engine.errors.duration_error import DurationError
-from core.base.duration_unit import DurationUnit
+from engine.enums.duration_unit import DurationUnit
 from core.base.timestamp import Timestamp
 
 

@@ -1,7 +1,7 @@
 from pathlib import Path
 from uuid import uuid4
 
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler

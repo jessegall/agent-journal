@@ -1,4 +1,4 @@
-from core.base.helper_role import HelperRole
+from engine.enums.helper_role import HelperRole
 from core.base.change.logged_event import LoggedEvent
 from core.base.actor import Actor
 from core.base.command.bus import Bus

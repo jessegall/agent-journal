@@ -3,7 +3,7 @@ import json
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS

@@ -9,7 +9,7 @@ from suites.coding.modules.workers.support.worker_nudges import HELPER_INACTIVE,
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_GRACE_MINUTES, INACTIVE_HELPER_MINUTES
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.support.coding_helper_role import CodingHelperRole
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName

@@ -1,6 +1,6 @@
 from core.base.driver.driver import Driver
 from suites.coding.coding_suite import CodingSuite
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 
 
 class MainDriver(Driver):

@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
-from core.base.log_level import LogLevel
-from core.base.log_source import LogSource
+from engine.enums.log_level import LogLevel
+from engine.enums.log_source import LogSource
 from core.modules.developer.support.log_file_lines import BLOCK_BYTES, LogFileLines
 from core.modules.developer.support.log_filter import LogFilter
 from core.modules.developer.support.system_log import SystemLog

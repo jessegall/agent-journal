@@ -6,7 +6,7 @@ import pytest
 
 import suites.coding.modules.workers as workers_package
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.query.queries import Queries
 from core.modules.messages.models.message import Message

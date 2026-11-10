@@ -16,7 +16,7 @@ from core.base.model.event_form import EventForm
 from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.scope.scopes import Scopes
-from core.base.script_stop import ScriptStop
+from engine.enums.script_stop import ScriptStop
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.plugins.queries.plugin_query import PluginQuery

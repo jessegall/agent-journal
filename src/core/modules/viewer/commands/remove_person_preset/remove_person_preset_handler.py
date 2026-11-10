@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.base.repository.repository import Repository
 from core.modules.viewer.commands.remove_person_preset.remove_person_preset import RemovePersonPreset

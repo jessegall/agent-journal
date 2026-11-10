@@ -2,7 +2,7 @@ from suites.coding.modules.workers.support.worker_routes import WorkerRoutes
 from datetime import timedelta
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.driver.block_until import BlockUntil
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
 from core.modules.tasks.models.task import Task

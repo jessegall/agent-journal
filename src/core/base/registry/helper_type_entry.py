@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from core.base.access import Access
+from engine.enums.access import Access
 from core.base.helper_type import HelperType
 from core.base.dotted_path.dotted_path import DottedPath
 

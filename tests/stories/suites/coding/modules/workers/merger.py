@@ -4,12 +4,12 @@ import pytest
 from datetime import timedelta
 
 from core.testing.hook_samples import HookSamples
-from core.base.access import Access
+from engine.enums.access import Access
 from core.base.caller.caller_request import CallerRequest
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from tests.stories.core.modules.processes.support.process_samples import end_run, start_process
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.driver.nudge import Nudge
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal

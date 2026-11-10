@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.delete_command import DeleteCommand
 from core.base.command.edit_command import EditCommand

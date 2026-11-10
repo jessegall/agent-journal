@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.command.accept_covered_approval import AcceptCoveredApproval
 from core.base.command.bus import Bus
 from core.base.command.context import Context

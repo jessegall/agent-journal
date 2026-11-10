@@ -6,7 +6,7 @@ from datetime import timedelta
 import shlex
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.hook_reply import HookReply

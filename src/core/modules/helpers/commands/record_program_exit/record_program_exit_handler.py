@@ -1,13 +1,13 @@
 from core.base.profile.agent_profile import AgentProfile
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from datetime import timedelta
 
 from core.base.clock import Clock
 from core.base.timestamp import Timestamp
 from core.base.system_log_writer import SystemLogWriter
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
-from core.base.agent_role import AgentRole
+from engine.enums.actor_type import ActorType
+from engine.enums.agent_role import AgentRole
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler

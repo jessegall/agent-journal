@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.sandbox_level import SandboxLevel
+from engine.enums.sandbox_level import SandboxLevel
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.processes.commands.record_sandbox.record_sandbox import RecordSandbox
 from core.modules.processes.models.process import Process

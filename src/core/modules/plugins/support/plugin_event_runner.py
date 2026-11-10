@@ -1,7 +1,7 @@
 from collections.abc import Callable, Mapping
 
 from core.base.clock import Clock
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.base.system_log_writer import SystemLogWriter
 from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.timestamp import Timestamp

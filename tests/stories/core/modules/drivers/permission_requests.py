@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.driver.tool_type import ToolType
 from core.base.query.queries import Queries
 from core.modules.drivers.models.enums.permission_state import PermissionState

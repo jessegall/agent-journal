@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from core.base.registry.profile_entry import ProfileEntry
 from engine.errors.refusal import Refusal
 from core.base.agent_policy import AgentPolicy
-from core.base.role_group import RoleGroup
+from engine.enums.role_group import RoleGroup
 from core.base.agent_group_book import AgentGroupBook
 from core.base.helper_type_book import HelperTypeBook
 from core.base.registry.agent_group_entry import AgentGroupEntry

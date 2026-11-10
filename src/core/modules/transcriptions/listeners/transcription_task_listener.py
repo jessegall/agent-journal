@@ -1,4 +1,4 @@
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.listener.save_listener import SaveListener
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries

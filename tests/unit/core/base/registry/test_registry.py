@@ -20,7 +20,7 @@ from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.profile.agent_profile import AgentProfile
-from core.base.access import Access
+from engine.enums.access import Access
 from core.base.registry.profile_entry import ProfileEntry
 from core.base.registry.suite_entry import SuiteEntry
 from core.base.template.template_declaration import TemplateDeclaration

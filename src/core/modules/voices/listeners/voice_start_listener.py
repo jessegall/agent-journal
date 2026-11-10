@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.listener.save_listener import SaveListener
 from core.modules.agents.models.agent import Agent
 from core.modules.voices.support.voice_lines import VoiceLines

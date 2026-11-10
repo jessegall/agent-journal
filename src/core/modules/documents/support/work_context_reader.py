@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from dataclasses import replace
 
 from core.base.caller.caller import Caller
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.base.query.queries import Queries

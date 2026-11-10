@@ -1,4 +1,4 @@
-from core.base.helper_role import HelperRole
+from engine.enums.helper_role import HelperRole
 from core.base.command.bus import Bus
 from core.base.listener.save_listener import SaveListener
 from core.base.listener.event_rows import EventRows

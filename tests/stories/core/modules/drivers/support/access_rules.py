@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.driver import Driver
 from core.base.driver.suite import Suite

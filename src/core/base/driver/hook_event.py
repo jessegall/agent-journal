@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.driver.foreign_run import ForeignRun
 from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_event_name import HookEventName

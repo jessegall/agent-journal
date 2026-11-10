@@ -1,7 +1,7 @@
 import re
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.driver.hook_reply import HookReply
 from core.testing.story import Story
 

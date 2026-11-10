@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.conditions.greater import Greater

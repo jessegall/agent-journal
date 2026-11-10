@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.file_status import FileStatus
+from engine.enums.file_status import FileStatus
 
 
 @dataclass(frozen=True)

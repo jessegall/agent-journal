@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from core.base.driver.nudge import Nudge
 from core.modules.processes.support.process_nudges import RUN_NAME
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard

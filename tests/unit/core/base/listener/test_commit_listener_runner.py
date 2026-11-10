@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.change.event_log import EventLog, PAGE_SIZE_EVENTS
 from core.base.change.event_pattern import EventPattern
 from core.base.change.logged_event import LoggedEvent

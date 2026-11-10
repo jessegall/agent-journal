@@ -7,7 +7,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 
 
 class DeliveredWorkStopRule(DriverRule):

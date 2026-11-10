@@ -1,4 +1,4 @@
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.modules.agents.models.enums.agent_role import AgentRole
 
 

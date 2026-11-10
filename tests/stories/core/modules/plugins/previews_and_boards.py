@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from core.base.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest

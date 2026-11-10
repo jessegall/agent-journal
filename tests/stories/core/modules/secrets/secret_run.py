@@ -1,7 +1,7 @@
 from core.base.private.secret_values import SecretValues
 from tests.stories.core.support.fixtures import UserJoined
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.secrets.support.private_home import REPLACEMENT_VALUE, VALUE, filled_story, private_folder
 
 __all__ = ["private_folder"]

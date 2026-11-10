@@ -1,7 +1,7 @@
 from core.modules.agents.models.agent import Agent
 from core.base.query.queries import Queries
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.helper_started import HELPER_LAUNCH_NAME, HelperStarted

@@ -1,4 +1,4 @@
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries

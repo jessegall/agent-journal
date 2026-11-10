@@ -12,8 +12,8 @@ from core.base.database.database import Database
 from core.base.database.hook_requests_table import HookRequestsTable
 from core.base.journal_container import synced_database_container
 from core.base.journal_home import JournalHome
-from core.base.log_level import LogLevel
-from core.base.log_source import LogSource
+from engine.enums.log_level import LogLevel
+from engine.enums.log_source import LogSource
 from core.base.system_log_writer import SystemLogWriter
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from engine.enums.hook_answer import HookAnswer

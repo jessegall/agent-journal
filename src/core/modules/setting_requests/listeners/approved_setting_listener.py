@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.change.logged_event import LoggedEvent
 from core.base.change.moved import Moved
 from core.base.command.bus import Bus

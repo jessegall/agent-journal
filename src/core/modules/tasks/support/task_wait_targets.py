@@ -2,7 +2,7 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from engine.errors.refusal import Refusal
 from core.base.query.queries import Queries
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob
 

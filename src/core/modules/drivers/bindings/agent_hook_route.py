@@ -1,11 +1,11 @@
 from dataclasses import replace
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.driver.hook_event import HookEvent
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.base.request_values import RequestValues
 from core.base.system_log_writer import SystemLogWriter
 from core.base.driver.hook_event_name import HookEventName
@@ -14,7 +14,7 @@ from core.base.driver.hook_route import HookRoute
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.modules.agents.commands.bind_agent_session.bind_agent_session import BindAgentSession
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.agents.support.agent_program import AgentProgram

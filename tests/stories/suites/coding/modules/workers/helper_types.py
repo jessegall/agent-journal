@@ -3,8 +3,8 @@ import json
 
 import pytest
 
-from core.base.access import Access
-from core.base.agent_role import AgentRole
+from engine.enums.access import Access
+from engine.enums.agent_role import AgentRole
 from core.base.helper_type_book import HelperTypeBook
 from core.base.database.database import Database
 from core.base.query.queries import Queries

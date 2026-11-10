@@ -2,7 +2,7 @@ import io
 from contextlib import redirect_stderr, redirect_stdout
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.caller.caller import Caller
 from core.base.cli.console import Console
 from core.base.cli.module_remove_line import MODULE_REMOVAL_ARGUMENTS

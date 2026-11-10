@@ -1,8 +1,8 @@
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from argparse import ArgumentParser, Namespace
 
-from core.base.access import Access
-from core.base.actor_type import ActorType
+from engine.enums.access import Access
+from engine.enums.actor_type import ActorType
 from core.base.helper_type_book import HelperTypeBook
 from core.base.caller.caller import Caller
 from core.base.page import Page

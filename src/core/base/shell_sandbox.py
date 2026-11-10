@@ -2,7 +2,7 @@ import subprocess
 
 from core.base.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from core.base.sandbox_level import SandboxLevel
+from engine.enums.sandbox_level import SandboxLevel
 
 
 class ShellSandbox:

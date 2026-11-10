@@ -8,7 +8,7 @@ import shlex
 import stat
 
 from core.base.journal_home import LAUNCHER_SOCKET, JournalHome
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker

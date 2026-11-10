@@ -3,7 +3,7 @@ from collections import defaultdict
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.connection_status import ConnectionStatus
+from engine.enums.connection_status import ConnectionStatus
 from core.base.internet_connection import InternetConnection
 from core.base.journal_home import JournalHome
 from core.base.query.conditions.among import Among
@@ -28,7 +28,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.support.worker_nudges import IDLE_WORKER, SILENT_AGENT_CONTINUE, SILENT_WORKER_CONTINUE
 from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES, IDLE_WORKER_MINUTES, IDLE_WORKER_REPEAT_MINUTES, RESUME_SILENT_AGENTS
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 RECOVERY_ATTEMPTS = 3

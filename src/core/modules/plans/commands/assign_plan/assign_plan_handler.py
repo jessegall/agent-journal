@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries

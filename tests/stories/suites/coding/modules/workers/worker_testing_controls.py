@@ -2,7 +2,7 @@ import pytest
 import json
 from dataclasses import dataclass
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from suites.coding.modules.workers.commands.record_own_test_failure.record_own_test_failure import RecordOwnTestFailure
 from core.base.driver.command_category import CommandCategory

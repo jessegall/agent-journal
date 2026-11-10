@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, replace
 from collections.abc import Mapping, Sequence
 from typing import Any
-from core.base.access import Access
+from engine.enums.access import Access
 from core.base.profile.model_tier import ModelTier
 
 

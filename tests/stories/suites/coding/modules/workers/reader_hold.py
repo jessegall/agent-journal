@@ -14,7 +14,7 @@ from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.base.module.module_actors import ModuleActors

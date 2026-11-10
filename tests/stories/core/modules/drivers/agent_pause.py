@@ -9,7 +9,7 @@ from core.testing.hook_samples import HookSamples
 from core.base.driver.command_category import CommandCategory
 from core.testing.shell_part import ShellPart
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.database.database import Database
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
@@ -17,7 +17,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.overlays.paused_overlay import PausedOverlay
 from tests.stories.core.support import story_lines as lines
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, OpenTaskOrchestrator, BuilderHelper
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_refusal_hook

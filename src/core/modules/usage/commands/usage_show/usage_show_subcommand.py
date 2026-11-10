@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from argparse import ArgumentParser, Namespace
 from dataclasses import replace
 
-from core.base.helper_role import HelperRole
+from engine.enums.helper_role import HelperRole
 from core.base.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from core.base.caller.caller import Caller

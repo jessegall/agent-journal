@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.process_row import ProcessRow
 from core.base.timestamp import Timestamp

@@ -2,7 +2,7 @@ import logging
 
 from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.base.system_log_writer import SystemLogWriter
 
 

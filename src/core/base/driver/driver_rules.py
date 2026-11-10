@@ -21,7 +21,7 @@ from core.base.driver.rule_outcome import RuleOutcome
 from core.base.driver.rule_timings import RuleTimings
 from core.base.driver.walk import Walk
 from core.base.error_log import ErrorLog
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.base.system_log_writer import SystemLogWriter
 from core.base.guard.guard_switches import GuardSwitches
 from core.base.registry.driver_rule_entry import DriverRuleEntry

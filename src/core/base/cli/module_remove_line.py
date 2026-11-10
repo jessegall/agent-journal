@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from typing import TextIO
 
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.caller import Caller
 from core.base.caller.caller_resolver import CallerResolver

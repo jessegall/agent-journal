@@ -1,4 +1,4 @@
-from core.base.role_group import RoleGroup
+from engine.enums.role_group import RoleGroup
 from core.modules.drivers.rules.agent_block_rule import AgentBlockRule
 from core.modules.drivers.rules.block_stop_rule import BlockStopRule
 

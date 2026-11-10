@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.modules.developer.support.log_line import LogLine
-from core.base.log_source import LogSource
+from engine.enums.log_source import LogSource
 
 
 @dataclass(frozen=True)

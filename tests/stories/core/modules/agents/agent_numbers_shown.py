@@ -1,7 +1,7 @@
 import json
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.testing.hook_samples import HookSamples

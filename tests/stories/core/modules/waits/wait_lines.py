@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.base.driver.support.fixtures import LeadWaiting
 from tests.stories.core.base.driver.support.samples import SAMPLES

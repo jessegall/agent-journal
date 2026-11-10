@@ -2,7 +2,7 @@ from enum import StrEnum
 from dataclasses import replace
 from typing import ClassVar
 
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.change.logged_event import LoggedEvent
 from core.base.chat.mark_outcome import MarkOutcome
 from core.base.command.bus import Bus

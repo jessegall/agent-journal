@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 import pytest
 from core.testing.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK

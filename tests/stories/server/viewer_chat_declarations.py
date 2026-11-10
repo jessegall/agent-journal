@@ -4,7 +4,7 @@ from tests.stories.core.base.chat.support.mark_faults import PATH
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, worker_run

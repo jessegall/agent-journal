@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from pathlib import Path, PurePosixPath
 
 from engine.errors.refusal import Refusal
-from core.base.file_status import FileStatus
+from engine.enums.file_status import FileStatus
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
 from suites.coding.modules.workers.support.worker_folder_runs import WorkerFolderRuns

@@ -1,7 +1,7 @@
 import getpass
 
 from core.base.actor import CORE_ACTOR_ID
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
 from core.base.upgrade.move_context import MoveContext

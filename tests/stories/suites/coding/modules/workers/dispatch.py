@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from tests.stories.core.support import story_lines as lines

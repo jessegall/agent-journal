@@ -1,7 +1,7 @@
 import json
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.query.queries import Queries
 from core.modules.plugins.models.plugin_delivery import PluginDelivery
 from core.modules.plugins.support.plugin_folders import PluginFolders

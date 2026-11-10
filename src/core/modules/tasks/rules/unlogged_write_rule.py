@@ -4,7 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.rules.support.task_write_count import TaskWriteCount
-from core.base.role_group import RoleGroup
+from engine.enums.role_group import RoleGroup
 from core.modules.tasks.support.block_conditions.task_logged import TaskLogged
 from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
 from core.modules.tasks.support.block_conditions.task_stopped import TaskStopped

@@ -6,7 +6,7 @@ import json
 import shlex
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.database.database import Database
 from core.base.query.queries import Queries
 from core.modules.sequences.models.sequence_run import SequenceRun

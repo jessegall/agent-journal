@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 
 
 @dataclass(frozen=True)

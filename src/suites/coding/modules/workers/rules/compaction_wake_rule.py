@@ -9,7 +9,7 @@ from core.modules.drivers.commands.wake_compacted_agent.wake_compacted_agent imp
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.driver_nudges import AGENT_COMPACTED
 from suites.coding.support.coding_helper_role import CodingHelperRole
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 
 RETRY_SECONDS = Seconds(600)
 

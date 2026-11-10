@@ -16,13 +16,7 @@
                 "testCode": true
             },
             {
-                "file": "src/core/base/access.py"
-            },
-            {
                 "file": "src/core/base/actor.py"
-            },
-            {
-                "file": "src/core/base/actor_type.py"
             },
             {
                 "file": "src/core/base/adopted_process.py"
@@ -41,9 +35,6 @@
             },
             {
                 "file": "src/core/base/agent_policy.py"
-            },
-            {
-                "file": "src/core/base/agent_role.py"
             },
             {
                 "file": "src/core/base/agent_role_reader.py"
@@ -67,9 +58,6 @@
                 "file": "src/core/base/checkout_file.py"
             },
             {
-                "file": "src/core/base/checkout_type.py"
-            },
-            {
                 "file": "src/core/base/child_process.py"
             },
             {
@@ -88,9 +76,6 @@
                 "file": "src/core/base/connection_probe.py"
             },
             {
-                "file": "src/core/base/connection_status.py"
-            },
-            {
                 "file": "src/core/base/container.py"
             },
             {
@@ -101,9 +86,6 @@
             },
             {
                 "file": "src/core/base/duration.py"
-            },
-            {
-                "file": "src/core/base/duration_unit.py"
             },
             {
                 "file": "src/core/base/environment_names.py"
@@ -136,13 +118,7 @@
                 "file": "src/core/base/file_state.py"
             },
             {
-                "file": "src/core/base/file_status.py"
-            },
-            {
                 "file": "src/core/base/file_version.py"
-            },
-            {
-                "file": "src/core/base/helper_role.py"
             },
             {
                 "file": "src/core/base/helper_type.py"
@@ -179,12 +155,6 @@
             },
             {
                 "file": "src/core/base/leftover_process.py"
-            },
-            {
-                "file": "src/core/base/log_level.py"
-            },
-            {
-                "file": "src/core/base/log_source.py"
             },
             {
                 "file": "src/core/base/metadata.py"
@@ -229,25 +199,16 @@
                 "file": "src/core/base/request_values.py"
             },
             {
-                "file": "src/core/base/role_group.py"
-            },
-            {
                 "file": "src/core/base/rotated_file.py"
             },
             {
                 "file": "src/core/base/row_owner.py"
             },
             {
-                "file": "src/core/base/sandbox_level.py"
-            },
-            {
                 "file": "src/core/base/sandboxed_agent.py"
             },
             {
                 "file": "src/core/base/script_skip.py"
-            },
-            {
-                "file": "src/core/base/script_stop.py"
             },
             {
                 "file": "src/core/base/search_term.py"

@@ -5,7 +5,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 
 
 class WorkersOutRule(DriverRule):

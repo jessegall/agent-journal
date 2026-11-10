@@ -5,8 +5,8 @@ import json
 
 from core.base.profile.agent_profile import AgentProfile
 from core.modules.profiles.support.profile_files import ProfileFiles
-from core.base.agent_role import AgentRole
-from core.base.helper_role import HelperRole
+from engine.enums.agent_role import AgentRole
+from engine.enums.helper_role import HelperRole
 from core.base.caller.caller import Caller
 from core.base.provider.providers import Providers
 from core.base.registry.registry import Registry

@@ -5,7 +5,7 @@ import pytest
 
 from tests.unit.core.base.scope_samples import empty_database_scopes
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.change.event_pattern import EventPattern
 from core.base.command.context import Context

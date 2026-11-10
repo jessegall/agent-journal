@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent
 from core.modules.agents.models.agent import Agent
 from core.modules.chat.listeners.mark_listener import MarkListener

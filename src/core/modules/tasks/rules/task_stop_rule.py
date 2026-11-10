@@ -5,7 +5,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.watched_runs import WatchedRuns
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners
 
 

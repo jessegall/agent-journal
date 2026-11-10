@@ -11,7 +11,7 @@ from core.base.driver.suite import Suite
 from core.base.module.driver_entries import DriverEntries
 from core.base.module.module import Module
 from core.base.module.suite_check import SuiteCheck
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 
 
 class StopThrough(DriverRule):

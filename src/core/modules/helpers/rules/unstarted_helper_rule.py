@@ -4,8 +4,8 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.interval import Interval
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.span_queries import SpanQueries
-from core.base.helper_role import HelperRole
-from core.base.role_group import RoleGroup
+from engine.enums.helper_role import HelperRole
+from engine.enums.role_group import RoleGroup
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure import RecordAgentLaunchFailure
 from core.modules.agents.models.agent import Agent

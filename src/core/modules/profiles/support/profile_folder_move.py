@@ -2,9 +2,9 @@ import errno
 import tomllib
 from pathlib import Path
 
-from core.base.access import Access
+from engine.enums.access import Access
 from core.base.file_access import FileAccess
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.base.profile.agent_profile import AgentProfile
 from engine.errors.refusal import Refusal
 from core.base.system_log_writer import SystemLogWriter

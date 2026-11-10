@@ -1,4 +1,4 @@
-from core.base.file_status import FileStatus
+from engine.enums.file_status import FileStatus
 from suites.coding.modules.workers.support.worktree_file_change import WorktreeFileChange
 
 

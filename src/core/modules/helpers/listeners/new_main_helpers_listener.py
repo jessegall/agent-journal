@@ -1,5 +1,5 @@
-from core.base.agent_role import AgentRole
-from core.base.helper_role import HelperRole
+from engine.enums.agent_role import AgentRole
+from engine.enums.helper_role import HelperRole
 from core.base.change.created import Created
 from core.base.command.context import Context
 from core.base.listener.save_listener import SaveListener

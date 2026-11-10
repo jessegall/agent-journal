@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.connection_status import ConnectionStatus
+from engine.enums.connection_status import ConnectionStatus
 
 
 @dataclass(frozen=True)

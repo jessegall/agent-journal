@@ -1,5 +1,5 @@
 from core.modules.questions.support.question_nudges import QUESTION_TOOL
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName

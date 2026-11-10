@@ -193,7 +193,7 @@ from core.base.module.module import Module
 from core.base.viewer.button_condition import ButtonCondition
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.base.viewer.text_field import TextField
-from core.base.access import Access
+from engine.enums.access import Access
 from core.base.helper_type import HelperType
 from suites.coding.modules.workers.bindings.worker_roster import WorkerRoster
 from core.modules.processes.support.run_counts import RunCounts

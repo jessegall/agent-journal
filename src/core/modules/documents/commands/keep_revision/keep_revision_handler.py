@@ -3,7 +3,7 @@ from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.query.queries import Queries
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.modules.documents.models.open_document import OpenDocument
 from core.modules.documents.commands.keep_revision.keep_revision import KeepRevision
 from core.modules.documents.models.doc_revision import DocRevision

@@ -1,4 +1,4 @@
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle

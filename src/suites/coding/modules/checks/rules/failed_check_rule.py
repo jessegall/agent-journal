@@ -1,5 +1,5 @@
 from suites.coding.modules.checks.support.check_nudges import CHECK_FAILED
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard

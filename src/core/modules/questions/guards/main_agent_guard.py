@@ -1,5 +1,5 @@
-from core.base.actor_type import ActorType
-from core.base.agent_role import AgentRole
+from engine.enums.actor_type import ActorType
+from engine.enums.agent_role import AgentRole
 from core.base.guard.guard import Guard
 from core.base.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal

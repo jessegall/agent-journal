@@ -1,4 +1,4 @@
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.change.changed import Changed
 from core.base.change.created import Created
 from core.base.change.deleted import Deleted

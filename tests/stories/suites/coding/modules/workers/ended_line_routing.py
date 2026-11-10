@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.query.queries import Queries
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

@@ -13,7 +13,7 @@ from core.base.file_access import FileAccess
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.plugins.support.plugin_program import SETTINGS_FILE
 from core.modules.skills.support.loaded_skills import LoadedSkills
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client

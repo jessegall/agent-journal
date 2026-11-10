@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.modules.agents.models.agent import Agent
 from core.base.query.queries import Queries
 from core.testing.hook_samples import HookSamples

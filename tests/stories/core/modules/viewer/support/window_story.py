@@ -6,7 +6,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.listener.commit_listener_runner import CommitListenerRunner

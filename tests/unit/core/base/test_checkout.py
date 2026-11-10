@@ -1,9 +1,9 @@
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.checkout import Checkout
 from core.base.checkout_file import CheckoutFile
-from core.base.checkout_type import CheckoutType
+from engine.enums.checkout_type import CheckoutType
 from core.base.file_state import FileState
-from core.base.file_status import FileStatus
+from engine.enums.file_status import FileStatus
 
 
 def linked_project(tmp_path):

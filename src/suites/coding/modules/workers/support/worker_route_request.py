@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.command.context import Context
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.support.worker_program_request import WorkerProgramRequest

@@ -3,7 +3,7 @@ from dataclasses import FrozenInstanceError
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 
 
 def test_two_actors_with_one_id_and_type_are_the_same_actor():

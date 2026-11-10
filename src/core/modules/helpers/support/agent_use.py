@@ -1,4 +1,4 @@
-from core.base.duration_unit import DurationUnit
+from engine.enums.duration_unit import DurationUnit
 from collections import defaultdict
 from datetime import timedelta
 

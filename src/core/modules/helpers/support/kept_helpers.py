@@ -1,5 +1,5 @@
 from core.modules.settings.bindings.support.context_share import ContextShare
-from core.base.helper_role import HelperRole
+from engine.enums.helper_role import HelperRole
 from core.base.database.kept_rows import KeptRows
 from core.base.provider.providers import Providers
 from core.base.query.conditions.is_null import IsNull

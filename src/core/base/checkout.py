@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from core.base.checkout_type import CheckoutType
+from engine.enums.checkout_type import CheckoutType
 
 
 @dataclass(frozen=True)

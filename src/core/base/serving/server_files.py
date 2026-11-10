@@ -8,8 +8,8 @@ from typing import IO
 from core.base.clock import Clock
 from core.base.journal_home import SERVER_SOCKET, JournalHome
 from core.base.file_access import FileAccess
-from core.base.log_level import LogLevel
-from core.base.log_source import LogSource
+from engine.enums.log_level import LogLevel
+from engine.enums.log_source import LogSource
 from core.base.system_log_writer import LOG_LIMIT_BYTES, SystemLogWriter
 from core.base.server_restart_state import ServerRestartState
 from engine.errors.server_files_error import ServerFilesError

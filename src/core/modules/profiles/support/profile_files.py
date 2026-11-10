@@ -3,7 +3,7 @@ from collections.abc import Mapping
 from dataclasses import replace
 from pathlib import Path
 
-from core.base.access import Access
+from engine.enums.access import Access
 from core.base.file_access import FileAccess
 from core.base.kept_file_text import KeptFileText
 from core.base.journal_home import JournalHome

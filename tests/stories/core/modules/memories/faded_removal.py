@@ -1,7 +1,7 @@
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 from tests.stories.core.modules.memories.fading_at_compaction import compacted
 from tests.stories.core.modules.memories.support.faded_removal import expect_removed, expect_unchanged, prepare_zero_weight_fact

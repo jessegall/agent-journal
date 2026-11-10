@@ -2,7 +2,7 @@ from core.modules.plans.support.plan_assignee_json_record import PlanAssigneeJso
 from core.modules.plans.support.plan_inspection_json_record import PlanInspectionJsonRecord
 from dataclasses import dataclass
 
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.modules.agents.models.agent import Agent
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan

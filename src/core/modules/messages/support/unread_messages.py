@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.database.kept_rows import KeptRows
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull

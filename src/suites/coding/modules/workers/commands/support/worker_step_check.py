@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.clock import Clock
 from core.base.command.bus import Bus

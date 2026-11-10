@@ -1,6 +1,6 @@
 from core.base.actor import Actor
 from core.base.driver.command_category import CommandCategory
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.testing.story_fixture import StoryFixture

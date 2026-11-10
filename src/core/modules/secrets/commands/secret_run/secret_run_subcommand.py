@@ -1,8 +1,8 @@
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from argparse import ArgumentParser, Namespace
 
-from core.base.actor_type import ActorType
-from core.base.agent_role import AgentRole
+from engine.enums.actor_type import ActorType
+from engine.enums.agent_role import AgentRole
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal

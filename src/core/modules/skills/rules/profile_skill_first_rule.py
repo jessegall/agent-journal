@@ -2,7 +2,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.role_group import RoleGroup
+from engine.enums.role_group import RoleGroup
 from core.modules.skills.support.agent_profile_skills import AgentProfileSkills
 from core.modules.skills.support.skill_files import SkillFiles
 from core.modules.skills.support.skill_nudges import READ_SKILL_FIRST

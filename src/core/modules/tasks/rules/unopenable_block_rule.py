@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.block_until import BlockUntil
 from core.base.driver.driver_rule import DriverRule

@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.processes.support.process_samples import ended_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 

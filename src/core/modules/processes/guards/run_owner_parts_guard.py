@@ -1,4 +1,4 @@
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.guard.guard import Guard
 from core.base.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal

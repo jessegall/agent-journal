@@ -1,5 +1,5 @@
-from core.base.access import Access
-from core.base.actor_type import ActorType
+from engine.enums.access import Access
+from engine.enums.actor_type import ActorType
 from core.base.change.updated import Updated
 from core.base.command.context import Context
 from core.base.command.edit_command import is_edit_command

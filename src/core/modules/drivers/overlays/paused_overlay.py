@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.helper_role import HelperRole
+from engine.enums.helper_role import HelperRole
 from core.base.driver.open_row import OpenRow
 from core.base.driver.overlay import Overlay
 from core.modules.agents.support.agent_rows import AgentRows

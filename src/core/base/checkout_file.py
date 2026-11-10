@@ -4,7 +4,7 @@ from pathlib import Path
 
 from core.base.checkout import Checkout
 from core.base.file_state import FileState
-from core.base.file_status import FileStatus
+from engine.enums.file_status import FileStatus
 
 
 @dataclass(frozen=True)

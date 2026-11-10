@@ -3,7 +3,7 @@ from dataclasses import replace
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.caller.process_chain import ProcessChain
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -12,7 +12,7 @@ from core.modules.agents.support.single_main_agent import SingleMainAgent
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.helper_type_book import HelperTypeBook
-from core.base.access import Access
+from engine.enums.access import Access
 from core.base.actor import Actor
 from core.base.shell_sandbox import ShellSandbox
 

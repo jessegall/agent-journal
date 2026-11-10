@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.database.kept_rows import KeptRows
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries

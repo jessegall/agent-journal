@@ -1,4 +1,4 @@
-from core.base.access import Access
+from engine.enums.access import Access
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver import Driver
 from core.base.driver.driver_rule import DriverRule

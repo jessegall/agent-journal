@@ -1,5 +1,5 @@
-from core.base.actor_type import ActorType
-from core.base.access import Access
+from engine.enums.actor_type import ActorType
+from engine.enums.access import Access
 from core.base.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent

@@ -1,7 +1,7 @@
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from argparse import Namespace
 
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.caller.caller import Caller
 from core.base.query.conditions.has_value import HasValue
 from core.base.query.conditions.is_null import IsNull

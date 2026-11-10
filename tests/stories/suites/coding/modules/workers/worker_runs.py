@@ -3,8 +3,8 @@ import pytest
 from datetime import timedelta
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
-from core.base.agent_role import AgentRole
+from engine.enums.actor_type import ActorType
+from engine.enums.agent_role import AgentRole
 from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.base.driver.agent_hook import AgentHook

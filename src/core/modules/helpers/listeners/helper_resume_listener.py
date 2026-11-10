@@ -1,6 +1,6 @@
 from core.base.change.changed import Changed
 from core.base.change.logged_event import LoggedEvent
-from core.base.helper_role import HelperRole
+from engine.enums.helper_role import HelperRole
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries

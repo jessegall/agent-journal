@@ -5,9 +5,9 @@ from core.base.page import Page
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.developer.support.system_log import SystemLog
 from core.modules.developer.support.log_filter import LogFilter
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.modules.developer.support.log_line import LogLine
-from core.base.log_source import LogSource
+from engine.enums.log_source import LogSource
 
 
 class SystemLogsSubcommand(ReadSubcommand[Page[LogLine]]):

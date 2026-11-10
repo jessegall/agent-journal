@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 REPORT_COMMAND = 'report make "Critique" --abstract "What the review found" --body "Fine" --about plan:1 --environment main'

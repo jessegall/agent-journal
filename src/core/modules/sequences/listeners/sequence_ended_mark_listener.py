@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent
 from core.base.change.updated import Updated
 from core.modules.agents.models.agent import Agent

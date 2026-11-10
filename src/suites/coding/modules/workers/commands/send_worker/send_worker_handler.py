@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from dataclasses import replace
 import json
 from core.base.command.bus import Bus

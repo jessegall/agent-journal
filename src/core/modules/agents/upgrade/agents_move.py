@@ -2,10 +2,10 @@ import sqlite3
 from collections import Counter
 
 from core.base.actor import CORE_ACTOR_ID
-from core.base.actor_type import ActorType
-from core.base.access import Access
-from core.base.agent_role import AgentRole
-from core.base.helper_role import HelperRole
+from engine.enums.actor_type import ActorType
+from engine.enums.access import Access
+from engine.enums.agent_role import AgentRole
+from engine.enums.helper_role import HelperRole
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
 from core.base.upgrade.creator_resolver import AGENT, CreatorResolver

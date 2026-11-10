@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from core.base.access import Access
+from engine.enums.access import Access
 from core.base.caller.caller_request import SESSION_VARIABLE
 from core.base.cli.shell_handoff import RUNNER_VARIABLE
 from core.base.cli.subcommand_lookup import SubcommandLookup

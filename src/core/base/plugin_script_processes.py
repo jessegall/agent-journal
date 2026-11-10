@@ -14,7 +14,7 @@ from core.base.leftover_process import LeftoverProcess
 from core.base.model.event_form import EventForm
 from core.base.plugin_script_process import PluginScriptProcess
 from core.base.script_skip import ScriptSkip
-from core.base.script_stop import ScriptStop
+from engine.enums.script_stop import ScriptStop
 from core.base.timestamp import Timestamp
 
 

@@ -6,7 +6,7 @@ from core.base.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.commands.compact_agent_context.compact_agent_context import CompactAgentContext
 from suites.coding.modules.workers.support.worker_nudges import CONTEXT_COMPACTED
 from suites.coding.support.coding_helper_role import CodingHelperRole
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
 

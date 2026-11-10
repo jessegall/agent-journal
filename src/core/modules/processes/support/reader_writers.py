@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.suite_choice import SuiteChoice

@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.modules.triggers.support.trigger_settings import AGENTS_ENABLE_SETTING
 from core.modules.triggers.support.trigger_nudges import TRIGGER_LINE as TRIGGER_FIRED
 from core.testing.hook_samples import HookSamples

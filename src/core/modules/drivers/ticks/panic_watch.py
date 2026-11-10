@@ -5,8 +5,8 @@ from core.base.container import Container
 from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
 from core.base.module.module_actors import ModuleActors
-from core.base.log_level import LogLevel
-from core.base.log_source import LogSource
+from engine.enums.log_level import LogLevel
+from engine.enums.log_source import LogSource
 from core.base.system_log_writer import SystemLogWriter
 from core.base.query.queries import Queries
 from core.modules.chat.commands.show_mark.show_mark import ShowMark

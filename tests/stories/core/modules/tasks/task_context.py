@@ -6,7 +6,7 @@ from datetime import timedelta
 
 from core.base.database.database import Database
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.caller.caller import Caller
 from core.base.database.statement import Statement
 from core.base.query.queries import Queries

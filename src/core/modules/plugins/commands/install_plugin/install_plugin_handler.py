@@ -2,7 +2,7 @@ import json
 import shutil
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.base.command.context import Context
 from core.base.command.handler import Handler

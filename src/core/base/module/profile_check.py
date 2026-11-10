@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.access import Access
+from engine.enums.access import Access
 from core.base.module.module import Module
 from core.base.profile.agent_profile import AgentProfile
 from core.base.profile.profile_name import PROFILE_NAME

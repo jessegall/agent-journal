@@ -1,7 +1,7 @@
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
@@ -14,7 +14,7 @@ from suites.coding.modules.workers.commands.start_merger.start_merger_handler im
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from core.testing.hook_samples import HookSamples
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.merger_cases import merger_case
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment

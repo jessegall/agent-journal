@@ -4,7 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 
 
 class TaskSummaryLineRule(DriverRule):

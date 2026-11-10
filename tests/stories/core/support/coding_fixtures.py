@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from core.testing.helper_expectation import HelperExpectation
 from core.testing.hook_samples import HookSamples

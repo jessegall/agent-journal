@@ -3,7 +3,7 @@ import shlex
 from pathlib import Path
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, checked_worker, repository_environment

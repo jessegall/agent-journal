@@ -1,6 +1,6 @@
 from core.base.command.command_json import CommandJson
 from core.base.command.context import Context
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.command.handler import Handler
 from core.base.command.request_user_approval import RequestUserApproval
 from core.base.database.actor_table import ActorTable

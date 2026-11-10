@@ -10,7 +10,7 @@ from server.listener_wake import ListenerWake
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.change.event_log import EventLog
 from core.base.change.logged_event import LoggedEvent
 from core.base.database.reported_findings import ReportedFindings

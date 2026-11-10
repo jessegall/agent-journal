@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.caller.caller import Caller
 from core.base.query.conditions.contains_every import ContainsEvery
 from core.base.query.conditions.is_null import IsNull

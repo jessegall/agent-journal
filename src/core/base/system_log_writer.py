@@ -3,8 +3,8 @@ import os
 from core.base.clock import Clock
 from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
-from core.base.log_level import LogLevel
-from core.base.log_source import LogSource
+from engine.enums.log_level import LogLevel
+from engine.enums.log_source import LogSource
 from core.base.rotated_file import RotatedFile
 
 LOG_LIMIT_BYTES = 10_000_000

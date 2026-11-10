@@ -2,7 +2,7 @@ from datetime import timedelta
 
 import pytest
 
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.tool_type import ToolType
 from core.base.query.queries import Queries

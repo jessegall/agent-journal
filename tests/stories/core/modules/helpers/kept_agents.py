@@ -9,7 +9,7 @@ from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.testing.story_helper_programs import StoryHelperPrograms
 import pytest
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.modules.usage.support.agent_type_limits import AgentTypeLimits
 from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.helpers.support.kept_helpers import KeptHelpers

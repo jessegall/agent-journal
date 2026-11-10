@@ -8,7 +8,7 @@ from http.server import BaseHTTPRequestHandler
 
 from core.base.caller.caller_request_error import CallerRequestError
 from core.base.cli.console import ERROR_CODE
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.base.timing import TIMING_HEADER, Timing
 from core.base.timing_log import TimingLog
 from core.base.caller.caller_request import CallerRequest

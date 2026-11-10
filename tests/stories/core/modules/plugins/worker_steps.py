@@ -5,7 +5,7 @@ import json
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.testing.hook_samples import HookSamples
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.plugins.support.worker_step_samples import step_plugin_folder
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, DISPATCH, FIRST_PROOF, checked_worker, dispatched_worker, repository_environment

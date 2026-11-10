@@ -1,5 +1,5 @@
 from core.modules.skills.support.skill_nudges import UNREAD_SKILLS
-from core.base.role_group import RoleGroup
+from engine.enums.role_group import RoleGroup
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName

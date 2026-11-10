@@ -6,7 +6,7 @@ from core.base.command.bus import Bus
 from core.base.container import Container
 from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.base.query.queries import Queries
 from core.base.system_log_writer import SystemLogWriter
 from core.modules.drivers.models.hook_call import HookCall

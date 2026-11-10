@@ -6,7 +6,7 @@ from core.base.database.repeated_lines import RepeatedLines
 from core.base.database.request_watch import RequestWatch
 from core.base.request_queue import RequestQueue
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.database.kept_rows import KeptRows
 from core.base.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord

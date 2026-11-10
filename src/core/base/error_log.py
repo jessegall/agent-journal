@@ -1,7 +1,7 @@
 import traceback
 
 from core.base.exception_sink import ExceptionSink
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.base.system_log_writer import SystemLogWriter
 
 

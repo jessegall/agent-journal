@@ -1,13 +1,13 @@
 import shlex
 
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.caller.caller import Caller
 from core.base.caller.caller_request import CallerRequest
 from core.base.cli.alias_options import AliasOptions
 from core.base.cli.shell_aliases import ShellAliases
 from core.base.checkout import Checkout
-from core.base.checkout_type import CheckoutType
+from engine.enums.checkout_type import CheckoutType
 from core.base.cli.shell_run import ShellRun
 from core.base.journal_home import JournalHome
 from core.modules.aliases.models.alias import Alias

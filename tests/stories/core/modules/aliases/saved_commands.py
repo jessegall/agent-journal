@@ -3,7 +3,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.driver.classification import Classification
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.part import Part

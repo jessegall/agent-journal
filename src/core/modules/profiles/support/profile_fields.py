@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from core.base.access import Access
+from engine.enums.access import Access
 from core.base.profile.model_tier import ModelTier
 
 

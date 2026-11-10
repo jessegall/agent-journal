@@ -1,5 +1,5 @@
 from suites.coding.support.coding_helper_role import CodingHelperRole
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.driver.suite import Suite
 from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import split, tabs

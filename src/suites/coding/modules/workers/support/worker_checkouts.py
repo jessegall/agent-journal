@@ -3,7 +3,7 @@ from pathlib import Path
 from core.base.checkout import Checkout
 from core.base.checkout_file import CheckoutFile
 from core.base.file_state import FileState
-from core.base.file_status import FileStatus
+from engine.enums.file_status import FileStatus
 from engine.errors.missing_file_refusal import MissingFileRefusal
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal

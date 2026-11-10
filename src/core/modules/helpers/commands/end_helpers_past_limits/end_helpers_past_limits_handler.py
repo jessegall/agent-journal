@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.helper_role import HelperRole
+from engine.enums.helper_role import HelperRole
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler

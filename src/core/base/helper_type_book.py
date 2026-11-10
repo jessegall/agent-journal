@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.access import Access
+from engine.enums.access import Access
 from engine.errors.refusal import Refusal
 from core.base.registry.helper_type_entry import HelperTypeEntry
 

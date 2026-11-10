@@ -8,7 +8,7 @@ from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from core.base.unix_connection import UnixConnection
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.base.serving.update_steps import FAILED, FINISHED, HANDOVER, PROOF, SERVING, UpdateSteps
 from core.base.serving.server_files import ServerFiles
 from core.base.serving.server_limits import PROOF_LIMIT_SECONDS

@@ -8,7 +8,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.search_category import JOURNAL_FOLDER
 from core.base.listener.event_rows import EventRows
 from core.modules.environments.models.environment import Environment
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
 from suites.coding.support.coding_nudges import MAIN_CODE_EDIT_REFUSED
 

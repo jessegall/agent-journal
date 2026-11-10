@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 
 
 CORE_ACTOR_ID = 1

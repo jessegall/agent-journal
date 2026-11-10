@@ -2,8 +2,8 @@ from core.base.clock import Clock
 from core.base.error_log import ErrorLog
 from core.base.exception_sink import ExceptionSink
 from core.base.journal_home import JournalHome
-from core.base.log_level import LogLevel
-from core.base.log_source import LogSource
+from engine.enums.log_level import LogLevel
+from engine.enums.log_source import LogSource
 from core.base.system_log_writer import SystemLogWriter
 
 LINE_LENGTH = 90

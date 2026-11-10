@@ -11,7 +11,7 @@ from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery
 from core.modules.memories.models.keyword_memory import KeywordMemory
 from core.modules.memories.commands.give_memories.give_memories import GiveMemories
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from core.base.role_group import RoleGroup
+from engine.enums.role_group import RoleGroup
 from core.modules.memories.support.memory_settings import KEYWORD_LIMIT
 
 

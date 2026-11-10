@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from pathlib import Path
 
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.guard.guard_refusal import GuardRefusal
 from core.base.guard.guard_switches import GuardSwitches
 from engine.errors.refusal import Refusal

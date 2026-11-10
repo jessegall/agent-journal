@@ -1,7 +1,7 @@
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from suites.coding.modules.workers.listeners.worker_test_listener import WorkerTestListener
 from suites.coding.modules.workers.ticks.stalled_worker_tests import StalledWorkerTests
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

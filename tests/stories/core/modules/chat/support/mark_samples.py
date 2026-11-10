@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.caller.caller import Caller
 from core.base.command.command import Command
 from core.base.command.context import Context

@@ -1,4 +1,4 @@
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.base.system_log_writer import SystemLogWriter
 from core.base.file_access import FileAccess
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled

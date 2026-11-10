@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, BooleanOptionalAction, Namespace
 from dataclasses import replace
 
-from core.base.access import Access
+from engine.enums.access import Access
 from core.base.profile.model_tier import ModelTier
 from core.base.caller.caller import Caller
 from core.base.profile.agent_profile import AgentProfile

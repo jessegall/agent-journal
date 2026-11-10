@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.server.support.launch_terminal import LaunchTerminal, fake_programs

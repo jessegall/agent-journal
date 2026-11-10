@@ -5,7 +5,7 @@ from pathlib import Path
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.caller.caller_request import SESSION_VARIABLE
 from core.base.checkout import Checkout
-from core.base.checkout_type import CheckoutType
+from engine.enums.checkout_type import CheckoutType
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.driver.command_category import CommandCategory
@@ -14,7 +14,7 @@ from core.base.project_reads import ProjectReads
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.plugin_script_processes import PluginScriptProcesses
-from core.base.script_stop import ScriptStop
+from engine.enums.script_stop import ScriptStop
 from core.modules.agents.models.agent import Agent
 from core.modules.plugins.support.plugin_command_run import PluginCommandRun
 from core.modules.processes.models.process import Process

@@ -3,7 +3,7 @@ from core.testing.story_fixture import StoryFixture
 from datetime import timedelta
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.registry.registry import Registry
 from core.base.registry.suite_windows import SuiteWindows
 from core.testing.hook_samples import HookSamples

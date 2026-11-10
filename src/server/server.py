@@ -20,7 +20,7 @@ from core.base.hosting.hosted_start_check import HostedStartCheck
 from core.base.journal_container import opened_container, synced_database_container
 from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from engine.errors.refusal import Refusal
 from core.base.periodic_checks import PeriodicChecks
 from core.base.performance.performance_state import PerformanceState

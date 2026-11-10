@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
-from core.base.sandbox_level import SandboxLevel
+from engine.enums.sandbox_level import SandboxLevel
 from core.modules.processes.models.process import Process
 
 

@@ -10,7 +10,7 @@ from core.base.clock import Clock
 from core.base.leftover_process import LeftoverProcess
 from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.system_log_writer import SystemLogWriter
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.modules.plugins.models.enums.service_restart import ServiceRestart
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.plugins.support.service_fault import ServiceFault

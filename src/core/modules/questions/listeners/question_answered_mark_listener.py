@@ -1,4 +1,4 @@
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.change.logged_event import LoggedEvent
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.questions.listeners.question_mark_listener import QuestionMarkListener

@@ -35,15 +35,6 @@
                 "testCode": true
             },
             {
-                "file": "src/core/base/access.py"
-            },
-            {
-                "file": "src/core/base/actor_type.py"
-            },
-            {
-                "file": "src/core/base/agent_role.py"
-            },
-            {
                 "file": "src/core/base/chat/mark_click.py"
             },
             {
@@ -57,12 +48,6 @@
             },
             {
                 "file": "src/core/base/chat/mark_outcome.py"
-            },
-            {
-                "file": "src/core/base/checkout_type.py"
-            },
-            {
-                "file": "src/core/base/connection_status.py"
             },
             {
                 "file": "src/core/base/driver/command_category.py"
@@ -87,21 +72,6 @@
             },
             {
                 "file": "src/core/base/driver/tool_type.py"
-            },
-            {
-                "file": "src/core/base/duration_unit.py"
-            },
-            {
-                "file": "src/core/base/file_status.py"
-            },
-            {
-                "file": "src/core/base/helper_role.py"
-            },
-            {
-                "file": "src/core/base/log_level.py"
-            },
-            {
-                "file": "src/core/base/log_source.py"
             },
             {
                 "file": "src/core/base/model/event_form.py"
@@ -129,15 +99,6 @@
             },
             {
                 "file": "src/core/base/registry/listener_timing.py"
-            },
-            {
-                "file": "src/core/base/role_group.py"
-            },
-            {
-                "file": "src/core/base/sandbox_level.py"
-            },
-            {
-                "file": "src/core/base/script_stop.py"
             },
             {
                 "file": "src/core/base/setting/setting_scope.py"

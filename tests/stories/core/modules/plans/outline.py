@@ -2,7 +2,7 @@ import json
 from datetime import timedelta
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import CheckpointPlan, UserJoined
 from tests.stories.support.story_checks import expect_index, expect_lines_2

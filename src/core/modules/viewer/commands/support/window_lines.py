@@ -1,6 +1,6 @@
 from core.base.exception_sink import ExceptionSink
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.cli.line_parser import LineParser
 from core.base.cli.parsed_line import ParsedLine
 from core.base.cli.usage_error import UsageError

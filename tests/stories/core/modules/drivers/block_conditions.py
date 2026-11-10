@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.block_check import BlockCheck
 from core.base.driver.hook_event import HookEvent

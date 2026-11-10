@@ -8,7 +8,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.database.database import Database
 from core.base.listener.event_rows import EventRows
-from core.base.log_level import LogLevel
+from engine.enums.log_level import LogLevel
 from core.base.system_log_writer import SystemLogWriter
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.hook_event_name import HookEventName

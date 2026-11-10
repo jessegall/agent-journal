@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.modules.agents.commands.end_agent.end_agent import EndAgent

@@ -1,6 +1,6 @@
 from core.base.driver.command_category import CommandCategory
 from core.base.query.queries import Queries
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice

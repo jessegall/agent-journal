@@ -15,7 +15,7 @@ from core.base.instruction_imports import INSTRUCTION_FILES
 from engine.errors.refusal import Refusal
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.worktree import Worktree
-from core.base.file_status import FileStatus
+from engine.enums.file_status import FileStatus
 from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
 from suites.coding.modules.workers.support.worktree_changes import WorktreeChanges
 from suites.coding.modules.workers.support.worktree_file_change import WorktreeFileChange

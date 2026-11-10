@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.command.context import Context
 from core.base.guard.lifecycle_guard import LifecycleGuard

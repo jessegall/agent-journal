@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.provider.managed_hook import ManagedHook
 from core.base.provider.managed_hooks import ManagedHooks
 from core.testing.story import Story

@@ -1,4 +1,4 @@
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.change.moved import Moved
 from core.base.command.context import Context
 from core.base.guard.guard import Guard

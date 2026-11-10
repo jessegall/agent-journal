@@ -1,5 +1,5 @@
-from core.base.actor_type import ActorType
-from core.base.agent_role import AgentRole
+from engine.enums.actor_type import ActorType
+from engine.enums.agent_role import AgentRole
 from core.base.change.moved import Moved
 from core.base.change.updated import Updated
 from core.base.command.context import Context

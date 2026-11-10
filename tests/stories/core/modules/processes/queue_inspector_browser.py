@@ -1,7 +1,7 @@
 import os
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.timestamp import Timestamp
 from datetime import datetime, timezone
 from core.modules.processes.support.output_folder import OutputFolder

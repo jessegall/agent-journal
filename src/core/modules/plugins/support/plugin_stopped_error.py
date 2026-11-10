@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from core.base.script_stop import ScriptStop
+from engine.enums.script_stop import ScriptStop
 from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 
 

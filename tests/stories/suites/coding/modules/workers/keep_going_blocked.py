@@ -3,7 +3,7 @@ from datetime import timedelta
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.query.queries import Queries
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED

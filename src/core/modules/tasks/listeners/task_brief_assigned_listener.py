@@ -1,5 +1,5 @@
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.listener.save_listener import SaveListener
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task

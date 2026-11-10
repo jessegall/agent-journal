@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from collections.abc import Mapping
 
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.timestamp import Timestamp
 from core.modules.usage.models.enums.agent_list_state import AgentListState
 

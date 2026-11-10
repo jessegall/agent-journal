@@ -7,7 +7,7 @@ import subprocess
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.database.database import Database
 from core.base.leftover_process import LeftoverProcess
 from core.modules.agents.support.terminal_typing import TerminalTyping

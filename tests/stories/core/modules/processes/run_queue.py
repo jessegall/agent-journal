@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.driver.command_category import CommandCategory
 from core.base.query.queries import Queries

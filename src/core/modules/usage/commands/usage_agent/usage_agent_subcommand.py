@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.actor_type import ActorType
-from core.base.agent_role import AgentRole
+from engine.enums.actor_type import ActorType
+from engine.enums.agent_role import AgentRole
 from core.base.caller.caller import Caller
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater

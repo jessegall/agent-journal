@@ -1,5 +1,5 @@
-from core.base.actor_type import ActorType
-from core.base.helper_role import HelperRole
+from engine.enums.actor_type import ActorType
+from engine.enums.helper_role import HelperRole
 from core.base.command.context import Context
 from core.base.caller.caller import Caller
 from core.base.provider.providers import Providers

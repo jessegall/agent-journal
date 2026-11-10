@@ -1,10 +1,10 @@
-from core.base.actor_type import ActorType
+from engine.enums.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.base.sandbox_level import SandboxLevel
+from engine.enums.sandbox_level import SandboxLevel
 from core.modules.processes.commands.record_sandbox.record_sandbox import RecordSandbox
 from core.modules.processes.models.process import Process
 

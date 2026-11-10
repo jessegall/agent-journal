@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.helper_role import HelperRole
+from engine.enums.helper_role import HelperRole
 from core.base.journal_home import JournalHome
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows

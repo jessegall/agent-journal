@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from engine.enums.agent_role import AgentRole
 from core.base.clock import Clock
 from core.base.container import Container
 from core.base.driver.hook_event import HookEvent
