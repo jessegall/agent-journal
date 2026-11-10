@@ -1,11 +1,10 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.modules.plans.commands.focus_plan.focus_plan import FocusPlan
+from core.modules.plans.commands.choose_plan_focus.choose_plan_focus import ChoosePlanFocus
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.focus.plan_focus import PlanFocus
@@ -17,19 +16,19 @@ UNAPPROVED_TEXTS = {PlanState.DRAFT: "a draft", PlanState.READY: "ready"}
 FOCUSED_STATES = (PlanState.APPROVED, PlanState.STARTED)
 
 
-class FocusPlanHandler(Handler[FocusPlan, tuple[str, ...]]):
+class ChoosePlanFocusHandler(Handler[ChoosePlanFocus, tuple[str, ...]]):
     """Names a plan as the focus of the asking agent, clears it, or only reads it, and answers with the lines
-    of the focus. An agent changes its own focus alone; a person changes that of the running main agent. A plan
-    that is not approved or started is refused, and so is a number that is no plan of this environment, with
-    the same words as a plan that does not exist."""
+    of the focus. An agent changes its own focus alone; a person changes that of the running main agent. A
+    plan that is not approved or started is refused, and so is a number that is no plan of this environment,
+    with the same words as a plan that does not exist."""
 
-    command = FocusPlan
+    command = ChoosePlanFocus
 
     def __init__(self, queries: Queries, focus: PlanFocus, report: PlanFocusReport) -> None:
         self.queries, self.focus, self.report = queries, focus, report
 
-    def handle(self, command: FocusPlan, context: Context) -> tuple[str, ...]:
-        is_person = context.actor.type is not ActorType.AGENT
+    def handle(self, command: ChoosePlanFocus, context: Context) -> tuple[str, ...]:
+        is_person = not context.actor.is_agent()
         agent = self.main_agent() if is_person else self.queries.query(Agent).find(context.actor.id)
         heading = [PERSON_HEADING] if is_person else []
         if command.clears:

@@ -9,8 +9,8 @@ from core.modules.plans.support.focus.unblockers import Unblockers
 PLANS_MODULE = "journal.core.plans"
 
 
-def agent(agent_id, role, named_plan_id=None):
-    part = {} if named_plan_id is None else {"focus_plan": named_plan_id}
+def agent(agent_id, role, chosen_plan_id=None):
+    part = {} if chosen_plan_id is None else {"focus_plan": chosen_plan_id}
     return SimpleNamespace(id=agent_id, role=role, metadata=SimpleNamespace(module_part=lambda module: part if module == PLANS_MODULE else {}))
 
 

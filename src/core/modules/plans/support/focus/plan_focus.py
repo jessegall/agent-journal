@@ -41,18 +41,18 @@ class PlanFocus:
 
     def overview(self, agent: Agent) -> FocusOverview:
         plans = tuple(self.queries.query(Plan).filter(state=PlanState.STARTED).ordered("started_at", "id").all_rows())
-        named_id = agent.metadata.module_part(PLANS_MODULE).get(FOCUS_KEY)
-        named = next((plan for plan in plans if plan.id == named_id), None)
+        chosen_id = agent.metadata.module_part(PLANS_MODULE).get(FOCUS_KEY)
+        chosen = next((plan for plan in plans if plan.id == chosen_id), None)
         unused = None
-        if isinstance(named_id, int) and named is None:
-            stored = self.queries.query(Plan).filter(id=named_id).first()
+        if isinstance(chosen_id, int) and chosen is None:
+            stored = self.queries.query(Plan).filter(id=chosen_id).first()
             if stored is not None and stored.state is PlanState.APPROVED:
-                named, plans = stored, (*plans, stored)
+                chosen, plans = stored, (*plans, stored)
             else:
-                unused = UnusedFocus(named_id, DELETED_STATE if stored is None else stored.state.value)
+                unused = UnusedFocus(chosen_id, DELETED_STATE if stored is None else stored.state.value)
         unblockers = self.unblockers.plan_unblockers([plan.id for plan in plans], agent)
         started = tuple(PlanWork(plan, self.next_tasks.ready(plan.id, agent), unblockers[plan.id]) for plan in plans)
-        if named is not None:
-            return FocusOverview(FocusedPlan(named, FocusSource.EXPLICIT), started)
+        if chosen is not None:
+            return FocusOverview(FocusedPlan(chosen, FocusSource.EXPLICIT), started)
         default = next((work.plan for work in started if work.is_workable), None)
         return FocusOverview(None if default is None else FocusedPlan(default, FocusSource.DEFAULT), started, unused)
