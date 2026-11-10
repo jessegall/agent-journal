@@ -135,7 +135,7 @@ const cost = computed(() => (status.value?.cost_dollars ? `$${status.value.cost_
                             <span class="context-used">{{ context }}%</span>
                         </div>
                         <template v-if="tokensLine">
-                            <p class="context-cap" data-context-menu-cap>{{ tokensLine }} <template v-if="capped"><DashboardBadge text="Capped" tone="warn" /></template></p>
+                            <p class="context-cap" data-context-menu-cap>{{ tokensLine }} <DashboardBadge :text="capped ? 'Capped' : 'Model window'" :tone="capped ? 'warn' : ''" /></p>
                         </template>
                     </template>
                     <template v-for="choice in group.choices" :key="choice.value">

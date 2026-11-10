@@ -14,6 +14,7 @@ class ContextWindow:
     used_percentage: int | None
     total_input_tokens: int | None
     read_at: Timestamp | None = None
+    window_size_tokens: int | None = None
 
     @classmethod
     def read_status_file(cls, path: Path) -> "ContextWindow":
@@ -25,7 +26,7 @@ class ContextWindow:
     @classmethod
     def parsed(cls, fields: Mapping[str, object], read_at: Timestamp) -> "ContextWindow":
         window = fields.get("context_window")
-        return cls(cls.number(window, "used_percentage"), cls.number(window, "total_input_tokens"), read_at)
+        return cls(cls.number(window, "used_percentage"), cls.number(window, "total_input_tokens"), read_at, cls.number(window, "context_window_size"))
 
     @staticmethod
     def number(window: object, name: str) -> int | None:

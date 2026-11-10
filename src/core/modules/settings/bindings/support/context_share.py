@@ -21,13 +21,19 @@ class ContextShare:
 
     def reading(self, window: ContextWindow) -> ContextReading:
         window_percent, tokens = window.used_percentage, window.total_input_tokens
-        window_tokens = None if tokens is None or not window_percent else tokens * PERCENT_FULL // window_percent
+        window_tokens = window.window_size_tokens or self.window_tokens_from_percent(window)
         if tokens is None or not self.settings.flag(CONTEXT_LIMIT_ENABLED):
             return ContextReading(window_percent, tokens, None, window_tokens)
         limit = self.settings.number(CONTEXT_LIMIT_TOKENS)
         limit_percent = tokens * PERCENT_FULL // limit
         percent = limit_percent if window_percent is None else max(limit_percent, window_percent)
         return ContextReading(min(PERCENT_FULL, percent), tokens, limit if window_tokens is None or limit < window_tokens else None, window_tokens)
+
+    @staticmethod
+    def window_tokens_from_percent(window: ContextWindow) -> int | None:
+        if window.total_input_tokens is None or not window.used_percentage:
+            return None
+        return window.total_input_tokens * PERCENT_FULL // window.used_percentage
 
     def percent(self, program: str, session: str) -> int | None:
         return self.usage(program, session).percent
