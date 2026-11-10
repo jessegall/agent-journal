@@ -115,7 +115,7 @@ test("a retired card offers only its transcript and no composer", async () => {
     row.retired_at = "2026-11-02T10:00:00Z";
     await settle();
     expect([...element.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["transcript"]);
-    expect(element.querySelector("[data-agent-actions]")).toBeNull();
+    expect(element.querySelector("[data-agent-retire], [data-agent-send-job], [data-agent-driver]")).toBeNull();
     expect(element.querySelector("textarea")).toBeNull();
 });
 
@@ -147,4 +147,24 @@ test("a refused driver change shows the refusal of the command and keeps the for
     await pickButton(element, "Change the driver");
     expect(element.querySelector("[role=alert]").textContent).toBe("journal-researcher does not allow gpt-6.1-sol");
     expect(element.querySelector("[data-agent-driver-form]")).not.toBeNull();
+});
+
+test("the session history of an agent is read by its number and lists each session with how it ended", async () => {
+    const rows = [{session: "s-2", program: "codex", model: "gpt-6.1-sol", started_at: null, ended_at: null, end_reason: null}, {session: "s-1", program: "claude", model: "sonnet", started_at: "2026-11-01T09:00:00Z", ended_at: "2026-11-01T10:00:00Z", end_reason: "driver_changed"}];
+    const {element, run} = await actions(helper, vi.fn(async () => ({ok: true, value: {rows}})));
+    await pickButton(element, "Session history");
+    expect(run).toHaveBeenCalledExactlyOnceWith(["agent", "sessions", "5"]);
+    expect([...element.querySelectorAll("[data-agent-session-state]")].map((state) => state.textContent)).toEqual(["Not started", "Ended: driver changed"]);
+});
+
+test("a retired card offers its session history and no other button", async () => {
+    const {element} = await actions({...helper, state: "retired", retired_at: "2026-11-02T10:00:00Z"});
+    expect([...element.querySelectorAll("button")].map((button) => button.textContent.trim())).toEqual(["Session history"]);
+});
+
+test("the main agent's card has no retire and no change driver button", async () => {
+    const {element} = await actions({...helper, role: "main", number: 1, job_command: []});
+    expect(element.querySelector("[data-agent-retire]")).toBeNull();
+    expect(element.querySelector("[data-agent-driver]")).toBeNull();
+    expect(element.querySelector("[data-agent-history]")).not.toBeNull();
 });

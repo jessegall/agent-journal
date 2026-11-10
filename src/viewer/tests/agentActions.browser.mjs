@@ -36,7 +36,7 @@ try {
     await retiredCard.locator('[data-agent-tab-body="transcript"]').waitFor();
     await page.waitForFunction((id) => !document.querySelector(`[data-agent-open="${id}"] [aria-busy="true"]`), retiring);
     assert.deepEqual(await retiredCard.locator('[data-tab]').evaluateAll((tabs) => tabs.map((tab) => tab.dataset.tab)), ["transcript", "reports"]);
-    assert.equal(await retiredCard.locator('[data-agent-actions], textarea').count(), 0);
+    assert.equal(await retiredCard.locator('[data-agent-retire], [data-agent-send-job], textarea').count(), 0);
     for (const colorScheme of ["light", "dark"]) {
         await page.emulateMedia({colorScheme});
         await window.screenshot({path: `${capture}-retired-${colorScheme}.png`, animations: "disabled"});

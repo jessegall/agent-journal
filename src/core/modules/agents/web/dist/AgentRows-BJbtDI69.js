@@ -1,0 +1,2025 @@
+import { openBlock as n, createElementBlock as s, withModifiers as ae, unref as r, createTextVNode as y, toDisplayString as c, createVNode as p, createBlock as N, computed as i, createElementVNode as h, createCommentVNode as m, withCtx as b, Fragment as U, renderList as le, ref as z, watch as ce, onUnmounted as we, defineAsyncComponent as _e, createSlots as et, resolveDynamicComponent as tt, normalizeClass as de, normalizeStyle as je, renderSlot as Me, onMounted as at, Teleport as nt, mergeProps as ot, toRef as Re, withKeys as We, nextTick as qe } from "vue";
+import { peekRef as $e, Icon as Oe, RunningCommand as lt, TimeAgo as Te, FoldGroup as Pe, TaskStatusIcon as st, useWindow as Le, loadWindowComponent as rt, coalesced as it, READ_RATES as dt, eventMayBeChildOf as ut, InnerTabs as ct, TabBody as gt, SwitchCase as Je, EmptyState as Ve, TextInput as ze, Btn as ee, TextArea as vt, HoverTip as Ae, TaskBar as pt, useNow as Ge, age as mt, perHour as ht, sinceWords as ft, seenWords as bt, AgentTip as kt, SearchBar as yt, Segmented as wt, MenuLabel as Ie, MenuItem as Se, RowList as Mt, toggleFilter as $t } from "@journal/window-kit";
+import { _ as G, T as xt } from "./TranscriptRows-Crmxs6Un.js";
+const St = {
+  class: "agent-command",
+  "data-agent-command": ""
+}, Ct = {
+  key: 1,
+  "data-agent-stopped": ""
+}, At = {
+  __name: "AgentCommand",
+  props: { waitReason: { type: String, required: !0 }, stopped: Boolean, command: { type: String, required: !0 }, note: { type: String, required: !0 } },
+  setup(e) {
+    return (o, t) => (n(), s("span", St, [
+      e.waitReason ? (n(), s("button", {
+        key: 0,
+        type: "button",
+        class: "agent-waiting",
+        "data-agent-waiting": "",
+        title: "Open the process queue",
+        onClick: t[0] || (t[0] = ae((l) => r($e)("test_queue:0"), ["stop"]))
+      }, [
+        y("Waiting: " + c(e.waitReason) + " ", 1),
+        p(r(Oe), {
+          name: "arrow",
+          size: 11
+        })
+      ])) : e.stopped ? (n(), s("span", Ct, "Waiting")) : (n(), N(r(lt), {
+        key: 2,
+        text: e.command,
+        idle: e.note || "thinking"
+      }, null, 8, ["text", "idle"]))
+    ]));
+  }
+}, jt = /* @__PURE__ */ G(At, [["__scopeId", "data-v-1b371fb5"]]), Tt = {
+  class: "lasting-facts",
+  "data-agent-lasting-facts": ""
+}, Lt = { key: 0 }, Bt = { "data-agent-driver-name": "" }, Rt = { "data-agent-session-count": "" }, It = { "data-agent-memory-count": "" }, Ot = { key: 1 }, Vt = { "data-agent-session-end-reason": "" }, zt = { key: 2 }, Ht = { "data-agent-retired-at": "" }, Et = { key: 3 }, Nt = { "data-agent-retired-by": "" }, Wt = {
+  __name: "AgentLastingFacts",
+  props: { row: { type: Object, required: !0 } },
+  setup(e) {
+    const o = { cache_passed: "its cache had passed", each_launch: "each job starts a new one", driver_changed: "its driver was changed", replaced_by_person: "a person replaced it", launch_rotation: "its program was changed for the job" }, t = e, l = i(() => t.row.program ? t.row.program.slice(0, 1).toUpperCase() + t.row.program.slice(1) : ""), a = i(() => [l.value, t.row.program_model].filter(Boolean).join(" ")), g = i(() => t.row.replaced_session_end_reason ? o[t.row.replaced_session_end_reason] || t.row.replaced_session_end_reason.replaceAll("_", " ") : "");
+    return (M, f) => (n(), s("dl", Tt, [
+      a.value ? (n(), s("div", Lt, [
+        f[0] || (f[0] = h("dt", null, "Driver", -1)),
+        h("dd", Bt, c(a.value), 1)
+      ])) : m("", !0),
+      h("div", null, [
+        f[1] || (f[1] = h("dt", null, "Sessions", -1)),
+        h("dd", Rt, c(e.row.session_count ?? 0), 1)
+      ]),
+      h("div", null, [
+        f[2] || (f[2] = h("dt", null, "Memories", -1)),
+        h("dd", It, c(e.row.memory_count ?? 0), 1)
+      ]),
+      g.value ? (n(), s("div", Ot, [
+        f[3] || (f[3] = h("dt", null, "Last session ended", -1)),
+        h("dd", Vt, c(g.value), 1)
+      ])) : m("", !0),
+      e.row.retired_at ? (n(), s("div", zt, [
+        f[4] || (f[4] = h("dt", null, "Retired", -1)),
+        h("dd", Ht, [
+          p(r(Te), {
+            at: e.row.retired_at
+          }, null, 8, ["at"])
+        ])
+      ])) : m("", !0),
+      e.row.retiring_actor_name ? (n(), s("div", Et, [
+        f[5] || (f[5] = h("dt", null, "Retired by", -1)),
+        h("dd", Nt, c(e.row.retiring_actor_name), 1)
+      ])) : m("", !0)
+    ]));
+  }
+}, qt = /* @__PURE__ */ G(Wt, [["__scopeId", "data-v-32d69973"]]), Dt = ["data-agent-delegated", "onClick"], Ft = { class: "agent-task-number" }, Ut = { class: "agent-task-title" }, Pt = ["title"], Jt = {
+  __name: "AgentTaskGroup",
+  props: { section: { type: Object, required: !0 }, open: Boolean },
+  emits: ["toggle"],
+  setup(e, { emit: o }) {
+    const t = o;
+    return (l, a) => (n(), N(r(Pe), {
+      label: e.section.label,
+      count: e.section.tasks.length,
+      open: e.open,
+      "data-agent-section": e.section.state,
+      onToggle: a[0] || (a[0] = (g) => t("toggle"))
+    }, {
+      default: b(() => [
+        (n(!0), s(U, null, le(e.section.tasks, (g) => (n(), s("button", {
+          key: g.id,
+          type: "button",
+          class: "agent-task",
+          "data-agent-delegated": g.id,
+          onClick: (M) => r($e)(`tasks:${g.id}`)
+        }, [
+          p(r(st), {
+            status: g.state
+          }, null, 8, ["status"]),
+          h("span", Ft, c(g.id), 1),
+          h("span", Ut, c(g.title), 1),
+          g.plan_id ? (n(), s("span", {
+            key: 0,
+            class: "agent-task-plan",
+            "data-agent-task-plan": "",
+            title: `Plan ${g.plan_id}: ${g.plan_title}`
+          }, "Plan " + c(g.plan_id), 9, Pt)) : m("", !0)
+        ], 8, Dt))), 128))
+      ]),
+      _: 1
+    }, 8, ["label", "count", "open", "data-agent-section"]));
+  }
+}, Gt = /* @__PURE__ */ G(Jt, [["__scopeId", "data-v-ea4ccd6b"]]), Kt = {
+  key: 0,
+  class: "agent-summary",
+  "data-agent-retirement-reason": ""
+}, Zt = {
+  key: 1,
+  class: "agent-summary",
+  "data-agent-resume-reason": ""
+}, Yt = {
+  key: 3,
+  class: "agent-ended-reason",
+  "data-agent-ended-reason": ""
+}, Qt = ["data-peek", "onClick"], Xt = {
+  class: "agent-instruction",
+  "data-agent-instruction": ""
+}, _t = {
+  key: 0,
+  class: "agent-helper-brief"
+}, ea = {
+  class: "agent-instruction",
+  "data-agent-instruction": ""
+}, ta = {
+  key: 1,
+  class: "agent-label",
+  "data-agent-no-job": ""
+}, aa = "It ended without a report", na = {
+  __name: "AgentCardDetails",
+  props: { row: { type: Object, required: !0 }, facts: { type: Object, default: null }, progress: { type: Object, default: null }, waitReason: { type: String, default: "" }, tasks: { type: Array, required: !0 }, stoppedWithWork: Boolean, open: Boolean },
+  setup(e) {
+    const o = e, t = ["started", "blocked", "open", "completed"], l = i(() => {
+      var u, L;
+      return o.row.ended_at && ((L = (u = o.facts) == null ? void 0 : u.job_returned) != null && L.startsWith(aa)) ? o.facts.job_returned : "";
+    }), a = i(() => o.tasks.length ? t.map((u) => ({ state: u, label: u.slice(0, 1).toUpperCase() + u.slice(1), tasks: o.tasks.filter((L) => L.state === u || u === "started" && L.state === "testing" || u === "completed" && L.state === "cancelled") })) : []), g = /* @__PURE__ */ new Set(["completed"]), M = z({}), f = (u) => !(M.value[u] ?? g.has(u)), S = (u) => M.value = { ...M.value, [u]: f(u) }, R = Le(), { rows: D } = R.props.reports;
+    R.state["reports.agent"] = String(o.row.number);
+    const q = i(() => o.row.access === "read-only"), H = i(() => !!o.row.retired_at || o.row.state === "retired"), E = ["tasks", "transcript", "terminal", "file-feed", "reports"], j = i(() => (H.value ? R.tabs.filter((L) => ["reports", "transcript"].includes(L.key)) : q.value ? R.tabs.filter((L) => ["reports", "transcript", "terminal"].includes(L.key)) : [...R.tabs]).sort((L, v) => (E.indexOf(L.key) < 0 ? E.length : E.indexOf(L.key)) - (E.indexOf(v.key) < 0 ? E.length : E.indexOf(v.key)))), O = () => q.value || H.value ? j.value.find((u) => u.key === "transcript") : j.value[0], W = z(O());
+    ce(W, (u) => {
+      R.state.tab = (u == null ? void 0 : u.key) ?? "";
+    }, { immediate: !0 }), we(() => {
+      R.state.tab = "";
+    }), ce(j, (u) => {
+      u.some((L) => {
+        var v;
+        return L.key === ((v = W.value) == null ? void 0 : v.key);
+      }) || (W.value = u[0]);
+    }), ce(() => o.open, (u) => {
+      u && (W.value = O());
+    });
+    const Z = Object.fromEntries(R.tabs.filter((u) => u.component).map((u) => [u.key, _e(() => rt(u.component))])), K = z(!1), { data: Q } = R.props.tool, _ = i(() => {
+      var u;
+      return ((u = Q.value) == null ? void 0 : u.tool) ?? "";
+    }), F = i(() => {
+      var u;
+      return ((u = Q.value) == null ? void 0 : u.note) ?? "";
+    }), C = i(() => o.row.role !== "main" && (!o.row.ended_at || o.stoppedWithWork || o.waitReason));
+    async function d() {
+      !o.open || !C.value || (R.state["tool.agent"] = String(o.row.number), await R.reload("tool"));
+    }
+    const Y = it(d, dt.agentCommand), B = R.follow(["hook_call.*", "process_part.*"], (u) => ut(u, "session_agent_id", /* @__PURE__ */ new Set([o.row.id])) && Y());
+    return we(() => B == null ? void 0 : B()), ce(() => o.open, (u) => {
+      u && d();
+    }, { immediate: !0 }), (u, L) => {
+      var v;
+      return n(), s("div", {
+        class: "agent-more",
+        "data-agent-more": "",
+        onClick: L[2] || (L[2] = ae(() => {
+        }, ["stop"]))
+      }, [
+        p(qt, { row: e.row }, null, 8, ["row"]),
+        e.row.retirement_reason ? (n(), s("p", Kt, "Retirement reason: " + c(e.row.retirement_reason), 1)) : m("", !0),
+        e.row.resume_reason ? (n(), s("p", Zt, c(e.row.resume_reason), 1)) : m("", !0),
+        C.value ? (n(), N(jt, {
+          key: 2,
+          class: "agent-command",
+          "wait-reason": e.waitReason,
+          stopped: e.stoppedWithWork,
+          command: _.value,
+          note: F.value
+        }, null, 8, ["wait-reason", "stopped", "command", "note"])) : m("", !0),
+        l.value ? (n(), s("p", Yt, c(l.value), 1)) : m("", !0),
+        p(r(ct), {
+          class: "agent-tabs",
+          tabs: j.value,
+          active: W.value,
+          answer: { tasks: e.tasks.length, reports: r(D).length },
+          onChoose: L[0] || (L[0] = (I) => W.value = I)
+        }, null, 8, ["tabs", "active", "answer"]),
+        p(r(gt), {
+          class: "agent-tab-body",
+          tab: W.value,
+          "data-agent-tab-body": (v = W.value) == null ? void 0 : v.key
+        }, {
+          default: b(() => {
+            var I;
+            return [
+              p(r(Je), {
+                value: (I = W.value) == null ? void 0 : I.key
+              }, et({
+                reports: b(() => [
+                  r(D).length ? m("", !0) : (n(), N(r(Ve), {
+                    key: 0,
+                    title: "No reports"
+                  }, {
+                    default: b(() => [...L[3] || (L[3] = [
+                      y("This agent has not sent any reports.", -1)
+                    ])]),
+                    _: 1
+                  })),
+                  (n(!0), s(U, null, le(r(D), (w) => (n(), s("button", {
+                    key: w.id,
+                    type: "button",
+                    class: "agent-report",
+                    "data-peek": `messages:${w.id}`,
+                    onClick: (x) => r($e)(`messages:${w.id}`)
+                  }, c(w.text), 9, Qt))), 128))
+                ]),
+                tasks: b(() => {
+                  var w;
+                  return [
+                    e.tasks.length ? m("", !0) : (n(), N(r(Ve), {
+                      key: 0,
+                      title: "No tasks"
+                    }, {
+                      default: b(() => [...L[4] || (L[4] = [
+                        y("No tasks have been assigned to this agent.", -1)
+                      ])]),
+                      _: 1
+                    })),
+                    (n(!0), s(U, null, le(a.value, (x) => (n(), N(Gt, {
+                      key: x.state,
+                      section: x,
+                      open: f(x.state),
+                      onToggle: (te) => S(x.state)
+                    }, null, 8, ["section", "open", "onToggle"]))), 128)),
+                    (w = e.facts) != null && w.instruction ? (n(), s(U, { key: 1 }, [
+                      L[5] || (L[5] = h("p", { class: "agent-label" }, "Instruction", -1)),
+                      h("div", Xt, c(e.facts.instruction), 1)
+                    ], 64)) : m("", !0)
+                  ];
+                }),
+                transcript: b(() => {
+                  var w;
+                  return [
+                    q.value ? (n(), s(U, { key: 0 }, [
+                      (w = e.facts) != null && w.instruction ? (n(), s("div", _t, [
+                        p(r(Pe), {
+                          label: "Instruction",
+                          open: K.value,
+                          "data-agent-section": "instruction",
+                          onToggle: L[1] || (L[1] = (x) => K.value = !K.value)
+                        }, {
+                          default: b(() => [
+                            h("div", ea, c(e.facts.instruction), 1)
+                          ]),
+                          _: 1
+                        }, 8, ["open"])
+                      ])) : e.facts && e.row.ended_at ? (n(), s("p", ta, "No job recorded")) : m("", !0)
+                    ], 64)) : m("", !0),
+                    p(xt, {
+                      name: `transcript.${e.row.id}`,
+                      padding: "0"
+                    }, null, 8, ["name"])
+                  ];
+                }),
+                _: 2
+              }, [
+                le(r(Z), (w, x) => ({
+                  name: x,
+                  fn: b(() => [
+                    (n(), N(tt(w), {
+                      agent: e.row.id
+                    }, null, 8, ["agent"]))
+                  ])
+                }))
+              ]), 1032, ["value"])
+            ];
+          }),
+          _: 1
+        }, 8, ["tab", "data-agent-tab-body"])
+      ]);
+    };
+  }
+}, oa = /* @__PURE__ */ G(na, [["__scopeId", "data-v-6d8f6905"]]), la = { class: "action-buttons" }, sa = {
+  __name: "AgentDriverForm",
+  props: { program: String, model: String, pending: Boolean },
+  emits: ["submit", "cancel", "update:program", "update:model"],
+  setup(e) {
+    return (o, t) => (n(), s("form", {
+      "data-agent-driver-form": "",
+      onSubmit: t[3] || (t[3] = ae((l) => o.$emit("submit"), ["prevent"]))
+    }, [
+      t[6] || (t[6] = h("p", null, "Starts the next session on this program; the agent keeps its number and memories.", -1)),
+      p(r(ze), {
+        "model-value": e.program,
+        label: "Program",
+        disabled: e.pending,
+        "data-agent-driver-program": "",
+        "onUpdate:modelValue": t[0] || (t[0] = (l) => o.$emit("update:program", l))
+      }, null, 8, ["model-value", "disabled"]),
+      p(r(ze), {
+        "model-value": e.model,
+        label: "Model",
+        disabled: e.pending,
+        "data-agent-driver-model": "",
+        "onUpdate:modelValue": t[1] || (t[1] = (l) => o.$emit("update:model", l))
+      }, null, 8, ["model-value", "disabled"]),
+      h("div", la, [
+        p(r(ee), {
+          type: "submit",
+          small: "",
+          disabled: e.pending || !e.program.trim() || !e.model.trim(),
+          "data-agent-confirm-driver": ""
+        }, {
+          default: b(() => [...t[4] || (t[4] = [
+            y("Change the driver", -1)
+          ])]),
+          _: 1
+        }, 8, ["disabled"]),
+        p(r(ee), {
+          small: "",
+          disabled: e.pending,
+          onClick: t[2] || (t[2] = (l) => o.$emit("cancel"))
+        }, {
+          default: b(() => [...t[5] || (t[5] = [
+            y("Cancel", -1)
+          ])]),
+          _: 1
+        }, 8, ["disabled"])
+      ])
+    ], 32));
+  }
+}, ra = /* @__PURE__ */ G(sa, [["__scopeId", "data-v-c138a4da"]]), ia = { class: "action-field" }, da = ["value", "disabled"], ua = ["value"], ca = { key: 1 }, ga = {
+  key: 1,
+  class: "action-field"
+}, va = { class: "action-buttons" }, pa = {
+  __name: "AgentJobForm",
+  props: { row: Object, task: String, tasks: Array, text: String, pending: Boolean, loading: Boolean, moreTasks: Boolean, failure: String, jobReady: Boolean },
+  emits: ["submit", "cancel", "more", "update:task", "update:text"],
+  setup(e) {
+    return (o, t) => (n(), s("form", {
+      onSubmit: t[4] || (t[4] = ae((l) => o.$emit("submit"), ["prevent"]))
+    }, [
+      e.row.job_task_flag ? (n(), s(U, { key: 0 }, [
+        h("label", ia, [
+          t[6] || (t[6] = y("Task ", -1)),
+          h("select", {
+            value: e.task,
+            disabled: e.pending || e.loading,
+            "data-agent-job-task": "",
+            onChange: t[0] || (t[0] = (l) => o.$emit("update:task", l.target.value))
+          }, [
+            t[5] || (t[5] = h("option", { value: "" }, "Choose an open task", -1)),
+            (n(!0), s(U, null, le(e.tasks, (l) => (n(), s("option", {
+              key: l.id,
+              value: String(l.id)
+            }, c(l.id) + ": " + c(l.title), 9, ua))), 128))
+          ], 40, da)
+        ]),
+        e.moreTasks ? (n(), N(r(ee), {
+          key: 0,
+          small: "",
+          disabled: e.pending || e.loading,
+          "data-agent-more-tasks": "",
+          onClick: t[1] || (t[1] = (l) => o.$emit("more"))
+        }, {
+          default: b(() => [...t[7] || (t[7] = [
+            y("More tasks", -1)
+          ])]),
+          _: 1
+        }, 8, ["disabled"])) : m("", !0),
+        !e.loading && !e.tasks.length && !e.failure ? (n(), s("p", ca, "No open tasks.")) : m("", !0)
+      ], 64)) : (n(), s("label", ga, [
+        t[8] || (t[8] = y("Job", -1)),
+        p(r(vt), {
+          value: e.text,
+          disabled: e.pending,
+          "data-agent-job-text": "",
+          onInput: t[2] || (t[2] = (l) => o.$emit("update:text", l.target.value))
+        }, null, 8, ["value", "disabled"])
+      ])),
+      h("div", va, [
+        p(r(ee), {
+          type: "submit",
+          small: "",
+          disabled: e.pending || !e.jobReady,
+          "data-agent-submit-job": ""
+        }, {
+          default: b(() => [...t[9] || (t[9] = [
+            y("Send the job", -1)
+          ])]),
+          _: 1
+        }, 8, ["disabled"]),
+        p(r(ee), {
+          small: "",
+          disabled: e.pending,
+          onClick: t[3] || (t[3] = (l) => o.$emit("cancel"))
+        }, {
+          default: b(() => [...t[10] || (t[10] = [
+            y("Cancel", -1)
+          ])]),
+          _: 1
+        }, 8, ["disabled"])
+      ])
+    ], 32));
+  }
+}, ma = /* @__PURE__ */ G(pa, [["__scopeId", "data-v-adde4158"]]), ha = { class: "action-buttons" }, fa = {
+  __name: "AgentRetireForm",
+  props: { reason: String, pending: Boolean },
+  emits: ["submit", "cancel", "update:reason"],
+  setup(e) {
+    return (o, t) => (n(), s("form", {
+      "data-agent-retire-confirm": "",
+      onSubmit: t[2] || (t[2] = ae((l) => o.$emit("submit"), ["prevent"]))
+    }, [
+      t[5] || (t[5] = h("p", null, "Retirement is permanent. This agent cannot be resumed. Its record, its memories and its number stay.", -1)),
+      p(r(ze), {
+        "model-value": e.reason,
+        label: "Reason",
+        disabled: e.pending,
+        "data-agent-retire-reason": "",
+        "onUpdate:modelValue": t[0] || (t[0] = (l) => o.$emit("update:reason", l))
+      }, null, 8, ["model-value", "disabled"]),
+      h("div", ha, [
+        p(r(ee), {
+          type: "submit",
+          small: "",
+          disabled: e.pending || !e.reason.trim(),
+          "data-agent-confirm-retire": ""
+        }, {
+          default: b(() => [...t[3] || (t[3] = [
+            y("Retire permanently", -1)
+          ])]),
+          _: 1
+        }, 8, ["disabled"]),
+        p(r(ee), {
+          small: "",
+          disabled: e.pending,
+          onClick: t[1] || (t[1] = (l) => o.$emit("cancel"))
+        }, {
+          default: b(() => [...t[4] || (t[4] = [
+            y("Cancel", -1)
+          ])]),
+          _: 1
+        }, 8, ["disabled"])
+      ])
+    ], 32));
+  }
+}, ba = /* @__PURE__ */ G(fa, [["__scopeId", "data-v-92de7dd6"]]), ka = {
+  class: "session-history",
+  "data-agent-session-history": ""
+}, ya = { key: 0 }, wa = { key: 0 }, Ma = { "data-agent-session-state": "" }, $a = { class: "action-buttons" }, xa = {
+  __name: "AgentSessionHistory",
+  props: { sessions: { type: Array, required: !0 } },
+  emits: ["close"],
+  setup(e) {
+    return (o, t) => (n(), s("div", ka, [
+      e.sessions.length ? m("", !0) : (n(), s("p", ya, "This agent has no session in its history.")),
+      h("ol", null, [
+        (n(!0), s(U, null, le(e.sessions, (l) => (n(), s("li", {
+          key: l.session,
+          "data-agent-session": ""
+        }, [
+          h("span", null, c([l.program, l.model].filter(Boolean).join(" ")), 1),
+          l.started_at ? (n(), s("span", wa, [
+            t[1] || (t[1] = y("Started ", -1)),
+            p(r(Te), {
+              at: l.started_at
+            }, null, 8, ["at"])
+          ])) : m("", !0),
+          h("span", Ma, c(l.end_reason ? `Ended: ${l.end_reason.replaceAll("_", " ")}` : l.started_at ? "Running" : "Not started"), 1),
+          h("code", null, c(l.session), 1)
+        ]))), 128))
+      ]),
+      h("div", $a, [
+        p(r(ee), {
+          small: "",
+          onClick: t[0] || (t[0] = (l) => o.$emit("close"))
+        }, {
+          default: b(() => [...t[2] || (t[2] = [
+            y("Close", -1)
+          ])]),
+          _: 1
+        })
+      ])
+    ]));
+  }
+}, Sa = /* @__PURE__ */ G(xa, [["__scopeId", "data-v-0d688bd9"]]), Ca = { class: "action-buttons" }, Aa = {
+  key: 0,
+  role: "alert"
+}, ja = {
+  key: 1,
+  role: "status"
+}, Ta = {
+  __name: "AgentActions",
+  props: { row: { type: Object, required: !0 } },
+  setup(e) {
+    const o = e, t = Le(), l = z(""), a = z(""), g = z(""), M = z(""), f = z(""), S = z(""), R = z([]), D = z(0), q = z(!1), H = z(!1), E = z(!1), j = z(""), O = z(""), W = z([]), Z = i(() => !!o.row.retired_at || o.row.state === "retired"), K = i(() => !Z.value && !!o.row.ended_at), Q = i(() => {
+      var w;
+      return K.value && ((w = o.row.job_command) == null ? void 0 : w.length) && !o.row.resume_reason;
+    }), _ = i(() => Q.value && !H.value && (o.row.job_task_flag ? R.value.some((w) => String(w.id) === S.value) : !!a.value.trim()));
+    function F(w) {
+      l.value = w, a.value = "", g.value = "", S.value = "", j.value = "", O.value = "";
+    }
+    async function C() {
+      F("job"), o.row.job_task_flag && (R.value = [], D.value = 0, q.value = !1, await d());
+    }
+    async function d() {
+      if (!H.value) {
+        H.value = !0;
+        try {
+          t.state["jobs.page"] = String(D.value + 1), await t.reload("jobs");
+          const w = t.props.jobs;
+          j.value = w.failure.value, j.value || (R.value = [...R.value, ...w.rows.value], D.value = w.data.value.page, q.value = w.more.value);
+        } finally {
+          H.value = !1;
+        }
+      }
+    }
+    async function Y(w, x) {
+      if (!E.value) {
+        E.value = !0, j.value = "";
+        try {
+          const te = await t.run(w);
+          j.value = te.ok ? "" : te.error, te.ok && (F(""), O.value = x);
+        } finally {
+          E.value = !1;
+        }
+      }
+    }
+    async function B() {
+      if (!_.value) return;
+      const w = o.row.job_task_flag ? [o.row.job_task_flag, S.value] : [a.value.trim()];
+      await Y([...o.row.job_command, String(o.row.number), ...w], "Job sent.");
+    }
+    async function u() {
+      if (!E.value) {
+        E.value = !0;
+        try {
+          const w = await t.run(["agent", "sessions", String(o.row.number)]);
+          F(w.ok ? "history" : ""), j.value = w.ok ? "" : w.error, W.value = w.ok ? w.value.rows : [];
+        } finally {
+          E.value = !1;
+        }
+      }
+    }
+    function L() {
+      F("driver"), M.value = o.row.program || "", f.value = "";
+    }
+    async function v() {
+      !K.value || l.value !== "driver" || !M.value.trim() || !f.value.trim() || await Y(["agent", "driver", String(o.row.number), "--program", M.value.trim(), "--model", f.value.trim()], "Driver changed.");
+    }
+    async function I() {
+      !K.value || l.value !== "retire" || !g.value.trim() || await Y(["agent", "retire", String(o.row.number), "--reason", g.value.trim()], "Agent retired permanently.");
+    }
+    return (w, x) => {
+      var te;
+      return n(), s("div", {
+        class: "agent-actions",
+        "data-agent-actions": "",
+        onClick: x[10] || (x[10] = ae(() => {
+        }, ["stop"])),
+        onKeydown: x[11] || (x[11] = ae(() => {
+        }, ["stop"]))
+      }, [
+        h("div", Ca, [
+          p(r(ee), {
+            small: "",
+            "data-agent-history": "",
+            disabled: E.value || H.value,
+            onClick: u
+          }, {
+            default: b(() => [...x[12] || (x[12] = [
+              y("Session history", -1)
+            ])]),
+            _: 1
+          }, 8, ["disabled"]),
+          K.value ? (n(), s(U, { key: 0 }, [
+            (te = e.row.job_command) != null && te.length ? (n(), N(r(ee), {
+              key: 0,
+              small: "",
+              "data-agent-send-job": "",
+              disabled: E.value || H.value || !Q.value,
+              onClick: C
+            }, {
+              default: b(() => [...x[13] || (x[13] = [
+                y("Send a job", -1)
+              ])]),
+              _: 1
+            }, 8, ["disabled"])) : m("", !0),
+            e.row.role !== "main" ? (n(), N(r(ee), {
+              key: 1,
+              small: "",
+              "data-agent-driver": "",
+              disabled: E.value || H.value,
+              onClick: L
+            }, {
+              default: b(() => [...x[14] || (x[14] = [
+                y("Change driver", -1)
+              ])]),
+              _: 1
+            }, 8, ["disabled"])) : m("", !0),
+            e.row.role !== "main" ? (n(), N(r(ee), {
+              key: 2,
+              small: "",
+              "data-agent-retire": "",
+              disabled: E.value || H.value,
+              onClick: x[0] || (x[0] = (J) => F("retire"))
+            }, {
+              default: b(() => [...x[15] || (x[15] = [
+                y("Retire", -1)
+              ])]),
+              _: 1
+            }, 8, ["disabled"])) : m("", !0)
+          ], 64)) : m("", !0)
+        ]),
+        p(r(Je), { value: l.value }, {
+          job: b(() => [
+            p(ma, {
+              task: S.value,
+              "onUpdate:task": x[1] || (x[1] = (J) => S.value = J),
+              text: a.value,
+              "onUpdate:text": x[2] || (x[2] = (J) => a.value = J),
+              row: e.row,
+              tasks: R.value,
+              pending: E.value,
+              loading: H.value,
+              "more-tasks": q.value,
+              failure: j.value,
+              "job-ready": _.value,
+              onSubmit: B,
+              onMore: d,
+              onCancel: x[3] || (x[3] = (J) => F(""))
+            }, null, 8, ["task", "text", "row", "tasks", "pending", "loading", "more-tasks", "failure", "job-ready"])
+          ]),
+          driver: b(() => [
+            p(ra, {
+              program: M.value,
+              "onUpdate:program": x[4] || (x[4] = (J) => M.value = J),
+              model: f.value,
+              "onUpdate:model": x[5] || (x[5] = (J) => f.value = J),
+              pending: E.value,
+              onSubmit: v,
+              onCancel: x[6] || (x[6] = (J) => F(""))
+            }, null, 8, ["program", "model", "pending"])
+          ]),
+          history: b(() => [
+            p(Sa, {
+              sessions: W.value,
+              onClose: x[7] || (x[7] = (J) => F(""))
+            }, null, 8, ["sessions"])
+          ]),
+          retire: b(() => [
+            p(ba, {
+              reason: g.value,
+              "onUpdate:reason": x[8] || (x[8] = (J) => g.value = J),
+              pending: E.value,
+              onSubmit: I,
+              onCancel: x[9] || (x[9] = (J) => F(""))
+            }, null, 8, ["reason", "pending"])
+          ]),
+          _: 1
+        }, 8, ["value"]),
+        j.value ? (n(), s("p", Aa, c(j.value), 1)) : m("", !0),
+        O.value ? (n(), s("p", ja, c(O.value), 1)) : m("", !0)
+      ], 32);
+    };
+  }
+}, La = /* @__PURE__ */ G(Ta, [["__scopeId", "data-v-03a4a81a"]]), Ba = { class: "line" }, Ra = {
+  key: 0,
+  class: "line",
+  "data-agent-since": ""
+}, Ia = {
+  key: 1,
+  class: "line",
+  "data-agent-seen": ""
+}, Oa = {
+  __name: "AgentStatusDot",
+  props: { state: { type: String, default: "" }, doing: { type: String, required: !0 }, since: { type: String, default: "" }, seen: { type: String, default: "" } },
+  setup(e) {
+    const o = /* @__PURE__ */ new Set(["running", "working", "thinking"]), t = e, l = i(() => o.has(t.state)), a = i(() => [t.doing, t.since, t.seen].filter(Boolean).join(". "));
+    return (g, M) => (n(), N(r(Ae), {
+      as: "button",
+      place: "corner",
+      class: de(["agent-dot", { pulse: l.value }]),
+      "data-state": e.state,
+      "aria-label": a.value,
+      "data-agent-status": "",
+      onClick: M[0] || (M[0] = ae(() => {
+      }, ["stop"]))
+    }, {
+      tip: b(() => [
+        h("b", Ba, c(e.doing), 1),
+        e.since ? (n(), s("span", Ra, c(e.since), 1)) : m("", !0),
+        e.seen ? (n(), s("span", Ia, c(e.seen), 1)) : m("", !0)
+      ]),
+      default: b(() => [
+        M[1] || (M[1] = h("i", null, null, -1))
+      ]),
+      _: 1
+    }, 8, ["class", "data-state", "aria-label"]));
+  }
+}, Va = /* @__PURE__ */ G(Oa, [["__scopeId", "data-v-1a0bc478"]]), za = { started: { words: "started" }, testing: { words: "being tested" }, blocked: { words: "blocked" } }, Ha = (e) => e.filter((o) => o.state !== "cancelled"), De = (e, o) => e.filter((t) => t.state === o).length;
+function Ea({ tasks: e, inHand: o, perHour: t }) {
+  const l = Ha(e), a = De(l, "completed"), g = za[o == null ? void 0 : o.state], M = l.length - a - (o && o.state !== "completed" ? 1 : 0), f = a === l.length;
+  return {
+    number: o.id,
+    title: o.title,
+    plan: o.plan_id ?? 0,
+    count: `${a} of ${l.length}`,
+    taskTip: `${a} of its ${l.length} tasks done${g ? `. This one is ${g.words}.` : "."}`,
+    countTip: f ? `All ${l.length} tasks done` : `${a} done, 1 in hand, ${M} to go`,
+    paceTip: !f && t ? `About ${t} an hour.` : "",
+    rate: !f && t ? `${Math.round(t)}/hour` : "",
+    bar: { total: l.length, done: a, testing: De(l, "testing") }
+  };
+}
+const Na = {
+  key: 0,
+  class: "task-line",
+  "data-agent-task-line": ""
+}, Wa = {
+  key: 0,
+  class: "plan",
+  "data-agent-job-launch": ""
+}, qa = {
+  class: "task-line",
+  "data-agent-task-line": ""
+}, Da = {
+  key: 0,
+  class: "plan",
+  "data-agent-plan": ""
+}, Fa = {
+  key: 1,
+  class: "rate",
+  "data-agent-rate": ""
+}, Ua = { key: 0 }, Pa = {
+  __name: "AgentTaskLine",
+  props: { tasks: { type: Array, default: () => [] }, inHand: { type: Object, default: null }, job: { type: String, default: "" }, jobTitle: { type: String, default: "" }, jobLaunch: { type: String, default: "" }, perHour: { type: Number, default: 0 } },
+  setup(e) {
+    const o = e, t = i(() => o.inHand ? Ea({ tasks: o.tasks, inHand: o.inHand, perHour: o.perHour }) : null);
+    return (l, a) => e.job && !t.value ? (n(), s("span", Na, [
+      p(r(Ae), {
+        as: "button",
+        class: "task",
+        "data-agent-job": ""
+      }, {
+        tip: b(() => [
+          h("b", null, c(e.job), 1)
+        ]),
+        default: b(() => [
+          y(c(e.jobTitle || "Job"), 1)
+        ]),
+        _: 1
+      }),
+      e.jobLaunch ? (n(), s("span", Wa, c(e.jobLaunch), 1)) : m("", !0)
+    ])) : t.value ? (n(), s(U, { key: 1 }, [
+      h("span", qa, [
+        p(r(Ae), {
+          as: "button",
+          class: "task",
+          "data-agent-task": "",
+          "data-peek": `tasks:${t.value.number}`,
+          "aria-label": `Task ${t.value.number}: ${t.value.title}`,
+          onClick: a[0] || (a[0] = ae((g) => r($e)(`tasks:${t.value.number}`), ["stop"]))
+        }, {
+          tip: b(() => [
+            h("b", null, c(t.value.title), 1),
+            h("span", null, c(t.value.taskTip), 1)
+          ]),
+          default: b(() => [
+            y("Task " + c(t.value.number), 1)
+          ]),
+          _: 1
+        }, 8, ["data-peek", "aria-label"]),
+        t.value.plan ? (n(), s("span", Da, "Plan " + c(t.value.plan), 1)) : m("", !0),
+        t.value.rate ? (n(), s("span", Fa, c(t.value.rate), 1)) : m("", !0),
+        p(r(Ae), {
+          class: "count",
+          tabindex: "0",
+          place: "right",
+          "data-agent-count": ""
+        }, {
+          tip: b(() => [
+            h("b", null, c(t.value.countTip), 1),
+            t.value.paceTip ? (n(), s("span", Ua, c(t.value.paceTip), 1)) : m("", !0)
+          ]),
+          default: b(() => [
+            y(c(t.value.count), 1)
+          ]),
+          _: 1
+        })
+      ]),
+      p(r(pt), {
+        class: "bar",
+        "data-agent-bar": "",
+        "aria-hidden": "true",
+        total: t.value.bar.total,
+        done: t.value.bar.done,
+        testing: t.value.bar.testing
+      }, null, 8, ["total", "done", "testing"])
+    ], 64)) : m("", !0);
+  }
+}, Ja = /* @__PURE__ */ G(Pa, [["__scopeId", "data-v-d39df179"]]), Ga = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', Ka = ["data-icon", "stroke-width", "innerHTML"], oe = {
+  __name: "Icon",
+  props: {
+    name: { type: String, default: "dot" },
+    size: { type: Number, default: 0 },
+    facing: { type: String, default: "right" },
+    bold: Boolean
+  },
+  setup(e) {
+    const o = e, t = { right: 0, down: 90, left: 180, up: 270 }, l = {
+      mail: "inbox",
+      circle: "todos",
+      play: "work",
+      flag: "plan",
+      file: "docs",
+      report: "reports",
+      pin: "pins",
+      list: "rules",
+      clock: "reminders",
+      help: "questions",
+      bubble: "inbox",
+      wrench: "tools",
+      brush: "style",
+      band: "rules",
+      smile: "smile",
+      bot: "agents",
+      panel: "activity",
+      x: "close",
+      check: "todos",
+      clip: "paperclip",
+      send: "arrow",
+      more: "dots",
+      chevron: "arrow"
+    }, a = {
+      agent: Ga,
+      time: '<circle cx="8" cy="8" r="5.5"/><path d="M8 4.5V8l2.4 1.5"/>',
+      allowance: '<path d="M3 4.5h10v7H3zM5 6.5h1M10 9.5h1"/><circle cx="8" cy="8" r="1.4"/>',
+      phone: '<rect x="4.5" y="1.5" width="7" height="13" rx="1.6"/><path d="M7 12.2h2"/>',
+      key: '<circle cx="5.5" cy="10.5" r="2.8"/><path d="M7.5 8.5 13 3M10.8 5.2l1.7 1.7M9.2 6.8l1.2 1.2"/>',
+      terminal: '<path d="M2 3.5h12v9H2zM4.8 6.4 6.9 8l-2.1 1.6M8.4 10h3"/>',
+      trash: '<path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/>',
+      chat: '<path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/>',
+      edits: '<path d="M8 3v6M5 6h6M5 12.5h6"/>',
+      gauge: '<path d="M2.6 11.5a5.4 5.4 0 1 1 10.8 0"/><path d="M8 11.5 10.4 7.4"/><circle cx="8" cy="11.5" r=".6" fill="currentColor"/>',
+      hook: '<path d="M8 2v7.6a2.9 2.9 0 1 1-2.9-2.9"/><circle cx="8" cy="2.6" r=".7" fill="currentColor"/>',
+      request: '<path d="M3 5.2h9.4M10 2.9l2.4 2.3L10 7.5"/><path d="M13 10.8H3.6M6 8.5l-2.4 2.3L6 13.1"/>',
+      heart: '<path d="M8 13.2 3.2 8.4a2.9 2.9 0 0 1 4.1-4.1L8 5l.7-.7a2.9 2.9 0 0 1 4.1 4.1z"/>',
+      weight: '<path d="M2.5 13.5h11l-1.6-7.5H4.1zM6 6a2 2 0 1 1 4 0"/>',
+      points: '<path d="M3 13.2V8.6M6.7 13.2V5.4M10.4 13.2V9.8M14 13.2V2.8" stroke-linecap="round"/>',
+      bolt: '<path d="M9.2 2 4.2 8.8h3.6L6.8 14l5-6.8H8.2z"/>',
+      bulb: '<path d="M5.4 9.9a4.3 4.3 0 1 1 5.2 0c-.45.35-.7.85-.7 1.4v.2H6.1v-.2c0-.55-.25-1.05-.7-1.4Z"/><path d="M6.3 13.5h3.4"/>',
+      todos: '<circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/>',
+      task: '<rect x="3.5" y="2.5" width="9" height="11.5" rx="1.4"/><path d="M6.2 2.5V1.6h3.6v.9M5.8 6.4h4.4M5.8 8.9h4.4M5.8 11.4h2.6"/>',
+      pins: '<path d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>',
+      style: '<path d="M5.5 4.5 2.5 8l3 3.5M10.5 4.5l3 3.5-3 3.5M9 3.5l-2 9"/>',
+      warn: '<path d="M8 2.6 14 13H2zM8 6.6v3.2M8 11.6v.1"/>',
+      book: '<path d="M8 4.4c-1.7-1.2-3.8-1.5-6-.9v9c2.2-.6 4.3-.3 6 .9 1.7-1.2 3.8-1.5 6-.9v-9c-2.2-.6-4.3-.3-6 .9Z"/><path d="M8 4.4v9"/>',
+      auto: '<path d="M5 3.4 12.4 8 5 12.6z" fill="currentColor" stroke-width="1"/>',
+      branch: '<circle cx="5" cy="3.6" r="1.6"/><circle cx="5" cy="12.4" r="1.6"/><circle cx="11.6" cy="5.4" r="1.6"/><path d="M5 5.2v5.6M11.6 7v.6a3.6 3.6 0 0 1-3.6 3.6H6.6"/>',
+      scheme: '<circle cx="8" cy="8" r="5.75"/><path d="M8 2.25a5.75 5.75 0 0 1 0 11.5z" fill="currentColor" stroke="none"/>',
+      wide: '<path d="M6.2 2.6H2.6v3.6M9.8 2.6h3.6v3.6M6.2 13.4H2.6V9.8M9.8 13.4h3.6V9.8"/>',
+      narrow: '<path d="M2.6 6.2h3.6V2.6M13.4 6.2H9.8V2.6M2.6 9.8h3.6v3.6M13.4 9.8H9.8v3.6"/>',
+      up: '<path d="M8 12.5V4M4.5 7.5L8 4l3.5 3.5"/>',
+      down: '<path d="M8 3.5V12M4.5 8.5L8 12l3.5-3.5"/>',
+      board: '<rect x="1.8" y="2.5" width="12.4" height="11" rx="2"/><rect x="3.6" y="4.4" width="2.4" height="4" rx=".5" fill="currentColor" stroke="none"/><rect x="3.6" y="9.4" width="2.4" height="2.2" rx=".5" fill="currentColor" stroke="none"/><rect x="6.8" y="4.4" width="2.4" height="5.6" rx=".5" fill="currentColor" stroke="none"/><rect x="10" y="4.4" width="2.4" height="2.4" rx=".5" fill="currentColor" stroke="none"/><rect x="10" y="7.8" width="2.4" height="3.2" rx=".5" fill="currentColor" stroke="none"/>',
+      ticket: '<path d="M2.5 4.5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v1.75a1.75 1.75 0 0 0 0 3.5v1.75a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V9.75a1.75 1.75 0 0 0 0-3.5z"/><path d="M6.5 5v1M6.5 7.5v1M6.5 10v1"/>',
+      download: '<path d="M8 2.5v7.5M5 7l3 3 3-3"/><path d="M3 11v2h10v-2"/>',
+      upload: '<path d="M8 10V2.5M5 5.5l3-3 3 3"/><path d="M3 11v2h10v-2"/>',
+      open: '<path d="M9 3.5h3.5V7"/><path d="M12.5 3.5L7.5 8.5"/><path d="M11 9.5v3H3.5V5h3"/>',
+      sidepanel: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10"/>',
+      columns: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M8 3v10"/>',
+      rows: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M2.5 8h11"/>',
+      tab: '<path d="M2.5 5.5h11V13h-11zM2.5 5.5V3h5v2.5"/>',
+      float: '<rect x="5.5" y="5.5" width="8" height="7.5" rx="1"/><path d="M2.5 10.5V3h8"/>',
+      minimize: '<path d="M4 8h8"/>',
+      chapters: '<path d="M2.5 4h6M2.5 8h11M2.5 12h8"/><path d="M11 2.2v3.6l1.2-.9 1.2.9V2.2"/>',
+      reply: '<path d="M6.5 4.2 3 7.6l3.5 3.4"/><path d="M3.4 7.6h5.4a4 4 0 0 1 4 4v1.2"/>',
+      copy: '<rect x="5.5" y="5.5" width="8" height="8" rx="1.6"/><path d="M10.5 3.8V3.6A1.6 1.6 0 0 0 8.9 2H4.1A1.6 1.6 0 0 0 2.5 3.6v4.8A1.6 1.6 0 0 0 4.1 10h.2"/>',
+      broadcast: '<circle cx="8" cy="8" r="1.3"/><path d="M5.4 5.2a4 4 0 0 0 0 5.6"/><path d="M10.6 5.2a4 4 0 0 1 0 5.6"/><path d="M3.2 2.9a7 7 0 0 0 0 10.2"/><path d="M12.8 2.9a7 7 0 0 1 0 10.2"/>',
+      artboard: '<path d="M5 2.5v11M11 2.5v11M2.5 5h11M2.5 11h11"/>',
+      webpage: '<rect x="2.5" y="3" width="11" height="10" rx="1.6"/><path d="M2.5 5.8h11M5 8.6h6M5 10.6h3.6"/>',
+      pull: '<circle cx="4.5" cy="3.8" r="1.5"/><circle cx="4.5" cy="12.2" r="1.5"/><circle cx="11.5" cy="12.2" r="1.5"/><path d="M4.5 5.3v5.4M11.5 10.7V7.2a2.2 2.2 0 0 0-2.2-2.2H7.4M8.8 3.4 7.2 5l1.6 1.6"/>',
+      window: '<rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/>',
+      dock: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M8 5.5V10M5.8 7.8 8 10l2.2-2.2"/>',
+      restore: '<path d="M3 8a5 5 0 1 0 1.5-3.55"/><path d="M3 2.75V5h2.25"/>',
+      caret: '<path d="M5 6.5l3 3 3-3"/>',
+      share: '<path d="M5.5 6H4.5A1.5 1.5 0 0 0 3 7.5v5A1.5 1.5 0 0 0 4.5 14h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 6h-1"/><path d="M8 9.5V2M5.75 4.25L8 2l2.25 2.25"/>',
+      floppy: '<path d="M3 4.5A1.5 1.5 0 0 1 4.5 3h6.4L13 5.1v6.4a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 11.5z"/><path d="M5.5 3v3h4.5V3"/><rect x="5" y="8.5" width="6" height="4.5" rx="0.6"/>',
+      saveinto: '<path d="M5.5 3H4a1.5 1.5 0 0 0-1.5 1.5v7A1.5 1.5 0 0 0 4 13h8a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 12 3h-1.5"/><path d="M8 1.75v6.5M5.75 6l2.25 2.25L10.25 6"/><path d="M5 10.75h6"/>',
+      tiles: '<rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1"/><rect x="9" y="9" width="4.5" height="4.5" rx="1"/>',
+      palette: '<path d="M8 2.5a5.5 5.5 0 1 0 0 11c.8 0 1.2-.5 1.2-1.1 0-.9-.8-1.2-.8-2 0-.6.5-1 1.1-1h1.6a2.4 2.4 0 0 0 2.4-2.4C13.5 4.6 11.1 2.5 8 2.5z"/><circle cx="5.3" cy="7.2" r=".6"/><circle cx="7.4" cy="5.1" r=".6"/><circle cx="10.2" cy="5.4" r=".6"/>',
+      pause: '<path d="M5.8 4v8M10.2 4v8"/>',
+      stop: '<path d="M4.5 4.5h7v7h-7z"/>',
+      phone: '<rect x="4.5" y="1.5" width="7" height="13" rx="1.6"/><path d="M7 12.2h2"/>',
+      resume: '<path d="M5.5 3.8v8.4L12.2 8z"/>',
+      tick: '<path d="M3.8 8.3l2.6 2.6 5.8-6.1"/>',
+      ring: '<circle cx="8" cy="8" r="5.25" stroke-width="2"/>',
+      checkbox: '<rect x="2.75" y="2.75" width="10.5" height="10.5" rx="2.5"/><path d="M5.4 8.1l1.8 1.8 3.5-3.7"/>',
+      layout: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9 3v10M9 8h4.5"/>',
+      info: '<circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/>',
+      bell: '<path d="M4.5 11V7.5a3.5 3.5 0 0 1 7 0V11l1 1.5h-9z"/><path d="M6.8 13.5a1.3 1.3 0 0 0 2.4 0"/>',
+      activity: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10M11 6h1M11 8.5h1"/>',
+      arrow: '<path d="M3.5 8h9M9 4.5L12.5 8 9 11.5"/>',
+      chevronRight: '<path d="M6 3 11 8 6 13"/>',
+      back: '<path d="M12.5 8h-9M7 4.5L3.5 8 7 11.5"/>',
+      paperclip: '<path d="M10.5 5.5l-4.3 4.3a1.3 1.3 0 0 0 1.8 1.8l4.6-4.6a2.6 2.6 0 0 0-3.7-3.7L4.3 8a3.9 3.9 0 0 0 5.5 5.5l3.7-3.7"/>',
+      crosshair: '<circle cx="8" cy="8" r="4.2"/><path d="M8 1.5v3M8 11.5v3M1.5 8h3M11.5 8h3"/>',
+      camera: '<path d="M2 5.5h2.6l1.2-1.8h4.4l1.2 1.8H14v7.5H2z"/><circle cx="8" cy="9" r="2.3"/>',
+      wheel: '<circle cx="8" cy="8" r="5.6"/><circle cx="8" cy="8" r="1.6"/><path d="M8 2.4v4M8 9.6v4M2.4 8h4M9.6 8h4"/>',
+      model: '<path d="M8 2.2c.5 2.9 2 4.4 4.9 4.9-2.9.5-4.4 2-4.9 4.9-.5-2.9-2-4.4-4.9-4.9 2.9-.5 4.4-2 4.9-4.9z"/><path d="M12.6 10.6c.2 1.1.8 1.7 1.9 1.9-1.1.2-1.7.8-1.9 1.9-.2-1.1-.8-1.7-1.9-1.9 1.1-.2 1.7-.8 1.9-1.9z"/>',
+      agents: '<circle cx="6" cy="5.5" r="2"/><path d="M2.5 13a3.5 3.5 0 0 1 7 0"/><path d="M10.5 3.8a2 2 0 0 1 0 3.4"/><path d="M11.5 9.8a3.5 3.5 0 0 1 2 3.2"/>',
+      reviewer: '<circle cx="7" cy="7" r="4.6"/><path d="M10.4 10.4 14 14"/><path d="M5 7.1l1.4 1.4 2.6-2.8"/>',
+      verifier: '<path d="M8 1.8v1.4"/><path d="M5.5 3.2h5"/><path d="M5 4.6h6v7.4H5z"/><path d="M4.5 13.6h7"/><path d="M8 6.9c.9.9 1.2 1.6 1.2 2.3a1.2 1.2 0 0 1-2.4 0c0-.7.3-1.4 1.2-2.3z"/>',
+      reports: '<path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6.5 8h3M6.5 10.5h3"/>',
+      work: '<circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/>',
+      reminders: '<path d="M13 8a5 5 0 1 1-1.5-3.55"/><path d="M13 2.75V5h-2.25"/><path d="M8 5.5V8l1.75 1.25"/>',
+      pencil: '<path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/>',
+      revisions: '<path d="M5.2 4.4h7v9.8h-7z"/><path d="M3.4 11.8V2.2h6.4"/><path d="M7 7.4h3.4M7 10h3.4"/>',
+      docs: '<path d="M4 1.8h5.5L12.5 5v9.2H4V1.8Z"/><path d="M9.5 1.8V5h3"/>',
+      rules: '<path d="M3 3.5h10M3 8h10M3 12.5h6"/>',
+      folder: '<path d="M2.5 3h4l1.5 1.5h5.5v8.5h-11V3Z"/>',
+      inbox: '<path d="M2 9.5l1.8-6h8.4l1.8 6v3.5H2V9.5Z"/><path d="M2 9.5h3.5l1 1.5h3l1-1.5H14"/>',
+      questions: '<circle cx="8" cy="8" r="5.5"/><path d="M6.4 6.3a1.7 1.7 0 0 1 3.2.7c0 1.2-1.6 1.4-1.6 2.5"/><circle cx="8" cy="11.4" r=".6" fill="currentColor" stroke="none"/>',
+      home: '<path d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/>',
+      close: '<path d="M4 4l8 8M12 4l-8 8"/>',
+      plus: '<path d="M8 3.5v9M3.5 8h9"/>',
+      minus: '<path d="M3.5 8h9"/>',
+      power: '<path d="M8 2v6"/><path d="M4.5 4.2a5 5 0 1 0 7 0"/>',
+      people: '<circle cx="6" cy="5.5" r="2.2"/><path d="M2.2 13c.4-2.2 1.9-3.5 3.8-3.5s3.4 1.3 3.8 3.5"/><circle cx="11.2" cy="6" r="1.8"/><path d="M11 9.6c1.6 0 2.8 1.1 3.1 3"/>',
+      lock: '<rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/>',
+      plug: '<path d="M5.2 2.2v3.2M8.8 2.2v3.2M3.4 5.4h7.2v2.1a3.6 3.6 0 0 1-3.6 3.6 3.6 3.6 0 0 1-3.6-3.6Z"/><path d="M7 11.3v2.5"/>',
+      tools: '<path d="M9.8 2.3a3 3 0 0 0-3.6 3.9L2.5 9.9a1.2 1.2 0 0 0 1.7 1.7l3.7-3.7a3 3 0 0 0 3.9-3.6L10 6 8.6 5.4 8 4l1.8-1.7Z"/>',
+      plan: '<path d="M4 14V2.5M4 3h7.5l-1.5 2.75 1.5 2.75H4"/>',
+      search: '<circle cx="7" cy="7" r="4.25"/><path d="M10.25 10.25L13.5 13.5"/>',
+      settings: '<circle cx="8" cy="8" r="2"/><path d="M8 1.75v1.5M8 12.75v1.5M1.75 8h1.5M12.75 8h1.5M3.6 3.6l1.05 1.05M11.35 11.35l1.05 1.05M3.6 12.4l1.05-1.05M11.35 4.65l1.05-1.05"/>',
+      smile: '<circle cx="8" cy="8" r="5.5"/><path d="M5.8 9.5c1.2 1.2 3.2 1.2 4.4 0M6.2 6.5h.01M9.8 6.5h.01"/>',
+      dots: '<path d="M4 8h.01M8 8h.01M12 8h.01"/>',
+      "dots-vertical": '<circle cx="8" cy="3.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="12.5" r="1.3" fill="currentColor" stroke="none"/>',
+      eye: '<path d="M1.9 8c1.5-2.6 3.5-3.9 6.1-3.9s4.6 1.3 6.1 3.9c-1.5 2.6-3.5 3.9-6.1 3.9S3.4 10.6 1.9 8Z"/><circle cx="8" cy="8" r="1.8"/>',
+      dot: '<circle cx="8" cy="8" r="2.5"/>',
+      start: '<path d="M5.5 3.8v8.4L12 8z" stroke-linejoin="round"/>',
+      family: '<rect x="6" y="1.8" width="4" height="3.4" rx="1"/><rect x="1.8" y="10.8" width="4" height="3.4" rx="1"/><rect x="10.2" y="10.8" width="4" height="3.4" rx="1"/><path d="M8 5.2v2.6M3.8 10.8V9.4q0-1.6 1.6-1.6h5.2q1.6 0 1.6 1.6v1.4"/>',
+      loop: '<path d="M12.6 6.2A4.9 4.9 0 0 0 3.4 6M3.4 9.8a4.9 4.9 0 0 0 9.2.2"/><path d="M12.8 3v3.3H9.5M3.2 13V9.7h3.3"/>'
+    };
+    return (g, M) => (n(), s("svg", {
+      class: "ico",
+      "data-icon": e.name,
+      style: je({
+        ...e.size ? { "--icon-size": `${e.size}px` } : {},
+        ...o.facing === "right" ? {} : { transform: `rotate(${t[o.facing]}deg)` }
+      }),
+      viewBox: "0 0 16 16",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": e.bold ? 2 : 1.4,
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      "aria-hidden": "true",
+      innerHTML: a[l[e.name] || e.name] || a.dot
+    }, null, 12, Ka));
+  }
+}, Za = {
+  key: 0,
+  class: "menu-item-check",
+  "aria-hidden": "true"
+}, Ya = {
+  key: 1,
+  class: "menu-item-text"
+}, Qa = {
+  __name: "MenuItem",
+  props: { on: Boolean, danger: Boolean, checked: { type: Boolean, default: null }, description: { type: String, default: "" } },
+  setup(e) {
+    return (o, t) => (n(), s("button", {
+      type: "button",
+      class: de(["menu-item", { on: e.on, danger: e.danger, described: e.description }])
+    }, [
+      e.checked !== null ? (n(), s("span", Za, c(e.checked ? "✓" : ""), 1)) : m("", !0),
+      e.description ? (n(), s("span", Ya, [
+        h("span", null, [
+          Me(o.$slots, "default", {}, void 0, !0)
+        ]),
+        h("small", null, c(e.description), 1)
+      ])) : Me(o.$slots, "default", {}, void 0, !0, 2)
+    ], 2));
+  }
+}, fe = /* @__PURE__ */ G(Qa, [["__scopeId", "data-v-fec99974"]]), Xa = {}, _a = { class: "menu-label" };
+function en(e, o) {
+  return n(), s("span", _a, [
+    Me(e.$slots, "default", {}, void 0, !0)
+  ]);
+}
+const ye = /* @__PURE__ */ G(Xa, [["render", en], ["__scopeId", "data-v-aa955b3e"]]), tn = {
+  class: "skills-menu",
+  "data-agent-skills-menu": ""
+}, an = {
+  key: 0,
+  class: "skills-none"
+}, nn = {
+  __name: "AgentSkillsMenu",
+  props: { skills: { type: Array, required: !0 } },
+  emits: ["browse"],
+  setup(e, { emit: o }) {
+    const t = e, l = o, a = i(() => t.skills.filter((M) => M.state === "loaded")), g = i(() => t.skills.filter((M) => M.state !== "loaded"));
+    return (M, f) => (n(), s("div", tn, [
+      p(ye, null, {
+        default: b(() => [...f[1] || (f[1] = [
+          y("Read in this conversation", -1)
+        ])]),
+        _: 1
+      }),
+      a.value.length ? m("", !0) : (n(), s("p", an, "None yet. Compacting the conversation empties this list.")),
+      (n(!0), s(U, null, le(a.value, (S) => (n(), s("p", {
+        key: S.id,
+        class: "skill-line",
+        "data-agent-skill-read": ""
+      }, [
+        p(oe, {
+          name: "book",
+          size: 12
+        }),
+        y(c(S.skill), 1)
+      ]))), 128)),
+      g.value.length ? (n(), s(U, { key: 1 }, [
+        p(ye, null, {
+          default: b(() => [...f[2] || (f[2] = [
+            y("Still to read", -1)
+          ])]),
+          _: 1
+        }),
+        (n(!0), s(U, null, le(g.value, (S) => (n(), s("p", {
+          key: S.id,
+          class: "skill-line waiting",
+          "data-agent-skill-waiting": ""
+        }, [
+          p(oe, {
+            name: "book",
+            size: 12
+          }),
+          y(c(S.skill), 1)
+        ]))), 128))
+      ], 64)) : m("", !0),
+      p(fe, {
+        "data-agent-skills-browse": "",
+        onClick: f[0] || (f[0] = (S) => l("browse"))
+      }, {
+        default: b(() => [...f[3] || (f[3] = [
+          y("Browse every skill", -1)
+        ])]),
+        _: 1
+      })
+    ]));
+  }
+}, on = /* @__PURE__ */ G(nn, [["__scopeId", "data-v-be514d47"]]), ln = ["disabled", "title"], sn = { class: "gauge usage" }, rn = {
+  __name: "AllowanceBar",
+  props: { windows: { type: Array, default: () => [] }, disabled: Boolean },
+  emits: ["open"],
+  setup(e, { emit: o }) {
+    const t = e, l = o, a = i(() => t.windows[0] ?? null), g = i(() => a.value && Number.isFinite(a.value.used_percent) ? Math.max(0, Math.min(100, Math.round(a.value.used_percent))) : null), M = i(() => g.value !== null && g.value >= 100), f = i(() => {
+      var R;
+      return (R = a.value) != null && R.reset_epoch_seconds ? new Date(a.value.reset_epoch_seconds * 1e3).toLocaleString() : "";
+    }), S = i(() => M.value ? `At usage limit: the plan's ${a.value.title} allowance is used up${f.value ? `, starts again ${f.value}` : ""}` : `${g.value}% of the plan's ${a.value.title} allowance used${f.value ? `, starts again ${f.value}` : ""}`);
+    return (R, D) => g.value !== null ? (n(), s("button", {
+      key: 0,
+      type: "button",
+      class: "fact",
+      disabled: e.disabled,
+      "data-fact": "usage",
+      title: S.value,
+      onClick: D[0] || (D[0] = (q) => l("open", q.currentTarget))
+    }, [
+      p(oe, {
+        name: "allowance",
+        size: 12
+      }),
+      D[1] || (D[1] = y()),
+      h("span", sn, [
+        h("span", {
+          style: je({ width: `${g.value}%` })
+        }, null, 4)
+      ]),
+      y(" " + c(M.value ? "At usage limit" : `${g.value}%`), 1)
+    ], 8, ln)) : m("", !0);
+  }
+}, dn = /* @__PURE__ */ G(rn, [["__scopeId", "data-v-a36f09dc"]]), un = {
+  __name: "DashboardBadge",
+  props: { text: { type: String, required: !0 }, tone: { type: String, default: "" } },
+  setup(e) {
+    return (o, t) => (n(), s("span", {
+      class: de(["badge", e.tone])
+    }, c(e.text), 3));
+  }
+}, cn = /* @__PURE__ */ G(un, [["__scopeId", "data-v-9e7e1157"]]), gn = (e, o, t) => Math.max(o, Math.min(t, e)), Ke = /* @__PURE__ */ new WeakMap(), vn = (e, o) => Ke.set(e, o);
+function pn(e, o) {
+  for (let t = o; t; t = Ke.get(t) ?? t.parentElement) if (t === e) return !0;
+  return !1;
+}
+function mn(e, o) {
+  const t = (l) => {
+    var g, M;
+    const a = ((g = e.value) == null ? void 0 : g.element) || ((M = e.value) == null ? void 0 : M.$el) || e.value;
+    a && !pn(a, l.target) && o(l);
+  };
+  window.addEventListener("click", t), we(() => window.removeEventListener("click", t));
+}
+const he = 8, hn = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
+  __name: "MenuPanel",
+  props: {
+    anchor: { type: Object, default: null },
+    align: { type: String, default: "auto" },
+    minWidth: { type: Number, default: 0 },
+    maxWidth: { type: Number, default: 0 },
+    maxHeight: { type: Number, default: 0 },
+    gap: { type: Number, default: 4 },
+    height: { type: Number, default: 0 },
+    plain: Boolean
+  },
+  emits: ["close"],
+  setup(e, { expose: o, emit: t }) {
+    const l = e, a = z(null), g = (v) => v ? `${v}px` : void 0, M = i(() => ({
+      minWidth: g(l.minWidth),
+      maxWidth: g(l.maxWidth),
+      maxHeight: g(l.maxHeight),
+      height: g(l.height)
+    })), f = z({ w: 0, h: 0 }), S = z(l.anchor ? l.anchor.getBoundingClientRect() : null), R = () => ({ left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight }), D = (v) => ({
+      left: Math.max(0, v.left),
+      top: Math.max(0, v.top),
+      right: Math.min(window.innerWidth, v.right),
+      bottom: Math.min(window.innerHeight, v.bottom)
+    }), q = (v) => {
+      const I = v.closest(".pane, .float-window");
+      return I ? D(I.getBoundingClientRect()) : R();
+    }, H = (v, I) => `${Math.max(0, v ? Math.min(v, I) : I)}px`;
+    function E(v, I) {
+      return {
+        below: v.bottom - I.bottom - l.gap - he,
+        above: I.top - v.top - l.gap - he,
+        across: v.right - v.left - 2 * he
+      };
+    }
+    function j(v) {
+      const I = q(l.anchor), w = E(I, v);
+      return f.value.w <= w.across && f.value.h <= Math.max(w.below, w.above) ? I : R();
+    }
+    const O = i(() => {
+      if (!S.value) return M.value;
+      const v = S.value, I = j(v), w = E(I, v), { w: x, h: te } = f.value, J = l.align === "auto" ? v.left + v.right > I.left + I.right : l.align === "right", be = gn(J ? v.right - x : v.left, I.left + he, Math.max(I.left + he, I.right - x - he)), k = te > w.below && w.above > w.below ? { bottom: `${window.innerHeight - v.top + l.gap}px`, maxHeight: H(l.maxHeight, w.above) } : { top: `${v.bottom + l.gap}px`, maxHeight: H(l.maxHeight, w.below) };
+      return { ...M.value, ...k, left: `${be}px`, maxWidth: H(l.maxWidth, w.across) };
+    }), W = t, Z = () => [...a.value.querySelectorAll("button:not(:disabled)")];
+    function K(v) {
+      const I = Z(), w = I.indexOf(document.activeElement);
+      I[(w + v + I.length) % I.length].focus();
+    }
+    const Q = { ArrowDown: () => K(1), ArrowUp: () => K(-1), Escape: () => W("close") }, _ = (v) => Q[v.key] && (v.preventDefault(), Q[v.key]()), F = () => a.value && (f.value = { w: a.value.offsetWidth, h: a.value.scrollHeight });
+    let C = 0;
+    const d = new ResizeObserver(() => {
+      cancelAnimationFrame(C), C = requestAnimationFrame(F);
+    });
+    mn(a, (v) => l.anchor && !l.anchor.contains(v.target) && W("close"));
+    const Y = (v, I) => ["top", "left", "right", "bottom"].some((w) => Math.abs(v[w] - I[w]) > 1), B = (v) => v.bottom < 0 || v.top > window.innerHeight;
+    let u = 0;
+    function L() {
+      if (l.anchor) {
+        const v = l.anchor.getBoundingClientRect();
+        if (!l.anchor.isConnected || B(v)) return W("close");
+        Y(v, S.value) && (S.value = v);
+      }
+      u = requestAnimationFrame(L);
+    }
+    return at(() => {
+      l.anchor && a.value && vn(a.value, l.anchor), F(), a.value && d.observe(a.value), !l.plain && Z()[0] && Z()[0].focus(), L();
+    }), we(() => {
+      d.disconnect(), cancelAnimationFrame(u), cancelAnimationFrame(C);
+    }), o({ element: a }), (v, I) => (n(), N(nt, {
+      to: "body",
+      disabled: !e.anchor
+    }, [
+      h("div", ot({
+        ref_key: "panel",
+        ref: a
+      }, v.$attrs, {
+        class: ["menu-panel", { anchored: e.anchor }],
+        style: O.value,
+        onKeydown: _
+      }), [
+        Me(v.$slots, "default", {}, void 0, !0)
+      ], 16)
+    ], 8, ["disabled"]));
+  }
+}), fn = /* @__PURE__ */ G(hn, [["__scopeId", "data-v-3d203970"]]);
+async function bn(e, o, t) {
+  if (!e) return t(o);
+  const { target: l, fields: a } = e, g = Object.fromEntries(Object.keys(a).map((S) => [S, l[S]])), M = () => Object.assign(l, g);
+  Object.assign(l, a);
+  let f = !1;
+  try {
+    const S = await t(o);
+    return f = S.ok, S;
+  } finally {
+    f || M();
+  }
+}
+function kn(e, o, t, { groups: l, programs: a }) {
+  const g = z({}), M = z(""), f = z(!1), S = i(() => !!e.value && !e.value.ended_at), R = i(() => S.value && !!e.value.paused_at);
+  async function D(j, O = null) {
+    M.value = "";
+    const W = await bn(O, j, o);
+    return M.value = W.ok ? "" : W.error, t(), W;
+  }
+  return { groups: l, programs: a, chosen: g, failure: M, asking: f, running: S, paused: R, choose: (j, O) => D(["agent", "control", String(e.value.number), j, O.value], { target: g, fields: { value: { ...g.value, [j]: O.label } } }), stop: () => (f.value = !1, D(["agent", "stop", String(e.value.number)], { target: e.value, fields: { ended_at: (/* @__PURE__ */ new Date()).toISOString() } })), start: (j) => D(["agent", "launch", j.name]) };
+}
+function yn(e) {
+  return e ? `Last compacted ${new Date(e.started_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "medium" })}` : "Not compacted yet";
+}
+const wn = ["disabled", "title"], Mn = ["disabled", "title"], $n = { class: "gauge" }, xn = ["disabled", "title"], Sn = ["disabled"], Cn = ["disabled"], An = {
+  key: 4,
+  class: "fact",
+  "data-fact": "branch",
+  title: "Current branch"
+}, jn = ["title"], Tn = {
+  class: "context-compaction",
+  "data-context-menu-compaction": ""
+}, Ln = {
+  class: "context-meter",
+  "data-context-menu-meter": ""
+}, Bn = { class: "gauge" }, Rn = { class: "context-used" }, In = {
+  key: 0,
+  class: "context-cap",
+  "data-context-menu-cap": ""
+}, On = 75, Vn = {
+  __name: "InformationBar",
+  props: {
+    agent: { type: Object, default: null },
+    card: Boolean,
+    controlGroups: { type: Array, default: () => [] },
+    agentPrograms: { type: Array, default: () => [] },
+    skills: { type: Array, default: () => [] },
+    loading: Boolean,
+    jobs: { type: Number, default: 0 },
+    usage: { type: Object, default: () => ({ agents: [], windows: [] }) },
+    branch: { type: String, default: "" },
+    fitness: { type: Object, default: null },
+    run: { type: Function, default: null }
+  },
+  emits: ["open", "changed", "skills"],
+  setup(e, { emit: o }) {
+    const t = e, l = o, a = kn(Re(t, "agent"), t.run ?? (async () => ({ ok: !1, error: "nothing to ask" })), () => l("changed"), { groups: Re(t, "controlGroups"), programs: Re(t, "agentPrograms") }), g = z(null), M = z(""), f = i(() => a.groups.value.find((C) => C.key === M.value));
+    function S(C, d) {
+      g.value = C.currentTarget, M.value = d;
+    }
+    function R() {
+      g.value = null, M.value = "", a.asking.value = !1;
+    }
+    const D = i(() => t.skills.filter((C) => C.state === "loaded"));
+    function q(C) {
+      S(C, "skills"), l("skills");
+    }
+    const H = (C) => a.groups.value.some((d) => d.key === C), E = i(() => {
+      var C;
+      return a.chosen.value.model ?? ((C = O.value) == null ? void 0 : C.model) ?? "";
+    }), j = i(() => {
+      var C;
+      return a.chosen.value.effort ?? ((C = O.value) == null ? void 0 : C.effort) ?? "";
+    });
+    i(() => !!t.agent && !t.agent.ended_at);
+    const O = i(() => {
+      var C;
+      return ((C = t.usage.agents) == null ? void 0 : C.find((d) => {
+        var Y;
+        return d.id === ((Y = t.agent) == null ? void 0 : Y.id);
+      })) ?? null;
+    }), W = i(() => {
+      var C;
+      return ((C = O.value) == null ? void 0 : C.context_percent) == null ? null : Math.round(O.value.context_percent);
+    }), Z = (C) => `${Math.round(C / 1e3)}k`, K = i(() => {
+      var C;
+      return !!((C = O.value) != null && C.context_limit_tokens);
+    }), Q = i(() => {
+      var C, d;
+      return ((C = O.value) == null ? void 0 : C.context_limit_tokens) || ((d = O.value) == null ? void 0 : d.context_window_tokens) || 0;
+    }), _ = i(() => Q.value ? `${Z(O.value.context_tokens ?? 0)} of ${Z(Q.value)}` : ""), F = i(() => {
+      var C;
+      return (C = O.value) != null && C.cost_dollars ? `$${O.value.cost_dollars.toFixed(2)}` : "";
+    });
+    return (C, d) => {
+      var Y;
+      return n(), s("div", {
+        class: de(["information", { card: e.card }]),
+        "data-information-bar": ""
+      }, [
+        e.agent ? (n(), s(U, { key: 0 }, [
+          h("button", {
+            type: "button",
+            class: "fact lead",
+            disabled: e.card,
+            "data-fact": "agent",
+            title: `Session ${e.agent.session}: stop it`,
+            onClick: d[0] || (d[0] = (B) => S(B, "agent"))
+          }, [
+            p(oe, {
+              name: "agents",
+              size: 12
+            }),
+            y(" " + c(((Y = e.agentPrograms.find((B) => B.name === e.agent.program)) == null ? void 0 : Y.title) || e.agent.program), 1)
+          ], 8, wn),
+          p(dn, {
+            windows: e.usage.windows,
+            disabled: e.card,
+            onOpen: d[1] || (d[1] = (B) => l("open", "usage", B))
+          }, null, 8, ["windows", "disabled"]),
+          W.value !== null ? (n(), s("button", {
+            key: 0,
+            type: "button",
+            class: "fact",
+            disabled: e.card,
+            "data-fact": "context",
+            title: `Context ${W.value}% full: clear or compact it`,
+            onClick: d[2] || (d[2] = (B) => H("context") ? S(B, "context") : l("open", "context", B.currentTarget))
+          }, [
+            p(oe, {
+              name: "gauge",
+              size: 12
+            }),
+            d[14] || (d[14] = y()),
+            h("span", $n, [
+              h("span", {
+                style: je({ width: `${W.value}%` })
+              }, null, 4)
+            ]),
+            y(" " + c(W.value) + "% ", 1)
+          ], 8, Mn)) : m("", !0),
+          E.value ? (n(), s("button", {
+            key: 1,
+            type: "button",
+            class: "fact",
+            disabled: e.card,
+            "data-fact": "model",
+            title: `${E.value}: change the model`,
+            onClick: d[3] || (d[3] = (B) => H("model") ? S(B, "model") : null)
+          }, [
+            p(oe, {
+              name: "model",
+              size: 12
+            }),
+            y(" " + c(E.value), 1)
+          ], 8, xn)) : m("", !0),
+          H("effort") || e.card && j.value ? (n(), s("button", {
+            key: 2,
+            type: "button",
+            class: "fact",
+            disabled: e.card,
+            "data-fact": "effort",
+            title: "Reasoning effort: change it",
+            onClick: d[4] || (d[4] = (B) => S(B, "effort"))
+          }, [
+            p(oe, {
+              name: "bolt",
+              size: 12
+            }),
+            y(" " + c(j.value), 1)
+          ], 8, Sn)) : m("", !0),
+          F.value ? (n(), s("button", {
+            key: 3,
+            type: "button",
+            class: "fact",
+            disabled: e.card,
+            "data-fact": "cost",
+            title: "The predicted API price of this session: open its breakdown",
+            onClick: d[5] || (d[5] = (B) => l("open", "cost", B.currentTarget))
+          }, c(F.value), 9, Cn)) : m("", !0),
+          e.branch ? (n(), s("span", An, [
+            p(oe, {
+              name: "branch",
+              size: 12
+            }),
+            y(" " + c(e.branch), 1)
+          ])) : m("", !0),
+          e.card ? m("", !0) : (n(), s("button", {
+            key: 5,
+            type: "button",
+            class: de(["fact", { none: !e.jobs }]),
+            "data-fact": "jobs",
+            title: "Jobs the agent scheduled for itself",
+            onClick: d[6] || (d[6] = (B) => l("open", "jobs", B.currentTarget))
+          }, [
+            p(oe, {
+              name: "clock",
+              size: 12
+            }),
+            y(" " + c(e.jobs), 1)
+          ], 2)),
+          e.run ? (n(), s("button", {
+            key: 6,
+            type: "button",
+            class: "fact",
+            "data-fact": "skills",
+            title: "View skills read by this agent",
+            onClick: q
+          }, [
+            p(oe, {
+              name: "book",
+              size: 12
+            }),
+            y(" " + c(D.value.length), 1)
+          ])) : m("", !0),
+          e.fitness ? (n(), s(U, { key: 7 }, [
+            h("button", {
+              type: "button",
+              class: de(["fact", "fitness-fact", { low: e.fitness.is_measured && e.fitness.score < On }]),
+              "data-fact": "fitness",
+              title: "View the agent’s performance measures",
+              onClick: d[7] || (d[7] = (B) => l("open", "fitness", B.currentTarget))
+            }, [
+              p(oe, {
+                name: "heart",
+                size: 12
+              }),
+              y(" " + c(e.fitness.is_measured ? e.fitness.score : "–"), 1)
+            ], 2),
+            h("button", {
+              type: "button",
+              class: de(["fact", "load-fact", e.fitness.workload_level]),
+              "data-fact": "load",
+              title: "Compare incoming messages with agent replies",
+              onClick: d[8] || (d[8] = (B) => l("open", "load", B.currentTarget))
+            }, [
+              p(oe, {
+                name: "weight",
+                size: 12
+              }),
+              y(" " + c(e.fitness.workload), 1)
+            ], 2)
+          ], 64)) : m("", !0)
+        ], 64)) : e.run && !e.loading ? (n(), s("button", {
+          key: 1,
+          type: "button",
+          class: "fact lead",
+          "data-agent-start": "",
+          onClick: d[9] || (d[9] = (B) => S(B, "start"))
+        }, [
+          p(oe, {
+            name: "agents",
+            size: 12
+          }),
+          d[15] || (d[15] = y(" Start an agent", -1))
+        ])) : m("", !0),
+        d[21] || (d[21] = h("span", { class: "space" }, null, -1)),
+        r(a).failure.value ? (n(), s("span", {
+          key: 2,
+          class: "fact failure",
+          role: "alert",
+          "data-agent-failure": "",
+          title: r(a).failure.value
+        }, c(r(a).failure.value), 9, jn)) : m("", !0),
+        Me(C.$slots, "default", {}, void 0, !0),
+        g.value ? (n(), N(fn, {
+          key: 3,
+          anchor: g.value,
+          "min-width": 190,
+          onClose: R
+        }, {
+          default: b(() => {
+            var B;
+            return [
+              M.value === "agent" ? (n(), s(U, { key: 0 }, [
+                r(a).asking.value ? (n(), s(U, { key: 0 }, [
+                  p(ye, { "data-agent-stop-ask": "" }, {
+                    default: b(() => [...d[16] || (d[16] = [
+                      y("Stop the agent? It stops what it is doing.", -1)
+                    ])]),
+                    _: 1
+                  }),
+                  p(fe, {
+                    "data-agent-stop-confirm": "",
+                    onClick: d[10] || (d[10] = (u) => (R(), r(a).stop()))
+                  }, {
+                    default: b(() => [...d[17] || (d[17] = [
+                      y("Stop it", -1)
+                    ])]),
+                    _: 1
+                  }),
+                  p(fe, {
+                    onClick: d[11] || (d[11] = (u) => r(a).asking.value = !1)
+                  }, {
+                    default: b(() => [...d[18] || (d[18] = [
+                      y("Keep it running", -1)
+                    ])]),
+                    _: 1
+                  })
+                ], 64)) : (n(), N(fe, {
+                  key: 1,
+                  "data-agent-stop": "",
+                  onClick: d[12] || (d[12] = (u) => r(a).asking.value = !0)
+                }, {
+                  default: b(() => [...d[19] || (d[19] = [
+                    y("Stop", -1)
+                  ])]),
+                  _: 1
+                }))
+              ], 64)) : M.value === "start" ? (n(), s(U, { key: 1 }, [
+                p(ye, null, {
+                  default: b(() => [...d[20] || (d[20] = [
+                    y("Start an agent", -1)
+                  ])]),
+                  _: 1
+                }),
+                (n(!0), s(U, null, le(r(a).programs.value, (u) => (n(), N(fe, {
+                  key: u.name,
+                  "data-agent-program": u.name,
+                  onClick: (L) => (R(), r(a).start(u))
+                }, {
+                  default: b(() => [
+                    y(c(u.title), 1)
+                  ]),
+                  _: 2
+                }, 1032, ["data-agent-program", "onClick"]))), 128))
+              ], 64)) : M.value === "skills" ? (n(), N(on, {
+                key: 2,
+                skills: e.skills,
+                onBrowse: d[13] || (d[13] = (u) => (R(), l("open", "skills", null)))
+              }, null, 8, ["skills"])) : f.value ? (n(), s(U, { key: 3 }, [
+                p(ye, null, {
+                  default: b(() => [
+                    y(c(f.value.label), 1)
+                  ]),
+                  _: 1
+                }),
+                M.value === "context" ? (n(), s(U, { key: 0 }, [
+                  h("p", Tn, c(r(yn)(((B = O.value) == null ? void 0 : B.last_compaction) ?? null)), 1),
+                  h("div", Ln, [
+                    h("span", Bn, [
+                      h("span", {
+                        style: je({ width: `${W.value}%` })
+                      }, null, 4)
+                    ]),
+                    h("span", Rn, c(W.value) + "%", 1)
+                  ]),
+                  _.value ? (n(), s("p", In, [
+                    y(c(_.value) + " ", 1),
+                    K.value ? (n(), N(cn, {
+                      key: 0,
+                      text: "Capped",
+                      tone: "warn"
+                    })) : m("", !0)
+                  ])) : m("", !0)
+                ], 64)) : m("", !0),
+                (n(!0), s(U, null, le(f.value.choices, (u) => (n(), N(fe, {
+                  key: u.value,
+                  "data-agent-choice": u.value,
+                  onClick: (L) => (r(a).choose(f.value.key, u), R())
+                }, {
+                  default: b(() => [
+                    y(c(u.label), 1)
+                  ]),
+                  _: 2
+                }, 1032, ["data-agent-choice", "onClick"]))), 128))
+              ], 64)) : m("", !0)
+            ];
+          }),
+          _: 1
+        }, 8, ["anchor"])) : m("", !0)
+      ], 2);
+    };
+  }
+}, zn = /* @__PURE__ */ G(Vn, [["__scopeId", "data-v-c1e2d220"]]), Hn = ["data-agent-open", "aria-expanded", "role", "tabindex"], En = {
+  class: "agent-title",
+  "data-agent-title": "",
+  "data-agent-motion": ""
+}, Nn = {
+  class: "agent-name",
+  "data-agent-name": "",
+  "data-agent-motion": ""
+}, Wn = {
+  key: 2,
+  class: "agent-time",
+  "data-agent-motion": "",
+  "data-agent-run-time": "",
+  title: "How long this session has run"
+}, qn = { class: "agent-line" }, Dn = {
+  class: "agent-identity",
+  "data-agent-identity": "",
+  "data-agent-motion": ""
+}, Fn = {
+  key: 0,
+  class: "agent-sandbox-off",
+  "data-agent-sandbox-off": ""
+}, Un = {
+  key: 1,
+  class: "agent-first-dispatched",
+  "data-agent-first-dispatched": ""
+}, Pn = {
+  key: 2,
+  class: "agent-last-heard",
+  "data-agent-last-heard": ""
+}, Jn = {
+  __name: "AgentCard",
+  props: { row: { type: Object, required: !0 }, facts: { type: Object, default: null }, progress: { type: Object, default: null }, waitReason: { type: String, default: "" }, open: Boolean },
+  emits: ["toggle"],
+  setup(e, { emit: o }) {
+    const t = /* @__PURE__ */ new Set(["started", "testing", "blocked"]), l = { helper: "Helper", reviewer: "Reviewer", main: "Main agent" }, a = e, g = o, M = Ge(), f = i(() => {
+      var k, re;
+      if ((k = a.facts) != null && k.profile_title) return a.facts.profile_title;
+      if ((re = a.facts) != null && re.profile) return a.facts.profile;
+      const $ = l[a.row.role] || a.row.role;
+      return $.slice(0, 1).toUpperCase() + $.slice(1);
+    }), S = i(() => {
+      var $;
+      return (($ = a.facts) == null ? void 0 : $.tasks) ?? [];
+    }), R = i(() => S.value.filter(($) => $.state === "open")), D = i(() => S.value.find(($) => {
+      var k;
+      return $.id === ((k = a.progress) == null ? void 0 : k.task_id) && $.state === "started";
+    })), q = i(() => D.value || S.value.find(($) => {
+      var k;
+      return $.id === ((k = a.facts) == null ? void 0 : k.task_id);
+    }) || S.value.find(($) => t.has($.state)) || R.value[0] || S.value.at(-1)), H = i(() => {
+      var $, k, re, se, ue, ne;
+      return a.row.role === "helper" ? (($ = a.facts) == null ? void 0 : $.helper_job) || "" : (k = a.facts) != null && k.job_enabled && (((re = D.value) == null ? void 0 : re.title) || ((se = a.facts) == null ? void 0 : se.task_title) || ((ue = R.value[0]) == null ? void 0 : ue.title) || ((ne = S.value.at(-1)) == null ? void 0 : ne.title)) || "";
+    }), E = i(() => `${a.row.role} ${a.row.number}`), j = i(() => {
+      var $, k;
+      return [a.row.program, ($ = a.facts) == null ? void 0 : $.model, (k = a.facts) == null ? void 0 : k.effort, E.value].filter(Boolean).join(" · ");
+    }), O = Le(), W = i(() => mt(a.row.process_started_at || a.row.created_at, M.value)), Z = /* @__PURE__ */ new Set(["open", "started", "testing"]), K = { fresh: "new conversation", resumed: "resumed" }, Q = i(() => {
+      var $, k;
+      return [($ = a.facts) == null ? void 0 : $.helper_job_program, K[(k = a.facts) == null ? void 0 : k.occupant_launch]].filter(Boolean).join(", ");
+    }), _ = i(() => {
+      var $;
+      return ($ = a.facts) == null ? void 0 : $.work_status;
+    }), F = i(() => !!a.row.ended_at && a.row.role !== "main" && S.value.some(($) => Z.has($.state))), C = i(() => {
+      var $, k;
+      return a.row.state === "running" && (($ = a.facts) == null ? void 0 : $.state) === "at usage limit" && !!((k = a.facts) != null && k.usage_limit_ends_at);
+    }), d = ($) => new Date($).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), Y = i(() => a.row.halted_at ? `Stopped at the usage limit since ${d(a.row.halted_at)}, goes on at ${d(a.facts.usage_limit_ends_at)}` : `At usage limit: starts again ${new Date(a.facts.usage_limit_ends_at).toLocaleString()}`), B = i(() => {
+      var $;
+      return a.row.retired_at || a.row.state === "retired" ? "retired" : C.value || _.value || a.waitReason || F.value ? "waiting" : a.row.state === "running" && (($ = a.facts) == null ? void 0 : $.state) || a.row.state;
+    }), u = i(() => {
+      var $;
+      return C.value ? Y.value : _.value ? `Status: ${_.value}` : a.waitReason ? `Waiting: ${a.waitReason}` : B.value === "blocked" ? ($ = a.facts) != null && $.blocked_reason ? `Blocked: ${a.facts.blocked_reason}` : "Blocked" : F.value ? "Stopped with work left" : "";
+    }), L = i(() => {
+      var $;
+      return (($ = a.progress) == null ? void 0 : $.completed_count) ?? S.value.filter((k) => k.state === "completed").length;
+    }), v = i(() => {
+      var $;
+      return ht(L.value, (($ = a.progress) == null ? void 0 : $.started_at) || a.row.created_at, a.progress ? a.progress.finished_at : a.row.ended_at, M.value);
+    }), I = i(() => a.row.role === "main" ? 0 : v.value), w = i(() => !!a.row.retired_at || a.row.state === "retired"), x = i(() => w.value ? "Retired" : B.value === "blocked" || B.value === "waiting" ? u.value || (B.value === "blocked" ? "Blocked" : "Waiting") : a.row.ended_at ? "Idle: its process has stopped" : "Working"), te = i(() => {
+      var k;
+      if (w.value) return a.row.retired_at;
+      const $ = B.value === "blocked" || B.value === "waiting";
+      return a.row.ended_at || $ && ((k = a.facts) == null ? void 0 : k.last_activity) || a.row.process_started_at || a.row.created_at;
+    }), J = i(() => ft(te.value, M.value)), be = i(() => {
+      var $;
+      return bt(($ = a.facts) == null ? void 0 : $.last_activity, M.value);
+    });
+    return ($, k) => {
+      var re, se, ue, ne, ke, pe;
+      return n(), s("div", {
+        class: de(["agent-card", { open: e.open }]),
+        "data-agent-open": e.row.id,
+        "aria-expanded": e.open,
+        role: e.open ? void 0 : "button",
+        tabindex: e.open ? void 0 : 0,
+        onClick: k[3] || (k[3] = (X) => !e.open && g("toggle")),
+        onKeydown: [
+          k[4] || (k[4] = We(ae((X) => !e.open && g("toggle"), ["self", "prevent"]), ["enter"])),
+          k[5] || (k[5] = We(ae((X) => !e.open && g("toggle"), ["self", "prevent"]), ["space"]))
+        ]
+      }, [
+        p(r(kt), {
+          "agent-id": e.row.id,
+          label: f.value,
+          class: "agent-head"
+        }, {
+          default: b(() => {
+            var X;
+            return [
+              e.open ? (n(), s("button", {
+                key: 0,
+                type: "button",
+                class: "agent-back",
+                title: "Back",
+                "aria-label": "Back",
+                onClick: k[0] || (k[0] = ae((Be) => g("toggle"), ["stop"]))
+              }, [
+                p(r(Oe), {
+                  name: "chevronRight",
+                  facing: "left",
+                  size: 14
+                })
+              ])) : m("", !0),
+              h("span", En, c(f.value), 1),
+              h("span", Nn, c(((X = e.facts) == null ? void 0 : X.given_name) || e.row.id), 1),
+              e.open ? m("", !0) : (n(), N(r(Oe), {
+                key: 1,
+                class: "agent-chevron",
+                name: "chevronRight",
+                size: 12
+              })),
+              e.open ? (n(), s("span", Wn, c(W.value), 1)) : m("", !0)
+            ];
+          }),
+          _: 1
+        }, 8, ["agent-id", "label"]),
+        h("span", qn, [
+          h("span", Dn, c(j.value), 1),
+          (re = e.facts) != null && re.sandbox_off ? (n(), s("span", Fn, "sandbox off")) : m("", !0),
+          e.open ? (n(), s("span", Un, [
+            k[6] || (k[6] = y("Started ", -1)),
+            p(r(Te), {
+              at: e.row.created_at
+            }, null, 8, ["at"])
+          ])) : m("", !0),
+          e.open && ((se = e.facts) != null && se.last_activity) ? (n(), s("span", Pn, [
+            k[7] || (k[7] = y("Seen ", -1)),
+            p(r(Te), {
+              at: e.facts.last_activity
+            }, null, 8, ["at"])
+          ])) : m("", !0)
+        ]),
+        e.open ? (n(), N(zn, {
+          key: 0,
+          "agent-programs": r(O).props.programs.rows.value,
+          agent: e.row,
+          branch: (ue = e.progress) == null ? void 0 : ue.branch,
+          usage: { agents: e.facts ? [e.facts] : [], windows: ((ne = e.facts) == null ? void 0 : ne.windows) ?? [] },
+          card: ""
+        }, {
+          default: b(() => [
+            p(La, { row: e.row }, null, 8, ["row"]),
+            p(r(ee), {
+              variant: "ghost",
+              small: "",
+              "data-agent-inspector": "",
+              onClick: k[1] || (k[1] = ae((X) => r($e)(`agents:${e.row.id}`), ["stop"]))
+            }, {
+              default: b(() => [...k[8] || (k[8] = [
+                y("Open inspector", -1)
+              ])]),
+              _: 1
+            }),
+            e.row.role === "helper" && !e.row.ended_at ? (n(), N(r(ee), {
+              key: 0,
+              variant: "ghost",
+              small: "",
+              "data-helper-stop": "",
+              onClick: k[2] || (k[2] = ae((X) => r(O).run(["helper", "stop", String(e.row.number)]), ["stop"]))
+            }, {
+              default: b(() => [...k[9] || (k[9] = [
+                y("Stop", -1)
+              ])]),
+              _: 1
+            })) : m("", !0)
+          ]),
+          _: 1
+        }, 8, ["agent-programs", "agent", "branch", "usage"])) : m("", !0),
+        e.open ? m("", !0) : (n(), N(Ja, {
+          key: 1,
+          tasks: S.value,
+          "in-hand": e.row.role !== "helper" && ((ke = e.facts) != null && ke.job_enabled) && q.value || null,
+          job: e.row.role === "helper" ? H.value : "",
+          "job-title": e.row.role === "helper" && ((pe = e.facts) == null ? void 0 : pe.helper_job_title) || "",
+          "job-launch": e.row.role === "helper" ? Q.value : "",
+          "per-hour": I.value
+        }, null, 8, ["tasks", "in-hand", "job", "job-title", "job-launch", "per-hour"])),
+        p(Va, {
+          state: B.value,
+          doing: x.value,
+          since: J.value,
+          seen: be.value
+        }, null, 8, ["state", "doing", "since", "seen"]),
+        e.open ? (n(), N(oa, {
+          key: 2,
+          row: e.row,
+          facts: e.facts,
+          progress: e.progress,
+          "wait-reason": e.waitReason,
+          tasks: S.value,
+          "stopped-with-work": F.value,
+          open: e.open
+        }, null, 8, ["row", "facts", "progress", "wait-reason", "tasks", "stopped-with-work", "open"])) : m("", !0)
+      ], 42, Hn);
+    };
+  }
+}, Gn = /* @__PURE__ */ G(Jn, [["__scopeId", "data-v-d4b59be2"]]), Kn = {
+  key: 1,
+  class: "agents-upgrade",
+  "data-agents-upgrade": ""
+}, Zn = ["data-agent-row", "data-agent-lingering"], Fe = "journal.agents.filters", Ue = 300 * 1e3, Ce = "cubic-bezier(0.2, 0.9, 0.25, 1)", Yn = {
+  __name: "AgentRows",
+  props: { empty: { type: String, required: !0 }, texts: { type: Object, default: () => ({}) } },
+  setup(e) {
+    const o = e, t = Le(), { rows: l } = t.props.waits, { rows: a } = t.props.progress, { rows: g, failure: M, loaded: f, more: S } = t.props.agents, R = (T) => a.value.find((V) => V.agent_id === T.id) ?? null, D = (T) => {
+      var V;
+      return ((V = l.value.find((A) => A.agent_id === T.id)) == null ? void 0 : V.reason) ?? "";
+    }, q = z("running"), H = z(""), E = JSON.parse(localStorage.getItem(Fe) || '{"roles":[],"profiles":[],"programs":[]}'), j = z(E), O = i(() => t.props.filters.data.value ?? { roles: [], profiles: [], states: [], upgrade_retired: 0 }), { rows: W } = t.props.programs, Z = i(() => j.value.roles.length + j.value.profiles.length + j.value.programs.length), K = (T, V) => {
+      j.value = $t(j.value, T, V);
+    }, Q = () => {
+      j.value = { roles: [], profiles: [], programs: [] };
+    }, _ = (T) => T.slice(0, 1).toUpperCase() + T.slice(1);
+    ce(j, (T) => localStorage.setItem(Fe, JSON.stringify(T)));
+    const F = z(25);
+    function C() {
+      Object.assign(t.state, {
+        "agents.show": q.value,
+        "agents.search": H.value,
+        "agents.limit": String(F.value),
+        "agents.roles": j.value.roles.join(","),
+        "agents.profiles": j.value.profiles.join(","),
+        "agents.programs": j.value.programs.join(",")
+      });
+    }
+    async function d() {
+      return F.value += 25, C(), await t.reload("agents"), !0;
+    }
+    ce([q, H, j], () => {
+      F.value = 25, C(), t.reload("agents");
+    }), C();
+    const Y = (T) => T.facts ?? null, B = g, u = Ge(), L = z([]), v = i(() => new Set(L.value.filter((T) => u.value - T.left < Ue).map((T) => T.row.id))), I = i(() => L.value.filter((T) => v.value.has(T.row.id)).map((T) => T.row)), w = i(() => [...B.value, ...I.value]);
+    let x = "", te = [];
+    async function J(T) {
+      await t.reload(`card.${T.id}`);
+      const V = t.props[`card.${T.id}`].rows.value.find((A) => A.id === T.id);
+      V != null && V.ended_at && !L.value.some((A) => A.row.id === T.id) && (L.value = [...L.value, { row: V, left: Date.now() }]);
+    }
+    ce(g, (T) => {
+      const V = x === `${q.value}|${H.value}|${JSON.stringify(j.value)}` && q.value === "running", A = V ? te.filter((P) => !T.some((ge) => ge.id === P.id)) : [];
+      x = `${q.value}|${H.value}|${JSON.stringify(j.value)}`, te = T, L.value = V ? L.value.filter((P) => u.value - P.left < Ue && !T.some((ge) => ge.id === P.row.id)) : [], A.forEach(J);
+    }, { immediate: !0 });
+    const be = i(() => !!H.value.trim() || Z.value > 0), $ = i(() => o.texts[q.value] ?? { title: o.empty, hint: "" }), k = z(null), re = z(null), se = z(null), ue = z(null), ne = i(() => k.value === null ? null : t.props[`card.${k.value}`].rows.value.find((T) => T.id === k.value) ?? re.value), ke = i(() => ne.value ? [ne.value] : w.value), pe = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches, X = z(!1);
+    let Be = 0;
+    async function Ze(T) {
+      if (X.value) return;
+      X.value = !0, Be = ue.value.scrollTop;
+      const V = se.value.querySelector(`[data-agent-open="${T.id}"]`);
+      if (!pe()) {
+        const ve = [...se.value.querySelectorAll(".agent-row")].filter((ie) => !ie.contains(V));
+        await Promise.all(ve.map((ie) => ie.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, fill: "forwards" }).finished));
+      }
+      const A = [...V.querySelectorAll(".agent-head, .agent-line")], P = [...A, ...V.querySelectorAll("[data-agent-motion]")], ge = P.map((ve) => ve.getBoundingClientRect());
+      if (re.value = T, k.value = T.id, t.reload(`card.${T.id}`), await qe(), !pe()) {
+        const ve = P.map((ie) => ie.getBoundingClientRect());
+        P.forEach((ie, xe) => {
+          const me = A.findIndex((Ne) => Ne !== ie && Ne.contains(ie)), Qe = ge[xe].left - ve[xe].left - (me < 0 ? 0 : ge[me].left - ve[me].left), Xe = ge[xe].top - ve[xe].top - (me < 0 ? 0 : ge[me].top - ve[me].top);
+          ie.animate([{ transform: `translate(${Qe}px, ${Xe}px)` }, { transform: "none" }], { duration: 280, easing: Ce });
+        }), se.value.querySelectorAll(".agent-usage, .agent-more > .agent-command, .agent-tabs, .agent-tab-body").forEach((ie) => {
+          ie.animate([{ opacity: 0, transform: "translateY(6px)" }, { opacity: 1, transform: "none" }], { duration: 240, delay: 60, easing: Ce, fill: "backwards" });
+        });
+      }
+      X.value = !1;
+    }
+    async function He() {
+      if (X.value || !ne.value) return;
+      X.value = !0;
+      const T = se.value.querySelector(`[data-agent-open="${k.value}"]`), V = [...T.children], A = pe() ? [] : V.map((P) => P.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: "forwards" }));
+      await Promise.all(A.map((P) => P.finished)), k.value = null, await qe(), ue.value.scrollTop = Be, A.forEach((P) => P.cancel()), pe() || (T.animate([{ transform: "translateY(-12px)" }, { transform: "none" }], { duration: 280, easing: Ce }), se.value.querySelectorAll(".agent-row").forEach((P) => {
+        P.contains(T) || P.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: Ce });
+      })), X.value = !1;
+    }
+    const Ye = (T) => k.value === T.id ? He() : Ze(T);
+    ce(H, (T) => T.trim() && (k.value = null)), ce(q, () => {
+      k.value = null;
+    });
+    const Ee = (T) => {
+      T.key === "Escape" && He();
+    };
+    return window.addEventListener("keydown", Ee), we(() => window.removeEventListener("keydown", Ee)), (T, V) => (n(), s("div", {
+      ref_key: "agents",
+      ref: se,
+      class: de(["agents", { focused: ne.value, "card-changing": X.value }])
+    }, [
+      ne.value ? m("", !0) : (n(), N(r(yt), {
+        key: 0,
+        modelValue: H.value,
+        "onUpdate:modelValue": V[1] || (V[1] = (A) => H.value = A),
+        placeholder: "Search agents",
+        "menu-count": Z.value,
+        "data-agents-search": ""
+      }, {
+        menu: b(() => [
+          p(r(Ie), null, {
+            default: b(() => [...V[2] || (V[2] = [
+              y("Type", -1)
+            ])]),
+            _: 1
+          }),
+          (n(!0), s(U, null, le(O.value.roles, (A) => (n(), N(r(Se), {
+            key: A,
+            role: "menuitemcheckbox",
+            "aria-checked": j.value.roles.includes(A),
+            checked: j.value.roles.includes(A),
+            "data-filter-role": A,
+            onClick: (P) => K("roles", A)
+          }, {
+            default: b(() => [
+              y(c(_(A)), 1)
+            ]),
+            _: 2
+          }, 1032, ["aria-checked", "checked", "data-filter-role", "onClick"]))), 128)),
+          O.value.profiles.length ? (n(), N(r(Ie), { key: 0 }, {
+            default: b(() => [...V[3] || (V[3] = [
+              y("Profile", -1)
+            ])]),
+            _: 1
+          })) : m("", !0),
+          (n(!0), s(U, null, le(O.value.profiles, (A) => (n(), N(r(Se), {
+            key: A.name,
+            role: "menuitemcheckbox",
+            "aria-checked": j.value.profiles.includes(A.name),
+            checked: j.value.profiles.includes(A.name),
+            "data-filter-profile": A.name,
+            onClick: (P) => K("profiles", A.name)
+          }, {
+            default: b(() => [
+              y(c(A.title), 1)
+            ]),
+            _: 2
+          }, 1032, ["aria-checked", "checked", "data-filter-profile", "onClick"]))), 128)),
+          p(r(Ie), null, {
+            default: b(() => [...V[4] || (V[4] = [
+              y("Program", -1)
+            ])]),
+            _: 1
+          }),
+          (n(!0), s(U, null, le(r(W), (A) => (n(), N(r(Se), {
+            key: A.name,
+            role: "menuitemcheckbox",
+            "aria-checked": j.value.programs.includes(A.name),
+            checked: j.value.programs.includes(A.name),
+            "data-filter-program": A.name,
+            onClick: (P) => K("programs", A.name)
+          }, {
+            default: b(() => [
+              y(c(A.title), 1)
+            ]),
+            _: 2
+          }, 1032, ["aria-checked", "checked", "data-filter-program", "onClick"]))), 128)),
+          Z.value ? (n(), N(r(Se), {
+            key: 1,
+            "data-filter-clear": "",
+            onClick: Q
+          }, {
+            default: b(() => [...V[5] || (V[5] = [
+              y("Clear filters", -1)
+            ])]),
+            _: 1
+          })) : m("", !0)
+        ]),
+        default: b(() => [
+          p(r(wt), {
+            options: O.value.states,
+            value: q.value,
+            onPick: V[0] || (V[0] = (A) => q.value = A)
+          }, null, 8, ["options", "value"])
+        ]),
+        _: 1
+      }, 8, ["modelValue", "menu-count"])),
+      q.value === "retired" && O.value.upgrade_retired ? (n(), s("p", Kn, "Retired during the upgrade: " + c(O.value.upgrade_retired), 1)) : m("", !0),
+      h("div", {
+        ref_key: "list",
+        ref: ue,
+        class: de(["agents-view", { "agents-view-open": ne.value }])
+      }, [
+        r(f) && !r(M) && !ke.value.length && Z.value ? (n(), N(r(Ve), {
+          key: 0,
+          title: "No agents match the filters",
+          "data-filter-empty": ""
+        }, {
+          default: b(() => [
+            p(r(ee), {
+              small: "",
+              "data-empty-clear": "",
+              onClick: Q
+            }, {
+              default: b(() => [...V[6] || (V[6] = [
+                y("Clear filters", -1)
+              ])]),
+              _: 1
+            })
+          ]),
+          _: 1
+        })) : (n(), N(r(Mt), {
+          key: 1,
+          moves: "",
+          "leaves-at-once": X.value,
+          rows: ke.value,
+          failure: r(M),
+          loaded: r(f),
+          more: !ne.value && r(S),
+          older: d,
+          empty: $.value.title,
+          hint: $.value.hint,
+          searching: be.value
+        }, {
+          default: b(({ row: A }) => [
+            h("div", {
+              class: de(["agent-row", { lingering: v.value.has(A.id) && A.id !== k.value }]),
+              "data-agent-row": A.id,
+              "data-agent-lingering": v.value.has(A.id) ? "" : null
+            }, [
+              p(Gn, {
+                row: A,
+                facts: Y(A),
+                progress: R(A),
+                "wait-reason": D(A),
+                open: A.id === k.value,
+                onToggle: (P) => Ye(A)
+              }, null, 8, ["row", "facts", "progress", "wait-reason", "open", "onToggle"])
+            ], 10, Zn)
+          ]),
+          _: 1
+        }, 8, ["leaves-at-once", "rows", "failure", "loaded", "more", "empty", "hint", "searching"]))
+      ], 2)
+    ], 2));
+  }
+}, eo = /* @__PURE__ */ G(Yn, [["__scopeId", "data-v-fceb20c3"]]);
+export {
+  eo as A
+};
