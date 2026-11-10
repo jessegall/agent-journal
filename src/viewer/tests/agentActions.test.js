@@ -118,3 +118,33 @@ test("a retired card offers only its transcript and no composer", async () => {
     expect(element.querySelector("[data-agent-actions]")).toBeNull();
     expect(element.querySelector("textarea")).toBeNull();
 });
+
+test("a stopped agent offers a driver change that runs with its number, the program and the model", async () => {
+    const {element, run} = await actions({...helper, program: "claude"});
+    await pickButton(element, "Change driver");
+    expect(element.textContent).toContain("Starts the next session on this program; the agent keeps its number and memories.");
+    expect(element.querySelector("[data-agent-driver-program]").value).toBe("claude");
+    expect(element.querySelector("[data-agent-confirm-driver]").disabled).toBe(true);
+    typeInto(element.querySelector("[data-agent-driver-program]"), "codex");
+    typeInto(element.querySelector("[data-agent-driver-model]"), "gpt-6.1-sol");
+    await settle();
+    await pickButton(element, "Change the driver");
+    expect(run).toHaveBeenCalledExactlyOnceWith(["agent", "driver", "5", "--program", "codex", "--model", "gpt-6.1-sol"]);
+});
+
+test("a running agent and a retired one offer no driver change", async () => {
+    const running = await actions({...helper, state: "running", ended_at: null});
+    expect(running.element.querySelector("[data-agent-driver]")).toBeNull();
+    const retired = await actions({...helper, state: "retired", retired_at: "2026-11-02T10:00:00Z"});
+    expect(retired.element.querySelector("[data-agent-driver]")).toBeNull();
+});
+
+test("a refused driver change shows the refusal of the command and keeps the form", async () => {
+    const {element} = await actions({...helper, program: "claude"}, vi.fn(async () => ({ok: false, error: "journal-researcher does not allow gpt-6.1-sol"})));
+    await pickButton(element, "Change driver");
+    typeInto(element.querySelector("[data-agent-driver-model]"), "gpt-6.1-sol");
+    await settle();
+    await pickButton(element, "Change the driver");
+    expect(element.querySelector("[role=alert]").textContent).toBe("journal-researcher does not allow gpt-6.1-sol");
+    expect(element.querySelector("[data-agent-driver-form]")).not.toBeNull();
+});

@@ -10,7 +10,7 @@ REPORTED_DOLLARS = {"s-codex": 0.25, "s-claude": 1.5}
 
 def session_costs(reported_dollars: dict[str, float]) -> dict[int, tuple[SessionCost, ...]]:
     files = SimpleNamespace(status=lambda session: SimpleNamespace(cost_dollars=reported_dollars.get(session)))
-    sessions = SimpleNamespace(sessions_by_agent=lambda agent_ids: {agent_id: SESSIONS[agent_id] for agent_id in agent_ids})
+    sessions = SimpleNamespace(agent_histories=lambda agent_ids: {agent_id: SESSIONS[agent_id] for agent_id in agent_ids})
     return AgentSpend(sessions, files).session_costs([AGENT_ID, 9])
 
 

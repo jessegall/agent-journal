@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
 import {Btn, SwitchCase, useWindow} from "@journal/window-kit";
+import AgentDriverForm from "./AgentDriverForm.vue";
 import AgentJobForm from "./AgentJobForm.vue";
 import AgentRetireForm from "./AgentRetireForm.vue";
 
@@ -9,6 +10,8 @@ const view = useWindow();
 const mode = ref("");
 const text = ref("");
 const reason = ref("");
+const program = ref("");
+const model = ref("");
 const task = ref("");
 const tasks = ref([]);
 const taskPage = ref(0);
@@ -75,6 +78,15 @@ async function sendJob() {
     const job = props.row.job_task_flag ? [props.row.job_task_flag, task.value] : [text.value.trim()];
     await run([...props.row.job_command, String(props.row.number), ...job], "Job sent.");
 }
+function openDriver() {
+    choose("driver");
+    program.value = props.row.program || "";
+    model.value = "";
+}
+async function changeDriver() {
+    if (!idle.value || mode.value !== "driver" || !program.value.trim() || !model.value.trim()) return;
+    await run(["agent", "driver", String(props.row.number), "--program", program.value.trim(), "--model", model.value.trim()], "Driver changed.");
+}
 async function retire() {
     if (!idle.value || mode.value !== "retire" || !reason.value.trim()) return;
     await run(["agent", "retire", String(props.row.number), "--reason", reason.value.trim()], "Agent retired permanently.");
@@ -87,12 +99,16 @@ async function retire() {
             <div class="action-buttons">
                 <template v-if="idle">
                     <template v-if="row.job_command?.length"><Btn small data-agent-send-job :disabled="pending || loading || !canSendJob" @click="openJob">Send a job</Btn></template>
+                    <template v-if="row.role !== 'main'"><Btn small data-agent-driver :disabled="pending || loading" @click="openDriver">Change driver</Btn></template>
                     <template v-if="row.role !== 'main'"><Btn small data-agent-retire :disabled="pending || loading" @click="choose('retire')">Retire</Btn></template>
                 </template>
             </div>
             <SwitchCase :value="mode">
                 <template #job>
                     <AgentJobForm v-model:task="task" v-model:text="text" :row="row" :tasks="tasks" :pending="pending" :loading="loading" :more-tasks="moreTasks" :failure="failure" :job-ready="jobReady" @submit="sendJob" @more="readTasks" @cancel="choose('')" />
+                </template>
+                <template #driver>
+                    <AgentDriverForm v-model:program="program" v-model:model="model" :pending="pending" @submit="changeDriver" @cancel="choose('')" />
                 </template>
                 <template #retire>
                     <AgentRetireForm v-model:reason="reason" :pending="pending" @submit="retire" @cancel="choose('')" />

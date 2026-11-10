@@ -14,4 +14,4 @@ class AgentSpend:
 
     def session_costs(self, agent_ids: Sequence[int]) -> dict[int, tuple[SessionCost, ...]]:
         return {agent_id: tuple(SessionCost(session.session, session.program, self.files.status(session.session).cost_dollars or 0.0) for session in sessions)
-                for agent_id, sessions in self.sessions.sessions_by_agent(agent_ids).items()}
+                for agent_id, sessions in self.sessions.agent_histories(agent_ids).items()}
