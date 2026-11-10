@@ -124,7 +124,7 @@ class Story:
         self.fixture_environment, self.fixture_environment_id = name, None
 
     def caller_environment_id(self, actor: Actor | None) -> int | None:
-        if self.fixture_environment is None or (actor is not None and actor.type is ActorType.AGENT):
+        if self.fixture_environment is None or actor is None or actor.type is not ActorType.USER:
             return None
         if self.fixture_environment_id is None:
             self.fixture_environment_id = self.container.get(EnvironmentNames).environment_id(self.fixture_environment)
