@@ -44,7 +44,7 @@ class MessageConversationsSubcommand(ReadSubcommand[tuple[RecentConversation, ..
         latest_messages = self.messages.matching(Minimum("created_at", Timestamp(self.clock.timestamp().value - RECENT).text)).matching(Among("type", CONVERSATION_TYPES))
         rows = {message.id: message for query in (latest_messages.addressed(agent_id), latest_messages.filter(creator_id=agent_id)) for message in query.newest().limited(RECENT_MESSAGES)}
         grouped: dict[str, list[Message]] = {}
-        agent_ids = sorted({other_id for message in rows.values() for other_id in (message.creator_id, message.target_agent_id) if other_id is not None})
+        agent_ids = sorted({row_id for message in rows.values() for row_id in (message.creator_id, message.target_agent_id) if row_id is not None})
         labels = {agent.id: AgentLabel.from_agent(agent).text for agent in self.queries.query(Agent).matching(Among("id", agent_ids)).all_rows()} if agent_ids else {}
         for message in sorted(rows.values(), key=lambda row: row.id):
             grouped.setdefault(self.actor(message, agent_id, labels), []).append(message)
