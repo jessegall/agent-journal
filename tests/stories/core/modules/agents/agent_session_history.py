@@ -3,6 +3,7 @@ import json
 import pytest
 
 from core.modules.agents.migrations.m022_agent_number import AgentNumberMigration
+from core.modules.agents.migrations.m023_agent_sessions import AgentSessionsMigration
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.database.database import Database
 from engine.database.module_migrations import ModuleMigrations
@@ -34,6 +35,23 @@ class WholeNumberMigration(AgentNumberMigration):
     """The number migration under the number the stopped one had."""
 
     number = 9022
+
+
+class StoppedSessionsMigration(AgentSessionsMigration):
+    """The history migration with a last statement that fails."""
+
+    number = 9023
+    statements = [*AgentSessionsMigration.statements, "UPDATE a_table_that_is_missing SET number = 1"]
+
+
+class WholeSessionsMigration(AgentSessionsMigration):
+    """The history migration under the number the stopped one had."""
+
+    number = 9023
+
+
+def session_row_count(story) -> int:
+    return story.container.get(Database).rows(Statement("SELECT COUNT(*) AS session_rows FROM agent_sessions"))[0]["session_rows"]
 
 
 def sessions_of(story, agent_id: int) -> str:
@@ -137,3 +155,15 @@ def test_the_number_migration_stopped_half_way_rolls_back_and_a_second_run_finis
     story.expect_rows(agent_rows(story) == rows)
     story.expect_rows(schema.migrate([ModuleMigrations(STORY_MODULE, [WholeNumberMigration()])]) == [f"{STORY_MODULE} {WholeNumberMigration.number}"])
     story.expect_rows(story.container.get(Database).rows(Statement("SELECT COUNT(*) AS unnumbered FROM agents WHERE number IS NULL"))[0]["unnumbered"] == 0)
+
+
+def test_the_history_migration_stopped_half_way_rolls_back_and_a_second_run_gives_every_agent_its_row(new_story):
+    story = new_story(fixture=AgentsWithoutNumbers)
+    agents = len(agent_rows(story))
+    story.container.get(Database).update(Statement("DELETE FROM agent_sessions"))
+    schema = story.container.get(Schema)
+    with pytest.raises(Exception, match="a_table_that_is_missing"):
+        schema.migrate([ModuleMigrations(STORY_MODULE, [StoppedSessionsMigration()])])
+    story.expect_rows(session_row_count(story) == 0)
+    schema.migrate([ModuleMigrations(STORY_MODULE, [WholeSessionsMigration()])])
+    story.expect_rows(session_row_count(story) == agents, detail=str(agents))

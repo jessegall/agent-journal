@@ -15,6 +15,7 @@ class AgentSessionsMigration(Migration):
         " program_model TEXT NOT NULL DEFAULT '', started_at TEXT NOT NULL, ended_at TEXT, end_reason TEXT NOT NULL DEFAULT ''," + COMMON,
         "CREATE UNIQUE INDEX IF NOT EXISTS agent_sessions_session ON agent_sessions (session)",
         "CREATE INDEX IF NOT EXISTS agent_sessions_agent_started_at ON agent_sessions (session_agent_id, started_at)",
+        "CREATE INDEX IF NOT EXISTS agent_sessions_environment ON agent_sessions (environment_id, id)",
         "INSERT INTO agent_sessions (session_agent_id, environment_id, session, program, program_model, started_at, ended_at, end_reason, created_at, updated_at)"
         " SELECT id, environment_id, session, program, program_model, created_at, ended_at, CASE WHEN ended_at IS NULL THEN '' ELSE 'unknown' END, created_at, updated_at"
         " FROM agents WHERE NOT EXISTS (SELECT 1 FROM agent_sessions WHERE agent_sessions.session_agent_id = agents.id)",
