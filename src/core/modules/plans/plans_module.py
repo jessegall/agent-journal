@@ -3,6 +3,7 @@ from engine.module.model_declaration import ALL_SUBCOMMANDS
 from core.modules.plans.migrations.m008_plan_context_reads import PlanContextReadsMigration
 from core.modules.plans.migrations.m009_plan_waits import PlanWaitsMigration
 from core.modules.plans.models.plan_wait import PlanWait
+from core.modules.plans.support.plan_button_slots import WAITING_PLAN_SLOTS
 from core.modules.plans.commands.wait_plan.wait_plan_handler import WaitPlanHandler
 from core.modules.plans.commands.wait_plan.wait_plan_subcommand import WaitPlanSubcommand
 from core.modules.plans.listeners.plan_wait_listener import PlanWaitListener
@@ -124,7 +125,7 @@ class PlansModule(Module):
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule, PlanContextRule]
     docks = PLAN_DOCKS
     window_extensions = [WindowExtension("messages.chat", reads=["agent running"])]
-    buttons = [ButtonDeclaration("plans.approve", tuple(["row.plan"]), "Approve", "plan approve {row_id}",
+    buttons = [ButtonDeclaration("plans.approve", WAITING_PLAN_SLOTS, "Approve", "plan approve {row_id}",
                                  icon="check", primary=True, condition=ButtonCondition("state", tuple(["ready"])),
                                  tip="Approve the plan; the agent starts it", menu_label="Other ways to approve",
                                  menu=tuple([ButtonMenuItem("Approve with a message", "plan approve {row_id} --message={message}",

@@ -1,4 +1,5 @@
 from engine.module.module import Module
+from core.modules.plans.support.plan_button_slots import WAITING_PLAN_SLOTS
 from engine.skill.skill_declaration import SkillDeclaration
 from engine.viewer.button_declaration import ButtonCondition, ButtonDeclaration, Choice, ChoiceField, TemplateField, TextField
 from engine.viewer.skeleton_part import SkeletonPart
@@ -27,7 +28,7 @@ class PlanReviewsModule(Module):
     added_states = tuple([REVIEW_STATE])
     listeners = [CritiqueReportListener]
     subcommands = [PlanRoundsSubcommand, PlanReviewTipSubcommand]
-    buttons = [ButtonDeclaration("plan_reviews.critique", tuple(["row.plan"]), "Critique",
+    buttons = [ButtonDeclaration("plan_reviews.critique", WAITING_PLAN_SLOTS, "Ask for critique",
                                  "template send {template} --on=plan:{row_id} --set=agents={agents} --set=size={size}", icon="review",
                                  condition=ButtonCondition("state", tuple(["ready"])), tip="Reviewers read it before you approve",
                                  fields=(ChoiceField("agents", "How many agents", tuple(Choice("one agent" if count == 1 else f"{count} agents", str(count)) for count in range(1, 6)), "2 agents"),

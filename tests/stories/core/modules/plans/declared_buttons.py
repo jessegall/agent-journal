@@ -12,8 +12,8 @@ def test_approval_and_critique_have_separate_module_owners(new_story):
     critique = buttons["plan_reviews.critique"].declaration
     expect_row(approve, label="Approve", runs="plan approve {row_id}", icon="check", primary=True,
                tip="Approve the plan; the agent starts it", menu_label="Other ways to approve")
-    expect_row(critique, label="Critique", tip="Reviewers read it before you approve")
-    story.expect_rows(set(approve.slots) == {"row.plan"}, set(critique.slots) == {"row.plan"})
+    expect_row(critique, label="Ask for critique", tip="Reviewers read it before you approve")
+    story.expect_rows(set(approve.slots) == {"dock.plans.waiting", "row.plan"}, set(critique.slots) == {"dock.plans.waiting", "row.plan"})
 
 
 def test_template_choices_keep_every_agent_count_and_size(new_story):
@@ -29,6 +29,6 @@ def test_the_critique_and_end_review_buttons_sit_on_the_plan_inspector_for_their
     story = new_story(fixture=ReadyApprovalPlan)
     buttons = {entry.declaration.name: entry.declaration for entry in story.container.get(Registry).buttons}
     critique, end_review = buttons["plan_reviews.critique"], buttons["plan_reviews.end-review"]
-    story.expect_rows(critique.slots == tuple(["row.plan"]), tuple(critique.condition.values) == tuple(["ready"]),
+    story.expect_rows("row.plan" in critique.slots, tuple(critique.condition.values) == tuple(["ready"]),
                       end_review.slots == tuple(["row.plan"]), tuple(end_review.condition.values) == tuple(["reviewing"]))
     story.expect_text("plan show 1", "state: ready")

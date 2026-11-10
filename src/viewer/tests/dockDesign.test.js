@@ -124,3 +124,13 @@ test("a collapsed card keeps the pin and the card elsewhere still expands it", a
     host.querySelector(".dock-title").click();
     expect(told).toEqual(["expand"]);
 });
+
+test("a collapsed card keeps its worded buttons in the footer, and pressing one does not expand the card", async () => {
+    const told = [];
+    const host = await draw({buttons: [{label: "Accept", runs: "approval accept {row_id}"}]}, {}, true, true, {onOpen: () => told.push("expand")});
+    const button = host.querySelector(".chat-dock-foot .dock-acts button");
+    expect(button.textContent.trim()).toBe("Accept");
+    button.click();
+    await settle();
+    expect(told).toEqual([]);
+});

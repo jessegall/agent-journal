@@ -41,17 +41,17 @@ try {
     const card = page.locator('.chat-dock-card[aria-label^="Tax rules"]');
     await card.getByRole("button", {name: "Approve", exact: true}).waitFor();
     assert.equal(await card.getByRole("button", {name: "Approve", exact: true}).count(), 1);
-    assert.equal(await card.getByRole("button", {name: "Critique", exact: true}).count(), 1);
+    assert.equal(await card.getByRole("button", {name: "Ask for critique", exact: true}).count(), 1);
     await page.evaluate((id) => { location.hash = `#?open=plans:${id}`; }, plan.id);
     const panel = page.locator("[data-plan-inspector]");
     await panel.getByRole("button", {name: "Approve", exact: true}).waitFor();
     assert.equal(await panel.getByRole("button", {name: "Approve", exact: true}).count(), 1);
-    assert.equal(await panel.getByRole("button", {name: "Critique", exact: true}).count(), 1);
+    assert.equal(await panel.getByRole("button", {name: "Ask for critique", exact: true}).count(), 1);
     await panel.locator("[data-resource-close]").click();
     await panel.waitFor({state: "hidden"});
 
     console.log("Asking for a critique from the demo plan card");
-    await card.getByRole("button", {name: "Critique", exact: true}).click();
+    await card.getByRole("button", {name: "Ask for critique", exact: true}).click();
     const form = page.locator("[data-button-form]");
     await form.getByRole("radio", {name: /Find what is missing/}).click();
     await form.getByRole("button", {name: "Send", exact: true}).click();
