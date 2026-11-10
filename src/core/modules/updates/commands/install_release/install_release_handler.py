@@ -34,8 +34,9 @@ class InstallReleaseHandler(Handler[InstallRelease, ReleaseInstall]):
         install = self.repository.save(ReleaseInstall(creator_id=context.actor.id, checksum=release.checksum,
                                                       tag=release.tag, code_version=tag), context)
         handover = CodeHandover(self.home, ReleaseInstallSteps(self.home, install.id))
-        if not handover.server_pid():
+        running_pid = handover.server_pid()
+        if not running_pid:
             handover.request_takeover(tag, "")
             return self.bus.dispatch(RecordReleaseInstall(install.id, UpdateStep.FINISHED), context)
-        handover.begin_version(tag)
+        handover.begin_version(tag, running_pid)
         return install

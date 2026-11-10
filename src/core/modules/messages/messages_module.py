@@ -121,7 +121,7 @@ class MessagesModule(Module):
     settings = MESSAGE_SETTINGS
     requires_core = ">=5,<6"
     block_conditions = [MessagesRead, MessagesAnswered]
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.pins", "journal.core.drivers", "journal.core.dumps"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.pins", "journal.core.drivers", "journal.core.dumps", "journal.core.settings", "journal.core.schedules"]
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"]), ModelDeclaration(MessageWorkSource, excluded_subcommands=ALL_SUBCOMMANDS)]
     bindings = {EnvironmentActivity: MessageEnvironmentActivity}
     moves = [MessagesMove]
@@ -151,9 +151,9 @@ class MessagesModule(Module):
                                  options=[ChoiceOption("figure", "Figure", [("voice", "The voice I chose"), ("none", "None"), ("butler", "Butler"), ("homie", "Homie"), ("coach", "Coach"), ("colleague", "Colleague"), ("squire", "Squire")], "voice"),
                                           ToggleOption("floors", "Show floors")])]
     marks = MESSAGE_MARKS
-    skills = [SkillDeclaration("journal-flowcharts", "Draw a flowchart in the chat, and know when one fits; load it when the user asks for a flowchart or a diagram, or a process with branches is easier to see than to read.",
+    skills = [SkillDeclaration("journal-flowcharts", "Draw a flowchart in the chat and know when one fits; read it when the user asks for a flowchart or a diagram, or a process with branches is easier to see than to read",
                                keywords=("flowchart", "flow chart", "diagram")),
-              SkillDeclaration("journal-messages", "Read and answer the user's messages and ask the user questions; read it before the first message command of a session.",
+              SkillDeclaration("journal-messages", "Read and answer the user's messages and ask the user questions; read it before the first message command of a session",
                                keywords=("message", "reply", "question"), commands=("message", "question"))]
     listeners = [ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, AllowedStopListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener]
     seeders = [MessagesSeeder]

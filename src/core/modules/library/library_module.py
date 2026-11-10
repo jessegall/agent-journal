@@ -74,7 +74,7 @@ class LibraryModule(Module):
     requires_core = ">=5,<6"
     seed_reason = "it keeps only what a connected server gave it"
     move_reason = "version 4's team rows are not carried over"
-    dependencies = ["journal.core.actors", "journal.core.settings", "journal.core.documents", "journal.core.secrets"]
+    dependencies = ["journal.core.actors", "journal.core.settings", "journal.core.documents", "journal.core.secrets", "journal.core.agents"]
     settings = [SettingValue("address", "Shared server address", "The IP address or URL of your team's shared server, such as 10.0.0.5 or https://library.example.com.",
                              SettingType.TEXT, default="", scope=SettingScope.PROJECT),
                 SettingValue("agent-edits-wait", "Agent edits wait for a person", "An agent's edit of an item that follows the library stays on this journal until a person sends it.",
@@ -91,7 +91,7 @@ class LibraryModule(Module):
                    RevokeLibraryTokenSubcommand,
                    MakeLibraryCopySubcommand, SendLibraryItemSubcommand, LeaveLibraryCopySubcommand, LibraryCopiesSubcommand, RunLibrarySyncSubcommand, ChooseLibraryVersionSubcommand, RemoveLibraryItemSubcommand, RestoreLibraryItemSubcommand]
     tick_handlers = [TickHandler(TickInterval(seconds=10), LibrarySyncTick(), "library sync")]
-    skills = [SkillDeclaration("journal-library", "Find, read, get and share a team's documents, sequences and checks; read it when a shared item is needed",
+    skills = [SkillDeclaration("journal-library", "Use the library to find, read, get and share a team's documents, sequences and checks; read it when a shared item is needed",
                                keywords=("library", "team", "shared"), commands=["library"])]
     windows = [WindowDeclaration("library.teams", "Teams", "teams.js", WindowLoading.COMPONENT, skeleton=LIBRARY_TEAMS_SKELETON, search=WindowReadSearch("library list", "Search the library", ("title", "abstract")),
                                  place=WindowPlace.PAGE, group="project", icon=WindowIcon.SHARE, reads=["library status", "library list", "library browse", "library inspect", "library show", "library copies", "library-user list", "library-user tokens"],

@@ -11,7 +11,7 @@ from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_program import AgentProgram
 from core.base.tasks.clear_delegated_tasks import ClearDelegatedTasks
-from core.modules.drivers.support.suite_choice import SuiteChoice
+from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy
 
 
 
@@ -21,7 +21,7 @@ class StopAgentHandler(Handler[StopAgent, Agent]):
 
     command = StopAgent
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, program: AgentProgram, suites: SuiteChoice) -> None:
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, program: AgentProgram, suites: CurrentAgentPolicy) -> None:
         self.queries, self.repository, self.bus, self.program = queries, repository, bus, program
         self.suites = suites
 

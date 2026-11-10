@@ -83,7 +83,7 @@ class MemoriesModule(Module):
     settings = MEMORY_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.settings", "journal.core.chat", "journal.core.docking",
                     "journal.core.drivers", "journal.core.documents"]
-    skills = [SkillDeclaration("journal-memory", "Keep what is important outside the context window with weighted memories; read it before the first memory command of a session, or when the context reaches a mark", keywords=("memory", "memories", "remember"), commands=["memory"])]
+    skills = [SkillDeclaration("journal-memory", "Keep what matters beyond the context window with weighted memories; read it before the first memory command of a session, or when the context reaches a mark", keywords=("memory", "memories", "remember"), commands=["memory"])]
     models = [ModelDeclaration(Memory, commands=[RemoveMemory], excluded_subcommands=["make", "list"]), ModelDeclaration(MemoryKeyword),
               ModelDeclaration(MemoryDelivery, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(MemoryMark, excluded_subcommands=["make", "edit", "delete", "weigh", "skip"])]

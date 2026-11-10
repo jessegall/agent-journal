@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from collections.abc import Mapping
 
 from core.base.model.view_model import ViewModel
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.support.views import HOOK_CALL_ROWS_SELECT
 
 

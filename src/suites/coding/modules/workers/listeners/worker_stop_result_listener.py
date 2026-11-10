@@ -4,7 +4,7 @@ from core.base.listener.save_listener import SaveListener
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_refusals import WorkerRefusals
 from core.modules.drivers.events.stop_allowed import StopAllowed

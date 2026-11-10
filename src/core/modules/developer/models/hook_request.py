@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from core.base.type_guards import is_mapping
 from core.base.model.view_model import ViewModel
 from core.modules.developer.models.support.views import HOOK_REQUEST_ROWS_SELECT
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 
 
 @dataclass(frozen=True, kw_only=True)

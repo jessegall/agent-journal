@@ -16,7 +16,7 @@ from core.base.query.conditions.minimum import Minimum
 from core.base.query.conditions.equal import Equal
 from core.base.query.query import Query
 from core.modules.drivers.models.support.views import tool_use_counts_select
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.base.driver.search_category import CODE, GRAPHIFY
 

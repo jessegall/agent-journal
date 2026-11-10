@@ -12,7 +12,7 @@ from core.base.refusal_log import RefusalLog
 from core.base.registry.registry import Registry
 from core.modules.drivers.commands.skip_refusal.skip_refusal import SkipRefusal
 from core.modules.drivers.commands.use_refusal_skip.use_refusal_skip import UseRefusalSkip
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.models.refusal_skip import RefusalSkip
 

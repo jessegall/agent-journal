@@ -1,6 +1,6 @@
 ---
 name: journal-functional-design
-description: How a functional designer writes a design document: user stories, code examples and the phases in order; read it before you write one
+description: Write a functional design of user stories, code examples and the phases in order; read it before you write one
 ---
 
 # Writing a functional design

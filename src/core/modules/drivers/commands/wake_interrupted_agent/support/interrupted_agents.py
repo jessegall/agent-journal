@@ -6,7 +6,7 @@ from core.modules.agents.commands.record_agent_interrupt.record_agent_interrupt 
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.drivers.commands.wake_interrupted_agent.wake_interrupted_agent import WakeInterruptedAgent
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 
 IDLE_SECONDS = 30

@@ -113,7 +113,7 @@ class PluginsModule(Module):
     seed_reason = "a plugin is a program the person installs, which a demo has none of"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.chat", "journal.core.skills",
-                    "journal.core.processes"]
+                    "journal.core.processes", "journal.core.agents", "journal.core.messages"]
     skills = [SkillDeclaration("journal-plugins", "See what plugins do, install and upgrade them or propose one to the user; read it before the first plugin command of a session", keywords=("plugin", "plugins"), commands=["plugin"])]
     models = [ModelDeclaration(Plugin, query=PluginQuery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PluginSetting, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(PluginDelivery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PluginOutput, excluded_subcommands=ALL_SUBCOMMANDS),

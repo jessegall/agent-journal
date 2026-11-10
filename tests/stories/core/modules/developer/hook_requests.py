@@ -1,6 +1,6 @@
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from datetime import timedelta
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from core.testing.expect_row import expect_row

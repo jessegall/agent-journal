@@ -1,6 +1,6 @@
 ---
 name: journal-plan-dispatch
-description: How the main agent gets a plan made: it dispatches a functional designer and then a planner; read it when the user asks for a plan
+description: Send a functional designer and then a planner to make the plan; read it when the user asks for a plan
 ---
 
 # Getting a plan made

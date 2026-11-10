@@ -16,7 +16,7 @@ from core.base.log_level import LogLevel
 from core.base.log_source import LogSource
 from core.base.system_log_writer import SystemLogWriter
 from core.modules.developer.support.hook_request_log import HookRequestLog
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING, HOOK_REQUEST_LOG_SIZE_SETTING
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from server.request_log_entry import RequestLogEntry

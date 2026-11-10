@@ -25,7 +25,7 @@ class RemindersModule(Module):
     seed_reason = "a reminder speaks at a time the demo does not reach"
     move_reason = "version 4's reminders move with the memories"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.memories"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.memories", "journal.core.chat"]
     models = [ModelDeclaration(Reminder, excluded_subcommands=["make", "edit"])]
     migrations = [OpenReminderIndexMigration, RemindersTableMigration]
     handlers = [MakeReminderHandler, RecordReminderFiredHandler]
