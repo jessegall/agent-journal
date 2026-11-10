@@ -8,7 +8,7 @@ from pathlib import Path
 from engine.journal.journal_home import JournalHome
 from tests.unit.core.base.module.test_module_sync import ITEMS, synced
 
-ROOT = Path(__file__).resolve().parents[5]
+ROOT = Path(__file__).resolve().parents[4]
 STARTUP_LIMIT_SECONDS = 3.0
 TIMEOUT_SECONDS = 30
 SCRIPT = "import sys; from core.journal import main; sys.exit(main(sys.argv[1:]))"
