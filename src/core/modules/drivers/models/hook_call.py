@@ -16,6 +16,7 @@ from engine.enums.hook_answer import HookAnswer
 
 COMPACTION = "compact"
 SESSION_START = "session_start"
+PROGRAM_SESSION = "program_session"
 PROMPT = "prompt"
 SUMMARY_CHARACTERS = 200
 DISPLAYED_TEXT = "displayed"
@@ -102,6 +103,10 @@ class HookCall(EnvironmentScoped, Model):
     @property
     def folder(self) -> str:
         return self.driver_text("folder")
+
+    @property
+    def program_session(self) -> str:
+        return self.driver_text(PROGRAM_SESSION)
 
     def driver_text(self, key: str) -> str:
         value = self.metadata.module_part(DRIVERS_MODULE).get(key, "")

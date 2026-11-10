@@ -35,7 +35,7 @@ from core.modules.drivers.commands.support.rule_history_writer import RuleHistor
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from engine.enums.hook_answer import HookAnswer
-from core.modules.drivers.models.hook_call import DISPLAYED_MESSAGE_ID, DISPLAYED_PART, DISPLAYED_TEXT, MONITOR_DESCRIPTION, SUMMARY_CHARACTERS, HookCall
+from core.modules.drivers.models.hook_call import DISPLAYED_MESSAGE_ID, DISPLAYED_PART, DISPLAYED_TEXT, MONITOR_DESCRIPTION, PROGRAM_SESSION, SUMMARY_CHARACTERS, HookCall
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from engine.driver.nudger import Nudger
 from engine.driver.search_category import SearchCategory
@@ -86,6 +86,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             percent = self.share.percent(command.event.program, command.event.session)
             if percent is not None:
                 metadata["context_percent"] = percent
+        metadata[PROGRAM_SESSION] = command.event.session
         displayed_text = self.hook_calls.displayed_block(agent.id, command.event)
         if displayed_text:
             metadata[DISPLAYED_TEXT] = displayed_text
