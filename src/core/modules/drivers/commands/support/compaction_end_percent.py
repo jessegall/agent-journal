@@ -5,6 +5,7 @@ from engine.row.metadata import Metadata
 from engine.module.driver_entries import DRIVERS_MODULE
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
+from core.modules.drivers.models.enums.compaction_reason import CompactionReason
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.context_compactions import ContextCompactions
 from core.modules.drivers.support.current_context_window import COMPACTION_ENDED_AT, CurrentContextWindow
@@ -29,8 +30,10 @@ class CompactionEndPercent:
             self.mark_ended(agent, context)
             return
         if event.event == HookEventName.COMPACT:
-            self.compactions.record_start(agent.id, context)
+            self.compactions.record_start(agent.id, CompactionReason.TERMINAL_PERSON if event.is_manual_compaction else CompactionReason.AUTO, context)
             return
+        if event.event in (HookEventName.SESSION_START, HookEventName.SESSION_END):
+            self.compactions.abandon_open(agent.id, context)
         if not agent.metadata.module_part(DRIVERS_MODULE).get(COMPACTION_PENDING):
             return
         tokens = self.current_window.window(agent).total_input_tokens

@@ -15,7 +15,9 @@ class ContextCompactions:
     """The compactions and clears of agents' contexts, one row each. It is the one place that records a request,
     and it refuses a second one while the first is open: started, or requested less than the retry time ago. A
     request whose line never started by then is given up, and the next request takes its place. The hooks move
-    the newest row as the program starts and ends the compaction."""
+    the newest row as the program starts and ends the compaction; a compaction the journal did not ask for
+    gets its row at its first hook, and a row still open when the program's session ends or starts anew is
+    given up."""
 
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository
@@ -35,20 +37,27 @@ class ContextCompactions:
         newest = self.newest(agent_id)
         if newest is not None and newest.blocks_request_at(context.timestamp):
             raise Refusal(newest.refusal_text(), "wait for it to end before asking again")
-        unstarted = self.open_compaction(agent_id)
-        if unstarted is not None:
-            self.repository.save(replace(unstarted, state=CompactionState.ABANDONED), context)
+        self.abandon_open(agent_id, context)
         return self.repository.save(ContextCompaction(session_agent_id=agent_id, change=change, reason=reason, line=line, request_tokens=request_tokens), context)
 
-    def record_start(self, agent_id: int, context: Context) -> None:
-        newest = self.newest(agent_id)
-        if newest is not None and newest.state is CompactionState.REQUESTED:
-            self.repository.save(replace(newest, state=CompactionState.STARTED, started_at=context.timestamp), context)
+    def record_start(self, agent_id: int, reason: CompactionReason, context: Context) -> None:
+        running = self.open_compaction(agent_id)
+        if running is None:
+            self.repository.save(ContextCompaction(session_agent_id=agent_id, change=ContextChange.COMPACT, reason=reason, state=CompactionState.STARTED, started_at=context.timestamp), context)
+        elif running.state is CompactionState.REQUESTED:
+            self.repository.save(replace(running, state=CompactionState.STARTED, started_at=context.timestamp), context)
 
     def record_end(self, agent_id: int, context: Context) -> None:
-        running = self.open_compaction(agent_id)
-        if running is not None:
-            self.repository.save(replace(running, state=CompactionState.ENDED, ended_at=context.timestamp), context)
+        newest = self.newest(agent_id)
+        if newest is not None and newest.state.is_open:
+            self.repository.save(replace(newest, state=CompactionState.ENDED, ended_at=context.timestamp), context)
+        elif newest is None or newest.state is not CompactionState.ENDED:
+            self.repository.save(ContextCompaction(session_agent_id=agent_id, change=ContextChange.COMPACT, reason=CompactionReason.AUTO, state=CompactionState.ENDED, ended_at=context.timestamp), context)
+
+    def abandon_open(self, agent_id: int, context: Context) -> None:
+        unfinished = self.open_compaction(agent_id)
+        if unfinished is not None:
+            self.repository.save(replace(unfinished, state=CompactionState.ABANDONED), context)
 
     def record_tokens_after(self, agent_id: int, tokens: int, context: Context) -> None:
         newest = self.newest(agent_id)
