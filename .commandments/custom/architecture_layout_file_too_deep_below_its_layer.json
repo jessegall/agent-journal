@@ -1,0 +1,96 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "any": [
+                    {
+                        "fileMatches": "(^|/)src/(engine|server|install)/([^/]+/){3,}[^/]+\\.py$"
+                    },
+                    {
+                        "fileMatches": "(^|/)src/core/modules/[^/]+/([^/]+/){3,}[^/]+\\.py$"
+                    },
+                    {
+                        "fileMatches": "(^|/)src/tunnels/[^/]+/([^/]+/){3,}[^/]+\\.py$"
+                    },
+                    {
+                        "fileMatches": "(^|/)src/suites/[^/]+/modules/[^/]+/([^/]+/){3,}[^/]+\\.py$"
+                    },
+                    {
+                        "all": [
+                            {
+                                "fileMatches": "(^|/)src/suites/[^/]+/([^/]+/){3,}[^/]+\\.py$"
+                            },
+                            {
+                                "not": {
+                                    "fileMatches": "(^|/)src/suites/[^/]+/modules/"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)(web|viewer|node_modules|dist)/"
+            },
+            {
+                "file": "src/core/modules/agents/commands/remove_instruction_import/support/instruction_import_question.py"
+            },
+            {
+                "file": "src/core/modules/aliases/commands/set_alias_silence/support/alias_silence.py"
+            },
+            {
+                "file": "src/core/modules/drivers/commands/wake_interrupted_agent/support/interrupted_agents.py"
+            },
+            {
+                "file": "src/core/modules/helpers/commands/cold_sessions/support/cold_session.py"
+            },
+            {
+                "file": "src/core/modules/messages/commands/unread_reports/support/unread_reports.py"
+            },
+            {
+                "file": "src/core/modules/plugins/commands/plugin_path/support/checkout_path.py"
+            },
+            {
+                "file": "src/core/modules/processes/commands/read_output/support/output_texts.py"
+            },
+            {
+                "file": "src/core/modules/processes/commands/read_output/support/repeat_reads.py"
+            },
+            {
+                "file": "src/core/modules/skills/commands/load_skill/support/kept_skills.py"
+            },
+            {
+                "file": "src/suites/coding/drivers/worker/rules/worker_command_type_rule.py"
+            },
+            {
+                "file": "src/suites/coding/drivers/worker/rules/worker_full_test_run_rule.py"
+            },
+            {
+                "file": "src/suites/coding/drivers/worker/rules/worker_git_rule.py"
+            },
+            {
+                "file": "src/suites/coding/drivers/worker/rules/worker_task_start_rule.py"
+            },
+            {
+                "file": "src/suites/coding/modules/workers/commands/send_worker/support/inactive_worker_send.py"
+            },
+            {
+                "file": "src/suites/coding/modules/workers/commands/send_worker/support/worker_queued_start.py"
+            }
+        ]
+    },
+    "sin": {
+        "name": "file-too-deep-below-its-layer",
+        "description": "A class sits in a file more than 3 folders below its layer: the engine, a module, a suite or a tunnel.",
+        "rule": "Keep a file at most 3 levels below its layer: move it up beside the classes that use it, or give the subject a folder of its own nearer the top. The files named here are the ones that exist today; the list only shrinks.",
+        "skill": "plain-code-words"
+    }
+}
