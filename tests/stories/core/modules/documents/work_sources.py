@@ -16,6 +16,7 @@ from tests.stories.core.modules.documents.support.trail_fixtures import Scenario
 from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.client_binary import ROOT
 from tests.stories.server.support.server_client import server_story
+from tests.stories.core.support.agent_labels import agent_number
 @pytest.fixture
 def source_server(unselected_scenario):
     with server_story(unselected_scenario.story, listener_thread_started=False) as server:
@@ -186,7 +187,7 @@ def test_unauthorized_source_does_not_replace_the_active_request(scenario, envir
         folder.mkdir()
         scenario.story.expect_success(f"environment make {environment} {shlex.quote(str(folder))}")
     target = scenario.story.new_row_id(f"agent start {session} claude main --environment {environment}")
-    answer = viewer_answer(scenario.story, "messages.chat", ["message", "send", "Another agent's private request", "--target-agent", str(target)], environment)
+    answer = viewer_answer(scenario.story, "messages.chat", ["message", "send", "Another agent's private request", "--target-agent", str(agent_number(scenario.story, target))], environment)
     scenario.story.expect_rows(answer.code == 0, detail=answer.error)
     outcome = scenario.story.run(f'message work-from {answer.value["id"]}', actor=scenario.story.agent)
     feature(outcome.code == 1, outcome.output_text)

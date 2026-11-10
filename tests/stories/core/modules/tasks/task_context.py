@@ -22,6 +22,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from tests.stories.core.modules.documents.support.trail_fixtures import feature, linked_scenario, LinkedTrail, Scenario
 from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
+from tests.stories.core.support.agent_labels import agent_number
 
 
 class SourcelessTask(StoryFixture):
@@ -232,7 +233,7 @@ def test_context_includes_a_reply_written_before_resource_creation(linked_scenar
 
 def test_another_agents_private_branch_does_not_enter_context(linked_scenario):
     second_agent_id = linked_scenario.story.new_row_id("agent start private-context-main claude main --environment main")
-    private = linked_scenario.person("messages.chat", "message", "send", "Private branch for another agent", "--target-agent", str(second_agent_id))
+    private = linked_scenario.person("messages.chat", "message", "send", "Private branch for another agent", "--target-agent", str(agent_number(linked_scenario.story, second_agent_id)))
     linked_scenario.story.expect_success(f'message edit {private["id"]} --parent-id 1', actor=Actor(second_agent_id, ActorType.AGENT))
     linked_scenario.story.expect_success(f'message reply {private["id"]} "Private branch response"', actor=Actor(second_agent_id, ActorType.AGENT))
     page = linked_scenario.context(flags="--page-size 50")

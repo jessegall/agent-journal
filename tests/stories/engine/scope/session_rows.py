@@ -6,6 +6,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.scope.environment_rows import TwoWorkingEnvironments, staging_agent
 from tests.stories.core.modules.memories.support.memory_owners import MainAndWorkerMemories, read_agent, started_agent
+from tests.stories.core.support.agent_labels import agent_number
 
 MAIN_QUESTION = "Ship on Friday?"
 PERSON_MESSAGE = "Hello main"
@@ -100,7 +101,7 @@ def test_a_message_with_no_target_reaches_a_new_main_session(new_story):
 def test_a_message_to_a_worker_keeps_its_target(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
     worker = read_agent(story, "s-9")
-    message_id = story.new_row_id(f'message send "{PERSON_MESSAGE}" --target-agent {worker.id} --environment main', story.user)
+    message_id = story.new_row_id(f'message send "{PERSON_MESSAGE}" --target-agent {agent_number(story, worker.id)} --environment main', story.user)
     story.expect_rows(story.row(Message, message_id).target_agent_id == worker.id)
 
 
@@ -108,7 +109,7 @@ def test_the_migration_clears_a_stored_main_target_and_keeps_a_worker_s(new_stor
     story = new_story(fixture=MainAndWorkerMemories)
     worker = read_agent(story, "s-9")
     first = story.new_row_id(f'message send "{PERSON_MESSAGE}" --environment main', story.user)
-    second = story.new_row_id(f'message send "{PERSON_MESSAGE}" --target-agent {worker.id} --environment main', story.user)
+    second = story.new_row_id(f'message send "{PERSON_MESSAGE}" --target-agent {agent_number(story, worker.id)} --environment main', story.user)
     database = story.container.get(Database)
     database.update(Statement(f"UPDATE messages SET target_agent_id = {story.agent.id} WHERE id = {first}"))
     for sql in MainMessageTargetsMigration.statements:

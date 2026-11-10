@@ -21,6 +21,7 @@ from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.support.story_checks import expect_value
+from tests.stories.core.support.agent_labels import agent_number
 
 READ = HookSamples.shell("cat cart.py", ShellPart("cat", CommandCategory.READ, ["cart.py"]))
 
@@ -69,7 +70,7 @@ def targeted_chat(new_story, monkeypatch):
 
 
 def post_target(server, cookie, target, text):
-    return server.viewer_line_value(cookie, {"window": "agents.transcript", "environment": "main", "line": ["message", "send", text, "--target-agent", str(target.id)]})
+    return server.viewer_line_value(cookie, {"window": "agents.transcript", "environment": "main", "line": ["message", "send", text, "--target-agent", str(agent_number(server.story, target.id))]})
 
 
 @pytest.mark.parametrize("role", ["worker", "helper"])
