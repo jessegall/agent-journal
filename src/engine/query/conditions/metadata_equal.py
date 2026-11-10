@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 from engine.database.statement import Statement
-from engine.query.conditions.metadata_key_error import MetadataKeyError
+from engine.query.errors.metadata_key_error import MetadataKeyError
 
 
 PLAIN_KEY = re.compile(r"^[a-z_][a-z0-9_]*$")

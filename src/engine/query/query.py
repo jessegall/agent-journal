@@ -19,7 +19,7 @@ from engine.query.conditions.session_rows import SessionRows
 from engine.row.page import Page
 from engine.query.select import Select
 from engine.row.row_owner import RowOwner
-from engine.query.unknown_column_error import UnknownColumnError
+from engine.query.errors.unknown_column_error import UnknownColumnError
 
 
 M = TypeVar("M", bound=Model | ViewModel, covariant=True)

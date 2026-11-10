@@ -11,7 +11,7 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.less import Less
 from engine.query.conditions.maximum import Maximum
 from engine.query.conditions.metadata_equal import MetadataEqual
-from engine.query.conditions.metadata_key_error import MetadataKeyError
+from engine.query.errors.metadata_key_error import MetadataKeyError
 from engine.query.conditions.prefix import Prefix
 
 

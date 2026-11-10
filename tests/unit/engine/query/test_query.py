@@ -14,7 +14,7 @@ from engine.query.conditions.greater import Greater
 from engine.query.conditions.less import Less
 from engine.query.queries import Queries
 from engine.query.query import Query
-from engine.query.unknown_column_error import UnknownColumnError
+from engine.query.errors.unknown_column_error import UnknownColumnError
 from tests.unit.engine.model.test_table import LogEntry
 
 FIXED_TIME = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))

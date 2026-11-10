@@ -19,12 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/engine/query/conditions/metadata_key_error.py"
-            },
-            {
-                "file": "src/engine/query/unknown_column_error.py"
-            },
-            {
                 "file": "src/engine/registry/lazy_load_error.py"
             },
             {
