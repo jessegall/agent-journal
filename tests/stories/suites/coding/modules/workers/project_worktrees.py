@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_label
 import pytest
 import shutil
 
@@ -37,7 +38,7 @@ def test_a_worktree_a_worker_is_out_on_stays(new_story):
     repository = repository_environment(story)
     unfinished_worktree(story, repository)
     worker = dispatched_worker(story)
-    story.expect_refusal(f"project-worktree remove {repository.worktree_folder(worker.id).resolve()} --environment main", f"worker {worker.id} is out", actor=story.user)
+    story.expect_refusal(f"project-worktree remove {repository.worktree_folder(worker.id).resolve()} --environment main", f"{agent_label(story, worker.id)} is out", actor=story.user)
 
 
 def test_a_folder_deleted_by_hand_is_pruned(new_story):

@@ -71,7 +71,7 @@ def ended_worker(running_worker):
 
 def test_a_worker_resumed_before_the_stop_of_its_end_keeps_its_new_program(running_worker):
     story = running_worker
-    story.expect_success(f'worker send --wait {agent_number(story, story.worker.id)} "Add the tax"', f"worker {story.worker.id} takes the job", actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, story.worker.id)} "Add the tax"', f"{agent_label(story, story.worker.id)} takes the job", actor=story.agent)
     story.use_processes()
     story.tick(MAIN_SESSION)
     launcher = start_launcher(story, f"started {RESUMED_PID}\n".encode(), request_count=2)

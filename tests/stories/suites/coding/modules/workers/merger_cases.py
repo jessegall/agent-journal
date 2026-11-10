@@ -208,7 +208,7 @@ def test_a_pass_shows_a_mark_in_the_chat(case):
     case.repository.changed(case.worker.id, "cart.py", CART_CHANGE)
     case.story.expect_success(FIRST_PROOF, actor=case.worker)
     case.story.expect_success("worker deliver --wait --differences none", actor=case.worker)
-    case.story.expect_success(f'merger pass {case.worker.id} "A design choice"', actor=case.merger)
+    case.story.expect_success(f'merger pass {agent_number(case.story, case.worker.id)} "A design choice"', actor=case.merger)
     case.story.expect_rows("The merger left" in case.marks(), detail=case.marks())
 
 

@@ -138,7 +138,7 @@ def test_work_returned_to_the_main_agent_keeps_the_place_until_release(waiting_p
     story, _, first, second, tests, launches, _, server, cookie = waiting_place
     ended(story, tests[0], 0)
     merger = merger_agent(story)
-    story.expect_success(f'merger pass {first.id} "Needs a decision"', actor=Actor(merger.id, ActorType.AGENT))
+    story.expect_success(f'merger pass {agent_number(story, first.id)} "Needs a decision"', actor=Actor(merger.id, ActorType.AGENT))
     story.expect_text("merger-line list", "Needs a decision", actor=story.agent)
     story.expect_text(f"agent-line list --agent {story.agent.id}", "merger-line:", actor=story.agent)
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "Needs a decision", actor=story.agent)

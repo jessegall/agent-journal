@@ -149,7 +149,7 @@ def test_a_delivered_worker_sent_a_job_has_its_task_back_in_hand_and_a_running_o
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
-    story.expect_text(f'worker send --wait {agent_number(story, worker.id)} "Add the tax as well"', f"worker {worker.id} takes the job", actor=story.agent)
+    story.expect_text(f'worker send --wait {agent_number(story, worker.id)} "Add the tax as well"', f"{agent_label(story, worker.id)} takes the job", actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
     story.expect_success("worker-worktree show 1", "state: cut")
     story.expect_text(f"agent-line list --agent {worker.id}", "Add the tax as well", "waiting")

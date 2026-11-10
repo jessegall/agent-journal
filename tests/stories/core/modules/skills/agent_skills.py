@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from engine.actor.actor import Actor
@@ -39,7 +40,7 @@ def test_a_skill_made_due_for_an_agent_is_a_due_row(skill_files):
     story = skill_files
     due_notes(story)
     story.expect_success("agent-skill list", f"3  {story.agent.id}  journal-notes  due")
-    story.expect_success("agent-skill unread " + str(story.agent.id), "journal-notes")
+    story.expect_success(f"agent-skill unread {agent_number(story, story.agent.id)}", "journal-notes")
 
 
 def test_a_second_read_changes_nothing(skill_files):
@@ -59,7 +60,7 @@ def due_skill_files(skill_files):
 def test_a_skill_whose_text_changed_since_it_was_read_counts_as_unread(due_skill_files):
     story = due_skill_files
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", "the-digest-of-an-older-text"), story.agent)
-    story.expect_success("agent-skill unread " + str(story.agent.id), "journal-notes")
+    story.expect_success(f"agent-skill unread {agent_number(story, story.agent.id)}", "journal-notes")
 
 
 def test_a_compaction_clears_the_agents_loaded_rows(skill_files):
@@ -69,14 +70,14 @@ def test_a_compaction_clears_the_agents_loaded_rows(skill_files):
     story.hook("s-1", HookSamples.sample("compact"))
     story.run_listeners()
     story.expect_absent("agent-skill list --agent " + str(story.agent.id), "journal-notes")
-    story.expect_absent("agent-skill unread " + str(story.agent.id), "journal-notes")
+    story.expect_absent(f"agent-skill unread {agent_number(story, story.agent.id)}", "journal-notes")
 
 
 def test_a_skill_gone_from_the_catalogue_is_dropped_from_due(skill_files):
     story = skill_files
     story.run(f"skill require {story.agent.id} journal-gone")
     due_notes(story)
-    story.expect_absent("agent-skill unread " + str(story.agent.id), "journal-gone")
+    story.expect_absent(f"agent-skill unread {agent_number(story, story.agent.id)}", "journal-gone")
 
 
 def test_each_agent_has_its_own_loaded_rows(skill_files):
@@ -85,8 +86,8 @@ def test_each_agent_has_its_own_loaded_rows(skill_files):
     due_notes(story)
     story.run(f"skill require {helper.id} journal-notes")
     read_row(story, NOTES_FILE)
-    story.expect_absent("agent-skill unread " + str(story.agent.id), "journal-notes")
-    story.expect_success("agent-skill unread " + str(helper.id), "journal-notes")
+    story.expect_absent(f"agent-skill unread {agent_number(story, story.agent.id)}", "journal-notes")
+    story.expect_success(f"agent-skill unread {agent_number(story, helper.id)}", "journal-notes")
 
 
 @pytest.fixture
@@ -104,4 +105,4 @@ def test_a_shell_line_naming_one_skill_in_many_parts_reads_its_row_once(due_skil
     connection.set_trace_callback(None)
     expect_rows_loaded = [statement for statement in statements if statement.startswith("SELECT * FROM agent_skills WHERE session_agent_id") and "journal-notes" in statement]
     story.expect_rows(len(expect_rows_loaded) == 1, detail="\n".join(expect_rows_loaded))
-    story.expect_success("agent-skill unread " + str(story.agent.id))
+    story.expect_success(f"agent-skill unread {agent_number(story, story.agent.id)}")
