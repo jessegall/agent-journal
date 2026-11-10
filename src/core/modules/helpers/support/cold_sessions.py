@@ -11,7 +11,7 @@ from core.modules.agents.commands.replace_agent_session.replace_agent_session im
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
-from core.modules.helpers.support.stale_session_error import StaleSessionError
+from core.modules.helpers.errors.stale_session_error import StaleSessionError
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 STALE_SESSION_SECONDS = 3600

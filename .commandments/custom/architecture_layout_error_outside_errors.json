@@ -19,9 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/core/modules/helpers/support/stale_session_error.py"
-            },
-            {
                 "file": "src/core/modules/phone/support/infinite_point_error.py"
             },
             {
