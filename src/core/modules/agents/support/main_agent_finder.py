@@ -19,13 +19,12 @@ class MainAgentFinder:
         return tuple(AgentQuery(queries.database, queries.tables).running().filter(role=AgentRole.MAIN).all_rows())
 
     @staticmethod
-    def sessions(queries: Queries, program: str) -> tuple[Agent, ...]:
-        rows = queries.query(Agent).filter(role=AgentRole.MAIN, program=program).newest().all_rows()
-        return tuple(sorted(rows, key=lambda agent: agent.ended_at is not None))
-
-    @staticmethod
     def latest(queries: Queries) -> Agent | None:
         return queries.query(Agent).filter(role=AgentRole.MAIN).newest().first()
+
+    @staticmethod
+    def newest_ids(queries: Queries, limit: int) -> list[int]:
+        return [agent.id for agent in queries.query(Agent).filter(role=AgentRole.MAIN).newest().page(1, limit).rows]
 
     @staticmethod
     def numbered_one(queries: Queries) -> Agent | None:

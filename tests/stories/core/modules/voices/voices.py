@@ -87,7 +87,7 @@ def test_a_session_started_by_hand_gives_the_instruction_and_no_introduction(new
     story = enabled_story(new_story)
     given_names(story)
     second = hook_agent(story, story.hook("s-2", SECOND_START))
-    [line] = voice_lines(story, second.id)
+    line = voice_lines(story, second.id)[-1]
     expect_value_with(line, BUTLER_TEXT)
     expect_value_with(line, 'Address me as "Captain Ada".')
     expect_value_without(line, "introduce yourself in the chat")

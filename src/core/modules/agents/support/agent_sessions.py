@@ -1,4 +1,5 @@
 from engine.command.context import Context
+from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.scope.environment_scope import EnvironmentScope
@@ -7,6 +8,9 @@ from engine.time.clock import Clock
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.agent_session import AgentSession
 from core.modules.agents.models.enums.end_reason import EndReason
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
+
+NEWEST_ROWS = 50
 
 
 class AgentSessions:
@@ -52,6 +56,11 @@ class AgentSessions:
     def history(self, session_agent_id: int, limit: int) -> list[AgentSession]:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             return list(self.queries.query(AgentSession).filter(session_agent_id=session_agent_id).oldest().page(1, limit).rows)
+
+    def main_sessions(self, program: str) -> tuple[str, ...]:
+        main_ids = MainAgentFinder.newest_ids(self.queries, NEWEST_ROWS)
+        rows = self.queries.query(AgentSession).filter(program=program).matching(Among("session_agent_id", main_ids)).descending("id").page(1, NEWEST_ROWS).rows
+        return tuple(dict.fromkeys(row.session for row in rows))
 
     def has(self, session: str) -> bool:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
