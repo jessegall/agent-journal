@@ -27,5 +27,4 @@ tests/stories/suites/coding/modules/workers/ended_with_tasks.py::test_no_line_co
 tests/stories/suites/coding/modules/workers/ended_with_tasks.py::test_no_line_comes_once_the_worker_is_released  plan 1110: task 8702, an ended worker that still holds tasks is not yet reported
 tests/stories/suites/coding/modules/workers/ended_with_tasks.py::test_a_worker_that_ended_with_finished_unmerged_work_is_named_too  plan 1110: task 8702, an ended worker that still holds tasks is not yet reported
 tests/stories/suites/coding/modules/workers/ended_with_tasks.py::test_once_its_work_is_merged_a_worker_that_ended_holds_nothing_and_no_line_comes  plan 1110: task 8702, an ended worker that still holds tasks is not yet reported
-tests/stories/core/modules/agents/agent_driver_access.py::test_a_driver_changed_to_a_program_that_is_out_says_when_it_is_back_and_the_next_job_waits_on_it  plan 1108 phase 'D. The driver': journal agent driver does not exist yet
 tests/stories/core/modules/agents/agent_driver_access.py::test_the_spend_of_an_agent_is_counted_for_each_session_so_two_programs_are_not_mixed  plan 1108 phase 'D. The driver': journal agent driver does not exist yet

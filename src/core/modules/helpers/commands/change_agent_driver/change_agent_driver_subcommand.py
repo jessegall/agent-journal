@@ -7,15 +7,20 @@ from engine.subcommand.subcommand import Subcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_label import AgentLabel
 from core.modules.helpers.commands.change_agent_driver.change_agent_driver import ChangeAgentDriver
+from core.modules.helpers.support.program_states import ProgramStates
 
 
 class ChangeAgentDriverSubcommand(Subcommand[ChangeAgentDriver, Agent]):
     """`journal agent driver <agent> --program <program> --model <model>`: moves a stopped agent to another
-    program or model. It stays the same agent, with a new session."""
+    program or model. It stays the same agent, with a new session. When the program is out, the answer says
+    until when, and the agent waits on it."""
 
     cli_name = "agent"
     name = "driver"
     outward = True
+
+    def __init__(self, states: ProgramStates) -> None:
+        self.states = states
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_id", type=AgentNumber)
@@ -27,4 +32,12 @@ class ChangeAgentDriverSubcommand(Subcommand[ChangeAgentDriver, Agent]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Agent):
-            output.line(f"{AgentLabel.from_agent(value).text} runs on {value.program} {value.program_model} from its next session")
+            output.line(self.answer(value))
+
+    def answer(self, agent: Agent) -> str:
+        label = AgentLabel.from_agent(agent).text
+        changed_line = f"{label} runs on {agent.program} {agent.program_model} from its next session"
+        program_state = self.states.outage_state(agent.program)
+        if program_state.is_ready:
+            return changed_line
+        return f"{changed_line}\n{agent.program} is out: {program_state.wait_line}; {label} waits on it"
