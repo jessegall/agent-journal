@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 
 from engine.actor.actor import Actor
@@ -109,8 +110,8 @@ def test_the_agents_of_a_page_of_memories_are_read_together_by_number(new_story)
     story = new_story(fixture=MainAndWorkerMemories)
     second_agent = started_agent(story, "s-10")
     worker_memory(story, "s-10", "Another note", second_agent)
-    story.expect_rows(names(story, f"--agents {second_agent.id} {read_agent(story, 's-9').id}") == [f"Worker {second_agent.id}", f"Worker {read_agent(story, 's-9').id}"])
-    story.expect_rows(names(story, f"--agents {second_agent.id}") == [f"Worker {second_agent.id}"])
+    story.expect_rows(names(story, f"--agents {agent_number(story, second_agent.id)} {agent_number(story, read_agent(story, 's-9').id)}") == [f"Worker {second_agent.id}", f"Worker {read_agent(story, 's-9').id}"])
+    story.expect_rows(names(story, f"--agents {agent_number(story, second_agent.id)}") == [f"Worker {second_agent.id}"])
 
 
 def test_agents_are_listed_for_one_environment_or_for_all(new_story):

@@ -189,7 +189,7 @@ def test_a_tell_without_every_part_is_refused_with_the_shape(case, line):
 
 
 def test_a_case_no_command_covers_ends_at_the_main_agent_with_the_facts_of_the_worker(own_files):
-    own_files.story.expect_success(f"{MERGER_QUESTION} --worker {own_files.worker.id}", actor=own_files.merger)
+    own_files.story.expect_success(f"{MERGER_QUESTION} --worker {agent_number(own_files.story, own_files.worker.id)}", actor=own_files.merger)
     text = own_files.main_messages()[0].text
     own_files.story.expect_rows("Recommendation: Dutch tax" in text, "point build, task 1" in text, "cart.py, rate.py" in text, detail=text)
 

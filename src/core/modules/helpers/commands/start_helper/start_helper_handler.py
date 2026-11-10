@@ -3,7 +3,9 @@ from dataclasses import replace
 
 from engine.actor.actor import Actor
 from engine.sandbox.shell_sandbox import ShellSandbox
+from engine.cli.row_numbers import RowNumbers
 from engine.command.bus import Bus
+from core.modules.agents.support.agent_label import AgentLabel
 from engine.driver.program_lockdown import ProgramLockdown
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -38,6 +40,8 @@ SHORT_BRIEF_CHARACTERS = 200
 
 INDEPENDENT_REASON = "An independent profile starts a new helper for its own view."
 
+HELPER_WORD = "helper"
+
 
 class StartHelperHandler(Handler[StartHelper, HelperStarted]):
     """Starts a helper of a profile as a process the journal owns, in the folder of the agent that asked. A profile
@@ -46,7 +50,8 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
 
     command = StartHelper
 
-    def __init__(self, profiles: ProfileFiles, types: HelperTypeBook, limits: HelperLimits, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers, models: ProfileModels, shares: ProgramShares, states: ProgramStates, counts: HelperCounts, lockdown: ProgramLockdown) -> None:
+    def __init__(self, profiles: ProfileFiles, types: HelperTypeBook, limits: HelperLimits, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers, models: ProfileModels, shares: ProgramShares, states: ProgramStates, counts: HelperCounts, lockdown: ProgramLockdown, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.lockdown = lockdown
         self.kept, self.models = kept, models
         self.sandbox = sandbox
@@ -148,4 +153,5 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
             helper = next((helper for helper in self.kept.kept(profile.name) if helper.id == job.helper_id), None)
             if helper is not None:
                 self.kept.check_program(helper)
-            raise Refusal(f"agent:{job.helper_id} knows these files", f"journal helper send {job.helper_id} \"<job>\", or start a new one with --fresh")
+            label = AgentLabel.from_row_id(job.helper_id, self.numbers, HELPER_WORD)
+            raise Refusal(f"{label.text} knows these files", f"journal helper send {label.number} \"<job>\", or start a new one with --fresh")

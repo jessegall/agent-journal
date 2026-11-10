@@ -9,6 +9,7 @@ from core.modules.usage.models.enums.agent_list_state import AgentListState
 @dataclass(frozen=True, kw_only=True)
 class AgentListingState:
     id: int
+    number: int
     environment_id: int
     session: str
     role: AgentRole

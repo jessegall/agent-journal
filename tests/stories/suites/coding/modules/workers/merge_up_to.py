@@ -53,7 +53,7 @@ def test_a_merge_up_to_a_commit_takes_the_work_up_to_it(proven_worker):
 
 def test_a_commit_not_on_the_workers_branch_is_refused(proven_worker):
     story, _, worker, _ = proven_worker
-    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)} --up-to {UNKNOWN_COMMIT}", f"not on the branch of worker {worker.id}", actor=story.agent)
+    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)} --up-to {UNKNOWN_COMMIT}", f"not on the branch of worker {agent_number(story, worker.id)}", actor=story.agent)
 
 
 def test_an_unproven_task_is_refused(second_task_worker):

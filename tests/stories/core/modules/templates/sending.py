@@ -99,6 +99,7 @@ def test_a_target_in_another_environment_leaves_no_message(new_story):
 
 def test_a_target_with_no_current_environment_leaves_no_message(new_story):
     story = new_story(fixture=SendingTemplates)
+    story.use_fixture_environment(None)
     story.expect_refusal(CRITIQUE.replace(" --environment main", ""), "belongs to another environment", actor=story.user)
     expect_empty_messages(story)
 

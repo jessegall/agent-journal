@@ -73,7 +73,7 @@ class InactiveHelperRule(DriverRule):
 
     @staticmethod
     def action(helper: Agent) -> str:
-        return f"journal worker status {helper.id}" if helper.role == CodingHelperRole.WORKER else "check on it"
+        return f"journal worker status {helper.number}" if helper.role == CodingHelperRole.WORKER else "check on it"
 
     def unstarted(self, hook: AgentHook, grace: Seconds) -> list[Agent]:
         ended = tuple(self.queries.query(Agent).filter(parent_id=hook.agent_id).matching(Among("role", self.types.helper_keys())).matching(Greater("ended_at", "")).matching(IsNull("retired_at")).matching(IsNull("paused_at")).all_rows())

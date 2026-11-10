@@ -130,7 +130,7 @@ def test_an_unknown_topic_is_refused_with_the_list_of_topics(asking):
 
 
 def test_the_ask_is_logged_on_the_task(open_question):
-    open_question.story.expect_text("task-log list --task 1", f"worker {open_question.worker.id} asked the merger", QUESTION, actor=open_question.story.agent)
+    open_question.story.expect_text("task-log list --task 1", f"worker {agent_number(open_question.story, open_question.worker.id)} asked the merger", QUESTION, actor=open_question.story.agent)
 
 
 @pytest.mark.real_git
@@ -208,18 +208,18 @@ def test_a_job_sent_to_a_worker_that_asked_gets_through(open_question):
 
 
 def test_the_main_agent_cannot_ask(asking):
-    asking.story.expect_refusal(f'worker ask "{QUESTION}"', "only a worker asks", actor=asking.story.agent)
+    asking.story.expect_refusal(f'worker ask "{QUESTION}"', "journal worker ask is for workers", actor=asking.story.agent)
     asking.story.expect_rows(asking.merger_lines() == ())
 
 
 def test_a_person_cannot_ask(asking):
     person = Actor(asking.story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    asking.story.expect_refusal(f'worker ask "{QUESTION}"', "only a worker asks", actor=person)
+    asking.story.expect_refusal(f'worker ask "{QUESTION}"', "journal worker ask is for workers", actor=person)
 
 
 def test_a_helper_cannot_ask(asking):
     helper = asking.story.container.get(Bus).run(StartAgent("s-helper", "claude", CodingHelperRole.HELPER, asking.story.agent.id, profile="journal-researcher"), Actor.core(), environment_id=1)
-    asking.story.expect_refusal(f'worker ask "{QUESTION}"', "only a worker asks", actor=Actor(helper.id, ActorType.AGENT))
+    asking.story.expect_refusal(f'worker ask "{QUESTION}"', "journal worker ask is for workers", actor=Actor(helper.id, ActorType.AGENT))
 
 
 def test_a_worker_with_no_task_cannot_ask(asking):

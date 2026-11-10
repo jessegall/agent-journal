@@ -17,7 +17,7 @@ def test_an_agent_starts_no_fake_agent_in_another_environment_until_a_person_gra
 def test_an_agent_cannot_grant_itself_a_test_environment(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_success("environment make story-engine /work/story-engine --test", actor=story.user)
-    story.expect_refusal(f"environment edit 2 --test-agent-id {story.agent.id} --reason 'a story asks'", f"Let agent {story.agent.id} work in test environment story-engine?",
+    story.expect_refusal(f"environment edit 2 --test-agent-id {story.agent.id} --reason 'a story asks'", "Let main agent work in test environment story-engine?",
                          actor=story.agent)
 
 
@@ -48,4 +48,4 @@ def test_the_granted_agent_is_readable_while_it_dispatches_in_its_test_environme
 def test_the_granted_agent_may_review_a_workers_logs_in_its_test_environment(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_success(f"environment make story-engine /work/story-engine --test --test-agent-id {story.agent.id}", actor=story.user)
-    story.expect_refusal("worker logs 99 --environment story-engine", "has delivered nothing to review", actor=story.agent)
+    story.expect_refusal("worker logs 99 --environment story-engine", "no agent 99 in environment story-engine", actor=story.agent)

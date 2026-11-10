@@ -36,7 +36,7 @@ def test_a_helpers_request_is_addressed_to_its_main_agent_and_has_no_person_card
     story.expect_rows(approval.recipient_agent_id == story.agent.id, not items)
     story.expect_text(f"agent-line list --agent {story.agent.id}", "needs your review", actor=story.agent)
     with viewer_client(story) as viewer:
-        viewer.refusal("messages.chat", ["approval", "accept", str(approval.id)], "addressed to agent")
+        viewer.refusal("messages.chat", ["approval", "accept", str(approval.id)], "addressed to main agent")
 
 
 def test_only_the_addressed_main_agent_can_relay_the_request(helper_request):

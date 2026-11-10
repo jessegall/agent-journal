@@ -56,6 +56,7 @@ def test_an_agent_that_reported_no_windows_carries_the_account_windows_of_the_ne
 
 def test_usage_outside_an_environment_is_refused_with_how_to_name_one(new_story):
     story = new_story(fixture=UserJoined)
+    story.use_fixture_environment(None)
     story.expect_refusal("usage show", "usage is shown for one environment: name it with --environment", actor=story.user)
 
 

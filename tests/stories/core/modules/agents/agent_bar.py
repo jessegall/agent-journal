@@ -134,7 +134,7 @@ def test_stopping_an_ended_agent_is_refused(new_story):
 def test_launch_hands_the_launcher_the_program_in_the_environments_folder_under_a_new_agent_row(new_story):
     story = new_story(fixture=UserJoined)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_text("agent launch claude --environment main", "started agent", actor=story.user)
+    story.expect_text("agent launch claude --environment main", "started main agent", actor=story.user)
     launcher.drain_requests()
     request = launcher.requests[0]
     story.expect_rows(request["environment"] == "main", request["session"].startswith("launch-"), request["command"][0].endswith("claude"), request["variables"]["JOURNAL_LAUNCH"] == request["session"])

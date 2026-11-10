@@ -98,4 +98,4 @@ def test_helper_stop_tells_a_worker_where_its_work_goes(new_story):
 def test_a_wait_on_a_helper_that_is_a_worker_follows_the_worker(new_story):
     story = new_story(fixture=WorkerStarted)
     worker = json.loads(story.run("agent list --role worker --json").output_text)["rows"][0]
-    story.expect_refusal(f"task block 1 --on helper:{worker['id']}", f"worker {worker['id']} has already finished")
+    story.expect_refusal(f"task block 1 --on helper:{agent_number(story, worker['id'])}", f"worker {agent_number(story, worker['id'])} has already finished")

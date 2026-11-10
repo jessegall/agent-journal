@@ -133,7 +133,7 @@ def test_worker_commands_return_before_slow_git_and_notify_once(worker_git_comma
         return original_command_output(bus, value, command)
 
     monkeypatch.setattr(Bus, "result", checked_result)
-    line = f"worker {name} --differences none" if name.is_handoff else f'worker {name} {worker.id}'
+    line = f"worker {name} --differences none" if name.is_handoff else f'worker {name} {agent_number(story, worker.id)}'
     if name is WorkerOperationName.JOB:
         line += ' "Add the receipt"'
     actor = worker if name.is_handoff else story.agent

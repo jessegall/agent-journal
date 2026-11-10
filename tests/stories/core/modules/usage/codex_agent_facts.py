@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 
 from tests.stories.core.support.coding_fixtures import UserBuilder
@@ -13,7 +14,7 @@ def test_a_codex_agent_shows_the_model_its_rollout_ran_and_no_cost_where_codex_r
     facts = json.loads(story.run("usage agents --environment main --json").output_text)["rows"]
     row = next(row for row in facts if row["id"] == worker_id)
     story.expect_rows(row["model"] == "gpt-6.1-sol" and row["cost_dollars"] is None)
-    story.expect_text("usage show --environment main", f"agent {worker_id}  codex-model  codex  nothing reported yet", actor=story.user)
+    story.expect_text("usage show --environment main", f"worker {agent_number(story, worker_id)}  codex-model  codex  nothing reported yet", actor=story.user)
 
 
 def test_a_codex_agent_shows_the_context_its_rollout_last_counted(new_story, monkeypatch):

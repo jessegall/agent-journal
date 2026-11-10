@@ -14,4 +14,4 @@ class TypeLimits:
     @staticmethod
     def retirement_instruction(agents: Iterable[Agent]) -> str:
         stopped = next((agent for agent in agents if agent.ended_at is not None), None)
-        return "all of them run: wait for a report" if stopped is None else f'journal agent retire {stopped.id} --reason "<why>"'
+        return "all of them run: wait for a report" if stopped is None else f'journal agent retire {stopped.number} --reason "<why>"'

@@ -65,7 +65,7 @@ def test_a_cold_helper_starts_a_new_session_under_the_same_agent_and_is_told_who
     replaced = helper_agent(ended_helper)
     prompt = " ".join(request["command"])
     ended_helper.expect_rows(replaced.id == helper.id, replaced.session != helper.session, request["session"] == replaced.session, "--resume" not in request["command"],
-                             replaced.session in request["command"], f"You are helper {helper.id}." in prompt, JOB in prompt, not is_cold(ended_helper), detail=str(request))
+                             replaced.session in request["command"], f"You are helper {agent_number(ended_helper, helper.id)}." in prompt, JOB in prompt, not is_cold(ended_helper), detail=str(request))
 
 
 def test_a_warm_helper_resumes_its_own_session(ended_helper, monkeypatch):

@@ -30,7 +30,7 @@ def forty_task_inspector(new_story):
 def test_inspector_facts_select_one_agent(forty_task_inspector):
     server, cookie, worker = forty_task_inspector
     answer = server.viewer_line_value(cookie, {'window': 'viewer.shell', 'environment': 'main',
-                                              'line': ['usage', 'agents', '--closed', '--agent', str(worker)]})
+                                              'line': ['usage', 'agents', '--closed', '--agent', str(agent_number(server.story, worker))]})
     server.story.expect_rows([row['id'] for row in answer['rows']] == [worker], len(answer['rows'][0]['tasks']) == 40)
 
 

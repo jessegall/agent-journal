@@ -46,7 +46,7 @@ def test_a_cold_worker_starts_a_new_session_and_keeps_its_agent_and_worktree(sto
     worktree = stopped_worker.container.get(WorktreeQuery).worker_worktree(worker.id)
     prompt = " ".join(request["command"])
     stopped_worker.expect_rows(replaced.session != worker.session, request["session"] == replaced.session, "--resume" not in request["command"], worktree.folder == folder,
-                               f"You are worker {worker.id}." in prompt, JOB in prompt, f"journal task overview {worktree.task_id}" in prompt, detail=prompt)
+                               f"You are worker {agent_number(stopped_worker, worker.id)}." in prompt, JOB in prompt, f"journal task overview {worktree.task_id}" in prompt, detail=prompt)
 
 
 @pytest.mark.parametrize("minutes, percent", [(49, 100), (50, 19), (0, 0)], ids=["warm", "small and under an hour", "just stopped"])

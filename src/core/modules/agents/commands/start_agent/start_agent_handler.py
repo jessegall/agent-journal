@@ -1,3 +1,4 @@
+from engine.errors.existing_row_refusal import ExistingRowRefusal
 from dataclasses import replace
 
 from core.modules.actors.models.actor_record import ActorRecord
@@ -61,7 +62,7 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
                       program_model=command.program_model, profile=command.profile, given_name=command.given_name)
         try:
             return self.numbered(agent, context)
-        except Refusal:
+        except ExistingRowRefusal:
             return self.numbered(agent, context)
 
     def numbered(self, agent: Agent, context: Context) -> Agent:

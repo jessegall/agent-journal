@@ -222,7 +222,7 @@ def test_task_assign_holds_the_route_person_passes(split_story, split_viewer):
     worker = dispatch(story, flags='--program claude')
     story.expect_success('worker-route make --program codex --tags person --environment main', actor=story.agent)
     task = new_task(story, 'Person assigned task', '--tag person --confirm')
-    split_viewer.value('tasks.tasks', ['task', 'assign', str(task), '--to', str(worker.id)])
+    split_viewer.value('tasks.tasks', ['task', 'assign', str(task), '--to', str(agent_number(story, worker.id))])
     story.expect_text(f'task show {task}', f'delegated_to: {worker.id}')
 
 

@@ -6,6 +6,7 @@ from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.model.model import Model
 from engine.model.table import Table, indefinite_article
+from engine.errors.existing_row_refusal import ExistingRowRefusal
 from engine.errors.refusal import Refusal
 
 RULE_PREFIX = "rule: "
@@ -31,7 +32,7 @@ class ConstraintRefusals:
         unique = UNIQUE_COLUMNS.match(message)
         if unique:
             columns = ", ".join(column.split(".")[-1] for column in unique.group(1).split(", "))
-            return Refusal(f"{indefinite_article(cli_name)} {cli_name} with that {columns} exists already")
+            return ExistingRowRefusal(f"{indefinite_article(cli_name)} {cli_name} with that {columns} exists already")
         missing_value = MISSING_VALUE_COLUMN.match(message)
         if missing_value:
             column = missing_value.group(1)

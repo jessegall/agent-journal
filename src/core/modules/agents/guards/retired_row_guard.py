@@ -20,6 +20,6 @@ class RetiredRowGuard(Guard[Updated[Agent]]):
             return
         retirement = (old_row.retired_at, old_row.retirement_reason, old_row.retiring_actor_id)
         if isinstance(context.command, EditCommand) and retirement != (row.retired_at, row.retirement_reason, row.retiring_actor_id):
-            raise Refusal("an edit does not change a retirement", f'journal agent retire {row.id} --reason "<why>"')
+            raise Refusal("an edit does not change a retirement", f'journal agent retire {row.number} --reason "<why>"')
         if old_row.retired_at is not None and (row.retired_at is None or row.ended_at is None):
             raise Refusal(f"{AgentLabel.from_agent(row).text} is retired, for good", "start a new agent")

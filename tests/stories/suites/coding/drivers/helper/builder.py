@@ -36,7 +36,7 @@ def test_a_main_agent_with_auto_on_the_journal_started_is_told_to_introduce_itse
     story = new_story(fixture=CodingEnvironment)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.expect_text("agent launch claude --environment main", "started agent", actor=user)
+    story.expect_text("agent launch claude --environment main", "started main agent", actor=user)
     launcher.drain_requests()
     name = launcher.requests[0]["session"]
     story.expect_hook_allowed(name, HookSamples.session_start().with_fields(launch=name), "introduce yourself in the chat")

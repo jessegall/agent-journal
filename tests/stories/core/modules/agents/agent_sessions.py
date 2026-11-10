@@ -22,7 +22,7 @@ def test_a_helper_names_the_agent_that_started_it_and_the_environment_lists_both
     main_id = story.new_row_id(lines.AGENT_START)
     helper_id = story.new_row_id(f"agent start s-2 claude worker --parent {main_id} --environment main")
     story.expect_success(f"agent show {agent_number(story, helper_id)}", f"parent_id: {main_id}", "role: worker")
-    story.expect_success("agent list --environment 1", f"{helper_id}  {main_id}  s-2  claude  worker  writing", f"{main_id}  s-1  claude  main  writing")
+    story.expect_success("agent list --environment 1", f"{helper_id}  2  {main_id}  s-2  claude  worker  writing", f"{main_id}  1  s-1  claude  main  writing")
 
 
 def test_an_agent_starts_only_in_an_environment_and_is_never_made_by_hand(new_story):
@@ -49,8 +49,8 @@ def test_a_resumed_session_reopens_its_ended_agent_under_the_same_number(ended_s
 def test_a_resume_in_another_environment_or_as_another_role_is_refused_naming_the_row(ended_session):
     story, agent_id = ended_session
     story.run('environment make elsewhere /work/elsewhere')
-    story.expect_refusal("agent start s-1 claude main --environment elsewhere", f"session s-1 is agent {agent_id} of environment 1")
-    story.expect_refusal("agent start s-1 claude worker --environment main", f"session s-1 is agent {agent_id}, a main agent of claude")
+    story.expect_refusal("agent start s-1 claude main --environment elsewhere", "session s-1 is main agent of environment 1")
+    story.expect_refusal("agent start s-1 claude worker --environment main", "session s-1 is main agent, a main agent of claude")
 
 
 @pytest.fixture

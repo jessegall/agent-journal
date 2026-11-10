@@ -40,7 +40,7 @@ class AgentUse:
             return ""
         selected = max(candidates, key=lambda model_use: model_use.job_agent_ratio)
         agent = selected.idle()[0]
-        return (f"to make room: journal agent retire {agent.id} --reason \"<why>\": a {selected.model} agent idle for "
+        return (f"to make room: journal agent retire {agent.number} --reason \"<why>\": a {selected.model} agent idle for "
                 f"{self.age(agent)}, and {selected.model} ran {selected.jobs} jobs with {len(selected.agents)} kept")
 
     def age(self, agent: Agent) -> str:

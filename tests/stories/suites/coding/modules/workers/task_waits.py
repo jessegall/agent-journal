@@ -119,7 +119,7 @@ def test_a_task_cannot_wait_on_a_worker_that_was_released(working):
 def test_a_worker_target_must_exist_and_have_the_worker_role(new_story):
     story, _, worker = working_story(new_story)
     task_id = story.new_row_id('task make "Continue" --environment main', actor=story.agent)
-    story.expect_refusal(f"task block {task_id} --on worker:99999", "worker 99999 does not exist", actor=story.agent)
+    story.expect_refusal(f"task block {task_id} --on worker:99999", "no agent 99999 in environment main", actor=story.agent)
     story.expect_refusal(f"task block {task_id} --on worker:{agent_number(story, story.agent.id)}", "is not a worker", actor=story.agent)
 
 

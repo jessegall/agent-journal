@@ -51,10 +51,10 @@ class KeptHelpers:
         return (self.share.percent(helper.program, helper.session) or 0) < FULL_SESSION_PERCENT
 
     def idle_refusal(self, helpers: tuple[Agent, ...]) -> Refusal:
-        additional_helpers = f" (also {', '.join(str(helper.id) for helper in helpers[1:3])})" if helpers[1:] else ""
+        additional_helpers = f" (also {', '.join(str(helper.number) for helper in helpers[1:3])})" if helpers[1:] else ""
         state = self.program_state(helpers[0])
         waiting = f"; {state.wait_line}" if not state.is_ready else ""
-        return Refusal(f'helper {helpers[0].id} is idle: journal helper send {helpers[0].id} "<job>"{additional_helpers}{waiting}', 'or --fresh "<why>"')
+        return Refusal(f'helper {helpers[0].number} is idle: journal helper send {helpers[0].number} "<job>"{additional_helpers}{waiting}', 'or --fresh "<why>"')
 
     def program_state(self, helper: Agent) -> ProgramState:
         return self.states.outage_state(helper.program)

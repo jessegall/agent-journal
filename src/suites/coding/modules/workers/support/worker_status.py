@@ -12,6 +12,7 @@ from suites.coding.modules.workers.support.worker_point import WorkerPoint
 @dataclass(frozen=True)
 class WorkerStatus:
     worker_id: int
+    worker_number: int
     current_task: Task
     tests: Page[Proof]
     assignments: Page[Task]

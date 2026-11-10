@@ -54,7 +54,7 @@ def test_accept_runs_the_stored_command_once_as_the_person_and_no_second_card_co
 
 def test_a_refused_card_runs_nothing(resume_approval):
     story, approval = resume_approval
-    story.expect_text(f"approval show {approval.id}", "Resume the paused agent", actor=story.user)
+    story.expect_text(f"approval show {approval.id}", "Resume the paused main agent", actor=story.user)
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "refuse", str(approval.id)])
     story.expect_rows(story.row(Agent, story.agent.id).paused_at is not None)
@@ -70,6 +70,6 @@ def test_the_same_attempt_again_keeps_one_open_card(resume_approval):
 
 def test_a_command_run_as_approved_by_an_approval_asks_nobody_again_whoever_runs_it(new_story):
     story = new_story(fixture=ResumeRequested)
-    story.expect_text(f"approval list", "Resume the paused agent", actor=story.user)
+    story.expect_text(f"approval list", "Resume the paused main agent", actor=story.user)
     story.container.get(Bus).run(ResumeAgent(story.agent.id), story.agent, environment_id=1, approval_id=1)
     story.expect_rows(story.row(Agent, story.agent.id).paused_at is None)

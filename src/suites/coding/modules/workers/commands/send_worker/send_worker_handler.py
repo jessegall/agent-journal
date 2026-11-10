@@ -74,7 +74,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         if worker.retired_at is not None:
             raise RetiredWorkerRefusal.create(worker)
         if not command.job.strip() and not command.task_ids:
-            raise Refusal("a send needs a job or a task", f'journal worker send {worker.id} "<job>", or --task <task>')
+            raise Refusal("a send needs a job or a task", f'journal worker send {worker.number} "<job>", or --task <task>')
 
     def check_session(self, worker: Agent) -> None:
         if worker.ended_at is not None:

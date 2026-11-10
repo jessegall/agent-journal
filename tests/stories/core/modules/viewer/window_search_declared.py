@@ -49,5 +49,5 @@ def test_the_tasks_window_finds_the_tasks_that_hold_the_words(new_story):
 
 def test_the_agents_window_finds_the_agents_whose_session_holds_the_words(new_story):
     story = new_story(fixture=UserBuilder)
-    story.expect_text("window search agents.agents s-1", f"{story.agent.id}  s-1  claude  main", actor=story.user)
-    story.expect_absent("window search agents.agents nothing-matches", f"{story.agent.id}  s-1  claude  main", actor=story.user)
+    story.expect_text("window search agents.agents s-1", f"{story.agent.id}  1  s-1  claude  main", actor=story.user)
+    story.expect_absent("window search agents.agents nothing-matches", f"{story.agent.id}  1  s-1  claude  main", actor=story.user)

@@ -23,7 +23,7 @@ class ChooseAgentControlHandler(Handler[ChooseAgentControl, Agent]):
         agent = self.queries.query(Agent).find(command.agent_id)
         choices = [choice for group in self.providers.provider(agent.program).controls if group.key == command.key for choice in group.choices if choice.value == command.value]
         if not choices:
-            raise Refusal(f"{command.key} {command.value} is not a choice the agent bar offers", f"journal agent controls {agent.id} lists them")
+            raise Refusal(f"{command.key} {command.value} is not a choice the agent bar offers", f"journal agent controls {agent.number} lists them")
         if agent.ended_at is not None:
             raise Refusal(f"{AgentLabel.from_agent(agent).text} has ended")
         self.typing.type_line(agent, choices[0].line)

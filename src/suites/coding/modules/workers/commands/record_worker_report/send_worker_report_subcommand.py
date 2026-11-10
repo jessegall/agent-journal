@@ -39,7 +39,7 @@ class SendWorkerReportSubcommand(Subcommand[RecordParentReport | SendMergerInput
         if PROGRESS_PATTERN.search(arguments.text):
             raise Refusal("a report is for what the main agent must act on; this is progress", f'journal task log <n> "{PROGRESS_LOG}"')
         if worker.parent_id is None:
-            raise Refusal("the worker has no main agent", f"journal agent show {worker.id}")
+            raise Refusal("the worker has no main agent", f"journal agent show {worker.number}")
         if self.settings.flag(MERGER_ENABLED):
             return SendMergerInput(worker.id, arguments.text)
         return RecordParentReport(worker.id, worker.parent_id, arguments.text)
