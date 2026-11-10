@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.command.bus import Bus
 from engine.query.queries import Queries
 from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATED, NOTES, EventNote, ManyNotes
@@ -28,7 +29,7 @@ def test_s34_a_merge_runs_no_guard_script_and_runs_its_commit_script(new_story):
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     original_commit = repository.tip(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     repository.expect_merge_commits_after(ENVIRONMENT_BRANCH, original_commit, 1)
     story.expect_rows(not script_calls(story, "refuse.sh"), "were skipped" in story.system_log_text(), "runs only once" in story.system_log_text())
     story.run_listeners()

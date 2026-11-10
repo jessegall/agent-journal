@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import subprocess
 
 import pytest
@@ -33,7 +34,7 @@ def test_a_release_runs_git_with_no_write_open(git_writes):
     repository_environment(story)
     worker = dispatched_worker(story)
     git_calls.clear()
-    story.expect_success(f'worker release {worker.id} "it went the wrong way"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "it went the wrong way"', actor=story.agent)
     story.expect_text("task show 1", "state: open")
     expect_external_git_calls(git_calls)
 
@@ -45,10 +46,10 @@ def test_a_release_whose_git_timed_out_takes_up_again_from_the_abandoned_worktre
     worker = dispatched_worker(story)
     with monkeypatch.context() as patch:
         patch.setattr(WorktreeGit, "remove", expired_removal)
-        failed = story.run(f'worker release {worker.id} "it went the wrong way"', actor=story.agent)
+        failed = story.run(f'worker release {agent_number(story, worker.id)} "it went the wrong way"', actor=story.agent)
     story.expect_rows(failed.code != 0)
     story.expect_text("task show 1", "state: open")
     git_calls.clear()
-    story.expect_success(f'worker release {worker.id} "it went the wrong way"', actor=story.agent)
-    story.expect_refusal(f'worker release {worker.id} "it went the wrong way"', "has no worktree out", actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "it went the wrong way"', actor=story.agent)
+    story.expect_refusal(f'worker release {agent_number(story, worker.id)} "it went the wrong way"', "has no worktree out", actor=story.agent)
     expect_external_git_calls(git_calls)

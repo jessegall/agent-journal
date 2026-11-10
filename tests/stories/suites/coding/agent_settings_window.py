@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from tests.stories.server.window_data_route import window_data
@@ -54,7 +55,7 @@ def test_s49_counts_groups_and_retirement(new_story):
         names = [row["profile"] for row in helper["profiles"]]
         expect_value((names.count("journal-merger"), names.count("journal-designer"), sum(row["kept"] for row in helper["profiles"]) <= helper["kept"]), (1, 1, True))
         worker = agent_actors(story)["worker"]
-        story.expect_refusal(f'agent retire {worker.id} --reason "not needed"', "", actor=story.user)
+        story.expect_refusal(f'agent retire {agent_number(story, worker.id)} --reason "not needed"', "", actor=story.user)
 
 
 def test_s51_agent_details_are_paged(new_story):

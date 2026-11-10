@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 import pytest
@@ -41,7 +42,7 @@ def test_helper_followups_keep_separate_request_boundaries(scenario):
     helper_id = helper_agent(scenario.story).id
     helper_plan(scenario, helper_id, "First helper job")
     scenario.switch(1)
-    scenario.command(f'helper send {helper_id} "Now plan the original request" --steer')
+    scenario.command(f'helper send {agent_number(story, helper_id)} "Now plan the original request" --steer')
     helper_plan(scenario, helper_id, "Work already in flight")
     scenario.expect_link("message:2", "plan:3", "about")
     reply = scenario.story.hook(helper_agent(scenario.story).session, HookSamples.tool_use("Read", ToolType.READ, [], None))
@@ -60,7 +61,7 @@ def test_resumed_helper_does_not_reuse_previous_request(scenario, monkeypatch):
     scenario.story.expect_success(f"agent end {helper_id}")
     resumable_session(scenario.story, helper_agent(scenario.story), monkeypatch)
     scenario.requested_command("message clear-work-source")
-    scenario.command(f'helper send {helper_id} "A separate unsourced job"')
+    scenario.command(f'helper send {agent_number(story, helper_id)} "A separate unsourced job"')
     scenario.story.hook(helper_agent(scenario.story).session, HookSamples.session_start())
     helper_plan(scenario, helper_id, "Unrelated resumed work")
     scenario.expect_no_link("message:2", "plan:3")
@@ -87,7 +88,7 @@ def test_deleted_helper_source_is_not_a_new_message_reusing_its_number(new_story
     scenario.switch(replacement["id"])
     helper_plan(scenario, helper_id, "Output from the deleted assignment")
     scenario.expect_no_link(f'message:{replacement["id"]}', "plan:2")
-    scenario.command(f'helper send {helper_id} "Now handle the replacement request" --steer')
+    scenario.command(f'helper send {agent_number(story, helper_id)} "Now handle the replacement request" --steer')
     scenario.story.hook(helper_agent(scenario.story).session, HookSamples.tool_use("Read", ToolType.READ, [], None))
     helper_plan(scenario, helper_id, "Output from the new assignment")
     scenario.expect_link(f'message:{replacement["id"]}', "plan:3", "about")

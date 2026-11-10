@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import subprocess
 import sys
 from pathlib import Path
@@ -60,7 +61,7 @@ def test_removal_stops_a_build_before_it_can_recreate_the_folder(writing_folder,
         return finished
 
     monkeypatch.setattr(WorktreeGit, 'git', write_after_git)
-    story.expect_success(f'worker merge --wait {worker.id}', actor=story.agent)
+    story.expect_success(f'worker merge --wait {agent_number(story, worker.id)}', actor=story.agent)
     repository.expect_no_folder(worker.id)
     story.expect_rows(writer.poll() is not None)
     story.expect_rows(story.row(Process, process.id).state is ProcessState.STOPPED)
@@ -69,7 +70,7 @@ def test_removal_stops_a_build_before_it_can_recreate_the_folder(writing_folder,
 def test_removal_stops_the_worker_program_before_git(writing_folder):
     story, repository, worker, process, writer = writing_folder
     story.container.get(Bus).run(RecordAgentProcess(worker.id, writer.pid), story.agent, environment_id=1)
-    story.expect_success(f'worker merge --wait {worker.id}', actor=story.agent)
+    story.expect_success(f'worker merge --wait {agent_number(story, worker.id)}', actor=story.agent)
     repository.expect_no_folder(worker.id)
     story.expect_rows(writer.poll() is not None, story.row(Process, process.id).state is ProcessState.STOPPED)
 
@@ -77,7 +78,7 @@ def test_removal_stops_the_worker_program_before_git(writing_folder):
 def test_removal_stops_the_workers_helper_program(writing_folder):
     story, repository, worker, process, writer = writing_folder
     story.new_row_id(f'agent start folder-helper claude helper --parent {worker.id} --pid {writer.pid} --environment main')
-    story.expect_success(f'worker merge --wait {worker.id}', actor=story.agent)
+    story.expect_success(f'worker merge --wait {agent_number(story, worker.id)}', actor=story.agent)
     repository.expect_no_folder(worker.id)
     story.expect_rows(writer.poll() is not None, story.row(Process, process.id).state is ProcessState.STOPPED)
 
@@ -94,19 +95,19 @@ def test_removal_clears_files_left_by_git(delivered_folder, monkeypatch):
         return original(git, folder, limit, *arguments)
 
     monkeypatch.setattr(WorktreeGit, 'git', leave_files)
-    story.expect_success(f'worker merge --wait {worker.id}', actor=story.agent)
+    story.expect_success(f'worker merge --wait {agent_number(story, worker.id)}', actor=story.agent)
     repository.expect_no_folder(worker.id)
 
 
 @pytest.mark.real_git
 def test_send_preserves_a_registered_worktree(delivered_folder):
     story, repository, worker = delivered_folder
-    story.expect_success(f'worker merge --wait {worker.id}', actor=story.agent)
+    story.expect_success(f'worker merge --wait {agent_number(story, worker.id)}', actor=story.agent)
     folder = repository.worktree_folder(worker.id)
     repository.git('worktree', 'add', '-b', 'separate-work', str(folder), ENVIRONMENT_BRANCH)
     (folder / 'keep.txt').write_text('unmerged work')
     task_id = story.new_row_id('task make "Separate change" --brief "Change the cart separately"', actor=story.agent)
-    story.expect_refusal(f'worker send --wait {worker.id} --task {task_id}', 'git worktree still exists', actor=story.agent)
+    story.expect_refusal(f'worker send --wait {agent_number(story, worker.id)} --task {task_id}', 'git worktree still exists', actor=story.agent)
     story.expect_rows((folder / 'keep.txt').read_text() == 'unmerged work', (folder / '.git').is_file())
 
 
@@ -114,6 +115,6 @@ def test_removal_leaves_a_run_in_a_sibling_folder(delivered_folder):
     story, repository, worker = delivered_folder
     folder = str(repository.worktree_folder(worker.id)) + '-other'
     process = story.container.get(Bus).run(StartProcess.single_part(story.agent.id, 'python3 other.py', folder, CommandCategory.BUILD, 30), story.agent, environment_id=1)
-    story.expect_success(f'worker merge --wait {worker.id}', actor=story.agent)
+    story.expect_success(f'worker merge --wait {agent_number(story, worker.id)}', actor=story.agent)
     repository.expect_no_folder(worker.id)
     story.expect_rows(story.row(Process, process.id).state is ProcessState.RUNNING)

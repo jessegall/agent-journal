@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from suites.coding.modules.workers.commands.record_own_test_failure.record_own_test_failure import RecordOwnTestFailure
@@ -30,10 +31,10 @@ def test_a_difference_is_an_important_line_the_merge_asks_an_answer_to(new_story
     repository, worker = proved_worker(story)
     story.expect_success(f'worker deliver --wait --differences "{OMISSION}"', actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
-    story.expect_text(f"worker logs {worker.id}", f"! {OMISSION}", actor=story.agent)
+    story.expect_text(f"worker logs {agent_number(story, worker.id)}", f"! {OMISSION}", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_refusal(f"worker merge --wait {worker.id}", "important log lines you have not answered", actor=story.agent)
-    story.expect_success(f'worker merge --wait {worker.id} --read-important "The phone width follows in its own task"', actor=story.agent)
+    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "important log lines you have not answered", actor=story.agent)
+    story.expect_success(f'worker merge --wait {agent_number(story, worker.id)} --read-important "The phone width follows in its own task"', actor=story.agent)
     story.expect_text("task overview 1", "main agent on the important lines: The phone width follows in its own task")
 
 
@@ -43,9 +44,9 @@ def test_the_logs_give_a_notes_first_words_and_a_task_shows_them_whole(new_story
     story.expect_success('task log 1 "one two three four five six seven eight nine ten"', actor=worker)
     story.expect_success('task log 1 --important "I could not work out the rounding"', actor=worker)
     story.expect_success("worker deliver --wait --differences none", actor=worker)
-    summary = story.run(f"worker logs {worker.id}", actor=story.agent).output_text
+    summary = story.run(f"worker logs {agent_number(story, worker.id)}", actor=story.agent).output_text
     story.expect_rows("! I could not work out the rounding" in summary, "one two three four five six seven eight" in summary, "nine ten" not in summary)
-    story.expect_text(f"worker logs {worker.id} --task 1", "one two three four five six seven eight nine ten", actor=story.agent)
+    story.expect_text(f"worker logs {agent_number(story, worker.id)} --task 1", "one two three four five six seven eight nine ten", actor=story.agent)
 
 
 def test_a_test_failing_five_times_in_a_workers_own_runs_is_kept_from_the_worker_and_shown_to_the_main_agent(new_story):
@@ -56,7 +57,7 @@ def test_a_test_failing_five_times_in_a_workers_own_runs_is_kept_from_the_worker
         bus.run(RecordOwnTestFailure(worker.id, 1, WORKER_RUN_LINE), Actor.core(), environment_id=1)
     story.expect_rows("failed 5 times" not in story.run("task overview 1", actor=worker).output_text)
     story.expect_success("worker deliver --wait --differences none", actor=worker)
-    story.expect_text(f"worker logs {worker.id}", "! its own runs failed 5 times: tests/stories/cart.py", actor=story.agent)
+    story.expect_text(f"worker logs {agent_number(story, worker.id)}", "! its own runs failed 5 times: tests/stories/cart.py", actor=story.agent)
 
 
 def test_a_failed_run_is_counted_for_each_test_file_it_names(new_story):

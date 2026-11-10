@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.available_work import AvailableWork
@@ -83,7 +84,7 @@ class UnfinishedTaskMain(StoryFixture):
         story.expect_success('plan make "Later work" --brief "A plan the person has not approved"', actor=story.agent)
         story.expect_success('phase make --plan 1 "First" --goal "The first step is done"', actor=story.agent)
         story.expect_success('task make "In the plan" --brief "A task of a plan that has not started" --phase 1', actor=story.agent)
-        story.expect_success(f"task assign 2 --to {story.agent.id}", actor=story.agent)
+        story.expect_success(f"task assign 2 --to {agent_number(story, story.agent.id)}", actor=story.agent)
 
 
 def test_a_stop_with_an_unfinished_task_of_its_own_in_a_plan_not_started_is_held_naming_it(new_story):

@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.models.agent import Agent
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.drivers.support.driver_settings import AUTOMATIC_APPROVAL
@@ -21,8 +22,8 @@ class EveryApprovalAccepted(StoryFixture):
 
 def test_with_the_setting_on_a_request_is_accepted_at_once_as_the_person_who_switched_it_on_and_its_command_runs(new_story):
     story = new_story(NOTES, fixture=EveryApprovalAccepted)
-    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
-    story.expect_text(f"agent resume {story.agent.id} --reason needed", "the setting Accept every approval accepted approval", actor=story.agent)
+    story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
+    story.expect_text(f"agent resume {agent_number(story, story.agent.id)} --reason needed", "the setting Accept every approval accepted approval", actor=story.agent)
     accepted = requests(story)[0]
     story.expect_rows(accepted.state is ApprovalState.ACCEPTED, accepted.standing_id is None, standing_yeses(story) == [], story.row(Agent, story.agent.id).paused_at is None, detail=str(accepted))
     story.expect_text(save_preset("Mine"), "accepted approval", actor=story.agent)

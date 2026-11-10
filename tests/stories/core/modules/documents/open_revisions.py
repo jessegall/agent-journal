@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 from datetime import timedelta
 
@@ -18,7 +19,7 @@ class DocumentReady(StoryFixture):
     parent = UserBuilder
 
     def steps(self, story):
-        story.expect_success(f'agent edit {story.agent.id} --given-name "Lady Lovelace"')
+        story.expect_success(f'agent edit {agent_number(story, story.agent.id)} --given-name "Lady Lovelace"')
         story.run('doc make "Notes" --abstract "Project notes" --body "Original"', actor=story.agent)
 
 

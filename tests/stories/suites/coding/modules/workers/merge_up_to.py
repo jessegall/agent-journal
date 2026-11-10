@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
@@ -16,7 +17,7 @@ def second_task_worker(new_story):
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     second_task = story.new_row_id('task make "Second job" --brief "Add the receipt"', actor=story.agent)
-    story.expect_success(f"worker send {worker.id} --wait --task {second_task}", actor=story.agent)
+    story.expect_success(f"worker send {agent_number(story, worker.id)} --wait --task {second_task}", actor=story.agent)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(FIRST_PROOF, actor=worker)
     story.expect_success("worker next --wait --differences none", actor=worker)
@@ -46,30 +47,30 @@ def expect_first_task_merged(story, repository, worker, second_task):
 
 def test_a_merge_up_to_a_commit_takes_the_work_up_to_it(proven_worker):
     story, repository, worker, second_task = proven_worker
-    story.expect_success(f"worker merge --wait {worker.id} --up-to {first_task_commit(repository, worker)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)} --up-to {first_task_commit(repository, worker)}", actor=story.agent)
     expect_first_task_merged(story, repository, worker, second_task)
 
 
 def test_a_commit_not_on_the_workers_branch_is_refused(proven_worker):
     story, _, worker, _ = proven_worker
-    story.expect_refusal(f"worker merge --wait {worker.id} --up-to {UNKNOWN_COMMIT}", f"not on the branch of worker {worker.id}", actor=story.agent)
+    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)} --up-to {UNKNOWN_COMMIT}", f"not on the branch of worker {worker.id}", actor=story.agent)
 
 
 def test_an_unproven_task_is_refused(second_task_worker):
     story, _, worker, _ = second_task_worker
     story.expect_text("task show 1", "state: testing")
-    story.expect_refusal(f"worker merge --wait {worker.id} --up-to 1", "is not checked", actor=story.agent)
+    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)} --up-to 1", "is not checked", actor=story.agent)
     story.expect_text("task show 1", "state: testing")
 
 
 def test_the_later_merge_brings_only_the_rest(proven_worker):
     story, repository, worker, second_task = proven_worker
-    story.expect_success(f"worker merge --wait {worker.id} --up-to 1", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)} --up-to 1", actor=story.agent)
     story.expect_success(f'proof make 1 --task {second_task} "receipt.py:1, the receipt story"', actor=worker)
     story.expect_success(DELIVERY, actor=worker)
     story.expect_success("proof check 2", actor=story.agent)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "receipt.py", RECEIPT)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
     story.expect_text(f"task show {second_task}", "state: completed")

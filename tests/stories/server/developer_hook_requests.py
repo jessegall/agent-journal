@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
@@ -151,7 +152,7 @@ def test_requests_show_the_sender_and_queue_time(recording_server):
     server = recording_server
     story = server.story
     worker = story.new_row_id("agent start s-worker claude worker --environment main")
-    story.expect_success(f'agent edit {worker} --given-name "Ada"')
+    story.expect_success(f'agent edit {agent_number(story, worker)} --given-name "Ada"')
     for session, role in (("s-1", "main"), ("s-worker", "worker")):
         sample = HookSamples.sample("post_tool_use").with_fields(session=session, role=role, firing=f"sender-{role}")
         server.expect_hook_answer("/hook", dict(sample.body), 200, '"refusal":')
@@ -228,7 +229,7 @@ def test_queue_inspector_shows_hook_priority_without_waiting(recording_server):
     server = recording_server
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     worker_id = server.story.new_row_id("agent start s-queue-worker claude worker --environment main")
-    server.story.expect_success(f'agent edit {worker_id} --given-name "Ada"')
+    server.story.expect_success(f'agent edit {agent_number(server.story, worker_id)} --given-name "Ada"')
     worker = HookSamples.sample("post_tool_use").with_fields(session="s-queue-worker", role="worker", firing="queue-worker")
     main = HookSamples.sample("post_tool_use").with_fields(role="main", firing="queue-main")
     with ThreadPoolExecutor(2) as pool:

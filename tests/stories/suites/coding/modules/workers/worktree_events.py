@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import shutil
 import sys
 
@@ -61,7 +62,7 @@ def delivery_line(story) -> None:
     story.expect_success(FIRST_PROOF, "point: 1", actor=story.worker)
     story.expect_success(DELIVERY, actor=story.worker)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
-    story.expect_success(f"worker logs {story.worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, story.worker.id)}", actor=story.agent)
 
 
 def worktree_state(story) -> tuple[str, str, bool]:
@@ -80,7 +81,7 @@ def test_s36_a_commit_script_on_the_delivery_lifts_the_mark_and_restores_the_fol
     story, repository, worker = lifting_story, lifting_story.repository, lifting_story.worker
     story.expect_rows(worktree_state(story) == (f"H {RULES}\n", "", True), plugin_row(story).fault_count == 0)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, RULES, RULES_TEXT)
 
 
@@ -101,14 +102,14 @@ def test_a_removal_event_fires_when_a_merge_removes_the_worktree(removable):
     story = removable
     delivery_line(story)
     story.repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker merge --wait {story.worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, story.worker.id)}", actor=story.agent)
     story.run_listeners()
     story.expect_rows(len(script_calls(story, "see.sh")) == 1)
 
 
 def test_a_removal_event_fires_when_a_worker_is_released(removable):
     story = removable
-    story.expect_success(f'worker release {story.worker.id} "not needed"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, story.worker.id)} "not needed"', actor=story.agent)
     story.run_listeners()
     calls = script_calls(story, "see.sh")
     story.expect_rows(len(calls) == 1, data_row(calls[0])["folder"] == str(story.repository.worktree_folder(story.worker.id)))

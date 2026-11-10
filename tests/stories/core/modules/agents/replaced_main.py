@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from engine.process.leftover_process import LeftoverProcess
@@ -40,8 +41,8 @@ def test_two_launches_at_once_end_with_one_main_and_the_first_is_stopped(new_sto
     first_id = story.new_row_id("agent start launch-a claude main --environment main")
     launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"stopped\n")
     second_id = story.new_row_id("agent start launch-b claude main --environment main")
-    story.expect_text(f"agent show {first_id}", "ended_at: 20")
-    story.expect_absent(f"agent show {second_id}", "ended_at: 20")
+    story.expect_text(f"agent show {agent_number(story, first_id)}", "ended_at: 20")
+    story.expect_absent(f"agent show {agent_number(story, second_id)}", "ended_at: 20")
     story.run_listeners()
     launcher.drain_requests()
     story.expect_rows(launcher.requests == [{"agent_id": first_id, "stop": True}])
@@ -50,11 +51,11 @@ def test_two_launches_at_once_end_with_one_main_and_the_first_is_stopped(new_sto
 def test_a_worker_that_starts_ends_no_main(replaced_story):
     story, old = replaced_story
     story.run(f"agent start w-1 claude worker --parent {old.id} --environment main")
-    story.expect_absent(f"agent show {old.id}", "ended_at: 20")
+    story.expect_absent(f"agent show {agent_number(story, old.id)}", "ended_at: 20")
 
 
 def test_an_agent_cannot_register_a_main_agent_that_would_end_the_running_one(replaced_story):
     story, running = replaced_story
     story.expect_refusal("agent start story-ada-1 claude main --environment main", f"main agent {running.id} runs in this environment, and an agent does not replace it",
                          actor=running)
-    story.expect_absent(f"agent show {running.id}", "ended_at: 20")
+    story.expect_absent(f"agent show {agent_number(story, running.id)}", "ended_at: 20")

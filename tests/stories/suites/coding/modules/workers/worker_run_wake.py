@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
 from engine.actor.actor import Actor
@@ -51,7 +52,7 @@ def test_a_worker_a_person_stopped_stays_stopped_when_its_run_ends(new_story):
     story, worker = story_with_worker(new_story)
     run, bus = start_background_run(story, worker)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at 2026-10-31T09:00:00+00:00", "pid: 700")
-    story.expect_success(f"agent stop {worker.id}", actor=user)
+    story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at 2026-10-31T09:00:00+00:00", "pid: 700")
+    story.expect_success(f"agent stop {agent_number(story, worker.id)}", actor=user)
     bus.run(EndProcess(run.id, 1, 10, 1), worker, environment_id=1)
     expect_run_ended_line_absent(story, worker, run)

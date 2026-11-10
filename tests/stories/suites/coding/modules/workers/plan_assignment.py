@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 
 import pytest
@@ -36,7 +37,7 @@ def assignee(story) -> dict[str, object]:
 
 def test_a_plan_is_assigned_to_a_worker_before_it_starts(new_story):
     story, first, _ = story_with_two_workers(new_story)
-    story.expect_success(f"plan assign 1 --to {first.id}", actor=story.agent)
+    story.expect_success(f"plan assign 1 --to {agent_number(story, first.id)}", actor=story.agent)
     expect_task_holder(story, first)
     story.expect_text("plan show 1", "state: approved", actor=story.agent)
     expect_value(assignee(story)["id"], first.id)

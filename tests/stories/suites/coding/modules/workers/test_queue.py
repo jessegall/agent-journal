@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from suites.coding.modules.workers.models.merger_line import MergerLine
 import json
 import subprocess
@@ -82,8 +83,8 @@ def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_me
     expect_marks_text(story, "passed")
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{worker.id} all pass", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
 
 
@@ -137,12 +138,12 @@ def test_passed_tests_with_a_proof_with_no_test_ask_for_the_check_not_the_merge(
     ended(story, started[0], 0)
     lines = story.run(f"agent-line list --agent {story.agent.id}")
     lines.expect_text(PROOF_CHECK.nudge(worker=worker.id, task=1, proofs="2").text)
-    lines.expect_no_text(f"journal worker merge {worker.id}")
+    lines.expect_no_text(f"journal worker merge {agent_number(story, worker.id)}")
     expect_marks_text(story, "passed")
     story.expect_success("proof check 2", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
 
 
 def test_a_task_with_an_unchecked_proof_stays_in_testing_after_its_tests_pass(new_story, monkeypatch):
@@ -177,7 +178,7 @@ def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, m
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("base.txt", "rebased\n", "Base change")
-    story.expect_success(f'worker send --wait {worker.id} "go on" --test-command "probe=python3 -c"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "go on" --test-command "probe=python3 -c"', actor=story.agent)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story" --test "probe \'from pathlib import Path; assert Path(\\\"base.txt\\\").exists()\' tests/cart.py"', actor=worker)
     story.expect_success("worker deliver --wait --differences none", actor=worker)
     story.run_listeners()
@@ -305,7 +306,7 @@ def test_three_failed_hand_ins_of_a_task_give_the_main_agent_a_line_the_worker_n
     story.expect_success("worker deliver --wait --differences none", actor=worker)
     story.run_listeners()
     ended(story, started[3], 0)
-    story.expect_text(f"worker logs {worker.id}", "! failed 3 hand-ins", actor=story.agent)
+    story.expect_text(f"worker logs {agent_number(story, worker.id)}", "! failed 3 hand-ins", actor=story.agent)
 
 
 def test_every_third_failed_hand_in_in_a_row_puts_a_line_before_the_merger(new_story, monkeypatch):

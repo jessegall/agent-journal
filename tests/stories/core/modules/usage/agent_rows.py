@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 import json
 from datetime import timedelta
@@ -40,7 +41,7 @@ def test_agent_rows_keep_creation_order_when_states_and_activity_change(new_stor
     story.advance(timedelta(seconds=1))
     newest = story.new_row_id("agent start newest claude reviewer --environment main")
     story.run(f"agent end {middle}")
-    story.run(f"agent edit {oldest} --paused-at {story.clock.timestamp().text}")
+    story.run(f"agent edit {agent_number(story, oldest)} --paused-at {story.clock.timestamp().text}")
     expect_card_order(story, "all", oldest, middle, newest)
     expect_card_order(story, "running", oldest, newest)
 
@@ -84,15 +85,15 @@ def test_agent_filters_leave_out_main_agents_and_include_finished_helpers(new_st
     story.run(f"agent end {retired_main}")
     expect_listed(story, "running", running_helper, running_worker)
     expect_listed(story, "idle", helper, reviewer, worker)
-    story.expect_success(f'agent retire {worker} --reason "Its work is finished"', actor=story.user)
+    story.expect_success(f'agent retire {agent_number(story, worker)} --reason "Its work is finished"', actor=story.user)
     expect_listed(story, "retired", worker)
     expect_listed(story, "all", helper, reviewer, worker, running_helper, running_worker)
     expect_unlisted(story, main, retired_main)
     states = {row["id"]: row["state"] for row in cards(story, "all")}
     expect_states_2(states, helper, "idle")
     expect_states_2(states, worker, "retired")
-    story.expect_text(f"agent transcript {helper}", "The review is complete", actor=story.user)
-    story.expect_text(f"agent transcript {helper} --before-id 2", "The review is complete", actor=story.user)
+    story.expect_text(f"agent transcript {agent_number(story, helper)}", "The review is complete", actor=story.user)
+    story.expect_text(f"agent transcript {agent_number(story, helper)} --before-id 2", "The review is complete", actor=story.user)
 
 
 def expect_states_2(states, worker, expected) -> None:
@@ -116,7 +117,7 @@ class StatesAgents(StoryFixture):
         story.expect_success(f"agent end {worker}", actor=story.user)
         retired = story.new_row_id("agent start retired-reviewer claude reviewer --environment main")
         story.expect_success(f"agent end {retired}", actor=story.user)
-        story.expect_success(f'agent retire {retired} --reason "{UPGRADE_RETIREMENT_REASON}"', actor=story.user)
+        story.expect_success(f'agent retire {agent_number(story, retired)} --reason "{UPGRADE_RETIREMENT_REASON}"', actor=story.user)
         story.expect_success("agent start working-reviewer claude reviewer --environment main")
 
 

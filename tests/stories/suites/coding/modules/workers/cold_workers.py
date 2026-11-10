@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
 import pytest
@@ -31,7 +32,7 @@ def with_job(story, minutes, percent):
     full_status(story, worker.session, percent, 0.0)
     story.advance(timedelta(minutes=minutes))
     launcher = start_launcher(story, f"started {RESUMED_PID}\n".encode())
-    story.expect_success(f'worker send --wait {worker.id} "{JOB}"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "{JOB}"', actor=story.agent)
     story.expect_success(f"agent end {worker.id}", actor=story.user)
     story.container.get(WorkerResume).resume(story.row(Agent, worker.id), story.agent)
     launcher.drain_requests()

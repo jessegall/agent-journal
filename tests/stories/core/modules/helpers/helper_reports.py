@@ -102,7 +102,7 @@ class ExitedHelper(StoryFixture):
 def test_a_resumed_helper_reports_its_next_job_the_same_way(new_story, monkeypatch):
     story = new_story(fixture=EndedHelper)
     resumable_session(story, helper_agent(story), monkeypatch)
-    story.expect_success(f'helper send {helper_agent(story).id} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
     story.hook(helper_agent(story).session, HookSamples.session_start())
     story.hook(helper_agent(story).session, stop_with_report("The listener side is fine."))
@@ -117,7 +117,7 @@ def test_two_jobs_in_a_row_that_end_without_a_report_both_close(new_story, monke
     helper = helper_agent(story)
     story.expect_text(f"message read {helper_report(story).id}", "", actor=story.agent)
     resumable_session(story, helper, monkeypatch)
-    story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {agent_number(story, helper.id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
     story.hook(helper.session, HookSamples.session_start())
     exited(story, 0)
@@ -160,7 +160,7 @@ def test_a_program_that_exits_after_its_report_only_ends_its_row(new_story):
 def test_a_main_agents_exit_leaves_its_row(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_success(f"agent exited {story.agent.id} 0")
-    story.expect_text(f"agent show {story.agent.id}", "role: main")
+    story.expect_text(f"agent show {agent_number(story, story.agent.id)}", "role: main")
 
 
 def test_a_helper_that_ends_with_its_job_open_tells_the_parent(new_story):
@@ -181,12 +181,12 @@ def test_a_silent_helper_ends_with_no_agent_to_carry_the_tick(new_story):
 
 def test_a_paused_parent_keeps_its_helpers_job_open_and_takes_it_back_on_resume(new_story):
     story = new_story(fixture=StartedHelper)
-    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
+    story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
     story.expect_success(f"agent end {helper_agent(story).id}", actor=story.user)
     story.run_listeners()
     story.expect_rows(read_jobs(story, helper_agent(story))[0].ended_at is None)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
+    story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", actor=story.user)
     story.run_listeners()
     launcher.drain_requests()
     story.expect_rows(len(launcher.requests) == 1)

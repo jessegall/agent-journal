@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE
 from core.modules.agents.agents_module import AgentsModule
 import json
@@ -38,24 +39,24 @@ def typing_story(new_story):
 
 def test_the_controls_list_the_programs_choices_without_their_lines(new_story):
     story, _ = typing_story(new_story)
-    groups = json.loads(story.run(f"agent controls {story.agent.id} --json", actor=story.user).output_text)["groups"]
+    groups = json.loads(story.run(f"agent controls {agent_number(story, story.agent.id)} --json", actor=story.user).output_text)["groups"]
     expect_key_group_groups(groups, ["model", "effort", "context"])
     expect_choices_groups_with(groups, {"value": "opus", "label": "Opus"})
 
 
 def test_a_choice_types_the_programs_own_line(new_story):
     story, typing = typing_story(new_story)
-    story.expect_success(f"agent control {story.agent.id} model opus", f"applied to {agent_label(story, story.agent.id)}", actor=story.user)
-    story.expect_success(f"agent control {story.agent.id} effort high", actor=story.user)
-    story.expect_success(f"agent control {story.agent.id} context compact", actor=story.user)
+    story.expect_success(f"agent control {agent_number(story, story.agent.id)} model opus", f"applied to {agent_label(story, story.agent.id)}", actor=story.user)
+    story.expect_success(f"agent control {agent_number(story, story.agent.id)} effort high", actor=story.user)
+    story.expect_success(f"agent control {agent_number(story, story.agent.id)} context compact", actor=story.user)
     story.expect_rows(typing.typed == [(story.agent.id, "/model opus"), (story.agent.id, "/effort high"), (story.agent.id, COMPACT_LINE)])
 
 
 def test_a_choice_the_program_does_not_offer_and_an_ended_agent_are_refused(new_story):
     story, typing = typing_story(new_story)
-    story.expect_refusal(f"agent control {story.agent.id} model nope", "model nope is not a choice", actor=story.user)
+    story.expect_refusal(f"agent control {agent_number(story, story.agent.id)} model nope", "model nope is not a choice", actor=story.user)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
-    story.expect_refusal(f"agent control {story.agent.id} model opus", "has ended", actor=story.user)
+    story.expect_refusal(f"agent control {agent_number(story, story.agent.id)} model opus", "has ended", actor=story.user)
     story.expect_rows(typing.typed == [])
 
 
@@ -73,9 +74,9 @@ def test_stop_ends_the_program_under_the_agents_pid_and_its_session(new_story, t
     program = subprocess.Popen([str(fake)], start_new_session=True)
     try:
         agent_id = story.new_row_id(f"agent start s-stand-in claude worker --pid {program.pid} --environment main")
-        story.expect_success(f"agent stop {agent_id}", f"stopped {agent_label(story, agent_id)}", actor=story.user)
+        story.expect_success(f"agent stop {agent_number(story, agent_id)}", f"stopped {agent_label(story, agent_id)}", actor=story.user)
         story.expect_rows(program.wait(timeout=10) is not None)
-        story.expect_text(f"agent show {agent_id}", "ended_at:", actor=story.user)
+        story.expect_text(f"agent show {agent_number(story, agent_id)}", "ended_at:", actor=story.user)
     finally:
         program.kill()
         program.wait()
@@ -94,9 +95,9 @@ def test_stopping_holds_no_write_lock_and_a_session_its_hooks_ended_stays_ended(
 
     monkeypatch.setattr(LeftoverProcess, "stop", stopped)
     monkeypatch.setattr(LeftoverProcess, "command_line", staticmethod(lambda pid: "claude" if pid == 4242 and not transaction_flags else ""))
-    story.expect_success(f"agent stop {agent_id}", f"stopped {agent_label(story, agent_id)}", actor=story.user)
+    story.expect_success(f"agent stop {agent_number(story, agent_id)}", f"stopped {agent_label(story, agent_id)}", actor=story.user)
     story.expect_rows(transaction_flags == [False])
-    story.expect_text(f"agent show {agent_id}", "ended_at:", actor=story.user)
+    story.expect_text(f"agent show {agent_number(story, agent_id)}", "ended_at:", actor=story.user)
 
 
 def missing_launcher(story) -> None:
@@ -116,18 +117,18 @@ def different_program_launcher(story) -> None:
 def stopped_main_agent(new_story, request):
     story = new_story(fixture=UserJoined)
     request.param(story)
-    story.expect_success(f"agent stop {story.agent.id}", f"stopped {agent_label(story, story.agent.id)}", actor=story.user)
+    story.expect_success(f"agent stop {agent_number(story, story.agent.id)}", f"stopped {agent_label(story, story.agent.id)}", actor=story.user)
     return story
 
 
 def test_a_main_with_no_process_and_no_launcher_that_answers_ends_when_stopped(stopped_main_agent):
-    stopped_main_agent.expect_text(f"agent show {stopped_main_agent.agent.id}", "ended_at:", actor=stopped_main_agent.user)
+    stopped_main_agent.expect_text(f"agent show {agent_number(story, stopped_main_agent.agent.id)}", "ended_at:", actor=stopped_main_agent.user)
 
 
 def test_stopping_an_ended_agent_is_refused(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
-    story.expect_refusal(f"agent stop {story.agent.id}", "has ended already", actor=story.user)
+    story.expect_refusal(f"agent stop {agent_number(story, story.agent.id)}", "has ended already", actor=story.user)
 
 
 def test_launch_hands_the_launcher_the_program_in_the_environments_folder_under_a_new_agent_row(new_story):

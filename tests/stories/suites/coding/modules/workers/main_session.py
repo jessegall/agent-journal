@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 import pytest
@@ -55,10 +56,10 @@ def test_a_main_session_in_another_environment_does_not_take_over_a_worker(deliv
     story, worker = delivered_story
     story.expect_success('environment make side "Side project"')
     story.expect_success("agent start s-side claude main --environment side")
-    story.expect_text(f"agent show {worker.id}", f"parent_id: {story.agent.id}")
+    story.expect_text(f"agent show {agent_number(story, worker.id)}", f"parent_id: {story.agent.id}")
 
 
 def test_a_new_helper_session_does_not_take_over_a_worker(delivered_story):
     story, worker = delivered_story
     story.expect_success(f"agent start s-helper claude helper --parent {story.agent.id} --environment main")
-    story.expect_text(f"agent show {worker.id}", f"parent_id: {story.agent.id}")
+    story.expect_text(f"agent show {agent_number(story, worker.id)}", f"parent_id: {story.agent.id}")

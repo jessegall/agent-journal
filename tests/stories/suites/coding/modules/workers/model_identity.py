@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 from datetime import timedelta
 
@@ -14,7 +15,7 @@ from tests.stories.suites.coding.modules.workers.support.program_split import vi
 
 
 def expect_identity(story, worker, model):
-    story.expect_text(f"agent show {worker.id}", f"program_model: {model}")
+    story.expect_text(f"agent show {agent_number(story, worker.id)}", f"program_model: {model}")
     facts = json.loads(story.run("usage agents --environment main --closed --json").output_text)["rows"]
     card = next(row for row in facts if row["id"] == worker.id)
     story.expect_rows(card["model"] == model, card["effort"] == "high")
@@ -47,7 +48,7 @@ def test_dispatch_send_resume_and_restart_keep_the_model_on_the_command_and_card
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.run_listeners()
     story.advance(timedelta(seconds=1))
-    story.expect_success(f'worker send --wait {worker.id} "Add the tax"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Add the tax"', actor=story.agent)
     story.run_listeners()
     expect_identity(story, worker, model)
     for _ in range(2):

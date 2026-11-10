@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import subprocess
 from datetime import timedelta
 
@@ -153,8 +154,8 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     # all pass: the main agent is told to merge, and the merge closes all three
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{worker.id} all pass", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     expect_states(story, task1="completed", task2="completed", task3="completed")
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
 

@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
@@ -19,7 +20,7 @@ def built_and_released(story, repository, dispatch=DISPATCH):
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(FIRST_PROOF, actor=worker)
     story.expect_success(DELIVERY, actor=worker)
-    story.expect_success(f'worker release {worker.id} "the worker left"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "the worker left"', actor=story.agent)
     return worker
 
 
@@ -114,7 +115,7 @@ def test_another_tasks_commit_on_the_earlier_branch_does_not_count(base_story):
     repository.changed(first.id, "cart.py", CART_CHANGE)
     story.expect_success(FIRST_PROOF, actor=first)
     story.expect_success("worker next --wait --differences none", actor=first)
-    story.expect_success(f'worker release {first.id} "the worker left"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, first.id)} "the worker left"', actor=story.agent)
     third = dispatched_worker(story, f"{WORKER_DISPATCH_LINE} 2")
     expect_cut_from_the_base(story, repository, third)
 
@@ -127,8 +128,8 @@ def test_a_kept_worker_sent_a_built_task_finds_the_earlier_work_too(base_story):
     story.expect_success(SECOND_PROOF, actor=kept)
     story.expect_success(DELIVERY, actor=kept)
     story.expect_success("proof check 1", actor=story.agent)
-    story.expect_success(f"worker logs {kept.id}", actor=story.agent)
-    story.expect_success(f"worker merge --wait {kept.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, kept.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, kept.id)}", actor=story.agent)
     built_and_released(story, repository, f"{WORKER_DISPATCH_LINE} 1")
-    story.expect_success(f"worker send --wait {kept.id} --task 1", actor=story.agent)
+    story.expect_success(f"worker send --wait {agent_number(story, kept.id)} --task 1", actor=story.agent)
     expect_value((repository.worktree_folder(kept.id) / "cart.py").read_text(), CART_CHANGE)

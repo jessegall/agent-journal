@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, delivered_worker, dispatched_worker, repository_environment
@@ -66,5 +67,5 @@ def test_a_proof_is_returned_and_a_job_sent_while_the_delivered_workers_task_is_
     story.expect_success("task retest 1", "state: started", actor=story.agent)
     story.expect_success('proof short 1 "wrong task"', 'state: short', actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, 'state: started')
-    story.expect_success(f'worker send --wait {worker.id} "Go on with it"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Go on with it"', actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, 'state: started')

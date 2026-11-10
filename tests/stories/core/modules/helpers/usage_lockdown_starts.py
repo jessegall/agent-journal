@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
@@ -50,11 +51,11 @@ def test_a_send_to_an_ended_kept_helper_is_refused_with_the_reason_and_the_same_
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
     resumable_session(story, helper, monkeypatch)
     report(story, 55)
-    story.expect_refusal(f'helper send {helper.id} "{JOB}"', REFUSAL, actor=story.agent)
+    story.expect_refusal(f'helper send {agent_number(story, helper.id)} "{JOB}"', REFUSAL, actor=story.agent)
     story.run_listeners()
     story.expect_rows(len(read_jobs(story, helper)) == 1)
     story.expect_success("usage-limit delete 1", actor=story.user)
-    story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {agent_number(story, helper.id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
     story.expect_rows(len(read_jobs(story, helper)) == 2, len(launcher.requests) == 1, detail=str(launcher.requests))

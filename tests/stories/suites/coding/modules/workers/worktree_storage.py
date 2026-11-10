@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 from datetime import timedelta
 from pathlib import Path
@@ -41,5 +42,5 @@ def test_a_send_to_the_stopped_worker_copies_its_library_back_before_its_program
     story.advance(timedelta(minutes=15))
     libraries_tick(story)
     story.expect_rows(not (folder / COPY).exists())
-    story.expect_success(f'worker send --wait {worker} "go on"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, worker)} "go on"', actor=story.agent)
     story.expect_rows((folder / COPY / LIBRARY_FILE).read_text() == "library\n", (folder / CHANGED_FILE).is_file())

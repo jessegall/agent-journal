@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from engine.query.queries import Queries
@@ -120,7 +121,7 @@ def clashed(new_story):
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
-    story.expect_text(f"worker merge --wait {worker.id}", "clashed on cart.py", actor=story.agent)
+    story.expect_text(f"worker merge --wait {agent_number(story, worker.id)}", "clashed on cart.py", actor=story.agent)
     return story, worker, repository
 
 
@@ -160,7 +161,7 @@ def test_the_json_status_holds_the_point_and_the_counts(phase_worker):
 
 
 def test_the_main_agent_reads_the_same_line_as_the_worker(phase_worker):
-    main_view = phase_worker.story.run(f"worker status {phase_worker.worker.id}", actor=phase_worker.story.agent).output_text
+    main_view = phase_worker.story.run(f"worker status {agent_number(phase_worker.story, phase_worker.worker.id)}", actor=phase_worker.story.agent).output_text
     phase_worker.story.expect_rows(main_view.splitlines()[0] == phase_worker.status_line())
 
 

@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from suites.coding.modules.workers.support.worker_launch_failures import WorkerLaunchFailures
@@ -63,7 +64,7 @@ def test_a_worker_that_says_stuck_while_its_run_goes_tells_its_main_agent_nothin
     start_process(story, "make check", category=CommandCategory.TEST_RUN)
     story.agent = main
     story.expect_success('wait stuck "waiting for my test"', actor=worker)
-    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.expect_no_text(f"agent-line list --agent {main.id}", "is stuck")
@@ -77,7 +78,7 @@ def test_a_stuck_worker_may_stop_and_its_main_agent_hears_of_it(new_story):
     session = worker_session(story, worker)
     story.expect_success('wait stuck "the build tool is missing"', actor=worker)
     story.expect_hook_allowed(session, HookSamples.stop())
-    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent-line list --agent {story.agent.id}", "ended with task:1 left")
@@ -104,7 +105,7 @@ def test_a_worker_that_stops_with_tasks_left_shows_a_mark_and_its_main_agent_hea
     repository_environment(story)
     worker = dispatched_worker(story)
     last_reply(tmp_path, worker_session(story, worker), "I ran out of ideas")
-    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.run_listeners()
@@ -118,7 +119,7 @@ def test_a_worker_with_no_tasks_left_shows_no_stop_mark(new_story):
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success("task cancel 1 --reason gone", actor=story.agent)
-    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.run_listeners()
@@ -130,8 +131,8 @@ def test_a_worker_a_person_stops_loses_its_tasks_and_is_not_started_again(new_st
     repository_environment(story)
     worker = dispatched_worker(story)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
-    story.expect_success(f"agent stop {worker.id}", f"stopped {agent_label(story, worker.id)}", actor=user)
+    story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.expect_success(f"agent stop {agent_number(story, worker.id)}", f"stopped {agent_label(story, worker.id)}", actor=user)
     story.expect_no_text(lines.TASK_DETAILS, f"delegated_to: {worker.id}")
     story.expect_no_text(f"agent-line list --agent {worker.id}", "you ended with tasks left")
     story.expect_text(f"agent-line list --agent {story.agent.id}", "ended with task:1 left")
@@ -146,8 +147,8 @@ def test_a_stopped_worker_keeps_its_task_in_testing_and_loses_the_one_queued_whi
     story.expect_success('proof make 1 --task 1 "cart.py:1, its story" --test "python tests/cart.py"', actor=worker)
     story.expect_success("worker next --wait --differences none", actor=worker)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
-    story.expect_success(f"agent stop {worker.id}", actor=user)
+    story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.expect_success(f"agent stop {agent_number(story, worker.id)}", actor=user)
     story.expect_text(lines.TASK_DETAILS, "state: testing", f"delegated_to: {worker.id}")
     story.expect_no_text(lines.SECOND_TASK_DETAILS, "delegated_to")
 
@@ -159,7 +160,7 @@ def test_a_worker_that_ends_with_only_a_queued_task_has_it_named_to_the_main_age
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, f"{DISPATCH} 2")
     story.expect_success('task block 1 --reason "waits on a person"', actor=worker)
-    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} ended with task:2 left")
@@ -182,7 +183,7 @@ def test_a_worker_that_keeps_ending_is_named_to_the_main_agent(new_story, monkey
     story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} ended with task:1 left: send it a job, or release it")
@@ -195,7 +196,7 @@ def test_a_worker_that_ends_with_many_tasks_left_gives_the_main_agent_one_line(n
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     story.run('task make "Third job" --brief "Do the third job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, f"{DISPATCH} 2 3")
-    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} ended with task:1, task:2, task:3 left")
@@ -206,20 +207,20 @@ def test_a_worker_whose_process_is_gone_is_ended_at_the_next_tick_and_told_to_ca
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
-    story.expect_text(f"agent show {worker.id}", "ended_at: 2026")
+    story.expect_text(f"agent show {agent_number(story, worker.id)}", "ended_at: 2026")
     story.expect_text(f"agent-line list --agent {worker.id}", "you ended with tasks left")
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
 
 
 def test_a_main_session_whose_recorded_process_is_gone_is_never_ended_by_the_tick(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    story.expect_success(f"agent edit {story.agent.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.expect_success(f"agent edit {agent_number(story, story.agent.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
-    story.expect_rows("ended_at" not in story.run(f"agent show {story.agent.id}").output_text)
+    story.expect_rows("ended_at" not in story.run(f"agent show {agent_number(story, story.agent.id)}").output_text)
 
 
 def test_a_main_session_that_ends_with_a_worker_out_leaves_its_worktree_and_the_next_session_start_names_it(new_story):

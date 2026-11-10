@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 
 import pytest
@@ -42,7 +43,7 @@ def test_a_worker_in_a_phase_reads_the_phase_and_the_tasks_waiting_for_its_end(n
 
 def test_the_main_agent_reads_a_workers_status_in_pages(worker_batch):
     story, _, worker = worker_batch
-    status = json.loads(story.run(f"worker status {worker.id} --page 2 --limit 1 --json", actor=story.agent).output_text)
+    status = json.loads(story.run(f"worker status {agent_number(story, worker.id)} --page 2 --limit 1 --json", actor=story.agent).output_text)
     story.expect_rows(status["assignments"]["total"] == 2, status["assignments"]["page"] == 2,
                       [task["id"] for task in status["assignments"]["rows"]] == [3])
 
@@ -56,10 +57,10 @@ def test_worker_status_lists_tests_waiting_for_the_queue(worker_batch, monkeypat
     story.expect_success('proof make 1 --task 1 "cart story" --test "python tests/cart.py"', actor=worker)
     story.expect_success("worker next --wait --differences none", actor=worker)
     story.run_listeners()
-    status = json.loads(story.run(f"worker status {worker.id} --json", actor=story.agent).output_text)
+    status = json.loads(story.run(f"worker status {agent_number(story, worker.id)} --json", actor=story.agent).output_text)
     story.expect_rows(status["current_task"]["state"] == "testing", status["tests"]["total"] == 1,
                       status["tests"]["rows"][0]["test_command"] == "pytest tests/cart.py")
-    story.expect_text(f"worker status {worker.id}", "Current task: 1", "Tests waiting: 1", "Assignments remaining: 2", actor=story.agent)
+    story.expect_text(f"worker status {agent_number(story, worker.id)}", "Current task: 1", "Tests waiting: 1", "Assignments remaining: 2", actor=story.agent)
 
 
 def test_status_refuses_an_unbounded_page(worker_batch):

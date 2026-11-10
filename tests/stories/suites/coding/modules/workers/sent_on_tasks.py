@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
@@ -23,5 +24,5 @@ def test_a_task_the_main_agent_holds_is_queued_for_the_worker_it_is_sent_to(stor
     worker = dispatched_worker(story)
     task_id = story.new_row_id('task make "A second task" --brief "Do the second task"', actor=story.agent)
     story.expect_success(f"task start {task_id}", actor=story.agent)
-    story.expect_success(f"worker send --wait {worker.id} --task {task_id}", actor=story.agent)
+    story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task_id}", actor=story.agent)
     story.expect_text(f"task show {task_id}", f"delegated_to: {worker.id}", "state: open")

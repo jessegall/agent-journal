@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from datetime import timedelta
@@ -14,7 +15,7 @@ from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended,
 
 def waiting_task(story, worker):
     task_id = story.new_row_id('task make "Continue after the worker" --environment main', actor=story.agent)
-    story.expect_success(f"task block {task_id} --on worker:{worker.id}", "state: blocked", actor=story.agent)
+    story.expect_success(f"task block {task_id} --on worker:{agent_number(story, worker.id)}", "state: blocked", actor=story.agent)
     return task_id
 
 
@@ -47,8 +48,8 @@ def test_merging_a_worker_opens_the_task_waiting_on_it(new_story):
     story.expect_success("proof check 1", actor=story.agent)
     story.expect_success(f"task show {task_id}", "state: blocked", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_success(f"task show {task_id}", "state: open", actor=story.agent)
 
 
@@ -104,28 +105,28 @@ def test_a_task_cannot_wait_on_a_worker_that_has_already_ended(working):
     story, _, worker = working
     task_id = story.new_row_id('task make "Continue" --environment main', actor=story.agent)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
-    story.expect_refusal(f"task block {task_id} --on worker:{worker.id}", "already finished", actor=story.agent)
+    story.expect_refusal(f"task block {task_id} --on worker:{agent_number(story, worker.id)}", "already finished", actor=story.agent)
     story.expect_success(f"task show {task_id}", "state: open", actor=story.agent)
 
 
 def test_a_task_cannot_wait_on_a_worker_that_was_released(working):
     story, _, worker = working
     task_id = story.new_row_id('task make "Continue" --environment main', actor=story.agent)
-    story.expect_success(f'worker release {worker.id} "cancelled"', actor=story.agent)
-    story.expect_refusal(f"task block {task_id} --on worker:{worker.id}", "already finished", actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "cancelled"', actor=story.agent)
+    story.expect_refusal(f"task block {task_id} --on worker:{agent_number(story, worker.id)}", "already finished", actor=story.agent)
 
 
 def test_a_worker_target_must_exist_and_have_the_worker_role(new_story):
     story, _, worker = working_story(new_story)
     task_id = story.new_row_id('task make "Continue" --environment main', actor=story.agent)
     story.expect_refusal(f"task block {task_id} --on worker:99999", "worker 99999 does not exist", actor=story.agent)
-    story.expect_refusal(f"task block {task_id} --on worker:{story.agent.id}", "is not a worker", actor=story.agent)
+    story.expect_refusal(f"task block {task_id} --on worker:{agent_number(story, story.agent.id)}", "is not a worker", actor=story.agent)
 
 
 def test_a_crashed_worker_opens_the_task_at_the_next_process_check(new_story):
     story, _, worker = working_story(new_story)
     task_id = waiting_task(story, worker)
-    story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", actor=story.agent)
+    story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", actor=story.agent)
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.expect_success(f"task show {task_id}", "state: open", actor=story.agent)
@@ -144,8 +145,8 @@ def test_a_task_waits_for_both_the_worker_and_its_other_target(new_story):
     story, _, worker = working_story(new_story)
     task_id = story.new_row_id('task make "Continue" --environment main', actor=story.agent)
     dependency_id = story.new_row_id('task make "Other dependency" --environment main', actor=story.agent)
-    story.expect_success(f"task block {task_id} --on worker:{worker.id} --on task:{dependency_id}", actor=story.agent)
-    story.expect_success(f'worker release {worker.id} "cancelled"', actor=story.agent)
+    story.expect_success(f"task block {task_id} --on worker:{agent_number(story, worker.id)} --on task:{dependency_id}", actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "cancelled"', actor=story.agent)
     story.expect_success(f"task show {task_id}", "state: blocked", actor=story.agent)
     story.expect_success(f'task cancel {dependency_id} --reason "not needed"', actor=story.agent)
     story.expect_success(f"task show {task_id}", "state: open", actor=story.agent)

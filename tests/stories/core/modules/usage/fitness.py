@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 import json
@@ -15,7 +16,7 @@ READ_LINE = HookSamples.shell("journal message read 1", ShellPart("journal", Com
 
 
 def fitness(story) -> dict:
-    return json.loads(story.run(f"usage fitness --agent {story.agent.id} --json", actor=story.user).output_text)
+    return json.loads(story.run(f"usage fitness --agent {agent_number(story, story.agent.id)} --json", actor=story.user).output_text)
 
 
 def measure(answer: dict, key: str) -> dict:
@@ -26,7 +27,7 @@ def test_an_agent_is_not_measured_in_its_first_half_hour(new_story):
     story = new_story(fixture=UserJoined)
     answer = fitness(story)
     story.expect_rows(answer["is_measured"] is False, answer["score"] is None)
-    story.expect_text(f"usage fitness --agent {story.agent.id}", "fitness not measured yet", actor=story.user)
+    story.expect_text(f"usage fitness --agent {agent_number(story, story.agent.id)}", "fitness not measured yet", actor=story.user)
 
 
 def test_a_message_read_no_longer_counts(half_hour_session):
@@ -68,5 +69,5 @@ def test_an_agent_can_read_another_agents_wait_share(new_story):
     helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_success("wait stuck 'the build is down'", actor=helper)
     story.advance(timedelta(minutes=30))
-    answer = json.loads(story.run(f"usage fitness --agent {helper.id} --json", actor=story.agent).output_text)
+    answer = json.loads(story.run(f"usage fitness --agent {agent_number(story, helper.id)} --json", actor=story.agent).output_text)
     story.expect_rows(measure(answer, "wait_share")["value"] == 0.5)

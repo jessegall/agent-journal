@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 import shlex
 
@@ -119,9 +120,9 @@ def test_s11_lifecycle_new_helpers_off_refuses_a_helper_start_and_starts_nothing
 def test_s12_lifecycle_resume_off_or_a_forbidden_program_refuses_a_job_for_a_stopped_worker(split_story, split_viewer):
     worker, launcher = stopped_worker(split_story)
     viewer_options(split_viewer, "worker allow_resume=off")
-    split_story.expect_refusal(f'worker send {worker.id} "go on"', "may not resume", actor=split_story.agent)
+    split_story.expect_refusal(f'worker send {agent_number(story, worker.id)} "go on"', "may not resume", actor=split_story.agent)
     viewer_options(split_viewer, "worker allowed_providers=codex")
-    split_story.expect_refusal(f'worker send {worker.id} "go on"', "worker may not use claude", actor=split_story.agent)
+    split_story.expect_refusal(f'worker send {agent_number(story, worker.id)} "go on"', "worker may not use claude", actor=split_story.agent)
 
 
 RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"

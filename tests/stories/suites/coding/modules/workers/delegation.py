@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.models.agent import Agent
 import json
 import pytest
@@ -86,7 +87,7 @@ def test_a_worker_gets_none_of_the_messages_the_person_wrote_to_the_main_agent(n
 
 def test_a_started_task_taken_from_a_worker_goes_back_open_and_the_worker_goes_on_with_its_next(new_story):
     story, _, worker = delegated_story(new_story)
-    story.expect_text(f"task assign 1 --to {story.agent.id}", "task:1", actor=story.agent)
+    story.expect_text(f"task assign 1 --to {agent_number(story, story.agent.id)}", "task:1", actor=story.agent)
     story.expect_text("task show 1", "state: open", "reason: assigned to agent", f"delegated_to: {story.agent.id}", actor=story.agent)
     story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
     story.expect_text("worker-worktree show 1", "task_id: 2", actor=story.agent)
@@ -96,8 +97,8 @@ def test_a_started_task_taken_from_a_worker_goes_back_open_and_the_worker_goes_o
 def test_a_task_is_not_assigned_to_a_helper_and_the_refusal_names_who_takes_one(new_story):
     story = new_story(fixture=BuilderHelper)
     story.expect_success('task make "Fix the cart" --environment main')
-    story.expect_refusal(f"task assign 1 --to {story.helper.id}", "is a helper and takes no task", actor=story.agent)
-    story.expect_refusal(f"task assign 1 --to {story.helper.id}", "the main agent and a worker with a cut worktree take a task", actor=story.agent)
+    story.expect_refusal(f"task assign 1 --to {agent_number(story, story.helper.id)}", "is a helper and takes no task", actor=story.agent)
+    story.expect_refusal(f"task assign 1 --to {agent_number(story, story.helper.id)}", "the main agent and a worker with a cut worktree take a task", actor=story.agent)
     story.expect_absent("task show 1", "delegated_to", actor=story.agent)
 
 
@@ -106,8 +107,8 @@ def test_a_task_is_not_assigned_to_a_worker_whose_work_is_delivered(new_story):
     repository = repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     worker = delivered_worker(story, repository)
-    story.expect_refusal(f"task assign 2 --to {worker.id}", "is a worker and takes no task", actor=story.agent)
-    story.expect_refusal(f"task assign 2 --to {worker.id}", "a worker with a cut worktree take a task", actor=story.agent)
+    story.expect_refusal(f"task assign 2 --to {agent_number(story, worker.id)}", "is a worker and takes no task", actor=story.agent)
+    story.expect_refusal(f"task assign 2 --to {agent_number(story, worker.id)}", "a worker with a cut worktree take a task", actor=story.agent)
     story.expect_absent("task show 2", "delegated_to", actor=story.agent)
 
 
@@ -116,7 +117,7 @@ def test_a_workers_last_task_can_be_taken_back_after_other_work_is_finished(new_
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
     story.expect_success("worker next --wait --differences none", actor=worker)
-    story.expect_success(f"task assign 2 --to {story.agent.id}", actor=story.agent)
+    story.expect_success(f"task assign 2 --to {agent_number(story, story.agent.id)}", actor=story.agent)
     story.expect_text("task show 2", "state: open", actor=story.agent)
     story.expect_success("worker deliver --wait --differences none", actor=worker)
     story.expect_text("worker-worktree show 1", "state: delivered", actor=story.agent)
@@ -131,9 +132,9 @@ def delegated(new_story):
 
 def test_a_task_is_not_assigned_to_who_holds_it_or_when_it_has_ended(delegated):
     story, _, worker = delegated
-    story.expect_refusal(f"task assign 1 --to {worker.id}", "nothing to move", actor=story.agent)
+    story.expect_refusal(f"task assign 1 --to {agent_number(story, worker.id)}", "nothing to move", actor=story.agent)
     story.run('task cancel 2 --reason "no"', actor=story.agent)
-    story.expect_refusal(f"task assign 2 --to {story.agent.id}", "only an open, blocked or started task moves", actor=story.agent)
+    story.expect_refusal(f"task assign 2 --to {agent_number(story, story.agent.id)}", "only an open, blocked or started task moves", actor=story.agent)
 
 
 def test_a_comment_on_a_task_with_no_worker_tells_no_worker_and_links_none(new_story):
@@ -204,8 +205,8 @@ def test_the_last_delivery_delivers_the_worktree_and_the_merge_closes_every_task
     story.run("proof check 1", actor=story.agent)
     story.run("proof check 2", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
     story.expect_text("task show 2", "state: completed", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
@@ -214,7 +215,7 @@ def test_the_last_delivery_delivers_the_worktree_and_the_merge_closes_every_task
 def test_releasing_a_worker_leaves_a_delegated_task_that_ended_alone(new_story):
     story, _, worker = delegated_story(new_story)
     story.expect_success('task cancel 2 --reason "not needed"', actor=story.agent)
-    story.expect_success(f'worker release {worker.id} "not needed"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "not needed"', actor=story.agent)
     story.expect_text("task show 2", "state: cancelled", actor=story.agent)
 
 
@@ -268,7 +269,7 @@ def test_a_merged_worker_with_a_task_still_assigned_is_not_listed_as_running(new
     story, repository, worker = delegated_story(new_story)
     expect_card_listed(story, "running", worker.id, True)
     third = story.new_row_id('task make "Check it later" --brief "Check the cart later"', actor=story.agent)
-    story.expect_success(f"task assign {third} --to {worker.id}", actor=story.agent)
+    story.expect_success(f"task assign {third} --to {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_success(f'task block {third} --reason "Waits for the release"', actor=story.agent)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
@@ -280,8 +281,8 @@ def test_a_merged_worker_with_a_task_still_assigned_is_not_listed_as_running(new
     story.run("proof check 1", actor=story.agent)
     story.run("proof check 2", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     expect_card_listed(story, "running", worker.id, False)
     expect_card_listed(story, "idle", worker.id, True)
     expect_card_listed(story, "retired", worker.id, False)

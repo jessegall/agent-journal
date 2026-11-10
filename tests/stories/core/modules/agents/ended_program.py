@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from datetime import datetime, timezone
 
 import pytest
@@ -84,7 +85,7 @@ def test_a_program_stop_waits_for_its_own_round_and_holds_no_ordinary_listener(n
 def test_a_stop_command_stops_the_program_itself_and_the_listener_adds_no_second_stop(new_story):
     story = new_story(fixture=UserJoined)
     worker_id, launcher = started_agent(story, "worker")
-    story.expect_success(f"agent stop {worker_id}", f"stopped {agent_label(story, worker_id)}", actor=story.user)
+    story.expect_success(f"agent stop {agent_number(story, worker_id)}", f"stopped {agent_label(story, worker_id)}", actor=story.user)
     story.expect_rows(launcher.requests == read_stops(worker_id))
     story.run_listeners()
     story.expect_rows(launcher.requests == read_stops(worker_id))

@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import socket
 import threading
 
@@ -17,9 +18,9 @@ def test_an_agents_terminal_lines_are_read_from_the_launchers_log_and_after_a_li
     terminal_file = story.home.terminal_file(story.agent.id)
     terminal_file.parent.mkdir(parents=True)
     terminal_file.write_text(TERMINAL_LINES)
-    story.expect_success(f"agent terminal {story.agent.id}", "1  ready", "2  Reading cart.py", "3  The total is in cents now")
-    story.expect_success(f"agent terminal {story.agent.id} --after 2", "3  The total is in cents now")
-    story.expect_absent(f"agent terminal {story.agent.id} --after 2", "1  ready", "2  Reading cart.py")
+    story.expect_success(f"agent terminal {agent_number(story, story.agent.id)}", "1  ready", "2  Reading cart.py", "3  The total is in cents now")
+    story.expect_success(f"agent terminal {agent_number(story, story.agent.id)} --after 2", "3  The total is in cents now")
+    story.expect_absent(f"agent terminal {agent_number(story, story.agent.id)} --after 2", "1  ready", "2  Reading cart.py")
 
 
 def test_a_menu_the_launcher_answered_shows_in_the_chat_with_what_it_pressed(new_story):
@@ -42,7 +43,7 @@ def test_a_person_types_a_line_in_a_running_agents_terminal(new_story):
     story = new_story(fixture=UserJoined)
     typing = FakeTyping()
     story.container.bind(TerminalTyping, typing)
-    story.expect_success(f'agent type {story.agent.id} "ls -la"', f"typed in the terminal of {agent_label(story, story.agent.id)}", actor=story.user)
+    story.expect_success(f'agent type {agent_number(story, story.agent.id)} "ls -la"', f"typed in the terminal of {agent_label(story, story.agent.id)}", actor=story.user)
     story.expect_rows(typing.typed == [(story.agent.id, "ls -la")])
 
 
@@ -50,9 +51,9 @@ def test_an_empty_line_and_an_ended_agent_are_refused(new_story):
     story = new_story(fixture=UserJoined)
     typing = FakeTyping()
     story.container.bind(TerminalTyping, typing)
-    story.expect_refusal(f'agent type {story.agent.id} " "', "give the line to type", actor=story.agent)
+    story.expect_refusal(f'agent type {agent_number(story, story.agent.id)} " "', "give the line to type", actor=story.agent)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
-    story.expect_refusal(f'agent type {story.agent.id} "ls"', "has ended", actor=story.user)
+    story.expect_refusal(f'agent type {agent_number(story, story.agent.id)} "ls"', "has ended", actor=story.user)
     story.expect_rows(typing.typed == [])
 
 
@@ -76,19 +77,19 @@ def launcher_with_answer(story, answer: bytes) -> list[bytes]:
 def test_the_launcher_gets_the_line_and_answers_that_it_typed_it(new_story):
     story = new_story(fixture=UserJoined)
     received = launcher_with_answer(story, b"typed\n")
-    story.expect_success(f'agent type {story.agent.id} "ls"', actor=story.user)
+    story.expect_success(f'agent type {agent_number(story, story.agent.id)} "ls"', actor=story.user)
     story.expect_rows(b'"typed": "ls"' in received[0], f'"agent_id": {story.agent.id}'.encode() in received[0])
 
 
 def test_a_launcher_that_gives_no_answer_is_refused_with_what_to_do(new_story):
     story = new_story(fixture=UserJoined)
     launcher_with_answer(story, b"")
-    story.expect_refusal(f'agent type {story.agent.id} "ls"', "the launcher did not type the line", actor=story.user)
+    story.expect_refusal(f'agent type {agent_number(story, story.agent.id)} "ls"', "the launcher did not type the line", actor=story.user)
 
 
 def test_the_terminal_window_may_type(new_story):
     story = new_story(fixture=UserJoined)
-    WindowStory(story).expect_window_allowed("coding.terminal", f'agent type {story.agent.id} "ls"')
+    WindowStory(story).expect_window_allowed("coding.terminal", f'agent type {agent_number(story, story.agent.id)} "ls"')
 
 
 def resumed_story(new_story):
@@ -105,6 +106,6 @@ def test_a_resumed_session_reads_and_types_in_the_terminal_of_the_launch_it_runs
     terminal_file.write_text("1\tready\n")
     typing = FakeTyping()
     story.container.bind(TerminalTyping, typing)
-    story.expect_success(f"agent terminal {story.agent.id}", "1  ready")
-    story.expect_success(f'agent type {story.agent.id} "ls"', actor=story.user)
+    story.expect_success(f"agent terminal {agent_number(story, story.agent.id)}", "1  ready")
+    story.expect_success(f'agent type {agent_number(story, story.agent.id)} "ls"', actor=story.user)
     story.expect_rows(typing.typed == [(launch_id, "ls")])

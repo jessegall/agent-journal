@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
 from engine.actor.actor import Actor
@@ -93,7 +94,7 @@ def test_the_inactive_line_of_a_worker_with_a_queued_run_says_so(new_story):
     process = start_process(story, "make third", category=CommandCategory.TEST_RUN)
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)
-    story.expect_text(f"agent-line list --agent {main.id}", f"run {process.id} waits, 2 ahead", f"journal worker status {worker.id}", actor=main)
+    story.expect_text(f"agent-line list --agent {main.id}", f"run {process.id} waits, 2 ahead", f"journal worker status {agent_number(story, worker.id)}", actor=main)
 
 
 def test_a_helper_that_has_used_no_tool_for_fifteen_minutes_is_named_to_its_main_agent_with_a_request_to_check_on_it(new_story):
@@ -145,7 +146,7 @@ def test_the_setting_sets_how_long_a_helper_is_quiet_before_it_is_named(new_stor
 
 def test_a_worker_stopped_for_good_with_its_job_sent_before_is_not_named(new_story):
     story, worker = idle_worker(new_story)
-    story.run(f'worker send --wait {worker.id} "Add the tax"', actor=story.agent)
+    story.run(f'worker send --wait {agent_number(story, worker.id)} "Add the tax"', actor=story.agent)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)
@@ -157,7 +158,7 @@ def expect_waiting_job_name(story, monkeypatch) -> None:
     story.expect_success(f"agent end {helper.id}", actor=Actor(helper.id, ActorType.AGENT))
     resumable_session(story, helper, monkeypatch)
     story.advance(minutes(1))
-    story.expect_success(f'helper send {helper.id} "Read the cart"', actor=story.agent)
+    story.expect_success(f'helper send {agent_number(story, helper.id)} "Read the cart"', actor=story.agent)
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)
     story.expect_rows(line_count(story, f"helper:{helper.id} has had work waiting") == 1)

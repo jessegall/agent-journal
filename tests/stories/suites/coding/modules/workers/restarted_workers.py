@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
 import pytest
@@ -22,7 +23,7 @@ def limited_worker(running_worker):
     start_launcher(story, b"running\n", request_count=10)
     story.expect_success(f"agent end {story.worker.id}", actor=story.agent)
     story.advance(timedelta(seconds=1))
-    story.run(f'worker send --wait {story.worker.id} "Add the tax"', actor=story.agent)
+    story.run(f'worker send --wait {agent_number(story, story.worker.id)} "Add the tax"', actor=story.agent)
     story.run_listeners()
     return story
 

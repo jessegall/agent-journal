@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from datetime import timedelta
@@ -45,14 +46,14 @@ def test_a_worker_whose_delivered_work_is_not_merged_is_named_to_its_main_agent_
 def test_a_worker_whose_delivered_work_is_merged_is_not_named_again(delivered_work):
     story, repository, worker = delivered_work
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     reminder = f"worker:{worker.id} delivered task:1, unmerged"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick(MAIN_SESSION)
     story.expect_rows(story.run(main_lines).output_text.count(reminder) == 1)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.advance(REMINDER_INTERVAL)
     story.tick(MAIN_SESSION)
     story.expect_rows(story.run(main_lines).output_text.count(reminder) == 1)
@@ -65,7 +66,7 @@ def test_a_worker_whose_work_is_released_is_not_named_again(new_story):
     reminder = f"worker:{worker.id} delivered task:1, unmerged"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick(MAIN_SESSION)
-    story.expect_success(f'worker release {worker.id} "not wanted"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "not wanted"', actor=story.agent)
     story.advance(REMINDER_INTERVAL)
     story.tick(MAIN_SESSION)
     story.expect_rows(story.run(main_lines).output_text.count(reminder) == 1)
@@ -88,7 +89,7 @@ def remind(story, count: int) -> None:
 
 def merge_block_rows(story, worker_id: int) -> list[AgentBlock]:
     return [row for row in story.container.get(Queries).query(AgentBlock).filter(session_agent_id=story.agent.id).all_rows()
-            if f"journal worker merge {worker_id}" in row.condition_text and row.closed_at is None]
+            if f"journal worker merge {agent_number(story, worker_id)}" in row.condition_text and row.closed_at is None]
 
 
 def test_a_reason_passes_only_that_hold_and_the_next_reminder_holds_again(new_story):
@@ -110,10 +111,10 @@ def test_a_merged_worker_with_a_new_worktree_has_no_merge_due_block(new_story):
     remind(story, 3)
     expect_value(len(merge_block_rows(story, worker.id)), 1)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     expect_value(merge_block_rows(story, worker.id), [])
-    story.expect_success(f'worker send --wait {worker.id} "Another job"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Another job"', actor=story.agent)
     story.tick(MAIN_SESSION)
     expect_value(merge_block_rows(story, worker.id), [])
     remind(story, 3)
@@ -128,10 +129,10 @@ def test_a_merge_block_left_by_an_older_server_is_closed_on_the_next_tick(new_st
     remind(story, 3)
     expect_value(len(merge_block_rows(story, worker.id)), 1)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     with monkeypatch.context() as old_server:
         old_server.setattr(WorkerMergeBlockListener, "handle", lambda self, event, context: None)
-        story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+        story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     expect_value(len(merge_block_rows(story, worker.id)), 1)
     story.tick(MAIN_SESSION)
     expect_value(merge_block_rows(story, worker.id), [])

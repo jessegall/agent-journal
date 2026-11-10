@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
 from engine.actor.actor import Actor
@@ -51,18 +52,18 @@ def test_a_worker_messaged_by_its_main_agent_is_held_after_the_countdown_and_fre
     story = new_story(fixture=WorkerBeside)
     story.advance(timedelta(seconds=30))
     worker = Actor(next(story.container.get(Queries).query(Agent).filter(role="worker").all_rows()).id, ActorType.AGENT)
-    story.expect_success(f'message send "Look at src/cart.py again" --to agent:{worker.id}', actor=story.agent)
+    story.expect_success(f'message send "Look at src/cart.py again" --to agent:{agent_number(story, worker.id)}', actor=story.agent)
     story.expect_success("message read 1", actor=worker)
     story.expect_hook_allowed(WORKER_SESSION, VIEW_LINE, "answer message 1 before you go on")
     use_tools(story, WORKER_SESSION, 12)
     story.expect_hook_refusal(WORKER_SESSION, EDIT, HOLD)
-    story.expect_success(f'message send "On it" --to agent:{story.agent.id}', actor=worker)
+    story.expect_success(f'message send "On it" --to agent:{agent_number(story, story.agent.id)}', actor=worker)
     story.expect_absent_hook_line(WORKER_SESSION, EDIT, "answer message 1")
 
 
 def test_a_main_agent_messaged_by_a_worker_is_held_after_the_countdown_and_freed_by_its_reply(new_story):
     story = beside_story(new_story)
-    story.expect_success(f'message send "The total is wrong" --to agent:{story.agent.id}', actor=story.helper)
+    story.expect_success(f'message send "The total is wrong" --to agent:{agent_number(story, story.agent.id)}', actor=story.helper)
     story.expect_success("message read 1", actor=story.agent)
     story.expect_hook_allowed("s-1", VIEW_LINE, "answer message 1 before you go on")
     use_tools(story, "s-1", 12)

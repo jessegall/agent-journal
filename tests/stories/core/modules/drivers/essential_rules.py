@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import LeadStarted
 from tests.stories.engine.driver.support.samples import SAMPLES
@@ -14,7 +15,7 @@ def test_the_main_agents_stop_is_refused_every_time_however_often_it_was_refused
 def test_a_session_end_ends_its_agent(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     story.hook("s-1", HookSamples.sample("session_end"))
-    story.expect_text(f"agent show {story.agent.id}", "ended_at: 2026")
+    story.expect_text(f"agent show {agent_number(story, story.agent.id)}", "ended_at: 2026")
 
 
 def test_a_suite_in_complete_control_still_asks_an_essential_rule_the_user_allowed(new_story):

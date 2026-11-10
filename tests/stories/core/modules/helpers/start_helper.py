@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.errors.refusal import Refusal
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.testing.story_helper_programs import StoryHelperPrograms
@@ -80,7 +81,7 @@ def running_helper(story):
 def test_a_start_makes_a_read_only_helper_under_the_main_agent(new_story):
     story = new_story(fixture=StartedHelper)
     helper_id = running_helper(story)
-    story.expect_success(f"agent show {helper_id}", "role: helper", "access: read-only", f"parent_id: {story.agent.id}", "profile: journal-researcher")
+    story.expect_success(f"agent show {agent_number(story, helper_id)}", "role: helper", "access: read-only", f"parent_id: {story.agent.id}", "profile: journal-researcher")
 
 
 def test_a_start_keeps_a_job_with_the_whole_brief(new_story):
@@ -93,13 +94,13 @@ def test_a_start_keeps_a_job_with_the_whole_brief(new_story):
 def test_a_helper_runs_on_the_program_named(new_story):
     story = new_story(fixture=LauncherRuns)
     helper_id, _ = started(story, CODEX_START)
-    story.expect_success(f"agent show {helper_id}", "program: codex", "program_model: gpt-6.1-sol")
+    story.expect_success(f"agent show {agent_number(story, helper_id)}", "program: codex", "program_model: gpt-6.1-sol")
 
 
 def test_a_given_name_shows_on_the_helper(new_story):
     story = new_story(fixture=LauncherRuns)
     helper_id, _ = started(story, f'{START} --name "Lady Lovelace"')
-    story.expect_success(f"agent show {helper_id}", "given_name: Lady Lovelace")
+    story.expect_success(f"agent show {agent_number(story, helper_id)}", "given_name: Lady Lovelace")
 
 
 def test_a_start_with_no_model_anywhere_is_refused_naming_the_flag(new_story):
@@ -131,7 +132,7 @@ def test_a_helper_starts_no_helper(new_story):
 def test_a_person_s_start_has_the_main_agent_as_parent(new_story):
     story = new_story(fixture=LauncherRuns)
     helper_id, _ = started(story, START, story.user)
-    story.expect_success(f"agent show {helper_id}", f"parent_id: {story.agent.id}")
+    story.expect_success(f"agent show {agent_number(story, helper_id)}", f"parent_id: {story.agent.id}")
 
 
 def test_at_the_limit_a_start_names_the_running_helpers_and_an_ended_one_gives_its_slot_back(new_story):
@@ -167,7 +168,7 @@ def test_a_failed_launch_ends_the_helper_and_tells_the_parent(new_story):
     helper_id = story.new_row_id(f"{START} --model opus", actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
-    story.expect_text(f"agent show {helper_id}", "ended_at: 20")
+    story.expect_text(f"agent show {agent_number(story, helper_id)}", "ended_at: 20")
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{helper_id} could not start")
 
 
@@ -177,7 +178,7 @@ def test_a_helper_with_no_hook_after_a_minute_ends_and_the_parent_is_told(new_st
     story.advance(timedelta(seconds=61))
     story.hook("s-1", HookSamples.tick())
     story.run_listeners()
-    story.expect_text(f"agent show {helper_id}", "ended_at: 20")
+    story.expect_text(f"agent show {agent_number(story, helper_id)}", "ended_at: 20")
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{helper_id} could not start")
 
 
@@ -189,7 +190,7 @@ def test_a_helper_that_sent_a_hook_stays(new_story):
     story.advance(timedelta(seconds=61))
     story.hook("s-1", HookSamples.tick())
     story.run_listeners()
-    story.expect_no_text(f"agent show {helper_id}", "ended_at: 20")
+    story.expect_no_text(f"agent show {agent_number(story, helper_id)}", "ended_at: 20")
 
 
 def refuse_claude(monkeypatch):
@@ -229,7 +230,7 @@ def test_a_profile_that_uses_its_program_if_possible_keeps_it_when_it_can_start(
     story = new_story(fixture=LauncherRuns)
     save_profile(story, "--program-if-possible")
     helper_id, _ = started(story, f'{START} --name "Marie"')
-    story.expect_success(f"agent show {helper_id}", "program: claude")
+    story.expect_success(f"agent show {agent_number(story, helper_id)}", "program: claude")
 
 
 def test_a_profile_that_says_nothing_falls_back_to_another_program(new_story, monkeypatch):

@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import json
 import shlex
 from pathlib import Path
@@ -29,9 +30,9 @@ def merge_story(new_story, commands: list[str]):
 
 def test_s57_restart_retains_successful_steps(new_story):
     story, worker, repository = merge_story(new_story, ["echo ran >> ran.txt", "test -f marker.txt"])
-    story.expect_refusal(f"worker merge --wait {worker.id}", "failed with code 1", actor=story.agent)
+    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "failed with code 1", actor=story.agent)
     Path(repository.folder, "marker.txt").write_text("")
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
     executed = Path(repository.folder, "ran.txt").read_text().splitlines()
     expect_value(executed, ["ran"])
@@ -40,10 +41,10 @@ def test_s57_restart_retains_successful_steps(new_story):
 def test_s57_uncertain_command_needs_reconciliation(new_story, monkeypatch):
     monkeypatch.setattr("suites.coding.modules.workers.commands.support.worktree_commands.COMMAND_LIMIT_SECONDS", 1)
     story, worker, _ = merge_story(new_story, ["sleep 3"])
-    story.expect_refusal(f"worker merge --wait {worker.id}", "may have done part of its work", actor=story.agent)
-    story.expect_refusal(f"worker merge --wait {worker.id}", "ended uncertain", actor=story.agent)
+    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "may have done part of its work", actor=story.agent)
+    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "ended uncertain", actor=story.agent)
     story.expect_text("task show 1", "state: testing", actor=story.agent)
-    story.expect_success(f"worker merge --wait {worker.id} --reconcile 'the command only waits'", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)} --reconcile 'the command only waits'", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 
@@ -55,6 +56,6 @@ def test_s57_later_merge_waits_for_required_followup(new_story):
     story.expect_success('proof make 1 --task 2 "second.py:1, the second story"', "point: 1", actor=second)
     story.expect_success(DELIVERY, actor=second)
     story.expect_success("proof check 2", "state: checked", actor=story.agent)
-    story.expect_success(f"worker logs {second.id}", actor=story.agent)
-    story.expect_refusal(f"worker merge --wait {worker.id}", "failed with code 1", actor=story.agent)
-    story.expect_refusal(f"worker merge --wait {second.id}", "still has required commands to run", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, second.id)}", actor=story.agent)
+    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "failed with code 1", actor=story.agent)
+    story.expect_refusal(f"worker merge --wait {agent_number(story, second.id)}", "still has required commands to run", actor=story.agent)

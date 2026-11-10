@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
@@ -45,7 +46,7 @@ class MergerCase:
     merger: Actor
 
     def scope(self) -> str:
-        outcome = self.story.run(f"merger scope {self.worker.id}", actor=self.merger)
+        outcome = self.story.run(f"merger scope {agent_number(self.story, self.worker.id)}", actor=self.merger)
         assert outcome.code == 0, outcome.output_text
         return outcome.output_text
 
@@ -127,12 +128,12 @@ def test_merger_scope_says_when_all_refused_files_are_the_workers(own_files):
 
 
 def test_merger_scope_of_a_worker_with_no_worktree_is_refused(case):
-    expect_refused_with(case.story, f"merger scope {case.merger.id}", "has no worktree", actor=case.merger)
+    expect_refused_with(case.story, f"merger scope {agent_number(story, case.merger.id)}", "has no worktree", actor=case.merger)
 
 
 def test_only_the_merger_runs_merger_scope(case):
-    case.story.expect_refusal(f"merger scope {case.worker.id}", MERGER_ROLE_REFUSAL, actor=case.worker)
-    case.story.expect_refusal(f"merger scope {case.worker.id}", MERGER_ROLE_REFUSAL, actor=case.story.agent)
+    case.story.expect_refusal(f"merger scope {agent_number(case.story, case.worker.id)}", MERGER_ROLE_REFUSAL, actor=case.worker)
+    case.story.expect_refusal(f"merger scope {agent_number(case.story, case.worker.id)}", MERGER_ROLE_REFUSAL, actor=case.story.agent)
 
 
 @pytest.mark.real_git
@@ -150,24 +151,24 @@ def test_merger_scope_reads_a_real_judge_refusal(new_story, monkeypatch):
 
 def test_repair_with_nothing_missing_says_so_and_tells_the_worker_nothing(linked):
     lines_at_start = linked.worker_lines()
-    linked.story.expect_text(f"merger repair {linked.worker.id}", "nothing missing", actor=linked.merger)
+    linked.story.expect_text(f"merger repair {agent_number(linked.story, linked.worker.id)}", "nothing missing", actor=linked.merger)
     linked.story.expect_rows(linked.worker_lines() == lines_at_start, detail=linked.worker_lines())
 
 
 def test_a_second_repair_finds_nothing_and_does_not_tell_the_worker_again(linked):
     (linked.repository.worktree_folder(linked.worker.id) / "node_modules").unlink()
-    linked.story.expect_success(f"merger repair {linked.worker.id}", actor=linked.merger)
-    linked.story.expect_text(f"merger repair {linked.worker.id}", "nothing missing", actor=linked.merger)
+    linked.story.expect_success(f"merger repair {agent_number(linked.story, linked.worker.id)}", actor=linked.merger)
+    linked.story.expect_text(f"merger repair {agent_number(linked.story, linked.worker.id)}", "nothing missing", actor=linked.merger)
     linked.story.expect_rows(linked.worker_lines().count(LINKED_LINE) == 1, detail=linked.worker_lines())
 
 
 def test_repair_of_a_worker_with_no_worktree_is_refused(case):
-    expect_refused_with(case.story, f"merger repair {case.merger.id}", "has no worktree", actor=case.merger)
+    expect_refused_with(case.story, f"merger repair {agent_number(story, case.merger.id)}", "has no worktree", actor=case.merger)
 
 
 def test_only_the_merger_runs_merger_repair(case):
-    case.story.expect_refusal(f"merger repair {case.worker.id}", MERGER_ROLE_REFUSAL, actor=case.worker)
-    case.story.expect_refusal(f"merger repair {case.worker.id}", MERGER_ROLE_REFUSAL, actor=case.story.agent)
+    case.story.expect_refusal(f"merger repair {agent_number(case.story, case.worker.id)}", MERGER_ROLE_REFUSAL, actor=case.worker)
+    case.story.expect_refusal(f"merger repair {agent_number(case.story, case.worker.id)}", MERGER_ROLE_REFUSAL, actor=case.story.agent)
 
 
 def test_a_named_test_run_with_a_library_missing_says_the_merger_can_relink(linked):
@@ -212,12 +213,12 @@ def test_a_pass_shows_a_mark_in_the_chat(case):
 
 
 def test_an_advice_from_the_merger_to_a_worker_shows_no_ask_mark(case):
-    case.story.expect_success(f'merger advise {case.worker.id} "Look at the cart"', actor=case.merger)
+    case.story.expect_success(f'merger advise {agent_number(case.story, case.worker.id)} "Look at the cart"', actor=case.merger)
     case.story.expect_rows("The merger asks" not in case.marks(), detail=case.marks())
 
 
 def test_a_tell_of_the_main_agents_own_message_shows_no_ask_mark(case):
-    case.story.expect_success(f'message send "Look at the cart" --to agent:{case.worker.id}', actor=case.story.agent)
+    case.story.expect_success(f'message send "Look at the cart" --to agent:{agent_number(case.story, case.worker.id)}', actor=case.story.agent)
     case.story.expect_rows("The merger asks" not in case.marks(), detail=case.marks())
 
 
@@ -245,37 +246,37 @@ def test_the_merger_reads_the_logs_of_a_worker_that_delivered_and_they_count_as_
     worker = delivered_worker(story, repository_environment(story))
     story.expect_success(f'task log 1 "{LOG_LINE}"', actor=worker)
     merger = running_merger(story, worker)
-    story.expect_success(f"worker logs {worker.id}", actor=merger)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=merger)
     expect_value(logs_read_at(story, worker) is None, False)
 
 
 def test_the_merger_reads_the_logs_of_a_worker_whose_hand_ins_keep_failing(case):
     case.story.expect_success(f'task log 1 "{LOG_LINE}"', actor=case.worker)
-    case.story.expect_text(f"worker logs {case.worker.id} --task 1", LOG_LINE, actor=case.merger)
+    case.story.expect_text(f"worker logs {agent_number(case.story, case.worker.id)} --task 1", LOG_LINE, actor=case.merger)
 
 
 def test_reading_logs_before_a_delivery_does_not_count_for_the_merge(case):
-    case.story.expect_success(f"worker logs {case.worker.id}", actor=case.merger)
+    case.story.expect_success(f"worker logs {agent_number(case.story, case.worker.id)}", actor=case.merger)
     expect_value(logs_read_at(case.story, case.worker), None)
 
 
 def test_a_worker_may_not_read_the_logs_of_a_worker(case):
-    case.story.expect_refusal(f"worker logs {case.worker.id}", LOG_REVIEW_REFUSAL, actor=case.worker)
+    case.story.expect_refusal(f"worker logs {agent_number(case.story, case.worker.id)}", LOG_REVIEW_REFUSAL, actor=case.worker)
 
 
 def test_the_main_agent_still_needs_a_delivery_to_review(case):
-    case.story.expect_refusal(f"worker logs {case.worker.id}", "has delivered nothing to review", actor=case.story.agent)
+    case.story.expect_refusal(f"worker logs {agent_number(case.story, case.worker.id)}", "has delivered nothing to review", actor=case.story.agent)
 
 
 def test_the_merger_grants_a_run_that_names_its_test_file(spent_case):
-    spent_case.story.expect_success(f"helper grant {spent_case.worker.id} pytest tests/cart.py", actor=spent_case.merger)
+    spent_case.story.expect_success(f"helper grant {agent_number(spent_case.story, spent_case.worker.id)} pytest tests/cart.py", actor=spent_case.merger)
     spent_case.story.expect_rows("helper-grant:1" in spent_case.worker_lines(), detail=spent_case.worker_lines())
 
 
 def test_the_merger_may_not_grant_a_run_with_no_test_file(spent_case):
-    spent_case.story.expect_refusal(f"helper grant {spent_case.worker.id} pytest tests", "name each test file", actor=spent_case.merger)
+    spent_case.story.expect_refusal(f"helper grant {agent_number(spent_case.story, spent_case.worker.id)} pytest tests", "name each test file", actor=spent_case.merger)
 
 
 def test_the_main_agent_hears_nothing_of_a_grant_the_merger_gives(spent_case):
-    spent_case.story.expect_success(f"helper grant {spent_case.worker.id} pytest tests/cart.py", actor=spent_case.merger)
+    spent_case.story.expect_success(f"helper grant {agent_number(spent_case.story, spent_case.worker.id)} pytest tests/cart.py", actor=spent_case.merger)
     spent_case.story.expect_rows("helper-grant" not in spent_case.main_lines(), detail=spent_case.main_lines())

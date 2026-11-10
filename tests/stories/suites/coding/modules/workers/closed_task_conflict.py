@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from engine.database.database import Database
@@ -25,8 +26,8 @@ def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new
     story.expect_hook_allowed(worker_session(story, worker), HookSamples.edit(str(path)))
     path.write_text("TOTAL = 3\n")
     story.expect_success("worker deliver --wait --differences none", actor=worker)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
 
 
@@ -42,6 +43,6 @@ def test_worker_send_runs_git_outside_its_transaction(new_story, monkeypatch):
         return synced(git, worktree)
 
     monkeypatch.setattr(WorktreeGit, "sync", watched_sync)
-    story.expect_text(f'worker send --wait {worker.id} "Finish the total"', "takes the job", actor=story.agent)
+    story.expect_text(f'worker send --wait {agent_number(story, worker.id)} "Finish the total"', "takes the job", actor=story.agent)
     story.expect_rows(transaction_flags == [False])
 

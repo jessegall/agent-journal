@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from datetime import timedelta
@@ -295,7 +296,7 @@ def test_a_compaction_that_sends_no_further_hook_stops_holding_lines_after_its_l
 def test_a_paused_agent_that_is_idle_is_typed_a_message_so_the_user_can_chat(idle_delivery_typing):
     story, typing = idle_delivery_typing
     agent = story.agent
-    story.run(f"agent pause {agent.id}", actor=story.user)
+    story.run(f"agent pause {agent_number(story, agent.id)}", actor=story.user)
     typing.typed.clear()
     post_message(story, "Are you there")
     expect_row(typing, typed=[(agent.id, "[journal] new message 1")])
@@ -499,7 +500,7 @@ class StoppedLead(StoryFixture):
         story.agent = hook_agent(story, story.hook("s-1", HookSamples.stop()))
 
     def expect(self, story: Story) -> None:
-        story.expect_success(f"agent show {story.agent.id}", "session: s-1")
+        story.expect_success(f"agent show {agent_number(story, story.agent.id)}", "session: s-1")
 
 
 def stopped_lead_story(new_story):
