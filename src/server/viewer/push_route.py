@@ -3,7 +3,7 @@ import json
 from server.viewer.phone_sessions import PhoneSessions
 from server.viewer.session_type import SessionType
 from server.viewer.viewer_login import ViewerLogin
-from server.viewer.viewer_request_error import ViewerRequestError
+from server.errors.viewer_request_error import ViewerRequestError
 
 
 class PushRoute:

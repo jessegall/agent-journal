@@ -3,7 +3,7 @@ from engine.time.deadline import Deadline
 from engine.time.timing import Timing
 from engine.types.type_guards import is_mapping, is_text_list
 from dataclasses import dataclass, field
-from server.endpoints.cli_request_error import CliRequestError
+from server.errors.cli_request_error import CliRequestError
 
 
 @dataclass(frozen=True)

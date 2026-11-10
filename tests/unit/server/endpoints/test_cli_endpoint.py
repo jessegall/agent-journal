@@ -16,7 +16,7 @@ from tests.unit.engine.module.test_module_sync import ITEMS
 from server.endpoints.cli_endpoint import CliEndpoint
 from server.endpoints.chunk_stream import ChunkStream
 from server.endpoints.cli_request import CliRequest
-from server.endpoints.cli_request_error import CliRequestError
+from server.errors.cli_request_error import CliRequestError
 
 
 def test_each_piece_of_output_is_handed_on_as_it_is_written():

@@ -7,7 +7,7 @@ from engine.time.timestamp import Timestamp
 from server.viewer.session_type import SessionType
 from server.viewer.share_link_session import ShareLinkSession
 from server.viewer.shared_row import SharedRow
-from server.viewer.share_session_error import ShareSessionError
+from server.errors.share_session_error import ShareSessionError
 from server.viewer.viewer_login import ViewerLogin
 from tests.unit.server.viewer.no_phones import NoPhones, NoShares
 

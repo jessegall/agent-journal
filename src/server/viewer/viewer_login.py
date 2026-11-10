@@ -6,8 +6,8 @@ from server.viewer.phone_sessions import PhoneSessions
 from server.viewer.session_file import SessionFile
 from server.viewer.session_type import SessionType
 from server.viewer.share_sessions import ShareSessions
-from server.viewer.share_session_error import ShareSessionError
-from server.viewer.unknown_login_key_error import UnknownLoginKeyError
+from server.errors.share_session_error import ShareSessionError
+from server.errors.unknown_login_key_error import UnknownLoginKeyError
 from server.viewer.viewer_session import ViewerSession
 
 KEY_BYTES = 24

@@ -22,7 +22,7 @@ from server.endpoints.cli_endpoint import CliEndpoint
 from engine.performance.performance_state import PerformanceState
 from server.endpoints.chunk_stream import ChunkStream
 from server.endpoints.cli_request import CliRequest
-from server.endpoints.cli_request_error import CliRequestError
+from server.errors.cli_request_error import CliRequestError
 from server.endpoints.health_endpoint import HealthEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
 from engine.driver.errors.hook_event_error import HookEventError

@@ -16,7 +16,7 @@ from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from engine.scope.scopes import Scopes
 from engine.container.container import Container
-from server.viewer.unknown_environment_error import UnknownEnvironmentError
+from server.errors.unknown_environment_error import UnknownEnvironmentError
 from engine.registry.window_listing import WindowListing
 
 

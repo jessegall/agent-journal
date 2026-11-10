@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.types.type_guards import is_mapping, is_text_list
-from server.viewer.viewer_request_error import ViewerRequestError
+from server.errors.viewer_request_error import ViewerRequestError
 from server.viewer.read_attribution import ReadAttribution
 
 

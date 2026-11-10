@@ -6,7 +6,7 @@ from engine.errors.refusal import Refusal
 from engine.registry.registry import Registry
 from core.modules.viewer.commands.support.window_lines import WindowLines
 from server.viewer.shared_windows import SharedWindows
-from server.viewer.share_refusal import ShareRefusal
+from server.errors.share_refusal import ShareRefusal
 from server.viewer.shared_row import SharedRow
 
 COMMAND_REFUSAL = "a share link only reads"

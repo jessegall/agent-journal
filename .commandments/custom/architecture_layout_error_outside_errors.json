@@ -34,34 +34,7 @@
                 "file": "src/install/stray_version_four_error.py"
             },
             {
-                "file": "src/server/endpoints/cli_request_error.py"
-            },
-            {
-                "file": "src/server/hook/hook_database_busy_error.py"
-            },
-            {
                 "file": "src/server/viewer/door_refusal.py"
-            },
-            {
-                "file": "src/server/viewer/missing_module_file_error.py"
-            },
-            {
-                "file": "src/server/viewer/phone_module_error.py"
-            },
-            {
-                "file": "src/server/viewer/share_refusal.py"
-            },
-            {
-                "file": "src/server/viewer/share_session_error.py"
-            },
-            {
-                "file": "src/server/viewer/unknown_environment_error.py"
-            },
-            {
-                "file": "src/server/viewer/unknown_login_key_error.py"
-            },
-            {
-                "file": "src/server/viewer/viewer_request_error.py"
             },
             {
                 "file": "src/suites/coding/modules/workers/commands/record_worker_refusal/record_worker_refusal.py"

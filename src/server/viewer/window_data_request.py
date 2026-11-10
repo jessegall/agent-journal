@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from urllib.parse import parse_qsl
 
 from engine.viewer.window_key import WindowKey
-from server.viewer.viewer_request_error import ViewerRequestError
+from server.errors.viewer_request_error import ViewerRequestError
 
 WINDOW_HEADER = "x-journal-window"
 KEYS_HEADER = "x-journal-data-only"

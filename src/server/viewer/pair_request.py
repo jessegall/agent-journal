@@ -2,7 +2,7 @@ import json
 from dataclasses import dataclass
 
 from engine.types.type_guards import is_mapping
-from server.viewer.viewer_request_error import ViewerRequestError
+from server.errors.viewer_request_error import ViewerRequestError
 
 
 @dataclass(frozen=True)

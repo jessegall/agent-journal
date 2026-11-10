@@ -12,7 +12,7 @@ from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS
 from server.listener_thread import ListenerThread
 from server.listener_wake import ListenerWake
 from server.viewer.paired_phone import PairedPhone
-from server.viewer.phone_module_error import PhoneModuleError
+from server.errors.phone_module_error import PhoneModuleError
 from server.viewer.wrong_code_limit import WrongCodeLimit
 from engine.text.text_digest import TextDigest
 from core.modules.sharing.commands.make_share_link.make_share_link_handler import TOKEN_BYTES

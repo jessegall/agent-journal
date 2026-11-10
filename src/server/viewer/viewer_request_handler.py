@@ -20,7 +20,7 @@ from server.viewer.events_request import EventsRequest
 from engine.database.repeated_lines import RepeatedLines
 from engine.change.errors.event_pattern_error import EventPatternError
 from engine.types.type_guards import is_list
-from server.viewer.missing_module_file_error import MissingModuleFileError
+from server.errors.missing_module_file_error import MissingModuleFileError
 from server.viewer.line_answer import LineAnswer
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.window_data_request import KEYS_HEADER, WINDOW_HEADER, WindowDataRequest
@@ -31,12 +31,12 @@ from server.viewer.module_file_caching import ModuleFileCaching
 from server.viewer.share_sessions import ShareSessions
 from server.viewer.viewer_session import ViewerSession
 from server.viewer.shared_row import SharedRow
-from server.viewer.share_refusal import ShareRefusal
+from server.errors.share_refusal import ShareRefusal
 from server.viewer.share_route import OPEN, PASSWORD_NEEDED, PASSWORD_TRY_LIMIT_STATUS
-from server.viewer.phone_module_error import PhoneModuleError
-from server.viewer.unknown_environment_error import UnknownEnvironmentError
-from server.viewer.unknown_login_key_error import UnknownLoginKeyError
-from server.viewer.viewer_request_error import ViewerRequestError
+from server.errors.phone_module_error import PhoneModuleError
+from server.errors.unknown_environment_error import UnknownEnvironmentError
+from server.errors.unknown_login_key_error import UnknownLoginKeyError
+from server.errors.viewer_request_error import ViewerRequestError
 from server.viewer.door_refusal import DoorRefusal
 from server.viewer.door_request import DoorRequest
 from server.viewer.viewer_server import ViewerServer

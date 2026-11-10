@@ -11,7 +11,7 @@ from core.modules.viewer.models.enums.window_permission_type import WindowPermis
 from server.viewer.button_permission import ButtonPermission
 from server.viewer.buttons_listing import ButtonsListing
 from engine.scope.scopes import Scopes
-from server.viewer.unknown_environment_error import UnknownEnvironmentError
+from server.errors.unknown_environment_error import UnknownEnvironmentError
 
 
 class ButtonsRoute:

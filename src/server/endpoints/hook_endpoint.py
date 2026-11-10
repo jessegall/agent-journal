@@ -28,7 +28,7 @@ from server.hook.hook_delivery_retries import HookDeliveryRetries
 from server.hook.hook_sender import HookSender
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
-from server.hook.hook_database_busy_error import HookDatabaseBusyError
+from server.errors.hook_database_busy_error import HookDatabaseBusyError
 from server.hook.queue_priority import QueuePriority
 from server.hook.queue_request import QueueRequest
 from server.server_context import ServerContext

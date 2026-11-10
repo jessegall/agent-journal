@@ -29,7 +29,7 @@ from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS
 from server.listener_thread import ListenerThread
 from server.listener_wake import ListenerWake
 from server.viewer.line_answer import LineAnswer
-from server.viewer.share_refusal import ShareRefusal
+from server.errors.share_refusal import ShareRefusal
 from server.viewer.share_scope import ShareScope
 from server.viewer.shared_row import SharedRow
 from server.viewer.timed_line_answer import TimedLineAnswer

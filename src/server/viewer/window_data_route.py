@@ -7,7 +7,7 @@ from server.viewer.shared_row import SharedRow
 from server.viewer.timed_line_answer import TimedLineAnswer
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.viewer_lines_request import ViewerLinesRequest
-from server.viewer.viewer_request_error import ViewerRequestError
+from server.errors.viewer_request_error import ViewerRequestError
 from server.viewer.window_data_answer import WindowDataAnswer
 from server.viewer.window_data_request import WindowDataRequest
 from server.viewer.window_priorities import WindowPriorities

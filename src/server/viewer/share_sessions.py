@@ -2,7 +2,7 @@ import json
 import secrets
 from collections.abc import Callable
 
-from server.viewer.phone_module_error import PhoneModuleError
+from server.errors.phone_module_error import PhoneModuleError
 from server.viewer.share_link_session import ShareLinkSession
 from engine.time.clock import Clock
 from engine.text.text_digest import TextDigest

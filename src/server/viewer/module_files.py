@@ -7,7 +7,7 @@ from engine.journal.journal_home import JournalHome
 from engine.module.module_finder import ModuleFinder
 from engine.registry.registry import Registry
 from engine.viewer.window_loading import WindowLoading
-from server.viewer.missing_module_file_error import MissingModuleFileError
+from server.errors.missing_module_file_error import MissingModuleFileError
 from server.viewer.module_file import ModuleFile
 
 UNKNOWN_TYPE = "application/octet-stream"
