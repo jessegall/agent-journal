@@ -256,6 +256,18 @@ def test_a_line_left_in_typing_by_a_stopped_server_waits_again_when_the_journal_
     story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", "new message 1", actor=story.user)
 
 
+def test_a_line_left_in_typing_by_a_stopped_server_for_a_message_read_meanwhile_is_not_given_after_the_journal_starts(untyped_idle_message):
+    story = untyped_idle_message
+    line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, state=AgentLineState.WAITING).newest().first()
+    story.run(f"agent-line claim {line.id}", actor=story.user)
+    story.expect_success("message read 1", actor=story.agent)
+    BootingWork().run(story.container)
+    story.run_listeners()
+    story.expect_rows(story.row(AgentLine, line.id).state is not AgentLineState.WAITING)
+    reply = story.hook("s-1", HookSamples.edit("src/cart.py"))
+    story.expect_rows(not any("new message" in reply_line for reply_line in reply.lines), detail=str(reply.lines))
+
+
 def test_a_refused_stop_is_not_idle_since_the_agent_goes_on(delivery_typing):
     story, typing = delivery_typing
     post_message(story, "First")

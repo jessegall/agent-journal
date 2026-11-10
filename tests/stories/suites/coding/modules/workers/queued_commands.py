@@ -166,6 +166,23 @@ def test_worker_commands_return_before_slow_git_and_notify_once(worker_git_comma
     story.expect_rows(len(notifications) == 1, story.row(WorkerOperation, operation.id).ended_at is not None)
 
 
+@pytest.mark.real_git
+@pytest.mark.parametrize("name", [WorkerOperationName.MERGE])
+def test_a_merge_that_succeeds_makes_no_conflict_line_when_the_worker_has_a_next_task(worker_git_command):
+    story, _, worker, _ = worker_git_command
+    task = story.new_row_id('task make "The next task" --brief "Add the receipt"', actor=story.agent)
+    story.expect_success(f"worker send {worker.id} --wait --task {task}", actor=story.agent)
+    story.expect_text(f"worker merge {worker.id}", "command accepted", actor=story.agent)
+    operation = story.container.get(Queries).query(WorkerOperation).newest().first()
+    outcome = run_operation_copy(story, operation)
+    story.expect_rows(outcome.code == 0, detail=outcome.output_text)
+    with operation_story(story) as ending_story:
+        end_operation(ending_story, operation)
+    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows()
+    keys = [line.nudge.key for line in lines if line.nudge.key.startswith("workers.operation_")]
+    story.expect_rows(keys == ["workers.operation_merged"], detail=str(keys))
+
+
 def test_a_second_command_on_the_same_worker_is_refused(worker_command):
     story, _, worker, launches = worker_command
     story.expect_text('worker deliver --differences none', "command accepted", actor=worker)

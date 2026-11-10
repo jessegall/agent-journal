@@ -20,6 +20,7 @@ class HelperJob(EnvironmentScoped, Model):
     profile: str
     program_model: str
     description: str
+    title: str = ""
     instruction: str
     returned: str = ""
     ended_at: Timestamp | None = None
@@ -35,6 +36,6 @@ class HelperJob(EnvironmentScoped, Model):
     started_at: Timestamp | None = None
     cost_baseline: float | None = None
 
-    def next_job(self, session: str, brief: str, instruction: str, creator_id: int) -> "HelperJob":
-        return replace(self, id=0, version=0, created_at=None, updated_at=None, creator_id=creator_id, tool_key=f"{session}:{self.id}", brief=brief, instruction=instruction, ended_at=None, returned="", report_message_id=None,
+    def next_job(self, session: str, brief: str, instruction: str, title: str, creator_id: int) -> "HelperJob":
+        return replace(self, id=0, version=0, created_at=None, updated_at=None, creator_id=creator_id, tool_key=f"{session}:{self.id}", brief=brief, instruction=instruction, title=title, ended_at=None, returned="", report_message_id=None,
                        source_message_id=None, source_version=0, source_unavailable=False, source_line_id=None, started_at=None, cost_baseline=None)

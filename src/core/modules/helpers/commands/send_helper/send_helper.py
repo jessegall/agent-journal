@@ -11,3 +11,4 @@ class SendHelper(Command[int]):
     job: str
     steer: bool = False
     review_plan_id: int | None = None
+    title: str = ""

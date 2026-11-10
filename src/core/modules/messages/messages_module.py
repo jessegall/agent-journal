@@ -10,6 +10,7 @@ from core.modules.messages.migrations.m012_message_reply_index import MessageRep
 from core.base.viewer.window_priority import WindowPriority
 from core.base.viewer.window_read_search import WindowReadSearch
 from core.modules.messages.listeners.read_message_line_listener import ReadMessageLineListener
+from core.modules.messages.listeners.released_message_line_listener import ReleasedMessageLineListener
 from core.modules.messages.listeners.waiting_message_typing_listener import WaitingMessageTypingListener
 from core.modules.messages.migrations.m009_message_recipient import MessageRecipientMigration
 from core.modules.messages.migrations.m010_message_hook_indexes import MessageHookIndexesMigration
@@ -155,5 +156,5 @@ class MessagesModule(Module):
                                keywords=("flowchart", "flow chart", "diagram")),
               SkillDeclaration("journal-messages", "Read and answer the user's messages and ask the user questions; read it before the first message command of a session",
                                keywords=("message", "reply", "question"), commands=("message", "question"))]
-    listeners = [ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, AllowedStopListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener]
+    listeners = [ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, ReleasedMessageLineListener, AllowedStopListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener]
     seeders = [MessagesSeeder]

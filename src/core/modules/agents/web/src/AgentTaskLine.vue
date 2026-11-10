@@ -4,15 +4,15 @@ import {HoverTip, TaskBar, peekRef} from "@journal/window-kit";
 import {taskLine} from "./agentTaskLine.js";
 
 // the bottom line of an agent's row: "Task" and its number with its title in a tooltip, how many of its tasks are done at the far right
-// with the rest in a tooltip, and the thin bar of its tasks done and in testing; a helper has a job, whose question is its tooltip
-const props = defineProps({tasks: {type: Array, default: () => []}, inHand: {type: Object, default: null}, job: {type: String, default: ""}, perHour: {type: Number, default: 0}});
+// with the rest in a tooltip, and the thin bar of its tasks done and in testing; a helper has a job, named by the title its sender gave it or else Job, whose question is its tooltip
+const props = defineProps({tasks: {type: Array, default: () => []}, inHand: {type: Object, default: null}, job: {type: String, default: ""}, jobTitle: {type: String, default: ""}, perHour: {type: Number, default: 0}});
 const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand: props.inHand, perHour: props.perHour}) : null));
 </script>
 
 <template>
     <template v-if="job && !line">
       <span class="task-line" data-agent-task-line>
-          <HoverTip as="button" class="task" data-agent-job>Job<template #tip><b>{{ job }}</b></template></HoverTip>
+          <HoverTip as="button" class="task" data-agent-job>{{ jobTitle || "Job" }}<template #tip><b>{{ job }}</b></template></HoverTip>
       </span>
     </template>
     <template v-else-if="line">

@@ -97,3 +97,15 @@ def test_the_log_keeps_the_newest_1000_file_edits(new_story, monkeypatch):
     story.expect_refusal("file-edit show 2", "no")
     story.expect_text("file-edit show 3", "path: src/part3.py")
     story.expect_text("file-edit show 5", "path: src/part5.py")
+
+
+def test_a_request_that_prunes_more_than_ten_file_edits_reads_the_links_once_for_each_side(new_story, monkeypatch):
+    story = new_story(fixture=BuilderStarted)
+    for number in range(1, 14):
+        scanned_edit(story, "s-1", f"src/part{number}.py")
+    monkeypatch.setattr(record_file_edit_handler, "ROWS_KEPT", 2)
+    scanned_edit(story, "s-1", "src/part14.py")
+    reads = {sql: count for sql, count in story.repeated_work.read_texts.items() if "FROM links" in sql}
+    story.expect_rows(len(reads) <= 2, all(count == 1 for count in reads.values()), detail=str(reads))
+    story.expect_refusal("file-edit show 12", "no")
+    story.expect_text("file-edit show 14", "path: src/part14.py")

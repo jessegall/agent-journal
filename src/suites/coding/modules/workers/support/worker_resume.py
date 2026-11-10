@@ -120,8 +120,6 @@ class WorkerResume:
                 self.compaction.started(worker.id)
             return answer
         current = self.cold.replaced_silent(worker)
-        if current.session == worker.session:
-            self.cold.require_replaced(current)
         command = self.worker_command.resumed(current, worktree, environment, job.text) if self.conversations.exists(current) else self.worker_command.restarted(current, worktree, environment, self.queries.query(Task).find(worktree.task_id), job.text)
         answer = self.launcher.hand(current, environment, command)
         if answer is not LaunchAnswer.STARTED:

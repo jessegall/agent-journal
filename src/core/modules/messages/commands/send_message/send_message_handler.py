@@ -46,8 +46,13 @@ class SendMessageHandler(Handler[SendMessage, Message]):
         parent = self.rows.required(Message, command.parent_id)
         if actor.type is ActorType.AGENT and parent.type in PERSON_MESSAGE_TYPES:
             self.sources.select(parent, WorkSourceOrigin.REPLY, context)
+            self.mark_answered_read(parent, context)
         with self.scopes.row_scope(parent):
             return self.sent(command, parent, context)
+
+    def mark_answered_read(self, parent: Message, context: Context) -> None:
+        if parent.read_at is None:
+            self.repository.update(parent, context, read_at=context.timestamp)
 
     def answered_agent_name(self, parent: Message | None, actor: Actor) -> str:
         """A reply to what another agent wrote is talk between agents and names that agent; any other message names none."""
