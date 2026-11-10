@@ -9,6 +9,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
 from core.base.timestamp import Timestamp
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
+from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.end_silent_helpers.end_silent_helpers import EndSilentHelpers
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.agents.support.agent_rows import AgentRows
@@ -18,7 +19,8 @@ SILENT_HELPER_SECONDS = 1800
 
 class EndSilentHelpersHandler(Handler[EndSilentHelpers, None]):
     """A helper's stop never arrives when the journal was away or its program was killed, so a helper that has
-    sent no hook for half an hour ends and stops counting as running."""
+    sent no hook for half an hour ends and stops counting as running. A helper stopped at its program's usage
+    limit is left alone, and its half hour starts when the limit ends."""
 
     command = EndSilentHelpers
 
@@ -31,5 +33,9 @@ class EndSilentHelpersHandler(Handler[EndSilentHelpers, None]):
         helpers = tuple(helpers)
         recently_called = {call.session_agent_id for call in self.hook_calls.matching(Among("session_agent_id", [helper.id for helper in helpers])).matching(Greater("created_at", recent_limit.text)).all_rows()}
         for helper in helpers:
-            if helper.id not in recently_called and helper.creation_timestamp().elapsed_seconds(context.timestamp) >= SILENT_HELPER_SECONDS:
+            if helper.id not in recently_called and self.is_past_silence(helper, context.timestamp):
                 self.bus.dispatch(EndAgent(helper.id), replace(context, environment_id=helper.environment_id))
+
+    @staticmethod
+    def is_past_silence(helper: Agent, timestamp: Timestamp) -> bool:
+        return helper.halted_at is None and helper.update_timestamp().elapsed_seconds(timestamp) >= SILENT_HELPER_SECONDS

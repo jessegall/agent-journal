@@ -49,7 +49,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         self.work, self.nudger, self.bus, self.stop, self.main_line, self.places = work, nudger, bus, stop, main_line, places
 
     def handle(self, command: SendSilentAgentLines, context: Context) -> None:
-        agents = tuple(self.queries.query(Agent).all_rows())
+        agents = tuple(agent for agent in self.queries.query(Agent).all_rows() if agent.halted_at is None)
         agent_ids = tuple(agent.id for agent in agents)
         activities = {row.id: row for row in self.queries.query(AgentActivity).matching(Among("id", agent_ids)).all_rows()}
         working = set(self.work.unfinished_tasks(agent_ids))

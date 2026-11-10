@@ -53,6 +53,7 @@ from core.modules.helpers.guards.usage_cap_guard import UsageCapGuard
 from core.modules.helpers.commands.set_usage_limit.set_usage_limit_handler import SetUsageLimitHandler
 from core.modules.helpers.commands.set_usage_limit.set_usage_limit_subcommand import SetUsageLimitSubcommand
 from core.modules.helpers.commands.refresh_hourly_limits.refresh_hourly_limits_handler import RefreshHourlyLimitsHandler
+from core.modules.helpers.commands.end_agent_lockdown.end_agent_lockdown_handler import EndAgentLockdownHandler
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.helpers.commands.helper_availability.helper_availability_subcommand import HelperAvailabilitySubcommand
 from core.modules.helpers.rules.helper_report_rule import HelperReportRule
@@ -77,7 +78,7 @@ class HelpersModule(Module):
     marks = PROGRAM_MARKS
     settings = HELPER_SETTINGS
     guards = [UsageCapGuard, ProviderOutageAccessGuard, OpenJobRetireGuard, ProviderOutageProgramGuard, ProgramSplitGuard]
-    handlers = [GrantHelperHandler, RunGrantedCommandHandler, SetUsageLimitHandler, RefreshHourlyLimitsHandler, MakeProviderOutageHandler, SendProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]
+    handlers = [EndAgentLockdownHandler, GrantHelperHandler, RunGrantedCommandHandler, SetUsageLimitHandler, RefreshHourlyLimitsHandler, MakeProviderOutageHandler, SendProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=60), HelperLimitsTick(), "helper limits"), TickHandler(TickInterval(seconds=3), UsageLimitMarker(), "usage limit marks")]
     nudges = HELPER_NUDGES
     skills = [SkillDeclaration("journal-helpers", "Start a helper for a bounded read, send it more, stop it, and read its report; read it before the first helper command of a session", keywords=["helper start"])]

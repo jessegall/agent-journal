@@ -11,7 +11,9 @@ from core.base.system_log_writer import SystemLogWriter
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
+from core.base.driver.lockdown import Lockdown
 from core.base.driver.program_lockdown import ProgramLockdown
+from core.modules.agents.commands.halt_agent.halt_agent import HaltAgent
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
@@ -60,7 +62,7 @@ class AgentHookRoute(HookRoute):
     def answered(self, event: HookEvent) -> HookReply:
         lockdown = self.lockdown.lockdown(event.program)
         if lockdown.stops(event.event):
-            return HookReply.halted(lockdown.stop_line)
+            return self.halted(event, lockdown)
         stored_call = self.queries.query(HookCall).filter(firing=event.firing).first()
         if stored_call is not None:
             return HookReply.stored(stored_call)
@@ -92,6 +94,12 @@ class AgentHookRoute(HookRoute):
             return HookReply.allowed()
         self.program.request_stop(row)
         return HookReply(refusal=ENDED_AGENT.nudge().text)
+
+    def halted(self, event: HookEvent, lockdown: Lockdown) -> HookReply:
+        agent = self.open_agent(event.session) or self.launch_name_agent(event)
+        if agent is not None and agent.halted_at is None:
+            self.bus.run(HaltAgent(agent.id), Actor.core(), environment_id=agent.environment_id)
+        return HookReply.halted(lockdown.stop_line)
 
     def ended_agent(self, event: HookEvent) -> Agent | None:
         rows = (self.agents.session(event.session), self.agents.launch_row(event.launch) if event.launch else None)

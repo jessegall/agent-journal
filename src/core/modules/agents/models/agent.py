@@ -51,6 +51,7 @@ class Agent(EnvironmentScoped, Model):
     usage_limit_ends_at: Timestamp | None = None
     interrupted_at: Timestamp | None = None
     launched_at: Timestamp | None = None
+    halted_at: Timestamp | None = None
 
     def change_name(self, old_row: Model | None) -> str | None:
         newly_ended = isinstance(old_row, Agent) and old_row.ended_at is None and self.ended_at is not None
@@ -77,6 +78,8 @@ class Agent(EnvironmentScoped, Model):
     def activity(self) -> AgentActivity:
         if self.ended_at is not None:
             return AgentActivity.ENDED
+        if self.halted_at is not None:
+            return AgentActivity.HALTED
         if self.paused_at is not None:
             return AgentActivity.PAUSED
         return AgentActivity.USAGE_LIMITED if self.usage_limit_ends_at is not None else AgentActivity.WORKING

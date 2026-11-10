@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.base.checkout import Checkout
 from core.base.checkout_file import CheckoutFile
 from core.base.file_state import FileState
@@ -9,7 +10,6 @@ from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.bindings.agent_project_checkouts import AgentProjectCheckouts
 from core.modules.agents.models.agent import Agent
-from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -24,9 +24,9 @@ class WorkerCheckouts(AgentProjectCheckouts):
     worktrees are found by the folders that hold the path, with one read by folder. Git is
     asked in the project folder, whose store every worktree shares and which stays when a worktree is removed."""
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, git: WorktreeGit) -> None:
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows) -> None:
         super().__init__(queries)
-        self.worktrees, self.git = worktrees, git
+        self.worktrees, self.git, self.environments = worktrees, git, environments
 
     def checkout(self, agent_id: int) -> Checkout:
         agent = self.queries.query(Agent).find(agent_id)
@@ -45,7 +45,7 @@ class WorkerCheckouts(AgentProjectCheckouts):
     def folders_holding(self, path: Path) -> tuple[str, ...]:
         real = path.parent.resolve() / path.name
         spellings = [path.absolute(), real]
-        for environment in self.queries.query(Environment).all_rows():
+        for environment in self.environments.all():
             root = Path(environment.folder)
             if real.is_relative_to(root.resolve()):
                 spellings.append(root / real.relative_to(root.resolve()))

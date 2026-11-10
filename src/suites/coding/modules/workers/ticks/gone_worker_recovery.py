@@ -13,7 +13,7 @@ class GoneWorkerRecovery:
     worker that has a job or started work, instead of waiting for the next agent tick and the retry after it."""
 
     def __call__(self, container: Container) -> None:
-        workers = [agent for agent in container.get(AgentRows).running() if agent.role == CodingHelperRole.WORKER]
+        workers = [agent for agent in container.get(AgentRows).running() if agent.role == CodingHelperRole.WORKER and agent.halted_at is None]
         missing = container.get(GoneAgents).find(workers)
         bus = container.get(Bus)
         for missing_agent in missing:

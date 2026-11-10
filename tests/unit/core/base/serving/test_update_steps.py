@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from core.base.clock import Clock
 from core.base.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from core.base.serving.code_handover import CodeHandover
@@ -20,7 +21,7 @@ class FixedVersions:
     def switch(self, tag: str) -> None:
         return
 
-    def add(self, source: Path) -> str:
+    def add(self, source: Path, clock: Clock) -> str:
         return "tag-one"
 
 

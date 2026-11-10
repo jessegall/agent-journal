@@ -25,7 +25,8 @@ WARNING_SHARE = 0.8
 
 class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
     """Tells a parent once at 80 percent of a limit, and past it reports the job and ends the helper's row. It reads
-    the status files outside any transaction, and leaves every other type of agent alone."""
+    the status files outside any transaction, and leaves every other type of agent alone. A helper stopped at its
+    program's usage limit is left alone, and the time it was stopped does not count toward its job's minutes."""
 
     command = EndHelpersPastLimits
 
@@ -36,7 +37,7 @@ class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
     def handle(self, command: EndHelpersPastLimits, context: Context) -> None:
         for helper in self.agents.running(HelperRole.HELPER):
             job = self.jobs.open_job(helper.id)
-            if job is not None and helper.parent_id is not None:
+            if job is not None and helper.parent_id is not None and helper.halted_at is None:
                 self.check(helper, helper.parent_id, job, context)
 
     def check(self, helper: Agent, parent_id: int, job: HelperJob, context: Context) -> None:
@@ -44,7 +45,7 @@ class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
             limits = self.options.resolved(helper.role, helper.profile).options
             max_minutes = limits.max_minutes if limits.max_minutes is not None else self.settings.number(HELPER_MAX_MINUTES)
             max_cost = limits.max_cost if limits.max_cost is not None else self.settings.decimal(HELPER_MAX_COST)
-            spend = HelperSpend(job.creation_timestamp().elapsed_seconds(context.timestamp) / 60, self.files.status(helper.session).cost_dollars, job.cost_baseline,
+            spend = HelperSpend((job.creation_timestamp().elapsed_seconds(context.timestamp) - job.halted_seconds) / 60, self.files.status(helper.session).cost_dollars, job.cost_baseline,
                                 max_minutes, max_cost)
         if spend.share >= 1:
             self.stop(helper, parent_id, job, spend)
