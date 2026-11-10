@@ -11,6 +11,7 @@ class LayerTier(Enum):
     SUITE_MODULE = "suite module"
     TUNNEL = "tunnel"
     HOST = "host"
+    MODULE_LIST = "module list"
     TEST_KIT = "test kit"
 
     @property
@@ -18,4 +19,4 @@ class LayerTier(Enum):
         return TIER_HEIGHTS[self]
 
 
-TIER_HEIGHTS = {LayerTier.ENGINE: 0, LayerTier.CORE_MODULE: 1, LayerTier.SUITE: 2, LayerTier.SUITE_MODULE: 2, LayerTier.TUNNEL: 2, LayerTier.HOST: 3, LayerTier.TEST_KIT: 4}
+TIER_HEIGHTS = {LayerTier.ENGINE: 0, LayerTier.CORE_MODULE: 1, LayerTier.SUITE: 2, LayerTier.SUITE_MODULE: 2, LayerTier.TUNNEL: 2, LayerTier.HOST: 3, LayerTier.MODULE_LIST: 3, LayerTier.TEST_KIT: 4}

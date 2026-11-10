@@ -1,3 +1,4 @@
+import inspect
 import json
 from pathlib import Path
 
@@ -30,8 +31,8 @@ def module_folder(project, folder, name, source=""):
     (target / f"{name}_module.py").write_text(source)
 
 
-def failures(project, *modules, allow_list=()):
-    return LayerCheck(project, LayerTable(), modules, allow_list).failures()
+def failures(project, *modules):
+    return LayerCheck(project, LayerTable(), modules).failures()
 
 
 @pytest.mark.parametrize("path,layer", [
@@ -140,7 +141,6 @@ def test_a_core_module_that_depends_on_a_suite_fails(tmp_path):
     assert "journal.plans depends on journal.coding, which is above it" in failures(tmp_path, plans, coding)
 
 
-TASKS_IMPORT = "src/core/modules/plans/plans_module.py imports core module tasks, which core module plans may not use"
 
 
 def undeclared_import(project):
@@ -149,26 +149,16 @@ def undeclared_import(project):
     return declared("tasks", "core.modules.tasks"), declared("plans", "core.modules.plans")
 
 
-def test_a_violation_on_the_allow_list_is_accepted(tmp_path):
-    assert failures(tmp_path, *undeclared_import(tmp_path), allow_list=[TASKS_IMPORT]) == []
+def test_allow_list_is_gone():
+    folder = Path(inspect.getfile(LayerCheck)).parent
+    assert not list(folder.glob("layer_allow_list*")) and "allow_list" not in inspect.signature(LayerCheck).parameters
 
 
-def test_a_new_violation_fails_beside_a_listed_one(tmp_path):
-    modules = undeclared_import(tmp_path)
-    module_folder(tmp_path, "core.modules.orders", "orders", "from core.modules.tasks.models.task import Task\n")
-    orders = declared("orders", "core.modules.orders")
-    assert failures(tmp_path, *modules, orders, allow_list=[TASKS_IMPORT]) == ["src/core/modules/orders/orders_module.py imports core module tasks, which core module orders may not use"]
-
-
-def test_a_line_on_the_allow_list_that_no_longer_happens_fails(tmp_path):
-    assert failures(tmp_path, allow_list=[TASKS_IMPORT]) == [f"{TASKS_IMPORT}: is on the allow-list but no longer happens"]
-
-
-def test_a_listed_import_does_not_count_towards_a_loop(tmp_path):
-    module_folder(tmp_path, "core.modules.tasks", "tasks", "from core.modules.plans.models.plan import Plan\n")
-    module_folder(tmp_path, "core.modules.plans", "plans")
-    listed = "src/core/modules/tasks/tasks_module.py imports core module plans, which core module tasks may not use"
-    assert failures(tmp_path, declared("tasks", "core.modules.tasks"), declared("plans", "core.modules.plans", ["tasks"]), allow_list=[listed]) == []
+def test_a_file_that_lists_the_modules_of_a_top_folder_is_in_a_layer_and_may_import_them(tmp_path):
+    module_folder(tmp_path, "core.modules.tasks", "tasks")
+    (tmp_path / "src" / "core" / "modules" / "__init__.py").write_text("from core.modules.tasks.tasks_module import TasksModule\n")
+    assert LayerTable().file_layer("src/core/modules/__init__.py").label == "module list core/modules"
+    assert failures(tmp_path, declared("tasks", "core.modules.tasks")) == []
 
 
 def test_no_hand_written_layer_is_left():

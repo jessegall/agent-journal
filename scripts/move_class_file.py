@@ -15,7 +15,7 @@ from pathlib import Path
 
 SOURCE_FOLDERS = ("src", "tests", "scripts")
 SKIPPED_FOLDERS = {"__pycache__", "node_modules"}
-TEXT_FILE_PATTERNS = (".commandments/**/*", "tests/snapshots/**/*.json", "docs/writing-a-module.md", "pyrightconfig.json", "src/**/layer_allow_list.txt")
+TEXT_FILE_PATTERNS = (".commandments/**/*", "tests/snapshots/**/*.json", "docs/writing-a-module.md", "pyrightconfig.json")
 RECORDING_FILE_PATTERNS = ["tools/journal-hook/**/testdata/*.jsonl"]
 LOOSE_FILE_RULE_PATTERN = "architecture_layout_*_loose_*.json"
 PLACED_FOLDER_RULES = {"architecture_layout_enum_outside_enums.json": "enums", "architecture_layout_error_outside_errors.json": "errors"}

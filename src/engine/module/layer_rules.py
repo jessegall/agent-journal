@@ -21,6 +21,8 @@ class LayerRules:
             return {ENGINE_LAYER}
         if layer.tier is LayerTier.HOST:
             return {layer, ENGINE_LAYER, *(module_layer for module_layer in self.layer_by_module.values() if module_layer.tier is LayerTier.CORE_MODULE)}
+        if layer.tier is LayerTier.MODULE_LIST:
+            return {layer, ENGINE_LAYER, *self.layer_by_module.values()}
         return {layer, ENGINE_LAYER, *self.declared_layers(layer)}
 
     def may_use(self, layer: Layer, target: Layer) -> bool:

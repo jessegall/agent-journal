@@ -1,6 +1,6 @@
 import ast
 from collections import defaultdict
-from collections.abc import Collection, Iterator, Sequence
+from collections.abc import Iterator, Sequence
 from pathlib import Path
 
 from engine.file.file_access import FileAccess
@@ -19,15 +19,13 @@ class LayerCheck:
     """Lists every way the source breaks the layers: a folder with no declaration, a dependency that goes up,
     a file outside every layer, an import its layer may not use, and a loop over declarations and imports."""
 
-    def __init__(self, project_folder: Path, table: LayerTable, modules: Sequence[type[Module]], allow_list: Collection[str] = ()) -> None:
-        self.project_folder, self.table, self.modules, self.allow_list = project_folder, table, modules, set(allow_list)
+    def __init__(self, project_folder: Path, table: LayerTable, modules: Sequence[type[Module]]) -> None:
+        self.project_folder, self.table, self.modules = project_folder, table, modules
         self.rules = LayerRules(table, modules)
         self.edges: dict[str, set[str]] = defaultdict(set)
 
     def failures(self) -> list[str]:
-        lines = [*self.folder_failures(), *self.dependency_failures(), *self.source_failures(), *self.loop_failures()]
-        stale_lines = [f"{line}: is on the allow-list but no longer happens" for line in sorted(self.allow_list.difference(lines))]
-        return [*(line for line in lines if line not in self.allow_list), *stale_lines]
+        return [*self.folder_failures(), *self.dependency_failures(), *self.source_failures(), *self.loop_failures()]
 
     def folder_failures(self) -> list[str]:
         declared = self.declared_folders()
@@ -77,10 +75,8 @@ class LayerCheck:
         lines: list[str] = []
         for target in sorted(targets, key=self.layer_label):
             line = f"{relative} imports {target.label}, which {layer.label} may not use"
-            is_allowed = self.rules.may_use(layer, target)
-            if is_allowed or line not in self.allow_list:
-                self.edges[layer.label].add(target.label)
-            if not is_allowed:
+            self.edges[layer.label].add(target.label)
+            if not self.rules.may_use(layer, target):
                 lines.append(line)
         return lines
 

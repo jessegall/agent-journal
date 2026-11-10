@@ -1,4 +1,0 @@
-src/core/__init__.py: the file is in no layer
-src/core/modules/__init__.py: the file is in no layer
-src/suites/__init__.py: the file is in no layer
-src/tunnels/__init__.py: the file is in no layer
