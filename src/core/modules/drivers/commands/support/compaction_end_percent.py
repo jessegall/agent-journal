@@ -6,7 +6,8 @@ from engine.module.driver_entries import DRIVERS_MODULE
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.drivers.support.current_context_window import COMPACTION_ENDED_AT
+from core.modules.drivers.support.context_compactions import ContextCompactions
+from core.modules.drivers.support.current_context_window import COMPACTION_ENDED_AT, CurrentContextWindow
 from core.modules.settings.bindings.support.context_share import ContextShare
 
 COMPACTION_PENDING = "compaction_to_settle"
@@ -19,15 +20,22 @@ class CompactionEndPercent:
     the compaction until it is settled, so every other hook reads no hook call for this, and the time its
     newest compaction ended, which CurrentContextWindow compares a reading with."""
 
-    def __init__(self, hook_calls: HookCallQuery, share: ContextShare, repository: Repository) -> None:
-        self.hook_calls, self.share, self.repository = hook_calls, share, repository
+    def __init__(self, hook_calls: HookCallQuery, share: ContextShare, repository: Repository, compactions: ContextCompactions, current_window: CurrentContextWindow) -> None:
+        self.hook_calls, self.share, self.repository, self.compactions, self.current_window = hook_calls, share, repository, compactions, current_window
 
     def finish_compaction(self, event: HookEvent, agent: Agent, context: Context) -> None:
         if event.is_compaction_start:
+            self.compactions.record_end(agent.id, context)
             self.mark_ended(agent, context)
             return
-        if event.event == HookEventName.COMPACT or not agent.metadata.module_part(DRIVERS_MODULE).get(COMPACTION_PENDING):
+        if event.event == HookEventName.COMPACT:
+            self.compactions.record_start(agent.id, context)
             return
+        if not agent.metadata.module_part(DRIVERS_MODULE).get(COMPACTION_PENDING):
+            return
+        tokens = self.current_window.window(agent).total_input_tokens
+        if tokens is not None:
+            self.compactions.record_tokens_after(agent.id, tokens, context)
         start = self.hook_calls.latest_turn_call(agent.id)
         if start is None or not start.is_compaction_start or start.context_percent is None:
             self.mark(agent, False, context)

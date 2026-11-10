@@ -1,11 +1,10 @@
 from engine.time.timestamp import Timestamp
+from core.modules.drivers.support.context_compactions import ContextCompactions
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.current_context_window import CurrentContextWindow
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from engine.setting.setting_values import SettingValues
 from core.modules.tasks.queries.task_query import TaskQuery
-
-REQUEST_RETRY_SECONDS = 180
 
 
 class ContextLimitCheck:
@@ -15,16 +14,12 @@ class ContextLimitCheck:
     rule asks and whatever its context size is by then: the typed line can wait in the program until the agent
     pauses. After three minutes over the limit it is asked once more."""
 
-    def __init__(self, settings: SettingValues, agents: AgentRows, current_window: CurrentContextWindow, tasks: TaskQuery) -> None:
+    def __init__(self, settings: SettingValues, agents: AgentRows, current_window: CurrentContextWindow, tasks: TaskQuery, compactions: ContextCompactions) -> None:
         self.settings, self.agents, self.current_window, self.tasks = settings, agents, current_window, tasks
-        self.requested_at: dict[int, Timestamp] = {}
+        self.compactions = compactions
 
     def is_compaction_requested(self, agent_id: int, timestamp: Timestamp) -> bool:
-        requested_at = self.requested_at.get(agent_id)
-        return requested_at is not None and requested_at.elapsed_seconds(timestamp) < REQUEST_RETRY_SECONDS
-
-    def record_request(self, agent_id: int, timestamp: Timestamp) -> None:
-        self.requested_at[agent_id] = timestamp
+        return self.compactions.blocks_request(agent_id, timestamp)
 
     def tokens(self, agent_id: int) -> int | None:
         if not self.settings.flag(CONTEXT_LIMIT_ENABLED):

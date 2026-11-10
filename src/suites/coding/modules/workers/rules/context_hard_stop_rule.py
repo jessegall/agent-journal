@@ -1,4 +1,5 @@
 from engine.driver.agent_hook import AgentHook
+from core.modules.drivers.models.enums.compaction_reason import CompactionReason
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
@@ -31,4 +32,4 @@ class ContextHardStopRule(DriverRule):
         if is_memory_command or not self.limit_check.exceeds_hard_limit(hook.agent_id):
             return RuleAnswer.allowed()
         refusal = RuleAnswer.refused(CONTEXT_HARD_STOP.nudge())
-        return refusal if self.limit_check.is_compaction_requested(hook.agent_id, hook.timestamp) else refusal.running(CompactAgentContext(hook.agent_id))
+        return refusal if self.limit_check.is_compaction_requested(hook.agent_id, hook.timestamp) else refusal.running(CompactAgentContext(hook.agent_id, CompactionReason.HARD_STOP))
