@@ -19,8 +19,8 @@ KEPT_AGENTS_REASON = "The helpers and workers that are not retired, which the ke
 
 
 class AgentUse:
-    """Counts the jobs of each type of agent by model over the last days, with the agents kept of it, so the main
-    agent can decide what to retire; the journal retires nothing itself."""
+    """Counts the jobs of each type of agent by model over the last days, with the agents kept of it, so a person
+    can decide what to retire; the journal retires nothing itself."""
 
     def __init__(self, queries: Queries, settings: SettingValues, clock: Clock, job_counts: AgentJobCounts) -> None:
         self.queries, self.settings, self.clock, self.job_counts = queries, settings, clock, job_counts
@@ -33,15 +33,6 @@ class AgentUse:
             unretired_agents[(agent.profile or agent.role, agent.program_model or "default")].append(agent)
         model_keys = sorted(key for key in {*jobs, *unretired_agents} if jobs[key] or unretired_agents[key])
         return tuple(ModelUse(agent_type, model, jobs[(agent_type, model)], tuple(unretired_agents[(agent_type, model)])) for agent_type, model in model_keys)
-
-    def retire_suggestion(self, agent_type: str) -> str:
-        candidates = [model_use for model_use in self.models() if model_use.agent_type == agent_type and model_use.idle()]
-        if not candidates:
-            return ""
-        selected = max(candidates, key=lambda model_use: model_use.job_agent_ratio)
-        agent = selected.idle()[0]
-        return (f"to make room: journal agent retire {agent.number} --reason \"<why>\": a {selected.model} agent idle for "
-                f"{self.age(agent)}, and {selected.model} ran {selected.jobs} jobs with {len(selected.agents)} kept")
 
     def age(self, agent: Agent) -> str:
         seconds = int(agent.ended_timestamp().elapsed_seconds(self.clock.timestamp()))

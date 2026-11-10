@@ -1,6 +1,5 @@
 from engine.enums.occupant import Occupant
 from tests.stories.core.support.agent_labels import agent_number
-from core.modules.helpers.support.agent_use import AgentUse
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.drivers.models.helper_job import HelperJob
@@ -199,11 +198,11 @@ def test_at_the_run_limit_a_start_of_that_profile_is_refused_and_another_profile
     story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", "journal-debugger") == TypeLimits(4, 8))
 
 
-def test_at_the_kept_maximum_a_new_start_is_refused_with_a_retire_line(new_story):
+def test_at_the_kept_maximum_a_new_start_is_refused_naming_the_idle_helper_and_the_person_who_retires(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:4:1"]\' --project', actor=story.user)
-    expect_start_refused(story, f"journal agent retire {agent_number(story, helper.id)}")
+    expect_start_refused(story, f"send the job to idle helper {agent_number(story, helper.id)}, or ask the person to retire one")
 
 
 def test_launches_in_flight_count(new_story, monkeypatch):
@@ -310,19 +309,17 @@ def test_same_reviewer_same_plan_is_refused(new_story, monkeypatch):
     story.home.socket("launcher").unlink()
 
 
-def test_refusals_fit_and_a_kept_limit_with_all_running_says_wait(new_story):
+def test_refusals_fit_and_a_kept_limit_with_all_running_says_to_ask_the_person(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:4:1"]\' --project', actor=story.user)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
     outcome = story.run("helper start journal-researcher --brief 'Read src/other.py' --environment main", actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
-    story.expect_rows("all of them run" in outcome.output_text, max(len(line) for line in outcome.output_text.splitlines()) <= 120)
+    story.expect_rows("ask the person to retire one" in outcome.output_text, "send the job" not in outcome.output_text, max(len(line) for line in outcome.output_text.splitlines()) <= 120)
 
 
-def test_a_refusal_for_no_kept_place_suggests_the_idle_agent_of_the_model_with_the_most_to_spare(new_story):
+def test_the_agent_mix_counts_the_jobs_and_the_idle_agents_of_each_model(new_story):
     story = new_story(fixture=ReportedHelper)
     helper = helper_agent(story)
     story.expect_text("agent mix", f"journal-researcher, {helper.program_model}: jobs 1, kept 1, idle", actor=story.agent)
-    story.expect_rows(f"journal agent retire {agent_number(story, helper.id)}" in story.container.get(AgentUse).retire_suggestion("journal-researcher"),
-                      story.container.get(AgentUse).retire_suggestion("journal-planner") == "")

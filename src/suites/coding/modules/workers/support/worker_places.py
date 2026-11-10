@@ -1,4 +1,3 @@
-from core.modules.helpers.support.agent_use import AgentUse
 from engine.agent.agent_work import AgentWork
 from datetime import timedelta
 
@@ -28,9 +27,8 @@ KEPT_NAMES_SHOWN = 5
 class WorkerPlaces:
     """Counts processes, starts in progress and delivered work against the worker limit."""
 
-    def __init__(self, agents: AgentRows, queries: Queries, limits: AgentTypeLimits, kept: KeptRows, clock: Clock, scopes: Scopes, use: AgentUse, work: AgentWork) -> None:
+    def __init__(self, agents: AgentRows, queries: Queries, limits: AgentTypeLimits, kept: KeptRows, clock: Clock, scopes: Scopes, work: AgentWork) -> None:
         self.work = work
-        self.use = use
         self.agents, self.queries, self.limits, self.kept, self.clock, self.scopes = agents, queries, limits, kept, clock, scopes
 
     def running(self) -> tuple[Agent, ...]:
@@ -64,7 +62,7 @@ class WorkerPlaces:
         workers = self.kept_workers()
         if self.kept_limit() != UNLIMITED_AGENT_COUNT and len(workers) >= self.kept_limit():
             names = ", ".join(f"agent:{worker.number}" for worker in workers[:KEPT_NAMES_SHOWN])
-            raise Refusal(f"the limit of {self.kept_limit()} workers is reached: {names}", self.use.retire_suggestion(CodingHelperRole.WORKER) or TypeLimits.retirement_instruction(workers))
+            raise Refusal(f"the limit of {self.kept_limit()} workers is reached: {names}", TypeLimits.kept_limit_suggestion(workers))
 
     def run_limit(self) -> int:
         return self.limits.required(CodingHelperRole.WORKER).run

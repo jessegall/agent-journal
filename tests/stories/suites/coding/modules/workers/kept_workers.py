@@ -80,7 +80,7 @@ def test_a_retire_runs_git_outside_the_transaction(new_story):
     story.expect_rows(bool(internal), not any(internal))
 
 
-def test_at_the_kept_maximum_a_dispatch_is_refused_with_a_retire_line(new_story):
+def test_at_the_kept_maximum_a_dispatch_is_refused_naming_the_kept_workers(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.expect_success("setting set journal.suites.coding.workers.worker-kept-limit 1 --environment main", actor=story.user)

@@ -12,8 +12,8 @@ dispatch`, and work that writes goes to one or stays with you.
 - Choose the profile from what the job is: `journal-researcher` for research and checks, `journal-code-reviewer` for a review,
   `journal-debugger` to trace a fault, `journal-planner` for a design. A job that writes goes to a worker.
 - Pick the cheapest model that fits the job. Reuse a kept helper only when it is on that model, never because a
-  stronger one happens to be there. With no idle kept helper on that model and no free place, retire a finished
-  helper and start one on the simpler model.
+  stronger one happens to be there. With no idle kept helper on that model and no free place, ask the person
+  to retire a finished helper, then start one on the simpler model.
 - A helper stays kept after its process stops. It is idle until retired, and can take another job on the same
   agent number and session. Give new work to a compatible idle helper, whatever the subject; prefer the
   helper that already knows the work. A missing session, a nearly full context or an unfinished job can prevent reuse.
@@ -58,7 +58,8 @@ Keep a mix that matches the work: the models a profile actually uses, with more 
 rarely runs keeps at most one agent per model, unless they know different work. When retiring, prefer the agent that has idled
 longest, among the models with most agents to spare; one that knows the work coming next is worth keeping. `journal agent mix`
 lists, for each kind of agent and model, the recent jobs, the agents kept and the time each has idled. When a start is
-refused because no place is free, the refusal suggests one to retire; the journal retires no agent by itself.
+refused because no place is free, the refusal names the idle helper to send the job to, or says to ask the person to retire
+one; the journal retires no agent by itself.
 
 ## Running and kept limits
 

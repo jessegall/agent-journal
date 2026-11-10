@@ -19,7 +19,7 @@ stays kept on the same agent number and session until retired.
   task to a worker only to clear the notice that a place is free: say why not instead.
 - Choose the model first: the least expensive one that fits the job. Reuse a kept worker only when it is on that model,
   and never because a stronger one happens to be there. When no kept worker on that model is idle and no place is free,
-  retire a finished worker and start one on the simpler model.
+  ask the person to retire a finished worker, then start one on the simpler model.
 - Name a worker by the number `journal agent list` shows beside it here; a row id is refused.
 - Give new work to a kept worker on that model that can take it, even when the subject changes; prefer the one that already knows
   the work. `journal worker send <number> --task <task> [<task> ...]` assigns its next tasks. A kept worker can take them on
@@ -84,8 +84,8 @@ stays kept on the same agent number and session until retired.
 
 Keep a mix that matches the work, and read `journal agent mix` before retiring: it prints the jobs of each kind of agent by
 model lately, the agents kept and how long they have been idle. Prefer retiring the agent idle the longest on the model with
-the most spare agents; one that knows the work coming next is worth keeping. A start refused for no free place names a
-suggestion. The journal never retires an agent itself.
+the most spare agents; one that knows the work coming next is worth keeping. A start refused for no free place names the
+idle worker to send the job to, or says to ask the person to retire one. The journal never retires an agent itself.
 
 ## Running and kept limits
 
