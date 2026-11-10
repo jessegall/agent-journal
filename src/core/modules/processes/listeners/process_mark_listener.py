@@ -2,7 +2,7 @@ import re
 
 from engine.enums.actor_type import ActorType
 from core.base.change.logged_event import LoggedEvent
-from core.base.chat.mark_outcome import MarkOutcome
+from engine.chat.mark_outcome import MarkOutcome
 from core.base.command.bus import Bus
 from core.base.driver.project_paths import ProjectPaths
 from core.base.driver.command_category import CommandCategory

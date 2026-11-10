@@ -1,6 +1,6 @@
 import pytest
 
-from tests.stories.core.base.chat.support.mark_faults import PATH
+from tests.stories.engine.chat.support.mark_faults import PATH
 from tests.stories.core.support.fixtures import MainEnvironment
 
 

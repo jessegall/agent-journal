@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from enum import StrEnum
 from string import Formatter
 
-from core.base.chat.mark_button import MarkButton
-from core.base.chat.mark_click import MarkClick
-from core.base.chat.mark_family import MarkFamily
-from core.base.chat.mark_grouping import MarkGrouping
+from engine.chat.mark_button import MarkButton
+from engine.chat.mark_click import MarkClick
+from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_grouping import MarkGrouping
 
 GROUP_LABEL_FIELDS = ("family", "type", "count")
 

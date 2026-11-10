@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.base.chat.mark_colouring import MarkColouring
-from core.base.chat.mark_group import MarkGroup
+from engine.chat.mark_colouring import MarkColouring
+from engine.chat.mark_group import MarkGroup
 
 
 @dataclass(frozen=True)

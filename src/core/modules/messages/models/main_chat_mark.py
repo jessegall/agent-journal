@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.chat.mark_outcome import MarkOutcome
+from engine.chat.mark_outcome import MarkOutcome
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.view_model import ViewModel
 from engine.time.timestamp import Timestamp

@@ -35,19 +35,19 @@
                 "testCode": true
             },
             {
-                "file": "src/core/base/chat/mark_click.py"
+                "file": "src/engine/chat/mark_click.py"
             },
             {
-                "file": "src/core/base/chat/mark_colouring.py"
+                "file": "src/engine/chat/mark_colouring.py"
             },
             {
-                "file": "src/core/base/chat/mark_group.py"
+                "file": "src/engine/chat/mark_group.py"
             },
             {
-                "file": "src/core/base/chat/mark_grouping.py"
+                "file": "src/engine/chat/mark_grouping.py"
             },
             {
-                "file": "src/core/base/chat/mark_outcome.py"
+                "file": "src/engine/chat/mark_outcome.py"
             },
             {
                 "file": "src/core/base/driver/command_category.py"

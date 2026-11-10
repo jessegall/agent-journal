@@ -1,9 +1,9 @@
 from dataclasses import replace
 from enum import StrEnum
 
-from core.base.chat.mark_declaration import MarkDeclaration
-from core.base.chat.mark_family import MarkFamily
-from core.base.chat.mark_group import MarkGroup
+from engine.chat.mark_declaration import MarkDeclaration
+from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_group import MarkGroup
 from core.base.module.button_check import ButtonCheck
 from core.base.module.mark_check import MarkCheck
 from core.base.module.module import Module

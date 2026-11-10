@@ -1,5 +1,5 @@
-from core.base.chat.dock_declaration import DockDeclaration
-from core.base.chat.mark_button import MarkButton
+from engine.chat.dock_declaration import DockDeclaration
+from engine.chat.mark_button import MarkButton
 from core.modules.approvals.commands.answer_agent_approval.answer_agent_approval_handler import AnswerAgentApprovalHandler
 from core.modules.approvals.commands.answer_agent_approval.answer_agent_approval_subcommand import AnswerAgentApprovalSubcommand
 from core.base.module.model_declaration import ModelDeclaration

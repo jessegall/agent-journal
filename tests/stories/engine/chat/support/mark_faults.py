@@ -1,14 +1,14 @@
 from enum import StrEnum
 
-from core.base.chat.dock_declaration import DockDeclaration
-from core.base.chat.mark_button import MarkButton
-from core.base.chat.mark_click import MarkClick
-from core.base.chat.mark_declaration import MarkDeclaration
-from core.base.chat.mark_family import MarkFamily
-from core.base.chat.mark_group import MarkGroup
+from engine.chat.dock_declaration import DockDeclaration
+from engine.chat.mark_button import MarkButton
+from engine.chat.mark_click import MarkClick
+from engine.chat.mark_declaration import MarkDeclaration
+from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_group import MarkGroup
 from core.base.module.module import Module
 
-PATH = "tests.stories.core.base.chat.support.mark_faults"
+PATH = "tests.stories.engine.chat.support.mark_faults"
 DEPENDENCIES = ["journal.core.tasks", "journal.core.plans", "journal.core.viewer"]
 FAMILY = MarkFamily("notes", "Notes", "words", MarkGroup.WORK)
 

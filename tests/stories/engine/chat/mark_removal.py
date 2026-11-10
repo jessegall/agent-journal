@@ -2,7 +2,7 @@ import json
 
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
-from tests.stories.core.base.chat.support.mark_faults import PATH
+from tests.stories.engine.chat.support.mark_faults import PATH
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.support.story_checks import expect_value
 

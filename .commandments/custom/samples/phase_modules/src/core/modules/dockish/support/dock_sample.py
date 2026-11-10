@@ -1,4 +1,4 @@
-from core.base.chat.dock_declaration import DockDeclaration
+from engine.chat.dock_declaration import DockDeclaration
 
 DOCKS = [
     # @sin architecture_viewer_dock_type_without_title

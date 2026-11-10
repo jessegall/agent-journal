@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 
-from core.base.chat.mark_button import MarkButton
+from engine.chat.mark_button import MarkButton
 
 
 @dataclass(frozen=True)

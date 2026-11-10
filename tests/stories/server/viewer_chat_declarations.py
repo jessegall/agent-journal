@@ -1,6 +1,6 @@
 import pytest
 
-from tests.stories.core.base.chat.support.mark_faults import PATH
+from tests.stories.engine.chat.support.mark_faults import PATH
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from engine.actor.actor import Actor

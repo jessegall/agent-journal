@@ -1,6 +1,6 @@
-from core.base.chat.mark_declaration import MarkDeclaration
-from core.base.chat.mark_family import MarkFamily
-from core.base.chat.mark_group import MarkGroup
+from engine.chat.mark_declaration import MarkDeclaration
+from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_group import MarkGroup
 from core.modules.helpers.models.enums.program_mark_type import ProgramMarkType
 from core.modules.helpers.models.enums.program_mark_variant import ProgramMarkVariant
 

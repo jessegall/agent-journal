@@ -1,6 +1,6 @@
 from core.base.change.created import Created
 from core.base.change.logged_event import LoggedEvent
-from core.base.chat.mark_outcome import MarkOutcome
+from engine.chat.mark_outcome import MarkOutcome
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.drivers.models.enums.bypass_mark_type import BypassMarkType
 from core.modules.drivers.models.enums.bypass_mark_variant import BypassMarkVariant

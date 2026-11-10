@@ -4,7 +4,7 @@ import shlex
 from string import Formatter
 
 from engine.module.declaration_names import DeclarationNames
-from core.base.chat.mark_button import MarkButton
+from engine.chat.mark_button import MarkButton
 from core.base.module.button_command_check import ButtonCommandCheck
 from core.base.module.button_slots import ButtonSlots
 from core.base.module.module import Module

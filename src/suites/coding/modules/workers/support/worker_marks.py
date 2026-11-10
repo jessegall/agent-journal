@@ -1,8 +1,8 @@
-from core.base.chat.mark_click import MarkClick
-from core.base.chat.mark_colouring import MarkColouring
-from core.base.chat.mark_declaration import MarkDeclaration
-from core.base.chat.mark_family import MarkFamily
-from core.base.chat.mark_group import MarkGroup
+from engine.chat.mark_click import MarkClick
+from engine.chat.mark_colouring import MarkColouring
+from engine.chat.mark_declaration import MarkDeclaration
+from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_group import MarkGroup
 from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMarkType
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 

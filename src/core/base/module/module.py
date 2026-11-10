@@ -8,8 +8,8 @@ from engine.helper_type.helper_type import HelperType
 from core.base.profile.agent_profile import AgentProfile
 
 from core.base.driver.nudge_declaration import NudgeDeclaration
-from core.base.chat.dock_declaration import DockDeclaration
-from core.base.chat.mark_declaration import MarkDeclaration
+from engine.chat.dock_declaration import DockDeclaration
+from engine.chat.mark_declaration import MarkDeclaration
 from core.base.command.command import Command
 from core.base.command.handler import Handler
 from core.base.database.migration import Migration

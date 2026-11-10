@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.actor.actor import Actor
-from core.base.chat.mark_outcome import MarkOutcome
+from engine.chat.mark_outcome import MarkOutcome
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.session_bound import SessionBound
 from core.base.model.model import Model

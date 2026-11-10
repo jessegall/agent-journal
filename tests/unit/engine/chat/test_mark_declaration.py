@@ -2,12 +2,12 @@ import ast
 from enum import StrEnum
 from pathlib import Path
 
-from core.base.chat.dock_declaration import DockDeclaration
-from core.base.chat.mark_button import MarkButton
-from core.base.chat.mark_colouring import MarkColouring
-from core.base.chat.mark_declaration import MarkDeclaration
-from core.base.chat.mark_family import MarkFamily
-from core.base.chat.mark_group import MarkGroup
+from engine.chat.dock_declaration import DockDeclaration
+from engine.chat.mark_button import MarkButton
+from engine.chat.mark_colouring import MarkColouring
+from engine.chat.mark_declaration import MarkDeclaration
+from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_group import MarkGroup
 from tests.unit.source_tree import source_tree
 
 
@@ -57,4 +57,4 @@ def test_the_chat_base_imports_no_module():
     folder = Path(__file__).resolve().parents[5] / "src" / "core" / "base" / "chat"
     imported = [node.module for path in folder.glob("*.py") for node in ast.walk(source_tree(path))
                 if isinstance(node, ast.ImportFrom) and node.module]
-    assert [name for name in imported if not name.startswith(("core.base.chat", "collections", "dataclasses", "enum", "string"))] == []
+    assert [name for name in imported if not name.startswith(("engine.chat", "collections", "dataclasses", "enum", "string"))] == []

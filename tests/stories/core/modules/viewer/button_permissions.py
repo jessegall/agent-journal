@@ -3,7 +3,7 @@ import pytest
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.support.task_priority import TaskPriority
 from core.testing.expect_row import expect_row
-from tests.stories.core.base.chat.support.mark_faults import PATH
+from tests.stories.engine.chat.support.mark_faults import PATH
 from tests.stories.core.modules.viewer.support.acme_buttons_module import PATH as ACME
 from tests.stories.core.modules.viewer.support.wider_acme_buttons_module import PATH as WIDER_ACME
 from tests.stories.core.modules.viewer.support.coding_acme_buttons_module import PATH as CODING_ACME

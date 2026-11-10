@@ -11,7 +11,7 @@ from tests.stories.server.support.server_client import server_story, viewer_answ
 from tests.stories.server.viewer.share import PlanAndPersonFixture, opened, shared_link
 from tests.stories.support.story_checks import expect_value
 
-LEGACY = "tests.stories.core.base.chat.support.legacy_buttons_module:LegacyButtonsModule"
+LEGACY = "tests.stories.engine.chat.support.legacy_buttons_module:LegacyButtonsModule"
 
 
 @pytest.fixture

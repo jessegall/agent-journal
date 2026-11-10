@@ -10,10 +10,10 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.chat.models.chat_mark import ChatMark
-from core.base.chat.mark_button import MarkButton
-from core.base.chat.mark_declaration import MarkDeclaration
-from core.base.chat.mark_family import MarkFamily
-from core.base.chat.mark_group import MarkGroup
+from engine.chat.mark_button import MarkButton
+from engine.chat.mark_declaration import MarkDeclaration
+from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_group import MarkGroup
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.module.module import Module
