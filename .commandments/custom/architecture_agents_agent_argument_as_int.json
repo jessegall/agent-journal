@@ -1,0 +1,37 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/"
+            },
+            {
+                "name": "add_argument"
+            },
+            {
+                "argument": {
+                    "at": 0,
+                    "textMatches": "(?i)(agent|worker|helper|reviewer|merger)"
+                }
+            },
+            {
+                "argument": {
+                    "name": "int"
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "agent-argument-as-int",
+        "description": "A command line argument that names an agent is declared as a plain int, so the number a person writes is read as a row id.",
+        "rule": "An argument that names an agent is declared with type=AgentNumber: the console turns the number into the row id of that agent in the environment of the line.",
+        "skill": "module-registration"
+    }
+}

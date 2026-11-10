@@ -260,6 +260,8 @@
         "architecture_layers_engine_imports_a_module",
         "architecture_layers_import_of_core_base",
         "architecture_layout_file_too_deep_below_its_layer",
+        "architecture_agents_agent_argument_as_int",
+        "architecture_agents_agent_row_id_in_text",
         "architecture_suites_module_names_its_suite"
     ],
     "parallel": 2,
