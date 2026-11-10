@@ -362,6 +362,13 @@ def test_each_new_message_read_in_one_turn_tells_the_agent_how_to_act(new_story)
     expect_startswith_lines_reply(READ_NUDGE_START, reply)
 
 
+def test_the_line_after_reading_a_message_names_a_memory_as_a_choice(new_story):
+    story = new_story(SAMPLES, fixture=ReadCartMessage)
+    post_message(story, "And the checkout")
+    reply = story.hook("s-1", HookSamples.shell("journal message read 2", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "2"], subcommand="message")).with_fields(event="post_tool_use"))
+    expect_any_line_with_all(["act on what you read:", "a memory worth keeping"], reply)
+
+
 def test_the_agent_cannot_show_a_message_it_has_not_read_and_is_told_to_read_it(new_story):
     story = new_story(SAMPLES, fixture=UnreadCartMessage)
     story.expect_hook_refusal("s-1", MESSAGE_DISPLAY_HOOK, "message 1 is unread, so it cannot be shown")
@@ -697,6 +704,11 @@ def expect_lines_without_line(lines, number, expected) -> None:
 def expect_output_4(story, text, expected) -> None:
     actual = story.run(text, actor=story.user).output_text.splitlines()
     assert actual == expected, actual
+
+
+def expect_any_line_with_all(parts, reply) -> None:
+    actual = any((all(part in line for part in parts) for line in reply.lines))
+    assert actual, reply.lines
 
 
 def expect_startswith_lines_reply(item, reply) -> None:

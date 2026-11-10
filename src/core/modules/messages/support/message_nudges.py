@@ -15,7 +15,7 @@ MESSAGE_UPDATED = NudgeDeclaration("messages.message_updated", NudgeType.NOTICE,
                                    'message:{message} updated')
 NEW_MESSAGES = NudgeDeclaration("messages.new_messages", NudgeType.STEERING, '{count} new messages', turn_limited=False)
 MESSAGE_FILE = NudgeDeclaration("messages.message_file", NudgeType.STEERING, '  file .journal/files/message/{message}/{name}', turn_limited=False)
-MESSAGE_NOTE = NudgeDeclaration("messages.act_on_messages", NudgeType.NOTICE, 'act on what you read: steering you follow, an update you give now, work you file as a task; else answer it', turn_limited=False)
+MESSAGE_NOTE = NudgeDeclaration("messages.act_on_messages", NudgeType.NOTICE, 'act on what you read: steering you follow, an update you give now, work you file as a task, a memory worth keeping; else answer it', turn_limited=False)
 IMAGE_TAG_REQUEST = NudgeDeclaration("messages.tag_the_image", NudgeType.STEERING, 'message:{message} has an image "{name}": tag it with what it shows', required_command="journal message tag {message}")
 REPEATED_CLOSING = NudgeDeclaration("messages.repeated_closing", NudgeType.STEERING, "your closing words say much the same as message {message}, so they were not shown")
 CLOSING_CHOICE = NudgeDeclaration("messages.closing_choice", NudgeType.STEERING, "your closing words ask the user to choose: they are shown in the chat, and a choice belongs in the question tool")
