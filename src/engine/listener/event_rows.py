@@ -13,8 +13,9 @@ M = TypeVar("M", bound=Model | ViewModel)
 
 
 class EventRows:
-    """Shares repository rows between listeners and checks external changes and rollbacks in batches; a view has no
-    version to check, so its rows are read again in each new generation."""
+    """Shares repository rows between listeners and checks external changes in batches; a view has no version to
+    check, so its rows are read again in each new generation. A rollback drops every row cached before it, since a
+    write after it can reuse the version of a row the rollback undid."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -50,6 +51,9 @@ class EventRows:
         name = self.cache_name(model)
         stale = [row_id for row_id in dict.fromkeys(row_ids)
                  if name in self.known.get((model, row_id), {}) and self.known[(model, row_id)][name].generation != generation]
+        for row_id in [row_id for row_id in stale if self.known[(model, row_id)][name].generation[1] != generation[1]]:
+            self.known[(model, row_id)].pop(name)
+        stale = [row_id for row_id in stale if name in self.known[(model, row_id)]]
         if stale and issubclass(model, ViewModel):
             for row_id in stale:
                 self.known[(model, row_id)].pop(name)

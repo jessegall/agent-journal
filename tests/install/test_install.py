@@ -24,7 +24,7 @@ def test_install_in_an_empty_project_makes_a_version_5_database_synced_from_the_
 def test_install_writes_the_hooks_of_claude_code_and_codex(installed):
     scratch = installed
     assert (scratch.project / ".claude" / "settings.local.json").is_file() and (scratch.project / ".codex" / "hooks.json").is_file()
-    assert not any(scratch.home.iterdir())
+    assert {path.relative_to(scratch.home).as_posix() for path in scratch.home.rglob("*") if path.is_file()} == {".local/bin/journal", ".codex/config.toml"}
 
 
 def test_install_starts_nothing_the_person_did_not_ask_for(installed):
