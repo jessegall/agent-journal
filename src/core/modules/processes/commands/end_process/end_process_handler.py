@@ -2,7 +2,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 from core.modules.processes.queries.output_query import OutputQuery

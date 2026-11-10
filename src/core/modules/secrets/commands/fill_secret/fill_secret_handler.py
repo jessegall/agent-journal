@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.secrets.commands.fill_secret.fill_secret import FillSecret
 from core.modules.secrets.commands.support.filled_field import FilledField
 from core.modules.secrets.queries.secret_query import SecretQuery

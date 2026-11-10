@@ -5,7 +5,7 @@ from core.base.command.context import Context
 from core.base.database.database import Database
 from core.base.driver.command_category import CommandCategory
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.skills.support.skill_requirement import SkillRequirement

@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.assign_rules.models.assign_decision import AssignDecision
 from core.modules.assign_rules.models.assign_rule import AssignRule
 from core.modules.assign_rules.models.assign_rule_condition import AssignRuleCondition

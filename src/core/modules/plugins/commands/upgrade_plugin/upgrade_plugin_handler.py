@@ -9,7 +9,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.file.file_access import FileAccess
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.plugins.commands.upgrade_plugin.upgrade_plugin import UpgradePlugin
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_code_diff import PluginCodeDiff

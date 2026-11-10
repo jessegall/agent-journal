@@ -2,7 +2,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.secrets.commands.make_secret.make_secret import MakeSecret
 from core.modules.secrets.models.enums.secret_type import SecretType

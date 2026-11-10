@@ -12,7 +12,7 @@ from core.base.model.model import Model
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.tasks.models.task import Task
 
 PATH = "tests.stories.core.modules.plugins.support.event_modules"

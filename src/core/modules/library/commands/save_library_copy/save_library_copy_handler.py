@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.library.commands.save_library_copy.save_library_copy import SaveLibraryCopy
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.support.library_shares import LibraryShares

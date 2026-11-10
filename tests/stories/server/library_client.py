@@ -4,7 +4,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from core.base.command.context import Context
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.library.support.library_client import LibraryClient
 from core.modules.library.support.library_denied_error import LibraryDeniedError
 from core.modules.library.support.library_item_removed_error import LibraryItemRemovedError

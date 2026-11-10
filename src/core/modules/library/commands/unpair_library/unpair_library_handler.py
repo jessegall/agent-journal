@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.private.secret_values import SecretValues
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.library.commands.unpair_library.unpair_library import UnpairLibrary
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.models.library_copy import LibraryCopy

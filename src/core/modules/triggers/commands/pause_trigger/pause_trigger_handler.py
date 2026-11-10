@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.triggers.commands.pause_trigger.pause_trigger import PauseTrigger
 from core.modules.triggers.models.trigger import Trigger
 

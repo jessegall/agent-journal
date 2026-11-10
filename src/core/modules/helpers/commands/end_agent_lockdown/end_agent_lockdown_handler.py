@@ -3,7 +3,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.modules.agents.commands.end_agent_halt.end_agent_halt import EndAgentHalt
 from core.modules.agents.support.agent_rows import AgentRows
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.helpers.commands.end_agent_lockdown.end_agent_lockdown import EndAgentLockdown

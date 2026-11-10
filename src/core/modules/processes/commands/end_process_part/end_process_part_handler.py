@@ -5,7 +5,7 @@ from core.base.command.completed_command_error import CompletedCommandError
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.models.enums.part_state import PartState
 from core.modules.processes.models.process_part import ProcessPart

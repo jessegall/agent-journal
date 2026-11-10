@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.documents.commands.make_text.make_text import MakeText
 from core.modules.documents.commands.support.new_text import NewText
 from core.modules.documents.models.doc import Doc

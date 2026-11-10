@@ -5,7 +5,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.driver.command_category import CommandCategory
 from core.base.listener.event_rows import EventRows
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.support.environment_rows import EnvironmentRows

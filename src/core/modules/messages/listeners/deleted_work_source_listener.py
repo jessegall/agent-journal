@@ -2,7 +2,7 @@ from core.base.change.deleted import Deleted
 from core.base.command.context import Context
 from core.base.listener.deletion_listener import DeletionListener
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.messages.models.enums.work_source_origin import WorkSourceOrigin
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.message_work_source import MessageWorkSource

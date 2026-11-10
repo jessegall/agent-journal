@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.library.commands.update_library_connection.update_library_connection import UpdateLibraryConnection
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery

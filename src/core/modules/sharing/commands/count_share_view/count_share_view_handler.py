@@ -3,7 +3,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.sharing.commands.count_share_view.count_share_view import CountShareView
 from core.modules.sharing.models.share_link import ShareLink
 

@@ -6,7 +6,7 @@ from core.base.driver.nudge import Nudge
 from core.base.driver.nudge_type import NudgeType
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.agents.support.agent_rows import AgentRows
 from engine.query.conditions.is_null import IsNull
 from core.modules.tasks.models.task import Task

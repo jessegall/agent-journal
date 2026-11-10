@@ -4,7 +4,7 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.enums.actor_type import ActorType
 from engine.errors.user_approval_refusal import UserApprovalRefusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.viewer.commands.remove_person_preset.remove_person_preset import RemovePersonPreset
 from core.modules.viewer.models.person_preset import PersonPreset
 

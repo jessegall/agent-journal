@@ -1,7 +1,7 @@
 from engine.actor.actor import Actor
 from core.base.command.context import Context
 from engine.private.secret_values import SecretValues
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.support.library_address import ADDRESS_SETTING, LibraryAddress
 from core.modules.library.support.library_client import TOKEN_VARIABLE

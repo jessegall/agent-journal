@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.module.block_conditions import BlockConditions
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.reminders.commands.make_reminder.make_reminder import MakeReminder
 from core.modules.reminders.models.reminder import Reminder
 

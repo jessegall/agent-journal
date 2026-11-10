@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.templates.commands.make_template.make_template import MakeTemplate
 from core.modules.templates.models.template import Template
 

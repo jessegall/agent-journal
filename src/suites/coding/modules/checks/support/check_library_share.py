@@ -2,7 +2,7 @@ from dataclasses import asdict
 
 from core.base.command.context import Context
 from core.base.library.library_share import Fields, LibraryShare
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from suites.coding.modules.checks.models.check import Check
 from suites.coding.modules.checks.support.check_columns import CheckColumns
 

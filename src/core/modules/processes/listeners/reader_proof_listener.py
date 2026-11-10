@@ -3,7 +3,7 @@ from core.base.change.updated import Updated
 from dataclasses import replace
 
 from core.base.listener.save_listener import SaveListener
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.processes.models.output import Output
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.base.listener.event_rows import EventRows

@@ -2,7 +2,7 @@ from core.base.change.event_log import EventLog
 from core.base.command.context import Context
 from core.base.database.kept_rows import KeptRows
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_context_read import PlanContextRead
 

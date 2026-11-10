@@ -5,7 +5,7 @@ from core.base.database.kept_rows import KeptRows
 from core.base.listener.event_rows import EventRows
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.open_dependency import OpenDependency

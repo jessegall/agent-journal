@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.standard_rows import StandardRows
+from engine.repository.standard_rows import StandardRows
 from core.modules.templates.commands.save_standard_templates.save_standard_templates import SaveStandardTemplates
 from core.base.registry.registry import Registry
 from core.modules.templates.models.template import Template

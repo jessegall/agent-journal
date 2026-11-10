@@ -3,7 +3,7 @@ import shlex
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from suites.coding.modules.workers.commands.make_proof.make_proof import MakeProof
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.enums.proof_state import ProofState

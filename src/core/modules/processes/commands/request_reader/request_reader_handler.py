@@ -5,7 +5,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.processes.commands.request_reader.request_reader import RequestReader
 from core.modules.processes.commands.support.part_spec import PartSpec

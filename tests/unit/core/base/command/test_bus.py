@@ -29,7 +29,7 @@ from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from tests.unit.core.base.sample_container import sample_container
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle

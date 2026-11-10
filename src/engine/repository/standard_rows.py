@@ -7,7 +7,7 @@ from core.base.database.kept_rows import KeptRows
 from core.base.model.model import Model
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 
 
 class StandardRows:

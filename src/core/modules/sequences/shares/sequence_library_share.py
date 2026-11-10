@@ -3,7 +3,7 @@ from dataclasses import asdict
 from engine.actor.actor import CORE_ACTOR_ID
 from core.base.command.context import Context
 from core.base.library.library_share import Fields, LibraryShare
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.queries.sequence_query import EMPTY_TRIGGERS

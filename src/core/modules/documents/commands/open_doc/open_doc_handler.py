@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.documents.commands.open_doc.open_doc import OpenDoc
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.open_document import OpenDocument

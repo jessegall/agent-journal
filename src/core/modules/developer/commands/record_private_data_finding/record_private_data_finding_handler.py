@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.developer.commands.record_private_data_finding.record_private_data_finding import RecordPrivateDataFinding
 from core.modules.developer.models.private_data_mark import PrivateDataMark
 

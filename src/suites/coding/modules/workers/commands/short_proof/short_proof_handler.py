@@ -3,7 +3,7 @@ from engine.enums.agent_role import AgentRole
 from engine.enums.actor_type import ActorType
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from engine.errors.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.support.nudger import Nudger

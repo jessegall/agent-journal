@@ -4,7 +4,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.processes.commands.stop_process.stop_process import StopProcess
 from core.modules.processes.commands.stop_timed_process.stop_timed_process import StopTimedProcess

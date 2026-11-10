@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.models.enums.agent_skill_state import AgentSkillState

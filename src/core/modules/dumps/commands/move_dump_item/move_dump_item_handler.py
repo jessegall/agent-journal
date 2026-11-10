@@ -5,7 +5,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.dumps.commands.move_dump_item.move_dump_item import MoveDumpItem
 from core.modules.dumps.commands.support.dump_line import DumpLine
 from core.modules.dumps.models.dump import Dump

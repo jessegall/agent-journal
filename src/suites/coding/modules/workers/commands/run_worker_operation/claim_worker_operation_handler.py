@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process

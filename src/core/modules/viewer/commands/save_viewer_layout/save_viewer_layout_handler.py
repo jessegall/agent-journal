@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.viewer.models.viewer_layout import ViewerLayout
 from core.modules.viewer.commands.save_viewer_layout.save_viewer_layout import SaveViewerLayout
 from core.modules.agents.support.person_check import PersonCheck

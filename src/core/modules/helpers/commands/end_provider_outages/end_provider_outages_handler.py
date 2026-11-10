@@ -2,7 +2,7 @@ from core.modules.helpers.support.program_change_access import ProgramChangeAcce
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.helpers.commands.end_provider_outages.end_provider_outages import EndProviderOutages
 from core.modules.helpers.models.provider_outage import ProviderOutage
 

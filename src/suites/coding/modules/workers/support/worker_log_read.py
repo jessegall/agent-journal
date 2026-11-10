@@ -1,5 +1,5 @@
 from core.base.command.context import Context
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.processes.support.output_delivery import OutputDelivery
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree

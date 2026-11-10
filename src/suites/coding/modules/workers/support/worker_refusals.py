@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.driver.count_down import CountDown
 from core.base.driver.times_span import TimesSpan
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.drivers.support.countdowns import Countdowns
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.models.worktree import Worktree

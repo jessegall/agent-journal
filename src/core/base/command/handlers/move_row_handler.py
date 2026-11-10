@@ -6,7 +6,7 @@ from core.base.model.state_book import StateBook
 from core.base.model.unknown_state_error import UnknownStateError
 from core.base.listener.event_rows import EventRows
 from core.base.registry.registry import Registry
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 
 
 class MoveRowHandler(Handler[MoveRow, Model]):

@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
 from core.modules.tasks.models.task_read import TaskRead
 

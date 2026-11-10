@@ -5,7 +5,7 @@ from core.base.listener.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.errors.user_approval_refusal import UserApprovalRefusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.documents.commands.remove_link.remove_link import RemoveLink
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link

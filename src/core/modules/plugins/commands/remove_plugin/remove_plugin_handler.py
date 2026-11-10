@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.plugins.commands.remove_plugin.remove_plugin import RemovePlugin
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_folders import PluginFolders

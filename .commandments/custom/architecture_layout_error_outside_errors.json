@@ -145,7 +145,7 @@
                 "file": "src/core/base/registry/unscanned_event_error.py"
             },
             {
-                "file": "src/core/base/repository/stale_row_error.py"
+                "file": "src/engine/repository/stale_row_error.py"
             },
             {
                 "file": "src/core/base/seed/demo_error.py"

@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.drivers.commands.record_overview_read.record_overview_read import RecordOverviewRead
 from core.modules.drivers.models.overview_read import OverviewRead
 

@@ -3,7 +3,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.approvals.commands.move_approval.move_approval import MoveApproval
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.lifecycles.approval_lifecycle import ApprovalLifecycle

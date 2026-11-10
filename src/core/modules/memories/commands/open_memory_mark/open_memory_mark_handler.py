@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.memories.models.memory_mark import MemoryMark
 from core.modules.memories.commands.open_memory_mark.open_memory_mark import OpenMemoryMark
 

@@ -3,7 +3,7 @@ from core.base.change.updated import Updated
 from core.base.command.context import Context
 from core.base.listener.save_listener import SaveListener
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.documents.models.link_correction import LinkCorrection
 from core.modules.messages.models.enums.work_source_origin import WorkSourceOrigin
 from core.modules.messages.models.message_work_source import MessageWorkSource

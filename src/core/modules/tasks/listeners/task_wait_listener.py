@@ -2,7 +2,7 @@ from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.drivers.models.helper_job import HelperJob

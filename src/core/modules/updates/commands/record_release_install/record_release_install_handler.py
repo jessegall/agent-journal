@@ -6,7 +6,7 @@ from core.base.command.handler import Handler
 from engine.journal.journal_home import JournalHome
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.updates.commands.record_release_install.record_release_install import RecordReleaseInstall
 from core.modules.updates.models.enums.update_step import UpdateStep
 from core.modules.updates.models.release import Release

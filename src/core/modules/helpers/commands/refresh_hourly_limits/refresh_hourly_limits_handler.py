@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.helpers.commands.refresh_hourly_limits.refresh_hourly_limits import RefreshHourlyLimits
 from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.support.usage_limits import UsageLimits

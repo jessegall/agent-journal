@@ -2,7 +2,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.tasks.clear_delegated_tasks import ClearDelegatedTasks
 from core.modules.agents.commands.end_replaced_main.end_replaced_main import EndReplacedMain
 from core.modules.agents.models.agent import Agent

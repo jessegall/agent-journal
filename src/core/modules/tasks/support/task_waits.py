@@ -7,7 +7,7 @@ from core.modules.drivers.support.nudger import Nudger
 from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task

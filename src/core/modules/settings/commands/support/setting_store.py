@@ -1,7 +1,7 @@
 import json
 
 from core.base.command.context import Context
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.settings.models.secret_setting import SecretSetting
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.setting_reader import SettingReader

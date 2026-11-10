@@ -2,7 +2,7 @@ from core.base.change.moved import Moved
 from core.base.command.context import Context
 from core.base.listener.save_listener import SaveListener
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.lifecycles.agent_line_lifecycle import AgentLineLifecycle
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource

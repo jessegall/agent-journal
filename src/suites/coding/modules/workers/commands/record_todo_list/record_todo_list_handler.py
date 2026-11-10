@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from suites.coding.modules.workers.commands.record_todo_list.record_todo_list import RecordTodoList
 from suites.coding.modules.workers.models.todo_item import TodoItem
 

@@ -5,7 +5,7 @@ from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.support.worker_test_group import WorkerTestGroup
 from core.modules.tasks.commands.start_task.start_task import StartTask

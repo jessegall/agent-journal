@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.dumps.commands.name_dump.name_dump import NameDump
 from core.modules.dumps.models.dump import Dump
 

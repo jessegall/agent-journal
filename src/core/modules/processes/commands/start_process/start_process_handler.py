@@ -3,7 +3,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.time.duration import Duration
 from core.base.listener.event_rows import EventRows
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.output import Output

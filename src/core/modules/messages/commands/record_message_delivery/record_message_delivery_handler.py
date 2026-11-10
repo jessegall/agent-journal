@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.messages.commands.record_message_delivery.record_message_delivery import RecordMessageDelivery
 from core.modules.messages.models.message import Message
 

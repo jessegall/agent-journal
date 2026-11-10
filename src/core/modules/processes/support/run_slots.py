@@ -9,7 +9,7 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.has_value import HasValue
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.enums.process_state import RUNNING_STATES

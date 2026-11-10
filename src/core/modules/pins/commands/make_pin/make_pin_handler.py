@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.pins.commands.make_pin.make_pin import MakePin
 from core.modules.pins.models.pin import Pin
 

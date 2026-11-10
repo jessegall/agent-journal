@@ -5,7 +5,7 @@ from core.base.command.context import Context
 from core.base.listener.deletion_listener import DeletionListener
 from core.base.model.model import Model
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.messages.models.message import Message
 
 

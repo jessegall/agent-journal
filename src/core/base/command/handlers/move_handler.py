@@ -3,7 +3,7 @@ from core.base.command.handler import Handler
 from core.base.command.move_command import MoveCommand
 from core.base.model.model import Model
 from core.base.listener.event_rows import EventRows
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.command.handlers.move_method_error import MoveMethodError
 
 

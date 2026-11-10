@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.models.plugin import Plugin
 

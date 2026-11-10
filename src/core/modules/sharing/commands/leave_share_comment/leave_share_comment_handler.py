@@ -6,7 +6,7 @@ from core.base.command.handler import Handler
 from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.scope.scopes import Scopes
 from engine.time.timestamp import Timestamp
 from core.modules.messages.models.enums.message_type import MessageType

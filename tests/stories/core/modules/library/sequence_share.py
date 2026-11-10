@@ -7,7 +7,7 @@ import pytest
 from engine.actor.actor import CORE_ACTOR_ID, Actor
 from core.base.command.context import Context
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.library.models.enums.copy_state import CopyState
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.messages.commands.read_message.read_message import ReadMessage

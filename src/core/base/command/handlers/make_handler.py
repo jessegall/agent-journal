@@ -6,7 +6,7 @@ from core.base.command.handler import Handler
 from core.base.command.make_command import MakeCommand
 from core.base.model.model import Model
 from core.base.model.tables import Tables
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 
 CREATOR_COLUMN = "creator_id"
 

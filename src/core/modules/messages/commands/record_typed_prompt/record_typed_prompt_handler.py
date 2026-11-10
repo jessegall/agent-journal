@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.messages.commands.record_typed_prompt.record_typed_prompt import RecordTypedPrompt
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import PROMPT_MESSAGE_KEY, Message

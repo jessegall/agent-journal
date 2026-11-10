@@ -3,7 +3,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.restore_refusal_skip.restore_refusal_skip import RestoreRefusalSkip
 from core.modules.drivers.models.refusal_skip import RefusalSkip

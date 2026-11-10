@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.helpers.commands.end_helper_job.end_helper_job import EndHelperJob
 

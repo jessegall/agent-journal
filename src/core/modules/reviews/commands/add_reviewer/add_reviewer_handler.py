@@ -5,7 +5,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.reviews.commands.add_reviewer.add_reviewer import AddReviewer
 from core.modules.reviews.models.reviewer import Reviewer

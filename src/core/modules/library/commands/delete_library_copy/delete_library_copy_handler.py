@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.library.commands.delete_library_copy.delete_library_copy import DeleteLibraryCopy
 from core.modules.library.models.library_copy import LibraryCopy
 

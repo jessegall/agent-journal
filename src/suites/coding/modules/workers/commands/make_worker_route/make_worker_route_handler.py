@@ -2,7 +2,7 @@ from core.modules.helpers.support.program_change_access import ProgramChangeAcce
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.plans.support.positions import Positions
 from suites.coding.modules.workers.commands.make_worker_route.make_worker_route import MakeWorkerRoute
 from suites.coding.modules.workers.models.worker_route import WorkerRoute

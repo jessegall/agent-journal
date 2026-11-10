@@ -4,7 +4,7 @@ from core.base.command.context import Context
 from core.base.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine

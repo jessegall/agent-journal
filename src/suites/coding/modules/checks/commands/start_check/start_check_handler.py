@@ -4,7 +4,7 @@ from core.modules.agents.support.person_check import PersonCheck
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from suites.coding.modules.checks.commands.start_check.start_check import StartCheck
 from suites.coding.modules.checks.commands.support.kept_checks import KeptChecks
 from suites.coding.modules.checks.models.check import Check

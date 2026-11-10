@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from core.base.command.context import Context
 from core.base.driver.nudge import Nudge
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.models.merger_line import MergerLine

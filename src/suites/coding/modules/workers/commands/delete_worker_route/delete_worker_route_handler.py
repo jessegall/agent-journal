@@ -2,7 +2,7 @@ from core.modules.helpers.support.program_change_access import ProgramChangeAcce
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.plans.support.positions import Positions
 from suites.coding.modules.workers.commands.delete_worker_route.delete_worker_route import DeleteWorkerRoute
 from suites.coding.modules.workers.models.worker_route import WorkerRoute

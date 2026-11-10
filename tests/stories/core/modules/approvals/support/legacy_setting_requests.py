@@ -7,7 +7,7 @@ from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.module.module import Module
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.questions.commands.ask_question.ask_question import AskQuestion
 from core.modules.setting_requests.commands.request_setting.request_setting_handler import APPROVE_OPTION, REFUSE_OPTION

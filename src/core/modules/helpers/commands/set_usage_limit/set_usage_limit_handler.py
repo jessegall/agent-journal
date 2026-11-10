@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.helpers.commands.set_usage_limit.set_usage_limit import SetUsageLimit
 from core.modules.helpers.models.enums.usage_limit_mode import UsageLimitMode
 from core.modules.helpers.models.usage_limit import UsageLimit

@@ -15,8 +15,8 @@ from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
-from core.base.repository.stale_row_error import StaleRowError
+from engine.repository.repository import Repository
+from engine.repository.stale_row_error import StaleRowError
 from engine.row.metadata import Metadata
 from engine.query.queries import Queries
 from engine.guard.guard import Guard

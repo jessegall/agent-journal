@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from suites.coding.modules.checks.commands.stop_check.stop_check import StopCheck
 from suites.coding.modules.checks.commands.support.kept_checks import KeptChecks
 from suites.coding.modules.checks.models.check import Check

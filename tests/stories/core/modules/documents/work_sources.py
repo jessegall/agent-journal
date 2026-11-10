@@ -8,7 +8,7 @@ import pytest
 from core.testing.hook_samples import HookSamples
 from core.base.driver.command_category import CommandCategory
 from core.testing.shell_part import ShellPart
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.registry.registry import Registry
 from core.modules.tasks.models.task import Task
 from tests.stories.core.base.driver.support.hook_agents import hook_agent

@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from core.base.command.completed_command_error import CompletedCommandError
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy

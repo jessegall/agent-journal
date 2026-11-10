@@ -6,7 +6,7 @@ from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.waits.models.wait import Wait
 from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.wait_target import WaitTarget

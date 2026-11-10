@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from core.base.command.context import Context
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.reader_file import ReaderFile
 

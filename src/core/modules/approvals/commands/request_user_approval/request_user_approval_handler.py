@@ -9,7 +9,7 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.support.standing_approvals import StandingApprovals
 from core.modules.approvals.models.enums.approval_state import ApprovalState

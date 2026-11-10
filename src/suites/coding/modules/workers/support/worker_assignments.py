@@ -2,7 +2,7 @@ import json
 from collections.abc import Sequence
 
 from core.base.command.context import Context
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.worker_assignment import WorkerAssignment
 

@@ -3,7 +3,7 @@ from dataclasses import replace
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.processes.commands.skip_reader_request.skip_reader_request import SkipReaderRequest
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery

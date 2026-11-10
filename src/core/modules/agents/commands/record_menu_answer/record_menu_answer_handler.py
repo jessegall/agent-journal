@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.agents.commands.record_menu_answer.record_menu_answer import RecordMenuAnswer
 from core.modules.agents.models.menu_answer import MenuAnswer
 

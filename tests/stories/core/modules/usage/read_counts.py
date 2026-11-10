@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from core.base.command.context import Context
 from core.base.database.actor_table import ActorTable
 from core.base.database.database import Database
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.drivers.models.nudge_record import NudgeRecord
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.modules.usage.usage import HELPER_START

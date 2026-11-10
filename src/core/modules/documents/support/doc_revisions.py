@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.doc_revision import DocRevision
 from core.modules.documents.models.open_document import OpenDocument

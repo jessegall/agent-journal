@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.aliases.commands.set_alias_silence.set_alias_silence import SetAliasSilence
 from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.support.alias_names import AliasNames

@@ -5,7 +5,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.driver.command_category import CommandCategory
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from suites.coding.modules.workers.commands.queue_worker_tests.start_worker_tests import StartWorkerTests
 from suites.coding.modules.workers.models.enums.proof_state import ProofState

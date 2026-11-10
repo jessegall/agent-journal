@@ -3,7 +3,7 @@ from core.base.command.context import Context
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.listener.save_listener import SaveListener
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.nudger import Nudger

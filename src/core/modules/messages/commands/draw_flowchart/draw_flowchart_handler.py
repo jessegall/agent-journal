@@ -6,7 +6,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.messages.commands.draw_flowchart.draw_flowchart import DrawFlowchart
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.models.message import Message

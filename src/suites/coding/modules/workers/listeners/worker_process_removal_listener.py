@@ -4,7 +4,7 @@ from core.base.change.deleted import Deleted
 from core.base.command.context import Context
 from core.base.listener.deletion_listener import DeletionListener
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation

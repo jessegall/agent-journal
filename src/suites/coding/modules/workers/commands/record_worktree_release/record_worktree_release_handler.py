@@ -5,7 +5,7 @@ from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.dependency_waits import DependencyWaits

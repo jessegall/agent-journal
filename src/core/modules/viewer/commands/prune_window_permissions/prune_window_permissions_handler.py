@@ -3,7 +3,7 @@ from core.base.command.handler import Handler
 from core.base.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from core.base.registry.registry import Registry
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.scope.scopes import Scopes
 from core.modules.environments.support.environment_rows import EnvironmentRows

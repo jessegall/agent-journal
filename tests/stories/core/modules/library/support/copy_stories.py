@@ -6,7 +6,7 @@ import pytest
 from engine.actor.actor import Actor
 from core.base.command.context import Context
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.messages.commands.read_message.read_message import ReadMessage

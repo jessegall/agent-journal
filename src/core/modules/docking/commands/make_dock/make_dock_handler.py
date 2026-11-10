@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.docking.commands.make_dock.make_dock import MakeDock
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.support.environment_docks import EnvironmentDocks

@@ -8,7 +8,7 @@ from core.base.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.enums.work_source_origin import WorkSourceOrigin
 from core.modules.messages.models.message import Message

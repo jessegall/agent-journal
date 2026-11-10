@@ -3,7 +3,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from engine.enums.sandbox_level import SandboxLevel
 from core.modules.processes.commands.record_sandbox.record_sandbox import RecordSandbox
 from core.modules.processes.models.process import Process

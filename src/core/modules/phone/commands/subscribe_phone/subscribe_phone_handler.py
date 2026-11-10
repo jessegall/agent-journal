@@ -5,7 +5,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from engine.types.type_guards import is_mapping
 from core.modules.phone.commands.subscribe_phone.subscribe_phone import SubscribePhone
 from core.modules.phone.models.enums.phone_state import PhoneState

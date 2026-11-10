@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from core.base.listener.deletion_listener import DeletionListener
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.base.change.deleted import Deleted

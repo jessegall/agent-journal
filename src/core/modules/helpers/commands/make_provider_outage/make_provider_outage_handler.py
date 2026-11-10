@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.helpers.commands.make_provider_outage.make_provider_outage import MakeProviderOutage
 from core.modules.helpers.models.provider_outage import ProviderOutage
 from core.modules.helpers.support.program_change_access import ProgramChangeAccess

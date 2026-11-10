@@ -10,7 +10,7 @@ from core.base.command.handler import Handler
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.single_main_agent import SingleMainAgent
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.enums.access import Access
 from engine.actor.actor import Actor

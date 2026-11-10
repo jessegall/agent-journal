@@ -4,7 +4,7 @@ from core.base.database.database import Database
 from core.base.driver.count_down import CountDown
 from core.base.driver.times_span import TimesSpan
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.rules.agent_block_rule import AgentBlockRule
 from core.modules.drivers.support.countdowns import Countdowns, condition_unmet

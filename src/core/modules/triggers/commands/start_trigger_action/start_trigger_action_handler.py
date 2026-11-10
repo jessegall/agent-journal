@@ -6,7 +6,7 @@ from core.base.command.handler import Handler
 from core.base.driver.command_category import CommandCategory
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
 from core.modules.triggers.commands.start_trigger_action.start_trigger_action import StartTriggerAction

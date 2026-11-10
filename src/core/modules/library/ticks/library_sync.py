@@ -6,7 +6,7 @@ from core.base.model.model import Model
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.stale_row_error import StaleRowError
+from engine.repository.stale_row_error import StaleRowError
 from core.modules.library.commands.delete_library_copy.delete_library_copy import DeleteLibraryCopy
 from core.modules.library.commands.merge_library_item.merge_library_item import MergeLibraryItem
 from core.modules.library.commands.update_library_connection.update_library_connection import UpdateLibraryConnection

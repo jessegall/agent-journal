@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.plugins.commands.clear_plugin_queue_file.clear_plugin_queue_file import ClearPluginQueueFile
 from core.modules.plugins.models.plugin_queue_file import PluginQueueFile
 

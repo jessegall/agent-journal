@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.memories.models.memory import Memory
 from core.modules.memories.support.mark_closer import MarkCloser
 from core.modules.memories.commands.weigh_memories.weigh_memories import WeighMemories

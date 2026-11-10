@@ -4,7 +4,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.modules.processes.models.enums.part_state import PartState
 from core.modules.processes.models.process_part import ProcessPart

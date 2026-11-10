@@ -9,7 +9,7 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.base.registry.registry import Registry
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.agents.commands.retire_agent.retire_agent import RetireAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_roster_check import is_agent_roster

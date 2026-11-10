@@ -13,7 +13,7 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.log.refusal_log import RefusalLog
 from core.base.registry.registry import Registry
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.skip_refusal.skip_refusal import SkipRefusal
 from engine.enums.hook_answer import HookAnswer

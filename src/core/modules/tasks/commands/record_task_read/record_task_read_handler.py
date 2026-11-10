@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.tasks.commands.record_task_read.record_task_read import RecordTaskRead
 from core.modules.tasks.models.task_read import TaskRead
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks

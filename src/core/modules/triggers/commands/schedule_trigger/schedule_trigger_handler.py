@@ -5,7 +5,7 @@ from engine.time.clock import Clock
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from engine.time.timestamp import Timestamp
 from core.modules.triggers.commands.schedule_trigger.schedule_trigger import ScheduleTrigger
 from core.modules.triggers.commands.support.cron_line import CronLine

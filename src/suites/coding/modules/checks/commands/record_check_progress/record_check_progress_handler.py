@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from suites.coding.modules.checks.commands.record_check_progress.record_check_progress import RecordCheckProgress
 from suites.coding.modules.checks.models.check import Check
 

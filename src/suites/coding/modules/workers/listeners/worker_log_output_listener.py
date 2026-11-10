@@ -4,7 +4,7 @@ from core.base.change.updated import Updated
 from core.base.command.context import Context
 from core.base.listener.save_listener import SaveListener
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process

@@ -7,7 +7,7 @@ from core.base.command.bus import Bus
 from engine.version.code_versions import CodeVersions
 from core.base.command.handler import Handler
 from engine.journal.journal_home import JournalHome
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.updates.commands.install_release.install_release import InstallRelease
 from core.modules.updates.models.release_install import ReleaseInstall
 from core.modules.updates.models.enums.update_step import UpdateStep

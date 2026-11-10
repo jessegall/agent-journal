@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.command.context import Context
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.processes.commands.prune_processes.prune_processes import PruneProcesses
 from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName

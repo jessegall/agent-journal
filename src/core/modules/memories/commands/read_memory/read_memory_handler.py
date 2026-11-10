@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.memories.models.enums.delivery_cause import DeliveryCause
 from core.modules.memories.models.memory import Memory
 from core.modules.memories.models.memory_delivery import MemoryDelivery

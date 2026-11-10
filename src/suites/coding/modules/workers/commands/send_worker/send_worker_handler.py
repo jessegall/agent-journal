@@ -9,7 +9,7 @@ from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.modules.helpers.support.agent_admission import AgentAdmission
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent

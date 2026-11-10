@@ -8,7 +8,7 @@ from core.base.driver.program_lockdown import ProgramLockdown
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from engine.helper_type.helper_type_book import HelperTypeBook
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.agents.models.agent import Agent

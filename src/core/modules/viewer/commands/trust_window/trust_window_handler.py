@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.viewer.commands.support.window_allowances import WindowAllowances
 from core.modules.viewer.models.window_permission import WindowPermission
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType

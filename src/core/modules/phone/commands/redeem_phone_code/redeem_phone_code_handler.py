@@ -4,7 +4,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.phone.commands.support.phone_code_maker import PhoneCodeMaker
 from core.modules.phone.commands.redeem_phone_code.redeem_phone_code import RedeemPhoneCode
 from core.modules.phone.models.enums.phone_code_state import PhoneCodeState

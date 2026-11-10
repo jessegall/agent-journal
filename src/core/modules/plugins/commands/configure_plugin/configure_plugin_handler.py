@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from engine.enums.actor_type import ActorType
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from engine.errors.refusal import Refusal
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.commands.configure_plugin.configure_plugin import ConfigurePlugin

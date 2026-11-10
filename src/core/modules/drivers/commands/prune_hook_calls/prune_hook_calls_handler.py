@@ -4,7 +4,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.conditions.less import Less
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.hook_call import HookCall

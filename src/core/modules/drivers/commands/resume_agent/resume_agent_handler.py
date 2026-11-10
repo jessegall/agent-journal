@@ -7,7 +7,7 @@ from core.base.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.errors.user_approval_refusal import UserApprovalRefusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.resume_agent.resume_agent import ResumeAgent
 from core.modules.drivers.listeners.typed_line_listener import RESUME_SOURCE

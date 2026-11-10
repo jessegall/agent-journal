@@ -12,7 +12,7 @@ from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.change.moved import Moved
 from core.base.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle

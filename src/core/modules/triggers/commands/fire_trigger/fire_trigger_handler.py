@@ -4,7 +4,7 @@ from datetime import timedelta
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from engine.time.timestamp import Timestamp
 from core.modules.triggers.commands.fire_trigger.fire_trigger import FireTrigger
 from core.modules.triggers.commands.support.cron_line import CronLine

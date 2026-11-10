@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.drivers.commands.use_refusal_skip.use_refusal_skip import UseRefusalSkip
 from core.modules.drivers.models.refusal_skip import RefusalSkip
 

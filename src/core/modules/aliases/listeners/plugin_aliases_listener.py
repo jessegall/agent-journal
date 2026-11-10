@@ -5,7 +5,7 @@ from core.base.change.created import Created
 from core.base.change.updated import Updated
 from core.base.command.context import Context
 from core.base.listener.save_listener import SaveListener
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.registry.registry import Registry
 from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.queries.alias_query import AliasQuery

@@ -7,7 +7,7 @@ from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.plugins.commands.install_plugin.install_plugin import InstallPlugin
 from core.modules.plugins.commands.support.plugin_install import PluginInstall
 from core.modules.plugins.models.plugin import Plugin

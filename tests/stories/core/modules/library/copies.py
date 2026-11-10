@@ -6,7 +6,7 @@ import pytest
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.documents.models.doc import Doc
 from suites.coding.modules.checks.models.check import Check
 from core.modules.library.commands.merge_library_item.merge_library_item import MergeLibraryItem

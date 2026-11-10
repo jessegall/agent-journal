@@ -15,7 +15,7 @@ from engine.guard.guard_refusal import GuardRefusal
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.registry import Registry
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from tests.unit.core.base.sample_container import context, sample_container
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState

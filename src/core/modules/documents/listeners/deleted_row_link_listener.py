@@ -4,7 +4,7 @@ from core.base.listener.deletion_listener import DeletionListener
 from core.base.model.model import Model
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.documents.models.link import Link
 from collections.abc import Sequence
 

@@ -5,7 +5,7 @@ import pytest
 from core.base.database.database import Database
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.pins.models.pin import Pin
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.base.command.support.lock_commands import ReadUnlockedPinsHandler

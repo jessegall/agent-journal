@@ -3,7 +3,7 @@ from core.base.listener.save_listener import SaveListener
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.base.scope.scopes import Scopes
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
 from core.modules.documents.support.row_link_writer import RowLinkWriter

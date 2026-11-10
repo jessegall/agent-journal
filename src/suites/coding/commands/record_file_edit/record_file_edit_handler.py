@@ -4,7 +4,7 @@ from pathlib import Path
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.environments.models.environment import Environment
 from suites.coding.models.file_edit import FileEdit
 from suites.coding.commands.record_file_edit.record_file_edit import RecordFileEdit

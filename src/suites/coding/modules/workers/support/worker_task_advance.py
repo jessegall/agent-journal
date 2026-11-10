@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.listener.event_rows import EventRows
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads

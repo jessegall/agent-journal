@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.agents.commands.bind_agent_session.bind_agent_session import BindAgentSession
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows

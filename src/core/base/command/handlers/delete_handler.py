@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.delete_command import DeleteCommand
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 
 
 class DeleteHandler(Handler[DeleteCommand, None]):

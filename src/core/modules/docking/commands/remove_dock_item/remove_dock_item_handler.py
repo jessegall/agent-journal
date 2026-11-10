@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.modules.docking.commands.remove_dock_item.remove_dock_item import RemoveDockItem
 from core.modules.docking.models.dock_item import DockItem
 

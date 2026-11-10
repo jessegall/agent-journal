@@ -2,7 +2,7 @@ from core.base.change.moved import Moved
 from core.base.command.context import Context
 from core.base.listener.save_listener import SaveListener
 from engine.query.queries import Queries
-from core.base.repository.repository import Repository
+from engine.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
