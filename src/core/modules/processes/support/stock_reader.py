@@ -39,8 +39,8 @@ go_test_list {part}'''
 
 STOCK_READERS = (
     StockReader("pytest", "pytest*,*python -m pytest*,*python3 -m pytest*,*uv run pytest*", "Python tests",
-                  r"^FAILED |^ERROR |^E +(assert\b|\w*(Error|Exception)\b)|^(=+ )?([0-9]+ (passed|failed|errors?|deselected)\b|no tests ran)|^ERROR: .{1,70}$|^\+{3,} Timeout \+{3,}$|^[0-9]+(/[0-9]+)? tests? collected",
-                  "", r"^(=+ )?[0-9]+ passed", r"^(=+ )?([0-9]+ (failed|errors?|deselected)\b|no tests ran)|^ERROR: .{1,70}$", r"(?:[0-9]+ failed, )?[0-9]+ passed|[0-9]+ failed|[0-9]+ errors? in |^\+{3,} Timeout \+{3,}$|^Timeout \([0-9:.]+\)!",
+                  r"^FAILED |^ERROR |^E +(assert\b|\w*(Error|Exception)\b)|^(=+ )?([0-9]+ (passed|failed|xfailed|errors?|deselected)\b|no tests ran)|^ERROR: .{1,70}$|^\+{3,} Timeout \+{3,}$|^[0-9]+(/[0-9]+)? tests? collected",
+                  "", r"^(=+ )?[0-9]+ (passed|xfailed)", r"^(=+ )?([0-9]+ (failed|errors?|deselected)\b|no tests ran)|^ERROR: .{1,70}$", r"(?:[0-9]+ failed, )?[0-9]+ passed|[0-9]+ failed|[0-9]+ xfailed|[0-9]+ errors?|^\+{3,} Timeout \+{3,}$|^Timeout \([0-9:.]+\)!",
                   count=r"^collected [0-9]+ items? / [0-9]+ deselected / ([0-9]+) selected|^([0-9]+)/[0-9]+ tests? collected|^collected ([0-9]+) items?|^([0-9]+) tests? collected|\[([0-9]+) items?\]|^.+\.py: (?P<sum>[0-9]+)$", count_command="{part} --collect-only -q", step=r"[.FEsxX]"),
     StockReader("vitest", "*vitest*,npm*run test*,npm test*", "Vitest tests", r"^\s*FAIL |^\s*(Assertion|Type|Reference)?Error\b|^\s*(Test Files|Tests)\s+[0-9]", "",
                   r"^\s*(Test Files|Tests)\s+[0-9]", r"^\s*FAIL |^\s*Tests\s+[0-9]+ failed", r"^\s*Tests\s+(?:([0-9]+ failed)\s*\|\s*)?([0-9]+ passed)",
@@ -105,7 +105,7 @@ STOCK_READERS = (
     StockReader("ng-test", "ng test*,npx ng test*", "Angular tests", r"Executed [0-9]+ of [0-9]+|\bFAILED\b|^TOTAL: ", r"Executed ([0-9]+) of ([0-9]+)", r"^TOTAL: ", r"\bFAILED\b", r"(Executed [0-9]+ of [0-9]+(?: \([0-9]+ FAILED\))?)|(^TOTAL: .*)", count=r"Executed [0-9]+ of ([0-9]+)"),
     StockReader("pio-test", "pio test*,platformio test*", "PlatformIO tests", r"\[(?:PASSED|FAILED)\]|test cases:|^Collected [0-9]+ tests|^Processing ", finished=r"test cases: ", failed=r"\[FAILED\]|test cases: .*[1-9][0-9]* failed",
                   summary=r"[0-9]+ test cases: [0-9]+ [a-z]+(?:, [0-9]+ [a-z]+)*(?: in [0-9:.]+)?", count=r"^=+ ([0-9]+) test cases:", step=r"(?m)^\S+:[0-9]+: \S+\s+\[(?:(?P<passed>PASSED)|(?P<failed>FAILED))\]"),
-    StockReader("hatch-test", "hatch test*,hatch run test*", "Python tests", r"^FAILED |^ERROR |^E +(assert\b|\w*(Error|Exception)\b)|^(=+ )?([0-9]+ (passed|failed|errors?|deselected)\b|no tests ran)", r"\[ *([0-9]+)%\]", r"^(=+ )?[0-9]+ passed",
+    StockReader("hatch-test", "hatch test*,hatch run test*", "Python tests", r"^FAILED |^ERROR |^E +(assert\b|\w*(Error|Exception)\b)|^(=+ )?([0-9]+ (passed|failed|xfailed|errors?|deselected)\b|no tests ran)", r"\[ *([0-9]+)%\]", r"^(=+ )?[0-9]+ passed",
                   r"^(=+ )?([0-9]+ (failed|errors?|deselected)\b|no tests ran)", r"(?:([0-9]+ failed), )?([0-9]+ passed)", count=r"^collected ([0-9]+) items?"),
     StockReader("tox", "tox*", "Python tests", r"^\s*\S+: (?:OK|FAIL|exit [0-9]+)|^\s*\S+: commands\[[0-9]+\]>|^congratulations|^\s*evaluation failed", finished=r"^congratulations", failed=r"^\s*evaluation failed|^\s*\S+: FAIL code",
                   summary=r"^congratulations :\)|^\s*evaluation failed :\(.*", count=r"^\s*\S+: commands\[0\]>", step=r"(?m)^\s*\S+: (?:(?P<passed>OK) \S+ in|(?P<failed>FAIL) code)"),
