@@ -114,7 +114,7 @@ be drawn from its output.
 
 `journal task block <n> --on worker:<number>` opens when that worker is merged, released or ended. Pending
 tests, corrections and queued tasks keep it blocked. A crashed worker is detected on a tick; one that
-never starts is retired after the idle time.
+never starts is ended after the idle time; no worker is retired unless a person does it.
 
 ## When this happens
 
