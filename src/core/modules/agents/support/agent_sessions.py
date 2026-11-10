@@ -17,15 +17,15 @@ class AgentSessions:
         self.queries, self.repository, self.scopes, self.clock = queries, repository, scopes, clock
 
     def started(self, agent: Agent, context: Context) -> AgentSession:
-        return self.repository.save(AgentSession(environment_id=agent.environment_id, agent_id=agent.id, session=agent.session, program=agent.program,
+        return self.repository.save(AgentSession(session_agent_id=agent.id, session=agent.session, program=agent.program,
                                                  program_model=agent.program_model, started_at=self.clock.timestamp()), context)
 
     def replaced(self, agent: Agent, reason: EndReason, context: Context) -> AgentSession:
         self.ended(agent.id, reason, context)
         return self.started(agent, context)
 
-    def ended(self, agent_id: int, reason: EndReason, context: Context) -> None:
-        current = self.current(agent_id)
+    def ended(self, session_agent_id: int, reason: EndReason, context: Context) -> None:
+        current = self.current(session_agent_id)
         if current is not None and current.ended_at is None:
             self.repository.update(current, context, ended_at=self.clock.timestamp(), end_reason=reason.value)
 
@@ -35,18 +35,18 @@ class AgentSessions:
         if row is not None:
             self.repository.update(row, context, session=real_session)
 
-    def current(self, agent_id: int) -> AgentSession | None:
+    def current(self, session_agent_id: int) -> AgentSession | None:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            return self.queries.query(AgentSession).filter(agent_id=agent_id).descending("id").first()
+            return self.queries.query(AgentSession).filter(session_agent_id=session_agent_id).descending("id").first()
 
-    def history(self, agent_id: int, limit: int) -> list[AgentSession]:
+    def history(self, session_agent_id: int, limit: int) -> list[AgentSession]:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            return list(self.queries.query(AgentSession).filter(agent_id=agent_id).oldest().page(1, limit).rows)
+            return list(self.queries.query(AgentSession).filter(session_agent_id=session_agent_id).oldest().page(1, limit).rows)
 
     def has(self, session: str) -> bool:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             row = self.queries.query(AgentSession).filter(session=session).first()
         if row is None:
             return False
-        current = self.current(row.agent_id)
+        current = self.current(row.session_agent_id)
         return current is not None and current.id != row.id

@@ -12,9 +12,10 @@ class AgentSession(EnvironmentScoped, Model):
 
     model_name = "agent_session"
     cli_name = "agent-session"
+    shared_rows = True
 
     environment_id: int = 0
-    agent_id: int
+    session_agent_id: int
     session: str
     program: str
     program_model: str = ""
