@@ -47,7 +47,7 @@ test("retirement requires a separate permanent confirmation and a reason", async
     const {element, run} = await actions();
     await pickButton(element, "Retire");
     expect(run).not.toHaveBeenCalled();
-    expect(element.textContent).toContain("Retirement is permanent. This agent cannot be resumed.");
+    expect(element.textContent).toContain("Retirement is permanent. This agent cannot be resumed. Its record, its memories and its number stay.");
     expect(element.querySelector("[data-agent-confirm-retire]").disabled).toBe(true);
     typeInto(element.querySelector("[data-agent-retire-reason]"), "Its question is answered");
     await settle();
@@ -58,6 +58,7 @@ test("retirement requires a separate permanent confirmation and a reason", async
     await settle();
     await pickButton(element, "Retire permanently");
     expect(run).toHaveBeenCalledExactlyOnceWith(["agent", "retire", "5", "--reason", "Its question is answered"]);
+    expect(run.mock.calls.flat(2)).not.toContain("delete");
 });
 
 test("the task picker reads later pages without losing its selection", async () => {

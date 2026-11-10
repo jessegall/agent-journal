@@ -62,11 +62,11 @@ def test_a_person_who_retires_a_running_helper_is_told_to_stop_it_first(new_stor
     story.expect_rows(helper_agent(story).retired_at is None)
 
 
-def test_a_person_who_deletes_an_agent_retires_it_and_its_record_stays(ended):
+def test_a_person_who_deletes_an_agent_is_refused_naming_the_retirement_and_its_record_stays(ended):
     helper = helper_agent(ended)
-    ended.run(f"agent delete {helper.number} --environment main", actor=ended.user)
+    ended.expect_refusal(f"agent delete {helper.number} --environment main", f"its record stays: journal agent retire {helper.number}", actor=ended.user)
     kept = helper_rows(ended)
-    ended.expect_rows(len(kept) == 1, kept[0].id == helper.id, kept[0].retired_at is not None, detail=str(kept))
+    ended.expect_rows(len(kept) == 1, kept[0].id == helper.id, kept[0].retired_at is None, detail=str(kept))
 
 
 def test_a_person_who_deletes_a_retired_agent_is_refused_and_its_record_stays(ended):

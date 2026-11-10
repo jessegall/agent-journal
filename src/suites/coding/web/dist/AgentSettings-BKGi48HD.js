@@ -1,7 +1,7 @@
 import { openBlock as a, createElementBlock as d, createElementVNode as l, computed as w, normalizeClass as D, toDisplayString as h, renderSlot as pe, createTextVNode as S, createCommentVNode as x, createVNode as $, unref as m, withCtx as A, reactive as oe, ref as C, watch as ee, Fragment as T, renderList as L, createBlock as V, withModifiers as me, useModel as ke, normalizeStyle as ae, mergeModels as ye, onMounted as be } from "vue";
 import { useWindow as G, Btn as K, Switch as ie, TextInput as fe, useNow as he, age as we, Icon as $e, Segmented as _e, WindowRoom as Se, InnerTabs as Ce, TabBody as Ae, SwitchCase as Oe } from "@journal/window-kit";
 import { _ as W } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne = ["disabled"], Ie = {
+const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ie = ["disabled"], Ne = {
   __name: "NumberStep",
   props: { modelValue: { type: [Number, String], default: 0 }, disabled: { type: Boolean, default: !1 } },
   emits: ["update:modelValue"],
@@ -26,10 +26,10 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
         disabled: e.disabled,
         "aria-label": "More",
         onClick: u[2] || (u[2] = (b) => i(1))
-      }, "+", 8, Ne)
+      }, "+", 8, Ie)
     ]));
   }
-}, Be = /* @__PURE__ */ W(Ie, [["__scopeId", "data-v-e9d43b82"]]), Me = { class: "ctl-text" }, Re = { class: "ctl-label" }, Ve = { class: "ctl-help" }, We = { class: "ctl-input" }, Fe = {
+}, Be = /* @__PURE__ */ W(Ne, [["__scopeId", "data-v-e9d43b82"]]), Me = { class: "ctl-text" }, Re = { class: "ctl-label" }, Ve = { class: "ctl-help" }, We = { class: "ctl-input" }, Fe = {
   key: 0,
   class: "ctl-src"
 }, Ue = {
@@ -106,10 +106,10 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
     }), H = w(() => F.value.filter((g) => {
       var j, f;
       return (((f = (j = i.data.value) == null ? void 0 : j.depends) == null ? void 0 : f[g.key]) ?? []).every((v) => n[v] !== !1);
-    })), U = (g) => g.type === "flag" ? !!g.value : String(g.value), N = (g) => (g.type === "flag" ? n[g.key] : String(n[g.key])) !== U(g), I = w(() => F.value.filter(N)), q = w(() => I.value.length > 0), M = w(() => {
+    })), U = (g) => g.type === "flag" ? !!g.value : String(g.value), I = (g) => (g.type === "flag" ? n[g.key] : String(n[g.key])) !== U(g), N = w(() => F.value.filter(I)), q = w(() => N.value.length > 0), M = w(() => {
       var g;
       return q.value && u.value && ((g = i.data.value) == null ? void 0 : g.revision) !== u.value;
-    }), R = (g) => g.type === "flag" ? n[g.key] ? "on" : "off" : String(n[g.key]).trim(), z = w(() => I.value.some((g) => g.type !== "flag" && R(g) === ""));
+    }), R = (g) => g.type === "flag" ? n[g.key] ? "on" : "off" : String(n[g.key]).trim(), z = w(() => N.value.some((g) => g.type !== "flag" && R(g) === ""));
     function E() {
       var g;
       for (const j of F.value) n[j.key] = U(j);
@@ -121,7 +121,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
     const _ = w(() => b.value || (M.value ? "These settings changed since you opened them. Cancel to read them again." : "") || (z.value ? "A number is missing." : ""));
     async function P() {
       B.value = !0;
-      const g = await p.run(`work-settings apply --revision ${u.value} ${I.value.map((j) => `${j.key}=${R(j)}`).join(" ")}`);
+      const g = await p.run(`work-settings apply --revision ${u.value} ${N.value.map((j) => `${j.key}=${R(j)}`).join(" ")}`);
       B.value = !1, b.value = g.ok ? "" : g.error, await p.reload("work"), g.ok && E();
     }
     return (g, j) => (a(), d("section", {
@@ -133,7 +133,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
         label: f.title,
         help: f.description,
         source: f.source,
-        changed: N(f),
+        changed: I(f),
         "data-control": f.key
       }, {
         default: A(() => {
@@ -175,7 +175,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
         _: 2
       }, 1032, ["label", "help", "source", "changed", "data-control"]))), 128)),
       $(re, {
-        changes: I.value.length,
+        changes: N.value.length,
         pending: B.value,
         problem: _.value,
         blocked: M.value || z.value,
@@ -201,7 +201,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
       "data-agent-retire-confirm": "",
       onSubmit: o[2] || (o[2] = me((p) => c.$emit("submit"), ["prevent"]))
     }, [
-      o[5] || (o[5] = l("p", null, "Retirement is permanent. This agent cannot be resumed.", -1)),
+      o[5] || (o[5] = l("p", null, "Retirement is permanent. This agent cannot be resumed. Its record, its memories and its number stay.", -1)),
       $(m(fe), {
         "model-value": e.reason,
         label: "Reason",
@@ -234,7 +234,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
       ])
     ], 32));
   }
-}, Qe = /* @__PURE__ */ W(Je, [["__scopeId", "data-v-23a905c0"]]), Xe = ["data-edit-type"], Ze = { class: "stepper" }, et = ["disabled", "onClick"], tt = ["value", "disabled", "data-agent-limit-input", "onChange"], nt = ["disabled", "onClick"], at = { key: 0 }, st = { key: 1 }, lt = {
+}, Qe = /* @__PURE__ */ W(Je, [["__scopeId", "data-v-92de7dd6"]]), Xe = ["data-edit-type"], Ze = { class: "stepper" }, et = ["disabled", "onClick"], tt = ["value", "disabled", "data-agent-limit-input", "onChange"], nt = ["disabled", "onClick"], at = { key: 0 }, st = { key: 1 }, lt = {
   __name: "AgentLimitEditor",
   props: { row: { type: Object, required: !0 }, pending: Boolean, readOnly: Boolean, environment: { type: String, required: !0 } },
   emits: ["change"],
@@ -295,7 +295,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
   },
   emits: /* @__PURE__ */ ye(["open-agent", "close"], ["update:title"]),
   setup(e, { emit: c }) {
-    const o = c, p = ke(e, "title"), i = G(), n = w(() => i.props.limits.rows.value ?? []), u = w(() => i.props.limits.failure.value), b = C([]), B = C(0), F = C(!1), H = he(), U = C(null), N = C(!1), I = C(""), q = C(""), M = C(null), R = C(""), z = w(() => it(n.value)), E = w(() => n.value.find((r) => r.per_profile)), _ = w(() => z.value.find((r) => r.key === U.value)), P = w(() => b.value.filter((r) => {
+    const o = c, p = ke(e, "title"), i = G(), n = w(() => i.props.limits.rows.value ?? []), u = w(() => i.props.limits.failure.value), b = C([]), B = C(0), F = C(!1), H = he(), U = C(null), I = C(!1), N = C(""), q = C(""), M = C(null), R = C(""), z = w(() => it(n.value)), E = w(() => n.value.find((r) => r.per_profile)), _ = w(() => z.value.find((r) => r.key === U.value)), P = w(() => b.value.filter((r) => {
       var t, s;
       return r.state !== "retired" && r.role === ((t = _.value) == null ? void 0 : t.type) && (!_.value.profile || (((s = r.facts) == null ? void 0 : s.profile) || r.profile) === _.value.profile);
     }).sort((r, t) => (r.state !== "running") - (t.state !== "running") || String(r.ended_at || r.created_at).localeCompare(String(t.ended_at || t.created_at)))), g = w(() => {
@@ -325,27 +325,27 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
       U.value = r.key, b.value = [], k(r);
     }
     function Z() {
-      U.value = null, M.value = null, I.value = "";
+      U.value = null, M.value = null, N.value = "";
     }
     function de() {
       Z(), o("close");
     }
     async function ce(r, t) {
-      if (N.value || i.readOnly) return;
+      if (I.value || i.readOnly) return;
       const s = Number(t);
       if (!String(t).trim() || !Number.isInteger(s) || s < 0) {
-        I.value = "Use a whole number of 0 or more.";
+        N.value = "Use a whole number of 0 or more.";
         return;
       }
-      N.value = !0, I.value = "";
+      I.value = !0, N.value = "";
       const y = _.value, Y = { run: y.run_limit, kept: y.kept_limit, [r]: s }, J = ["--environment", i.environment], Q = await i.run(y.profile ? ["agent", "profile-limits", y.type, y.profile, "--running", String(Y.run), "--kept", String(Y.kept), ...J] : ["setting", "set", r === "run" ? y.run_setting : y.kept_setting, String(s), ...J]);
-      Q.ok ? await i.reload("limits") : I.value = Q.error, N.value = !1;
+      Q.ok ? await i.reload("limits") : N.value = Q.error, I.value = !1;
     }
     async function ge(r) {
-      if (!R.value.trim() || N.value) return;
-      N.value = !0;
+      if (!R.value.trim() || I.value) return;
+      I.value = !0;
       const t = await i.run(["agent", "retire", String(r.number), "--reason", R.value.trim()]);
-      I.value = t.ok ? "" : "The agent could not be retired. Try again.", t.ok && (M.value = null, R.value = "", q.value = "Agent retired permanently.", await i.reload("limits"), await k(_.value)), N.value = !1;
+      N.value = t.ok ? "" : "The agent could not be retired. Try again.", t.ok && (M.value = null, R.value = "", q.value = "Agent retired permanently.", await i.reload("limits"), await k(_.value)), I.value = !1;
     }
     function ve(r) {
       de(), o("open-agent", r);
@@ -377,7 +377,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
         ], 64)) : _.value ? (a(), d(T, { key: 2 }, [
           $(ot, {
             row: _.value,
-            pending: N.value,
+            pending: I.value,
             "read-only": m(i).readOnly,
             environment: m(i).environment,
             onChange: ce
@@ -439,7 +439,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
                 key: 1,
                 reason: R.value,
                 "onUpdate:reason": t[1] || (t[1] = (X) => R.value = X),
-                pending: N.value,
+                pending: I.value,
                 onSubmit: (X) => ge(s),
                 onCancel: t[2] || (t[2] = (X) => M.value = null)
               }, null, 8, ["reason", "pending", "onSubmit"])) : x("", !0)
@@ -500,7 +500,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
             })
           ], 8, vt))), 128))
         ], 64)),
-        I.value ? (a(), d("p", mt, h(I.value), 1)) : q.value ? (a(), d("p", kt, h(q.value), 1)) : x("", !0)
+        N.value ? (a(), d("p", mt, h(N.value), 1)) : q.value ? (a(), d("p", kt, h(q.value), 1)) : x("", !0)
       ], 2))
     ]));
   }
@@ -570,13 +570,13 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
     ], o = [{ key: "builder", label: "Builder" }, { key: "orchestrator", label: "Orchestrator" }], p = [le], i = G(), n = i.props.work, u = oe({}), b = C(""), B = C(""), F = C(!1), H = w(() => c.filter((v) => {
       var k, O;
       return u[v.key] !== ((O = (k = n.data.value) == null ? void 0 : k.controls) == null ? void 0 : O[v.key]);
-    })), U = w(() => H.value.length > 0), N = w(() => U.value && n.data.value && b.value && n.data.value.revision !== b.value), I = w(() => {
+    })), U = w(() => H.value.length > 0), I = w(() => U.value && n.data.value && b.value && n.data.value.revision !== b.value), N = w(() => {
       var v;
       return ((v = n.data.value) == null ? void 0 : v.workflow) ?? "";
     }), q = w(() => {
       var v;
       return ((v = n.data.value) == null ? void 0 : v.depends) ?? {};
-    }), M = (v) => (q.value[v.key] ?? []).every((k) => u[k] !== !1), R = w(() => c.filter((v) => p.includes(v.key) && M(v))), z = w(() => c.filter((v) => !p.includes(v.key) && M(v))), E = w(() => B.value || (N.value ? "These settings changed since you opened them. Cancel to read them again." : "")), _ = w(() => u[le] === !1 && u[jt] === !1);
+    }), M = (v) => (q.value[v.key] ?? []).every((k) => u[k] !== !1), R = w(() => c.filter((v) => p.includes(v.key) && M(v))), z = w(() => c.filter((v) => !p.includes(v.key) && M(v))), E = w(() => B.value || (I.value ? "These settings changed since you opened them. Cancel to read them again." : "")), _ = w(() => u[le] === !1 && u[jt] === !1);
     function P() {
       const v = n.data.value;
       if (v) {
@@ -604,7 +604,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
           default: A(() => [
             $(m(_e), {
               options: o,
-              value: I.value,
+              value: N.value,
               onPick: f
             }, null, 8, ["value"])
           ]),
@@ -634,13 +634,13 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
         changes: H.value.length,
         pending: F.value,
         problem: E.value,
-        blocked: N.value,
+        blocked: I.value,
         onCancel: P,
         onApply: j
       }, null, 8, ["changes", "pending", "problem", "blocked"])
     ]));
   }
-}, Nt = /* @__PURE__ */ W(xt, [["__scopeId", "data-v-dfe4b9be"]]), It = {
+}, It = /* @__PURE__ */ W(xt, [["__scopeId", "data-v-dfe4b9be"]]), Nt = {
   class: "settings",
   "data-agent-settings": ""
 }, Bt = { class: "settings-bar" }, Mt = {
@@ -657,7 +657,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
     }
     return (u, b) => (a(), V(m(Se), { padding: "0" }, {
       default: A(() => [
-        l("div", It, [
+        l("div", Nt, [
           l("div", Bt, [
             $(m(Ce), {
               tabs: p,
@@ -673,7 +673,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
               default: A(() => [
                 $(m(Oe), { value: o.value }, {
                   work: A(() => [
-                    $(Nt)
+                    $(It)
                   ]),
                   agents: A(() => [
                     $(wt)

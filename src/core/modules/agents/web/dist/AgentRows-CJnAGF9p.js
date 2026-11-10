@@ -333,7 +333,7 @@ const St = {
       "data-agent-retire-confirm": "",
       onSubmit: a[2] || (a[2] = te((o) => l.$emit("submit"), ["prevent"]))
     }, [
-      a[5] || (a[5] = A("p", null, "Retirement is permanent. This agent cannot be resumed.", -1)),
+      a[5] || (a[5] = A("p", null, "Retirement is permanent. This agent cannot be resumed. Its record, its memories and its number stay.", -1)),
       y(i(vt), {
         "model-value": e.reason,
         label: "Reason",
@@ -366,7 +366,7 @@ const St = {
       ])
     ], 32));
   }
-}, aa = /* @__PURE__ */ Z(ta, [["__scopeId", "data-v-23a905c0"]]), na = { class: "action-buttons" }, la = {
+}, aa = /* @__PURE__ */ Z(ta, [["__scopeId", "data-v-92de7dd6"]]), na = { class: "action-buttons" }, la = {
   key: 0,
   role: "alert"
 }, oa = {
