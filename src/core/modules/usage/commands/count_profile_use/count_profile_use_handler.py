@@ -5,7 +5,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.modules.profiles.commands.count_profile_use.count_profile_use import CountProfileUse
+from core.modules.usage.commands.count_profile_use.count_profile_use import CountProfileUse
 from core.modules.usage.models.statistic import Statistic
 
 

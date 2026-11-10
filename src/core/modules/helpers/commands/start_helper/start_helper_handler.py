@@ -28,7 +28,7 @@ from core.modules.helpers.support.helper_program import HelperProgram
 from core.base.profile.model_tier import ModelTier
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.base.provider.providers import Providers
-from core.modules.profiles.commands.count_profile_use.count_profile_use import CountProfileUse
+from core.modules.usage.commands.count_profile_use.count_profile_use import CountProfileUse
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.messages.support.work_sources import WorkSources
 

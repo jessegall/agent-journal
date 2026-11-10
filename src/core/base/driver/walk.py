@@ -19,6 +19,7 @@ class Walk:
         self.is_silenced = False
         self.holds_wakes = False
         self.delays_notices = False
+        self.is_paused = False
         self.has_ended_layer = False
         self.delays_lines = False
 
@@ -36,12 +37,13 @@ class Walk:
         self.is_silenced = self.is_silenced or (overlay.exclusive and not self.has_ended_layer)
         self.holds_wakes = self.holds_wakes or (overlay.exclusive and not overlay.allows_wakes and not self.has_ended_layer)
         self.delays_notices = self.delays_notices or (overlay.delays_notices and not self.has_ended_layer)
+        self.is_paused = self.is_paused or (overlay.pauses_agent and not self.has_ended_layer)
         self.has_ended_layer = False
 
     def silences(self, rule: type[DriverRule]) -> bool:
         if rule.wakes_agent:
             return self.holds_wakes
-        return (self.is_silenced and not rule.overlay_proof) or (self.delays_notices and rule.is_notice)
+        return (self.is_silenced and not rule.overlay_proof) or (self.is_paused and rule.yields_to_pause) or (self.delays_notices and rule.is_notice)
 
     def answers(self) -> RuleAnswers:
         return RuleAnswers(self.layers, self.rules, self.delays_lines)
