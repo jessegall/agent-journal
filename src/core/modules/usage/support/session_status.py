@@ -20,6 +20,7 @@ class SessionStatus:
     effort: str = ""
     context_tokens: int | None = None
     context_limit_tokens: int | None = None
+    context_window_tokens: int | None = None
 
     @classmethod
     def reported(cls, report: object) -> "SessionStatus":

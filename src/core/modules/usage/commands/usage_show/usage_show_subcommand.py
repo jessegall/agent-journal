@@ -49,7 +49,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
     def with_share(self, agent: Agent) -> SessionStatus:
         status = self.files.status(agent.session)
         usage = self.share.usage(agent.program, agent.session)
-        return replace(status, context_percent=usage.percent, context_tokens=usage.used_tokens, context_limit_tokens=usage.limit_tokens) if status.context_percent is not None else status
+        return replace(status, context_percent=usage.percent, context_tokens=usage.used_tokens, context_limit_tokens=usage.limit_tokens, context_window_tokens=usage.window_tokens) if status.context_percent is not None else status
 
     @staticmethod
     def ended_helpers(agents: Query[Agent], opened: tuple[Agent, ...]) -> tuple[Agent, ...]:
@@ -64,7 +64,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
         lines = [self.agent_line(agent, status) for agent, status in value.agents]
         lines.append(f"plan: {'; '.join(window.line for window in value.windows)}" if value.windows else "plan: no limits reported yet")
         lines.append(f"cost of the open sessions: ${value.cost_dollars:.2f}")
-        output.write("\n".join(lines), {"agents": [{**output.values(agent), "work_status": pending.get(agent.id), "last_compacted_at": compactions[agent.id].started_at if agent.id in compactions else None, "last_compaction": compactions[agent.id].json() if agent.id in compactions else None, "model": status.model, "effort": status.effort, "context_percent": status.context_percent, "context_tokens": status.context_tokens, "context_limit_tokens": status.context_limit_tokens,
+        output.write("\n".join(lines), {"agents": [{**output.values(agent), "work_status": pending.get(agent.id), "last_compacted_at": compactions[agent.id].started_at if agent.id in compactions else None, "last_compaction": compactions[agent.id].json() if agent.id in compactions else None, "model": status.model, "effort": status.effort, "context_percent": status.context_percent, "context_tokens": status.context_tokens, "context_limit_tokens": status.context_limit_tokens, "context_window_tokens": status.context_window_tokens,
                                                     "cost_dollars": status.cost_dollars} for agent, status in value.agents],
                                         "windows": [output.values(window) for window in value.windows], "cost_dollars": value.cost_dollars})
 
