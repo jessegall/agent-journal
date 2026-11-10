@@ -8,7 +8,7 @@ from core.base.command.handler import Handler
 from core.base.guard.guard import Guard
 from core.base.module.module import Module
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 from core.modules.processes.models.process import Process

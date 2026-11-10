@@ -2,7 +2,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
 from core.modules.waits.commands.open_wait.open_wait import OpenWait

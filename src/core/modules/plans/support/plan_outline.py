@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.plans.support.outline_phase import OutlinePhase
 from core.modules.plans.support.plan_agent import PlanAgent
 from core.modules.plans.support.plan_outline_json_record import PlanOutlineJsonRecord

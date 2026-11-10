@@ -4,7 +4,7 @@ from core.base.command.context import Context
 from core.base.guard.guard import Guard
 from core.base.model.event_form import EventForm
 from core.base.model.model import Model
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.plugins.support.plugin_event_scripts import GUARD_NAME, PluginEventScripts
 
 

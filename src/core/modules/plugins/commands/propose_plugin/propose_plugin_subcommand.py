@@ -5,7 +5,7 @@ from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plugins.support.plugin_manifest import PluginManifest
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 
 
 class ProposePluginSubcommand(ReadSubcommand[PluginManifest]):

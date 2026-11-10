@@ -1,4 +1,4 @@
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.base.actor_type import ActorType
 from core.base.change.deleted import Deleted
 from core.base.change.updated import Updated

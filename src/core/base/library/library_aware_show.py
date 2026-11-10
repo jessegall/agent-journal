@@ -5,7 +5,7 @@ from core.base.caller.caller import Caller
 from core.base.library.library_lookup import LibraryLookup
 from core.base.library.library_reading import LibraryReading
 from core.base.library.library_ref import LibraryRef
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 
 L = TypeVar("L")

@@ -1,5 +1,5 @@
 from core.base.command.dry_run import DRY_RUN, DryRunReachedEffect
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.tunnel.tunnel_state import TunnelState
 from tunnels.tunler.support.tunler_client import TunlerClient
 from tunnels.tunler.support.tunler_login import TunlerLogin

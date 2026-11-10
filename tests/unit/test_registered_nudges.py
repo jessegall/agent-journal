@@ -14,10 +14,10 @@ NUDGE_LIST_NAMES = re.compile(r"NUDGES$")
 ALLOWED_PLACEHOLDERS = frozenset({"approval", "recipient", "code", "plugin", "targets", "route", "exception", "line", "trigger", "remaining", "reminder", "tool", "limit", "place", "doc",
     "uses", "action", "agent", "block", "branch", "category", "check", "count", "dump", "emoji", "environment", "folder", "job", "kept", "left", "limit", "lines", "memories", "memory", "message",
     "messages", "minutes", "name", "other", "output", "outputs", "percent", "phase", "place", "plan", "process", "program", "programs", "proof", "proofs", "question", "queue", "refusal", "request",
-    "path", "instruction", "reader", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "workers", "writes", "hint", "items", "hint", "then",
+    "path", "instruction", "reader", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "workers", "writes", "hint", "items", "hint", "then", "grant", "processor",
 })
-# Static driver instructions, runtime rule diagnostics and the words a managed hook printed have no stored resource.
-FOREIGN_TEMPLATES = frozenset({"OPENING_LINE", "RULE_FAILED", "MANAGED_HOOK_LINE"})
+# Static driver instructions, runtime rule diagnostics and the words a managed hook, a foreign hook or a plugin step printed have no stored resource.
+FOREIGN_TEMPLATES = frozenset({"OPENING_LINE", "RULE_FAILED", "MANAGED_HOOK_LINE", "AGENT_NOTICE"})
 
 def source_files() -> list[Path]:
     return [path for folder in ("src/core", "src/suites") for path in (ROOT / folder).rglob("*.py")]

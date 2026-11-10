@@ -20,7 +20,7 @@ from core.base.database.database import Database
 from core.base.database.reported_findings import ReportedFindings
 from core.base.environment_names import EnvironmentNames
 from core.base.journal_home import JournalHome
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.caller.caller import Caller
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.subcommand.subcommand import Subcommand

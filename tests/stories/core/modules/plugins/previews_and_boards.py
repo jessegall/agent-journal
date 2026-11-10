@@ -7,7 +7,7 @@ import pytest
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState

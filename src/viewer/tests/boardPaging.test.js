@@ -92,6 +92,18 @@ test("a plan answer for the tab left behind is dropped", async () => {
     expect(element.textContent).not.toContain("Closed plan");
 });
 
+test("more started plans are a longer first page, since their order follows no id", async () => {
+    const reads = [];
+    const window = planWindowContext({});
+    const started = (count) => ({ok: true, value: {open_total: 30, started_total: 30, closed_total: 0, plans: Array.from({length: count}, (_, index) => plan(30 - index, `Plan ${30 - index}`))}});
+    window.read = async (line) => (reads.push(line), started(line.includes("--limit 50") ? 30 : 25));
+    const element = await mounted(PlanCards, {...window, tabs: [{key: "started", label: "Started", read: "plan board --started", count_field: "started_total"}]});
+    element.querySelector("[data-plans-more]").click();
+    await settle();
+    expect(reads.at(-1)).toBe("plan board --started --limit 50");
+    expect(element.querySelectorAll(".plan").length).toBe(30);
+});
+
 test("show more on an empty plan list asks for nothing", async () => {
     const reads = [];
     const window = planWindowContext({});

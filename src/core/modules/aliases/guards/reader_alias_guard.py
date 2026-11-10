@@ -1,5 +1,5 @@
 from core.base.guard.guard import Guard
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.base.change.deleted import Deleted
 from core.base.command.context import Context

@@ -11,8 +11,8 @@ from core.base.model.model import Model
 from core.base.model.state_book import StateBook
 from core.base.model.table import indefinite_article
 from core.base.model.unknown_state_error import UnknownStateError
-from core.base.refusal import Refusal
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.refusal import Refusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 
 
 

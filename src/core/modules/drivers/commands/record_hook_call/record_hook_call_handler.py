@@ -17,7 +17,7 @@ from core.base.driver.project_paths import ProjectPaths
 from core.base.journal_home import JournalHome
 from core.base.driver.refusal_line import RefusalLine
 from core.base.driver.rule_answers import RuleAnswers
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.metadata import Metadata
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
@@ -34,7 +34,7 @@ from core.modules.drivers.commands.support.one_move_per_row import OneMovePerRow
 from core.modules.drivers.commands.support.rule_history_writer import RuleHistoryWriter
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import DISPLAYED_MESSAGE_ID, DISPLAYED_PART, DISPLAYED_TEXT, MONITOR_DESCRIPTION, SUMMARY_CHARACTERS, HookCall
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.nudger import Nudger

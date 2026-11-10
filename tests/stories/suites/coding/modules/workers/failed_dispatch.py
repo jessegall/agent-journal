@@ -4,7 +4,7 @@ import pytest
 
 from core.base.actor import Actor
 from core.base.command.bus import Bus
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.query.queries import Queries
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.drivers.commands.record_bypass_line.record_bypass_line import RecordBypassLine

@@ -4,7 +4,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.driver.command_category import CommandCategory
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from suites.coding.modules.workers.commands.run_worker_test.run_worker_test import RunWorkerTest

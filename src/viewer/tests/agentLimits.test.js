@@ -4,6 +4,7 @@ import AgentSettingsAgents from "../../suites/coding/web/src/AgentSettingsAgents
 import {context, mounted, page, settle, typeInto} from "./support/agentWindowContext.js";
 
 const worker = {key: "worker", label: "Worker", running: 1, kept: 3, run_limit: 1, kept_limit: 3, run_setting: "sample.run", kept_setting: "sample.kept", run_source: "environment main", kept_source: "environment main", per_profile: false, profiles: []};
+const helper = {key: "helper", label: "Helper", running: 0, kept: 1, run_limit: 4, kept_limit: 8, run_setting: "sample.helper-run", kept_setting: "sample.helper-kept", per_profile: true, profiles: [{profile: "journal-researcher", title: "Researcher", running: 0, kept: 1, run_limit: 2, kept_limit: 3, group: ""}]};
 const idle = {id: 42, role: "worker", state: "idle", program: "claude", created_at: "2026-11-01T09:00:00Z", ended_at: "2026-11-01T10:00:00Z", facts: {given_name: "Ada", model: "sonnet", task_title: "Fix the cart"}};
 afterEach(() => { document.body.innerHTML = ""; });
 async function counts({readOnly = false} = {}) {
@@ -25,16 +26,26 @@ test("the agents tab of agent settings shows the counts without status words", a
     expect(element.textContent).not.toContain("At limit");
 });
 
-test("maximum controls save a change and read-only viewers cannot edit", async () => {
+test("the table has no edit button; the maximums are set on the screen of the opened row", async () => {
     const {element, held} = await counts();
-    const edit = element.querySelector("[data-agent-limits-edit]");
-    expect(edit.textContent).toContain("Edit");
-    edit.click();
+    expect(element.querySelector("[data-agent-limits-edit]")).toBe(null);
+    element.querySelector("[data-agent-limit-type='worker']").click();
     await settle();
     const input = element.querySelector("[data-agent-limit-input='run']");
     input.nextElementSibling.click();
     await settle();
     expect(held.run).toHaveBeenCalledWith(["setting", "set", "sample.run", "2", "--environment", "main"]);
+});
+
+test("the screen of a profile sets its own maximums through the profile limits line", async () => {
+    const held = context({"agent limits": page([structuredClone(helper)]), "agent cards --show all --reusable --role helper --profile journal-researcher --page 1": page([])});
+    held.run = vi.fn(async () => ({ok: true}));
+    const element = await mounted({render: () => h(AgentSettingsAgents)}, held);
+    element.querySelector("[data-agent-limit-profile='journal-researcher']").click();
+    await settle();
+    element.querySelector("[data-agent-limit-input='kept']").nextElementSibling.click();
+    await settle();
+    expect(held.run).toHaveBeenCalledWith(["agent", "profile-limits", "helper", "journal-researcher", "--running", "2", "--kept", "4", "--environment", "main"]);
 });
 
 test("an opened row is a new screen in place of the table", async () => {

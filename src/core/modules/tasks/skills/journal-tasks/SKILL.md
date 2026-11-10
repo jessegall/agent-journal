@@ -1,6 +1,6 @@
 ---
 name: journal-tasks
-description: Declare, log and finish the current work; read it before the first task command of a session
+description: Use tasks to declare, log and finish the current work; read it before the first task command of a session
 ---
 
 # Tasks

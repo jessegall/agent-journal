@@ -66,3 +66,24 @@ def test_the_mode_menu_opens_both_limits_and_a_person_changes_them(agent_limits_
     settings = server.story.container.get(Queries).query(Setting)
     server.story.expect_rows(json.loads(settings.filter(key=RUN, environment_id=1).first().value) == 2)
     server.story.expect_rows(json.loads(settings.filter(key=KEPT, environment_id=1).first().value) == 7)
+
+
+def settings_line(server, cookie, command):
+    return server.viewer_line_value(cookie, {"window": "coding.agent-settings", "environment": "main", "line": command})
+
+
+def test_a_person_sets_one_profiles_counts_through_the_profile_screen_route(agent_limits_server):
+    server, cookie = agent_limits_server
+    settings_line(server, cookie, ["agent", "profile-limits", "helper", "journal-researcher", "--running", "1", "--kept", "6", "--environment", "main"])
+    helper = next(row for row in settings_line(server, cookie, ["agent", "limits"])["rows"] if row["key"] == "helper")
+    profile = next(row for row in helper["profiles"] if row["profile"] == "journal-researcher")
+    server.story.expect_rows((profile["run_limit"], profile["kept_limit"]) == (1, 6))
+    server.story.expect_rows((helper["run_limit"], helper["kept_limit"]) == (4, 8))
+
+
+def test_an_agent_cannot_set_a_profiles_counts(agent_limits_server):
+    server, cookie = agent_limits_server
+    server.story.expect_refusal("agent profile-limits helper journal-researcher --running 9 --kept 9 --environment main --reason \"fewer\"", "A person was asked", actor=server.story.agent)
+    helper = next(row for row in line(server, cookie, ["agent", "limits"])["rows"] if row["key"] == "helper")
+    profile = next(row for row in helper["profiles"] if row["profile"] == "journal-researcher")
+    server.story.expect_rows((profile["run_limit"], profile["kept_limit"]) == (2, 3))

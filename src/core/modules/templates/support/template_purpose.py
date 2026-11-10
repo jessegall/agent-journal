@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from string import Formatter
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.templates.models.template import Template
 from core.modules.templates.support.template_row import TemplateRow
 

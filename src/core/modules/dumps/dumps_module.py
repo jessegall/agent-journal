@@ -42,7 +42,7 @@ class DumpsModule(Module):
 
     name = "journal.core.dumps"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.docking"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.agents", "journal.core.drivers"]
     skills = [SkillDeclaration("journal-dumps", "File what the user dropped in a dump by sorting the material by subject into rows of their own; read it when a dump arrives", keywords=("dump", "dumps", "dumped"), commands=["dump"], types=["main"])]
     models = [ModelDeclaration(Dump, excluded_subcommands=BUILT), ModelDeclaration(DumpItem, excluded_subcommands=BUILT)]
     migrations = [DumpClosedIndexMigration, DumpsTablesMigration, ProjectDumpsMigration]

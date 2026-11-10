@@ -2,7 +2,7 @@ from core.base.change.created import Created
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import WORKERS_START_HELPERS

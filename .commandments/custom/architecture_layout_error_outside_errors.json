@@ -19,9 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/core/base/block_refusal.py"
-            },
-            {
                 "file": "src/core/base/caller/caller_request_error.py"
             },
             {
@@ -142,9 +139,6 @@
                 "file": "src/core/base/recorded_refusal.py"
             },
             {
-                "file": "src/core/base/refusal.py"
-            },
-            {
                 "file": "src/core/base/registry/lazy_load_error.py"
             },
             {
@@ -164,9 +158,6 @@
             },
             {
                 "file": "src/core/base/upgrade/upgrade_failed_error.py"
-            },
-            {
-                "file": "src/core/base/user_approval_refusal.py"
             },
             {
                 "file": "src/core/modules/drivers/commands/skip_refusal/skip_refusal.py"

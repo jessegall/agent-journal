@@ -61,9 +61,6 @@
                 "file": "src/core/base/agent_write_folder.py"
             },
             {
-                "file": "src/core/base/block_refusal.py"
-            },
-            {
                 "file": "src/core/base/checkout.py"
             },
             {
@@ -217,9 +214,6 @@
                 "file": "src/core/base/recorded_refusal.py"
             },
             {
-                "file": "src/core/base/refusal.py"
-            },
-            {
                 "file": "src/core/base/refusal_log.py"
             },
             {
@@ -287,9 +281,6 @@
             },
             {
                 "file": "src/core/base/unix_connection.py"
-            },
-            {
-                "file": "src/core/base/user_approval_refusal.py"
             },
             {
                 "file": "src/core/base/version_numbers.py"

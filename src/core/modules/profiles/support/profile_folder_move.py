@@ -6,7 +6,7 @@ from core.base.access import Access
 from core.base.file_access import FileAccess
 from core.base.log_level import LogLevel
 from core.base.profile.agent_profile import AgentProfile
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.system_log_writer import SystemLogWriter
 from core.base.text_digest import TextDigest
 from core.modules.profiles.support.profile_fields import ProfileFields

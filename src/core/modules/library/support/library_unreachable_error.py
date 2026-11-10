@@ -1,4 +1,4 @@
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.library.support.library_failure_error import LibraryFailureError
 
 

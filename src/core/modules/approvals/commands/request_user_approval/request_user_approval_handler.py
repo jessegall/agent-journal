@@ -8,7 +8,7 @@ from core.base.listener.event_rows import EventRows
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.support.standing_approvals import StandingApprovals

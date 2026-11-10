@@ -6,7 +6,7 @@ from core.base.model.environment_scoped import EnvironmentScoped
 
 from core.base.actor import Actor
 from core.base.model.model import Model
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.timestamp import Timestamp
 from core.modules.memories.models.lifecycles.memory_lifecycle import MemoryLifecycle
 from core.modules.memories.models.enums.memory_state import MemoryState

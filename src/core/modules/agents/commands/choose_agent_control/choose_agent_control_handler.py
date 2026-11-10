@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.commands.choose_agent_control.choose_agent_control import ChooseAgentControl
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.terminal_typing import TerminalTyping

@@ -4,7 +4,7 @@ from core.base.helper_role import HelperRole
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.reviews.commands.add_reviewer.add_reviewer import AddReviewer
@@ -30,7 +30,7 @@ class AddReviewerHandler(Handler[AddReviewer, Reviewer]):
         if context.environment_id is None:
             raise Refusal("a reviewer is added in an environment", "name one with --environment")
         program = self.settings.program()
-        session = f"reviewer-{self.reviewers.count() + 1}"
+        session = f"reviewer-{self.reviewers.in_environment(context.environment_id).count() + 1}"
         agent = self.bus.dispatch(StartAgent(session, program, HelperRole.REVIEWER, access="read-only"), context)
         return self.repository.save(Reviewer(id=agent.id, creator_id=context.actor.id, program=program,
                                              model=self.settings.model()), context)

@@ -7,7 +7,7 @@ from core.modules.drivers.events.prompt_submitted import PromptSubmitted
 from core.modules.drivers.events.session_started import SessionStarted
 from core.modules.drivers.events.stop_allowed import StopAllowed
 from core.modules.drivers.events.stop_denied import StopDenied
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 
 

@@ -6,7 +6,7 @@ import pytest
 from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.messages.models.enums.message_type import MessageType

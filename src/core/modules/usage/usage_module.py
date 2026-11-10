@@ -5,6 +5,8 @@ from core.modules.usage.models.agent_filter_options_view import AgentFilterOptio
 from core.modules.usage.commands.agent_cards.agent_cards_subcommand import AgentCardsSubcommand
 from core.modules.usage.commands.agent_tip.agent_tip_subcommand import AgentTipSubcommand
 from core.modules.usage.commands.agent_limits.agent_limits_subcommand import AgentLimitsSubcommand
+from core.modules.usage.commands.set_profile_limits.set_profile_limits_handler import SetProfileLimitsHandler
+from core.modules.usage.commands.set_profile_limits.set_profile_limits_subcommand import SetProfileLimitsSubcommand
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
@@ -36,13 +38,14 @@ class UsageModule(Module):
     name = "journal.core.usage"
     seed_reason = "usage is what the agent programs report, which a demo has none of"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.agents", "journal.core.environments", "journal.core.tasks", "journal.core.questions", "journal.core.drivers", "journal.core.messages", "journal.core.waits", "journal.core.plans", "journal.core.processes"]
+    dependencies = ["journal.core.agents", "journal.core.environments", "journal.core.tasks", "journal.core.questions", "journal.core.drivers", "journal.core.messages", "journal.core.waits", "journal.core.plans", "journal.core.processes", "journal.core.settings", "journal.core.actors", "journal.core.schedules", "journal.core.skills"]
     models = [ModelDeclaration(Statistic, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [StatisticsTableMigration]
     views = [AgentCard, AgentListing, AgentFilterOptionsView, AgentCounts]
     listeners = [EndedAgentStatusListener]
     moves = [StatisticsMove]
-    subcommands = [AgentLimitsSubcommand, AgentCardsSubcommand, AgentTipSubcommand, UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, UsageOwnMessagesSubcommand, UsageAgentSubcommand, UsageInspectorSubcommand, StatisticListSubcommand]
+    handlers = [SetProfileLimitsHandler]
+    subcommands = [AgentLimitsSubcommand, SetProfileLimitsSubcommand, AgentCardsSubcommand, AgentTipSubcommand, UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, UsageOwnMessagesSubcommand, UsageAgentSubcommand, UsageInspectorSubcommand, StatisticListSubcommand]
     windows = [WindowDeclaration("usage.usage", "Usage", "usage.js", WindowLoading.COMPONENT, skeleton=USAGE_USAGE_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show", "usage-limit list"], runs=["usage-limit set", "usage-limit delete"], events=["usage_limit.*"], keys=[WindowKey("usage", "usage show", reload_seconds=30), WindowKey("limits", "usage-limit list", events=["usage_limit.*"])]),
                WindowDeclaration("usage.cost", "Cost", "cost.js", WindowLoading.COMPONENT, skeleton=USAGE_COST_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"], keys=[WindowKey("usage", "usage show", reload_seconds=30)]),
                WindowDeclaration("usage.fitness", "Fitness", "fitness.js", WindowLoading.COMPONENT, skeleton=USAGE_FITNESS_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT, reads=["usage fitness"], keys=[WindowKey("fitness", "usage fitness", arguments=["agent"])]),

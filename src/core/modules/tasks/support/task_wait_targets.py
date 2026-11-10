@@ -1,6 +1,6 @@
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.query.queries import Queries
 from core.base.agent_role import AgentRole
 from core.modules.agents.models.agent import Agent

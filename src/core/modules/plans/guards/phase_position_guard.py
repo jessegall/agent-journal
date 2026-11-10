@@ -1,6 +1,6 @@
 from core.base.command.edit_command import EditCommand
 from core.base.guard.guard import Guard
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.plans.models.phase import Phase
 from core.base.change.updated import Updated
 from core.base.command.context import Context

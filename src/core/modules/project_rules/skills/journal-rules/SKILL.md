@@ -1,6 +1,6 @@
 ---
 name: journal-rules
-description: Project rules are standing instructions every agent gets at its start; read it before the first rule command of a session
+description: Declare project rules, the standing instructions every agent gets at its start; read it before the first rule command of a session
 ---
 
 # Rules

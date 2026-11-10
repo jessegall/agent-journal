@@ -10,7 +10,7 @@ from core.base.model.model import Model
 from core.base.model.table import stored
 from core.base.model.tables import Tables
 from core.base.page import Page
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.type_guards import is_frozenset, is_mapping, is_tuple
 
 LIST_HIDDEN_COLUMNS = ("version", "metadata", "created_at", "updated_at", "creator_id", "environment_id")

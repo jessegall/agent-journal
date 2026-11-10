@@ -1,6 +1,6 @@
 from core.base.actor import Actor
 from core.base.command.bus import Bus
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.provider.launch_command import LaunchCommand
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_link import ANSWER_BYTES, LauncherLink

@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.plugins.support.plugin_manifest_files import PluginManifestFiles
 
 

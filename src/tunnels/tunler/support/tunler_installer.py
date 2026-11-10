@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 from urllib.request import urlopen
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 ARCHITECTURES = {"x86_64": "amd64", "amd64": "amd64", "aarch64": "arm64", "arm64": "arm64"}
 DOWNLOAD_LIMIT_SECONDS = 60

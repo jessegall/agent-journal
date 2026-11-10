@@ -15,7 +15,6 @@ const agentPage = ref(0);
 const moreAgents = ref(false);
 const now = useNow();
 const selected = ref(null);
-const editing = ref(false);
 const pending = ref(false);
 const failure = ref("");
 const notice = ref("");
@@ -35,8 +34,8 @@ const models = computed(() => {
 });
 const width = (count, limit) => limit ? `${Math.min(count / Math.max(count, limit) * 100, 100)}%` : "0%";
 const overflow = (count, limit) => limit && count > limit ? `${(count - limit) / count * 100}%` : "0%";
-const screen = computed(() => (editing.value ? "edit" : chosen.value?.key ?? "counts"));
-watch(() => (editing.value ? "Edit" : chosen.value?.label || "Agent counts"), (value) => { title.value = value; }, {immediate: true});
+const screen = computed(() => chosen.value?.key ?? "counts");
+watch(() => chosen.value?.label || "Agent counts", (value) => { title.value = value; }, {immediate: true});
 async function readAgents(row, page = 1) {
     view.state["count-agents.role"] = row.type;
     if (row.profile) view.state["count-agents.profile"] = row.profile;
@@ -49,15 +48,20 @@ async function readAgents(row, page = 1) {
     moreAgents.value = result.more.value;
 }
 function select(row) { selected.value = row.key; agents.value = []; readAgents(row); }
-function back() { editing.value = false; selected.value = null; retiring.value = null; failure.value = ""; }
+function back() { selected.value = null; retiring.value = null; failure.value = ""; }
 function close() { back(); emit("close"); }
-async function change(row, key, previous, value) {
+async function change(kind, value) {
     if (pending.value || view.readOnly) return;
     const number = Number(value);
     if (!String(value).trim() || !Number.isInteger(number) || number < 0) { failure.value = "Use a whole number of 0 or more."; return; }
     pending.value = true;
     failure.value = "";
-    const answer = await view.run(["setting", "set", key, String(number), "--environment", view.environment]);
+    const row = chosen.value;
+    const limits = {run: row.run_limit, kept: row.kept_limit, [kind]: number};
+    const environment = ["--environment", view.environment];
+    const answer = await view.run(row.profile
+        ? ["agent", "profile-limits", row.type, row.profile, "--running", String(limits.run), "--kept", String(limits.kept), ...environment]
+        : ["setting", "set", kind === "run" ? row.run_setting : row.kept_setting, String(number), ...environment]);
     if (answer.ok) { await view.reload("limits"); notice.value = "Saved."; }
     else failure.value = answer.error;
     pending.value = false;
@@ -75,13 +79,11 @@ function openAgent(agent) { close(); emit("open-agent", agent); }
 
 <template>
     <div class="counts-panel">
-        <div :key="screen" class="counts" data-counts-screen>
-            <template v-if="editing || chosen"><button class="back" type="button" @click="back">‹ Back to the counts</button></template>
+        <div :key="screen" :class="['counts', {padded: readFailure || chosen}]" data-counts-screen>
+            <template v-if="chosen"><button class="back" type="button" @click="back">‹ Back to the counts</button></template>
             <template v-if="readFailure"><strong>The counts could not be read</strong><p>The journal did not answer.</p><Btn small @click="view.reload('limits')">Try again</Btn></template>
-            <template v-else-if="editing">
-                <AgentLimitEditor :rows="rows" :pending="pending" :read-only="view.readOnly" :environment="view.environment" @change="change" />
-            </template>
             <template v-else-if="chosen">
+                <AgentLimitEditor :row="chosen" :pending="pending" :read-only="view.readOnly" :environment="view.environment" @change="change" />
                 <p><strong>{{ chosen.running }} of {{ chosen.run_limit }}</strong> running, <strong>{{ chosen.kept }}<template v-if="chosen.kept_limit"> of {{ chosen.kept_limit }}</template></strong> kept</p><p>{{ models }}</p>
                 <template v-if="!chosenAgents.length"><strong>No agents here yet</strong><p>An agent shows here as soon as one of this type starts.</p></template>
                 <template v-for="agent in chosenAgents" :key="agent.id"><div class="person" :data-count-agent="agent.id">
@@ -100,20 +102,21 @@ function openAgent(agent) { close(); emit("open-agent", agent); }
             </template>
             <template v-if="failure"><p role="alert">{{ failure }}</p></template><template v-else-if="notice"><p role="status">{{ notice }}</p></template>
         </div>
-        <div class="foot"><template v-if="editing"><span class="foot-note">{{ notice || `Changes apply to ${view.environment}.` }}</span><Btn @click="back">Done</Btn></template><template v-else-if="!chosen"><Btn :disabled="view.readOnly" data-agent-limits-edit @click="editing = true">Edit</Btn></template></div>
     </div>
 </template>
 
 <style scoped>
 .counts { width: 100%; font-size: 12px; animation: counts-screen-in 180ms ease-out; }
+.counts.padded { padding: 14px 18px; }
 @keyframes counts-screen-in { from { opacity: 0; transform: translateX(16px); } }
 p { color: var(--text-3); margin: 0 0 12px; }
 .back { border: 0; background: none; color: var(--accent-text); cursor: pointer; margin-bottom: 12px; }
-.columns, .count-row { display: grid; grid-template-columns: minmax(100px, 1fr) minmax(90px, 1fr) minmax(90px, 1fr) 12px; gap: 12px; align-items: center; }
-.columns, .helper-head { color: var(--text-3); padding: 8px 0; }
+.columns, .count-row { display: grid; grid-template-columns: minmax(100px, 1fr) minmax(90px, 1fr) minmax(90px, 1fr) 12px; gap: 12px; align-items: center; padding-left: 18px; padding-right: 18px; }
+.columns, .helper-head { color: var(--text-3); padding-top: 8px; padding-bottom: 8px; }
+.helper-head { padding-left: 18px; padding-right: 18px; }
 .columns { position: sticky; top: var(--settings-bar-height, 0); z-index: 1; background: var(--raised, var(--bg)); }
 .helper-head { display: flex; justify-content: space-between; }
-.count-row { width: 100%; padding: 9px 0; background: none; border: 0; border-top: 1px solid var(--border); color: var(--text); text-align: left; cursor: pointer; }
+.count-row { width: 100%; padding-top: 9px; padding-bottom: 9px; background: none; border: 0; border-top: 1px solid var(--border); color: var(--text); text-align: left; cursor: pointer; }
 .count-row:hover { background: var(--hover); }
 .full { font-weight: 600; }
 .bar { display: block; position: relative; height: 4px; background: var(--border); margin-top: 5px; }
@@ -124,7 +127,8 @@ small { display: block; color: var(--text-3); margin-top: 4px; }
 .person { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--border); }
 .person-text { flex: 1; min-width: 0; }.person-text small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-3); }.dot.running { background: var(--accent); }
-[role="alert"] { color: var(--danger); }.foot-note { flex: 1; color: var(--text-3); }
+[role="alert"], [role="status"] { margin: 8px 18px; }
+.padded [role="alert"], .padded [role="status"] { margin: 8px 0; }
+[role="alert"] { color: var(--danger); }
 @media (max-width: 600px) { .bar { display: none; } }
-.foot { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
 </style>

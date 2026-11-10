@@ -93,9 +93,9 @@ class CodingModule(Module):
     guards = [MainTaskStartGuard, MainReservationGuard]
     suites = [CodingSuite]
     drivers = [MainDriver, HelperDriver, WorkerDriver]
-    skills = [SkillDeclaration("journal-plan-dispatch", "How the main agent gets a plan made: it dispatches a functional designer and then a planner; read it when the user asks for a plan", keywords=("plan", "roadmap"), types=["main"]),
-              SkillDeclaration("journal-functional-design", "How a functional designer writes a design document: user stories, code examples and the phases in order; read it before you write one"),
-              SkillDeclaration("journal-user-stories", "Write user stories for any system design from every angle, who acts, what they see, refusals, failures, recovery and abuse, and group them into story books; load it before you write stories or a functional design", keywords=("user story", "user stories", "story book")),
+    skills = [SkillDeclaration("journal-plan-dispatch", "Send a functional designer and then a planner to make the plan; read it when the user asks for a plan", keywords=("plan", "roadmap"), types=["main"]),
+              SkillDeclaration("journal-functional-design", "Write a functional design of user stories, code examples and the phases in order; read it before you write one"),
+              SkillDeclaration("journal-user-stories", "Write user stories for any system design from every angle, and group them into story books; read it before you write stories or a functional design", keywords=("user story", "user stories", "story book")),
               SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, read-only helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"), types=["main"])]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
     migrations = [HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration, PruneFileEditsMigration]
@@ -117,7 +117,7 @@ class CodingModule(Module):
                                        WindowKey("auto", "setting show journal.suites.coding.auto-mode", events=["setting.*"]),
                                        WindowKey("limits", "agent limits", tab="agents", events=["agent.*", "setting.*"])]),
                WindowDeclaration("coding.agent-settings", "Agent settings", "agent-settings.js", WindowLoading.COMPONENT, skeleton=CODING_AGENT_SETTINGS_SKELETON, icon=WindowIcon.WINDOW,
-                                 reads=["work-settings show", "agent limits", "agent cards", "setting show"], runs=["work-settings apply", "work-settings preset", "setting set", "agent retire"],
+                                 reads=["work-settings show", "agent limits", "agent cards", "setting show"], runs=["work-settings apply", "work-settings preset", "setting set", "agent profile-limits", "agent retire"],
                                  events=["setting.*", "agent.*"],
                                  keys=[WindowKey("work", "work-settings show", events=["setting.*"]),
                                        WindowKey("limits", "agent limits", tab="agents", events=["agent.*", "setting.*"]),

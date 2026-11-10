@@ -8,7 +8,7 @@ from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.commands.wake_inactive_agent.wake_inactive_agent import WakeInactiveAgent
 from core.modules.drivers.models.agent_activity import AgentActivity
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.driver_nudges import CACHE_KEEPALIVE
 from core.modules.helpers.support.helper_settings import COLD_SESSION_MINUTES

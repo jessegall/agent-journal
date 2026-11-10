@@ -10,7 +10,6 @@ from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
 from core.modules.processes.support.queued_process_start import QueuedProcessStart
 
-LIMIT_SECONDS = 0
 
 
 class RunGrantedCommandSubcommand(Subcommand[RunGrantedCommand, Process]):
@@ -35,5 +34,5 @@ class RunGrantedCommandSubcommand(Subcommand[RunGrantedCommand, Process]):
         if not isinstance(value, Process):
             return
         session = self.agents.find(value.session_agent_id).session
-        self.launch.start(QueuedProcessStart(value, value.line, session), ForegroundRun(LIMIT_SECONDS, True, queued=True))
+        self.launch.start(QueuedProcessStart(value, value.line, session), ForegroundRun.queued_background())
         output.line(f"started in the background: output {value.id}")

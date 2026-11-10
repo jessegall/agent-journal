@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.modules.documents.support.outline import Outline
 

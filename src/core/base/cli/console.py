@@ -36,10 +36,10 @@ from core.base.module.module_finder import ModuleFinder
 from core.base.registry.registry import Registry
 from core.base.driver.refusal_skips import RefusalSkips
 from core.base.registry.stale_registry_error import StaleRegistryError
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.refusal_log import RefusalLog
 from core.base.scope.scopes import Scopes
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 
 SUCCESS_CODE, REFUSED_CODE, USAGE_CODE, ERROR_CODE = 0, 1, 2, 3
 HELP_FLAGS = ("--help", "-h")

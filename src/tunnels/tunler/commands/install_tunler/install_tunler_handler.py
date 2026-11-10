@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from tunnels.tunler.commands.install_tunler.install_tunler import InstallTunler
 from tunnels.tunler.support.tunler_client import TunlerClient
 from tunnels.tunler.support.tunler_person import TunlerPerson

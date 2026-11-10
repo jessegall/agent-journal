@@ -4,7 +4,7 @@ from pathlib import Path
 from core.base.actor_type import ActorType
 from core.base.guard.guard_refusal import GuardRefusal
 from core.base.guard.guard_switches import GuardSwitches
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.tasks.models.task import Task

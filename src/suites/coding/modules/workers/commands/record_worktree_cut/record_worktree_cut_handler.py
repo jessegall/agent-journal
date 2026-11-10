@@ -17,7 +17,7 @@ from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
 from core.modules.messages.support.work_sources import WorkSources
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.support.worker_assignments import WorkerAssignments
 
 

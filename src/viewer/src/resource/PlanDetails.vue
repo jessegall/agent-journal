@@ -24,6 +24,9 @@ defineProps({plan: {type: Object, required: true}, read: {type: Function, defaul
                 <p class="text">{{ plan.reason }}</p>
             </section>
         </template>
+        <template v-if="plan.waits_on?.length">
+            <p class="note" data-plan-waits-on>Opens by itself when {{ plan.waits_on.map((id) => `plan ${id}`).join(" and ") }} {{ plan.waits_on.length === 1 ? "ends" : "have ended" }}.</p>
+        </template>
         <template v-if="plan.total">
             <section class="part" data-plan-progress>
                 <h4>Progress</h4>
@@ -124,6 +127,11 @@ h4 {
 }
 .overall-figure {
     flex: none;
+}
+.note {
+    margin: 0 0 18px;
+    color: var(--text-3);
+    font-size: 12px;
 }
 .delegation {
     margin: 0 0 18px;

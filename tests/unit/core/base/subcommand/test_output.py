@@ -5,7 +5,7 @@ from core.base.subcommand.output import Output
 from core.base.guard.guard_refusal import GuardRefusal
 from core.base.model.tables import Tables
 from core.base.page import Page
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from tests.unit.core.base.model.test_model import Item
 
 ITEM = Item(id=3, version=1, title="Dune")

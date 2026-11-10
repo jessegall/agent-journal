@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from install.built_bundle import BuiltBundle, SKIPPED_FOLDERS
 
 MODULE_ROOTS = ("core", "suites", "tunnels")

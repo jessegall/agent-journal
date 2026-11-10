@@ -3,7 +3,7 @@ import shutil
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.file_access import FileAccess
 from core.modules.messages.models.message import Message
 

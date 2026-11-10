@@ -16,7 +16,7 @@ import pytest
 
 from core.base.code_copy import IGNORED
 from core.base.journal_home import JournalHome
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.testing.expect_row import expect_row
 from install.code_handover import CodeHandover
 from install.install_journal import InstallJournal

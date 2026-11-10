@@ -1,5 +1,5 @@
 from core.base.listener.event_rows import EventRows
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.documents.support.row_refs import RowRefs
 from core.modules.templates.models.template import Template
 from core.modules.templates.support.template_row import TemplateRow

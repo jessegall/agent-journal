@@ -18,7 +18,7 @@ class SettingRequestsModule(Module):
     requires_core = ">=5,<6"
     move_reason = "this table is new in version 5, so version 4 holds nothing to carry over"
     seed_reason = "the demo shows no setting requests"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.questions"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.questions", "journal.core.approvals"]
     models = [ModelDeclaration(SettingRequest, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [SettingRequestsTableMigration, HelperKeysMigration]
     handlers = [RequestSettingHandler]

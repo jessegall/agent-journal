@@ -117,8 +117,6 @@ from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.viewer.window_loading import WindowLoading
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.tasks.models.open_dependency import OpenDependency
-from core.modules.tasks.commands.comment_task.comment_task_subcommand import CommentTaskSubcommand
-from core.modules.tasks.commands.task_comments.task_comments_subcommand import TaskCommentsSubcommand
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_dependency import TaskDependency
 from core.modules.tasks.models.task_log import TaskLog
@@ -147,12 +145,12 @@ class TasksModule(Module):
     settings = TASK_SETTINGS
     requires_core = ">=5,<6"
     block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged, TaskBriefRead, TaskBlocksReviewed]
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking"]
-    skills = [SkillDeclaration("journal-tasks", "Declare, log and finish the current work; read it before the first task command of a session", keywords=("task", "tasks", "todo"), commands=["task"])]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking", "journal.core.settings"]
+    skills = [SkillDeclaration("journal-tasks", "Use tasks to declare, log and finish the current work; read it before the first task command of a session", keywords=("task", "tasks", "todo"), commands=["task"])]
     models = [ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskTag, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(TaskBlockRenewal, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(TaskRead, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [TaskHolderDelegationMigration, BlockWaitingTasksMigration, TaskLogImportantMigration, TaskReadSessionMigration, PendingWaitsIndexMigration, OpenTaskEdgeIndexMigration, ClosedTaskIndexMigration, TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration, TaskReadsTableMigration, TaskBlockRenewalsMigration, TaskClosedCursorIndexMigration, AllEnvironmentsTaskStateIndexMigration, TaskComplexityMigration, TaskTagsMigration, TaskEnvironmentIdIndexMigration, TaskIndependenceReasonMigration]
-    subcommands = [ChooseNextTaskSubcommand, TagTaskSubcommand, RemoveTaskTagSubcommand, TaskTagsSubcommand, TaskListSubcommand, EditTaskSubcommand, AssignTaskSubcommand, CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskCountsSubcommand, TaskInspectSubcommand, TaskInfoSubcommand, MakeTaskLogSubcommand, ReadTaskBriefSubcommand, MakeTaskDependencySubcommand,
+    subcommands = [ChooseNextTaskSubcommand, TagTaskSubcommand, RemoveTaskTagSubcommand, TaskTagsSubcommand, TaskListSubcommand, EditTaskSubcommand, AssignTaskSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskCountsSubcommand, TaskInspectSubcommand, TaskInfoSubcommand, MakeTaskLogSubcommand, ReadTaskBriefSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand, RecordTaskIndependenceSubcommand]
     handlers = [ChooseNextTaskHandler, RecordTaskIndependenceHandler, TagTaskHandler, RemoveTaskTagHandler, RecordTaskReadHandler, AssignTaskHandler, ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]

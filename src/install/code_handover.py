@@ -6,7 +6,7 @@ from core.base.clock import Clock
 from core.base.code_versions import CodeVersions
 from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.unix_connection import UnixConnection
 from core.base.log_level import LogLevel
 from install.update_steps import FAILED, FINISHED, HANDOVER, PROOF, SERVING, UpdateSteps
@@ -48,10 +48,10 @@ class CodeHandover:
             self.steps.record(SERVING)
 
     def begin(self, source: Path) -> None:
-        self.begin_version(self.versions.add(source, self.clock))
+        self.begin_version(self.versions.add(source, self.clock), self.server_pid())
 
-    def begin_version(self, tag: str) -> None:
-        threading.Thread(target=self.background_takeover, args=(tag, self.server_pid()), name="code handover", daemon=True).start()
+    def begin_version(self, tag: str, running_pid: str) -> None:
+        threading.Thread(target=self.background_takeover, args=(tag, running_pid), name="code handover", daemon=True).start()
 
     def background_takeover(self, tag: str, running_pid: str) -> None:
         try:

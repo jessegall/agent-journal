@@ -1,6 +1,6 @@
 from core.base.clock import Clock
 from core.base.database.kept_rows import KeptRows
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.watched_runs import WatchedRuns
 from core.base.model.tables import Tables

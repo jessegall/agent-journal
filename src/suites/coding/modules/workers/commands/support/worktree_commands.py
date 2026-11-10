@@ -2,7 +2,7 @@ import os
 import subprocess
 from collections.abc import Sequence
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.models.merge_followup import STEP_FINISHED, FAILED_STEP, UNCERTAIN_STEP
 from suites.coding.modules.workers.commands.support.command_result import CommandResult
 

@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from core.base.journal_home import JournalHome
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from install.code_handover import CodeHandover
 from install.update_steps import UpdateSteps
 

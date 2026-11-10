@@ -5,7 +5,7 @@ from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.base.listener.event_rows import EventRows
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart

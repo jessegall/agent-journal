@@ -2,7 +2,7 @@ from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.base.query.queries import Queries
 from core.base.guard.guard import Guard
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.tasks.support.task_opener import USER_TARGET
 from core.modules.tasks.support.task_waits import TaskWaits
 from core.base.change.moved import Moved

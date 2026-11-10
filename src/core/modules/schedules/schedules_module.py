@@ -36,7 +36,7 @@ class SchedulesModule(Module):
     nudges = SCHEDULE_NUDGES
     moves = [SchedulesMove]
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.environments", "journal.core.drivers"]
+    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.environments", "journal.core.drivers", "journal.core.chat"]
     seeders = [SchedulesSeeder]
     models = [ModelDeclaration(ScheduledJob, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [ScheduleSessionMigration, ScheduledJobsTableMigration, StopRequestedMigration, JobRunTimeMigration]

@@ -4,8 +4,8 @@ from core.base.change.created import Created
 from core.base.change.moved import Moved
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
-from core.base.refusal import Refusal
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.refusal import Refusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.project_rules.models.enums.rule_state import RuleState
 from core.modules.project_rules.models.project_rule import ProjectRule
 

@@ -2,7 +2,7 @@ from core.base.query.queries import Queries
 from suites.coding.modules.workers.support.worker_review import WorkerReview
 from core.base.database.kept_rows import KeptRows
 from core.modules.environments.support.environment_rows import EnvironmentRows
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery

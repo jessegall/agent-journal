@@ -14,7 +14,7 @@ from core.modules.tasks.models.task import Task
 from core.modules.mcp.support.server_configs import ServerConfigs
 from suites.coding.modules.workers.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.models.worktree import Worktree
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 WORK_STEPS = "Read journal worker status first: it says where you are and what to do now. Prove each point with journal proof make, with the tests that cover your changes in its --test command; hand in with journal worker next and journal worker deliver."
 

@@ -23,7 +23,7 @@ from core.base.timing import Timing
 from core.base.module.performance_tools import PerformanceTools
 from core.base.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.hook_request_log import HookRequestLog
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from server.hook.hook_delivery_retries import HookDeliveryRetries
 from server.hook.hook_sender import HookSender
 from server.hook.raw_hook_body import RawHookBody, is_raw_body

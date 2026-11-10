@@ -6,7 +6,7 @@ from core.base.agent_checkouts import AgentCheckouts
 from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.modules.environments.support.environment_rows import EnvironmentRows
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.plugins.support.plugin_step_check import PluginStepCheck
 from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.worktree import Worktree

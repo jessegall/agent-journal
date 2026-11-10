@@ -3,7 +3,7 @@ import sqlite3
 
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.sequences.models.support.sequence_guards import SequenceGuards
 from core.modules.sequences.models.support.sequence_triggers import SequenceTriggers
 from core.base.upgrade.creator_resolver import CreatorResolver

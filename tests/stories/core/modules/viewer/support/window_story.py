@@ -11,7 +11,7 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.module.module_removal import ModuleRemoval
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.modules.viewer.commands.support.window_lines import WindowLines
 from core.testing.story import Story

@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 
 class MissingRowsError(Refusal):

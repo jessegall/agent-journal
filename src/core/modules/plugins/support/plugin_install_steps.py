@@ -2,7 +2,7 @@ import json
 import subprocess
 from pathlib import Path
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.type_guards import is_mapping
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_program import PluginProgram

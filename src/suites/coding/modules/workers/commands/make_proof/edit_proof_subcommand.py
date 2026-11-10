@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from core.base.caller.caller import Caller
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.commands.make_proof.make_proof import MakeProof
 from suites.coding.modules.workers.commands.make_proof.make_proof_subcommand import MakeProofSubcommand
 from suites.coding.modules.workers.queries.proof_query import ProofQuery

@@ -6,7 +6,7 @@ from core.base.repository.repository import Repository
 from core.base.tasks.clear_delegated_tasks import ClearDelegatedTasks
 from core.modules.agents.commands.end_replaced_main.end_replaced_main import EndReplacedMain
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.support.suite_choice import SuiteChoice
+from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy
 
 
 class EndReplacedMainHandler(Handler[EndReplacedMain, Agent]):
@@ -14,7 +14,7 @@ class EndReplacedMainHandler(Handler[EndReplacedMain, Agent]):
 
     command = EndReplacedMain
 
-    def __init__(self, rows: EventRows, repository: Repository, bus: Bus, suites: SuiteChoice) -> None:
+    def __init__(self, rows: EventRows, repository: Repository, bus: Bus, suites: CurrentAgentPolicy) -> None:
         self.rows, self.repository, self.bus, self.suites = rows, repository, bus, suites
 
     def handle(self, command: EndReplacedMain, context: Context) -> Agent:

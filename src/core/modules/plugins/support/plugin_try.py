@@ -2,7 +2,7 @@ from core.base.change.event_log import EventLog
 from core.base.clock import Clock
 from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.base.plugin_script_processes import PluginScriptProcesses
 from core.modules.actors.models.actor_record import ActorRecord

@@ -22,7 +22,7 @@ from core.base.listener.commit_listener_error import CommitListenerError
 from core.base.listener.event_builder import EventBuilder
 from core.base.database.performance_costs import PerformanceCosts
 from core.base.performance.performance_state import PerformanceState
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 
 FAILURE_LIMIT_ATTEMPTS = 3

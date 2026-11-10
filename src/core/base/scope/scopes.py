@@ -16,7 +16,7 @@ from core.base.model.model import Model
 from core.base.model.session_bound import SessionBound
 from core.base.model.session_private import SessionPrivate
 from core.base.model.table import indefinite_article
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.row_owner import RowOwner

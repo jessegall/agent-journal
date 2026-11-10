@@ -1,6 +1,6 @@
 ---
 name: journal-flowcharts
-description: Draw a flowchart in the chat when the user asks for a diagram or a process with branches is easier to see than to read.
+description: Draw a flowchart in the chat and know when one fits; read it when the user asks for a flowchart or a diagram, or a process with branches is easier to see than to read
 ---
 
 # Flowcharts

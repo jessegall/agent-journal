@@ -1,6 +1,6 @@
 import re
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 TITLE_RULE = "a short whole phrase in plain words that says what the run is doing, such as Running tests or Building the viewer"
 PHRASE_ENDINGS_REFUSED = frozenset({"of", "the", "a", "an", "to", "for", "with", "and", "or", "in", "on", "at", "by", "from", "into", "over"})

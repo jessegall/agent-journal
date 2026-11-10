@@ -7,7 +7,7 @@ from core.base.provider.providers import Providers
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.minimum import Minimum
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_tag import TaskTag
 from suites.coding.modules.workers.models.worker_route import WorkerRoute

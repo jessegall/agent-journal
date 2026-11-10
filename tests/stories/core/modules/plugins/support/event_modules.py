@@ -11,7 +11,7 @@ from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.tasks.models.task import Task
 

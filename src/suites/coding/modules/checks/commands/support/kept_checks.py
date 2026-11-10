@@ -1,5 +1,5 @@
 from core.base.listener.event_rows import EventRows
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from suites.coding.modules.checks.models.check import Check
 
 

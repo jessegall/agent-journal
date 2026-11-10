@@ -6,7 +6,7 @@ from core.base.checkout import Checkout
 from core.base.file_access import FileAccess
 from engine.errors.missing_file_refusal import MissingFileRefusal
 from core.base.project_reads import ProjectReads
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.plugins.support.plugin_call_access import PluginCallAccess
 from core.modules.plugins.support.plugin_file_place import PluginFilePlace
 

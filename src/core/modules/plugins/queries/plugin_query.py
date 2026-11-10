@@ -2,7 +2,7 @@ from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
 from core.base.query.query import Query
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.plugins.models.plugin import Plugin
 
 

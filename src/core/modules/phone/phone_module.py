@@ -48,7 +48,7 @@ class PhoneModule(Module):
 
     name = "journal.core.phone"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.settings", "journal.core.tunnel", "journal.core.questions", "journal.core.plans"]
+    dependencies = ["journal.core.actors", "journal.core.settings", "journal.core.tunnel", "journal.core.questions", "journal.core.plans", "journal.core.agents"]
     models = [ModelDeclaration(Phone, commands=[UnpairPhone], excluded_subcommands=["make", "edit"]),
               ModelDeclaration(PhoneCode, excluded_subcommands=["make", "list", "show", "edit", "delete"])]
     guards = [PhoneRowGuard, PhoneCodeRowGuard]

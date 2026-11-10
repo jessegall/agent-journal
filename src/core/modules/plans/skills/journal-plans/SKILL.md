@@ -13,8 +13,8 @@ and then it is followed.
   user should look at before the plan goes on, and `--test "<command>"` for a test that runs at the phase's end.
   `journal phase move <phase> --to <place>` reorders one.
 - `journal phase place <task> --phase <phase>` puts a task at the end of a phase.
-- `journal task make "<title>" --phase <phase>` makes a task at the end of that phase in one command. A missing phase
-  or an ended plan refuses the command and leaves no new task.
+- `journal task make "<title>" --phase <phase>` makes a task at the end of that phase in one command. The command is refused, and no
+  task is made, when the phase is missing or the plan has ended.
 - How thorough a plan is, is in the skill journal-planning, read before `plan make` and `phase make`.
 - A planner scores and tags each task as it writes it. Read `journal task tags` first and reuse its words.
   Give each `journal task make` its `--complexity <1-5>` and repeated `--tag <word>` flags; the score anchors are in
@@ -30,7 +30,8 @@ and then it is followed.
 - A helper that makes a plan may also run `plan edit`, `phase edit`, `task edit` and `plan ready` on it.
 - `journal plan outline <n>` lists its phases and tasks, `journal plan progress <n>` its counts,
   `journal plan inspect <n>` both, and `journal plan list` every plan.
-- `journal plan block <n> --reason "<why>"` when one thing stops all of it; `journal plan unblock <n>` opens it.
+- `journal plan block <n> --reason "<why>"` when one thing stops all of it; `journal plan unblock <n>` opens it. `journal plan block <n> --on plan:<m>`
+  (repeat it for each plan) opens the plan by itself once every plan it waits on is completed or cancelled, and tells the main agent.
 - `journal plan cancel <n>` abandons it. When the user asks for something that makes a plan no longer right, cancel that plan
   yourself, at once and without asking.
 - On each actual start or unblock, a main agent receives a pointer to `journal plan context <n>` and reads it

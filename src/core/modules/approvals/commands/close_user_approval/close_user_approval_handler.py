@@ -3,7 +3,7 @@ from core.base.command.close_user_approval import CloseUserApproval
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState

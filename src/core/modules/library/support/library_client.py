@@ -8,7 +8,7 @@ from types import MappingProxyType
 from typing import TypeVar
 
 from core.base.private.secret_values import SecretValues
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.library.support.library_certificate import LibraryCertificate
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
 from core.modules.library.support.library_address import ADDRESS_SETTING, LibraryAddress

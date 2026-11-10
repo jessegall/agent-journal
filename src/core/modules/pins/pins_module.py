@@ -21,7 +21,7 @@ class PinsModule(Module):
 
     name = "journal.core.pins"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.drivers"]
     nudges = PIN_NUDGES
     driver_rules = [LinkPinRule, AgentTextPinRule, AutomaticLinkPinRule]
     seeders = [PinsSeeder]

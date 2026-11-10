@@ -7,7 +7,7 @@ from core.base.driver.nudge import Nudge
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.modules.profiles.support.profile_files import ProfileFiles
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows

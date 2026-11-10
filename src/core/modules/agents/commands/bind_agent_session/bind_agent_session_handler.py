@@ -4,13 +4,13 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.commands.bind_agent_session.bind_agent_session import BindAgentSession
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.single_main_agent import SingleMainAgent
-from core.modules.drivers.support.suite_choice import SuiteChoice
+from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy
 
 
 class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
@@ -20,7 +20,7 @@ class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
 
     command = BindAgentSession
 
-    def __init__(self, agents: AgentRows, repository: Repository, suites: SuiteChoice, single_main: SingleMainAgent) -> None:
+    def __init__(self, agents: AgentRows, repository: Repository, suites: CurrentAgentPolicy, single_main: SingleMainAgent) -> None:
         self.agents, self.repository, self.suites, self.single_main = agents, repository, suites, single_main
 
     def handle(self, command: BindAgentSession, context: Context) -> Agent:

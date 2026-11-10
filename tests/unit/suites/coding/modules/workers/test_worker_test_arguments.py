@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.support.worker_test_arguments import WorkerTestArguments
 
 

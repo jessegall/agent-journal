@@ -3,8 +3,8 @@ from core.base.command.command import Command
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.base.helper_type_book import HelperTypeBook
-from core.base.refusal import Refusal
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.refusal import Refusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 

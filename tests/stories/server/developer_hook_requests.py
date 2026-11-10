@@ -9,7 +9,7 @@ import pytest
 
 from core.base.driver.command_category import CommandCategory
 from core.modules.developer.support.hook_request_log import HookRequestLog
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled

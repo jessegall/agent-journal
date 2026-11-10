@@ -1,5 +1,5 @@
 from core.base.guard.guard import Guard
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.reviews.models.reviewer import Reviewer
 from core.modules.reviews.queries.reviewer_query import ReviewerQuery
 from core.modules.reviews.support.review_settings import REVIEWERS_MOST_SETTING, ReviewSettings

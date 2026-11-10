@@ -4,7 +4,7 @@ from core.modules.triggers.models.enums.trigger_action import TriggerAction
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.triggers.commands.make_trigger.make_trigger import MakeTrigger
 from core.modules.triggers.models.trigger import Trigger

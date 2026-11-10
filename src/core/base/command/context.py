@@ -4,7 +4,7 @@ from core.base.actor import Actor
 from core.base.command.command import Command
 from core.base.command.outside_runs import OutsideRuns
 from core.base.explanation import Explanation
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.timestamp import Timestamp
 
 

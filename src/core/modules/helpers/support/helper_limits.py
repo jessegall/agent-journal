@@ -6,7 +6,7 @@ from core.base.provider.providers import Providers
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.query.query import Query
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.usage.support.agent_type_limits import UNLIMITED_AGENT_COUNT, AgentTypeLimits

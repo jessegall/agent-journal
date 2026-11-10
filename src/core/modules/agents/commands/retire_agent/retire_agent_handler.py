@@ -6,8 +6,8 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.container import Container
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.refusal import Refusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.base.registry.registry import Registry
 from core.base.repository.repository import Repository
 from core.modules.agents.commands.retire_agent.retire_agent import RetireAgent

@@ -2,7 +2,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.subcommand.overview_reads import OverviewReads
 from core.modules.drivers.commands.record_overview_read.record_overview_read import RecordOverviewRead
 from core.modules.drivers.models.overview_read import OverviewRead

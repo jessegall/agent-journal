@@ -5,7 +5,7 @@ from core.base.query.queries import Queries
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
 from suites.coding.support.coding_helper_role import CodingHelperRole
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.rules.repeated_stop_release_rule import STOP_REFUSAL_COUNT
 from core.modules.tasks.queries.task_query import TaskQuery

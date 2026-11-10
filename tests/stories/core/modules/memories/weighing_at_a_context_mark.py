@@ -4,7 +4,7 @@ from core.testing.story_fixture import StoryFixture
 
 import pytest
 
-from core.modules.drivers.rules.agent_block_rule import COUNTDOWN_USES
+from core.base.driver.count_down import COUNTDOWN_LINE_LIMIT
 from core.testing.hook_samples import HookSamples
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from tests.stories.core.modules.usage.support.status_files import save_status_file
@@ -36,7 +36,7 @@ def test_each_mark_gives_its_tool_uses_with_a_countdown_then_holds_writes_and_le
         story.expect_hook_allowed("s-1", EDITED, f"context at {mark}%: {uses} tool uses to weigh your 1 memories, heaviest first: 1")
         for remaining in reversed(range(uses)):
             story.advance(SECOND)
-            story.expect_hook_allowed("s-1", EDIT, *([f"weigh memories due: {remaining} tool uses"] if remaining < COUNTDOWN_USES else []))
+            story.expect_hook_allowed("s-1", EDIT, *([f"weigh memories due: {remaining} tool uses"] if remaining < COUNTDOWN_LINE_LIMIT else []))
         story.advance(SECOND)
         story.expect_hook_refusal("s-1", EDIT, "weigh your memories first")
         story.expect_hook_allowed("s-1", READ)

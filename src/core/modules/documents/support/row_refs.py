@@ -5,7 +5,7 @@ from core.base.model.model import Model
 from core.base.model.tables import Tables
 from core.base.query.queries import Queries
 from core.base.query.conditions.among import Among
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.modules.documents.references.row_ref import RowRef
 from core.modules.documents.support.resolved_row_ref import ResolvedRowRef

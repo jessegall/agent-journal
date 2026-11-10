@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.timestamp import Timestamp
 from core.modules.triggers.commands.support.cron_line import CronLine
 
