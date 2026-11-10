@@ -22,7 +22,7 @@ def cards(person, *flags: str, environment: str = "main") -> list[dict]:
     return person.server.viewer_line_value(person.cookie, {"window": WINDOW, "environment": environment, "line": ["usage", "agents", *flags, "--json"]})["rows"]
 
 
-def retired_by_the_person(story, person, helper) -> None:
+def retire_through_viewer(story, person, helper) -> None:
     person.value(WINDOW, ["agent", "retire", str(helper.number), "--reason", RETIREMENT_REASON, "--environment", "main"])
 
 
@@ -70,7 +70,7 @@ def test_the_list_pages_and_leaves_retired_agents_out_until_the_person_asks_for_
     for session in ("s-31", "s-32", "s-33"):
         ended.expect_success(f"agent end {ended.new_row_id(f'agent start {session} claude worker --environment main')}", actor=ended.user)
     with viewer_client(ended) as person:
-        retired_by_the_person(ended, person, helper)
+        retire_through_viewer(ended, person, helper)
         first_page = person.value(WINDOW, ["usage", "agents", "--closed", "--limit", "2", "--json"])
         second_page = person.value(WINDOW, ["usage", "agents", "--closed", "--limit", "2", "--page", "2", "--json"])
         with_retired = cards(person, "--closed", "--retired")
@@ -83,7 +83,7 @@ def test_a_person_who_opens_a_retired_agent_reads_its_reason_who_retired_it_when
     helper = helper_agent(ended)
     ended.expect_success(f'memory make "{MEMORY_TEXT}" --weight 5', actor=Actor(helper.id, ActorType.AGENT))
     with viewer_client(ended) as person:
-        retired_by_the_person(ended, person, helper)
+        retire_through_viewer(ended, person, helper)
         card = cards(person, "--closed", "--retired", "--agent", str(helper.number))[0]
         memories = person.value(WINDOW, card["memories_command"])
     retired = helper_agent(ended)

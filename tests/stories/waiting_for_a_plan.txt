@@ -33,3 +33,4 @@ tests/stories/core/modules/agents/agent_cards_numbers.py::test_a_person_who_swit
 tests/stories/core/modules/agents/agent_cards_numbers.py::test_a_person_in_a_new_environment_reads_agent_1_with_no_session_yet_and_no_row_behind_it  plan 1108 phase 'E. Close': the cards do not carry these fields yet
 tests/stories/core/modules/agents/agent_cards_numbers.py::test_the_list_pages_and_leaves_retired_agents_out_until_the_person_asks_for_them  plan 1108 phase 'E. Close': the cards do not carry these fields yet
 tests/stories/core/modules/agents/agent_cards_numbers.py::test_a_person_who_opens_a_retired_agent_reads_its_reason_who_retired_it_when_and_its_memories  plan 1108 phase 'E. Close': the cards do not carry these fields yet
+tests/stories/core/modules/agents/agent_card_buttons.py::test_the_card_of_an_agent_whose_session_was_replaced_is_the_same_card_and_says_why_the_old_session_ended  plan 1108 phase 'E. Close': the card does not say why its last session ended
