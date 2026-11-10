@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.enums.actor_type import ActorType
@@ -30,7 +31,7 @@ class UnreadReportsSubcommand(ReadSubcommand[UnreadReports]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--page", type=int, default=1)
         parser.add_argument("--search", default="")
-        parser.add_argument("--agent", type=int)
+        parser.add_argument("--agent", type=AgentNumber)
 
     def read(self, arguments: Namespace, caller: Caller) -> UnreadReports:
         reports = self.queries.query(Message).filter(type=MessageType.AGENT, is_chat_visible=False).matching(IsNull("read_at"))
