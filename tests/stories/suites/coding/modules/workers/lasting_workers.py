@@ -155,7 +155,7 @@ def test_a_job_sent_to_a_merged_worker_cuts_a_second_worktree_from_the_current_b
     lifetime_reviewers.launches(story, f'worker send --wait {worker.number} "{JOB}"')
     first, second = worktree_rows(story, worker.id)
     story.expect_rows(second.base_commit == story.repository.tip(ENVIRONMENT_BRANCH), second.base_branch == ENVIRONMENT_BRANCH, second.branch == f"{first.branch}-2",
-                      f"worker-{worker.number}" in second.branch, len(worker_rows(story)) == 1, detail=f"{first.branch} / {second.branch} / {second.base_commit}")
+                      second.folder == first.folder, len(worker_rows(story)) == 1, detail=f"{first.branch} / {second.branch} / {second.base_commit}")
     story.expect_text(f"worker status {worker.number}", second.branch, JOB, actor=story.agent)
 
 

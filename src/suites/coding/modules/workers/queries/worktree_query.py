@@ -45,6 +45,9 @@ class WorktreeQuery(Query[Worktree]):
     def newest_worktree(self, agent_id: int) -> Worktree | None:
         return self.kept.read_newest(self.table.name, self.with_removed().filter(session_agent_id=agent_id).newest().first, "session_agent_id = ?", [agent_id], name="workers.newest_worktree")
 
+    def worker_worktrees(self, agent_id: int) -> tuple[Worktree, ...]:
+        return tuple(self.with_removed().filter(session_agent_id=agent_id).oldest().all_rows())
+
     def merged_since(self, agent_id: int, since: Timestamp) -> bool:
         return self.with_removed().filter(session_agent_id=agent_id).matching(Minimum("merged_at", since.text)).exists()
 
