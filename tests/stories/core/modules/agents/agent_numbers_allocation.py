@@ -1,6 +1,6 @@
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.support.agent_numbers import AgentNumbers
-from tests.stories.core.modules.agents.support.numbered_agents import listed, agent_numbers, started_worker
+from tests.stories.core.modules.agents.support.numbered_agents import MainWithOneWorker, listed, agent_numbers, started_worker
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.fixtures import MainEnvironment
 
@@ -12,17 +12,17 @@ def number_of(story, agent_id: int, environment: str = "main") -> int:
 
 
 def test_the_number_of_a_retired_agent_is_never_given_again(new_story):
-    story = new_story(fixture=UserBuilder)
-    workers = [started_worker(story, f"s-{session}", "main", story.agent.id) for session in range(2, 8)]
-    story.expect_rows([number_of(story, worker) for worker in workers] == [2, 3, 4, 5, 6, 7])
+    story = new_story(fixture=MainWithOneWorker)
+    workers = [started_worker(story, f"s-{session}", "main", story.agent.id) for session in range(3, 8)]
+    story.expect_rows([number_of(story, worker) for worker in workers] == [3, 4, 5, 6, 7])
     story.expect_success(f"agent end {workers[-1]}", actor=story.user)
     story.expect_success(f"agent retire {agent_number(story, workers[-1])} {RETIRE_REASON}", actor=story.user)
     story.expect_rows(number_of(story, started_worker(story, "s-8", "main", story.agent.id)) == 8)
 
 
 def test_two_starts_that_read_the_same_highest_number_get_different_numbers_and_neither_is_refused(new_story, monkeypatch):
-    story = new_story(fixture=UserBuilder)
-    first = started_worker(story, "s-2", "main", story.agent.id)
+    story = new_story(fixture=MainWithOneWorker)
+    first = next(agent_id for agent_id, row in listed(story, "main").items() if row["number"] == 2)
     read_numbers = []
     next_number = AgentNumbers.next_number
 

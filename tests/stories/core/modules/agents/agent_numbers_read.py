@@ -15,13 +15,6 @@ def absent_refusal(number: int, environment: str) -> str:
     return f"no agent {number} in environment {environment}"
 
 
-def test_a_person_with_two_environments_sees_the_agents_of_each_numbered_from_one(new_story):
-    story = new_story(fixture=TwoEnvironments)
-    for environment in ("main", "shop"):
-        rows = listed(story, environment).values()
-        story.expect_rows(sorted(row["number"] for row in rows) == [1, 2], [row["role"] for row in rows if row["number"] == 1] == ["main"])
-
-
 def test_agent_show_reads_the_number_in_the_environment_of_the_line(new_story):
     story = new_story(fixture=TwoEnvironments)
     in_shop = json.loads(story.run("agent show 2 --environment shop --json", actor=story.user).output_text)

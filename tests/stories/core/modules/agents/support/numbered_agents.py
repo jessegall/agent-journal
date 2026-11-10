@@ -29,6 +29,18 @@ def started_worker(story: Story, session: str, environment: str, parent_id: int)
     return story.new_row_id(f"agent start {session} claude worker --parent {parent_id} --environment {environment}")
 
 
+class MainWithOneWorker(StoryFixture):
+    """Main has its main agent, number 1, and one worker, number 2."""
+
+    parent = UserBuilder
+
+    def steps(self, story: Story) -> None:
+        started_worker(story, "s-2", "main", story.agent.id)
+
+    def expect(self, story: Story) -> None:
+        story.expect_rows(sorted(row["number"] for row in listed(story, "main").values()) == [1, 2])
+
+
 class TwoEnvironments(StoryFixture):
     """Main has its main agent, number 1, and a worker, number 2; shop has its own main, number 1, and
     worker, number 2."""
@@ -43,6 +55,9 @@ class TwoEnvironments(StoryFixture):
 
     def expect(self, story: Story) -> None:
         story.expect_success("environment show 2", "name: shop")
+        for environment in ("main", "shop"):
+            rows = listed(story, environment).values()
+            story.expect_rows(sorted(row["number"] for row in rows) == [1, 2], [row["role"] for row in rows if row["number"] == 1] == ["main"])
 
 
 class ShopWithThreeAgents(StoryFixture):
