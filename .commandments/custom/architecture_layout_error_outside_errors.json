@@ -19,18 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/core/modules/plugins/support/plugin_fault_error.py"
-            },
-            {
-                "file": "src/core/modules/plugins/support/plugin_late_error.py"
-            },
-            {
-                "file": "src/core/modules/plugins/support/plugin_service_closed_error.py"
-            },
-            {
-                "file": "src/core/modules/plugins/support/plugin_stopped_error.py"
-            },
-            {
                 "file": "src/core/modules/processes/support/missing_runner_error.py"
             },
             {

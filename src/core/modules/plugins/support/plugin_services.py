@@ -15,7 +15,7 @@ from core.modules.plugins.models.enums.service_restart import ServiceRestart
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.plugins.support.service_fault import ServiceFault
 from core.modules.plugins.support.manifest_service import ManifestService
-from core.modules.plugins.support.plugin_fault_error import PluginFaultError
+from core.modules.plugins.errors.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_health import PluginHealth
 from core.modules.plugins.support.plugin_manifest import PluginManifest

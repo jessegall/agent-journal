@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from core.modules.plugins.support.plugin_fault_error import PluginFaultError
+from core.modules.plugins.errors.plugin_fault_error import PluginFaultError
 
 
 class PluginServiceClosedError(PluginFaultError):

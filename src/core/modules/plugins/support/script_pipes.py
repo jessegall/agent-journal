@@ -5,8 +5,8 @@ import time
 from collections.abc import Callable
 from typing import IO
 
-from core.modules.plugins.support.plugin_fault_error import PluginFaultError
-from core.modules.plugins.support.plugin_late_error import PluginLateError
+from core.modules.plugins.errors.plugin_fault_error import PluginFaultError
+from core.modules.plugins.errors.plugin_late_error import PluginLateError
 
 MOST_ANSWER_BYTES = 1_000_000
 ERROR_TAIL_BYTES = 2048

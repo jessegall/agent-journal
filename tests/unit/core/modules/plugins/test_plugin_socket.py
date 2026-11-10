@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from core.modules.plugins.support.plugin_late_error import PluginLateError
+from core.modules.plugins.errors.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_socket import PluginSocket
 
 LIMIT_MS = 500

@@ -4,11 +4,11 @@ from engine.module.module_actors import ModuleActors
 from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.support.hook_facts import HookFacts
 from core.modules.plugins.support.plugin_call import PluginCall
-from core.modules.plugins.support.plugin_fault_error import PluginFaultError
+from core.modules.plugins.errors.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_program import PluginProgram
 from core.modules.plugins.support.plugin_run_outcome import PluginRunOutcome
 from core.modules.plugins.support.plugin_run_request import PluginRunRequest
-from core.modules.plugins.support.plugin_service_closed_error import PluginServiceClosedError
+from core.modules.plugins.errors.plugin_service_closed_error import PluginServiceClosedError
 from core.modules.plugins.support.plugin_settings import PluginSettings
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 

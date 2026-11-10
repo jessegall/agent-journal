@@ -16,11 +16,11 @@ from engine.process.plugin_script_processes import PluginScriptProcesses
 from engine.time.timestamp import Timestamp
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_event import PluginEvent
-from core.modules.plugins.support.plugin_fault_error import PluginFaultError
+from core.modules.plugins.errors.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
-from core.modules.plugins.support.plugin_late_error import PluginLateError
+from core.modules.plugins.errors.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_manifest import PluginManifest
-from core.modules.plugins.support.plugin_late_error import PluginLateError
+from core.modules.plugins.errors.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_service_waits import MOST_WAITING_CALLS, PluginServiceWaits
 from core.modules.plugins.support.plugin_program import PluginProgram, STOP_LIMIT_SECONDS
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths

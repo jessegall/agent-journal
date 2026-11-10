@@ -2,7 +2,7 @@ import socket
 import time
 from pathlib import Path
 
-from core.modules.plugins.support.plugin_late_error import PluginLateError
+from core.modules.plugins.errors.plugin_late_error import PluginLateError
 
 READ_SIZE = 65536
 

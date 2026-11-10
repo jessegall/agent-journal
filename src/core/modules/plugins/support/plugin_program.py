@@ -23,10 +23,10 @@ from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.agent_facts import AgentFacts
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_call import PluginCall
-from core.modules.plugins.support.plugin_fault_error import PluginFaultError
-from core.modules.plugins.support.plugin_late_error import PluginLateError
+from core.modules.plugins.errors.plugin_fault_error import PluginFaultError
+from core.modules.plugins.errors.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_places import PluginPlaces
-from core.modules.plugins.support.plugin_service_closed_error import PluginServiceClosedError
+from core.modules.plugins.errors.plugin_service_closed_error import PluginServiceClosedError
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX
 from core.modules.plugins.support.plugin_manifest import LINE_VERSION
@@ -35,7 +35,7 @@ from core.modules.plugins.support.login_path import LoginPath
 from core.modules.plugins.support.plugin_service_waits import PluginServiceWaits
 from core.modules.plugins.support.plugin_socket import PluginSocket
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
-from core.modules.plugins.support.plugin_stopped_error import PluginStoppedError
+from core.modules.plugins.errors.plugin_stopped_error import PluginStoppedError
 from core.modules.plugins.support.script_pipes import ScriptPipes
 
 PASSED_VARIABLES = ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER")

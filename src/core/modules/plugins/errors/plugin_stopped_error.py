@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from engine.enums.script_stop import ScriptStop
-from core.modules.plugins.support.plugin_fault_error import PluginFaultError
+from core.modules.plugins.errors.plugin_fault_error import PluginFaultError
 
 
 class PluginStoppedError(PluginFaultError):
