@@ -110,13 +110,12 @@ def test_thanks_does_not_replace_active_request(scenario):
     scenario.expect_source(2)
 
 
-def test_compaction_keeps_source_and_new_agent_starts_without_one(scenario):
+def test_compaction_keeps_source_and_a_new_session_starts_without_one(scenario):
     scenario.story.hook("s-1", HookSamples.sample("compact"))
     scenario.make_task()
     scenario.expect_source(2)
     replacement = hook_agent(scenario.story, scenario.story.hook("replacement-main", HookSamples.session_start()))
-    scenario.expect_source(2)
-    feature(scenario.source_ids(replacement.id) == (), "replacement agent inherited another agent's selected source")
+    feature(scenario.source_ids(replacement.id) == (), "the new session inherited the request the session before it selected")
 
 
 @pytest.mark.parametrize("number", [999, 0, -1])
@@ -180,13 +179,13 @@ def test_reply_explicitly_switches_the_active_request(scenario):
     scenario.expect_source(1)
 
 
-@pytest.mark.parametrize("environment,session", [("main", "other-main"), ("side", "side-main")], ids=["another-addressee", "another-environment"])
-def test_unauthorized_source_does_not_replace_the_active_request(scenario, environment, session, tmp_path):
+@pytest.mark.parametrize("environment,session,role", [("main", "other-worker", "worker"), ("side", "side-main", "main")], ids=["another-addressee", "another-environment"])
+def test_unauthorized_source_does_not_replace_the_active_request(scenario, environment, session, role, tmp_path):
     if environment != "main":
         folder = tmp_path / environment
         folder.mkdir()
         scenario.story.expect_success(f"environment make {environment} {shlex.quote(str(folder))}")
-    target = scenario.story.new_row_id(f"agent start {session} claude main --environment {environment}")
+    target = scenario.story.new_row_id(f"agent start {session} claude {role} --environment {environment}")
     answer = viewer_answer(scenario.story, "messages.chat", ["message", "send", "Another agent's private request", "--target-agent", str(agent_number(scenario.story, target))], environment)
     scenario.story.expect_rows(answer.code == 0, detail=answer.error)
     outcome = scenario.story.run(f'message work-from {answer.value["id"]}', actor=scenario.story.agent)

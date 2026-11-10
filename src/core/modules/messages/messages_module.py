@@ -100,6 +100,7 @@ from core.modules.messages.support.block_conditions.messages_answered import Mes
 from core.modules.messages.support.skeletons import MESSAGES_ATTACHMENTS_SKELETON, MESSAGES_CHAT_SKELETON
 from engine.module.model_declaration import ALL_SUBCOMMANDS
 from core.modules.messages.models.message_work_source import MessageWorkSource
+from core.modules.messages.listeners.new_session_work_source_listener import NewSessionWorkSourceListener
 from core.modules.messages.migrations.m018_message_work_sources import MessageWorkSourcesMigration
 from core.modules.messages.commands.choose_work_source.choose_work_source_handler import ChooseWorkSourceHandler
 from core.modules.messages.commands.choose_work_source.choose_work_source_subcommand import ChooseWorkSourceSubcommand
@@ -156,5 +157,5 @@ class MessagesModule(Module):
                                keywords=("flowchart", "flow chart", "diagram")),
               SkillDeclaration("journal-messages", "Read and answer the user's messages and ask the user questions; read it before the first message command of a session",
                                keywords=("message", "reply", "question"), commands=("message", "question"))]
-    listeners = [ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, ReleasedMessageLineListener, AllowedStopListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener]
+    listeners = [NewSessionWorkSourceListener, ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, ReleasedMessageLineListener, AllowedStopListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener]
     seeders = [MessagesSeeder]

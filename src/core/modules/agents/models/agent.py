@@ -57,6 +57,10 @@ class Agent(EnvironmentScoped, Model):
     launched_at: Timestamp | None = None
     halted_at: Timestamp | None = None
 
+    @property
+    def is_main(self) -> bool:
+        return self.role == MAIN_ROLE
+
     def change_name(self, old_row: Model | None) -> str | None:
         newly_ended = isinstance(old_row, Agent) and old_row.ended_at is None and self.ended_at is not None
         return END_CHANGE if newly_ended else None

@@ -111,7 +111,7 @@ def test_person_answer_refuses_a_source_with_wrong_author_or_addressee(scenario,
     if invalid == "agent-message":
         supplied = json.loads(scenario.command('message send "A" --json').output_text)
     elif invalid == "other-recipient":
-        second_agent_id = scenario.story.new_row_id("agent start private-answer-main claude main --environment main")
+        second_agent_id = scenario.story.new_row_id("agent start private-answer-worker claude worker --environment main")
         supplied = scenario.person("messages.chat", "message", "send", "A", "--target-agent", str(agent_number(scenario.story, second_agent_id)))
     else:
         author = scenario.story.new_row_id('actor make user "Grace"')
