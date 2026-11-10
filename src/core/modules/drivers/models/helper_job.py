@@ -43,6 +43,13 @@ class HelperJob(EnvironmentScoped, Model):
     halted_seconds: float = 0.0
 
     @property
+    def session(self) -> str:
+        return self.tool_key.partition(":")[0]
+
+    def on_new_session(self, session: str) -> "HelperJob":
+        return replace(self, new_session=True, cost_baseline=0.0, tool_key=f"{session}:{self.tool_key.partition(':')[2]}")
+
+    @property
     def occupant_launch(self) -> str:
         return NEW_SESSION_LAUNCH if self.new_session else RESUMED_SESSION_LAUNCH
 

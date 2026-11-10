@@ -15,4 +15,4 @@ class RecordJobNewSessionHandler(Handler[RecordJobNewSession, None]):
         self.rows, self.repository = rows, repository
 
     def handle(self, command: RecordJobNewSession, context: Context) -> None:
-        self.repository.save(self.rows.required(HelperJob, command.job_id).changed(new_session=True), context)
+        self.repository.save(self.rows.required(HelperJob, command.job_id).on_new_session(command.session), context)

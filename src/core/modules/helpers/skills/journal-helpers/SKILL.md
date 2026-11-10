@@ -33,6 +33,8 @@ dispatch`, and work that writes goes to one or stays with you.
   stopped. `--plan <n>` names the plan a review is for; a reviewer cannot review the same plan again.
 - `journal helper send <number> --steer "<text>"` adds to a busy helper's current job. Without `--steer`, a new job for a
   busy helper is refused. Wait for its report when the work is separate.
+- `journal helper lifetimes <profile> --environment <name>` counts the profile's jobs that began a new session and
+  those that resumed one, with the mean cost of a job of each. It says nothing about which to choose.
 - `journal helper stop <number>` stops its program and ends its job, keeping the agent available for reuse.
 - `journal agent sessions <number>` lists the sessions an agent ran under, newest first, each with its program, model,
   start, end and the reason it ended.

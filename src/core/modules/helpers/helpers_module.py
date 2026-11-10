@@ -1,6 +1,7 @@
 from core.modules.helpers.migrations.m009_helper_grant_environment_index import HelperGrantEnvironmentIndexMigration
 from core.modules.helpers.guards.provider_outage_access_guard import ProviderOutageAccessGuard
 from core.modules.helpers.commands.cold_sessions.cold_sessions_subcommand import ColdSessionsSubcommand
+from core.modules.helpers.commands.helper_lifetimes.helper_lifetimes_subcommand import HelperLifetimesSubcommand
 from core.modules.helpers.commands.make_provider_outage.make_provider_outage_handler import MakeProviderOutageHandler
 from core.modules.helpers.commands.send_program_fault.send_program_fault_handler import SendProgramFaultHandler
 from core.modules.helpers.commands.agent_mix.agent_mix_subcommand import AgentMixSubcommand
@@ -84,6 +85,6 @@ class HelpersModule(Module):
     tick_handlers = [TickHandler(TickInterval(seconds=60), HelperLimitsTick(), "helper limits"), TickHandler(TickInterval(seconds=3), UsageLimitMarker(), "usage limit marks")]
     nudges = HELPER_NUDGES
     skills = [SkillDeclaration("journal-helpers", "Start a helper for a bounded read, send it more, stop it, and read its report; read it before the first helper command of a session", keywords=["helper start"])]
-    subcommands = [GrantHelperSubcommand, RunGrantedCommandSubcommand, ColdSessionsSubcommand, SetUsageLimitSubcommand, AgentMixSubcommand, StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand, MakeProviderOutageSubcommand, EndProviderOutagesSubcommand]
+    subcommands = [HelperLifetimesSubcommand, GrantHelperSubcommand, RunGrantedCommandSubcommand, ColdSessionsSubcommand, SetUsageLimitSubcommand, AgentMixSubcommand, StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand, MakeProviderOutageSubcommand, EndProviderOutagesSubcommand]
     listeners = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, HelperEndedListener, HelperJobMarkListener, HelperJobSourceListener, DeletedHelperSourceListener, ProviderOutageMarkListener]
     driver_rules = [UnstartedHelperRule, HelperReportRule, HelperSkillReadRule]

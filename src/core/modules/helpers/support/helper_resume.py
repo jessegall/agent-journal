@@ -40,7 +40,7 @@ class HelperResume:
     def restarted(self, helper: Agent, job: str) -> LaunchCommand:
         open_job = self.jobs.open_job(helper.id)
         if open_job is not None and not open_job.new_session:
-            self.bus.run(RecordJobNewSession(open_job.id), Actor.core(), environment_id=helper.environment_id)
+            self.bus.run(RecordJobNewSession(open_job.id, helper.session), Actor.core(), environment_id=helper.environment_id)
         return self.commands.restarted(helper, self.whole_brief(helper, job))
 
     def whole_brief(self, helper: Agent, job: str) -> str:

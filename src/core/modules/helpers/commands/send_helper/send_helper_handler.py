@@ -73,7 +73,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
         if parent_id != helper.parent_id:
             self.repository.save(helper.changed(parent_id=parent_id), context)
         next_job = last_job.next_job(helper.session, helper.program, helper.program_model, command.job, command.job[:SHORT_JOB_CHARACTERS], command.title.strip(), context.actor.id)
-        self.repository.save(next_job.changed(session_agent_id=parent_id, review_plan_id=command.review_plan_id, source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp, cost_baseline=cost_baseline), context)
+        self.repository.save(next_job.changed(session_agent_id=parent_id, review_plan_id=command.review_plan_id, source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp, cost_baseline=cost_baseline, new_session=rotating_profile is not None), context)
         self.sources.use_copy(source, source_context)
         return helper.id
 
