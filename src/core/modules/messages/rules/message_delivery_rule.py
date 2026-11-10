@@ -5,7 +5,6 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.drivers.models.agent_line import AgentLine
@@ -32,11 +31,10 @@ class MessageDeliveryRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not hook.event.accepts_lines or hook.event.event == HookEventName.TICK:
             return RuleAnswer.allowed()
-        undelivered = self.messages.unread(hook.agent_id).matching(IsNull("delivered_at"))
-        messages = undelivered.oldest().limited(LISTED_MESSAGES)
+        messages = self.messages.oldest_undelivered(hook.agent_id, LISTED_MESSAGES)
         if not messages or self.queries.query(AgentLine).filter(session_agent_id=hook.agent_id, source=WAITING_MESSAGE_SOURCE, state=AgentLineState.TYPING).exists():
             return RuleAnswer.allowed()
-        waiting = undelivered.count()
+        waiting = self.messages.undelivered(hook.agent_id).count()
         heading = NEW_MESSAGE.nudge(message=messages[0].id) if waiting == 1 else NEW_MESSAGES.nudge(count=waiting)
         return RuleAnswer.with_nudges(heading, *(nudge for message in messages for nudge in self.file_nudges(message))).running(*(RecordMessageDelivery(message.id) for message in messages))
 
