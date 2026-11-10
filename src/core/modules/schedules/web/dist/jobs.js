@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-b8040e944ada")) { const style = document.createElement("style"); style.id = "window-styles-b8040e944ada"; style.textContent = ".agent-jobs[data-v-421a0210]{display:flex;flex-direction:column;gap:6px}.agent-jobs-refusal[data-v-421a0210]{margin:0;color:var(--danger);font-size:12.5px}.agent-job[data-v-421a0210]{display:flex;flex:1;gap:10px;align-items:center;min-width:0;padding:6px 0}.agent-job-text[data-v-421a0210]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.agent-job-text span[data-v-421a0210]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-d94e8c4c52fb")) { const style = document.createElement("style"); style.id = "window-styles-d94e8c4c52fb"; style.textContent = ".agent-jobs[data-v-c96dcf7f]{display:flex;flex-direction:column;gap:6px}.agent-jobs-refusal[data-v-c96dcf7f]{margin:0;color:var(--danger);font-size:12.5px}.agent-job[data-v-c96dcf7f]{display:flex;flex:1;gap:10px;align-items:center;min-width:0;padding:6px 0}.agent-job-text[data-v-c96dcf7f]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.agent-job-text span[data-v-c96dcf7f]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
 import { ref as v, openBlock as h, createBlock as j, unref as l, withCtx as b, createElementVNode as _, createElementBlock as y, toDisplayString as m, createCommentVNode as S, createVNode as $, createTextVNode as k } from "vue";
 import { useWindow as N, WindowRoom as x, RowList as w, Btn as D } from "@journal/window-kit";
 const A = [
@@ -105,7 +105,7 @@ const L = (s, n) => {
       _: 1
     }));
   }
-}, G = /* @__PURE__ */ L(q, [["__scopeId", "data-v-421a0210"]]);
+}, G = /* @__PURE__ */ L(q, [["__scopeId", "data-v-c96dcf7f"]]);
 export {
   G as default
 };

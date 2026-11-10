@@ -1,6 +1,6 @@
 import { openBlock as n, createElementBlock as s, withModifiers as ee, unref as i, createTextVNode as m, toDisplayString as p, createVNode as k, createBlock as N, withCtx as b, Fragment as D, renderList as ne, createElementVNode as j, createCommentVNode as h, computed as u, ref as V, watch as de, onUnmounted as we, defineAsyncComponent as Xe, createSlots as _e, resolveDynamicComponent as et, normalizeClass as oe, normalizeStyle as Ae, renderSlot as Me, onMounted as tt, Teleport as at, mergeProps as nt, toRef as Be, withKeys as Ee, nextTick as Ne } from "vue";
 import { peekRef as xe, Icon as Le, RunningCommand as lt, FoldGroup as Pe, TaskStatusIcon as ot, useWindow as je, loadWindowComponent as st, coalesced as rt, READ_RATES as it, eventMayBeChildOf as dt, InnerTabs as ut, TabBody as ct, SwitchCase as Ue, EmptyState as Ie, Btn as ie, TextArea as gt, TextInput as vt, HoverTip as Te, TaskBar as pt, useNow as Je, age as ht, perHour as ft, sinceWords as mt, seenWords as kt, AgentTip as bt, TimeAgo as We, SearchBar as yt, Segmented as wt, MenuLabel as Re, MenuItem as Se, RowList as Mt, toggleFilter as xt } from "@journal/window-kit";
-import { _ as Q, T as $t } from "./TranscriptRows-htoQnyg3.mjs";
+import { _ as Q, T as $t } from "./TranscriptRows-BL93hPr8.js";
 const St = {
   class: "agent-command",
   "data-agent-command": ""
@@ -32,7 +32,7 @@ const St = {
       }, null, 8, ["text", "idle"]))
     ]));
   }
-}, At = /* @__PURE__ */ Q(Tt, [["__scopeId", "data-v-bb905922"]]), jt = ["data-agent-delegated", "onClick"], Bt = { class: "agent-task-number" }, Rt = { class: "agent-task-title" }, Lt = ["title"], It = {
+}, At = /* @__PURE__ */ Q(Tt, [["__scopeId", "data-v-1b371fb5"]]), jt = ["data-agent-delegated", "onClick"], Bt = { class: "agent-task-number" }, Rt = { class: "agent-task-title" }, Lt = ["title"], It = {
   __name: "AgentTaskGroup",
   props: { section: { type: Object, required: !0 }, open: Boolean },
   emits: ["toggle"],
@@ -69,7 +69,7 @@ const St = {
       _: 1
     }, 8, ["label", "count", "open", "data-agent-section"]));
   }
-}, Ot = /* @__PURE__ */ Q(It, [["__scopeId", "data-v-dbdcae3e"]]), Vt = {
+}, Ot = /* @__PURE__ */ Q(It, [["__scopeId", "data-v-ea4ccd6b"]]), Vt = {
   key: 0,
   class: "agent-summary",
   "data-agent-retirement-reason": ""
@@ -250,7 +250,7 @@ const St = {
       ]);
     };
   }
-}, Ut = /* @__PURE__ */ Q(Pt, [["__scopeId", "data-v-96a7a3fa"]]), Jt = { class: "action-field" }, Gt = ["value", "disabled"], Kt = ["value"], Zt = { key: 1 }, Yt = {
+}, Ut = /* @__PURE__ */ Q(Pt, [["__scopeId", "data-v-492142fe"]]), Jt = { class: "action-field" }, Gt = ["value", "disabled"], Kt = ["value"], Zt = { key: 1 }, Yt = {
   key: 1,
   class: "action-field"
 }, Qt = { class: "action-buttons" }, Xt = {
@@ -324,7 +324,7 @@ const St = {
       ])
     ], 32));
   }
-}, _t = /* @__PURE__ */ Q(Xt, [["__scopeId", "data-v-356a2712"]]), ea = { class: "action-buttons" }, ta = {
+}, _t = /* @__PURE__ */ Q(Xt, [["__scopeId", "data-v-adde4158"]]), ea = { class: "action-buttons" }, ta = {
   __name: "AgentRetireForm",
   props: { reason: String, pending: Boolean },
   emits: ["submit", "cancel", "update:reason"],
@@ -366,7 +366,7 @@ const St = {
       ])
     ], 32));
   }
-}, aa = /* @__PURE__ */ Q(ta, [["__scopeId", "data-v-bbe4e841"]]), na = { class: "action-buttons" }, la = {
+}, aa = /* @__PURE__ */ Q(ta, [["__scopeId", "data-v-23a905c0"]]), na = { class: "action-buttons" }, la = {
   key: 0,
   role: "alert"
 }, oa = {
@@ -491,7 +491,7 @@ const St = {
       ], 32));
     };
   }
-}, ra = /* @__PURE__ */ Q(sa, [["__scopeId", "data-v-58e13d12"]]), ia = { class: "line" }, da = {
+}, ra = /* @__PURE__ */ Q(sa, [["__scopeId", "data-v-4cb32275"]]), ia = { class: "line" }, da = {
   key: 0,
   class: "line",
   "data-agent-since": ""
@@ -525,7 +525,7 @@ const St = {
       _: 1
     }, 8, ["class", "data-state", "aria-label"]));
   }
-}, ga = /* @__PURE__ */ Q(ca, [["__scopeId", "data-v-a51f28ad"]]), va = { started: { words: "started" }, testing: { words: "being tested" }, blocked: { words: "blocked" } }, pa = (e) => e.filter((l) => l.state !== "cancelled"), qe = (e, l) => e.filter((t) => t.state === l).length;
+}, ga = /* @__PURE__ */ Q(ca, [["__scopeId", "data-v-1a0bc478"]]), va = { started: { words: "started" }, testing: { words: "being tested" }, blocked: { words: "blocked" } }, pa = (e) => e.filter((l) => l.state !== "cancelled"), qe = (e, l) => e.filter((t) => t.state === l).length;
 function ha({ tasks: e, inHand: l, perHour: t }) {
   const o = pa(e), a = qe(o, "completed"), g = va[l == null ? void 0 : l.state], f = o.length - a - (l && l.state !== "completed" ? 1 : 0), $ = a === o.length;
   return {
@@ -621,7 +621,7 @@ const fa = {
       }, null, 8, ["total", "done", "testing"])
     ], 64)) : h("", !0);
   }
-}, Ma = /* @__PURE__ */ Q(wa, [["__scopeId", "data-v-190e9031"]]), xa = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', $a = ["data-icon", "stroke-width", "innerHTML"], _ = {
+}, Ma = /* @__PURE__ */ Q(wa, [["__scopeId", "data-v-035bb012"]]), xa = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', $a = ["data-icon", "stroke-width", "innerHTML"], _ = {
   __name: "Icon",
   props: {
     name: { type: String, default: "dot" },
@@ -806,13 +806,13 @@ const fa = {
       ])) : Me(l.$slots, "default", {}, void 0, !0, 2)
     ], 2));
   }
-}, ke = /* @__PURE__ */ Q(Ta, [["__scopeId", "data-v-9c67fe37"]]), Aa = {}, ja = { class: "menu-label" };
+}, ke = /* @__PURE__ */ Q(Ta, [["__scopeId", "data-v-fec99974"]]), Aa = {}, ja = { class: "menu-label" };
 function Ba(e, l) {
   return n(), s("span", ja, [
     Me(e.$slots, "default", {}, void 0, !0)
   ]);
 }
-const ye = /* @__PURE__ */ Q(Aa, [["render", Ba], ["__scopeId", "data-v-71c11156"]]), Ra = {
+const ye = /* @__PURE__ */ Q(Aa, [["render", Ba], ["__scopeId", "data-v-aa955b3e"]]), Ra = {
   class: "skills-menu",
   "data-agent-skills-menu": ""
 }, La = {
@@ -873,7 +873,7 @@ const ye = /* @__PURE__ */ Q(Aa, [["render", Ba], ["__scopeId", "data-v-71c11156
       })
     ]));
   }
-}, Oa = /* @__PURE__ */ Q(Ia, [["__scopeId", "data-v-27140adf"]]), Va = ["disabled", "title"], za = { class: "gauge usage" }, Ha = {
+}, Oa = /* @__PURE__ */ Q(Ia, [["__scopeId", "data-v-be514d47"]]), Va = ["disabled", "title"], za = { class: "gauge usage" }, Ha = {
   __name: "AllowanceBar",
   props: { windows: { type: Array, default: () => [] }, disabled: Boolean },
   emits: ["open"],
@@ -904,7 +904,7 @@ const ye = /* @__PURE__ */ Q(Aa, [["render", Ba], ["__scopeId", "data-v-71c11156
       m(" " + p(f.value ? "At usage limit" : `${g.value}%`), 1)
     ], 8, Va)) : h("", !0);
   }
-}, Ea = /* @__PURE__ */ Q(Ha, [["__scopeId", "data-v-82d641a0"]]), Na = {
+}, Ea = /* @__PURE__ */ Q(Ha, [["__scopeId", "data-v-a36f09dc"]]), Na = {
   __name: "DashboardBadge",
   props: { text: { type: String, required: !0 }, tone: { type: String, default: "" } },
   setup(e) {
@@ -912,7 +912,7 @@ const ye = /* @__PURE__ */ Q(Aa, [["render", Ba], ["__scopeId", "data-v-71c11156
       class: oe(["badge", e.tone])
     }, p(e.text), 3));
   }
-}, Wa = /* @__PURE__ */ Q(Na, [["__scopeId", "data-v-6ef74765"]]), qa = (e, l, t) => Math.max(l, Math.min(t, e)), Ge = /* @__PURE__ */ new WeakMap(), Da = (e, l) => Ge.set(e, l);
+}, Wa = /* @__PURE__ */ Q(Na, [["__scopeId", "data-v-9e7e1157"]]), qa = (e, l, t) => Math.max(l, Math.min(t, e)), Ge = /* @__PURE__ */ new WeakMap(), Da = (e, l) => Ge.set(e, l);
 function Fa(e, l) {
   for (let t = l; t; t = Ge.get(t) ?? t.parentElement) if (t === e) return !0;
   return !1;
@@ -1009,7 +1009,7 @@ const me = 8, Ua = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       ], 16)
     ], 8, ["disabled"]));
   }
-}), Ja = /* @__PURE__ */ Q(Ua, [["__scopeId", "data-v-7f046e0d"]]);
+}), Ja = /* @__PURE__ */ Q(Ua, [["__scopeId", "data-v-3d203970"]]);
 async function Ga(e, l, t) {
   if (!e) return t(l);
   const { target: o, fields: a } = e, g = Object.fromEntries(Object.keys(a).map((S) => [S, o[S]])), f = () => Object.assign(o, g);
@@ -1384,7 +1384,7 @@ const Ya = ["disabled", "title"], Qa = ["disabled", "title"], Xa = { class: "gau
       ], 2);
     };
   }
-}, gn = /* @__PURE__ */ Q(cn, [["__scopeId", "data-v-7379a2a6"]]), vn = ["data-agent-open", "aria-expanded", "role", "tabindex"], pn = {
+}, gn = /* @__PURE__ */ Q(cn, [["__scopeId", "data-v-c1e2d220"]]), vn = ["data-agent-open", "aria-expanded", "role", "tabindex"], pn = {
   class: "agent-title",
   "data-agent-title": "",
   "data-agent-motion": ""
@@ -1595,7 +1595,7 @@ const Ya = ["disabled", "title"], Qa = ["disabled", "title"], Xa = { class: "gau
       ], 42, vn);
     };
   }
-}, xn = /* @__PURE__ */ Q(Mn, [["__scopeId", "data-v-ec0a381f"]]), $n = {
+}, xn = /* @__PURE__ */ Q(Mn, [["__scopeId", "data-v-88f21c24"]]), $n = {
   key: 1,
   class: "agents-upgrade",
   "data-agents-upgrade": ""
@@ -1826,7 +1826,7 @@ const Ya = ["disabled", "title"], Qa = ["disabled", "title"], Xa = { class: "gau
       ], 2)
     ], 2));
   }
-}, Bn = /* @__PURE__ */ Q(Cn, [["__scopeId", "data-v-9815d431"]]);
+}, Bn = /* @__PURE__ */ Q(Cn, [["__scopeId", "data-v-fceb20c3"]]);
 export {
   Bn as A
 };
