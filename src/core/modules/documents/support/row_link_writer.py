@@ -1,11 +1,13 @@
 from collections.abc import Sequence
 
 from engine.command.context import Context
+from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.documents.models.link import Link
 from core.modules.documents.models.link_correction import LinkCorrection
-from core.modules.documents.references.row_ref import RowRef
+
+STORED_LINK_TARGETS = 25
 
 
 class RowLinkWriter:
@@ -24,15 +26,28 @@ class RowLinkWriter:
         return self.save_many(allowed, context)
 
     def save_many(self, links: Sequence[Link], context: Context) -> tuple[Link, ...]:
-        sources = dict.fromkeys(RowRef(link.source_model, link.source_id) for link in links)
+        existing = self.stored(links)
         saved: list[Link] = []
-        for source in sources:
-            rows = self.queries.query(Link).filter(source_model=source.model, source_id=source.row_id).all_rows()
-            existing = {(row.target_model, row.target_id, row.link_type): row for row in rows}
-            for link in (row for row in links if row.source_model == source.model and row.source_id == source.row_id):
-                key = (link.target_model, link.target_id, link.link_type)
-                if key not in existing:
-                    existing[key] = self.repository.save(link, context)
-                saved.append(existing[key])
+        for link in links:
+            key = self.key(link)
+            if key not in existing:
+                existing[key] = self.repository.save(link, context)
+            saved.append(existing[key])
         return tuple(saved)
 
+    def stored(self, links: Sequence[Link]) -> dict[tuple[str, int, str, int, str], Link]:
+        target_ids: dict[tuple[str, int], list[int]] = {}
+        for link in links:
+            target_ids.setdefault((link.source_model, link.source_id), []).append(link.target_id)
+        links_of_keys: dict[tuple[str, int, str, int, str], Link] = {}
+        for (source_model, source_id), ids in target_ids.items():
+            distinct = sorted(set(ids))
+            for first in range(0, len(distinct), STORED_LINK_TARGETS):
+                targets = Among("target_id", distinct[first:first + STORED_LINK_TARGETS])
+                rows = self.queries.query(Link).filter(source_model=source_model, source_id=source_id).matching(targets).all_rows()
+                links_of_keys.update({self.key(row): row for row in rows})
+        return links_of_keys
+
+    @staticmethod
+    def key(link: Link) -> tuple[str, int, str, int, str]:
+        return (link.source_model, link.source_id, link.target_model, link.target_id, link.link_type)

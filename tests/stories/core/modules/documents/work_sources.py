@@ -38,6 +38,13 @@ def test_comment_request_creates_task_plan_doc_and_report(scenario):
         scenario.expect_link("message:2", target, "about")
 
 
+def test_a_request_with_more_links_than_one_read_may_load_still_takes_new_work(scenario):
+    for number in range(52):
+        scenario.make_task(f"Cart work {number}")
+    scenario.command("task edit 2 --brief 'Follow the request again' --environment main")
+    scenario.make_task("Cart work after the limit")
+
+
 def test_a_selected_source_survives_more_than_two_minutes(scenario):
     scenario.story.advance(timedelta(hours=2))
     scenario.make_task()

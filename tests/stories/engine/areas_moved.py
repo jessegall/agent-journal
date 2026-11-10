@@ -19,13 +19,13 @@ def python_files(folder: Path) -> list[Path]:
 
 
 def files_naming_a_previous_area() -> list[str]:
-    named = []
+    matching = []
     for folder in SCANNED_FOLDERS:
         for path in python_files(ROOT / folder):
             relative = str(path.relative_to(ROOT))
             if relative not in STORIES_OF_THE_MOVES and PREVIOUS_NAME.search(path.read_text()):
-                named.append(relative)
-    return named
+                matching.append(relative)
+    return matching
 
 
 def test_337_every_area_folder_sits_in_the_engine_and_none_in_core_base(new_story):
@@ -45,5 +45,5 @@ def test_338_the_test_folders_of_each_moved_area_sit_under_the_engine_test_folde
 
 def test_no_source_or_test_file_names_a_moved_area_by_its_previous_path(new_story):
     story = new_story()
-    named = files_naming_a_previous_area()
-    story.expect_rows(named == [], detail=str(named[:20]))
+    matching = files_naming_a_previous_area()
+    story.expect_rows(matching == [], detail=str(matching[:20]))
