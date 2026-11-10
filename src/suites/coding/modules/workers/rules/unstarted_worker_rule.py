@@ -1,3 +1,5 @@
+from engine.cli.agent_number import AGENT_MODEL_NAME
+from engine.cli.row_numbers import RowNumbers
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNSTARTED
@@ -25,14 +27,15 @@ class UnstartedWorkerRule(DriverRule):
     roles = [AgentRole.MAIN]
     disabled_scopes = [ActorScope]
 
-    def __init__(self, worktrees: WorkerWorktrees, activities: AgentActivities, settings: SettingValues, spans: SpanQueries) -> None:
+    def __init__(self, worktrees: WorkerWorktrees, activities: AgentActivities, settings: SettingValues, spans: SpanQueries, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.worktrees, self.activities, self.settings, self.spans = worktrees, activities, settings, spans
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         activities = self.activities.read(hook)
         workers = [activities[worktree.session_agent_id] for worktree in self.worktrees.main_worktrees() if worktree.state is WorktreeState.CUT and worktree.session_agent_id in activities]
         limit = Interval(self.settings.seconds(UNSTARTED_WORKER_SECONDS))
-        return RuleAnswer.with_nudges(*(WORKER_UNSTARTED.nudge(worker=worker.number, seconds=limit.seconds) for worker in workers if self.is_unstarted(worker, hook, limit)))
+        return RuleAnswer.with_nudges(*(WORKER_UNSTARTED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker.id), seconds=limit.seconds) for worker in workers if self.is_unstarted(worker, hook, limit)))
 
     def is_unstarted(self, worker: AgentActivity, hook: AgentHook, limit: Interval) -> bool:
         return worker.ended_at is None and limit.has_passed(self.spans, hook.agent_id, worker.created_at, hook.timestamp) and worker.last_hook_at is None

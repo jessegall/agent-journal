@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.query.queries import Queries
 from core.modules.tasks.rules.log_request_rule import LOG_REQUEST_WRITES
 from core.modules.tasks.rules.unlogged_write_rule import UNLOGGED_WRITES_CEILING
@@ -16,7 +17,7 @@ def test_the_main_agent_edits_no_file_in_a_workers_worktree(new_story):
     repository_environment(story)
     worker = dispatched_worker(story)
     folder = story.container.get(WorktreeQuery).worker_worktree(worker.id).folder
-    story.expect_hook_refusal("s-1", HookSamples.edit(f"{folder}/cart.py"), f"that file is in worker {worker.id}'s worktree")
+    story.expect_hook_refusal("s-1", HookSamples.edit(f"{folder}/cart.py"), f"that file is in worker {agent_number(story, worker.id)}'s worktree")
     story.expect_hook_allowed("s-1", HookSamples.edit("/elsewhere/cart.py"))
 
 

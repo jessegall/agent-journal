@@ -74,7 +74,7 @@ def test_a_persons_comment_on_a_delegated_task_reaches_the_worker_and_the_main_a
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} was also told message:")
     story.expect_text("message unread --environment main", "use the new cart", actor=story.agent)
     message_id = last_message_id(story)
-    story.expect_text(f"link list --source message:{message_id}", f"message:{message_id}  sent_to  agent:{agent_number(story, worker.id)}")
+    story.expect_text(f"link list --source message:{message_id}", f"message:{message_id}  sent_to  agent:{worker.id}")
 
 
 def test_a_worker_gets_none_of_the_messages_the_person_wrote_to_the_main_agent(new_story):

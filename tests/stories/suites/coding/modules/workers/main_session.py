@@ -40,7 +40,7 @@ def test_a_new_main_session_hears_a_workers_report(replacement):
 
 def test_a_new_main_session_is_held_for_a_delivered_workers_proof(started_replacement):
     story, worker, _ = started_replacement
-    notice = PROOF_CHECK.nudge(worker=worker.id, task=1, proofs="1").text
+    notice = PROOF_CHECK.nudge(worker=agent_number(story, worker.id), task=1, proofs="1").text
     story.expect_hook_refusal("s-new", HookSamples.stop(), notice)
 
 

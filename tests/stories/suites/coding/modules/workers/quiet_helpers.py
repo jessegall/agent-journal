@@ -99,7 +99,7 @@ def test_the_inactive_line_of_a_worker_with_a_queued_run_says_so(new_story):
 
 def test_a_helper_that_has_used_no_tool_for_fifteen_minutes_is_named_to_its_main_agent_with_a_request_to_check_on_it(new_story):
     story = new_story(fixture=BuilderHelper)
-    line = inactive_line("helper", story.helper.id)
+    line = inactive_line("helper", agent_number(story, story.helper.id))
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"{line}: check on it")
@@ -110,7 +110,7 @@ def test_an_idle_merger_is_not_named(new_story):
     story.tick(MAIN_SESSION)
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)
-    story.expect_absent(f"agent-line list --agent {story.agent.id}", inactive_line("helper", story.helper.id))
+    story.expect_absent(f"agent-line list --agent {story.agent.id}", inactive_line("helper", agent_number(story, story.helper.id)))
 
 
 def test_a_helper_that_ended_is_not_named(new_story):
@@ -141,7 +141,7 @@ def test_the_setting_sets_how_long_a_helper_is_quiet_before_it_is_named(new_stor
     story.expect_rows(line_count(story, f"helper:{agent_number(story, story.helper.id)} has used no tool") == 0)
     story.advance(minutes(later - GRACE_MINUTES))
     story.tick(MAIN_SESSION)
-    story.expect_rows(line_count(story, inactive_line("helper", story.helper.id, later)) == 1)
+    story.expect_rows(line_count(story, inactive_line("helper", agent_number(story, story.helper.id), later)) == 1)
 
 
 def test_a_worker_stopped_for_good_with_its_job_sent_before_is_not_named(new_story):

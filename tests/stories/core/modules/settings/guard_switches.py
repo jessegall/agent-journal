@@ -6,6 +6,7 @@ from tests.stories.core.support.fixtures import DependencyChain
 def test_a_guard_switched_off_by_its_setting_lets_the_refused_command_through(new_story):
     story = three_tasks(new_story)
     story.expect_refusal("task tag 1 networking", "networking is a new tag", actor=story.agent)
+    story.use_fixture_environment(None)
     story.expect_success("setting make journal.core.settings.guard.tasks.known-tag-word false", "created: setting:1")
     story.expect_success("task tag 1 networking", actor=story.agent)
 

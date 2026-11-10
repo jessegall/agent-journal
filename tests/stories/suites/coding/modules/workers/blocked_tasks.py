@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, OpenTaskOrchestrator
@@ -12,7 +13,7 @@ def test_a_worker_blocking_its_task_tells_the_main_agent_with_the_reason(new_sto
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
     story.expect_success('task block 1 --reason "the build tool is missing"', actor=worker)
-    notice = WORKER_TASK_BLOCKED.nudge(worker=worker.id, task=1, reason="the build tool is missing").text
+    notice = WORKER_TASK_BLOCKED.nudge(worker=agent_number(story, worker.id), task=1, reason="the build tool is missing").text
     story.expect_text(f"agent-line list --agent {story.agent.id}", notice)
     stop = story.hook(session, HookSamples.stop())
     expect_reply_allowed(stop)

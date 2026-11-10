@@ -11,6 +11,7 @@ def started_story(new_story, *modules: str):
 
 def test_a_task_without_an_environment_is_refused_with_the_flag_to_name_one(new_story):
     story = started_story(new_story)
+    story.use_fixture_environment(None)
     story.expect_refusal('task make "Fix the cart"', "a task needs an environment: name it with --environment")
 
 
