@@ -3,8 +3,8 @@ from dataclasses import replace
 
 from engine.actor.actor import Actor
 from engine.caller.caller import Caller
-from core.base.cli.console import Console
-from core.base.cli.usage_error import UsageError
+from engine.cli.console import Console
+from engine.cli.usage_error import UsageError
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.outside_runs import OutsideRuns

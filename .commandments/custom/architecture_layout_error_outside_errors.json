@@ -28,7 +28,7 @@
                 "file": "src/core/base/change/missing_row_error.py"
             },
             {
-                "file": "src/core/base/cli/usage_error.py"
+                "file": "src/engine/cli/usage_error.py"
             },
             {
                 "file": "src/core/base/command/command_error.py"

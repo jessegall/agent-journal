@@ -2,10 +2,10 @@ import sys
 
 import pytest
 
-from core.base.cli.list_subcommand import ListSubcommand
-from core.base.cli.move_subcommand import MoveSubcommand
-from core.base.cli.subcommand_lookup import SubcommandLookup
-from core.base.cli.usage_error import UsageError
+from engine.cli.list_subcommand import ListSubcommand
+from engine.cli.move_subcommand import MoveSubcommand
+from engine.cli.subcommand_lookup import SubcommandLookup
+from engine.cli.usage_error import UsageError
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.registry import Registry

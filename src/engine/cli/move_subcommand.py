@@ -6,7 +6,7 @@ from core.base.subcommand.subcommand import Subcommand
 from core.base.command.move_command import ROW_ID, MoveCommand
 from core.base.model.model import Model
 from core.base.model.table import Table, plain_type
-from core.base.cli.subcommand_columns import parser_argument
+from engine.cli.subcommand_columns import parser_argument
 
 
 class MoveSubcommand(Subcommand[MoveCommand[Model], Model]):

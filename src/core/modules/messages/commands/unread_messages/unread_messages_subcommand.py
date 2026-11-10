@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from engine.caller.caller import Caller
-from core.base.cli.row_links import RowLinks
+from engine.cli.row_links import RowLinks
 from engine.query.conditions.is_null import IsNull
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand

@@ -2,7 +2,7 @@ import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from core.base.cli.caller_stream import CallerStream
+from engine.cli.caller_stream import CallerStream
 from core.base.command.outside_runs import OutsideRuns
 from core.base.command.outside_turn import OutsideTurn
 from engine.enums.log_level import LogLevel

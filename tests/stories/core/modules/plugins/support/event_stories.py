@@ -3,7 +3,7 @@ from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import cast
 
-from core.base.cli.console import Console
+from engine.cli.console import Console
 from server.listener_thread import ListenerThread
 from server.listener_wake import ListenerWake
 

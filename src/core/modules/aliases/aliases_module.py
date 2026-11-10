@@ -1,4 +1,4 @@
-from core.base.cli.shell_aliases import ShellAliases
+from engine.cli.shell_aliases import ShellAliases
 from core.modules.aliases.migrations.m003_alias_agent_access import AliasAgentAccessMigration
 from core.modules.aliases.guards.reader_alias_guard import ReaderAliasGuard
 from core.modules.aliases.guards.saved_command_guard import SavedCommandGuard

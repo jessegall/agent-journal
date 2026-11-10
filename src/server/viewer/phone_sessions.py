@@ -4,7 +4,7 @@ import secrets
 
 from engine.actor.actor import Actor
 from engine.caller.caller import Caller
-from core.base.cli.line_run import LineRun
+from engine.cli.line_run import LineRun
 from engine.container.container import Container
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal

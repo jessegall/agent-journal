@@ -6,7 +6,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.change.event_pattern import EventPattern
-from core.base.cli.write_flags import WriteFlags
+from engine.cli.write_flags import WriteFlags
 from core.base.command.bus import Bus
 from core.base.command.handlers.make_handler import MakeHandler
 from core.base.command.make_command import MakeCommand

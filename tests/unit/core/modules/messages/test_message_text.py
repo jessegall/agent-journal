@@ -1,4 +1,4 @@
-from core.base.cli.row_links import RowLinks
+from engine.cli.row_links import RowLinks
 from engine.row.metadata import Metadata
 from core.modules.messages.support.messages_module_name import MESSAGES_MODULE
 from core.modules.messages.models.enums.message_type import MessageType

@@ -1,6 +1,6 @@
 import json
 
-from tests.unit.core.base.cli.test_console import console, run
+from tests.unit.engine.cli.test_console import console, run
 
 
 def test_event_and_refusal_lists_show_what_a_command_wrote_and_refused(tmp_path):

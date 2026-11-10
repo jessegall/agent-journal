@@ -6,7 +6,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.caller.caller_request import CallerRequest
-from core.base.cli.shell_aliases import ShellAliases
+from engine.cli.shell_aliases import ShellAliases
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.commands.move_process.move_process import MoveProcess

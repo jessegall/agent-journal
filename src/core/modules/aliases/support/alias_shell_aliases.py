@@ -4,11 +4,11 @@ from engine.enums.actor_type import ActorType
 from engine.agent.agent_checkouts import AgentCheckouts
 from engine.caller.caller import Caller
 from engine.caller.caller_request import CallerRequest
-from core.base.cli.alias_options import AliasOptions
-from core.base.cli.shell_aliases import ShellAliases
+from engine.cli.alias_options import AliasOptions
+from engine.cli.shell_aliases import ShellAliases
 from engine.checkout.checkout import Checkout
 from engine.enums.checkout_type import CheckoutType
-from core.base.cli.shell_run import ShellRun
+from engine.cli.shell_run import ShellRun
 from engine.journal.journal_home import JournalHome
 from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.queries.alias_query import AliasQuery

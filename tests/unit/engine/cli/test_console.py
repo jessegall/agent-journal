@@ -3,7 +3,7 @@ import io
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
-from core.base.cli.console import Console
+from engine.cli.console import Console
 from engine.container.container import Container
 from core.base.database.database import Database
 from core.base.database.statement import Statement

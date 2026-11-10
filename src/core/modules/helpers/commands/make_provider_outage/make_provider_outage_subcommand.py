@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-from core.base.cli.make_subcommand import MakeSubcommand
+from engine.cli.make_subcommand import MakeSubcommand
 from core.base.model.table import Table
 from engine.time.timestamp import Timestamp
 from core.modules.helpers.models.provider_outage import ProviderOutage

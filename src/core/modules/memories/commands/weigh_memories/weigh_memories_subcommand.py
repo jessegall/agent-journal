@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.cli.number_list import number_list
+from engine.cli.number_list import number_list
 from engine.caller.caller import Caller
 from core.base.subcommand.output import Output
 from engine.types.type_guards import is_list

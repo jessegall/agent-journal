@@ -14,12 +14,12 @@ from core.base.subcommand.overview_command import OverviewCommand
 from core.base.subcommand.overview_reads import OverviewReads
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.subcommand.subcommand import Subcommand
-from core.base.cli.line_parser import LineParser
-from core.base.cli.subcommand_lookup import AnySubcommand
-from core.base.cli.shell_aliases import ShellAliases
-from core.base.cli.shell_handoff import ShellHandoff
-from core.base.cli.usage_error import UsageError
-from core.base.cli.write_flags import WriteFlags
+from engine.cli.line_parser import LineParser
+from engine.cli.subcommand_lookup import AnySubcommand
+from engine.cli.shell_aliases import ShellAliases
+from engine.cli.shell_handoff import ShellHandoff
+from engine.cli.usage_error import UsageError
+from engine.cli.write_flags import WriteFlags
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.check_approval_works import CheckApprovalWorks
@@ -34,7 +34,7 @@ from core.base.model.tables import Tables
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from core.base.registry.registry import Registry
-from core.base.cli.read_limit_bypass import ReadLimitBypass
+from engine.cli.read_limit_bypass import ReadLimitBypass
 from core.base.driver.refusal_skips import RefusalSkips
 from engine.errors.read_limit_error import ReadLimitError
 from core.base.registry.stale_registry_error import StaleRegistryError

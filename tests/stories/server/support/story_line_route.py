@@ -1,6 +1,6 @@
 from engine.container.container import Container
 from collections.abc import Callable
-from core.base.cli.line_run import ignore_completed
+from engine.cli.line_run import ignore_completed
 from core.base.database.database import Database
 from core.base.database.reported_findings import ReportedFindings
 from engine.journal.journal_home import JournalHome

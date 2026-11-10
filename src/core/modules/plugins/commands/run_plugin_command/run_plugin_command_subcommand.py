@@ -3,7 +3,7 @@ import shlex
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.cli.usage_error import UsageError
+from engine.cli.usage_error import UsageError
 from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand

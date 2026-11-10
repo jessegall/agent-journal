@@ -10,11 +10,11 @@ from engine.enums.actor_type import ActorType
 from core.base.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
-from core.base.cli.console import USAGE_CODE, Console
-from core.base.cli.line_run import LineRun, ignore_completed
+from engine.cli.console import USAGE_CODE, Console
+from engine.cli.line_run import LineRun, ignore_completed
 from collections.abc import Callable
-from core.base.cli.subcommand_lookup import SubcommandLookup
-from core.base.cli.usage_error import UsageError
+from engine.cli.subcommand_lookup import SubcommandLookup
+from engine.cli.usage_error import UsageError
 from engine.container.container import Container
 from core.base.database.database import Database
 from core.base.database.reported_findings import ReportedFindings

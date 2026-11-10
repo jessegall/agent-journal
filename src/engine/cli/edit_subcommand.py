@@ -7,7 +7,7 @@ from core.base.subcommand.subcommand import Subcommand
 from core.base.command.edit_command import EditCommand
 from core.base.model.model import Model
 from core.base.model.table import Table
-from core.base.cli.subcommand_columns import generic_base, editable_columns, parser_argument
+from engine.cli.subcommand_columns import generic_base, editable_columns, parser_argument
 
 
 class EditSubcommand(Subcommand[EditCommand[Model], Model]):

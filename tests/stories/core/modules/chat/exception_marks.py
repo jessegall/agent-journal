@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from engine.actor.actor import CORE_ACTOR_ID
-from core.base.cli.console import Console
+from engine.cli.console import Console
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.registry.registry import Registry

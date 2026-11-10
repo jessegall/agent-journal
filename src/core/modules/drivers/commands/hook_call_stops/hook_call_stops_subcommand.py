@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.cli.view_rows_subcommand import ViewRowsSubcommand
+from engine.cli.view_rows_subcommand import ViewRowsSubcommand
 from core.base.driver.hook_event_name import HookEventName
 from core.base.model.view_model import ViewModel
 from engine.query.query import Query

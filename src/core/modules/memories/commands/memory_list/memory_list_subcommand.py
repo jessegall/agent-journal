@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.cli.list_subcommand import ListSubcommand
+from engine.cli.list_subcommand import ListSubcommand
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables

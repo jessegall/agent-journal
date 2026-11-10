@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from engine.caller.caller import Caller
-from core.base.cli.row_links import RowLinks
+from engine.cli.row_links import RowLinks
 from core.base.library.library_lookup import LibraryLookup
 from core.base.library.library_aware_show import LibraryAwareShow
 from core.base.library.library_ref import LibraryRef

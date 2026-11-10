@@ -3,7 +3,7 @@ import json
 import shlex
 
 from engine.caller.caller import Caller
-from core.base.cli.console import Console
+from engine.cli.console import Console
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from tests.stories.core.modules.plugins.plugin_calls import worker_with_tools
 from tests.stories.core.modules.plugins.services import served_story

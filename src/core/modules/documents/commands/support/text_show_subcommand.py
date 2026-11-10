@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from typing import ClassVar
 
 from engine.caller.caller import Caller
-from core.base.cli.row_links import LINKS_SHOWN, RowLinks
+from engine.cli.row_links import LINKS_SHOWN, RowLinks
 from engine.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand

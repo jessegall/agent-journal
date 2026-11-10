@@ -1,5 +1,5 @@
-from core.base.cli.alias_options import AliasOptions
-from core.base.cli.shell_aliases import ShellAliases
+from engine.cli.alias_options import AliasOptions
+from engine.cli.shell_aliases import ShellAliases
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.part import Part
 from core.base.driver.shell_line import ShellLine

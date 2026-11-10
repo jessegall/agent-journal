@@ -1303,7 +1303,7 @@
         "src/engine/file/conflict_files.py"
     ],
     "file_reads_shell_handoff_streams_child_output": [
-        "src/core/base/cli/shell_handoff.py"
+        "src/engine/cli/shell_handoff.py"
     ],
     "file_reads_release_archives_stream_entries": [
         "src/core/modules/updates/support/release_source.py"

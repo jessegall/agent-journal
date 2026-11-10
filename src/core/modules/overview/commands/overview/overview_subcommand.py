@@ -3,7 +3,7 @@ import shlex
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.cli.console import Console
+from engine.cli.console import Console
 from core.base.subcommand.output import Output
 from core.base.subcommand.overview_command import OverviewCommand
 from core.base.subcommand.read_subcommand import ReadSubcommand

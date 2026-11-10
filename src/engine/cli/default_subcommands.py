@@ -9,14 +9,14 @@ from core.base.model.table import Table
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.model.tables import Tables
 from engine.query.queries import Queries
-from core.base.cli.make_subcommand import MakeSubcommand
-from core.base.cli.row_links import RowLinks
-from core.base.cli.show_subcommand import ShowSubcommand
-from core.base.cli.list_subcommand import ListSubcommand
-from core.base.cli.edit_subcommand import EditSubcommand
-from core.base.cli.delete_subcommand import DeleteSubcommand
-from core.base.cli.move_subcommand import MoveSubcommand
-from core.base.cli.subcommand_columns import generic_base
+from engine.cli.make_subcommand import MakeSubcommand
+from engine.cli.row_links import RowLinks
+from engine.cli.show_subcommand import ShowSubcommand
+from engine.cli.list_subcommand import ListSubcommand
+from engine.cli.edit_subcommand import EditSubcommand
+from engine.cli.delete_subcommand import DeleteSubcommand
+from engine.cli.move_subcommand import MoveSubcommand
+from engine.cli.subcommand_columns import generic_base
 
 
 class DefaultSubcommands:

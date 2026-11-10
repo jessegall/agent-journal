@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import TextIO
 
-from core.base.cli.console import REFUSED_CODE, SUCCESS_CODE, USAGE_CODE
+from engine.cli.console import REFUSED_CODE, SUCCESS_CODE, USAGE_CODE
 from core.base.database.schema_mismatch_error import SchemaMismatchError
 from core.base.model.tables import Tables
 from core.base.module.module_addition import ModuleAddition

@@ -1,5 +1,5 @@
 from typing import TextIO
-from core.base.cli.line_run import LineRun, ignore_completed
+from engine.cli.line_run import LineRun, ignore_completed
 from collections.abc import Callable
 from engine.container.container import Container
 from engine.request.request_queue import RequestQueue

@@ -1,7 +1,7 @@
 from argparse import Namespace
 from dataclasses import dataclass
 
-from core.base.cli.subcommand_lookup import AnySubcommand
+from engine.cli.subcommand_lookup import AnySubcommand
 from core.base.subcommand.subcommand import Subcommand
 
 

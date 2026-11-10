@@ -5,9 +5,9 @@ from engine.enums.actor_type import ActorType
 from engine.caller.caller_request import CallerRequest
 from engine.caller.caller import Caller
 from engine.caller.caller_resolver import CallerResolver
-from core.base.cli.console import Console, REFUSED_CODE, SUCCESS_CODE, USAGE_CODE
-from core.base.cli.usage_error import UsageError
-from core.base.cli.write_flags import WriteFlags
+from engine.cli.console import Console, REFUSED_CODE, SUCCESS_CODE, USAGE_CODE
+from engine.cli.usage_error import UsageError
+from engine.cli.write_flags import WriteFlags
 from core.base.database.database import Database
 from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome

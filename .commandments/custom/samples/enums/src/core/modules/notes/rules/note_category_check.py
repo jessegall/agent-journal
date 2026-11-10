@@ -1,6 +1,6 @@
 from core.base.driver.tool import Tool
 from core.base.driver.tool_type import ToolType
-from core.base.cli.alias_options import AliasOptions
+from engine.cli.alias_options import AliasOptions
 
 
 def is_agent(tool: Tool) -> bool:

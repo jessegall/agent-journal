@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import TextIO
 
 from engine.caller.caller import Caller
-from core.base.cli.line_run import LineRun
+from engine.cli.line_run import LineRun
 from engine.container.container import Container
 from core.base.database.database import Database
 from engine.time.deadline import Deadline

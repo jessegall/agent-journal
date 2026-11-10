@@ -1,4 +1,4 @@
-from core.base.cli.delete_subcommand import DeleteSubcommand
+from engine.cli.delete_subcommand import DeleteSubcommand
 from core.base.model.table import Table
 from suites.coding.modules.workers.commands.delete_worker_route.delete_worker_route import DeleteWorkerRoute
 from suites.coding.modules.workers.models.worker_route import WorkerRoute

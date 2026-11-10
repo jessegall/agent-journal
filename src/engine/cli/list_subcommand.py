@@ -13,7 +13,7 @@ from engine.query.conditions.greater import Greater
 from engine.query.conditions.less import Less
 from engine.query.queries import Queries
 from engine.query.query import PAGE_SIZE_ROWS, Query
-from core.base.cli.subcommand_columns import FOREIGN_KEY_SUFFIX, parser_argument
+from engine.cli.subcommand_columns import FOREIGN_KEY_SUFFIX, parser_argument
 from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
 
 

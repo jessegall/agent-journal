@@ -2,10 +2,10 @@ from collections.abc import Callable
 from typing import TextIO
 
 from engine.caller.caller_request import CallerRequest
-from core.base.cli.console import USAGE_CODE, Console
-from core.base.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
-from core.base.cli.module_add_line import MODULE_ADDITION_ARGUMENTS, ModuleAddLine
-from core.base.cli.module_remove_line import MODULE_REMOVAL_ARGUMENTS, ModuleRemoveLine
+from engine.cli.console import USAGE_CODE, Console
+from engine.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
+from engine.cli.module_add_line import MODULE_ADDITION_ARGUMENTS, ModuleAddLine
+from engine.cli.module_remove_line import MODULE_REMOVAL_ARGUMENTS, ModuleRemoveLine
 from engine.container.container import Container
 from core.base.database.database import BUSY_TIMEOUT_SECONDS, Database
 from core.base.database.reported_findings import ReportedFindings
@@ -13,7 +13,7 @@ from core.base.database.request_watch import RequestWatch
 from engine.time.deadline import Deadline
 from engine.container.journal_container import opened_container, synced_container
 from engine.journal.journal_home import JournalHome
-from core.base.cli.caller_stream import CallerStream
+from engine.cli.caller_stream import CallerStream
 from core.base.command.script_policy import ScriptPolicy
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.module.code_fingerprint import CodeFingerprint

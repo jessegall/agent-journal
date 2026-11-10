@@ -1,6 +1,6 @@
 from argparse import Namespace
 
-from core.base.cli.view_rows_subcommand import ViewRowsSubcommand
+from engine.cli.view_rows_subcommand import ViewRowsSubcommand
 from core.base.model.view_model import ViewModel
 from engine.query.query import Query
 from core.modules.agents.conditions.main_agent_rows import MainAgentRows

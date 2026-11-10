@@ -7,7 +7,7 @@ from core.base.subcommand.subcommand import Subcommand
 from core.base.command.make_command import MakeCommand
 from core.base.model.model import Model
 from core.base.model.table import Table
-from core.base.cli.subcommand_columns import generic_base, argument_columns, flag_columns, switch_columns, copied_default, parser_argument
+from engine.cli.subcommand_columns import generic_base, argument_columns, flag_columns, switch_columns, copied_default, parser_argument
 
 
 M = TypeVar("M", bound=Model)

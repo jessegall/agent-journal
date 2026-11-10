@@ -1,6 +1,6 @@
 import json
 
-from core.base.cli.invalid_text_list import InvalidTextList
+from engine.cli.invalid_text_list import InvalidTextList
 from engine.types.type_guards import is_text_list
 
 

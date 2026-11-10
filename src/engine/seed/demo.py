@@ -5,7 +5,7 @@ import shlex
 
 from engine.actor.actor import Actor
 from engine.caller.caller import Caller
-from core.base.cli.console import Console
+from engine.cli.console import Console
 from core.base.command.bus import Bus
 from engine.container.container import Container
 from engine.seed.demo_error import DemoError

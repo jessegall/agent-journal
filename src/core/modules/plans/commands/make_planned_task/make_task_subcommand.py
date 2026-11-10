@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.cli.make_subcommand import MakeSubcommand
-from core.base.cli.write_flags import WriteFlags
+from engine.cli.make_subcommand import MakeSubcommand
+from engine.cli.write_flags import WriteFlags
 from core.base.command.command import Command
 from core.base.model.tables import Tables
 from core.base.subcommand.subcommand import Subcommand

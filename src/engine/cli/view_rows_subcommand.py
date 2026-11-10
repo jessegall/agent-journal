@@ -3,8 +3,8 @@ from collections.abc import Sequence
 from typing import ClassVar
 
 from engine.caller.caller import Caller
-from core.base.cli.number_list import number_list
-from core.base.cli.view_row_page import ViewRowPage
+from engine.cli.number_list import number_list
+from engine.cli.view_row_page import ViewRowPage
 from core.base.model.view_model import ViewModel
 from engine.query.conditions.among import Among
 from engine.query.conditions.greater import Greater

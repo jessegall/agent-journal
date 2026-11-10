@@ -1,4 +1,4 @@
-from core.base.cli.shell_handoff import RUNNER_VARIABLE
+from engine.cli.shell_handoff import RUNNER_VARIABLE
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from threading import Event

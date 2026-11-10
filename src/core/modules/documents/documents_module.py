@@ -74,7 +74,7 @@ from core.modules.documents.models.comment_selection import CommentSelection
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.doc_revision import DocRevision
 from core.modules.documents.models.document_row import DocumentRow
-from core.base.cli.row_links import RowLinks
+from engine.cli.row_links import RowLinks
 from core.modules.documents.listeners.new_doc_dock_listener import NewDocDockListener
 from core.modules.documents.listeners.new_report_dock_listener import NewReportDockListener
 from core.modules.documents.models.link import Link

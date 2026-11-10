@@ -18,7 +18,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Event, Thread
 from urllib.parse import urlencode
 
-from core.base.cli.console import ERROR_CODE
+from engine.cli.console import ERROR_CODE
 from engine.journal.journal_home import JournalHome
 from engine.container.journal_container import synced_database_container
 from server.endpoints.cli_endpoint import CliEndpoint

@@ -1,4 +1,4 @@
-from core.base.cli.row_links import LINKS_SHOWN, RowLinks
+from engine.cli.row_links import LINKS_SHOWN, RowLinks
 from engine.query.queries import Queries
 from core.modules.documents.models.link import Link
 from core.modules.documents.conditions.link_scope import LinkScope

@@ -1,6 +1,6 @@
 from engine.actor.actor import CORE_ACTOR_ID
 from engine.caller.caller_request import CallerRequest
-from core.base.cli.console import REFUSED_CODE, USAGE_CODE
+from engine.cli.console import REFUSED_CODE, USAGE_CODE
 from engine.caller.process_row import ProcessRow
 from engine.time.timestamp import Timestamp
 from tests.stories.core.support.fixtures import ProcessAgent, MainEnvironment

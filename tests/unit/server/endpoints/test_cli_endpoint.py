@@ -6,7 +6,7 @@ import pytest
 
 from engine.caller.caller_request import CallerRequest
 from engine.caller.caller_request_error import CallerRequestError
-from core.base.cli.line_run import LineRun
+from engine.cli.line_run import LineRun
 from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from core.base.listener.commit_listener_runner import CommitListenerRunner

@@ -4,7 +4,7 @@ import tempfile
 from collections import deque
 from typing import TextIO
 
-from core.base.cli.shell_run import ShellRun
+from engine.cli.shell_run import ShellRun
 
 RUNNER_VARIABLE = "JOURNAL_RUNNER_PROCESS"
 UNWATCHED_LIMIT_SECONDS = 15

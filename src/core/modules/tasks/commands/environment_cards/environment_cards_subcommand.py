@@ -1,4 +1,4 @@
-from core.base.cli.view_rows_subcommand import ViewRowsSubcommand
+from engine.cli.view_rows_subcommand import ViewRowsSubcommand
 from core.modules.tasks.models.environment_card import EnvironmentCard
 
 

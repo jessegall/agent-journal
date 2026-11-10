@@ -3,7 +3,7 @@ from suites.coding.modules.workers.support.worker_command_request import WorkerC
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.cli.write_flags import WriteFlags
+from engine.cli.write_flags import WriteFlags
 from engine.scope.scopes import Scopes
 from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
 from core.modules.agents.models.agent import Agent

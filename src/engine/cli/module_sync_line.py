@@ -1,6 +1,6 @@
 from typing import TextIO
 
-from core.base.cli.console import REFUSED_CODE, SUCCESS_CODE
+from engine.cli.console import REFUSED_CODE, SUCCESS_CODE
 from core.base.subcommand.output import Output
 from core.base.model.tables import Tables
 from core.base.database.schema_mismatch_error import SchemaMismatchError

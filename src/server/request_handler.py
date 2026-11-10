@@ -7,7 +7,7 @@ from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler
 
 from engine.caller.caller_request_error import CallerRequestError
-from core.base.cli.console import ERROR_CODE
+from engine.cli.console import ERROR_CODE
 from engine.enums.log_level import LogLevel
 from engine.time.timing import TIMING_HEADER, Timing
 from engine.time.timing_log import TimingLog

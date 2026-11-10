@@ -11,8 +11,8 @@ from datetime import timedelta
 from engine.actor.actor import Actor
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.testing.story_shell_sandbox import StoryShellSandbox
-from core.base.cli.console import Console
-from core.base.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
+from engine.cli.console import Console
+from engine.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
 from core.base.registry.registry import Registry
 from core.base.change.event_log import EventLog
 from engine.caller.caller_request import CallerRequest

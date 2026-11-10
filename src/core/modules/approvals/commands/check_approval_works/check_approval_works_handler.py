@@ -4,8 +4,8 @@ from contextlib import redirect_stderr, redirect_stdout
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
-from core.base.cli.console import Console
-from core.base.cli.module_remove_line import MODULE_REMOVAL_ARGUMENTS
+from engine.cli.console import Console
+from engine.cli.module_remove_line import MODULE_REMOVAL_ARGUMENTS
 from core.base.command.bus import Bus
 from core.base.command.check_approval_works import CheckApprovalWorks
 from core.base.command.command import Command

@@ -1,4 +1,4 @@
-from core.base.cli.view_rows_subcommand import ViewRowsSubcommand
+from engine.cli.view_rows_subcommand import ViewRowsSubcommand
 from core.modules.messages.models.chat_message import ChatMessage
 from argparse import Namespace
 from core.base.model.view_model import ViewModel

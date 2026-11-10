@@ -1,14 +1,14 @@
 from collections.abc import Sequence
 from engine.bookkeeping.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMANDS
-from core.base.cli.default_subcommands import DefaultSubcommands
-from core.base.cli.move_subcommand import MoveSubcommand
+from engine.cli.default_subcommands import DefaultSubcommands
+from engine.cli.move_subcommand import MoveSubcommand
 from core.base.subcommand.subcommand import Subcommand, is_subcommand_class
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.command.command import Command
 from engine.container.container import Container
 from core.base.model.model import Model
 from core.base.registry.registry import Registry
-from core.base.cli.usage_error import UsageError
+from engine.cli.usage_error import UsageError
 
 
 AnySubcommand = Subcommand[Command[object], object] | ReadSubcommand[object]

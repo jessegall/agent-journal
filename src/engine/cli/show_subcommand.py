@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
-from core.base.cli.row_links import RowLinks
+from engine.cli.row_links import RowLinks
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.model.model import Model

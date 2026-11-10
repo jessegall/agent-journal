@@ -4,7 +4,7 @@ from pathlib import Path
 
 from core.modules.processes.support.foreground_run import ForegroundRun
 from engine.caller.caller_request import SESSION_VARIABLE
-from core.base.cli.shell_handoff import RUNNER_VARIABLE
+from engine.cli.shell_handoff import RUNNER_VARIABLE
 
 MOST_OUTPUT_VARIABLE = "JOURNAL_RUN_MOST_OUTPUT"
 READ_FLAGS_VARIABLE = "JOURNAL_RUN_READING"

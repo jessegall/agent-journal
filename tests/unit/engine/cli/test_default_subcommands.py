@@ -6,7 +6,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
-from core.base.cli.default_subcommands import DefaultSubcommands
+from engine.cli.default_subcommands import DefaultSubcommands
 from core.base.subcommand.subcommand import Subcommand
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.command.bus import Bus
@@ -122,7 +122,7 @@ class CloseItem(MoveCommand[Item]):
 
 
 def test_each_move_is_a_subcommand_and_a_typed_command_gives_its_fields_as_flags(container):
-    pause, close = container.get(DefaultSubcommands).moves(Item, ["tests.unit.core.base.cli.test_default_subcommands:CloseItem"])
+    pause, close = container.get(DefaultSubcommands).moves(Item, ["tests.unit.engine.cli.test_default_subcommands:CloseItem"])
     assert (pause.name, close.name) == ("pause", "close")
     assert run(container, pause, "1").state == ItemState.PAUSED
     with pytest.raises(SystemExit):

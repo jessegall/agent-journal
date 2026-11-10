@@ -6,7 +6,7 @@ from uuid import uuid4
 import pytest
 
 from engine.caller.caller_request import CallerRequest
-from core.base.cli.line_run import LineRun
+from engine.cli.line_run import LineRun
 from tests.stories.core.modules.drivers.support.module_memberships import PATH
 from tests.stories.core.support.fixtures import UserJoined
 

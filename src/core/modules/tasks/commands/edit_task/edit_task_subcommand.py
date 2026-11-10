@@ -1,4 +1,4 @@
-from core.base.cli.edit_subcommand import EditSubcommand
+from engine.cli.edit_subcommand import EditSubcommand
 from core.base.model.tables import Tables
 from core.modules.tasks.models.task import Task
 
