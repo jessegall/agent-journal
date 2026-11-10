@@ -8,7 +8,7 @@ from tests.stories.engine.module.support.layer_project import LayerProject
 CONFIG_FILE = Path(__file__).resolve().parents[4] / ".commandments" / "config.json"
 HAND_WRITTEN_LAYERS = "python/NamespaceDependencyDetector"
 ORDER_LINES = "src/core/modules/orders/support/order_lines.py"
-FILE_IN_NO_LAYER = ": the file is in no layer"
+UNPLACED_FILE_ENDING = ": the file is in no layer"
 ALLOWED_LINE = f"{ORDER_LINES} imports core module stock, which core module orders may not use"
 
 
@@ -36,5 +36,5 @@ def test_525_an_allowed_line_names_its_file_and_what_it_breaks_and_fails_once_it
     while_it_holds = project.check_with_allow_list([ALLOWED_LINE], orders, stock)
     project.add_file(ORDER_LINES)
     once_fixed = project.check_with_allow_list([ALLOWED_LINE], orders, stock)
-    unreadable = [line for line in LayerAllowList.lines() if not line.startswith("src/") or (IMPORT_LINE.match(line) is None and not line.endswith(FILE_IN_NO_LAYER))]
+    unreadable = [line for line in LayerAllowList.lines() if not line.startswith("src/") or (IMPORT_LINE.match(line) is None and not line.endswith(UNPLACED_FILE_ENDING))]
     story.expect_rows(while_it_holds == [], once_fixed == [f"{ALLOWED_LINE}: is on the allow-list but no longer happens"], unreadable == [], detail=f"{once_fixed} {unreadable[:5]}")
