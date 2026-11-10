@@ -85,7 +85,7 @@ def worker_session(story: Story, worker: Actor) -> str:
 
 def merged_worker_lines(story: Story, worker: Actor) -> list[AgentLine]:
     lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows()
-    return [line for line in lines if line.text == f"worker:{worker.id} was merged"]
+    return [line for line in lines if line.text == f"worker:{agent_number(story, worker.id)} was merged"]
 
 
 def expect_clean_environment(story: Story, repository: GitRepository) -> None:

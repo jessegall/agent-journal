@@ -84,7 +84,7 @@ def test_a_scan_is_kept_for_the_agent_of_its_session_whatever_environment_it_wor
     story.expect_success("environment make elsewhere /work/elsewhere", actor=story.user)
     alternate_folder = story.new_row_id("agent start s-9 claude worker --environment elsewhere")
     scanned_edit(story, "s-9", "src/cart.py", 2, 0)
-    story.expect_success("file-edit show 1", "path: src/cart.py", f"session_agent_id: {alternate_folder}")
+    story.expect_success("file-edit show 1 --environment elsewhere", "path: src/cart.py", f"session_agent_id: {alternate_folder}")
 
 
 def test_the_log_keeps_the_newest_1000_file_edits(new_story, monkeypatch):

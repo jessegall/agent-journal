@@ -34,5 +34,10 @@ class SendAgentMessageHandler(Handler[SendAgentMessage, Message]):
         message = self.repository.save(Message(session_agent_id=sender_id, target_agent_id=None if receiver.role == AgentRole.MAIN else receiver.id, creator_id=context.actor.id,
                                                type=MessageType.AGENT, text=command.text, is_chat_visible=False), context)
         if command.notifies:
-            self.nudger.send(self.receivers.message_receiver(command.recipient_agent_id).id, PARENT_REPORT, PARENT_REPORT_SOURCE, context, agent=self.numbers.number(AGENT_MODEL_NAME, context.actor.id), message=message.id)
+            self.nudger.send(self.receivers.message_receiver(command.recipient_agent_id).id, PARENT_REPORT, PARENT_REPORT_SOURCE, context, agent=self.sender_number(message), message=message.id)
         return message
+
+    def sender_number(self, message: Message) -> int:
+        if message.session_agent_id is None:
+            return message.creator_id
+        return self.numbers.number(AGENT_MODEL_NAME, message.session_agent_id)
