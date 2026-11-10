@@ -25,7 +25,7 @@ from engine.command.context import Context
 from engine.command.check_approval_works import CheckApprovalWorks
 from engine.command.accept_covered_approval import AcceptCoveredApproval
 from engine.command.request_user_approval import RequestUserApproval
-from engine.command.server_stopping_error import ServerStoppingError
+from engine.command.errors.server_stopping_error import ServerStoppingError
 from engine.errors.deadline_passed_error import DeadlinePassedError
 from engine.environment.environment_names import EnvironmentNames
 from engine.log.error_log import ErrorLog

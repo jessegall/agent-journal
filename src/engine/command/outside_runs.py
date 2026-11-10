@@ -1,7 +1,7 @@
 from collections import Counter
 from collections.abc import Sequence
 
-from engine.command.outside_run_rollback_error import OutsideRunRollbackError
+from engine.command.errors.outside_run_rollback_error import OutsideRunRollbackError
 from engine.command.outside_turn import OutsideTurn
 from engine.command.outside_work import OutsideWork
 

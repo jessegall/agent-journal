@@ -6,8 +6,8 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.change.event_pattern import EventPattern
 from engine.command.bus import Bus
-from engine.command.missing_handler_error import MissingHandlerError
-from engine.command.transaction_error import TransactionError
+from engine.command.errors.missing_handler_error import MissingHandlerError
+from engine.command.errors.transaction_error import TransactionError
 from engine.command.command import Command
 from engine.command.outside_runs import MAX_ROUNDS, OutsideRuns
 from engine.command.outside_turn import OutsideTurn

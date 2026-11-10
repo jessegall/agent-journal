@@ -1,5 +1,5 @@
 from engine.command.context import Context
-from engine.command.completed_command_error import CompletedCommandError
+from engine.command.errors.completed_command_error import CompletedCommandError
 from engine.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal

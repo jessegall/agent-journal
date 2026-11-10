@@ -4,7 +4,7 @@ from engine.time.clock import Clock
 from engine.command.command import Command
 from engine.command.context import Context
 from engine.command.handler import Handler, is_handler_class
-from engine.command.outside_run_rollback_error import OutsideRunRollbackError
+from engine.command.errors.outside_run_rollback_error import OutsideRunRollbackError
 from engine.command.outside_runs import SERVER_THREAD_REASON, SINGLE_RUN_REASON, OutsideRuns
 from engine.command.script_policy import ScriptPolicy
 from engine.container.container import Container
@@ -14,9 +14,9 @@ from engine.text.explanation import Explanation
 from engine.registry.registry import Registry
 from engine.scope.scopes import Scopes
 from engine.time.timing import Timing
-from engine.command.missing_handler_error import MissingHandlerError
-from engine.command.transaction_error import TransactionError
-from engine.command.explanation_rollback_error import ExplanationRollbackError
+from engine.command.errors.missing_handler_error import MissingHandlerError
+from engine.command.errors.transaction_error import TransactionError
+from engine.command.errors.explanation_rollback_error import ExplanationRollbackError
 
 
 R = TypeVar("R")

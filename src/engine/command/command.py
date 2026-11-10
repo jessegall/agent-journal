@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, fields
 from typing import ClassVar, Generic, TypeIs, TypeVar, get_args
 from engine.model.model import Model
-from engine.command.command_error import CommandError
+from engine.command.errors.command_error import CommandError
 
 
 R = TypeVar("R", covariant=True)

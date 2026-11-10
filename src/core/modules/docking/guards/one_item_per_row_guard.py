@@ -1,5 +1,5 @@
 from engine.guard.guard import Guard
-from engine.command.completed_command_error import CompletedCommandError
+from engine.command.errors.completed_command_error import CompletedCommandError
 from core.modules.docking.guards.support.docking_arrival import DockingArrival
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from engine.change.changed import Changed
