@@ -34,7 +34,9 @@ from core.base.model.tables import Tables
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from core.base.registry.registry import Registry
+from core.base.cli.read_limit_bypass import ReadLimitBypass
 from core.base.driver.refusal_skips import RefusalSkips
+from engine.errors.read_limit_error import ReadLimitError
 from core.base.registry.stale_registry_error import StaleRegistryError
 from engine.errors.refusal import Refusal
 from core.base.refusal_log import RefusalLog
@@ -53,7 +55,8 @@ class Console:
 
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, line_parser: LineParser, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
-                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes, refusal_skips: RefusalSkips, overview_reads: OverviewReads) -> None:
+                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes, refusal_skips: RefusalSkips, overview_reads: OverviewReads, read_limit_bypass: ReadLimitBypass) -> None:
+        self.read_limit_bypass = read_limit_bypass
         self.registry, self.finder, self.fingerprint, self.line_parser, self.bus = registry, finder, fingerprint, line_parser, bus
         self.flags, self.refusals, self.errors, self.tables, self.commit_listeners = flags, refusals, errors, tables, commit_listeners
         self.refusal_skips, self.overview_reads = refusal_skips, overview_reads
@@ -62,6 +65,7 @@ class Console:
     def run(self, argv: list[str], caller: Caller, stream: TextIO, request: CallerRequest = CallerRequest()) -> int:
         output = Output(self.tables, "--json" in argv, stream)
         try:
+            argv = self.read_limit_bypass.applied(argv, caller)
             self.registry.require_current(self.fingerprint.text(self.finder.modules()))
             shell_run = self.aliases.shell_run(argv, caller, request)
             if shell_run is not None:
@@ -86,6 +90,11 @@ class Console:
             return refusal.exit_code
         except BrokenPipeError:
             return ERROR_CODE
+        except ReadLimitError as error:
+            self.errors.reported(argv, error, caller.environment_id)
+            refusal = self.read_limit_bypass.refusal(error, caller)
+            output.refusal(refusal)
+            return refusal.exit_code
         except Exception as error:
             output.error(self.errors.reported(argv, error, caller.environment_id))
             return ERROR_CODE
