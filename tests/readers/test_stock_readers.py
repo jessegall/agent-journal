@@ -88,6 +88,16 @@ def test_the_reader_finds_a_summary_and_passes_the_judge(sample):
     assert judge().misses(reader, read_category(reader.name), text) == ()
 
 
+@pytest.mark.parametrize("ending", ["============================= 13 xfailed in 4.88s ==============================", "13 xfailed in 4.88s"], ids=["framed", "plain"])
+def test_the_pytest_reader_reads_a_run_with_only_xfailed_tests(ending):
+    stock = READERS["pytest"]
+    reader = reader_row(stock)
+    text = f"collected 13 items\n\ntest_cart.py xxxxxxxxxxxxx                                               [100%]\n\n{ending}\n"
+    assert ReaderRun().summary(reader, text) == "13 xfailed"
+    assert re.search(stock.finished, ending)
+    assert not re.search(stock.failed, ending)
+
+
 @pytest.mark.parametrize("sample", [sample for sample in SAMPLES if sample.stem == "failed"], ids=sample_id)
 def test_a_failed_output_is_marked_failed(sample):
     stock = READERS[sample.parent.name]
