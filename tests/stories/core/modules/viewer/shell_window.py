@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
@@ -20,7 +21,7 @@ def test_the_shell_reads_visible_keys_and_requests_activity_and_fitness_separate
         status, activity = window_data(server, cookie, keys="activity", window="viewer.shell", query=query + "&tab=activity")
         story.expect_rows(status == 200, set(activity["keys"]) == {"activity"}, activity["keys"]["activity"]["code"] == 0,
                           len(activity["keys"]["activity"]["value"]["rows"]) <= 30)
-        status, fitness = window_data(server, cookie, keys="fitness", window="viewer.shell", query=query + f"&fitness.agent={story.agent.id}")
+        status, fitness = window_data(server, cookie, keys="fitness", window="viewer.shell", query=query + f"&fitness.agent={agent_number(story, story.agent.id)}")
         story.expect_rows(status == 200, set(fitness["keys"]) == {"fitness"}, fitness["keys"]["fitness"]["code"] == 0)
         status, controls = window_data(server, cookie, keys="controls,skills,programs", window="viewer.shell",
                                        query=query + f"&controls.agent={story.agent.id}&skills.agent={story.agent.id}")

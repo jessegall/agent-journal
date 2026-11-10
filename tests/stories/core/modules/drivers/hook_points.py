@@ -57,6 +57,7 @@ def test_every_kind_of_hook_costs_the_database_under_the_points_a_hook_may_cost_
 
 def test_every_read_a_window_asks_of_an_endpoint_costs_under_the_same_points_on_a_filled_journal(filled_hook_points):
     story, database, finished = filled_hook_points
+    story.use_fixture_environment(None)
     measured = 0
     for read in sorted({read for window in story.container.get(Registry).windows for read in window.reads}):
         for line in (read, f"{read} 1", f"{read} --agent {story.agent.id}"):

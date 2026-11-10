@@ -14,6 +14,7 @@ def test_a_module_supplies_profiles_for_its_registered_type(new_story):
 
 def test_a_module_supplies_its_standard_templates(new_story):
     story = new_story(NOTES_MODULE, fixture=UserJoined)
+    story.use_fixture_environment(None)
     BootingWork().run(story.container)
     story.run_listeners()
     story.expect_text("template list", "Summarize notes", actor=story.user)

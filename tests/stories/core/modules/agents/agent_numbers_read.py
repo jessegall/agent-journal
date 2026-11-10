@@ -65,7 +65,7 @@ def test_a_message_to_agent_two_reaches_agent_two_of_the_senders_environment_and
     main_message = story.new_row_id('message send "The till is counted" --to agent:1', actor=shop_worker)
     targets = {row["id"]: row["target_agent_id"] for row in json.loads(story.run("message list --environment shop --json", actor=story.user).output_text)["rows"]}
     story.expect_rows(targets[worker_message] == shop_worker.id, targets[main_message] is None, detail=str(targets))
-    story.expect_text("message unread", "The till is counted", actor=shop_main)
+    story.expect_text("message reports", "The till is counted", actor=shop_main)
 
 
 def test_an_agent_probing_one_hundred_numbers_learns_only_its_own_environment(new_story):

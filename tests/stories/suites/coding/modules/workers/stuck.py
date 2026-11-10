@@ -241,7 +241,7 @@ def test_two_environments_of_one_checkout_dispatch_side_by_side_on_branches_of_t
     main_worker = dispatched_worker(story)
     side_worker_id = story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 2 --program claude --environment side")
     story.expect_success("worker-worktree show 1", f"branch: {repository.worker_branch(main_worker.id)}", f"folder: {repository.worktree_folder(main_worker.id)}")
-    story.expect_success("worker-worktree show 2", f"branch: {repository.worker_branch(side_worker_id, 'side')}", f"folder: {repository.worktree_folder(side_worker_id, 'side')}")
+    story.expect_success("worker-worktree show 2 --environment side", f"branch: {repository.worker_branch(side_worker_id, 'side')}", f"folder: {repository.worktree_folder(side_worker_id, 'side')}")
     repository.expect_branch_tip(repository.worker_branch(main_worker.id), repository.tip(ENVIRONMENT_BRANCH))
     repository.expect_branch_tip(repository.worker_branch(side_worker_id, "side"), repository.tip(ENVIRONMENT_BRANCH))
 
