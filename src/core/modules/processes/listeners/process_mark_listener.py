@@ -78,8 +78,15 @@ class ProcessMarkListener(CommitListener[E]):
     def text(process: Process, title: str, line: str) -> str:
         return title or f"{PHRASES[process.state]} {line}"
 
+    @classmethod
+    def figure(cls, process: Process, output: Output | None) -> str:
+        result = cls.result(process, output)
+        if process.state not in ENDED or not process.duration_text():
+            return result
+        return f"{result} in {process.duration_text()}" if result else process.duration_text()
+
     @staticmethod
-    def figure(process: Process, output: Output | None) -> str:
+    def result(process: Process, output: Output | None) -> str:
         if process.state in ENDED and output and output.reader_summary:
             return output.reader_summary
         if output and output.steps_failed:

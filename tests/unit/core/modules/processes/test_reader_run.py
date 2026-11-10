@@ -105,3 +105,13 @@ def test_a_script_past_the_time_limit_is_cut_off_and_says_so(tmp_path):
 
 def test_a_script_that_is_not_there_says_so():
     assert "could not run" in ReaderRun().lines(reader(type=ReaderType.SCRIPT, script="/nowhere/read.sh"), "a\n", "running")[0]
+
+
+JUDGE_OUTPUT = "reading 3/3\n138 sins across 8 skills.\n"
+
+
+def test_a_summary_pattern_with_a_group_keeps_only_the_group_and_one_without_keeps_the_whole_line():
+    grouped = reader(summary_pattern=r"(No sins found|[0-9]+ sins? across).*")
+    whole = reader(summary_pattern=r"(?:No sins found|[0-9]+ sins? across).*")
+    assert ReaderRun().summary(grouped, JUDGE_OUTPUT) == "138 sins across"
+    assert ReaderRun().summary(whole, JUDGE_OUTPUT) == "138 sins across 8 skills."
