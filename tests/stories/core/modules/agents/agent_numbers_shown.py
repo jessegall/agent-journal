@@ -15,7 +15,7 @@ from tests.stories.suites.coding.drivers.worker.worker_driver import WORKER_SESS
 
 MAIN_TITLE = "Main agent"
 ENDED_MAIN_TITLE = "Main agent, earlier session"
-NUMBER_REFUSAL = "numbers are only given"
+NUMBER_REFUSAL = "the number of an agent cannot be changed"
 
 
 def shown(story: Story, agent_id: int, actor: Actor | None = None) -> dict:

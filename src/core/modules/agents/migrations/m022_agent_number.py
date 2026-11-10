@@ -6,9 +6,9 @@ NUMBER_COLUMN = "number"
 
 
 class AgentNumberMigration(Migration):
-    """Gives every agent a number inside its environment: the newest main agent of an environment is 1 and every
-    other agent 2, 3 and up in the order it was made. An environment without a main agent starts at 2. Run again
-    it numbers only the agents that have no number."""
+    """Gives every agent a number inside its environment: the newest main agent of an environment is 1,
+    every other agent 2, 3 and up in the order it was made. An environment without a main agent starts at 2.
+    Only agents without a number are numbered, so a second run changes nothing."""
 
     number = 22
     statements = [
