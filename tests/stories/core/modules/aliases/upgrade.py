@@ -1,4 +1,4 @@
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
+from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 
 
 def test_a_version_4_alias_moves_with_its_line_description_variables_and_flags(new_story):

@@ -3,7 +3,7 @@ from pathlib import Path
 from types import TracebackType
 
 from core.base.database.version_four_tables import VersionFourTables
-from core.base.upgrade.source_row import SourceRow
+from engine.upgrade.source_row import SourceRow
 
 
 class VersionFourSource:

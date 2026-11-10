@@ -1,4 +1,4 @@
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
+from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 
 
 def test_a_version_4_pin_keeps_its_title_link_and_button_and_a_closed_one_stays_closed(new_story):

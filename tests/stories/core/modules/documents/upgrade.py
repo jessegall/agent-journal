@@ -3,12 +3,12 @@ import sqlite3
 import pytest
 from unittest.mock import patch
 
-from core.base.upgrade.move_runner import MoveRunner
-from core.base.upgrade.move_map import MoveMap
-from core.base.upgrade.version_four_move import VersionFourMove
-from core.base.upgrade.version_four_source import VersionFourSource
-from core.base.upgrade.creator_resolver import CreatorResolver
-from core.base.upgrade.upgrade_failed_error import UpgradeFailedError
+from engine.upgrade.move_runner import MoveRunner
+from engine.upgrade.move_map import MoveMap
+from engine.upgrade.version_four_move import VersionFourMove
+from engine.upgrade.version_four_source import VersionFourSource
+from engine.upgrade.creator_resolver import CreatorResolver
+from engine.upgrade.upgrade_failed_error import UpgradeFailedError
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
 from core.base.database.moved_row import MovedRow
@@ -24,7 +24,7 @@ from core.modules.questions.upgrade.question_links_move import QuestionLinksMove
 from install.upgrade_journal import UpgradeJournal
 from tests.stories.core.modules.documents.support.trail_fixtures import Scenario, feature
 
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
+from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 
 
 def test_a_version_4_document_keeps_its_number_title_abstract_and_text_in_the_project_library(new_story):

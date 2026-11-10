@@ -6,12 +6,12 @@ from core.base.database.row_insert import RowInsert
 from engine.errors.refusal import Refusal
 from core.modules.sequences.models.support.sequence_guards import SequenceGuards
 from core.modules.sequences.models.support.sequence_triggers import SequenceTriggers
-from core.base.upgrade.creator_resolver import CreatorResolver
-from core.base.upgrade.move_context import MoveContext
-from core.base.upgrade.move_map import MoveMap
-from core.base.upgrade.move_report import MoveReport
-from core.base.upgrade.version_four_move import VersionFourMove
-from core.base.upgrade.version_four_source import VersionFourSource
+from engine.upgrade.creator_resolver import CreatorResolver
+from engine.upgrade.move_context import MoveContext
+from engine.upgrade.move_map import MoveMap
+from engine.upgrade.move_report import MoveReport
+from engine.upgrade.version_four_move import VersionFourMove
+from engine.upgrade.version_four_source import VersionFourSource
 from core.modules.sequences.upgrade.version_four_step import VersionFourStep
 
 TABLE = "sequences"

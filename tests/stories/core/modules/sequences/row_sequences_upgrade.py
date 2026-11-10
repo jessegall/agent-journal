@@ -1,4 +1,4 @@
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story
 from tests.stories.core.modules.sequences.support.upgraded_row_sequences import UpgradedRowSequences, expect_active_sequence, expect_dead_trigger_reported
 from tests.stories.fixtures.row_sequences import prepare_row_sequences
 

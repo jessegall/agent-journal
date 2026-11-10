@@ -1,4 +1,4 @@
-from core.base.upgrade.version_four_move import VersionFourMove
+from engine.upgrade.version_four_move import VersionFourMove
 
 
 # @sin architecture_modules_move_outside_upgrade_folder

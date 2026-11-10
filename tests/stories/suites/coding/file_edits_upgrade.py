@@ -1,4 +1,4 @@
-from tests.stories.core.base.upgrade.support.fixture_upgrade import (
+from tests.stories.engine.upgrade.support.fixture_upgrade import (
     expect_output_without_line,
     expect_upgrade_finished,
     expect_upgrade_text,

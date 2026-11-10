@@ -12,11 +12,11 @@ from core.base.database.database import Database
 from engine.container.journal_container import sync_modules, synced_container
 from engine.journal.journal_home import JournalHome
 from core.base.registry.registry import Registry
-from core.base.upgrade.move_map import MoveMap
-from core.base.upgrade.move_runner import MoveRunner
-from core.base.upgrade.upgrade_failed_error import UpgradeFailedError
-from core.base.upgrade.upgrade_report import UpgradeReport
-from core.base.upgrade.version_four_move import VersionFourMove
+from engine.upgrade.move_map import MoveMap
+from engine.upgrade.move_runner import MoveRunner
+from engine.upgrade.upgrade_failed_error import UpgradeFailedError
+from engine.upgrade.upgrade_report import UpgradeReport
+from engine.upgrade.version_four_move import VersionFourMove
 from install.backup_mismatch_error import BackupMismatchError
 from install.backup_write_error import BackupWriteError
 from install.code_replacement import CodeReplacement

@@ -1,4 +1,4 @@
-from core.base.upgrade.move_report import MoveReport
+from engine.upgrade.move_report import MoveReport
 
 
 def test_the_report_counts_rows_moved_and_rows_repeated_per_table():

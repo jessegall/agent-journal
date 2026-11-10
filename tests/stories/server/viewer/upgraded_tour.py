@@ -2,7 +2,7 @@ from tests.stories.server.support.server_fixtures import person_server, upgraded
 
 import pytest
 
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story
 from tests.stories.fixtures.viewer_tour import prepare_completed_tour, prepare_pending_tour
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story

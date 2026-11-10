@@ -151,10 +151,10 @@
                 "file": "src/engine/seed/demo_error.py"
             },
             {
-                "file": "src/core/base/upgrade/dry_run_end_error.py"
+                "file": "src/engine/upgrade/dry_run_end_error.py"
             },
             {
-                "file": "src/core/base/upgrade/upgrade_failed_error.py"
+                "file": "src/engine/upgrade/upgrade_failed_error.py"
             },
             {
                 "file": "src/core/modules/drivers/commands/skip_refusal/skip_refusal.py"

@@ -1,4 +1,4 @@
-from core.base.upgrade.upgrade_report import UpgradeReport
+from engine.upgrade.upgrade_report import UpgradeReport
 
 BOOKKEEPING_TABLES = ("entries", "state_transitions", "migrations", "migrated_rows", "version3_migrations", "journal_versions", "timings", "dashboard_rows")
 BOOKKEEPING_NOTE = "version 4's own records, kept in the backup"

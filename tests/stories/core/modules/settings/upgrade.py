@@ -1,4 +1,4 @@
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
+from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 from core.testing.expect_row import expect_row
 from tests.stories.support.story_checks import expect_outcome_with
 
@@ -20,7 +20,7 @@ def test_a_declared_key_moves_once_per_scope_with_its_value_and_a_second_one_for
     import sqlite3
 
     from install.upgrade_journal import UpgradeJournal
-    from tests.stories.core.base.upgrade.support.move_samples import PATH
+    from tests.stories.engine.upgrade.support.move_samples import PATH
     from tests.stories.fixtures.version_four import version_four_fixture
 
     story = new_story(f"{PATH}:PrefsModule")

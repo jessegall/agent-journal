@@ -1,7 +1,7 @@
 from engine.actor.actor import CORE_ACTOR_ID
 from core.base.database.actor_table import ActorTable
 from core.base.database.database import Database
-from core.base.upgrade.move_map import MoveMap
+from engine.upgrade.move_map import MoveMap
 
 USER = "user"
 AGENT = "agent"

@@ -1,6 +1,6 @@
 from install.upgrade_journal import UpgradeJournal
-from tests.stories.core.base.upgrade.upgrade import upgrade, upgrading
-from tests.stories.core.base.upgrade.support.move_samples import PATH
+from tests.stories.engine.upgrade.upgrade import upgrade, upgrading
+from tests.stories.engine.upgrade.support.move_samples import PATH
 from core.testing.expect_row import expect_row
 from tests.stories.support.story_checks import expect_code_outcome, expect_lines, expect_value_with, expect_value_without
 
@@ -54,7 +54,7 @@ def test_the_report_is_saved_and_a_rerun_replaces_it_keeping_the_earlier_one(new
 
 def test_the_first_start_after_an_upgrade_shows_one_chat_mark_with_the_counts_and_a_second_start_shows_none(new_story):
     from tests.stories.core.modules.chat.support.mark_samples import expect_mark_count, mark_count, marks_text
-    from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
+    from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story
 
     story = upgraded_story(new_story)
     story.run_listeners()

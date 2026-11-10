@@ -1,4 +1,4 @@
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
+from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 
 
 def test_the_pairing_codes_of_version_4_are_dropped_named_and_counted(new_story):

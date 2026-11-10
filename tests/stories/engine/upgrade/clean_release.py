@@ -1,6 +1,6 @@
 import pytest
 
-from tests.stories.core.base.upgrade.support.released_journal import prepare_release
+from tests.stories.engine.upgrade.support.released_journal import prepare_release
 
 pytestmark = pytest.mark.install_job
 

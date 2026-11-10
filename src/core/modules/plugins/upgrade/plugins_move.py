@@ -5,11 +5,11 @@ from pathlib import Path
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
 from engine.types.type_guards import is_mapping
-from core.base.upgrade.move_context import MoveContext
-from core.base.upgrade.move_map import MoveMap
-from core.base.upgrade.move_report import MoveReport
-from core.base.upgrade.table_copy_move import TableCopyMove
-from core.base.upgrade.version_four_source import VersionFourSource
+from engine.upgrade.move_context import MoveContext
+from engine.upgrade.move_map import MoveMap
+from engine.upgrade.move_report import MoveReport
+from engine.upgrade.table_copy_move import TableCopyMove
+from engine.upgrade.version_four_source import VersionFourSource
 from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 

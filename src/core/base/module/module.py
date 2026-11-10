@@ -26,7 +26,7 @@ from engine.model.view_model import ViewModel
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.provider.provider import Provider
 from engine.skill.skill_declaration import SkillDeclaration
-from core.base.upgrade.version_four_move import VersionFourMove
+from engine.upgrade.version_four_move import VersionFourMove
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_extension import WindowExtension
 from core.base.subcommand.subcommand import Subcommand

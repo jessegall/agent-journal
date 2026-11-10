@@ -1,4 +1,4 @@
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story
 
 
 def test_version_4_counts_move_with_their_keys_and_values(new_story):

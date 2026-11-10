@@ -10,13 +10,13 @@ from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.upgrade.move_context import MoveContext
-from core.base.upgrade.move_map import MoveMap
-from core.base.upgrade.move_report import MoveReport
-from core.base.upgrade.version_four_move import VersionFourMove
-from core.base.upgrade.version_four_source import VersionFourSource
+from engine.upgrade.move_context import MoveContext
+from engine.upgrade.move_map import MoveMap
+from engine.upgrade.move_report import MoveReport
+from engine.upgrade.version_four_move import VersionFourMove
+from engine.upgrade.version_four_source import VersionFourSource
 
-PATH = "tests.stories.core.base.upgrade.support.move_samples"
+PATH = "tests.stories.engine.upgrade.support.move_samples"
 STANDARD = " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT"
 ORDER: list[str] = []
 FAILURES = {"tags": 0}

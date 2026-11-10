@@ -2,14 +2,14 @@ import pytest
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.upgrade.move_map import MoveMap
-from core.base.upgrade.upgrade_failed_error import UpgradeFailedError
-from core.base.upgrade.move_runner import MoveRunner
+from engine.upgrade.move_map import MoveMap
+from engine.upgrade.upgrade_failed_error import UpgradeFailedError
+from engine.upgrade.move_runner import MoveRunner
 from tests.stories.core.support.fixtures import MainEnvironment
-from tests.stories.core.base.upgrade.support.move_samples import ORDER, PATH, version_four_database
+from tests.stories.engine.upgrade.support.move_samples import ORDER, PATH, version_four_database
 from core.testing.expect_row import expect_row
 from tests.stories.support.story_checks import expect_bytes_database_home, expect_bytes_source, expect_changed_value, expect_value, expect_value_2, expect_value_line, expect_value_without
-from tests.stories.core.base.upgrade.upgrade import expect_table_counts
+from tests.stories.engine.upgrade.upgrade import expect_table_counts
 
 NOTES, TAGS, BROKEN_TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:BrokenTagsModule"
 

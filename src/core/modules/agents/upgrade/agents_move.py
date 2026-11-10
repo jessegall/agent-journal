@@ -8,12 +8,12 @@ from engine.enums.agent_role import AgentRole
 from engine.enums.helper_role import HelperRole
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
-from core.base.upgrade.creator_resolver import AGENT, CreatorResolver
-from core.base.upgrade.move_context import MoveContext
-from core.base.upgrade.move_map import MoveMap
-from core.base.upgrade.move_report import MoveReport
-from core.base.upgrade.version_four_move import VersionFourMove
-from core.base.upgrade.version_four_source import VersionFourSource
+from engine.upgrade.creator_resolver import AGENT, CreatorResolver
+from engine.upgrade.move_context import MoveContext
+from engine.upgrade.move_map import MoveMap
+from engine.upgrade.move_report import MoveReport
+from engine.upgrade.version_four_move import VersionFourMove
+from engine.upgrade.version_four_source import VersionFourSource
 
 TABLE = "agents"
 ENDED = "ended"

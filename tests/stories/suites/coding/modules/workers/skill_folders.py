@@ -3,7 +3,7 @@ from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story
 from tests.stories.core.modules.skills.due import drain_countdown as exhaust_countdown
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session

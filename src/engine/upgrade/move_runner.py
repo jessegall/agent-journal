@@ -10,14 +10,14 @@ from engine.journal.journal_home import JournalHome
 from core.base.registry.move_entry import MoveEntry
 from core.base.registry.setting_entry import GROUP_TYPE
 from core.base.registry.registry import Registry
-from core.base.upgrade.dry_run_end_error import DryRunEndError
-from core.base.upgrade.move_context import MoveContext
-from core.base.upgrade.move_map import MoveMap
-from core.base.upgrade.move_report import MoveReport
-from core.base.upgrade.upgrade_failed_error import UpgradeFailedError
-from core.base.upgrade.upgrade_report import UpgradeReport
-from core.base.upgrade.version_four_move import VersionFourMove
-from core.base.upgrade.version_four_source import VersionFourSource
+from engine.upgrade.dry_run_end_error import DryRunEndError
+from engine.upgrade.move_context import MoveContext
+from engine.upgrade.move_map import MoveMap
+from engine.upgrade.move_report import MoveReport
+from engine.upgrade.upgrade_failed_error import UpgradeFailedError
+from engine.upgrade.upgrade_report import UpgradeReport
+from engine.upgrade.version_four_move import VersionFourMove
+from engine.upgrade.version_four_source import VersionFourSource
 
 
 class MoveRunner:

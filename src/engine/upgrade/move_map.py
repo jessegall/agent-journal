@@ -3,7 +3,7 @@ from collections.abc import Callable
 from core.base.database.database import Database
 from core.base.database.upgrade_map_table import UpgradeMapTable
 from core.base.database.moved_row import MovedRow
-from core.base.upgrade.version_four_ref import VersionFourRef
+from engine.upgrade.version_four_ref import VersionFourRef
 
 
 class MoveMap:

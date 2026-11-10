@@ -1,7 +1,7 @@
 import json
 from functools import partial
 
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.fixtures.version_four import SERVER_KEY, with_private_values
 

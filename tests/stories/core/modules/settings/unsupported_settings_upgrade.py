@@ -1,4 +1,4 @@
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story
 from tests.stories.core.modules.settings.support.unsupported_settings_report import expect_unsupported_settings_report
 from tests.stories.fixtures.unsupported_settings import prepare_unsupported_settings
 

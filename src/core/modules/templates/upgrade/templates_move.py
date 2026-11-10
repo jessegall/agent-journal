@@ -2,8 +2,8 @@ import json
 import sqlite3
 
 from core.base.database.row_insert import RowInsert
-from core.base.upgrade.move_context import MoveContext
-from core.base.upgrade.table_copy_move import TableCopyMove
+from engine.upgrade.move_context import MoveContext
+from engine.upgrade.table_copy_move import TableCopyMove
 
 TABLE = "templates"
 LIST_FIELDS = ("targets", "parts", "commands")

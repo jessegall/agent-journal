@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from core.base.module.module import Module
-from core.base.upgrade.version_four_move import VersionFourMove
+from engine.upgrade.version_four_move import VersionFourMove
 
 
 class MoveCheck:

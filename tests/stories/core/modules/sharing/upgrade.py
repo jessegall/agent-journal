@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.text.text_digest import TextDigest
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
+from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 from tests.stories.fixtures.version_four import SHARE_TOKEN
 
 

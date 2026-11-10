@@ -1,4 +1,4 @@
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story
 from tests.stories.fixtures.worker_recovery import prepare_worker_recovery
 from tests.stories.suites.coding.modules.workers.support.recovery_report import expect_recovery_report
 

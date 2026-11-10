@@ -1,6 +1,6 @@
 from functools import partial
 
-from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
+from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.fixtures.version_four import GITHUB_VALUE, with_private_values
 

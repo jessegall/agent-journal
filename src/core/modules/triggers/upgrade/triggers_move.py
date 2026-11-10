@@ -5,12 +5,12 @@ from functools import partial
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
 from engine.types.type_guards import is_list
-from core.base.upgrade.creator_resolver import CreatorResolver
-from core.base.upgrade.move_context import MoveContext
-from core.base.upgrade.move_map import MoveMap
-from core.base.upgrade.move_report import MoveReport
-from core.base.upgrade.version_four_move import VersionFourMove
-from core.base.upgrade.version_four_source import VersionFourSource
+from engine.upgrade.creator_resolver import CreatorResolver
+from engine.upgrade.move_context import MoveContext
+from engine.upgrade.move_map import MoveMap
+from engine.upgrade.move_report import MoveReport
+from engine.upgrade.version_four_move import VersionFourMove
+from engine.upgrade.version_four_source import VersionFourSource
 from core.modules.triggers.models.enums.trigger_action import TriggerAction
 from core.modules.triggers.models.trigger import TEXT_LIMIT_CHARACTERS
 

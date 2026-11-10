@@ -1,4 +1,4 @@
-from core.base.upgrade.table_drop_move import TableDropMove
+from engine.upgrade.table_drop_move import TableDropMove
 
 
 class UpdatesMove(TableDropMove):

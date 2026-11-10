@@ -1,5 +1,5 @@
 from tests.stories.core.support.fixtures import MainEnvironment
-from tests.stories.core.base.upgrade.support.move_samples import PATH
+from tests.stories.engine.upgrade.support.move_samples import PATH
 
 NOTES = f"{PATH}:NotesModule"
 

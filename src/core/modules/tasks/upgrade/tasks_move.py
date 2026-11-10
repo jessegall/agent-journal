@@ -3,14 +3,14 @@ from functools import partial
 
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
-from core.base.upgrade.creator_resolver import CreatorResolver
-from core.base.upgrade.move_context import MoveContext
-from core.base.upgrade.move_map import MoveMap
-from core.base.upgrade.move_report import MoveReport
-from core.base.upgrade.state_walk import StateWalk
-from core.base.upgrade.version_four_move import VersionFourMove
-from core.base.upgrade.version_four_ref import VersionFourRef
-from core.base.upgrade.version_four_source import VersionFourSource
+from engine.upgrade.creator_resolver import CreatorResolver
+from engine.upgrade.move_context import MoveContext
+from engine.upgrade.move_map import MoveMap
+from engine.upgrade.move_report import MoveReport
+from engine.upgrade.state_walk import StateWalk
+from engine.upgrade.version_four_move import VersionFourMove
+from engine.upgrade.version_four_ref import VersionFourRef
+from engine.upgrade.version_four_source import VersionFourSource
 from core.modules.tasks.models.support.task_priority import NORMAL_PRIORITY
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle

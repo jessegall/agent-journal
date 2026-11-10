@@ -1,6 +1,6 @@
 from core.base.module.module import Module
 from core.base.module.move_check import MoveCheck
-from core.base.upgrade.version_four_move import VersionFourMove
+from engine.upgrade.version_four_move import VersionFourMove
 
 
 def move(reads: list[str], drops: list[str] | None = None, id_modules: list[str] | None = None) -> type[VersionFourMove]:

@@ -2,7 +2,7 @@ import json
 
 from engine.query.queries import Queries
 from suites.coding.modules.checks.models.check import Check
-from tests.stories.core.base.upgrade.support.fixture_upgrade import repeated_upgrade, upgraded_story, expect_upgrade_text
+from tests.stories.engine.upgrade.support.fixture_upgrade import repeated_upgrade, upgraded_story, expect_upgrade_text
 from tests.stories.support.story_checks import expect_repeated_upgrade
 
 

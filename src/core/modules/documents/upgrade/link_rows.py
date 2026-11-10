@@ -4,11 +4,11 @@ from collections.abc import Iterable
 from core.base.database.database import Database
 from core.base.database.moved_row import MovedRow
 from core.base.database.row_insert import RowInsert
-from core.base.upgrade.creator_resolver import CreatorResolver
-from core.base.upgrade.move_context import MoveContext
-from core.base.upgrade.move_map import MoveMap
-from core.base.upgrade.move_report import MoveReport
-from core.base.upgrade.version_four_ref import VersionFourRef
+from engine.upgrade.creator_resolver import CreatorResolver
+from engine.upgrade.move_context import MoveContext
+from engine.upgrade.move_map import MoveMap
+from engine.upgrade.move_report import MoveReport
+from engine.upgrade.version_four_ref import VersionFourRef
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.references.row_ref import RowRef
 

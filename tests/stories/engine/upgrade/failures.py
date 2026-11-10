@@ -9,10 +9,10 @@ from core.base.database.database import Database
 from install.restore_version_four import RestoreVersionFour
 from install.upgrade_journal import UpgradeJournal
 from install.version_four_files import VersionFourFiles
-from tests.stories.core.base.upgrade.support.move_samples import ORDER, PATH, TagsMove
-from tests.stories.core.base.upgrade.upgrade import expect_upgrade, upgrade, upgrading
+from tests.stories.engine.upgrade.support.move_samples import ORDER, PATH, TagsMove
+from tests.stories.engine.upgrade.upgrade import expect_upgrade, upgrade, upgrading
 from tests.stories.support.story_checks import expect_code_outcome, expect_outcome_with
-from tests.stories.core.base.upgrade.upgrade import expect_upgrade_code
+from tests.stories.engine.upgrade.upgrade import expect_upgrade_code
 
 NOTES, TAGS, RETRYABLE_TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:RetryableTagsModule"
 

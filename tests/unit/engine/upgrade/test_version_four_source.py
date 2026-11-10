@@ -2,7 +2,7 @@ import sqlite3
 
 import pytest
 
-from core.base.upgrade.version_four_source import VersionFourSource
+from engine.upgrade.version_four_source import VersionFourSource
 
 
 def version_four(tmp_path):

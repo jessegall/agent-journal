@@ -3,7 +3,7 @@ from core.base.database.statement import Statement
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.program_hooks import ProgramHooks
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.base.upgrade.support.fixture_upgrade import repeated_upgrade
+from tests.stories.engine.upgrade.support.fixture_upgrade import repeated_upgrade
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
 import json
 
