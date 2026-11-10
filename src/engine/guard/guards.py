@@ -4,7 +4,7 @@ from engine.guard.change_filter import ChangeFilter
 from engine.listener.event_listeners import EventListeners
 from engine.guard.guard import Guard
 from engine.guard.guard_switches import GuardSwitches
-from engine.guard.guard_refusal import GuardRefusal
+from engine.guard.errors.guard_refusal import GuardRefusal
 from engine.model.model import Model
 from engine.registry.guard_entry import GuardEntry
 from engine.registry.listener_timing import ListenerTiming

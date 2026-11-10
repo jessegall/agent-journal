@@ -6,7 +6,7 @@ from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.driver.command_category import CommandCategory
 from engine.driver.tool_type import ToolType
-from engine.guard.guard_refusal import GuardRefusal
+from engine.guard.errors.guard_refusal import GuardRefusal
 from engine.errors.refusal import Refusal
 from engine.log.refusal_log import RefusalLog
 from engine.query.queries import Queries

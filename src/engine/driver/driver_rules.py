@@ -2,7 +2,7 @@ from dataclasses import replace
 from time import perf_counter
 
 from engine.container.container import Container
-from engine.guard.guard_refusal import SKIP_ALLOWED_CASE
+from engine.guard.errors.guard_refusal import SKIP_ALLOWED_CASE
 from engine.driver.rule_call import RuleCall
 from engine.driver.rule_record import RuleRecord
 from engine.driver.stop_check import StopCheck

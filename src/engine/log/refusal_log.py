@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from engine.time.clock import Clock
 from engine.database.bookkeeping_table import BookkeepingTable
 from engine.database.database import Database
-from engine.guard.guard_refusal import GuardRefusal
+from engine.guard.errors.guard_refusal import GuardRefusal
 from engine.row.page import Page
 from engine.errors.refusal import Refusal
 from engine.log.recorded_refusal import RecordedRefusal

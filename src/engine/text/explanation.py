@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from engine.guard.guard_refusal import GuardRefusal
+from engine.guard.errors.guard_refusal import GuardRefusal
 from engine.listener.event_listeners import EventListeners
 
 

@@ -7,7 +7,7 @@ from engine.change.event_pattern import EventPattern
 from engine.container.container import Container
 from engine.database.database import Database
 from engine.database.statement import Statement
-from engine.guard.guard_refusal import GuardRefusal
+from engine.guard.errors.guard_refusal import GuardRefusal
 from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.guard_entry import GuardEntry

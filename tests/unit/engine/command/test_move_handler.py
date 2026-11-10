@@ -7,7 +7,7 @@ from engine.change.event_pattern import EventPattern
 from engine.command.handlers.move_handler import MoveHandler
 from engine.command.move_command import MoveCommand
 from engine.guard.lifecycle_guard import LifecycleGuard
-from engine.guard.guard_refusal import GuardRefusal
+from engine.guard.errors.guard_refusal import GuardRefusal
 from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.guard_entry import GuardEntry
 from engine.registry.registry import Registry

@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from engine.enums.actor_type import ActorType
-from engine.guard.guard_refusal import GuardRefusal
+from engine.guard.errors.guard_refusal import GuardRefusal
 from engine.guard.guard_switches import GuardSwitches
 from engine.errors.refusal import Refusal
 from core.modules.environments.support.environment_rows import EnvironmentRows

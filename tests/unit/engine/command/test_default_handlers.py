@@ -11,7 +11,7 @@ from engine.command.handlers.make_handler import MakeHandler
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.guard.lifecycle_guard import LifecycleGuard
-from engine.guard.guard_refusal import GuardRefusal
+from engine.guard.errors.guard_refusal import GuardRefusal
 from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.guard_entry import GuardEntry
 from engine.registry.registry import Registry

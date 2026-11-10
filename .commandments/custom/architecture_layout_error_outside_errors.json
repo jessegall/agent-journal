@@ -19,9 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/engine/guard/guard_refusal.py"
-            },
-            {
                 "file": "src/engine/hosting/hosted_file_refusal.py"
             },
             {

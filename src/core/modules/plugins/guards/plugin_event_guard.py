@@ -1,5 +1,5 @@
 from engine.change.changed import Changed
-from engine.guard.guard_refusal import SKIP_ALLOWED_CASE
+from engine.guard.errors.guard_refusal import SKIP_ALLOWED_CASE
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.model.event_form import EventForm
