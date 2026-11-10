@@ -121,7 +121,7 @@ class MessagesModule(Module):
     settings = MESSAGE_SETTINGS
     requires_core = ">=5,<6"
     block_conditions = [MessagesRead, MessagesAnswered]
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.pins", "journal.core.drivers", "journal.core.dumps", "journal.core.settings", "journal.core.schedules"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.pins", "journal.core.drivers", "journal.core.dumps", "journal.core.settings", "journal.core.schedules", "journal.core.profiles"]
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"]), ModelDeclaration(MessageWorkSource, excluded_subcommands=ALL_SUBCOMMANDS)]
     bindings = {EnvironmentActivity: MessageEnvironmentActivity}
     moves = [MessagesMove]

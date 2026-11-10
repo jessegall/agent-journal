@@ -69,6 +69,7 @@ BULK_SEEDS = "core/base/seed/demo.py"
 READ_HELPERS = ("core/base/database/database.py", "core/base/database/bookkeeping_table.py", "unittest/mock.py", "<string>")
 WATCH_FILES = ("core/base/database/repeated_work.py", "core/base/database/collecting_repeated_work.py", *READ_HELPERS)
 ALLOWED_FILE_READS = {
+    "core/base/module/source_hash.py": "A test run hashes each source file once per process for the code fingerprint, in whichever request asks first.",
     "core/modules/plugins/support/journal_instruction_file.py": "The check for doubled imports reads the same instruction files in the journal's start round.",
     "core/modules/plugins/support/plugin_code_diff.py": "An upgrade preview compares every file of a plugin, its manifest among them.",
     "core/modules/claude_code/providers/support/claude_trust.py": "A helper's start marks its parent's folder trusted and its launch marks its own start folder, each against the file as it is then.",
@@ -94,6 +95,7 @@ class RepeatedWork(PointTally):
         self.allowed_scans: dict[Statement, str] = {}
         self.file_reads: Counter[str] = Counter()
         self.file_versions: dict[str, int] = {}
+        self.file_read_origins: dict[str, list[traceback.FrameSummary]] = {}
         self.read_mark: tuple[int, int, int] | None = None
         self.started_mark: tuple[int, int, int] | None = None
 
@@ -250,8 +252,11 @@ class RepeatedWork(PointTally):
             self.file_reads.pop(path, None)
         self.file_versions[path] = version
         self.file_reads[path] += 1
+        if self.file_reads[path] == 1:
+            self.file_read_origins[path] = self.caller_frames()
         if self.file_reads[path] == 2:
-            self.findings.append(self.build_finding("file", path, f"one request read file twice: {path}"))
+            first_read = self.shown_calls(self.file_read_origins[path])
+            self.findings.append(self.build_finding("file", path, f"one request read file twice: {path}\nfirst read: {first_read}\nrepeated read:"))
 
     @staticmethod
     def file_version(path: str) -> int:

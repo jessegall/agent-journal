@@ -65,6 +65,10 @@ SKILLS_KEYS = [WindowKey("catalogue", "skill list", events=["setting.*"]),
     WindowKey("agent-skill.*", "agent-skill show {id}", loading=KeyLoading.REQUESTED),
     WindowKey("trial", "trigger try", arguments=["phrases", "sentence", "match-mode"], loading=KeyLoading.REQUESTED)]
 
+from core.modules.skills.commands.profile_skills.profile_skills_subcommand import ProfileSkillsSubcommand
+from core.modules.skills.commands.save_profile.save_profile_handler import SaveProfileHandler
+from core.modules.skills.commands.save_profile.save_profile_subcommand import SaveProfileSubcommand
+
 class SkillsModule(Module):
     """Publishes skills and tracks what each agent must read."""
 
@@ -74,13 +78,13 @@ class SkillsModule(Module):
     requires_core = ">=5,<6"
     block_conditions = [SkillsRead, SkillLoaded]
     settings = SKILL_SETTINGS
-    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.chat", "journal.core.processes", "journal.core.environments"]
+    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.chat", "journal.core.processes", "journal.core.environments", "journal.core.profiles"]
     skills = [SkillDeclaration("journal", "Find your way in the journal: what it is, its basic ideas and which skill to load for what; read it before your first command of every session, with the etiquette skill"),
               SkillDeclaration("journal-etiquette", "Behave in the chat with the user and keep the journal's own mechanics out of it; read it before your first reply of every session, with the journal skill")]
     models = [ModelDeclaration(AgentSkill, commands=[LoadAgentSkill]), ModelDeclaration(SkillRequest, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [SkillSessionMigration, SkillsTablesMigration, SkillRequestsTableMigration]
-    subcommands = [SetRequiredSkillSubcommand, SkillRequirementsSubcommand, SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand, SkillRequiredSubcommand]
-    handlers = [SetRequiredSkillHandler, RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler, RequestSkillHandler]
+    subcommands = [SaveProfileSubcommand, ProfileSkillsSubcommand, SetRequiredSkillSubcommand, SkillRequirementsSubcommand, SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand, SkillRequiredSubcommand]
+    handlers = [SaveProfileHandler, SetRequiredSkillHandler, RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler, RequestSkillHandler]
     listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CommandSkillListener, KeptSkillsListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener, SkillRequestSaveListener]
     marks = SKILL_MARKS
     driver_rules = [SkillReadFirstRule, ProfileSkillFirstRule, UnreadSkillStopRule, CommandSkillRule]
