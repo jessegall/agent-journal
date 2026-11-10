@@ -42,3 +42,42 @@ class DepotScoutSuite(Suite):
     name = "depot"
     modules = [DepotModule]
     helper_types = [HelperType("scout", "Depot scout")]
+
+
+class YardModule(Module):
+    name = "folder.yard"
+    requires_core = ">=5,<6"
+
+
+class YardSuite(Suite):
+    """A sample suite with its own module alone."""
+
+    name = "yard"
+    modules = [YardModule]
+
+
+class BundleModule(Module):
+    name = "folder.bundle"
+    requires_core = ">=5,<6"
+    dependencies = ["folder.shop", "folder.yard"]
+
+
+class BundleSuite(Suite):
+    """A sample bundle: a suite that requires two other suites."""
+
+    name = "bundle"
+    requires = ["shop", "yard"]
+    modules = [BundleModule]
+
+
+class LoneBundleModule(Module):
+    name = "folder.lone-bundle"
+    requires_core = ">=5,<6"
+
+
+class LoneBundleSuite(Suite):
+    """A sample bundle whose required suites are not installed."""
+
+    name = "lone-bundle"
+    requires = ["shop", "yard"]
+    modules = [LoneBundleModule]
