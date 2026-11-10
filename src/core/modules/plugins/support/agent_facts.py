@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.checkout import Checkout
+from engine.checkout.checkout import Checkout
 
 
 @dataclass(frozen=True)

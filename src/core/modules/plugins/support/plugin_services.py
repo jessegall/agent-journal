@@ -4,11 +4,11 @@ import time
 from datetime import timedelta
 from pathlib import Path
 
-from core.base.adopted_process import AdoptedProcess
-from core.base.child_process import ChildProcess
+from engine.process.adopted_process import AdoptedProcess
+from engine.process.child_process import ChildProcess
 from engine.time.clock import Clock
-from core.base.leftover_process import LeftoverProcess
-from core.base.plugin_script_processes import PluginScriptProcesses
+from engine.process.leftover_process import LeftoverProcess
+from engine.process.plugin_script_processes import PluginScriptProcesses
 from engine.log.system_log_writer import SystemLogWriter
 from engine.enums.log_level import LogLevel
 from core.modules.plugins.models.enums.service_restart import ServiceRestart

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.caller.caller import Caller
-from core.base.checkout import Checkout
+from engine.checkout.checkout import Checkout
 from engine.errors.refusal import Refusal
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.subcommand.output import Output

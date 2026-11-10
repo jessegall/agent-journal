@@ -8,12 +8,12 @@ import subprocess
 from collections.abc import Callable, Mapping
 
 from core.base.agent_checkouts import AgentCheckouts
-from core.base.checkout import Checkout
+from engine.checkout.checkout import Checkout
 from core.base.driver.command_category import CommandCategory
 from core.base.change.event_log import HIDDEN
 from engine.journal.journal_home import JournalHome
 from core.base.model.event_form import EventForm
-from core.base.plugin_script_processes import PluginScriptProcesses
+from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.scope.scopes import Scopes
 from engine.enums.script_stop import ScriptStop

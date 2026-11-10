@@ -2,7 +2,7 @@ import os
 import subprocess
 import select
 
-from core.base.child_process import ChildProcess
+from engine.process.child_process import ChildProcess
 
 LIMIT_SECONDS = 5
 EXITING_LEADER_SCRIPT = "python3 -c 'import signal; signal.pause()' & echo $!"

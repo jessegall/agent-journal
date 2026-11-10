@@ -4,13 +4,13 @@ import subprocess
 from datetime import timedelta
 
 from server.booting_work import BootingWork
-from core.base.leftover_process import LeftoverProcess
+from engine.process.leftover_process import LeftoverProcess
 from core.base.cli.caller_stream import CallerStream
 from core.base.command.bus import Bus
 from engine.container.journal_container import synced_container
 from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
-from core.base.plugin_script_processes import PluginScriptProcesses
+from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATED, NOTES, EventNote, ManyNotes

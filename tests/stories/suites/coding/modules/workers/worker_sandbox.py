@@ -3,7 +3,7 @@ import shlex
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
-from core.base.shell_sandbox import ShellSandbox
+from engine.sandbox.shell_sandbox import ShellSandbox
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.testing.story import Story

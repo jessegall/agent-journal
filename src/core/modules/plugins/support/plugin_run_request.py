@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from core.base.checkout import Checkout
+from engine.checkout.checkout import Checkout
 from core.base.model.event_form import EventForm
 from engine.time.timestamp import Timestamp
 from core.modules.plugins.support.agent_facts import AgentFacts

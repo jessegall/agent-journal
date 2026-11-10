@@ -5,7 +5,7 @@ from install.server_wont_stop_error import ServerWontStopError
 from engine.connection.unix_connection import UnixConnection
 from core.base.serving.server_limits import DRAIN_LIMIT_SECONDS
 from core.base.serving.server_files import ServerFiles
-from core.base.leftover_process import POLL_SECONDS
+from engine.process.leftover_process import POLL_SECONDS
 
 SERVER_ABSENT = "no server running"
 STOPPED = "the server stopped"

@@ -46,7 +46,7 @@ from server.hook.hook_database import HookDatabase
 from server.request_log import SETTINGS_REFRESH_SECONDS
 from server.journal_round import JournalRound
 from server.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
-from core.base.plugin_script_processes import PluginScriptProcesses
+from engine.process.plugin_script_processes import PluginScriptProcesses
 from server.ordinary_listener_work import OrdinaryListenerWork
 from server.plugin_listener_work import PluginListenerWork
 from server.program_stop_listener_work import ProgramStopListenerWork

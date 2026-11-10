@@ -1,11 +1,11 @@
 from functools import cache
 from threading import RLock
 
-from core.base.adopted_process import AdoptedProcess
-from core.base.child_process import ChildProcess
+from engine.process.adopted_process import AdoptedProcess
+from engine.process.child_process import ChildProcess
 from engine.journal.journal_home import JournalHome
 from engine.time.timestamp import Timestamp
-from core.base.leftover_process import STOP_LIMIT_SECONDS
+from engine.process.leftover_process import STOP_LIMIT_SECONDS
 from core.modules.plugins.support.service_retries import ServiceRetries
 
 

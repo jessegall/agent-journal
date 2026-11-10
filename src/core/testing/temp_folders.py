@@ -5,7 +5,7 @@ import tempfile
 import time
 from pathlib import Path
 
-from core.base.process_ids import ProcessIds
+from engine.process.process_ids import ProcessIds
 from core.testing.folder_stat import FolderStat
 
 USER_FOLDER_LIMIT_BYTES = 2 * 1024 ** 3

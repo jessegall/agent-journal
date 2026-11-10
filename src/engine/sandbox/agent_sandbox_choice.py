@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from core.base.sandboxed_agent import SandboxedAgent
+from engine.sandbox.sandboxed_agent import SandboxedAgent
 
 
 class AgentSandboxChoice:

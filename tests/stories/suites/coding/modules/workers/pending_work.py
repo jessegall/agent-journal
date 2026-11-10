@@ -5,7 +5,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.shell_sandbox import ShellSandbox
+from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from core.modules.agents.support.launch_answer import LaunchAnswer

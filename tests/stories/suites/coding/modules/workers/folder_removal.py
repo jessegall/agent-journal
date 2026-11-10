@@ -6,7 +6,7 @@ import pytest
 
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
-from core.base.leftover_process import LeftoverProcess
+from engine.process.leftover_process import LeftoverProcess
 from core.modules.agents.commands.record_agent_process.record_agent_process import RecordAgentProcess
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.enums.process_state import ProcessState

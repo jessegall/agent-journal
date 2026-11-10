@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 from contextlib import contextmanager
 
-from core.base.shell_sandbox import ShellSandbox
+from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.story import Story

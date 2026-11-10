@@ -1,4 +1,4 @@
-from core.base.shell_sandbox import ShellSandbox
+from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.processes.support.stock_reader import STOCK_READERS
 from core.modules.processes.support.output_folder import OutputFolder
 from datetime import timedelta

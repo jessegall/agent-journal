@@ -5,7 +5,7 @@ import sys
 import time
 from pathlib import Path
 
-from core.base.child_process import ChildProcess
+from engine.process.child_process import ChildProcess
 from engine.journal.journal_home import JournalHome
 from engine.connection.unix_connection import UnixConnection
 from core.base.serving.server_files import ServerFiles, socket_path

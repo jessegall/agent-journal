@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from core.base.leftover_process import LeftoverProcess
+from engine.process.leftover_process import LeftoverProcess
 from core.modules.plugins.plugins_module import PluginsModule
 from core.modules.plugins.support.orphan_services import OrphanServices
 from core.modules.plugins.support.plugin_folders import PluginFolders

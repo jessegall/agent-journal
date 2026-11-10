@@ -1,7 +1,7 @@
 import shutil
 from pathlib import Path
 
-from core.base.plugin_script_processes import PluginScriptProcesses
+from engine.process.plugin_script_processes import PluginScriptProcesses
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.errors.user_approval_refusal import UserApprovalRefusal

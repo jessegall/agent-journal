@@ -1,7 +1,7 @@
 import subprocess
 
 from core.base.caller.process_table import PS_ENVIRONMENT, PS_TIMEOUT_SECONDS
-from core.base.leftover_process import LeftoverProcess
+from engine.process.leftover_process import LeftoverProcess
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.plugins.support.service_processes import ServiceProcesses

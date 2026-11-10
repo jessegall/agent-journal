@@ -1,7 +1,7 @@
 from dataclasses import dataclass, replace
 
-from core.base.checkout import Checkout
-from core.base.checkout_file import CheckoutFile
+from engine.checkout.checkout import Checkout
+from engine.checkout.checkout_file import CheckoutFile
 from engine.enums.file_status import FileStatus
 
 BASE_STATUSES = (FileStatus.CHANGED, FileStatus.DELETED)

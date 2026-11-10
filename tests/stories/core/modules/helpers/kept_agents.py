@@ -3,7 +3,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
-from core.base.shell_sandbox import ShellSandbox
+from engine.sandbox.shell_sandbox import ShellSandbox
 from core.testing.story_shell_sandbox import StoryShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.testing.story_helper_programs import StoryHelperPrograms

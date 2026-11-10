@@ -1,7 +1,7 @@
 import subprocess
 import sys
 
-from core.base.leftover_process import LeftoverProcess
+from engine.process.leftover_process import LeftoverProcess
 
 
 def test_a_leftover_that_ended_while_it_was_being_stopped_raises_nothing() -> None:

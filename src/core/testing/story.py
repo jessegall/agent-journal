@@ -9,7 +9,7 @@ from uuid import uuid4
 from typing import TypeVar, cast
 from datetime import timedelta
 from engine.actor.actor import Actor
-from core.base.shell_sandbox import ShellSandbox
+from engine.sandbox.shell_sandbox import ShellSandbox
 from core.testing.story_shell_sandbox import StoryShellSandbox
 from core.base.cli.console import Console
 from core.base.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine

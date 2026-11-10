@@ -6,7 +6,7 @@ from core.base.command.bus import Bus
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.shell_sandbox import ShellSandbox
+from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 from suites.coding.modules.workers.models.merger_line import MergerLine

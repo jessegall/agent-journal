@@ -7,7 +7,7 @@ from core.base.database.database import Database
 from engine.container.journal_container import database_container
 from engine.journal.journal_home import JournalHome
 from core.base.model.event_form import EventForm
-from core.base.plugin_script_processes import PluginScriptProcesses
+from engine.process.plugin_script_processes import PluginScriptProcesses
 from engine.time.timestamp import Timestamp
 
 STARTED_AT = Timestamp.parsed("2026-11-06T09:00:00+00:00")

@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.shell_sandbox import ShellSandbox
+from engine.sandbox.shell_sandbox import ShellSandbox
 from tests.stories.core.support.fixtures import MainEnvironment
 
 

@@ -92,7 +92,7 @@ from core.base.agent_checkouts import AgentCheckouts
 from core.base.agent_write_folder import AgentWriteFolder
 from suites.coding.modules.workers.support.worker_checkouts import WorkerCheckouts
 from suites.coding.modules.workers.support.worker_write_folder import WorkerWriteFolder
-from core.base.agent_sandbox_choice import AgentSandboxChoice
+from engine.sandbox.agent_sandbox_choice import AgentSandboxChoice
 from suites.coding.modules.workers.support.worker_sandbox_choice import WorkerSandboxChoice
 from suites.coding.modules.workers.commands.switch_worker_sandbox.switch_worker_sandbox_handler import SwitchWorkerSandboxHandler
 from suites.coding.modules.workers.commands.switch_worker_sandbox.switch_worker_sandbox_subcommand import SwitchWorkerSandboxSubcommand

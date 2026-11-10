@@ -7,7 +7,7 @@ from core.base.caller.caller_resolver import CallerResolver
 from core.base.caller.process_row import ProcessRow
 from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
-from core.base.plugin_script_processes import PluginScriptProcesses
+from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.drivers.models.agent_line import AgentLine
 from engine.time.timestamp import Timestamp
 from tests.stories.core.modules.processes.support.process_samples import install_runner

@@ -4,7 +4,7 @@ from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
-from core.base.plugin_script_processes import PluginScriptProcesses
+from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.models.plugin import Plugin

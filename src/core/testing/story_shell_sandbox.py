@@ -1,4 +1,4 @@
-from core.base.shell_sandbox import ShellSandbox
+from engine.sandbox.shell_sandbox import ShellSandbox
 
 
 class StoryShellSandbox(ShellSandbox):

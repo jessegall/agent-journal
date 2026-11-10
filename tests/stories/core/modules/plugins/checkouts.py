@@ -4,7 +4,7 @@ import json
 import sys
 
 from core.base.agent_checkouts import AgentCheckouts
-from core.base.checkout import Checkout
+from engine.checkout.checkout import Checkout
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE
 from tests.stories.core.modules.plugins.support.notices import expect_plugin_notice
 from tests.stories.core.modules.plugins.support.checkout_stories import (

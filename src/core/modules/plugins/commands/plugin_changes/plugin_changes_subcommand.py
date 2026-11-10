@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.caller.caller import Caller
-from core.base.checkout_file import CheckoutFile
+from engine.checkout.checkout_file import CheckoutFile
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand

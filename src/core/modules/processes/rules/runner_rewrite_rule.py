@@ -8,10 +8,10 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.helper_type_book import HelperTypeBook
 from engine.enums.access import Access
 from core.base.agent_checkouts import AgentCheckouts
-from core.base.agent_sandbox_choice import AgentSandboxChoice
+from engine.sandbox.agent_sandbox_choice import AgentSandboxChoice
 from core.base.agent_write_folder import AgentWriteFolder
 from core.base.project_reads import ProjectReads
-from core.base.shell_sandbox import ShellSandbox
+from engine.sandbox.shell_sandbox import ShellSandbox
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory

@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.leftover_process import LeftoverProcess
+from engine.process.leftover_process import LeftoverProcess
 from core.modules.drivers.support.access_nudges import ENDED_AGENT
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples

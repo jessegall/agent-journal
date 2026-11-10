@@ -3,7 +3,7 @@ from pathlib import Path
 
 from core.base.agent_checkouts import AgentCheckouts
 from engine.enums.agent_role import AgentRole
-from core.base.checkout_file import CheckoutFile
+from engine.checkout.checkout_file import CheckoutFile
 from core.base.model.event_form import EventForm
 from core.base.command.bus import Bus
 from core.base.command.context import Context

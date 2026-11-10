@@ -14,7 +14,7 @@ from core.base.repository.repository import Repository
 from core.base.helper_type_book import HelperTypeBook
 from engine.enums.access import Access
 from engine.actor.actor import Actor
-from core.base.shell_sandbox import ShellSandbox
+from engine.sandbox.shell_sandbox import ShellSandbox
 
 
 class StartAgentHandler(Handler[StartAgent, Agent]):

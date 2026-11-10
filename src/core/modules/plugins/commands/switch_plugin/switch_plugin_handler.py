@@ -1,5 +1,5 @@
 from engine.actor.actor import Actor
-from core.base.plugin_script_processes import PluginScriptProcesses
+from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.repository.repository import Repository

@@ -8,7 +8,7 @@ import sys
 from core.base.caller.caller import Caller
 from core.base.cli.console import Console
 from core.base.query.queries import Queries
-from core.base.plugin_script_processes import PluginScriptProcesses
+from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.models.plugin_output import PluginOutput
 from core.modules.processes.models.process import Process
 from tests.stories.core.modules.plugins.event_guard import LOCK_CHECK

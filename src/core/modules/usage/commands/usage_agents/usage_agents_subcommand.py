@@ -7,7 +7,7 @@ import json
 from collections.abc import Mapping, Sequence
 from argparse import ArgumentParser, Namespace
 
-from core.base.agent_sandbox_choice import AgentSandboxChoice
+from engine.sandbox.agent_sandbox_choice import AgentSandboxChoice
 from core.base.helper_type_book import HelperTypeBook
 from core.base.caller.caller import Caller
 from engine.time.clock import Clock

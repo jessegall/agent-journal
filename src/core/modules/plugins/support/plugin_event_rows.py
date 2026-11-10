@@ -5,7 +5,7 @@ from pathlib import Path
 from engine.journal.journal_home import JournalHome
 from core.base.model.event_form import EventForm
 from core.base.registry.registry import Registry
-from core.base.plugin_script_processes import PluginScriptProcesses
+from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, ManifestListener
 from core.modules.plugins.support.plugin_event_row import PluginEventRow
 from core.modules.plugins.support.plugin_event_state import PluginEventState

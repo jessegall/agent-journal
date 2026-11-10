@@ -4,9 +4,9 @@ import subprocess
 from collections.abc import Mapping
 from pathlib import Path
 
-from core.base.child_process import ChildProcess
+from engine.process.child_process import ChildProcess
 from engine.journal.journal_home import JournalHome
-from core.base.leftover_process import LeftoverProcess
+from engine.process.leftover_process import LeftoverProcess
 from engine.errors.refusal import Refusal
 from core.base.tunnel.tunnel_state import TunnelState
 from core.base.serving.server_files import ServerFiles

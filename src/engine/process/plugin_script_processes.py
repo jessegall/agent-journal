@@ -10,9 +10,9 @@ from pathlib import Path
 from core.base.caller.process_row import ProcessRow
 from engine.journal.journal_home import JournalHome
 from core.base.file_access import FileAccess
-from core.base.leftover_process import LeftoverProcess
+from engine.process.leftover_process import LeftoverProcess
 from core.base.model.event_form import EventForm
-from core.base.plugin_script_process import PluginScriptProcess
+from engine.process.plugin_script_process import PluginScriptProcess
 from engine.script.script_skip import ScriptSkip
 from engine.enums.script_stop import ScriptStop
 from engine.time.timestamp import Timestamp

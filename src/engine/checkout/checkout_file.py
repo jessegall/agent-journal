@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from core.base.checkout import Checkout
+from engine.checkout.checkout import Checkout
 from core.base.file_state import FileState
 from engine.enums.file_status import FileStatus
 

@@ -18,7 +18,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.drivers.models.agent_line import AgentLine
-from core.base.shell_sandbox import ShellSandbox
+from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.commands.start_helper.start_helper_handler import StartHelperHandler

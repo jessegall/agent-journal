@@ -6,7 +6,7 @@ from collections.abc import Callable
 from contextlib import ExitStack
 from pathlib import Path
 
-from core.base.process_ids import ProcessIds
+from engine.process.process_ids import ProcessIds
 from core.base.file_access import FileAccess
 
 GATE_FOLDER = Path(os.environ.get("JOURNAL_HEAVY_GATE_FOLDER", Path.home() / ".cache" / "agent-journal" / "heavy-runs"))

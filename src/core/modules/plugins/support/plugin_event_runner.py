@@ -3,7 +3,7 @@ from collections.abc import Callable, Mapping
 from engine.time.clock import Clock
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
-from core.base.plugin_script_processes import PluginScriptProcesses
+from engine.process.plugin_script_processes import PluginScriptProcesses
 from engine.time.timestamp import Timestamp
 from core.base.command.bus import Bus
 from core.base.command.command import Command

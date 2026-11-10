@@ -16,9 +16,6 @@
                 "testCode": true
             },
             {
-                "file": "src/core/base/adopted_process.py"
-            },
-            {
                 "file": "src/core/base/agent_brief_points.py"
             },
             {
@@ -40,22 +37,10 @@
                 "file": "src/core/base/agent_roster.py"
             },
             {
-                "file": "src/core/base/agent_sandbox_choice.py"
-            },
-            {
                 "file": "src/core/base/agent_work.py"
             },
             {
                 "file": "src/core/base/agent_write_folder.py"
-            },
-            {
-                "file": "src/core/base/checkout.py"
-            },
-            {
-                "file": "src/core/base/checkout_file.py"
-            },
-            {
-                "file": "src/core/base/child_process.py"
             },
             {
                 "file": "src/core/base/code_copy.py"
@@ -100,31 +85,13 @@
                 "file": "src/core/base/kept_file_text.py"
             },
             {
-                "file": "src/core/base/leftover_process.py"
-            },
-            {
-                "file": "src/core/base/plugin_script_process.py"
-            },
-            {
-                "file": "src/core/base/plugin_script_processes.py"
-            },
-            {
-                "file": "src/core/base/process_ids.py"
-            },
-            {
                 "file": "src/core/base/project_reads.py"
             },
             {
                 "file": "src/core/base/rotated_file.py"
             },
             {
-                "file": "src/core/base/sandboxed_agent.py"
-            },
-            {
                 "file": "src/core/base/server_restart_state.py"
-            },
-            {
-                "file": "src/core/base/shell_sandbox.py"
             }
         ]
     },

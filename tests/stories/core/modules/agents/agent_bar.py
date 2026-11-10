@@ -9,7 +9,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.database.database import Database
-from core.base.leftover_process import LeftoverProcess
+from engine.process.leftover_process import LeftoverProcess
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from tests.stories.core.support.fixtures import UserJoined
 from core.testing.fake_launcher import FakeLauncher

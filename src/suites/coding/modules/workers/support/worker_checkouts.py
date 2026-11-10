@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from core.modules.environments.support.environment_rows import EnvironmentRows
-from core.base.checkout import Checkout
-from core.base.checkout_file import CheckoutFile
+from engine.checkout.checkout import Checkout
+from engine.checkout.checkout_file import CheckoutFile
 from core.base.file_state import FileState
 from engine.enums.file_status import FileStatus
 from engine.errors.missing_file_refusal import MissingFileRefusal

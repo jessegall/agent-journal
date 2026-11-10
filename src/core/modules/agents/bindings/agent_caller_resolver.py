@@ -11,7 +11,7 @@ from core.base.cli.usage_error import UsageError
 from core.base.provider.providers import Providers
 from core.base.query.conditions.among import Among
 from core.base.command.script_policy import ScriptPolicy
-from core.base.plugin_script_processes import PluginScriptProcesses
+from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.base.caller.caller import Caller
 from core.modules.actors.queries.actor_query import ActorQuery
 from core.modules.agents.models.agent import Agent

@@ -5,7 +5,7 @@ import pytest
 
 from core.base.caller.process_row import ProcessRow
 from engine.journal.journal_home import LAUNCHER_SOCKET
-from core.base.leftover_process import LeftoverProcess
+from engine.process.leftover_process import LeftoverProcess
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard

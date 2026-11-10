@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 
-from core.base.agent_sandbox_choice import AgentSandboxChoice
+from engine.sandbox.agent_sandbox_choice import AgentSandboxChoice
 
-from core.base.sandboxed_agent import SandboxedAgent
+from engine.sandbox.sandboxed_agent import SandboxedAgent
 from core.base.helper_type_book import HelperTypeBook
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.settings.bindings.support.setting_values import SettingValues

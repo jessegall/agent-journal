@@ -6,7 +6,7 @@ from core.base.caller.caller import Caller
 from core.base.caller.caller_request import CallerRequest
 from core.base.cli.alias_options import AliasOptions
 from core.base.cli.shell_aliases import ShellAliases
-from core.base.checkout import Checkout
+from engine.checkout.checkout import Checkout
 from engine.enums.checkout_type import CheckoutType
 from core.base.cli.shell_run import ShellRun
 from engine.journal.journal_home import JournalHome

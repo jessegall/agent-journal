@@ -1,4 +1,4 @@
-from core.base.leftover_process import LeftoverProcess
+from engine.process.leftover_process import LeftoverProcess
 
 
 class AdoptedProcess:
