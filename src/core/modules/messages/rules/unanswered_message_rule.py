@@ -22,7 +22,8 @@ class UnansweredMessageRule(DriverRule):
     """A message an agent has read and not answered, whoever sent it but the journal, is named before each tool call,
     and after ten calls tool calls wait for the answer; a journal message line and the task a message asks for always go through,
     since they are the answer; a prompt typed in the terminal is answered in the terminal. Only messages read since
-    the agent's session began or since its last message wait on it: earlier agents handled the older ones."""
+    the agent's session began or since its last message wait on it: earlier agents handled the older ones. A
+    message from an agent that has ended waits on no reply."""
 
     name = "messages.unanswered"
     hook = HookEventName.PRE_TOOL_USE
@@ -47,10 +48,15 @@ class UnansweredMessageRule(DriverRule):
         session_start = self.queries.query(Agent).find(agent_id).creation_timestamp().text
         waiting_since = max(session_start, newest_agent_message.creation_timestamp().text) if newest_agent_message is not None else session_start
         read_people = self.read_since(agent_id, PERSON_MESSAGE_TYPES, waiting_since)
-        read_agents = (message for message in self.read_since(agent_id, (MessageType.AGENT,), session_start) if message.creator_id != agent_id)
+        read_agents = self.from_running_agents(tuple(message for message in self.read_since(agent_id, (MessageType.AGENT,), session_start) if message.creator_id != agent_id))
         candidates = tuple(sorted((*read_people, *read_agents), key=lambda message: message.id))
         answered = self.replies.answered_ids(agent_id, candidates)
         return tuple(message for message in candidates if message.id not in answered)
+
+    def from_running_agents(self, messages: tuple[Message, ...]) -> tuple[Message, ...]:
+        writers = self.queries.query(Agent).find_many(list(dict.fromkeys(message.creator_id for message in messages)))
+        running_ids = {writer.id for writer in writers if writer.ended_at is None and writer.retired_at is None}
+        return tuple(message for message in messages if message.creator_id in running_ids)
 
     def read_since(self, agent_id: int, types: tuple[MessageType, ...], since: str) -> tuple[Message, ...]:
         return tuple(self.messages.addressed(agent_id).filter(peer_key="").matching(Among("type", types)).matching(Greater("read_at", since)).all_rows())
