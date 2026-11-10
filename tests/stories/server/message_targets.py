@@ -69,6 +69,14 @@ def targeted_chat(new_story, monkeypatch):
         yield server, cookie, typing
 
 
+def end_turn(story, agent):
+    row = story.row(Agent, agent.id)
+    if row.role == "worker":
+        story.expect_success(f"agent interrupted {agent.id}")
+        return
+    story.expect_hook_allowed(row.session, HookSamples.stop())
+
+
 def post_target(server, cookie, target, text):
     return server.viewer_line_value(cookie, {"window": "agents.transcript", "environment": "main", "line": ["message", "send", text, "--target-agent", str(agent_number(server.story, target.id))]})
 
@@ -78,7 +86,7 @@ def test_a_message_wakes_its_idle_target(targeted_chat, role):
     server, cookie, typing = targeted_chat
     story = server.story
     target = getattr(story, role)
-    story.hook(story.row(Agent, target.id).session, HookSamples.stop())
+    end_turn(story, target)
     story.advance(timedelta(seconds=31))
     message = post_target(server, cookie, target, f"Continue the {role} job")
     story.run_listeners()
@@ -151,7 +159,7 @@ def test_a_read_message_edit_wakes_the_same_worker(targeted_chat):
     post_target(server, cookie, story.worker, "Worker text before editing")
     story.run("message read 1", actor=story.worker)
     story.hook(story.worker_session, READ_MESSAGE_HOOK)
-    story.hook(story.worker_session, HookSamples.stop())
+    end_turn(story, story.worker)
     story.advance(timedelta(seconds=31))
     server.viewer_line_value(cookie, {"window": "messages.chat", "environment": "main", "line": ["message", "edit", "1", "--text", "Worker text after editing"]})
     story.run_listeners()

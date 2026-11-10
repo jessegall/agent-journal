@@ -3,7 +3,7 @@ from datetime import timedelta
 from engine.command.bus import Bus
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.modules.processes.support.process_samples import end_run, moved_run, start_process
+from tests.stories.core.modules.processes.support.process_samples import end_run, monitor, moved_run, start_process
 from tests.stories.core.modules.tasks.task_waits import kept_typing
 from tests.stories.core.modules.approvals.approvals import CHANGE_SETTING
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
@@ -73,6 +73,7 @@ def test_an_agent_stopped_while_a_run_it_moved_to_the_background_ends_is_woken_w
         story = new_story(fixture=BuilderStarted)
         entered = kept_typing(story)
         process = moved_run(story, "make build")
+        story.hook("s-1", monitor(f"journal output monitor {process.id}"))
         story.hook("s-1", HookSamples.stop().with_fields(accepts_lines=False))
         story.advance(timedelta(seconds=IDLE_SECONDS))
         story.expect_rows(entered == [])
