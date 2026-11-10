@@ -28,7 +28,7 @@ class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, Model | 
         agent = self.agents.find(command.agent_id) if command.agent_id is not None else self.agents.main_agent()
         if agent is not None and agent.ended_at is not None:
             return None
-        if agent is None or not self.hook_calls.is_idle(agent.id, context.timestamp):
+        if agent is None or not self.hook_calls.is_between_turns(agent.id):
             return None
         message = self.lines.waking_message(agent.id)
         if message is None:

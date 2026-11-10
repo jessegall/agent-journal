@@ -114,6 +114,7 @@ def test_a_new_message_is_typed_to_an_idle_agent_though_an_older_one_was_told_an
     post_message(story, "Are you there")
     story.advance(timedelta(seconds=1))
     story.hook("s-1", HookSamples.prompt("[journal] new message 1"))
+    story.hook("s-1", tool_failure(True))
     story.advance(timedelta(minutes=10))
     post_message(story, "Hello")
     story.run_listeners()
@@ -135,23 +136,22 @@ def test_a_fresh_session_that_has_not_been_given_a_prompt_is_idle_too(new_story)
     expect_terminal_lines(typing, ["[journal] new message 1"])
 
 
-def test_a_message_to_an_agent_with_no_hook_for_half_a_minute_is_typed_since_an_interrupted_turn_sends_no_stop(delivery_typing):
+def test_a_message_to_an_agent_with_no_hook_for_half_a_minute_is_not_typed_since_it_is_in_a_turn(delivery_typing):
     story, typing = delivery_typing
     story.hook("s-1", HookSamples.edit("cart.py"))
     story.advance(timedelta(seconds=31))
     post_message(story, "Are you there")
-    expect_terminal_lines(typing, ["[journal] new message 1"])
+    expect_row(typing, typed=[])
 
 
-def test_a_message_sent_just_after_an_interrupted_turn_is_typed_at_the_next_tick(delivery_typing):
+def test_a_message_sent_after_a_turn_that_is_silent_is_not_typed_at_a_later_tick_either(delivery_typing):
     story, typing = delivery_typing
     story.hook("s-1", HookSamples.edit("cart.py"))
     post_message(story, "Are you there")
-    expect_row(typing, typed=[])
     story.advance(timedelta(seconds=61))
     story.tick("s-1")
     story.run_listeners()
-    expect_terminal_lines(typing, ["[journal] new message 1"])
+    expect_row(typing, typed=[])
 
 
 def tool_failure(interrupted: bool):

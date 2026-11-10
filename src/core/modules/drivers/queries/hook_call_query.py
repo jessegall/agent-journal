@@ -112,8 +112,12 @@ class HookCallQuery(Query[HookCall]):
         call = self.latest_turn_call(agent_id)
         if call is None:
             return False
-        is_silent = call.creation_timestamp().elapsed_seconds(checked_at) >= IDLE_LIMIT_SECONDS
-        return is_silent or (call.hook in IDLE_HOOKS and call.answer == HookAnswer.ALLOWED and not call.is_compaction_start) or call.is_interrupted
+        return call.creation_timestamp().elapsed_seconds(checked_at) >= IDLE_LIMIT_SECONDS or self.is_between_turns(agent_id)
+
+    def is_between_turns(self, agent_id: int) -> bool:
+        """The agent's last turn hook ended its turn or it was interrupted; an agent in a turn is never between turns, however long it is silent."""
+        call = self.latest_turn_call(agent_id)
+        return call is not None and ((call.hook in IDLE_HOOKS and call.answer == HookAnswer.ALLOWED and not call.is_compaction_start) or call.is_interrupted)
 
     def is_compacting(self, agent_id: int, checked_at: Timestamp) -> bool:
         call = self.kept.read_newest(self.table.name, self.agent(agent_id).matching(Among("hook", (*TURN_HOOKS, HookEventName.COMPACT))).newest().first,
