@@ -12,7 +12,7 @@ def test_527_a_suite_that_lists_its_modules_loads_them_with_it(new_story):
     story.expect_sync_success(f"{SAMPLES}:ShopSuite")
     registry = Registry.read(story.container.get(Database))
     shop = registry.suite("shop")
-    story.expect_rows(shop is not None and shop.module == "folder.shop", registry.module_suites["folder.shop"] == ("shop",), registry.module_suites["folder.carts"] == ("shop",),
+    story.expect_rows(shop is not None and shop.module == "folder.shop", registry.module_suites["folder.shop"] == tuple(["shop"]), registry.module_suites["folder.carts"] == tuple(["shop"]),
                       detail=str(registry.module_suites.get("folder.carts")))
 
 
@@ -37,7 +37,7 @@ def test_530_a_module_belongs_to_the_one_suite_that_lists_it_so_an_environment_o
     story = new_story(fixture=MainEnvironment)
     story.expect_sync_success(f"{SAMPLES}:ShopSuite")
     suites_by_module = Registry.read(story.container.get(Database)).module_suites
-    coding = sorted(name for name, suites in suites_by_module.items() if suites == ("coding",))
+    coding = sorted(name for name, suites in suites_by_module.items() if suites == tuple(["coding"]))
     story.expect_rows(coding == ["journal.suites.coding", "journal.suites.coding.checks", "journal.suites.coding.workers"], detail=str(coding))
     story.expect_rows("shop" not in [suite for name in coding for suite in suites_by_module[name]], suites_by_module["journal.core.tasks"] == (), detail="a core module is part of a suite")
 

@@ -12,11 +12,11 @@ from suites.coding.modules.workers.workers_module import WorkersModule
 
 
 def module(name: str, python_module: str = "samples.sample_module") -> type[Module]:
-    return type("SampleModule", (Module,), {"name": name, "requires_core": ">=5,<6", "__module__": python_module})
+    return type("SampleModule", tuple([Module]), {"name": name, "requires_core": ">=5,<6", "__module__": python_module})
 
 
 def suite(name: str, *modules: type[Module], helper_types: tuple[HelperType, ...] = ()) -> type[Suite]:
-    return type("SampleSuite", (Suite,), {"name": name, "modules": list(modules), "helper_types": list(helper_types)})
+    return type("SampleSuite", tuple([Suite]), {"name": name, "modules": list(modules), "helper_types": list(helper_types)})
 
 
 def test_the_first_module_a_suite_lists_ships_it_and_the_others_are_part_of_it():
@@ -24,7 +24,7 @@ def test_the_first_module_a_suite_lists_ships_it_and_the_others_are_part_of_it()
     suites = SuiteList([suite("shop", shop, carts)])
     assert [listed.name for listed in suites.shipped_suites(shop)] == ["shop"] and suites.shipped_suites(carts) == []
     assert suites.parent_name(carts) == "shop" and suites.parent_name(shop) is None
-    assert suites.suite_names(shop) == ("shop",) and suites.suite_names(carts) == ("shop",) and suites.problems() == ()
+    assert suites.suite_names(shop) == tuple(["shop"]) and suites.suite_names(carts) == tuple(["shop"]) and suites.problems() == ()
 
 
 def test_a_module_no_suite_lists_is_part_of_no_suite():
@@ -34,20 +34,20 @@ def test_a_module_no_suite_lists_is_part_of_no_suite():
 def test_a_module_listed_by_two_suites_is_refused_naming_both():
     carts = module("carts")
     problems = SuiteList([suite("shop", module("shop"), carts), suite("depot", module("depot"), carts)]).problems()
-    assert problems == ("module carts is listed by suite shop and suite depot: one suite lists a module",)
+    assert problems == tuple(["module carts is listed by suite shop and suite depot: one suite lists a module"])
 
 
 def test_a_core_module_listed_by_a_suite_is_refused():
     tasks = module("journal.core.tasks", "core.modules.tasks.tasks_module")
     problems = SuiteList([suite("shop", module("shop"), tasks)]).problems()
-    assert problems == ("suite shop lists core module journal.core.tasks: the core is always loaded, a suite lists its own modules",)
+    assert problems == tuple(["suite shop lists core module journal.core.tasks: the core is always loaded, a suite lists its own modules"])
 
 
 def test_a_listed_module_that_also_names_its_suite_itself_is_refused():
     carts = module("carts")
     carts.parent_suite = "shop"
     problems = SuiteList([suite("shop", module("shop"), carts)]).problems()
-    assert problems == ("module carts is listed by a suite and also names its suite itself: the list of the suite is the one place",)
+    assert problems == tuple(["module carts is listed by a suite and also names its suite itself: the list of the suite is the one place"])
 
 
 def test_the_helper_types_of_a_suite_are_those_of_the_module_that_ships_it():
