@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -17,7 +18,7 @@ class ReleaseWorkerSubcommand(Subcommand[ReleaseWorker, ReleaseOutcome]):
     outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("worker_id", type=int)
+        parser.add_argument("worker_id", type=AgentNumber)
         parser.add_argument("reason", nargs="?", default="")
         parser.add_argument("--reason", dest="reason_flag", default="", help="the reason, written as a flag so a button can fill it")
 

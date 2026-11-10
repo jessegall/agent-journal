@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from engine.command.command import Command
 from suites.coding.modules.workers.support.worker_command_request import WorkerCommandRequest
 from argparse import ArgumentParser, Namespace
@@ -41,7 +42,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         WorkerCommandRequest.arguments(parser)
-        parser.add_argument("worker_id", type=int)
+        parser.add_argument("worker_id", type=AgentNumber)
         parser.add_argument("job", nargs="?", default="")
         parser.add_argument("--job", dest="job_flag", default="", help="the job, written as a flag so a button can fill it")
         parser.add_argument("--task", type=int, nargs="+", default=[], help="tasks the worker takes next")
@@ -67,7 +68,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
                                         WorkerRouteRequest(worker.program, caller.actor.type, self.flags.skipped_guards(arguments)))
         job = arguments.job or arguments.job_flag
         command = SendWorker(arguments.worker_id, job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy), not arguments.no_sandbox, commands)
-        argv = ["worker", "send", str(arguments.worker_id), job]
+        argv = ["worker", "send", str(arguments.worker_id.number), job]
         if arguments.plan is not None:
             argv.extend(("--plan", str(arguments.plan)))
             if arguments.phase is not None:

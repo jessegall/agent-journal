@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -20,7 +21,7 @@ class MergeNextWorkerSubcommand(Subcommand[MergeNextWorker, MergeOutcome]):
         self.settings = settings
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("worker_id", type=int)
+        parser.add_argument("worker_id", type=AgentNumber)
         parser.add_argument("--read-important", default="")
 
     def command(self, arguments: Namespace, caller: Caller) -> MergeNextWorker:

@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -12,7 +13,7 @@ class RecoverWorkerLibrariesSubcommand(Subcommand[RecoverWorkerLibraries, str]):
     name = "repair"
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("worker_id", type=int)
+        parser.add_argument("worker_id", type=AgentNumber)
 
     def command(self, arguments: Namespace, caller: Caller) -> RecoverWorkerLibraries:
         return RecoverWorkerLibraries(arguments.worker_id)

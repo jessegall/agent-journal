@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from engine.command.command import Command
 from suites.coding.modules.workers.support.worker_command_request import WorkerCommandRequest
 from argparse import ArgumentParser, Namespace
@@ -23,7 +24,7 @@ class MergeWorkerSubcommand(Subcommand[Command[object], MergeOutcome]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         WorkerCommandRequest.arguments(parser)
-        parser.add_argument("worker_id", type=int)
+        parser.add_argument("worker_id", type=AgentNumber)
         parser.add_argument("--read-important", default="", help="what you make of the worker's important log lines")
         parser.add_argument("--reconcile", default="", help="what you checked of a required command that ended uncertain")
         parser.add_argument("--up-to", default="", help="a task number or a commit: take in the worker's checked work up to it while the worker goes on")
@@ -34,7 +35,7 @@ class MergeWorkerSubcommand(Subcommand[Command[object], MergeOutcome]):
 
     def command(self, arguments: Namespace, caller: Caller) -> Command[object]:
         if arguments.up_to:
-            return self.requests.command(MergeFinishedTasks(arguments.worker_id, arguments.up_to), arguments.worker_id, ["worker", "merge", str(arguments.worker_id), "--up-to", arguments.up_to], arguments, caller)
+            return self.requests.command(MergeFinishedTasks(arguments.worker_id, arguments.up_to), arguments.worker_id, ["worker", "merge", str(arguments.worker_id.number), "--up-to", arguments.up_to], arguments, caller)
         worktree = self.worktrees.worker_worktree(arguments.worker_id)
         if worktree is not None:
             self.step_check.check(worktree, MERGE_EVENTS, "the worker puts it right: journal worker send it the reason, then merge again")

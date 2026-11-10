@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -15,7 +16,7 @@ class SwitchWorkerSandboxSubcommand(Subcommand[SwitchWorkerSandbox, Agent]):
     name = "sandbox"
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("worker_id", type=int)
+        parser.add_argument("worker_id", type=AgentNumber)
         parser.add_argument("choice", choices=sorted(SANDBOX_CHOICES))
 
     def command(self, arguments: Namespace, caller: Caller) -> SwitchWorkerSandbox:

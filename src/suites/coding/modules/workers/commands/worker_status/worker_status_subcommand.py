@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.enums.actor_type import ActorType
@@ -34,7 +35,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
         self.unread_skills, self.files, self.phases, self.resume = unread_skills, files, phases, resume
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("worker_id", type=int, nargs="?")
+        parser.add_argument("worker_id", type=AgentNumber, nargs="?")
         parser.add_argument("--page", type=int, default=1)
         parser.add_argument("--limit", type=int, default=25)
 
@@ -63,7 +64,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
             super().write_output(value, output)
             return
         phase_lines = () if value.phase is None else (f"Current phase: phase {value.phase.phase.id} ({value.phase.phase.title})", f"Tasks waiting for its end: {value.phase.tasks_waiting}")
-        pause_lines = (f"Paused: it takes no job until journal agent resume {value.worker_id}",) if value.is_paused else ()
+        pause_lines = [f"Paused: it takes no job until journal agent resume {value.worker_id}"] if value.is_paused else []
         lines = [value.point.line, f"Point: {value.point.step}", f"Tasks left in the group: {value.point.open_task_count}", f"Own test runs left: {value.runs_text}", f"Worker: {value.worker_id}", *pause_lines, f"Current task: {value.current_task.id} ({value.current_task.state}) {value.current_task.title}", *phase_lines,
                  f"Tests waiting: {value.tests.total}", *(f"  proof {proof.id} ({proof.state}): {proof.test_command}" for proof in value.tests.rows),
                  f"Assignments remaining: {value.assignments.total}", *(f"  task {task.id} ({task.state}): {task.title}" for task in value.assignments.rows),

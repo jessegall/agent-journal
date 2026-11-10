@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -12,7 +13,7 @@ class CheckWorkerFilesSubcommand(Subcommand[CheckWorkerFiles, str]):
     name = "scope"
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("worker_id", type=int)
+        parser.add_argument("worker_id", type=AgentNumber)
 
     def command(self, arguments: Namespace, caller: Caller) -> CheckWorkerFiles:
         return CheckWorkerFiles(arguments.worker_id)

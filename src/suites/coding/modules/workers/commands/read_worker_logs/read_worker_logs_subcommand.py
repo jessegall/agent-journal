@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -10,7 +11,7 @@ class ReadWorkerLogsSubcommand(Subcommand[ReadWorkerLogs, str]):
     name = "logs"
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("worker_id", type=int)
+        parser.add_argument("worker_id", type=AgentNumber)
         parser.add_argument("--task", type=int, help="print this task's lines whole")
 
     def command(self, arguments: Namespace, caller: Caller) -> ReadWorkerLogs:
