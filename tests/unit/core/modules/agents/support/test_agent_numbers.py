@@ -16,7 +16,7 @@ class FakeAgentQuery:
         return self
 
     def filter(self, number: int) -> "FakeAgentQuery":
-        return FakeAgentQuery([taken for taken in self.numbers if taken == number])
+        return FakeAgentQuery([used for used in self.numbers if used == number])
 
     def exists(self) -> bool:
         return bool(self.numbers)
@@ -34,11 +34,11 @@ class FakeScopes:
         yield
 
 
-def agent_numbers(taken: list[int]) -> AgentNumbers:
-    return AgentNumbers(SimpleNamespace(query=lambda model: FakeAgentQuery(taken)), FakeScopes())
+def agent_numbers(used: list[int]) -> AgentNumbers:
+    return AgentNumbers(SimpleNamespace(query=lambda model: FakeAgentQuery(used)), FakeScopes())
 
 
-@pytest.mark.parametrize(("taken", "role", "expected"), [
+@pytest.mark.parametrize(("used", "role", "expected"), [
     ([], "main", 1),
     ([], "worker", 2),
     ([2, 3], "main", 1),
@@ -46,5 +46,5 @@ def agent_numbers(taken: list[int]) -> AgentNumbers:
     ([1, 2, 7], "worker", 8),
     ([1], "helper", 2),
 ])
-def test_a_main_agent_takes_one_while_it_is_free_and_any_other_agent_the_highest_number_plus_one(taken, role, expected):
-    assert agent_numbers(taken).next_number(1, role) == expected
+def test_a_main_agent_takes_one_while_it_is_free_and_any_other_agent_the_highest_number_plus_one(used, role, expected):
+    assert agent_numbers(used).next_number(1, role) == expected
