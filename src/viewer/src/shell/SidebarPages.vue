@@ -14,7 +14,7 @@ const props = defineProps({
     environments: {type: Array, default: () => []},
     activeEnvironments: {type: Array, default: () => []},
     current: {type: String, default: ""},
-    project: {type: String, default: "agent-journal"},
+    project: {type: String, default: ""},
     journalVersion: {type: String, default: ""},
     counts: {type: Object, default: () => ({})},
     open: {type: String, default: ""},

@@ -1,6 +1,6 @@
 <script setup>
 // the path at the top of the page as version 4 drew it: the project's swatch, the project, the environment and the page
-defineProps({environment: {type: String, required: true}, project: {type: String, default: "agent-journal"}, page: {type: String, default: "Home"}});
+defineProps({environment: {type: String, required: true}, project: {type: String, default: ""}, page: {type: String, default: "Home"}});
 </script>
 
 <template>

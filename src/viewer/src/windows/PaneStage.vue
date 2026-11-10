@@ -131,7 +131,7 @@ function stepSidebar() {
 }
 const sidebarShown = computed(() => Boolean(props.shellRead) && !phone.value && width.value >= SIDEBAR_FROM_WIDTH && !sideHidden.value);
 // the project's name as this browser last knew it, so it does not change when the server answers
-const lastProject = rememberedRef("last-project", "agent-journal");
+const lastProject = rememberedRef("last-project", "");
 const project = computed(() => environments.value?.find?.((row) => row.name === props.environment)?.folder?.split("/").pop() || lastProject.value);
 watchEffect(() => (lastProject.value = project.value));
 watchEffect(() => (document.title = pageTitle(props.environment, project.value)));
