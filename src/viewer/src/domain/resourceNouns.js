@@ -11,7 +11,7 @@ export const titleOf = (term, row, id) => row?.title || row?.name || `${term} ${
 export const headingOf = (term, row, id) => [firstUpper(`${term} ${id}`), row?.state && firstUpper(row.state)].filter(Boolean).join(" · ");
 
 // an agent by name: the one it was given, otherwise its role and number, such as Worker 412
-const agentNameOf =(agent) => agent.given_name || `${wordLabel(agent.role)} ${agent.id}`;
+const agentNameOf =(agent) => agent.given_name || `${wordLabel(agent.role)} ${agent.number}`;
 
 // who made a row, by name: an agent's name, otherwise the name of the actor; "" while the creator is not read
 export const creatorNameOf = (actor, agent) => (actor?.type === "agent" && agent ? agentNameOf(agent) : actor?.name ?? "");

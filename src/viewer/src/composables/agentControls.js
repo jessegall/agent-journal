@@ -18,12 +18,12 @@ export function useAgentControls(agent, run, changed, {groups, programs}) {
     }
 
     const choose = (key, choice) => {
-        return send(["agent", "control", String(agent.value.id), key, choice.value], {target: chosen, fields: {value: {...chosen.value, [key]: choice.label}}});
+        return send(["agent", "control", String(agent.value.number), key, choice.value], {target: chosen, fields: {value: {...chosen.value, [key]: choice.label}}});
     };
 
     const stop = () => {
         asking.value = false;
-        return send(["agent", "stop", String(agent.value.id)], {target: agent.value, fields: {ended_at: new Date().toISOString()}});
+        return send(["agent", "stop", String(agent.value.number)], {target: agent.value, fields: {ended_at: new Date().toISOString()}});
     };
 
     const start = (program) => send(["agent", "launch", program.name]);

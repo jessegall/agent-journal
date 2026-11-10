@@ -69,7 +69,7 @@ async function change(kind, value) {
 async function retire(agent) {
     if (!reason.value.trim() || pending.value) return;
     pending.value = true;
-    const answer = await view.run(["agent", "retire", String(agent.id), "--reason", reason.value.trim()]);
+    const answer = await view.run(["agent", "retire", String(agent.number), "--reason", reason.value.trim()]);
     failure.value = answer.ok ? "" : "The agent could not be retired. Try again.";
     if (answer.ok) { retiring.value = null; reason.value = ""; notice.value = "Agent retired permanently."; await view.reload("limits"); await readAgents(chosen.value); }
     pending.value = false;
@@ -87,7 +87,7 @@ function openAgent(agent) { close(); emit("open-agent", agent); }
                 <p><strong>{{ chosen.running }} of {{ chosen.run_limit }}</strong> running, <strong>{{ chosen.kept }}<template v-if="chosen.kept_limit"> of {{ chosen.kept_limit }}</template></strong> kept</p><p>{{ models }}</p>
                 <template v-if="!chosenAgents.length"><strong>No agents here yet</strong><p>An agent shows here as soon as one of this type starts.</p></template>
                 <template v-for="agent in chosenAgents" :key="agent.id"><div class="person" :data-count-agent="agent.id">
-                    <span :class="['dot', {running: agent.state === 'running'}]" /><div class="person-text"><strong>{{ agent.facts?.given_name || agent.id }}</strong> {{ agent.state === 'running' ? 'Running' : 'Idle' }}, {{ age(agent.state === 'running' ? agent.process_started_at || agent.created_at : agent.ended_at, now) }}<small>{{ [agent.program, agent.facts?.model, agent.facts?.effort, `${agent.role} ${agent.id}`].filter(Boolean).join(', ') }}</small><small>{{ agent.facts?.task_title || agent.facts?.helper_job }}</small></div>
+                    <span :class="['dot', {running: agent.state === 'running'}]" /><div class="person-text"><strong>{{ agent.facts?.given_name || agent.number }}</strong> {{ agent.state === 'running' ? 'Running' : 'Idle' }}, {{ age(agent.state === 'running' ? agent.process_started_at || agent.created_at : agent.ended_at, now) }}<small>{{ [agent.program, agent.facts?.model, agent.facts?.effort, `${agent.role} ${agent.id}`].filter(Boolean).join(', ') }}</small><small>{{ agent.facts?.task_title || agent.facts?.helper_job }}</small></div>
                     <Btn small @click="openAgent(agent)">Open</Btn><template v-if="agent.state === 'idle' && !view.readOnly"><Btn small @click="retiring = agent.id; reason = ''">Retire</Btn></template>
                     <template v-if="retiring === agent.id"><AgentRetireForm v-model:reason="reason" :pending="pending" @submit="retire(agent)" @cancel="retiring = null" /></template>
                 </div></template>

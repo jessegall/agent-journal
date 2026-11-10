@@ -116,7 +116,7 @@ CARD_KEYS = [WindowKey("reports", "message agent-reports", tab="reports", events
              WindowKey("filters", "agent cards --options", events=["agent.*"]),
              WindowKey("programs", "agent programs"),
              WindowKey("tool", "usage tool", loading=KeyLoading.REQUESTED, arguments=["agent"]),
-             WindowKey("transcript.*", "agent transcript {id}", arguments=["before-id"], page_size=50),
+             WindowKey("transcript.*", "agent transcript row:{id}", arguments=["before-id"], page_size=50),
              WindowKey("jobs", "task list --state open --limit 100", loading=KeyLoading.REQUESTED, arguments=["page"]),
              WindowKey("terminal-output.*", "output hook-page {id}", arguments=["before", "after"])]
 
@@ -140,7 +140,7 @@ class AgentsModule(Module):
                WindowDeclaration("agents.helpers", "Helpers", "helpers.js", WindowLoading.COMPONENT, skeleton=AGENTS_HELPERS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, search=WindowSearch(AgentSearcher, "Search the agents"), reads=CARD_READS, runs=["setting set", "message send", "helper send", "helper stop", "agent retire"],
                                  events=CARD_EVENTS, tabs=CARD_TABS, keys=CARD_KEYS),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, skeleton=AGENTS_TRANSCRIPT_SKELETON, icon=WindowIcon.DOCUMENT, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,
-                                 reads=["agent transcript", "hook-call feed"], runs=["message send"], events=["hook_call.*"], keys=[WindowKey("transcript.*", "agent transcript {id}", arguments=["before-id"], page_size=50)]),
+                                 reads=["agent transcript", "hook-call feed"], runs=["message send"], events=["hook_call.*"], keys=[WindowKey("transcript.*", "agent transcript row:{id}", arguments=["before-id"], page_size=50)]),
                WindowDeclaration("agents.agent-detail", "Agent", "agent-detail.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.AGENT, skeleton=[SkeletonPart.line()],
                                  reads=["usage inspector", "agent list", "agent-skill list"], events=["agent.*"])]
     inspectors = [AGENT_INSPECTOR]

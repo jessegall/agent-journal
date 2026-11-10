@@ -77,7 +77,7 @@ watch([() => props.profile, program], load, {immediate: true});
         </label>
         <template v-for="helper in availability.idle_helpers" :key="helper.id"><div class="idle-helper" :data-helper-idle="helper.id">
             <span>{{ helper.name }} · Idle</span>
-            <Btn type="button" :disabled="!canSend" :data-helper-send="helper.id" @click="send(helper.id)">Send the job</Btn>
+            <Btn type="button" :disabled="!canSend" :data-helper-send="helper.id" @click="send(helper.number)">Send the job</Btn>
         </div></template>
         <template v-if="availability.idle_helpers.length"><label class="field">
             <span>Why start another helper?</span>

@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {AutoScrollPane, Btn, FeedPaginator, RowList, WindowRoom, eventMayBeChildOf, useWindow} from "@journal/window-kit";
+import {AutoScrollPane, Btn, FeedPaginator, RowList, WindowRoom, agentRowArgument, eventMayBeChildOf, useWindow} from "@journal/window-kit";
 
 // the conversation oldest first with its newest row at the foot, where the pane opens and stays as rows arrive; scrolling up stops that and
 // shows Newest, and reaching the top reads the page of rows before the oldest; each row says who wrote it, lined up with the card's tabs, its words, and at its end when
@@ -19,7 +19,7 @@ const sendFailure = ref("");
 async function send() {
     if (props.agent === null || !message.value.trim() || sending.value) return;
     sending.value = true;
-    const answer = await view.run(props.helper ? ["helper", "send", String(props.agent), message.value] : ["message", "send", message.value, "--target-agent", String(props.agent)]);
+    const answer = await view.run(props.helper ? ["helper", "send", agentRowArgument(props.agent), message.value] : ["message", "send", message.value, "--target-agent", agentRowArgument(props.agent)]);
     sendFailure.value = answer.ok ? "" : answer.error;
     if (answer.ok) message.value = "";
     sending.value = false;

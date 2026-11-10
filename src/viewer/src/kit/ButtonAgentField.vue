@@ -12,7 +12,7 @@ const agents = ref([]);
 const failure = ref("");
 const options = computed(() => [...agents.value]
     .sort((first, second) => Number(second.role === props.field.first_role) - Number(first.role === props.field.first_role) || first.id - second.id)
-    .map((agent) => ({key: String(agent.id), label: agent.given_name || `${wordLabel(agent.role)} ${agent.id}`, note: `${wordLabel(agent.role)} ${agent.id}`})));
+    .map((agent) => ({key: String(agent.number), label: agent.given_name || `${wordLabel(agent.role)} ${agent.number}`, note: `${wordLabel(agent.role)} ${agent.number}`})));
 const picked = computed(() => options.value.find((option) => option.key === props.value));
 
 async function load() {

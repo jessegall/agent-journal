@@ -20,7 +20,7 @@ const props = defineProps({
 });
 const emit = defineEmits(["split", "detach", "option", "move", "close", "reset"]);
 const agents = computed(() => [{value: "main", agent: null, label: "Main agent", chosen: !props.pane.options?.agent},
-    ...props.followable.map((row) => ({value: row.id, agent: row.id, label: `${wordLabel(row.role)} ${row.id}`, chosen: props.pane.options?.agent === row.id}))]);
+    ...props.followable.map((row) => ({value: row.id, agent: row.id, label: `${wordLabel(row.role)} ${row.number}`, chosen: props.pane.options?.agent === row.id}))]);
 </script>
 
 <template>

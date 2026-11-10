@@ -73,11 +73,11 @@ async function run(command, success) {
 async function sendJob() {
     if (!jobReady.value) return;
     const job = props.row.job_task_flag ? [props.row.job_task_flag, task.value] : [text.value.trim()];
-    await run([...props.row.job_command, String(props.row.id), ...job], "Job sent.");
+    await run([...props.row.job_command, String(props.row.number), ...job], "Job sent.");
 }
 async function retire() {
     if (!idle.value || mode.value !== "retire" || !reason.value.trim()) return;
-    await run(["agent", "retire", String(props.row.id), "--reason", reason.value.trim()], "Agent retired permanently.");
+    await run(["agent", "retire", String(props.row.number), "--reason", reason.value.trim()], "Agent retired permanently.");
 }
 </script>
 

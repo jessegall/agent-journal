@@ -5,7 +5,7 @@ import {context, mounted, page, settle, typeInto} from "./support/agentWindowCon
 
 const worker = {key: "worker", label: "Worker", running: 1, kept: 3, run_limit: 1, kept_limit: 3, run_setting: "sample.run", kept_setting: "sample.kept", run_source: "environment main", kept_source: "environment main", per_profile: false, profiles: []};
 const helper = {key: "helper", label: "Helper", running: 0, kept: 1, run_limit: 4, kept_limit: 8, run_setting: "sample.helper-run", kept_setting: "sample.helper-kept", per_profile: true, profiles: [{profile: "journal-researcher", title: "Researcher", running: 0, kept: 1, run_limit: 2, kept_limit: 3, group: ""}]};
-const idle = {id: 42, role: "worker", state: "idle", program: "claude", created_at: "2026-11-01T09:00:00Z", ended_at: "2026-11-01T10:00:00Z", facts: {given_name: "Ada", model: "sonnet", task_title: "Fix the cart"}};
+const idle = {id: 42, number: 5, role: "worker", state: "idle", program: "claude", created_at: "2026-11-01T09:00:00Z", ended_at: "2026-11-01T10:00:00Z", facts: {given_name: "Ada", model: "sonnet", task_title: "Fix the cart"}};
 afterEach(() => { document.body.innerHTML = ""; });
 async function counts({readOnly = false} = {}) {
     const row = structuredClone(worker);
@@ -73,5 +73,5 @@ test("an opened row lists its idle agent and retires it with a reason", async ()
     await settle();
     agent.querySelector("[data-agent-retire-confirm]").dispatchEvent(new Event("submit", {bubbles: true, cancelable: true}));
     await settle();
-    expect(held.run).toHaveBeenCalledWith(["agent", "retire", "42", "--reason", "Finished work"]);
+    expect(held.run).toHaveBeenCalledWith(["agent", "retire", "5", "--reason", "Finished work"]);
 });

@@ -5,9 +5,9 @@ import {mounted} from "./support/windowContext.js";
 import {usageWindowContext as context} from "./support/usageWindowContext.js";
 
 const AGENTS = [
-    {id: 1, role: "main", model: "Opus 5.5", cost_dollars: 1052.5},
-    {id: 7, role: "worker", model: "Sonnet 5.5", cost_dollars: 12.25},
-    {id: 9, role: "worker", model: "Sonnet 5.5", cost_dollars: 3.5},
+    {id: 1, number: 1, role: "main", model: "Opus 5.5", cost_dollars: 1052.5},
+    {id: 70, number: 7, role: "worker", model: "Sonnet 5.5", cost_dollars: 12.25},
+    {id: 90, number: 9, role: "worker", model: "Sonnet 5.5", cost_dollars: 3.5},
     {id: 11, role: "reviewer", model: "", cost_dollars: 0},
 ];
 const USAGE = {agents: AGENTS, windows: [{title: "7 days", used_percent: 17, reset_epoch_seconds: 1794085200}], cost_dollars: 1068.25};

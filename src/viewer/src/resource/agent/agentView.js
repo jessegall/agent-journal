@@ -14,7 +14,7 @@ export const rowsOf = (answer) => (answer.ok ? answer.value.rows : []);
 const capital = (word) => word.slice(0, 1).toUpperCase() + word.slice(1);
 
 // the title band says the role and the number once; the main agent has no number to say
-export const agentTitle = (row) => (row.role === MAIN_ROLE ? MAIN_TITLE : `${capital(row.role)} ${row.id}`);
+export const agentTitle = (row) => (row.role === MAIN_ROLE ? MAIN_TITLE : `${capital(row.role)} ${row.number}`);
 
 export const givenName = (row, facts) => facts?.given_name || capital(facts?.profile_title || facts?.profile || row.role);
 
@@ -44,7 +44,7 @@ export function finishedWords(facts) {
 
 // every field of the agent with a plain label; the raw fields stay behind the Details fold
 export function detailRows(row, inspection) {
-    const rows = [["Number", String(row.id)], ["Session", row.session, "code"], ["Program", row.program], ["Type", row.role]];
+    const rows = [["Number", String(row.number)], ["Session", row.session, "code"], ["Program", row.program], ["Type", row.role]];
     if (row.parent_id) rows.push(["Parent agent", `Agent ${row.parent_id}`]);
     rows.push(["Started by", inspection.started_by], ["Started", dated(row.created_at)]);
     if (row.ended_at) rows.push(["Ended", dated(row.ended_at)]);

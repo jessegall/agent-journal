@@ -161,7 +161,7 @@ test("the helpers dropdown holds every type under its own header with a count", 
 });
 
 test("the pause button shows paused at once, resume shows working, and a refusal puts it back", async () => {
-    const agent = reactive({...MAIN, id: 7, paused_at: null});
+    const agent = reactive({...MAIN, id: 7, number: 3, paused_at: null});
     const ran = [];
     let answer = {ok: true, value: {}};
     const element = mounted(AgentBar, {agent, run: async (line) => (ran.push(line.join(" ")), answer)});
@@ -170,11 +170,11 @@ test("the pause button shows paused at once, resume shows working, and a refusal
     await nextTick();
     expect(element.querySelector("[data-agent-word]").textContent).toBe("Paused");
     await nextTick();
-    expect(ran).toEqual(["agent pause 7"]);
+    expect(ran).toEqual(["agent pause 3"]);
     button.click();
     await nextTick();
     expect(element.querySelector("[data-agent-word]").textContent).toBe("Working");
-    expect(ran).toEqual(["agent pause 7", "agent resume 7"]);
+    expect(ran).toEqual(["agent pause 3", "agent resume 3"]);
     answer = {ok: false, error: "no"};
     button.click();
     await new Promise((resolve) => setTimeout(resolve));

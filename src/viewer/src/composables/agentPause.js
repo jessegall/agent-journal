@@ -10,7 +10,7 @@ export function useAgentPause(agent, run, changed) {
         failure.value = "";
         const row = agent.value;
         const word = row.paused_at ? "resume" : "pause";
-        const answer = await runChanged({target: row, fields: {paused_at: row.paused_at ? null : new Date().toISOString()}}, ["agent", word, String(row.id)], run);
+        const answer = await runChanged({target: row, fields: {paused_at: row.paused_at ? null : new Date().toISOString()}}, ["agent", word, String(row.number)], run);
         failure.value = answer.ok ? "" : answer.error;
         changed();
         return answer;

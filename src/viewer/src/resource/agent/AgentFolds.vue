@@ -19,7 +19,7 @@ watch(() => [shown.helpers, props.loads], async ([isOpen]) => {
 watch(() => [shown.skills, props.loads], async ([isOpen]) => {
     if (isOpen) skills.value = await listed(["agent-skill", "list", "--agent", String(props.id), "--state", "loaded"]);
 });
-const nameOf = (agent) => agent.given_name || `${wordLabel(agent.role)} ${agent.id}`;
+const nameOf = (agent) => agent.given_name || `${wordLabel(agent.role)} ${agent.number}`;
 </script>
 
 <template>

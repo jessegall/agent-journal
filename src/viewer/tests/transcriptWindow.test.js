@@ -46,7 +46,7 @@ test("a refused message keeps the transcript draft and names the selected target
     await settle();
     input.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter"}));
     await settle();
-    expect(held.run).toHaveBeenCalledExactlyOnceWith(["message", "send", "Continue the check", "--target-agent", "73"]);
+    expect(held.run).toHaveBeenCalledExactlyOnceWith(["message", "send", "Continue the check", "--target-agent", "row:73"]);
     expect(input.value).toBe("Continue the check");
     expect(element.querySelector('[role="alert"]').textContent).toBe("The agent was retired");
 });

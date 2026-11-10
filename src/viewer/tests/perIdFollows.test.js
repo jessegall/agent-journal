@@ -116,7 +116,7 @@ test("an agent's inspector is one read to open and one read for each event about
     app.provide(WINDOW_CONTEXT, context({}));
     app.mount(element);
     await settle();
-    expect(lines).toEqual(["usage inspector 12 --environment main"]);
+    expect(lines).toEqual(["usage inspector row:12 --environment main"]);
     subscriptions.dispatch({event: "agent.change", row_id: 12, environment: "main", changed_ids: {}});
     await new Promise((resolve) => setTimeout(resolve, 150));
     expect(lines).toHaveLength(2);

@@ -529,7 +529,7 @@ test("a closed tab comes back through the plus of the pane it was closed in", as
 test("the shell reads its visible keys together and asks for fitness only after usage names its agent", async () => {
     localStorage.clear();
     const shellRead = async (line) => ({ok: true, value: line[0] === "usage" && line[1] === "show"
-        ? {agents: [{id: 7, role: "main"}], windows: []}
+        ? {agents: [{id: 7, number: 1, role: "main"}], windows: []}
         : line[0] === "agent" ? (line[1] === "controls" ? {groups: []} : {environment_ids: [1]}) : {rows: []}});
     await stage(SHAPE, {stageProps: {shellRead}});
     await settled();
@@ -538,7 +538,7 @@ test("the shell reads its visible keys together and asks for fitness only after 
     expect(requests[0][1].headers).toMatchObject({"x-journal-window": "viewer.shell"});
     expect(requests[0][1].headers["x-journal-data-only"]).toBeUndefined();
     expect(new Set(requests[1][1].headers["x-journal-data-only"].split(","))).toEqual(new Set(["fitness", "controls", "skills"]));
-    expect(new URL(requests[1][0], "http://localhost").searchParams.get("fitness.agent")).toBe("7");
+    expect(new URL(requests[1][0], "http://localhost").searchParams.get("fitness.agent")).toBe("1");
     expect(requests.some(([url]) => new URL(url, "http://localhost").searchParams.get("tab") === "activity")).toBe(false);
 });
 

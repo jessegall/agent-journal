@@ -5,6 +5,7 @@ import {useNow} from "../../../kit/useNow.js";
 import Skeleton from "../../kit/Skeleton.vue";
 import {useResourceEvents} from "../resourceEvents.js";
 import {eventAboutRows, eventChildOf} from "../../../kit/eventRows.js";
+import {agentRowArgument} from "../../../kit/agentRowArgument.js";
 import {agentState, agentTitle, detailRows, finishedWords, givenName, stripCells} from "./agentView.js";
 import AgentBrief from "./AgentBrief.vue";
 import AgentFolds from "./AgentFolds.vue";
@@ -31,7 +32,7 @@ const nothing = computed(() => (row.value.ended_at ? finishedWords(facts.value) 
 
 async function load() {
     const turn = ++reading;
-    const answer = await props.read(["usage", "inspector", String(props.id), "--environment", props.environment]);
+    const answer = await props.read(["usage", "inspector", agentRowArgument(props.id), "--environment", props.environment]);
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     if (!answer.ok) return;

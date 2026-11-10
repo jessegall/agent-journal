@@ -1,6 +1,6 @@
 import { openBlock as n, createElementBlock as s, withModifiers as ee, unref as i, createTextVNode as m, toDisplayString as p, createVNode as k, createBlock as N, withCtx as b, Fragment as D, renderList as ne, createElementVNode as j, createCommentVNode as h, computed as u, ref as V, watch as de, onUnmounted as we, defineAsyncComponent as Xe, createSlots as _e, resolveDynamicComponent as et, normalizeClass as oe, normalizeStyle as Ae, renderSlot as Me, onMounted as tt, Teleport as at, mergeProps as nt, toRef as Be, withKeys as Ee, nextTick as Ne } from "vue";
 import { peekRef as xe, Icon as Le, RunningCommand as lt, FoldGroup as Pe, TaskStatusIcon as ot, useWindow as je, loadWindowComponent as st, coalesced as rt, READ_RATES as it, eventMayBeChildOf as dt, InnerTabs as ut, TabBody as ct, SwitchCase as Ue, EmptyState as Ie, Btn as ie, TextArea as gt, TextInput as vt, HoverTip as Te, TaskBar as pt, useNow as Je, age as ht, perHour as ft, sinceWords as mt, seenWords as kt, AgentTip as bt, TimeAgo as We, SearchBar as yt, Segmented as wt, MenuLabel as Re, MenuItem as Se, RowList as Mt, toggleFilter as xt } from "@journal/window-kit";
-import { _ as Q, T as $t } from "./TranscriptRows-BL93hPr8.js";
+import { _ as Q, T as $t } from "./TranscriptRows-Crmxs6Un.js";
 const St = {
   class: "agent-command",
   "data-agent-command": ""
@@ -102,7 +102,7 @@ const St = {
       var r, y;
       return l.row.ended_at && ((y = (r = l.facts) == null ? void 0 : r.job_returned) != null && y.startsWith(Ft)) ? l.facts.job_returned : "";
     }), a = u(() => l.tasks.length ? t.map((r) => ({ state: r, label: r.slice(0, 1).toUpperCase() + r.slice(1), tasks: l.tasks.filter((y) => y.state === r || r === "started" && y.state === "testing" || r === "completed" && y.state === "cancelled") })) : []), g = /* @__PURE__ */ new Set(["completed"]), f = V({}), $ = (r) => !(f.value[r] ?? g.has(r)), S = (r) => f.value = { ...f.value, [r]: $(r) }, B = je(), { rows: q } = B.props.reports;
-    B.state["reports.agent"] = String(l.row.id);
+    B.state["reports.agent"] = String(l.row.number);
     const z = u(() => l.row.access === "read-only"), H = u(() => !!l.row.retired_at || l.row.state === "retired"), F = ["tasks", "transcript", "terminal", "file-feed", "reports"], A = u(() => (H.value ? B.tabs.filter((y) => ["reports", "transcript"].includes(y.key)) : z.value ? B.tabs.filter((y) => ["reports", "transcript", "terminal"].includes(y.key)) : [...B.tabs]).sort((y, c) => (F.indexOf(y.key) < 0 ? F.length : F.indexOf(y.key)) - (F.indexOf(c.key) < 0 ? F.length : F.indexOf(c.key)))), R = () => z.value || H.value ? A.value.find((r) => r.key === "transcript") : A.value[0], E = V(R());
     de(E, (r) => {
       B.state.tab = (r == null ? void 0 : r.key) ?? "";
@@ -124,7 +124,7 @@ const St = {
       return ((r = K.value) == null ? void 0 : r.note) ?? "";
     }), M = u(() => l.row.role !== "main" && (!l.row.ended_at || l.stoppedWithWork || l.waitReason));
     async function d() {
-      !l.open || !M.value || (B.state["tool.agent"] = String(l.row.id), await B.reload("tool"));
+      !l.open || !M.value || (B.state["tool.agent"] = String(l.row.number), await B.reload("tool"));
     }
     const W = rt(d, it.agentCommand), v = B.follow(["hook_call.*", "process_part.*"], (r) => dt(r, "session_agent_id", /* @__PURE__ */ new Set([l.row.id])) && W());
     return we(() => v == null ? void 0 : v()), de(() => l.open, (r) => {
@@ -250,7 +250,7 @@ const St = {
       ]);
     };
   }
-}, Ut = /* @__PURE__ */ Q(Pt, [["__scopeId", "data-v-492142fe"]]), Jt = { class: "action-field" }, Gt = ["value", "disabled"], Kt = ["value"], Zt = { key: 1 }, Yt = {
+}, Ut = /* @__PURE__ */ Q(Pt, [["__scopeId", "data-v-2de10293"]]), Jt = { class: "action-field" }, Gt = ["value", "disabled"], Kt = ["value"], Zt = { key: 1 }, Yt = {
   key: 1,
   class: "action-field"
 }, Qt = { class: "action-buttons" }, Xt = {
@@ -412,10 +412,10 @@ const St = {
     async function M() {
       if (!G.value) return;
       const W = l.row.job_task_flag ? [l.row.job_task_flag, f.value] : [a.value.trim()];
-      await Z([...l.row.job_command, String(l.row.id), ...W], "Job sent.");
+      await Z([...l.row.job_command, String(l.row.number), ...W], "Job sent.");
     }
     async function d() {
-      !R.value || o.value !== "retire" || !g.value.trim() || await Z(["agent", "retire", String(l.row.id), "--reason", g.value.trim()], "Agent retired permanently.");
+      !R.value || o.value !== "retire" || !g.value.trim() || await Z(["agent", "retire", String(l.row.number), "--reason", g.value.trim()], "Agent retired permanently.");
     }
     return (W, v) => {
       var r;
@@ -491,7 +491,7 @@ const St = {
       ], 32));
     };
   }
-}, ra = /* @__PURE__ */ Q(sa, [["__scopeId", "data-v-4cb32275"]]), ia = { class: "line" }, da = {
+}, ra = /* @__PURE__ */ Q(sa, [["__scopeId", "data-v-50edef73"]]), ia = { class: "line" }, da = {
   key: 0,
   class: "line",
   "data-agent-since": ""
@@ -1029,7 +1029,7 @@ function Ka(e, l, t, { groups: o, programs: a }) {
     const E = await Ga(R, A, l);
     return f.value = E.ok ? "" : E.error, t(), E;
   }
-  return { groups: o, programs: a, chosen: g, failure: f, asking: $, running: S, paused: B, choose: (A, R) => q(["agent", "control", String(e.value.id), A, R.value], { target: g, fields: { value: { ...g.value, [A]: R.label } } }), stop: () => ($.value = !1, q(["agent", "stop", String(e.value.id)], { target: e.value, fields: { ended_at: (/* @__PURE__ */ new Date()).toISOString() } })), start: (A) => q(["agent", "launch", A.name]) };
+  return { groups: o, programs: a, chosen: g, failure: f, asking: $, running: S, paused: B, choose: (A, R) => q(["agent", "control", String(e.value.number), A, R.value], { target: g, fields: { value: { ...g.value, [A]: R.label } } }), stop: () => ($.value = !1, q(["agent", "stop", String(e.value.number)], { target: e.value, fields: { ended_at: (/* @__PURE__ */ new Date()).toISOString() } })), start: (A) => q(["agent", "launch", A.name]) };
 }
 function Za(e) {
   return e ? `Last compacted ${new Date(e.started_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "medium" })}` : "Not compacted yet";
@@ -1437,7 +1437,7 @@ const Ya = ["disabled", "title"], Qa = ["disabled", "title"], Xa = { class: "gau
     }) || S.value.find((w) => t.has(w.state)) || B.value[0] || S.value.at(-1)), H = u(() => {
       var w, T, te, J, ue, ae;
       return a.row.role === "helper" ? ((w = a.facts) == null ? void 0 : w.helper_job) || "" : (T = a.facts) != null && T.job_enabled && (((te = q.value) == null ? void 0 : te.title) || ((J = a.facts) == null ? void 0 : J.task_title) || ((ue = B.value[0]) == null ? void 0 : ue.title) || ((ae = S.value.at(-1)) == null ? void 0 : ae.title)) || "";
-    }), F = u(() => `${a.row.role} ${a.row.id}`), A = u(() => {
+    }), F = u(() => `${a.row.role} ${a.row.number}`), A = u(() => {
       var w, T;
       return [a.row.program, (w = a.facts) == null ? void 0 : w.model, (T = a.facts) == null ? void 0 : T.effort, F.value].filter(Boolean).join(" · ");
     }), R = je(), E = u(() => ht(a.row.process_started_at || a.row.created_at, f.value)), G = /* @__PURE__ */ new Set(["open", "started", "testing"]), P = u(() => {
@@ -1595,7 +1595,7 @@ const Ya = ["disabled", "title"], Qa = ["disabled", "title"], Xa = { class: "gau
       ], 42, vn);
     };
   }
-}, xn = /* @__PURE__ */ Q(Mn, [["__scopeId", "data-v-5caf293f"]]), $n = {
+}, xn = /* @__PURE__ */ Q(Mn, [["__scopeId", "data-v-173959e8"]]), $n = {
   key: 1,
   class: "agents-upgrade",
   "data-agents-upgrade": ""

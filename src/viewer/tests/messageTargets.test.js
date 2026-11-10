@@ -29,5 +29,5 @@ test("an agent conversation sends its own agent as the message target", async ()
     await settle();
     box.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter"}));
     await settle();
-    expect(sent).toContainEqual(["message", "send", "Continue that task", "--target-agent", "73"]);
+    expect(sent).toContainEqual(["message", "send", "Continue that task", "--target-agent", "row:73"]);
 });

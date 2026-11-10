@@ -38,14 +38,14 @@ async function drawn(agent, failure, gate) {
 }
 
 test("the model and the effort are the facts of the bar, and each is chosen from them", async () => {
-    const {element, ran} = await drawn({id: 7, ended_at: null, program: "claude", session: "s"});
+    const {element, ran} = await drawn({id: 7, number: 3, ended_at: null, program: "claude", session: "s"});
     expect(ran).toEqual([]);
     expect(element.querySelector('[data-fact="model"]').textContent).toContain("sonnet");
     element.querySelector('[data-fact="model"]').click();
     await settle();
     document.querySelector('[data-agent-choice="opus"]').click();
     await settle();
-    expect(ran).toContain("agent control 7 model opus");
+    expect(ran).toContain("agent control 3 model opus");
     expect(element.querySelector('[data-fact="model"]').textContent).toContain("Opus");
     expect(element.textContent).not.toContain("was sent");
 });
@@ -53,7 +53,7 @@ test("the model and the effort are the facts of the bar, and each is chosen from
 test("a chosen model shows before the server answers and goes back when it refuses", async () => {
     let release;
     const gate = new Promise((resolve) => (release = resolve));
-    const {element} = await drawn({id: 7, ended_at: null, program: "claude", session: "s"}, "not now", gate);
+    const {element} = await drawn({id: 7, number: 3, ended_at: null, program: "claude", session: "s"}, "not now", gate);
     element.querySelector('[data-fact="model"]').click();
     await settle();
     document.querySelector('[data-agent-choice="opus"]').click();
@@ -66,16 +66,16 @@ test("a chosen model shows before the server answers and goes back when it refus
 });
 
 test("stopping asks first and can be kept running", async () => {
-    const {element, ran} = await drawn({id: 7, ended_at: null, program: "claude", session: "s"});
+    const {element, ran} = await drawn({id: 7, number: 3, ended_at: null, program: "claude", session: "s"});
     element.querySelector('[data-fact="agent"]').click();
     await settle();
     document.querySelector("[data-agent-stop]").click();
     await settle();
     expect(document.querySelector("[data-agent-stop-ask]")).not.toBeNull();
-    expect(ran).not.toContain("agent stop 7");
+    expect(ran).not.toContain("agent stop 3");
     document.querySelector("[data-agent-stop-confirm]").click();
     await settle();
-    expect(ran).toContain("agent stop 7");
+    expect(ran).toContain("agent stop 3");
 });
 
 test("with no agent it offers the programs to start, and a refusal says why", async () => {

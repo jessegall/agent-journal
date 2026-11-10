@@ -559,7 +559,7 @@ def test_the_workload_reads_scan_no_large_table_whole(read_sample):
 
 def test_an_agents_inspector_is_one_answer_on_one_connection(read_sample):
     agent_id = read_sample.server.story.agent.id
-    measured = read_sample.read([ReadLine("agents.agent-detail", ("usage", "inspector", str(agent_id), "--environment", "main"))])
+    measured = read_sample.read([ReadLine("agents.agent-detail", ("usage", "inspector", f"row:{agent_id}", "--environment", "main"))])
     print(json.dumps(measured.report(), sort_keys=True))
     expect_value((len(measured.answers), measured.answers[0]["code"], measured.connections), (1, 0, 1))
     expect_value(measured.answers[0]["value"]["agent"]["id"], agent_id)

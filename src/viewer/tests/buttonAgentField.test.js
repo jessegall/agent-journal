@@ -7,9 +7,9 @@ const ROW = {id: 12, term: "plan", title: "A better journal", state: "started"};
 const ASSIGN = {name: "plans.assign-agent", slots: [], label: "Assign to an agent", runs: "plan assign {row_id} --to={agent}", menu: [], icon: "", primary: false, condition: null, tip: "",
     fields: [{name: "agent", label: "Agent", first_role: "main"}]};
 const AGENTS = [
-    {id: 4, role: "worker", given_name: "Grace Hopper"},
-    {id: 9, role: "worker", given_name: ""},
-    {id: 7, role: "main", given_name: "Ada Lovelace"},
+    {id: 40, number: 4, role: "worker", given_name: "Grace Hopper"},
+    {id: 90, number: 9, role: "worker", given_name: ""},
+    {id: 70, number: 7, role: "main", given_name: "Ada Lovelace"},
 ];
 const mounted = [];
 let reads, writes;

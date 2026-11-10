@@ -4,7 +4,7 @@ import AgentActions from "../../core/modules/agents/web/src/AgentActions.vue";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
 import {context, mounted, page, pickButton, settle, typeInto} from "./support/agentWindowContext.js";
 
-const helper = {id: 42, role: "helper", state: "idle", ended_at: "2026-11-01T10:00:00Z", job_command: ["helper", "send"], job_task_flag: "", resume_reason: null};
+const helper = {id: 42, number: 5, role: "helper", state: "idle", ended_at: "2026-11-01T10:00:00Z", job_command: ["helper", "send"], job_task_flag: "", resume_reason: null};
 afterEach(() => { document.body.innerHTML = ""; });
 async function actions(row = helper, run = vi.fn(async () => ({ok: true})), answers = {}) {
     const held = {...context(answers), run};
@@ -27,7 +27,7 @@ test("an idle helper takes another job on the same agent", async () => {
     typeInto(element.querySelector("[data-agent-job-text]"), "Read src/tax.py");
     await settle();
     await pickButton(element, "Send the job");
-    expect(run).toHaveBeenCalledExactlyOnceWith(["helper", "send", "42", "Read src/tax.py"]);
+    expect(run).toHaveBeenCalledExactlyOnceWith(["helper", "send", "5", "Read src/tax.py"]);
 });
 
 test("a type declaring task jobs sends the selected open task", async () => {
@@ -40,7 +40,7 @@ test("a type declaring task jobs sends the selected open task", async () => {
     select.dispatchEvent(new Event("change"));
     await settle();
     await pickButton(element, "Send the job");
-    expect(run).toHaveBeenCalledExactlyOnceWith(["writer", "send", "42", "--task", "9"]);
+    expect(run).toHaveBeenCalledExactlyOnceWith(["writer", "send", "5", "--task", "9"]);
 });
 
 test("retirement requires a separate permanent confirmation and a reason", async () => {
@@ -57,7 +57,7 @@ test("retirement requires a separate permanent confirmation and a reason", async
     typeInto(element.querySelector("[data-agent-retire-reason]"), "Its question is answered");
     await settle();
     await pickButton(element, "Retire permanently");
-    expect(run).toHaveBeenCalledExactlyOnceWith(["agent", "retire", "42", "--reason", "Its question is answered"]);
+    expect(run).toHaveBeenCalledExactlyOnceWith(["agent", "retire", "5", "--reason", "Its question is answered"]);
 });
 
 test("the task picker reads later pages without losing its selection", async () => {

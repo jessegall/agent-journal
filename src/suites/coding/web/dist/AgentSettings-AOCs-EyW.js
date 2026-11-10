@@ -344,7 +344,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
     async function ge(r) {
       if (!R.value.trim() || N.value) return;
       N.value = !0;
-      const t = await i.run(["agent", "retire", String(r.id), "--reason", R.value.trim()]);
+      const t = await i.run(["agent", "retire", String(r.number), "--reason", R.value.trim()]);
       I.value = t.ok ? "" : "The agent could not be retired. Try again.", t.ok && (M.value = null, R.value = "", q.value = "Agent retired permanently.", await i.reload("limits"), await k(_.value)), N.value = !1;
     }
     function ve(r) {
@@ -409,7 +409,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
                 class: D(["dot", { running: s.state === "running" }])
               }, null, 2),
               l("div", ct, [
-                l("strong", null, h(((y = s.facts) == null ? void 0 : y.given_name) || s.id), 1),
+                l("strong", null, h(((y = s.facts) == null ? void 0 : y.given_name) || s.number), 1),
                 S(" " + h(s.state === "running" ? "Running" : "Idle") + ", " + h(m(we)(s.state === "running" ? s.process_started_at || s.created_at : s.ended_at, m(H))), 1),
                 l("small", null, h([s.program, (Y = s.facts) == null ? void 0 : Y.model, (J = s.facts) == null ? void 0 : J.effort, `${s.role} ${s.id}`].filter(Boolean).join(", ")), 1),
                 l("small", null, h(((Q = s.facts) == null ? void 0 : Q.task_title) || ((ne = s.facts) == null ? void 0 : ne.helper_job)), 1)
@@ -504,7 +504,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
       ], 2))
     ]));
   }
-}, bt = /* @__PURE__ */ W(yt, [["__scopeId", "data-v-dc019e75"]]), ft = {
+}, bt = /* @__PURE__ */ W(yt, [["__scopeId", "data-v-55110dab"]]), ft = {
   class: "agents",
   "data-agent-settings-agents": ""
 }, ht = {

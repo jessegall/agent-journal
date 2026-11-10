@@ -39,7 +39,7 @@ test("an agent not measured yet shows a dash, and no reading shows nothing", asy
 });
 
 test("the panel lists each measure and what the score counts", async () => {
-    const line = "usage fitness --agent 7";
+    const line = "usage fitness --agent row:7";
     const element = await mounted(FitnessPanel, context({[line]: {ok: true, value: FITNESS}}, 7));
     expect(element.querySelector("[data-fitness-head]").textContent).toBe("Fitness: 60 of 100");
     expect(element.querySelector('[data-measure="message_wait"]').textContent).toContain("15 of 5");
@@ -48,7 +48,7 @@ test("the panel lists each measure and what the score counts", async () => {
 });
 
 test("the load panel names the load and what it is made of", async () => {
-    const line = "usage fitness --agent 7";
+    const line = "usage fitness --agent row:7";
     const element = await mounted(LoadPanel, context({[line]: {ok: true, value: {...FITNESS, arrivals_hourly: 4, answers_hourly: 5, waiting_messages: 2}}}, 7));
     expect(element.querySelector("[data-load-head]").textContent).toBe("Load 0.80");
     expect(element.querySelector('[data-load-row="arrivals"]').textContent).toContain("4");

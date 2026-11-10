@@ -1,9 +1,9 @@
 <script setup>
-import {WindowRoom, useWindow} from "@journal/window-kit";
+import {WindowRoom, agentRowArgument, useWindow} from "@journal/window-kit";
 
 // the measures behind an agent's fitness score, each with its value and the level it should stay under
 const view = useWindow();
-view.state["fitness.agent"] = String(view.agent);
+view.state["fitness.agent"] = agentRowArgument(view.agent);
 const {data: fitness, failure} = view.props.fitness;
 </script>
 

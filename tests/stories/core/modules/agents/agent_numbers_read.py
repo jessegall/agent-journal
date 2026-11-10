@@ -44,6 +44,16 @@ def test_a_number_that_is_no_agent_here_gets_one_refusal_and_changes_nothing(new
     story.expect_refusal(f'worker send {number} "Total the till"', absent_refusal(number, "main"), actor=story.agent)
 
 
+def test_the_viewer_names_an_agent_by_its_row_and_reaches_it_in_the_environment_of_the_line_only(new_story):
+    story = new_story(fixture=TwoEnvironments)
+    shop_worker = worker_of(story, "shop")
+    shown = json.loads(story.run(f"agent show row:{shop_worker} --environment shop --json", actor=story.user).output_text)
+    story.expect_rows(shown["id"] == shop_worker, shown["number"] == 2)
+    absent = "no agent with row {row} in environment main"
+    story.expect_refusal(f"agent show row:{shop_worker} --environment main", absent.format(row=shop_worker), actor=story.user)
+    story.expect_refusal("agent show row:9999 --environment main", absent.format(row=9999), actor=story.user)
+
+
 def test_an_agent_naming_another_environment_is_refused_before_any_number_is_read(new_story):
     story = new_story(fixture=TwoEnvironments)
     for number in (2, 9):

@@ -24,6 +24,6 @@ def test_the_shell_reads_visible_keys_and_requests_activity_and_fitness_separate
         status, fitness = window_data(server, cookie, keys="fitness", window="viewer.shell", query=query + f"&fitness.agent={agent_number(story, story.agent.id)}")
         story.expect_rows(status == 200, set(fitness["keys"]) == {"fitness"}, fitness["keys"]["fitness"]["code"] == 0)
         status, controls = window_data(server, cookie, keys="controls,skills,programs", window="viewer.shell",
-                                       query=query + f"&controls.agent={story.agent.id}&skills.agent={story.agent.id}")
+                                       query=query + f"&controls.agent={agent_number(story, story.agent.id)}&skills.agent={story.agent.id}")
         story.expect_rows(status == 200, set(controls["keys"]) == {"controls", "skills", "programs"},
                           all(key["code"] == 0 for key in controls["keys"].values()))

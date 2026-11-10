@@ -5,7 +5,7 @@ import {context, settle} from "./support/windowContext.js";
 import HelperStartForm from "../../core/modules/profiles/web/src/HelperStartForm.vue";
 import {profileWindowContext, PROGRAMS} from "./support/profileWindowContext.js";
 
-const IDLE = {can_start: false, reason: 'helper 42 is idle: journal helper send 42 "<job>"', programs: ["claude", "codex"], idle_helpers: [{id: 42, name: "Lady Lovelace"}], can_start_fresh: true, fresh_reason: ""};
+const IDLE = {can_start: false, reason: 'helper 42 is idle: journal helper send 42 "<job>"', programs: ["claude", "codex"], idle_helpers: [{id: 42, number: 5, name: "Lady Lovelace"}], can_start_fresh: true, fresh_reason: ""};
 let app, host;
 
 afterEach(() => {
@@ -39,7 +39,7 @@ test("the helper form offers Send for the selected profile despite the idle-star
     expect(host.querySelector("[data-helper-start-button]").disabled).toBe(true);
     host.querySelector('[data-helper-send="42"]').click();
     await settle();
-    expect(window.run).toHaveBeenCalledExactlyOnceWith(["helper", "send", "42", "Read src/cart.py"]);
+    expect(window.run).toHaveBeenCalledExactlyOnceWith(["helper", "send", "5", "Read src/cart.py"]);
     expect(host.querySelector("[data-helper-brief]").value).toBe("");
     expect(host.textContent).toContain("Job sent.");
 });

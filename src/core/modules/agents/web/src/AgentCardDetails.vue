@@ -17,7 +17,7 @@ const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(s
 // a running helper's card names the command it runs, as the foot of the chat does for the main agent, or says plainly that it ran none
 const context = useWindow();
 const {rows: reports} = context.props.reports;
-context.state["reports.agent"] = String(props.row.id);
+context.state["reports.agent"] = String(props.row.number);
 const isReader = computed(() => props.row.access === "read-only");
 const retired = computed(() => Boolean(props.row.retired_at) || props.row.state === "retired");
 const tabOrder = ["tasks", "transcript", "terminal", "file-feed", "reports"];
@@ -39,7 +39,7 @@ const noCommandNote = computed(() => tool.value?.note ?? "");
 const showsCommand = computed(() => props.row.role !== "main" && (!props.row.ended_at || props.stoppedWithWork || props.waitReason));
 async function readCommand() {
     if (!props.open || !showsCommand.value) return;
-    context.state["tool.agent"] = String(props.row.id);
+    context.state["tool.agent"] = String(props.row.number);
     await context.reload("tool");
 }
 const readCommandSoon = coalesced(readCommand, READ_RATES.agentCommand);

@@ -5,6 +5,7 @@ import {followEvents} from "../windows/windowCatalogue.js";
 import {startWindows} from "../windows/startup.js";
 import {driverOf, useHomeLayout} from "../windows/homeLayout.js";
 import {wordLabel} from "../domain/labels.js";
+import {agentRowArgument} from "../../kit/agentRowArgument.js";
 
 const PHONE_WIDTH = 700;
 const props = defineProps({
@@ -41,7 +42,7 @@ function show(tab) {
 // the agent's role comes from the agent, its driver from the suite's driver for that role
 onMounted(async () => {
     window.addEventListener("resize", measure);
-    const answer = await shellLine(["agent", "show", String(props.agent)]);
+    const answer = await shellLine(["agent", "show", agentRowArgument(props.agent)]);
     if (!answer.ok) return void (failure.value = answer.error);
     const run = await shellLine(["suite", "current", props.environment]);
     const role = answer.value.role;

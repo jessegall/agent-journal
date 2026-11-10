@@ -34,10 +34,10 @@ function wire() {
         const flag = (name) => line[line.indexOf(name) + 1];
         let value = null;
         if (line.join(" ").startsWith("suite current")) value = current;
-        else if (line[0] === "agent" && line[1] === "show") value = line[2] === "99" ? null : {id: Number(line[2]), role: "worker"};
+        else if (line[0] === "agent" && line[1] === "show") value = line[2] === "row:99" ? null : {id: Number(line[2].slice(4)), role: "worker"};
         else if (line[0] === "viewer-layout" && line[1] === "current") layoutKeys.push(`${flag("--suite")}:${flag("--page")}:${flag("--driver")}`);
         else if (line[0] === "suite" && line[1] === "layout") value = {shape: SHAPES[`${current.suite}:${line[3]}:${flag("--driver")}`]};
-        return {json: async () => (value ? {code: 0, value, error: ""} : {code: 1, value: null, error: line[2] === "99" ? JSON.stringify({refused: "no agent 99", hint: "see journal agent list"}) : "none"})};
+        return {json: async () => (value ? {code: 0, value, error: ""} : {code: 1, value: null, error: line[2] === "row:99" ? JSON.stringify({refused: "no agent 99", hint: "see journal agent list"}) : "none"})};
     }));
 }
 

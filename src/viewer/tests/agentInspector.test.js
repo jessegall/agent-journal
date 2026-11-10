@@ -11,7 +11,7 @@ const before = (milliseconds) => new Date(Date.now() - milliseconds).toISOString
 const text = (element, selector) => element.querySelector(selector)?.textContent.replace(/\s+/g, " ").trim();
 const texts = (element, selector) => [...element.querySelectorAll(selector)].map((found) => found.textContent.replace(/\s+/g, " ").trim());
 
-const row = (overrides) => ({id: 12, role: "worker", program: "claude", session: "7c1f0d9e-52a4", created_at: before(7 * MINUTE), process_started_at: before(7 * MINUTE), ended_at: null, paused_at: null, parent_id: null, pid: 48211, ...overrides});
+const row = (overrides) => ({id: 12, number: 4, role: "worker", program: "claude", session: "7c1f0d9e-52a4", created_at: before(7 * MINUTE), process_started_at: before(7 * MINUTE), ended_at: null, paused_at: null, parent_id: null, pid: 48211, ...overrides});
 const facts = (overrides) => ({id: 12, given_name: "Lovelace", profile: "builder", model: "Sonnet 5.5", effort: "medium", context_percent: 41, cost_dollars: 3.18, state: "", instruction: "Rebuild the process queue inspector from the design.", tasks: [{state: "completed"}, {state: "completed"}, {state: "started"}], ...overrides});
 const inspection = (overrides) => ({id: 12, started_by: "Ada, the main agent", last_activity: before(12000), failed_runs: 0, recent: [], task: null, plan: null, ...overrides});
 
@@ -52,7 +52,7 @@ const WORKER = {
 test("opening an inspector is one read, for that agent alone", async () => {
     const {lines} = opened(WORKER);
     await settle();
-    expect(lines).toEqual(["usage inspector 12 --environment main"]);
+    expect(lines).toEqual(["usage inspector row:12 --environment main"]);
 });
 
 test("a running worker says who it is, how it does, what it does now and what it was told", async () => {
@@ -121,7 +121,7 @@ test("the helpers, the skills and the details are folds that start closed, and t
     await settle();
     expect(texts(element, "[data-agent-detail] .label")).toEqual(["Number:", "Session:", "Program:", "Type:", "Started by:", "Started:", "Process:"]);
     expect(element.textContent).not.toMatch(/created_at|creator_id|process_started_at|_id\b/);
-    expect(text(element, "[data-agent-detail]")).toBe("Number:12");
+    expect(text(element, "[data-agent-detail]")).toBe("Number:4");
 });
 
 const MAIN = {

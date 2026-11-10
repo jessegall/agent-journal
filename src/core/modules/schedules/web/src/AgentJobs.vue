@@ -1,11 +1,11 @@
 <script setup>
 import {ref} from "vue";
-import {Btn, RowList, WindowRoom, useWindow} from "@journal/window-kit";
+import {Btn, RowList, WindowRoom, agentRowArgument, useWindow} from "@journal/window-kit";
 import {nextRun, scheduleWords} from "./cron.js";
 
 // the jobs this agent scheduled for itself; a stop asks the agent to delete the job, so it stays listed until the agent has
 const view = useWindow();
-view.state["jobs.agent"] = String(view.agent);
+view.state["jobs.agent"] = agentRowArgument(view.agent);
 const {rows, failure, loaded} = view.props.jobs;
 const refusal = ref("");
 const firstLine = (prompt) => prompt.split("\n")[0];

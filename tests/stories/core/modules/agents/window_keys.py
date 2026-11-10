@@ -34,16 +34,16 @@ def test_agent_filter_state_reaches_only_the_list_key(agents_window):
 
 def test_a_card_requests_its_tool_and_transcript_without_the_list(agents_window):
     server, cookie = agents_window
-    agent_id = agent_number(server.story, helper_agent(server.story).id)
+    agent_id = helper_agent(server.story).id
     status, answer = window_data(server, cookie, keys=f"tool,transcript.{agent_id}", window="agents.agents",
-                                 query=f"environment=main&tool.agent={agent_id}")
+                                 query=f"environment=main&tool.agent={agent_number(server.story, agent_id)}")
     server.story.expect_rows(status == 200, set(answer["keys"]) == {"tool", f"transcript.{agent_id}"},
                              all(response["code"] == 0 for response in answer["keys"].values()))
 
 
 def test_the_standalone_transcript_reads_only_its_selected_agent_key(agents_window):
     server, cookie = agents_window
-    agent_id = agent_number(server.story, helper_agent(server.story).id)
+    agent_id = helper_agent(server.story).id
     status, answer = window_data(server, cookie, keys=f"transcript.{agent_id}", window="agents.transcript")
     server.story.expect_rows(status == 200, set(answer["keys"]) == {f"transcript.{agent_id}"},
                              answer["keys"][f"transcript.{agent_id}"]["code"] == 0)

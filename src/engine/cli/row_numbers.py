@@ -7,3 +7,6 @@ class RowNumbers:
 
     def number(self, model_name: str, row_id: int) -> int:
         return row_id
+
+    def environment_number(self, model_name: str, row_id: int, environment_id: int | None) -> int:
+        return row_id
