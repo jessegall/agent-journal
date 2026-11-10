@@ -14,6 +14,7 @@ from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PE
 from core.modules.helpers.errors.stale_session_error import StaleSessionError
 from engine.setting.setting_values import SettingValues
 from core.modules.agents.support.agent_label import AgentLabel
+from core.modules.agents.models.enums.end_reason import EndReason
 
 STALE_SESSION_SECONDS = 3600
 
@@ -31,15 +32,18 @@ class ColdSessions:
     def replaced(self, agent: Agent) -> Agent:
         if not self.is_cold(agent) and not self.exceeds_context_limit(agent):
             return agent
-        return self.bus.run(ReplaceAgentSession(agent.id), Actor.core(), environment_id=agent.environment_id)
+        return self.bus.run(ReplaceAgentSession(agent.id, self.end_reason(agent)), Actor.core(), environment_id=agent.environment_id)
 
     def replaced_silent(self, agent: Agent) -> Agent:
         if not self.is_silent(agent) and not self.exceeds_context_limit(agent):
             return agent
-        replaced = self.bus.run(ReplaceAgentSession(agent.id), Actor.core(), environment_id=agent.environment_id)
+        replaced = self.bus.run(ReplaceAgentSession(agent.id, self.end_reason(agent)), Actor.core(), environment_id=agent.environment_id)
         if replaced.session == agent.session:
             self.require_replaced(replaced)
         return replaced
+
+    def end_reason(self, agent: Agent) -> EndReason:
+        return EndReason.CONTEXT_LIMIT if self.exceeds_context_limit(agent) else EndReason.CACHE_PASSED
 
     def is_silent(self, agent: Agent) -> bool:
         activity = self.rows.required(AgentActivity, agent.id)
