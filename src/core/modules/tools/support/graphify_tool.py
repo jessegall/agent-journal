@@ -6,7 +6,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from engine.time.clock import Clock
-from core.base.git.hook_files_git import GIT_LIMIT_SECONDS
+from engine.git.hook_files_git import GIT_LIMIT_SECONDS
 from engine.errors.refusal import Refusal
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tools.support.graph_files import FAILED_FILE, RUNNING_FILE, GraphFiles

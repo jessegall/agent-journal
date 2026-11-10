@@ -1,7 +1,7 @@
 import subprocess
 from pathlib import Path
 
-from core.base.git.hook_files_git import HookFilesGit
+from engine.git.hook_files_git import HookFilesGit
 
 
 def test_tracks_distinguishes_tracked_and_untracked_files(tmp_path: Path):

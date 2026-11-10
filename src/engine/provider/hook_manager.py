@@ -3,7 +3,7 @@ from dataclasses import replace
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
-from core.base.git.hook_files_git import HookFilesGit
+from engine.git.hook_files_git import HookFilesGit
 from engine.provider.hook_tool_rule import HookToolRule
 from engine.provider.hook_effect import HookEffect
 from engine.provider.managed_hook import ManagedHook

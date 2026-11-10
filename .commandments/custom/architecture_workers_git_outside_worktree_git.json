@@ -48,7 +48,7 @@
             {
                 "all": [
                     {
-                        "fileMatches": "(^|/)core/base/git/hook_files_git\\.py$"
+                        "fileMatches": "(^|/)engine/git/hook_files_git\\.py$"
                     },
                     {
                         "any": [
