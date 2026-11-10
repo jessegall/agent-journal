@@ -33,10 +33,13 @@ class LayerProject:
         return SampleModule
 
     def check(self, *declarations: type[Module]) -> list[str]:
-        failures = LayerCheck(self.folder, LayerTable(), declarations).failures()
+        return self.check_with_allow_list([], *declarations)
+
+    def check_with_allow_list(self, allow_list: list[str], *declarations: type[Module]) -> list[str]:
+        failures = LayerCheck(self.folder, LayerTable(), declarations, allow_list).failures()
         reasons = "; ".join(failures)
         self.story.steps.append(f"layer check of {self.folder.name}")
-        self.story.path.append(f"layer check fails: {reasons}" if failures else "layer check passes")
+        self.story.path.append(f"layer check fails: {reasons}" if failures else f"layer check passes for {', '.join(declaration.name for declaration in declarations)}")
         return failures
 
     @staticmethod
