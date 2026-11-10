@@ -5,6 +5,8 @@ from core.modules.helpers.commands.helper_lifetimes.helper_lifetimes_subcommand 
 from core.modules.helpers.commands.make_provider_outage.make_provider_outage_handler import MakeProviderOutageHandler
 from core.modules.helpers.commands.send_program_fault.send_program_fault_handler import SendProgramFaultHandler
 from core.modules.helpers.commands.agent_mix.agent_mix_subcommand import AgentMixSubcommand
+from core.modules.helpers.commands.change_agent_driver.change_agent_driver_handler import ChangeAgentDriverHandler
+from core.modules.helpers.commands.change_agent_driver.change_agent_driver_subcommand import ChangeAgentDriverSubcommand
 from core.modules.helpers.migrations.m001_helper_limit_key import HelperCapKeyMigration
 from core.modules.helpers.migrations.m002_settle_old_helpers import RetireOldHelpersMigration
 from core.modules.helpers.migrations.m003_open_helper_jobs_index import OpenHelperJobsIndexMigration
@@ -81,10 +83,10 @@ class HelpersModule(Module):
     marks = PROGRAM_MARKS
     settings = HELPER_SETTINGS
     guards = [UsageCapGuard, ProviderOutageAccessGuard, OpenJobRetireGuard, ProviderOutageProgramGuard, ProgramSplitGuard]
-    handlers = [RecordJobNewSessionHandler, EndAgentLockdownHandler, GrantHelperHandler, RunGrantedCommandHandler, SetUsageLimitHandler, RefreshHourlyLimitsHandler, MakeProviderOutageHandler, SendProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]
+    handlers = [ChangeAgentDriverHandler, RecordJobNewSessionHandler, EndAgentLockdownHandler, GrantHelperHandler, RunGrantedCommandHandler, SetUsageLimitHandler, RefreshHourlyLimitsHandler, MakeProviderOutageHandler, SendProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=60), HelperLimitsTick(), "helper limits"), TickHandler(TickInterval(seconds=3), UsageLimitMarker(), "usage limit marks")]
     nudges = HELPER_NUDGES
     skills = [SkillDeclaration("journal-helpers", "Start a helper for a bounded read, send it more, stop it, and read its report; read it before the first helper command of a session", keywords=["helper start"])]
-    subcommands = [HelperLifetimesSubcommand, GrantHelperSubcommand, RunGrantedCommandSubcommand, ColdSessionsSubcommand, SetUsageLimitSubcommand, AgentMixSubcommand, StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand, MakeProviderOutageSubcommand, EndProviderOutagesSubcommand]
+    subcommands = [ChangeAgentDriverSubcommand, HelperLifetimesSubcommand, GrantHelperSubcommand, RunGrantedCommandSubcommand, ColdSessionsSubcommand, SetUsageLimitSubcommand, AgentMixSubcommand, StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand, MakeProviderOutageSubcommand, EndProviderOutagesSubcommand]
     listeners = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, HelperEndedListener, HelperJobMarkListener, HelperJobSourceListener, DeletedHelperSourceListener, ProviderOutageMarkListener]
     driver_rules = [UnstartedHelperRule, HelperReportRule, HelperSkillReadRule]

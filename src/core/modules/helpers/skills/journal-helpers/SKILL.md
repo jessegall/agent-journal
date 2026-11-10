@@ -41,6 +41,9 @@ dispatch`, and work that writes goes to one or stays with you.
 - `journal agent retire <number> --reason "<why>"` asks the person to retire a stopped helper for good: only a person
   retires an agent, so it stays until the person accepts. A retired helper keeps its record and transcript, but cannot
   receive another job or resume. Stop a running helper before retiring it; a report alone is not retirement.
+- `journal agent driver <number> --program <program> --model <model>` moves a stopped helper or worker to another program
+  or model. It stays the same agent, with its number, memories and tasks, and gets a new session; its profile must allow
+  the model. Stop a running agent first.
 - Its report comes to you as a line naming a message to read with `journal message read <n>`.
   `journal message reports` lists the reports nobody has read yet.
 - With a terminal the report wakes you, so you may stop. With none it arrives at your next hook, so keep working and read
