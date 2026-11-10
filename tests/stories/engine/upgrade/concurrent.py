@@ -1,7 +1,7 @@
 import threading
 
-from install.upgrade_journal import FINISHED_LINE, UpgradeJournal
-from install.upgrade_outcome import UpgradeOutcome
+from install.version_four.upgrade_journal import FINISHED_LINE, UpgradeJournal
+from install.version_four.upgrade_outcome import UpgradeOutcome
 from tests.stories.engine.upgrade.upgrade import expect_table_counts, upgrading
 from tests.stories.engine.upgrade.support.move_samples import PATH
 from tests.stories.support.story_checks import expect_absent_exists_version_four, expect_answers, expect_exists_version_four, expect_value

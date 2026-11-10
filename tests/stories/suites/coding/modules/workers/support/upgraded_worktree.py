@@ -1,5 +1,5 @@
 from engine.testing.stories.story import Story, story_container
-from install.upgrade_journal import UpgradeJournal
+from install.version_four.upgrade_journal import UpgradeJournal
 from server.work.booting_work import BootingWork
 from tests.stories.fixtures.worktree_upgrade import LEGACY_BRANCH, prepare_worktree_upgrade
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository

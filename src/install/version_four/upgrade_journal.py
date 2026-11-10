@@ -22,15 +22,15 @@ from install.errors.backup_write_error import BackupWriteError
 from install.code_replacement import CodeReplacement
 from install.hook_switch import HookSwitch
 from install.install_journal import InstallJournal
-from install.restore_version_four import RestoreVersionFour
+from install.version_four.restore_version_four import RestoreVersionFour
 from install.errors.stray_version_four_error import StrayVersionFourError
 from install.errors.server_wont_stop_error import ServerWontStopError
 from engine.connection.unix_connection import UnixConnection
-from install.upgrade_outcome import UpgradeOutcome
-from install.upgrade_report_file import UpgradeReportFile
-from install.upgrade_text import UpgradeText
+from install.version_four.upgrade_outcome import UpgradeOutcome
+from install.version_four.upgrade_report_file import UpgradeReportFile
+from install.version_four.upgrade_text import UpgradeText
 from install.backup.version_four_backup import BACKUP_FOLDER, DATABASE, VersionFourBackup
-from install.version_four_files import VersionFourFiles
+from install.version_four.version_four_files import VersionFourFiles
 from core.base.serving.server_files import ServerFiles
 
 DRY_RUN_LINE = "dry run: nothing was changed"

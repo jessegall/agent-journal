@@ -21,7 +21,7 @@ from core.modules.documents.upgrade.documents_move import DocumentsMove
 from core.modules.questions.questions_module import QuestionsModule
 from core.modules.questions.upgrade.questions_move import QuestionsMove
 from core.modules.questions.upgrade.question_links_move import QuestionLinksMove
-from install.upgrade_journal import UpgradeJournal
+from install.version_four.upgrade_journal import UpgradeJournal
 from tests.stories.core.modules.documents.support.trail_fixtures import Scenario, feature
 
 from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text

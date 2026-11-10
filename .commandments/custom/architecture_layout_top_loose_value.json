@@ -34,9 +34,6 @@
                 "file": "src/install/install_journal.py"
             },
             {
-                "file": "src/install/restore_version_four.py"
-            },
-            {
                 "file": "src/install/run_drain.py"
             },
             {
@@ -44,21 +41,6 @@
             },
             {
                 "file": "src/install/server_stop.py"
-            },
-            {
-                "file": "src/install/upgrade_journal.py"
-            },
-            {
-                "file": "src/install/upgrade_report_file.py"
-            },
-            {
-                "file": "src/install/upgrade_text.py"
-            },
-            {
-                "file": "src/install/version_four.py"
-            },
-            {
-                "file": "src/install/version_four_files.py"
             },
             {
                 "file": "src/install/working_tree_install.py"

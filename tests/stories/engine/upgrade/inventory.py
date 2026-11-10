@@ -1,5 +1,5 @@
 from engine.module.module_finder import DEFAULT_MODULE_LISTS
-from install.upgrade_text import BOOKKEEPING_TABLES
+from install.version_four.upgrade_text import BOOKKEEPING_TABLES
 from tests.stories.fixtures.version_four import table_names, version_four_fixture, with_unknown_table
 
 UNCLAIMED_TABLE = "old_reports"

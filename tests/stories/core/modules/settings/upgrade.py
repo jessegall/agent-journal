@@ -19,7 +19,7 @@ def test_a_setting_no_module_declares_is_skipped_with_its_number_and_reason(new_
 def test_a_declared_key_moves_once_per_scope_with_its_value_and_a_second_one_for_the_same_scope_is_skipped(new_story):
     import sqlite3
 
-    from install.upgrade_journal import UpgradeJournal
+    from install.version_four.upgrade_journal import UpgradeJournal
     from tests.stories.engine.upgrade.support.move_samples import PATH
     from tests.stories.fixtures.version_four import version_four_fixture
 

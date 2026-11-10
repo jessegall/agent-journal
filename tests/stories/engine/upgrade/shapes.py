@@ -1,6 +1,6 @@
 import pytest
 
-from install.upgrade_journal import UpgradeJournal
+from install.version_four.upgrade_journal import UpgradeJournal
 from tests.stories.engine.upgrade.upgrade import content, count, expect_count
 from tests.stories.fixtures.version_four import version_four_fixture, with_message_rows, with_unknown_table, strip_release_columns
 from engine.testing.expectations.expect_row import expect_row

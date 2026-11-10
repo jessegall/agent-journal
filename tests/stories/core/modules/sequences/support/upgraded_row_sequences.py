@@ -4,7 +4,7 @@ from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
-from install.upgrade_journal import UpgradeJournal
+from install.version_four.upgrade_journal import UpgradeJournal
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.fixtures.row_sequences import ROW_SEQUENCES, prepare_row_sequences
 from tests.stories.fixtures.version_four import version_four_fixture

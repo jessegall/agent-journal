@@ -1,4 +1,4 @@
-from install.upgrade_journal import UpgradeJournal
+from install.version_four.upgrade_journal import UpgradeJournal
 from tests.stories.engine.upgrade.upgrade import upgrade, upgrading
 from tests.stories.engine.upgrade.support.move_samples import PATH
 from engine.testing.expectations.expect_row import expect_row

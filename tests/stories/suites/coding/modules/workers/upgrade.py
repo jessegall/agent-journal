@@ -1,6 +1,6 @@
 import sqlite3
 
-from install.upgrade_journal import UpgradeJournal
+from install.version_four.upgrade_journal import UpgradeJournal
 from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 from tests.stories.fixtures.version_four import version_four_fixture
 from tests.stories.support.story_checks import expect_value_with

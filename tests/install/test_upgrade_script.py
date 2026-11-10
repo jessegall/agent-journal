@@ -60,7 +60,7 @@ def test_a_project_without_a_version_4_journal_is_told_so(tmp_path):
 
 
 def test_the_upgrade_is_refused_while_a_server_answers_and_says_how_to_stop_it(tmp_path):
-    from install.upgrade_journal import UpgradeJournal
+    from install.version_four.upgrade_journal import UpgradeJournal
     from tests.install.support import ServerScratch
 
     server_scratch = ServerScratch(tmp_path)

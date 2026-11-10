@@ -1,6 +1,6 @@
 import sqlite3
 
-from install.version_four_files import VersionFourFiles
+from install.version_four.version_four_files import VersionFourFiles
 from tests.install.test_version_four_backup import journal_with_version_four
 
 

@@ -3,8 +3,8 @@ from pathlib import Path
 
 from engine.database.database import Database
 from engine.database.statement import Statement
-from install.upgrade_journal import UpgradeJournal
-from install.upgrade_outcome import UpgradeOutcome
+from install.version_four.upgrade_journal import UpgradeJournal
+from install.version_four.upgrade_outcome import UpgradeOutcome
 from tests.stories.engine.upgrade.support.move_samples import FAILURES, ORDER, PATH, version_four_database
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_absent_exists_version_four, expect_answers, expect_bytes_database_home, expect_changed_code_outcome, expect_outcome_with, expect_value

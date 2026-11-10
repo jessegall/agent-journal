@@ -25,7 +25,7 @@
             {"testCode": true},
             {"fileMatches": "(^|/)src/engine/time/clock\\.py$"},
             {"fileMatches": "(^|/)src/(engine/testing|core/modules/[^/]+/testing)/"},
-            {"fileMatches": "(^|/)src/install/restore_version_four\\.py$"}
+            {"fileMatches": "(^|/)src/install/version_four/restore_version_four\\.py$"}
         ]
     },
     "sin": {

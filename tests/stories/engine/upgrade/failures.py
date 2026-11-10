@@ -6,9 +6,9 @@ import pytest
 
 from engine.change.event_log import EventLog
 from engine.database.database import Database
-from install.restore_version_four import RestoreVersionFour
-from install.upgrade_journal import UpgradeJournal
-from install.version_four_files import VersionFourFiles
+from install.version_four.restore_version_four import RestoreVersionFour
+from install.version_four.upgrade_journal import UpgradeJournal
+from install.version_four.version_four_files import VersionFourFiles
 from tests.stories.engine.upgrade.support.move_samples import ORDER, PATH, TagsMove
 from tests.stories.engine.upgrade.upgrade import expect_upgrade, upgrade, upgrading
 from tests.stories.support.story_checks import expect_code_outcome, expect_outcome_with

@@ -2,8 +2,8 @@ import json
 
 from engine.database.database import Database
 from core.modules.processes.migrations.m021_stock_reader_test_counts import StockReaderTestCountsMigration
-from install.restore_version_four import RestoreVersionFour
-from install.upgrade_journal import UpgradeJournal
+from install.version_four.restore_version_four import RestoreVersionFour
+from install.version_four.upgrade_journal import UpgradeJournal
 from tests.stories.fixtures.version_four import version_four_fixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from engine.testing.expectations.expect_row import expect_row

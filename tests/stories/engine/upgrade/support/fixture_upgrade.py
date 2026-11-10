@@ -1,5 +1,5 @@
-from install.upgrade_journal import FINISHED_LINE, UpgradeJournal
-from install.upgrade_outcome import UpgradeOutcome
+from install.version_four.upgrade_journal import FINISHED_LINE, UpgradeJournal
+from install.version_four.upgrade_outcome import UpgradeOutcome
 from tests.stories.fixtures.version_four import version_four_fixture
 
 
