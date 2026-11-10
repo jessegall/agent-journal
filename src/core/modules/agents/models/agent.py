@@ -14,6 +14,7 @@ UPGRADE_RETIREMENT_REASON = "Over the kept limit at the upgrade to kept agents"
 PID_FIELD = "pid"
 MAIN_ROLE = "main"
 MAIN_TITLE = "Main agent"
+MAIN_NUMBER = 1
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -30,6 +31,7 @@ class Agent(EnvironmentScoped, Model):
     shown_properties = ("activity", "display_name", "working_role")
 
     environment_id: int = 0
+    number: int = 0
     parent_id: int | None = None
     creator_id: int
     session: str

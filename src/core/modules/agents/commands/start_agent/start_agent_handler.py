@@ -7,6 +7,7 @@ from engine.enums.actor_type import ActorType
 from engine.caller.process_chain import ProcessChain
 from engine.command.context import Context
 from engine.command.handler import Handler
+from core.modules.agents.support.agent_numbers import AgentNumbers
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.single_main_agent import SingleMainAgent
 from engine.errors.refusal import Refusal
@@ -23,11 +24,12 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
     command = StartAgent
     caller_prepares = True
 
-    def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, types: HelperTypeBook, sandbox: ShellSandbox, single_main: SingleMainAgent) -> None:
+    def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, types: HelperTypeBook, sandbox: ShellSandbox, single_main: SingleMainAgent, numbers: AgentNumbers) -> None:
         self.agents, self.repository, self.chain = agents, repository, chain
         self.types = types
         self.sandbox = sandbox
         self.single_main = single_main
+        self.numbers = numbers
 
     def prepare(self, command: StartAgent, actor: Actor) -> None:
         if self.types.find(command.role).access is Access.READ:
@@ -56,7 +58,13 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
                       session=command.session, program=command.program, role=command.role, pid=command.pid,
                       process_started_at=command.process_started_at or self.chain.start_timestamp(command.pid),
                       program_model=command.program_model, profile=command.profile, given_name=command.given_name)
-        return self.repository.save(agent, context)
+        try:
+            return self.numbered(agent, context)
+        except Refusal:
+            return self.numbered(agent, context)
+
+    def numbered(self, agent: Agent, context: Context) -> Agent:
+        return self.repository.save(replace(agent, number=self.numbers.next_number(agent.environment_id, agent.role)), context)
 
     def check_resume(self, agent: Agent, command: StartAgent, environment_id: int) -> None:
         if agent.environment_id != environment_id:

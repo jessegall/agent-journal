@@ -28,6 +28,8 @@ from core.modules.agents.commands.launch_agent.launch_agent_subcommand import La
 from core.modules.agents.commands.agent_people.agent_people_subcommand import AgentPeopleSubcommand
 from core.modules.agents.commands.agent_programs.agent_programs_subcommand import AgentProgramsSubcommand
 from core.modules.agents.guards.agent_name_guard import AgentNameGuard
+from core.modules.agents.guards.number_guard import NumberGuard
+from core.modules.agents.migrations.m022_agent_number import AgentNumberMigration
 from core.modules.agents.guards.retired_delete_guard import RetiredDeleteGuard
 from core.modules.agents.guards.retired_row_guard import RetiredRowGuard
 from core.modules.agents.commands.retire_agent.retire_agent_handler import RetireAgentHandler
@@ -126,9 +128,9 @@ class AgentsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Agent, query=AgentQuery, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"])]
     moves = [AgentsMove]
-    migrations = [MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
+    migrations = [AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
     nudges = [AGENT_START_FAILED, *REPORT_NUDGES]
-    guards = [AgentNameGuard, RetiredRowGuard, RetiredDeleteGuard, AgentChatGuard]
+    guards = [AgentNameGuard, NumberGuard, RetiredRowGuard, RetiredDeleteGuard, AgentChatGuard]
     handlers = [HaltAgentHandler, EndAgentHaltHandler, ReplaceAgentSessionHandler, WarnInstructionImportsHandler, RemoveInstructionImportHandler, RecordAgentInterruptHandler, SetAgentUsageLimitHandler, RetireAgentHandler, EndReplacedMainHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
     subcommands = [RemoveInstructionImportSubcommand, RecordAgentInterruptSubcommand, RetireAgentSubcommand, ShowMainAgentsSubcommand, MainSessionsSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, AgentPeopleSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
     bindings = {CallerResolver: AgentCallerResolver, AgentCheckouts: AgentProjectCheckouts, AgentRoleReader: AgentRoleRows}
