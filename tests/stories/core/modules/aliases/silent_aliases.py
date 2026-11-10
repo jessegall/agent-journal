@@ -8,12 +8,13 @@ from core.modules.aliases.ticks.silent_alias_marking import SilentAliasMarking
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.testing.story import Story
 from tests.stories.core.modules.aliases.saved_commands import BuildSaved, read_hook
-from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run, parts_started
+from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, parts_started
 from tests.stories.support.story_checks import expect_value
 
 READ_NOTES = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
@@ -58,6 +59,7 @@ def test_an_alias_is_marked_silent_only_once_its_run_has_printed_nothing_for_30_
 
 def test_the_next_run_of_a_silent_alias_is_refused_until_the_alias_is_edited(new_story):
     story = silent_run(new_story)
+    end_run(story, story.row(Process, 1), "")
     for hook in read_hook(story, {"build-npm": "npm run build"}):
         hook.expect_denied(RUN, REFUSAL)
         edited_alias(story)
