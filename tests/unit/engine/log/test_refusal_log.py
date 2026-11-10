@@ -9,7 +9,7 @@ from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.registry import Registry
 from engine.errors.refusal import Refusal
 from engine.log.refusal_log import RefusalLog
-from tests.unit.core.base.sample_container import sample_container
+from tests.unit.engine.samples.sample_container import sample_container
 from tests.unit.engine.command.test_bus import BlockedItem, BlockedItemHandler
 
 AGENT = Actor(7, ActorType.AGENT)

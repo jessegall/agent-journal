@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from tests.unit.core.base.scope_samples import empty_database_scopes
+from tests.unit.engine.samples.scope_samples import empty_database_scopes
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.change.change import Change
@@ -55,7 +55,7 @@ def entry(listener: type[SaveListener] | type[DeletionListener], timing: Listene
     return ListenerEntry(listener.name, EventPattern(listener.event), timing, DottedPath.class_path(listener), position)
 
 
-UNUSED = ListenerEntry("shelves.count", EventPattern("shelf.create"), ListenerTiming.SAVE, DottedPath("tests.unit.core.base.samples.listener_sample:ShelfCounter"), 9)
+UNUSED = ListenerEntry("shelves.count", EventPattern("shelf.create"), ListenerTiming.SAVE, DottedPath("tests.unit.engine.samples.listener_sample:ShelfCounter"), 9)
 REGISTRY = Registry("abc", {}, {}, {}, (), (entry(SaveSecond, ListenerTiming.SAVE, 2), entry(SaveFirst, ListenerTiming.SAVE, 1),
                                           entry(ClearItemNotes, ListenerTiming.DELETION, 1), UNUSED))
 CONTEXT = Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), MakeItem(title="Dune"))
@@ -84,6 +84,6 @@ def test_deletion_listeners_run_only_for_deletions():
 
 
 def test_a_listener_whose_event_does_not_match_is_never_imported():
-    sys.modules.pop("tests.unit.core.base.samples.listener_sample", None)
+    sys.modules.pop("tests.unit.engine.samples.listener_sample", None)
     listeners().run_deletion_listeners(Change(Item(id=4, version=1, title="Dune"), None, CONTEXT))
-    assert "tests.unit.core.base.samples.listener_sample" not in sys.modules
+    assert "tests.unit.engine.samples.listener_sample" not in sys.modules

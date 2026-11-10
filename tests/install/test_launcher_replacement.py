@@ -5,8 +5,8 @@ import pytest
 
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from core.base.serving.code_handover import CodeHandover
-from core.base.serving.launcher_replacement import LauncherReplacement
+from engine.serving.code_handover import CodeHandover
+from engine.serving.launcher_replacement import LauncherReplacement
 
 
 @pytest.fixture

@@ -7,7 +7,7 @@ import os
 from engine.hosting.server_restart_state import RESTART_LIMIT_SECONDS
 from engine.version.journal_version import JOURNAL_VERSION
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
-from core.base.serving.server_files import ServerFiles
+from engine.serving.server_files import ServerFiles
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story
 

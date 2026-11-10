@@ -32,7 +32,7 @@ from engine.registry.window_entry import WindowEntry
 from dataclasses import replace
 from tests.unit.engine.command.test_commands import MakeItem
 
-SAMPLE = "tests.unit.core.base.samples.registry_sample:SampleGuard"
+SAMPLE = "tests.unit.engine.samples.registry_sample:SampleGuard"
 ENTRIES = {
     "models": {"item": {"module": "items", "model": "tests.unit.engine.model.test_model:Item", "commands": [], "excluded_subcommands": []}},
     "handlers": {DottedPath.class_path(MakeItem).text: "tests.unit.engine.command.test_commands:MakeItem"},
@@ -172,12 +172,12 @@ def test_a_journal_never_synced_is_told_to_sync(tmp_path):
 
 
 def test_a_class_named_by_its_path_is_imported_only_when_asked_for(database):
-    sys.modules.pop("tests.unit.core.base.samples.registry_sample", None)
+    sys.modules.pop("tests.unit.engine.samples.registry_sample", None)
     Registry.read(database)
-    assert "tests.unit.core.base.samples.registry_sample" not in sys.modules
+    assert "tests.unit.engine.samples.registry_sample" not in sys.modules
     assert DottedPath(SAMPLE).loaded().__name__ == "SampleGuard"
     with pytest.raises(DottedPathError):
-        DottedPath("tests.unit.core.base.samples.registry_sample:Nothing").loaded()
+        DottedPath("tests.unit.engine.samples.registry_sample:Nothing").loaded()
 
 
 def test_a_window_and_a_suite_saved_before_icons_options_counts_and_presets_read_with_their_defaults(tmp_path):

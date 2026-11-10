@@ -100,7 +100,7 @@
                 "fileMatches": "(^|/)core/modules/(plugins/support/|voices/support/voice_choice\\.py$)"
             },
             {
-                "fileMatches": "(^|/)src/((core/base|engine)/git/project_files|core/modules/tools/support/graphify_tool)\\.py$"
+                "fileMatches": "(^|/)src/(engine/git/project_files|core/modules/tools/support/graphify_tool)\\.py$"
             },
             {
                 "fileMatches": "^scripts/"

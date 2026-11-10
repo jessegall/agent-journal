@@ -9,13 +9,13 @@ from engine.cli.errors.usage_error import UsageError
 from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.model_entry import ModelEntry
 from engine.registry.registry import Registry
-from tests.unit.core.base.sample_container import sample_container
+from tests.unit.engine.samples.sample_container import sample_container
 
-UNUSED = "tests.unit.core.base.samples.lookup_unused_sample"
+UNUSED = "tests.unit.engine.samples.lookup_unused_sample"
 
 
 def lookup(tmp_path) -> SubcommandLookup:
-    subcommands = {"item make": DottedPath("tests.unit.core.base.samples.lookup_sample:ItemMakeOwn"), "item archive": DottedPath(f"{UNUSED}:ItemArchiveOwn")}
+    subcommands = {"item make": DottedPath("tests.unit.engine.samples.lookup_sample:ItemMakeOwn"), "item archive": DottedPath(f"{UNUSED}:ItemArchiveOwn")}
     models = {"item": ModelEntry("items", DottedPath("tests.unit.engine.model.test_model:Item"), ())}
     return sample_container(tmp_path, Registry("abc", models, {}, subcommands, (), ())).get(SubcommandLookup)
 

@@ -7,7 +7,7 @@ from engine.profile.model_tier import ModelTier
 from engine.provider.program_model import ProgramModel
 from engine.provider.program_server_file import ProgramServerFile
 from engine.provider.tool_server import ToolServer
-from tests.unit.core.base.samples.program_sample import SampleProgram
+from tests.unit.engine.samples.program_sample import SampleProgram
 
 
 class SampleServerFile(ProgramServerFile):

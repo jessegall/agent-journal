@@ -3,7 +3,7 @@ import select
 import socket
 import subprocess
 import sys
-from core.base.serving.server_limits import PROOF_LIMIT_SECONDS
+from engine.serving.server_limits import PROOF_LIMIT_SECONDS
 from dataclasses import astuple
 from pathlib import Path
 
@@ -11,7 +11,7 @@ from engine.version.code_versions import CodeVersions
 from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel
 from server.handover.handover_descriptors import READY_BYTE, HandoverDescriptors
-from core.base.serving.server_files import ServerFiles
+from engine.serving.server_files import ServerFiles
 
 KILLED_WAIT_SECONDS = 5
 PYTHON_PATH_VARIABLE = "PYTHONPATH"

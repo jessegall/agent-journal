@@ -44,7 +44,7 @@ class FutureCoreModule(Module):
 
 def test_the_finder_loads_the_listed_plugins_and_refuses_one_for_another_core(tmp_path):
     home = JournalHome(tmp_path)
-    home.module_list.write_text(json.dumps(["tests.unit.core.base.samples.module_sample:ItemsModule"]))
+    home.module_list.write_text(json.dumps(["tests.unit.engine.samples.module_sample:ItemsModule"]))
     assert [module.name for module in ModuleFinder(home).modules()][-1] == "items"
     home.module_list.write_text(json.dumps(["tests.unit.engine.module.test_module_order:FutureCoreModule"]))
     with pytest.raises(ModuleError, match="needs core >=6"):

@@ -2,8 +2,8 @@
 
   .venv/bin/python scripts/refactoring/rename.py Clock Timepiece
   .venv/bin/python scripts/refactoring/rename.py Agents.live current
-  .venv/bin/python scripts/refactoring/rename.py core.base.chain.LEADS CONTROL_KEYWORDS
-  .venv/bin/python scripts/refactoring/rename.py src/core/base/chain.py:Chain.spans.line text
+  .venv/bin/python scripts/refactoring/rename.py engine.text.chain.LEADS CONTROL_KEYWORDS
+  .venv/bin/python scripts/refactoring/rename.py src/engine/text/chain.py:Chain.spans.line text
   .venv/bin/python scripts/refactoring/rename.py --list=renames.txt --dry-run
 
 What the old name is decides what is renamed:

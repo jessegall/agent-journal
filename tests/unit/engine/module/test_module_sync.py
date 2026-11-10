@@ -16,11 +16,11 @@ from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.registry.template_entry import TemplateEntry
 from engine.template.template_declaration import TemplateDeclaration
 
-from tests.unit.core.base.samples.module_copy import items_module_copy
-from tests.unit.core.base.samples.sync_sample import ItemsModule
+from tests.unit.engine.samples.module_copy import items_module_copy
+from tests.unit.engine.samples.sync_sample import ItemsModule
 
-ITEMS = "tests.unit.core.base.samples.sync_sample:ItemsModule"
-ITEM_COUNT = "tests.unit.core.base.samples.sync_sample:ItemCountModule"
+ITEMS = "tests.unit.engine.samples.sync_sample:ItemsModule"
+ITEM_COUNT = "tests.unit.engine.samples.sync_sample:ItemCountModule"
 EVENT = Statement("INSERT INTO events (actor_id, row_id, name, row_table, command, created_at) VALUES (1, 1, 'item.create', 'items', 'MakeItem', '2026')")
 
 

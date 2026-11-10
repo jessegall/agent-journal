@@ -60,7 +60,7 @@ def entry(guard: type[Guard], position: int, short_flag: str = "") -> GuardEntry
     return GuardEntry(guard.name, EventPattern(guard.event), DottedPath.class_path(guard), position, short_flag)
 
 
-UNUSED = GuardEntry("shelves.weekdays-only", EventPattern("shelf.update"), DottedPath("tests.unit.core.base.samples.unused_guard_sample:ShelfGuard"), 9, "")
+UNUSED = GuardEntry("shelves.weekdays-only", EventPattern("shelf.update"), DottedPath("tests.unit.engine.samples.unused_guard_sample:ShelfGuard"), 9, "")
 REGISTRY = Registry("abc", {}, {}, {}, (entry(SecondGuard, 3), entry(NoSecondItem, 2, "confirm"), entry(PlaceholderLifecycleGuard, 1), UNUSED), ())
 
 
@@ -105,6 +105,6 @@ def test_a_guard_that_does_not_apply_is_passed_over_but_the_lifecycle_never_is()
 
 
 def test_a_guard_whose_event_does_not_match_is_never_imported():
-    sys.modules.pop("tests.unit.core.base.samples.unused_guard_sample", None)
+    sys.modules.pop("tests.unit.engine.samples.unused_guard_sample", None)
     guards().ask(change(frozenset({"items.no-second-item"})))
-    assert "tests.unit.core.base.samples.unused_guard_sample" not in sys.modules
+    assert "tests.unit.engine.samples.unused_guard_sample" not in sys.modules

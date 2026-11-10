@@ -11,8 +11,8 @@ from core.modules.updates.support.release_source import ReleaseSource
 from tests.stories.core.modules.updates.support.release_folder import ARCHIVE, installed_marker, published, released_story
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_absent_last, expect_answers
-from core.base.serving.code_handover import CodeHandover
-from core.base.serving.server_files import ServerFiles
+from engine.serving.code_handover import CodeHandover
+from engine.serving.server_files import ServerFiles
 
 
 def test_a_journal_whose_release_is_not_recorded_is_told_how_to_put_the_newest_in(new_story, tmp_path):

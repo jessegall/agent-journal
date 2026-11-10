@@ -22,12 +22,6 @@ PLUGIN_FILE_PATTERNS =[".journal/plugins/*/journal-plugin.json"]
 TEST_ROOTS = ("tests/unit", "tests/stories")
 SCRIPTS_FOLDER = "scripts"
 HELPER_FOLDERS = {"support", "samples", "fixtures", "testdata", "web", "__pycache__"}
-ENGINE_SOURCE = "src/core/base"
-ENGINE_TARGET = "src/engine"
-LAYER_PATTERN_LINE = 'LayerPattern(re.compile(r"{}/"), LayerTier.ENGINE)'
-LAYER_PATTERN_OLD_FOLDER = LAYER_PATTERN_LINE.format(ENGINE_SOURCE)
-LAYER_PATTERN_TWO_FOLDERS = LAYER_PATTERN_LINE.format("src/(?:core/base|engine)")
-LAYER_PATTERN_NEW_FOLDER = LAYER_PATTERN_LINE.format(ENGINE_TARGET)
 DOTTED_SEPARATORS = ".:"
 PATH_SEPARATORS = "/"
 SOURCE_TOP = "src/"
@@ -327,19 +321,6 @@ def unmatched_test_folders(root: Path, plan: MovePlan) -> list[str]:
     return sorted(orphan_test_folders(root, plan) - orphan_test_folders(root, EMPTY_PLAN))
 
 
-def engine_layer_line(root: Path, plan: MovePlan) -> str | None:
-    if not any(source.is_relative_to(root / ENGINE_SOURCE) and target.is_relative_to(root / ENGINE_TARGET) for source, target in plan.file_targets.items()):
-        return None
-    engine_files = [path for path in folder_files(root, root / ENGINE_SOURCE) if path.suffix == ".py" and path.name != "__init__.py" and path not in plan.file_targets]
-    return LAYER_PATTERN_TWO_FOLDERS if engine_files else LAYER_PATTERN_NEW_FOLDER
-
-
-def with_engine_layer_line(text: str, line: str | None) -> str:
-    if line is None:
-        return text
-    return text.replace(LAYER_PATTERN_OLD_FOLDER, line).replace(LAYER_PATTERN_TWO_FOLDERS, line)
-
-
 def plan_renames(root: Path, pairs: Sequence[tuple[Path, Path]]) -> tuple[Rename, ...]:
     dotted = [Rename(module_name(root, source), module_name(root, target), DOTTED_SEPARATORS) for source, target in pairs]
     paths = [Rename(relative_text(root, source), relative_text(root, target), PATH_SEPARATORS) for source, target in pairs]
@@ -422,7 +403,6 @@ def planned_files(root: Path, plan: MovePlan) -> dict[Path, str]:
     unmatched = unmatched_test_folders(root, plan)
     if unmatched:
         raise MoveError("test folders with no source folder after the move:\n" + "\n".join(unmatched))
-    layer_line = engine_layer_line(root, plan)
     changed: dict[Path, str] = {}
     unplaced: list[str] = []
     for path in python_files(root):
@@ -430,7 +410,7 @@ def planned_files(root: Path, plan: MovePlan) -> dict[Path, str]:
         unplaced.extend(rewrite.unplaced)
         if plan.guards_file(path) and rewrite.has_edits_outside_imports:
             raise MoveError(f"{rewrite.label}: the move would change a line of the moved file that is not an import")
-        edited = with_engine_layer_line(rewrite.edited_text(), layer_line)
+        edited = rewrite.edited_text()
         if edited != rewrite.text:
             changed[path] = edited
     moved_paths = {relative_text(root, source): relative_text(root, target) for source, target in plan.file_targets.items()}
@@ -516,15 +496,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", nargs="?")
     parser.add_argument("target", nargs="?")
-    parser.add_argument("--engine-area", help="moves src/core/base/<area> to src/engine/<area>")
     parser.add_argument("--branch", help="applies the move to this open branch in a temporary worktree and commits it there")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--leave-alias", action="store_true")
     arguments = parser.parse_args()
-    source = f"{ENGINE_SOURCE}/{arguments.engine_area}" if arguments.engine_area else arguments.source
-    target = f"{ENGINE_TARGET}/{arguments.engine_area}" if arguments.engine_area else arguments.target
+    source, target = arguments.source, arguments.target
     if source is None or target is None:
-        parser.error("name a source and a target, or an engine area")
+        parser.error("name a source and a target")
     root = Path(__file__).resolve().parents[1]
     try:
         report = move_branch(root, arguments.branch, source, target) if arguments.branch else move_path(root, root / source, root / target, arguments.leave_alias, arguments.dry_run)

@@ -2,7 +2,7 @@ import subprocess
 import time
 
 from engine.journal.journal_home import JournalHome
-from core.base.serving.update_steps import UpdateSteps
+from engine.serving.update_steps import UpdateSteps
 
 STEP_LIMIT_SECONDS = 90
 

@@ -8,7 +8,7 @@ from pathlib import Path
 from engine.database.database import Database
 from engine.database.registry_table import RegistryTable
 from engine.log.system_log_writer import LOG_LIMIT_BYTES
-from core.base.serving.server_files import ServerFiles
+from engine.serving.server_files import ServerFiles
 from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.server.support.code_folders import SampleCodeFolders
 from tests.stories.server.support.server_client import server_story

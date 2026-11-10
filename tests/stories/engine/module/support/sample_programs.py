@@ -1,5 +1,5 @@
 from engine.module.module import Module
-from tests.unit.core.base.samples.program_sample import SampleProgram
+from tests.unit.engine.samples.program_sample import SampleProgram
 
 PATH = "tests.stories.engine.module.support.sample_programs"
 

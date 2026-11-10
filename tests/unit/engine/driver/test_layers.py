@@ -8,7 +8,7 @@ from engine.driver.overlay import Overlay
 from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.overlay_entry import OverlayEntry
 from engine.time.timestamp import Timestamp
-from tests.unit.core.base.sample_container import empty_registry
+from tests.unit.engine.samples.sample_container import empty_registry
 
 START = datetime(2026, 10, 31, 9, tzinfo=timezone.utc)
 

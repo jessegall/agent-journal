@@ -14,7 +14,7 @@ from core.modules.updates.models.enums.update_step import UpdateStep
 from core.modules.updates.commands.record_release_install.record_release_install import RecordReleaseInstall
 from core.modules.updates.support.release_install_steps import ReleaseInstallSteps
 from core.modules.updates.support.release_source import ReleaseSource
-from core.base.serving.code_handover import CodeHandover
+from engine.serving.code_handover import CodeHandover
 
 
 class InstallReleaseHandler(Handler[InstallRelease, ReleaseInstall]):

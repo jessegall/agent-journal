@@ -1,7 +1,7 @@
 import json
 
 from engine.provider.program_table import ProgramTable
-from tests.unit.core.base.samples.program_sample import SampleProgram
+from tests.unit.engine.samples.program_sample import SampleProgram
 
 
 def test_program_table_serializes_the_providers_matcher_fields(monkeypatch):

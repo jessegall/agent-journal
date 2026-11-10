@@ -12,14 +12,10 @@ assert SPECIFICATION is not None and SPECIFICATION.loader is not None
 script = importlib.util.module_from_spec(SPECIFICATION)
 SPECIFICATION.loader.exec_module(script)
 
-AREA = "src/core/base/sample_area"
+AREA = "src/core/former/sample_area"
 AREA_TARGET = "src/engine/sample_area"
-LOOSE_FILE = "src/core/base/sample_deadline.py"
+LOOSE_FILE = "src/core/former/sample_deadline.py"
 LOOSE_TARGET = "src/engine/time/sample_deadline.py"
-LAYER_LINE = 'PATTERN = LayerPattern(re.compile(r"{}/"), LayerTier.ENGINE)\n'
-OLD_LAYER_LINE = LAYER_LINE.format("src/core/base")
-TWO_FOLDERS_LAYER_LINE = LAYER_LINE.format("src/(?:core/base|engine)")
-NEW_LAYER_LINE = LAYER_LINE.format("src/engine")
 
 
 def write(root, relative, text=""):
@@ -33,7 +29,7 @@ def area_project(root):
     write(root, f"{AREA}/__init__.py")
     write(root, f"{AREA}/reach.py", "class Reach:\n    pass\n")
     write(root, f"{AREA}/inner/__init__.py")
-    write(root, f"{AREA}/inner/rule.py", "from core.base.sample_area.reach import Reach\n")
+    write(root, f"{AREA}/inner/rule.py", "from core.former.sample_area.reach import Reach\n")
 
 
 def moved_area(root, **options):
@@ -42,7 +38,7 @@ def moved_area(root, **options):
 
 def test_a_folder_moves_in_one_pass_with_every_import_rewritten(tmp_path):
     area_project(tmp_path)
-    importer = write(tmp_path, "src/core/user.py", "from core.base.sample_area.reach import Reach\nfrom core.base.sample_area.inner.rule import Reach as Other\n")
+    importer = write(tmp_path, "src/core/user.py", "from core.former.sample_area.reach import Reach\nfrom core.former.sample_area.inner.rule import Reach as Other\n")
     moved_area(tmp_path)
     assert importer.read_text() == "from engine.sample_area.reach import Reach\nfrom engine.sample_area.inner.rule import Reach as Other\n"
     assert (tmp_path / AREA_TARGET / "inner/rule.py").read_text() == "from engine.sample_area.reach import Reach\n"
@@ -75,80 +71,64 @@ def test_a_package_file_with_text_at_a_target_package_file_refuses_the_move(tmp_
 
 def test_the_prefix_is_rewritten_in_strings_and_dotted_paths(tmp_path):
     area_project(tmp_path)
-    importer = write(tmp_path, "src/core/user.py", 'MODULE = "core.base.sample_area.reach"\nCLASS_PATH = "core.base.sample_area.reach:Reach"\nFOLDER = "core.base.sample_area"\n')
+    importer = write(tmp_path, "src/core/user.py", 'MODULE = "core.former.sample_area.reach"\nCLASS_PATH = "core.former.sample_area.reach:Reach"\nFOLDER = "core.former.sample_area"\n')
     moved_area(tmp_path)
     assert importer.read_text() == 'MODULE = "engine.sample_area.reach"\nCLASS_PATH = "engine.sample_area.reach:Reach"\nFOLDER = "engine.sample_area"\n'
 
 
 def test_a_longer_folder_name_keeps_its_prefix(tmp_path):
     area_project(tmp_path)
-    importer = write(tmp_path, "src/core/user.py", "from core.base.sample_area_list.row import Row\n")
+    importer = write(tmp_path, "src/core/user.py", "from core.former.sample_area_list.row import Row\n")
     moved_area(tmp_path)
-    assert importer.read_text() == "from core.base.sample_area_list.row import Row\n"
+    assert importer.read_text() == "from core.former.sample_area_list.row import Row\n"
 
 
 def test_a_file_path_in_a_python_string_is_rewritten(tmp_path):
     area_project(tmp_path)
-    importer = write(tmp_path, "src/core/user.py", 'FILE = "src/core/base/sample_area/reach.py"\n')
+    importer = write(tmp_path, "src/core/user.py", 'FILE = "src/core/former/sample_area/reach.py"\n')
     moved_area(tmp_path)
     assert importer.read_text() == 'FILE = "src/engine/sample_area/reach.py"\n'
 
 
 def test_a_config_rule_is_rewritten_for_a_folder(tmp_path):
     area_project(tmp_path)
-    rule = write(tmp_path, ".commandments/config.json", '{"module": "core.base.sample_area.reach", "file": "src/core/base/sample_area/reach.py"}\n')
+    rule = write(tmp_path, ".commandments/config.json", '{"module": "core.former.sample_area.reach", "file": "src/core/former/sample_area/reach.py"}\n')
     moved_area(tmp_path)
     assert rule.read_text() == '{"module": "engine.sample_area.reach", "file": "src/engine/sample_area/reach.py"}\n'
 
 
 def test_a_moved_file_leaves_the_allow_list_of_the_layout_rules(tmp_path):
     write(tmp_path, LOOSE_FILE, "class Deadline:\n    pass\n")
-    rule = write(tmp_path, ".commandments/custom/architecture_layout_base_loose_class.json", '{"find": {"reject": [{"testCode": true}, {"file": "src/core/base/sample_deadline.py"}, {"file": "src/core/base/sample_clock.py"}]}}\n')
+    rule = write(tmp_path, ".commandments/custom/architecture_layout_base_loose_class.json", '{"find": {"reject": [{"testCode": true}, {"file": "src/core/former/sample_deadline.py"}, {"file": "src/core/former/sample_clock.py"}]}}\n')
     script.move_path(tmp_path, tmp_path / LOOSE_FILE, tmp_path / LOOSE_TARGET)
-    assert json.loads(rule.read_text())["find"]["reject"] == [{"testCode": True}, {"file": "src/core/base/sample_clock.py"}]
-
-
-def test_the_layer_pattern_matches_two_folders_while_engine_files_remain(tmp_path):
-    area_project(tmp_path)
-    write(tmp_path, "src/core/base/sample_clock.py", "class Clock:\n    pass\n")
-    table = write(tmp_path, "src/core/layer_table.py", OLD_LAYER_LINE)
-    moved_area(tmp_path)
-    assert table.read_text() == TWO_FOLDERS_LAYER_LINE
-
-
-def test_the_layer_pattern_has_the_engine_folder_after_the_last_area(tmp_path):
-    area_project(tmp_path)
-    write(tmp_path, "src/core/base/__init__.py")
-    table = write(tmp_path, "src/core/layer_table.py", TWO_FOLDERS_LAYER_LINE)
-    moved_area(tmp_path)
-    assert table.read_text() == NEW_LAYER_LINE
+    assert json.loads(rule.read_text())["find"]["reject"] == [{"testCode": True}, {"file": "src/core/former/sample_clock.py"}]
 
 
 def test_a_folder_move_takes_its_test_folders(tmp_path):
     area_project(tmp_path)
-    write(tmp_path, "tests/unit/core/base/sample_area/__init__.py")
-    write(tmp_path, "tests/unit/core/base/sample_area/test_reach.py", "from core.base.sample_area.reach import Reach\n")
-    write(tmp_path, "tests/stories/core/base/sample_area/__init__.py")
-    write(tmp_path, "tests/stories/core/base/sample_area/reach_story.py")
+    write(tmp_path, "tests/unit/core/former/sample_area/__init__.py")
+    write(tmp_path, "tests/unit/core/former/sample_area/test_reach.py", "from core.former.sample_area.reach import Reach\n")
+    write(tmp_path, "tests/stories/core/former/sample_area/__init__.py")
+    write(tmp_path, "tests/stories/core/former/sample_area/reach_story.py")
     moved_area(tmp_path)
     assert (tmp_path / "tests/unit/engine/sample_area/test_reach.py").read_text() == "from engine.sample_area.reach import Reach\n"
     assert (tmp_path / "tests/unit/engine/sample_area/__init__.py").is_file() and (tmp_path / "tests/stories/engine/sample_area/reach_story.py").is_file()
-    assert not (tmp_path / "tests/unit/core/base/sample_area").exists() and not (tmp_path / "tests/stories/core/base/sample_area").exists()
+    assert not (tmp_path / "tests/unit/core/former/sample_area").exists() and not (tmp_path / "tests/stories/core/former/sample_area").exists()
 
 
 def test_a_loose_file_takes_its_unit_test_and_story_file(tmp_path):
     write(tmp_path, LOOSE_FILE, "class Deadline:\n    pass\n")
-    write(tmp_path, "tests/unit/core/base/test_sample_deadline.py", "from core.base.sample_deadline import Deadline\n")
-    write(tmp_path, "tests/stories/core/base/sample_deadline.py")
+    write(tmp_path, "tests/unit/core/former/test_sample_deadline.py", "from core.former.sample_deadline import Deadline\n")
+    write(tmp_path, "tests/stories/core/former/sample_deadline.py")
     script.move_path(tmp_path, tmp_path / LOOSE_FILE, tmp_path / LOOSE_TARGET)
     assert (tmp_path / "tests/unit/engine/time/test_sample_deadline.py").read_text() == "from engine.time.sample_deadline import Deadline\n"
     assert (tmp_path / "tests/stories/engine/time/sample_deadline.py").is_file() and (tmp_path / "tests/unit/engine/time/__init__.py").is_file()
-    assert not (tmp_path / "tests/unit/core/base/test_sample_deadline.py").exists()
+    assert not (tmp_path / "tests/unit/core/former/test_sample_deadline.py").exists()
 
 
 def test_a_test_folder_without_a_source_folder_refuses_the_move(tmp_path):
     area_project(tmp_path)
-    write(tmp_path, "tests/unit/core/base/sample_area/absent/test_reach.py")
+    write(tmp_path, "tests/unit/core/former/sample_area/absent/test_reach.py")
     with pytest.raises(script.MoveError, match="tests/unit/engine/sample_area/absent"):
         moved_area(tmp_path)
     assert (tmp_path / AREA / "reach.py").is_file()
@@ -156,10 +136,10 @@ def test_a_test_folder_without_a_source_folder_refuses_the_move(tmp_path):
 
 def test_the_dry_run_prints_the_test_folders_and_changes_nothing(tmp_path):
     area_project(tmp_path)
-    write(tmp_path, "tests/unit/core/base/sample_area/__init__.py")
+    write(tmp_path, "tests/unit/core/former/sample_area/__init__.py")
     report = moved_area(tmp_path, dry_run=True)
-    assert "move folder src/core/base/sample_area to src/engine/sample_area" in report
-    assert "move folder tests/unit/core/base/sample_area to tests/unit/engine/sample_area" in report
+    assert "move folder src/core/former/sample_area to src/engine/sample_area" in report
+    assert "move folder tests/unit/core/former/sample_area to tests/unit/engine/sample_area" in report
     assert (tmp_path / AREA / "reach.py").is_file() and not (tmp_path / AREA_TARGET).exists()
 
 
@@ -168,13 +148,13 @@ def open_branch_repository(root):
     repository.git("config", "user.name", "Story")
     repository.git("config", "user.email", "story@example.com")
     repository.git("config", "commit.gpgsign", "false")
-    write(repository.folder, "src/core/base/sample_area/__init__.py")
-    write(repository.folder, "src/core/base/sample_area/reach.py", "class Reach:\n    pass\n")
-    write(repository.folder, "src/core/user.py", "from core.base.sample_area.reach import Reach\n\nVALUE = 1\n")
+    write(repository.folder, "src/core/former/sample_area/__init__.py")
+    write(repository.folder, "src/core/former/sample_area/reach.py", "class Reach:\n    pass\n")
+    write(repository.folder, "src/core/user.py", "from core.former.sample_area.reach import Reach\n\nVALUE = 1\n")
     repository.git("add", "--all")
     repository.git("commit", "-m", "The area")
     repository.git("checkout", "-b", "work")
-    write(repository.folder, "src/core/user.py", "from core.base.sample_area.reach import Reach\n\nVALUE = 2\n")
+    write(repository.folder, "src/core/user.py", "from core.former.sample_area.reach import Reach\n\nVALUE = 2\n")
     repository.git("add", "--all")
     repository.git("commit", "-m", "The work")
     repository.git("checkout", "main")
@@ -215,9 +195,9 @@ def test_a_branch_file_at_the_target_path_refuses_the_rewrite_with_the_branch_un
 
 
 def test_a_file_moved_with_its_area_keeps_its_exception_of_the_enum_rule_at_its_new_path_until_it_sits_in_enums(tmp_path):
-    write(tmp_path, "src/core/base/sample_area/sample_state.py", "class SampleState:\n    pass\n")
-    rule = write(tmp_path, ".commandments/custom/architecture_layout_enum_outside_enums.json", '{"find": {"reject": [{"file": "src/core/base/sample_area/sample_state.py"}]}}\n')
-    script.move_path(tmp_path, tmp_path / "src/core/base/sample_area", tmp_path / "src/engine/sample_area")
+    write(tmp_path, "src/core/former/sample_area/sample_state.py", "class SampleState:\n    pass\n")
+    rule = write(tmp_path, ".commandments/custom/architecture_layout_enum_outside_enums.json", '{"find": {"reject": [{"file": "src/core/former/sample_area/sample_state.py"}]}}\n')
+    script.move_path(tmp_path, tmp_path / "src/core/former/sample_area", tmp_path / "src/engine/sample_area")
     assert json.loads(rule.read_text())["find"]["reject"] == [{"file": "src/engine/sample_area/sample_state.py"}]
     script.move_path(tmp_path, tmp_path / "src/engine/sample_area/sample_state.py", tmp_path / "src/engine/sample_area/enums/sample_state.py")
     assert json.loads(rule.read_text())["find"]["reject"] == []

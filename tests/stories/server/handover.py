@@ -18,10 +18,10 @@ from engine.file.code_copy import IGNORED
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from engine.testing.expectations.expect_row import expect_row
-from core.base.serving.code_handover import CodeHandover
+from engine.serving.code_handover import CodeHandover
 from install.update.install_journal import InstallJournal
 from engine.connection.unix_connection import UnixConnection
-from core.base.serving.server_files import ServerFiles
+from engine.serving.server_files import ServerFiles
 from tests.stories.support.story_checks import expect_value_4
 from tests.stories.server.support.server_client import request_answer
 from tests.stories.server.support.file_changes import FileChanges

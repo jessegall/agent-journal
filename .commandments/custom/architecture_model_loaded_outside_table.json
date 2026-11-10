@@ -8,7 +8,7 @@
             {"of": "child:func", "resolves": "engine.model.table.loaded"}
         ],
         "reject": [
-            {"fileMatches": "(^|/)(core/base|engine)/(model/table\\.py$|database/)"},
+            {"fileMatches": "(^|/)engine/(model/table\\.py$|database/)"},
             {"fileMatches": "(^|/)engine/listener/event_builder\\.py$"},
             {"testCode": true}
         ]

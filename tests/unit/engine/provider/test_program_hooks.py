@@ -3,7 +3,7 @@ from pathlib import Path
 
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.managed_hook import ManagedHook
-from tests.unit.core.base.samples.program_sample import HOOK_FILE, SampleProgram
+from tests.unit.engine.samples.program_sample import HOOK_FILE, SampleProgram
 
 
 def test_partition_splits_a_mixed_block_per_entry_and_keeps_noncommand_entries():

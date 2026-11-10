@@ -21,8 +21,8 @@ from engine.registry.listener_entry import ListenerEntry
 from engine.registry.listener_timing import ListenerTiming
 from engine.registry.registry import Registry
 from engine.errors.refusal import Refusal
-from tests.unit.core.base.sample_container import sample_container
-from tests.unit.core.base.samples.listener_sample import ShelfCounter
+from tests.unit.engine.samples.sample_container import sample_container
+from tests.unit.engine.samples.listener_sample import ShelfCounter
 from tests.unit.engine.command.test_commands import MakeItem
 from engine.change.created import Created
 from engine.command.context import Context

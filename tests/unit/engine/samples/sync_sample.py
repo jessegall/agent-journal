@@ -3,7 +3,7 @@ from tests.unit.engine.module.test_module_check import PausedItemGuard
 from engine.database.migration import Migration
 from engine.module.module import Module
 from engine.module.model_declaration import ModelDeclaration
-from tests.unit.core.base.sample_container import ITEMS
+from tests.unit.engine.samples.sample_container import ITEMS
 from tests.unit.engine.model.test_model import Item
 
 

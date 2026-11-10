@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-COPY_TEXT = "from tests.unit.core.base.samples.sync_sample import ItemsModule\n\n\nclass CopiedItemsModule(ItemsModule):\n    pass\n"
+COPY_TEXT = "from tests.unit.engine.samples.sync_sample import ItemsModule\n\n\nclass CopiedItemsModule(ItemsModule):\n    pass\n"
 
 
 def items_module_copy(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[str, Path]:

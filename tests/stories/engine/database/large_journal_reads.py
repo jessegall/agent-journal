@@ -10,7 +10,7 @@ from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from engine.testing.examples.hook_samples import HookSamples
 from engine.enums.actor_type import ActorType
-from tests.stories.core.base.support.large_journal import EDIT, HELPER_PROFILES, LargeJournal, TableCopies, required_arguments
+from tests.stories.engine.support.large_journal import EDIT, HELPER_PROFILES, LargeJournal, TableCopies, required_arguments
 
 SESSIONS = ("s-1", "s-helper", "s-worker")
 

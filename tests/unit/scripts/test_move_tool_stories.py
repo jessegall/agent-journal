@@ -5,11 +5,11 @@ from pathlib import Path
 import pytest
 
 SCRIPTS = Path(__file__).resolve().parents[3] / "scripts"
-SOURCE = "src/core/base/sample_error.py"
+SOURCE = "src/core/former/sample_error.py"
 TARGET = "src/engine/errors/sample_error.py"
 SAMPLE_CLASS = "class SampleError(Exception):\n    pass\n"
 IMPORTER = "src/core/user.py"
-IMPORT_LINE = "from core.base.sample_error import SampleError\n"
+IMPORT_LINE = "from core.former.sample_error import SampleError\n"
 MOVED_IMPORT_LINE = "from engine.errors.sample_error import SampleError\n"
 GIT_CONFIG = ("-c", "user.name=Story", "-c", "user.email=story@example.com", "-c", "commit.gpgsign=false")
 GIT_TIMEOUT_SECONDS = 30
@@ -70,15 +70,15 @@ def commit(repository, message):
 
 def test_341_a_multi_line_from_import_and_an_import_under_a_new_name_are_both_rewritten(tmp_path):
     write(tmp_path, SOURCE, SAMPLE_CLASS)
-    importer = write(tmp_path, IMPORTER, "from core.base.sample_error import (\n    SampleError,\n)\nimport core.base.sample_error as sample\n\nERRORS = (SampleError, sample.SampleError)\n")
+    importer = write(tmp_path, IMPORTER, "from core.former.sample_error import (\n    SampleError,\n)\nimport core.former.sample_error as sample\n\nERRORS = (SampleError, sample.SampleError)\n")
     moved(tmp_path)
     assert importer.read_text() == "from engine.errors.sample_error import (\n    SampleError,\n)\nimport engine.errors.sample_error as sample\n\nERRORS = (SampleError, sample.SampleError)\n"
 
 
 def test_342_a_path_written_as_text_is_rewritten_in_a_snapshot_and_a_rule_and_one_the_tool_cannot_place_stops_the_move(tmp_path):
     write(tmp_path, SOURCE, SAMPLE_CLASS)
-    registry_file = write(tmp_path, "tests/snapshots/registry.json", '{"error": "core.base.sample_error:SampleError"}\n')
-    rule = write(tmp_path, ".commandments/custom/rule.json", '{"module": "core.base.sample_error", "file": "src/core/base/sample_error.py"}\n')
+    registry_file = write(tmp_path, "tests/snapshots/registry.json", '{"error": "core.former.sample_error:SampleError"}\n')
+    rule = write(tmp_path, ".commandments/custom/rule.json", '{"module": "core.former.sample_error", "file": "src/core/former/sample_error.py"}\n')
     moved(tmp_path)
     assert registry_file.read_text() == '{"error": "engine.errors.sample_error:SampleError"}\n'
     assert rule.read_text() == '{"module": "engine.errors.sample_error", "file": "src/engine/errors/sample_error.py"}\n'
@@ -108,13 +108,13 @@ def test_344_a_move_is_one_commit_of_renames_and_import_lines_and_the_importer_n
     commit(repository, "Move the class")
     shown = repository.git("show", "-M", "--format=", "HEAD").stdout
     assert int(repository.git("rev-list", "--count", "HEAD").stdout) == starting_commit_count + 1
-    assert "rename from src/core/base/sample_error.py" in shown and move_check.non_move_lines(shown, ["sample_error"]) == []
+    assert "rename from src/core/former/sample_error.py" in shown and move_check.non_move_lines(shown, ["sample_error"]) == []
     assert files_at_start == [folder / SOURCE] and imported_files(folder) == [folder / TARGET]
     assert all(path.is_file() for path in imported_files(folder)) and not (folder / SOURCE).exists()
 
 
 def test_441_a_move_that_would_change_a_line_of_a_class_body_is_refused_and_names_the_file(tmp_path):
-    body = "import core.base.sample_error\n\n\nclass SampleError(Exception):\n    parent = core.base.sample_error.OTHER\n"
+    body = "import core.former.sample_error\n\n\nclass SampleError(Exception):\n    parent = core.former.sample_error.OTHER\n"
     write(tmp_path, SOURCE, body)
     with pytest.raises(move_tool.MoveError, match="not an import") as refused:
         moved(tmp_path)

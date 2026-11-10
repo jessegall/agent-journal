@@ -11,7 +11,7 @@ from engine.journal.journal_home import JournalHome
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.registry.registry import Registry
-from tests.unit.core.base.samples.module_copy import items_module_copy
+from tests.unit.engine.samples.module_copy import items_module_copy
 from tests.unit.engine.module.test_module_sync import ITEMS, synced
 
 CALLER = Caller(Actor(1, ActorType.CORE))

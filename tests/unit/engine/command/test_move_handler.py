@@ -13,7 +13,7 @@ from engine.registry.guard_entry import GuardEntry
 from engine.registry.registry import Registry
 from engine.time.timestamp import Timestamp
 from engine.repository.repository import Repository
-from tests.unit.core.base.sample_container import context, sample_container
+from tests.unit.engine.samples.sample_container import context, sample_container
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.engine.model.test_lifecycle import ItemLifecycle, ItemState
 from tests.unit.engine.model.test_model import Item

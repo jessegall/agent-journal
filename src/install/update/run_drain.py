@@ -3,7 +3,7 @@ import time
 
 from engine.journal.journal_home import JournalHome
 from core.modules.processes.support.output_folder import OutputFolder
-from core.base.serving.server_files import ServerFiles
+from engine.serving.server_files import ServerFiles
 
 RUN_DRAIN_LIMIT_SECONDS = 60
 POLL_SECONDS = 1.0

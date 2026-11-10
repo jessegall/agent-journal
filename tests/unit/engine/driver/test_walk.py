@@ -2,7 +2,7 @@ from engine.time.clock import Clock
 from engine.driver.rule_timings import RuleTimings
 from engine.driver.refusal_skips import RefusalSkips
 from tests.unit.engine.driver.nudge_sample import sample_nudge
-from tests.unit.core.base.scope_samples import empty_database_scopes
+from tests.unit.engine.samples.scope_samples import empty_database_scopes
 from engine.log.exception_sink import ExceptionSink
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -31,7 +31,7 @@ from engine.dotted_path.errors.wrong_base_error import WrongBaseError
 from engine.registry.driver_rule_entry import DriverRuleEntry
 from engine.registry.overlay_entry import OverlayEntry
 from engine.time.timestamp import Timestamp
-from tests.unit.core.base.sample_container import empty_registry
+from tests.unit.engine.samples.sample_container import empty_registry
 
 START = datetime(2026, 10, 31, 9, tzinfo=timezone.utc)
 DRIVER = "coding.main"

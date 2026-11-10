@@ -16,7 +16,7 @@
                 "fileMatches": "(^|/)src/core/modules/[^/]+/upgrade/|(^|/)src/suites/[^/]+(/modules/[^/]+)?/upgrade/"
             },
             {
-                "fileMatches": "(^|/)src/core/base/"
+                "fileMatches": "(^|/)src/engine/"
             }
         ]
     },

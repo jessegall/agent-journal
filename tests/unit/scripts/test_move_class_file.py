@@ -9,7 +9,7 @@ assert SPECIFICATION is not None and SPECIFICATION.loader is not None
 script = importlib.util.module_from_spec(SPECIFICATION)
 SPECIFICATION.loader.exec_module(script)
 
-SOURCE = "src/core/base/sample_error.py"
+SOURCE = "src/core/former/sample_error.py"
 TARGET = "src/engine/errors/sample_error.py"
 
 
@@ -30,45 +30,45 @@ def moved(root):
 
 
 def test_a_from_import_is_rewritten_and_the_file_moves(tmp_path):
-    importer = project(tmp_path, "from core.base.sample_error import SampleError\n")
+    importer = project(tmp_path, "from core.former.sample_error import SampleError\n")
     moved(tmp_path)
     assert importer.read_text() == "from engine.errors.sample_error import SampleError\n"
     assert (tmp_path / TARGET).is_file() and not (tmp_path / SOURCE).exists()
 
 
 def test_a_multi_line_from_import_is_rewritten(tmp_path):
-    importer = project(tmp_path, "from core.base.sample_error import (\n    SampleError,\n    OTHER_VALUE,\n)\n")
+    importer = project(tmp_path, "from core.former.sample_error import (\n    SampleError,\n    OTHER_VALUE,\n)\n")
     moved(tmp_path)
     assert importer.read_text() == "from engine.errors.sample_error import (\n    SampleError,\n    OTHER_VALUE,\n)\n"
 
 
 def test_an_import_with_a_new_name_is_rewritten(tmp_path):
-    importer = project(tmp_path, "import core.base.sample_error as errors\n\nerrors.SampleError\n")
+    importer = project(tmp_path, "import core.former.sample_error as errors\n\nerrors.SampleError\n")
     moved(tmp_path)
     assert importer.read_text() == "import engine.errors.sample_error as errors\n\nerrors.SampleError\n"
 
 
 def test_a_plain_import_rewrites_where_the_full_path_is_used(tmp_path):
-    importer = project(tmp_path, "import core.base.sample_error\n\nraise core.base.sample_error.SampleError()\n")
+    importer = project(tmp_path, "import core.former.sample_error\n\nraise core.former.sample_error.SampleError()\n")
     moved(tmp_path)
     assert importer.read_text() == "import engine.errors.sample_error\n\nraise engine.errors.sample_error.SampleError()\n"
 
 
 def test_a_name_in_a_docstring_or_in_all_is_not_touched(tmp_path):
-    text = '"""See core.base.sample_error."""\n__all__ = ["core.base.sample_error"]\n'
+    text = '"""See core.former.sample_error."""\n__all__ = ["core.former.sample_error"]\n'
     importer = project(tmp_path, text)
     moved(tmp_path)
     assert importer.read_text() == text
 
 
 def test_a_longer_module_name_is_not_rewritten(tmp_path):
-    importer = project(tmp_path, "from core.base.sample_error_list import Row\n")
+    importer = project(tmp_path, "from core.former.sample_error_list import Row\n")
     moved(tmp_path)
-    assert importer.read_text() == "from core.base.sample_error_list import Row\n"
+    assert importer.read_text() == "from core.former.sample_error_list import Row\n"
 
 
 def test_a_name_inside_a_longer_string_stops_the_move_and_is_named(tmp_path):
-    text = 'PATH = "see core.base.sample_error for more"\n'
+    text = 'PATH = "see core.former.sample_error for more"\n'
     importer = project(tmp_path, text)
     with pytest.raises(script.MoveError, match="src/core/user.py:1"):
         moved(tmp_path)
@@ -77,7 +77,7 @@ def test_a_name_inside_a_longer_string_stops_the_move_and_is_named(tmp_path):
 
 def test_a_relative_import_stops_the_move(tmp_path):
     project(tmp_path, "")
-    write(tmp_path, "src/core/base/neighbour.py", "from .sample_error import SampleError\n")
+    write(tmp_path, "src/core/former/neighbour.py", "from .sample_error import SampleError\n")
     with pytest.raises(script.MoveError, match="relative import"):
         moved(tmp_path)
 
@@ -96,13 +96,13 @@ def test_leaving_an_alias_is_refused(tmp_path):
 
 
 def test_a_change_to_a_line_of_the_moved_file_that_is_no_import_is_refused(tmp_path):
-    write(tmp_path, SOURCE, "import core.base.sample_error\n\nclass SampleError(Exception):\n    parent = core.base.sample_error.OTHER\n")
+    write(tmp_path, SOURCE, "import core.former.sample_error\n\nclass SampleError(Exception):\n    parent = core.former.sample_error.OTHER\n")
     with pytest.raises(script.MoveError, match="not an import"):
         moved(tmp_path)
 
 
 def test_two_files_of_one_name_in_two_folders_do_not_collide(tmp_path):
-    importer = project(tmp_path, "from core.base.sample_error import A\nfrom core.modules.tasks.sample_error import B\n")
+    importer = project(tmp_path, "from core.former.sample_error import A\nfrom core.modules.tasks.sample_error import B\n")
     write(tmp_path, "src/core/modules/tasks/sample_error.py")
     moved(tmp_path)
     assert importer.read_text() == "from engine.errors.sample_error import A\nfrom core.modules.tasks.sample_error import B\n"
@@ -117,7 +117,7 @@ def test_missing_packages_are_created_below_the_source_root(tmp_path):
 
 
 def test_a_dry_run_names_the_files_and_changes_nothing(tmp_path):
-    importer = project(tmp_path, "from core.base.sample_error import SampleError\n")
+    importer = project(tmp_path, "from core.former.sample_error import SampleError\n")
     report = script.move_path(tmp_path, tmp_path / SOURCE, tmp_path / TARGET, dry_run=True)
     assert report == ["change src/core/user.py", "1 Python files and 0 other files change"]
-    assert importer.read_text() == "from core.base.sample_error import SampleError\n" and (tmp_path / SOURCE).is_file()
+    assert importer.read_text() == "from core.former.sample_error import SampleError\n" and (tmp_path / SOURCE).is_file()

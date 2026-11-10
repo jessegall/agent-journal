@@ -49,7 +49,7 @@ def rule_text(name):
 
 
 def test_a_class_added_loose_in_the_engine_folder_is_refused_with_the_sorts_of_folder():
-    assert flagged(CLASS_RULE, "src/engine/new_thing.py") and flagged(CLASS_RULE, "src/core/base/new_thing.py")
+    assert flagged(CLASS_RULE, "src/engine/new_thing.py")
     assert "errors" in rule_text(CLASS_RULE) and "enums" in rule_text(CLASS_RULE)
 
 
@@ -80,13 +80,13 @@ def allow_listed(rule_name, entry):
 
 
 def test_the_name_of_a_moved_file_left_in_the_allow_list_is_reported(tmp_path):
-    assert stale_entries(allow_listed(CLASS_RULE, "src/core/base/sample_clock.py"), tmp_path) == ["src/core/base/sample_clock.py"]
+    assert stale_entries(allow_listed(CLASS_RULE, "src/engine/sample_clock.py"), tmp_path) == ["src/engine/sample_clock.py"]
 
 
 def test_an_allow_listed_file_that_stopped_being_loose_is_reported(tmp_path):
-    (tmp_path / "src/core/base/time").mkdir(parents=True)
-    (tmp_path / "src/core/base/time/clock.py").write_text("")
-    assert stale_entries(allow_listed(CLASS_RULE, "src/core/base/time/clock.py"), tmp_path) == ["src/core/base/time/clock.py"]
+    (tmp_path / "src/engine/time").mkdir(parents=True)
+    (tmp_path / "src/engine/time/clock.py").write_text("")
+    assert stale_entries(allow_listed(CLASS_RULE, "src/engine/time/clock.py"), tmp_path) == ["src/engine/time/clock.py"]
 
 
 def test_a_class_of_the_wrong_sort_in_a_kind_folder_is_refused():
@@ -120,7 +120,7 @@ def test_the_refusal_of_an_error_file_names_the_target_folder():
 
 
 def test_a_file_in_its_area_folder_gets_no_layout_finding():
-    assert not flagged(CLASS_RULE, "src/core/base/clock/clock.py") and not flagged(VALUE_RULE, "src/server/support/clock_values.py")
+    assert not flagged(CLASS_RULE, "src/engine/clock/clock.py") and not flagged(VALUE_RULE, "src/server/support/clock_values.py")
 
 
 @pytest.mark.parametrize("rule", ALLOW_LISTED_RULES)
@@ -128,7 +128,7 @@ def test_a_rule_narrows_to_a_file_path_ahead_of_reading_the_code(rule):
     assert any("fileMatches" in step for step in rule_file(rule)["find"]["where"])
 
 
-@pytest.mark.parametrize("path", ["src/engine/__init__.py", "src/core/base/__init__.py"])
+@pytest.mark.parametrize("path", ["src/engine/__init__.py"])
 def test_a_package_file_is_accepted(path):
     assert not flagged(CLASS_RULE, path)
 

@@ -7,7 +7,7 @@ from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
 from install.update.built_bundles import BuiltBundles
-from core.base.serving.code_handover import CodeHandover
+from engine.serving.code_handover import CodeHandover
 from install.update.code_replacement import CodeReplacement
 from install.update.run_drain import RunDrain
 from install.update.chat_update_steps import ChatUpdateSteps

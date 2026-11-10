@@ -12,7 +12,7 @@ from engine.provider.hook_manager import HookManager
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.managed_state import ManagedState
 from engine.provider.program_hooks import ProgramHooks
-from tests.unit.core.base.samples.program_sample import HOOK_FILE, SampleProgram
+from tests.unit.engine.samples.program_sample import HOOK_FILE, SampleProgram
 
 JOURNAL_ENTRY = {"type": "command", "command": "/p/.journal/bin/journal-hook sample /p"}
 PROJECT_ENTRY = {"type": "command", "command": "check", "timeout": 30, "statusMessage": "Checking"}

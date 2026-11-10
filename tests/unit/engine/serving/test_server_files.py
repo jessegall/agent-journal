@@ -12,7 +12,7 @@ import time
 import pytest
 
 from engine.journal.journal_home import JournalHome
-from core.base.serving.server_files import ServerFiles, socket_path
+from engine.serving.server_files import ServerFiles, socket_path
 from engine.errors.server_files_error import ServerFilesError
 
 TIMEOUT_SECONDS = 10
@@ -110,10 +110,10 @@ def test_rotating_the_log_points_the_output_the_starter_opened_at_the_new_file(t
     files = ServerFiles(JournalHome(tmp_path))
     files.log.parent.mkdir(parents=True)
     files.log.write_text("x" * 20)
-    script = ("import sys; from pathlib import Path; from engine.journal.journal_home import JournalHome; from core.base.serving.server_files import ServerFiles\n"
+    script = ("import sys; from pathlib import Path; from engine.journal.journal_home import JournalHome; from engine.serving.server_files import ServerFiles\n"
               "ServerFiles(JournalHome(Path(sys.argv[1]))).rotate_log(10); sys.stderr.write('after\\n')")
     with files.log.open("a") as output:
-        subprocess.run([sys.executable, "-c", script, str(tmp_path)], stderr=output, env={**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[5] / "src")}, timeout=TIMEOUT_SECONDS, check=True)
+        subprocess.run([sys.executable, "-c", script, str(tmp_path)], stderr=output, env={**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[4] / "src")}, timeout=TIMEOUT_SECONDS, check=True)
     assert files.log.read_text() == "after\n" and files.log.with_name("server.log.1").read_text() == "x" * 20
 
 

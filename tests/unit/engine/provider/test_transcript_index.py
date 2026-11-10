@@ -6,7 +6,7 @@ import pytest
 from engine.provider.program_folders import ProgramFolders
 from engine.provider.transcript_index import TranscriptIndex
 from engine.provider.transcript_row import TranscriptRow
-from tests.unit.core.base.samples.program_sample import SampleProgram
+from tests.unit.engine.samples.program_sample import SampleProgram
 
 
 class CountingProvider(SampleProgram):

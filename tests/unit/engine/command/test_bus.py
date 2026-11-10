@@ -30,7 +30,7 @@ from engine.registry.listener_timing import ListenerTiming
 from engine.registry.registry import Registry
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
-from tests.unit.core.base.sample_container import sample_container
+from tests.unit.engine.samples.sample_container import sample_container
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.engine.model.test_lifecycle import ItemLifecycle
 from tests.unit.engine.model.test_model import Item

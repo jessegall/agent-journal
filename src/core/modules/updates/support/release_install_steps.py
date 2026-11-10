@@ -5,7 +5,7 @@ from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from core.modules.updates.commands.record_release_install.record_release_install import RecordReleaseInstall
 from core.modules.updates.models.enums.update_step import UpdateStep
-from core.base.serving.update_steps import UpdateSteps
+from engine.serving.update_steps import UpdateSteps
 
 
 class ReleaseInstallSteps(UpdateSteps):

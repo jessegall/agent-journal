@@ -10,8 +10,8 @@ from engine.errors.refusal import Refusal
 from engine.provider.errors.unknown_program_error import UnknownProgramError
 from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.provider_entry import ProviderEntry
-from tests.unit.core.base.sample_container import empty_registry, sample_container
-from tests.unit.core.base.samples.program_sample import SampleProgram
+from tests.unit.engine.samples.sample_container import empty_registry, sample_container
+from tests.unit.engine.samples.program_sample import SampleProgram
 
 SAMPLE_ENTRY = ProviderEntry("sample", DottedPath.class_path(SampleProgram), "sample.program", "Sample program")
 

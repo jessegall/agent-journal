@@ -13,7 +13,7 @@ from engine.registry.listener_timing import ListenerTiming
 from engine.registry.registry import Registry
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
-from tests.unit.core.base.sample_container import context, empty_registry, sample_container
+from tests.unit.engine.samples.sample_container import context, empty_registry, sample_container
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.engine.model.test_model import Item
 from engine.change.deleted import Deleted

@@ -1,4 +1,4 @@
-from tests.stories.core.base.support.view_samples import EXTRA_COLUMN, MISSING_COLUMN
+from tests.stories.engine.support.view_samples import EXTRA_COLUMN, MISSING_COLUMN
 from tests.unit.engine.module.test_module_sync import ITEMS
 
 

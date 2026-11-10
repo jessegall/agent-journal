@@ -5,8 +5,8 @@ import pytest
 from engine.time.clock import Clock
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from core.base.serving.code_handover import CodeHandover
-from core.base.serving.update_steps import UpdateSteps
+from engine.serving.code_handover import CodeHandover
+from engine.serving.update_steps import UpdateSteps
 
 
 class RecordedSteps(UpdateSteps):

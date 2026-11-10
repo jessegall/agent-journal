@@ -6,7 +6,7 @@ import time
 import pytest
 
 from install.update.server_lock import ServerLock, ServerWontStopError
-from core.base.serving.server_files import ServerFiles
+from engine.serving.server_files import ServerFiles
 from tests.install.support import SERVER_SOURCE, TIMEOUT_SECONDS
 
 SERVER_WITH_LOCK = """

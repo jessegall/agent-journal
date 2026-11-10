@@ -8,23 +8,23 @@ assert SPECIFICATION is not None and SPECIFICATION.loader is not None
 script = importlib.util.module_from_spec(SPECIFICATION)
 SPECIFICATION.loader.exec_module(script)
 
-MOVES = {"core.base.sample": "engine.errors.sample"}
+MOVES = {"core.former.sample": "engine.errors.sample"}
 
 
 def test_a_registry_that_differs_only_in_the_moved_path_has_no_differences():
-    recorded = json.dumps({"handlers": {"Run": "core.base.sample:Run"}})
+    recorded = json.dumps({"handlers": {"Run": "core.former.sample:Run"}})
     current = json.dumps({"handlers": {"Run": "engine.errors.sample:Run"}})
     assert script.registry_differences(recorded, current, MOVES) == []
 
 
 def test_any_other_registry_change_is_named():
-    recorded = json.dumps({"handlers": {"Run": "core.base.sample:Run"}, "guards": []})
+    recorded = json.dumps({"handlers": {"Run": "core.former.sample:Run"}, "guards": []})
     current = json.dumps({"handlers": {"Run": "engine.errors.sample:Run"}, "guards": ["extra"]})
     assert script.registry_differences(recorded, current, MOVES) == ["registry entry guards changed"]
 
 
 def test_a_longer_module_name_is_not_taken_for_the_moved_one():
-    recorded = json.dumps({"handlers": {"Run": "core.base.sample_list:Run"}})
+    recorded = json.dumps({"handlers": {"Run": "core.former.sample_list:Run"}})
     current = json.dumps({"handlers": {"Run": "engine.errors.sample_list:Run"}})
     assert script.registry_differences(recorded, current, MOVES) == ["registry entry handlers changed"]
 
@@ -34,13 +34,13 @@ def test_the_fingerprints_of_the_source_are_not_compared():
 
 
 def test_a_commit_of_import_and_path_lines_has_no_other_lines():
-    diff = "--- a/x.py\n+++ b/x.py\n-from core.base.sample import A\n+from engine.errors.sample import A\n-PATH = \"core.base.sample:A\"\n+PATH = \"engine.errors.sample:A\"\n"
-    assert script.non_move_lines(diff, ["core.base.sample", "engine.errors.sample"]) == []
+    diff = "--- a/x.py\n+++ b/x.py\n-from core.former.sample import A\n+from engine.errors.sample import A\n-PATH = \"core.former.sample:A\"\n+PATH = \"engine.errors.sample:A\"\n"
+    assert script.non_move_lines(diff, ["core.former.sample", "engine.errors.sample"]) == []
 
 
 def test_a_changed_class_body_line_is_named():
     diff = "--- a/x.py\n+++ b/x.py\n-    return 1\n+    return 2\n"
-    assert script.non_move_lines(diff, ["core.base.sample"]) == ["-    return 1", "+    return 2"]
+    assert script.non_move_lines(diff, ["core.former.sample"]) == ["-    return 1", "+    return 2"]
 
 
 def test_a_failing_test_command_is_named_and_findings_of_the_judge_are_not():

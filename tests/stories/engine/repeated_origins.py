@@ -10,7 +10,7 @@ from tests.stories.support.story_checks import expect_value
 
 ORIGIN_READ = Statement("SELECT 2")
 ALLOWED_READER = "core/modules/plugins/support/plugin_code_diff.py"
-CALL_LINE = re.compile(r"^  \.\./tests/stories/core/base/repeated_origins\.py:\d+ (\w+)$")
+CALL_LINE = re.compile(r"^  \.\./tests/stories/engine/repeated_origins\.py:\d+ (\w+)$")
 
 
 def first_reader(database: Database) -> None:

@@ -52,7 +52,7 @@
                 "file": "**/upgrade/**"
             },
             {
-                "fileMatches": "(^|/)src/(core/base|engine)/(query|scope|database)/"
+                "fileMatches": "(^|/)src/engine/(query|scope|database)/"
             }
         ]
     },

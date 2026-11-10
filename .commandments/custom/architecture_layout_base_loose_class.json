@@ -5,7 +5,7 @@
         "select": "type-declaration",
         "where": [
             {
-                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/(core/base|engine)/[^/]+\\.py$"
+                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/engine/[^/]+\\.py$"
             }
         ],
         "reject": [

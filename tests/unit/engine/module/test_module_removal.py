@@ -9,7 +9,7 @@ from engine.module.errors.module_error import ModuleError
 from engine.module.module_removal import ModuleRemoval
 from tests.unit.engine.module.test_module_sync import ITEM_COUNT, ITEMS, synced
 
-REMOVABLE_ITEMS = "tests.unit.core.base.samples.sync_sample:RemovableItemsModule"
+REMOVABLE_ITEMS = "tests.unit.engine.samples.sync_sample:RemovableItemsModule"
 ITEM = Statement("INSERT INTO items (title, state, version, created_at, updated_at) VALUES ('Dune', 'open', 1, '2026', '2026')")
 TABLES = Statement("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'items'")
 
