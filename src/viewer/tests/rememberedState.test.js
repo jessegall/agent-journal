@@ -1,6 +1,6 @@
 import {nextTick} from "vue";
 import {expect, test} from "vitest";
-import {rememberedRef} from "../src/windows/rememberedState.js";
+import {rememberedRef, rememberedValue} from "../src/windows/rememberedState.js";
 
 function memory() {
     const kept = new Map();
@@ -22,4 +22,13 @@ test("storage that fails gives the fallback and breaks nothing", async () => {
     state.value = true;
     await nextTick();
     expect(state.value).toBe(true);
+});
+
+test("the project name a page kept is read before any component runs, and is empty when none was kept", async () => {
+    const storage = memory();
+    expect(rememberedValue("last-project", "", storage)).toBe("");
+    const project = rememberedRef("last-project", "", storage);
+    project.value = "Worldwatch Market";
+    await nextTick();
+    expect(rememberedValue("last-project", "", storage)).toBe("Worldwatch Market");
 });

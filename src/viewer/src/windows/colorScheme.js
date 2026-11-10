@@ -46,4 +46,4 @@ function applyColorScheme(key, sheets = document.styleSheets, root = document.do
 
 export const followColorScheme = () => watchEffect(() => applyColorScheme(colorScheme.value));
 
-export const pageTitle = (environment, project = "agent-journal") => (environment ? `${project} · ${environment}` : project);
+export const pageTitle = (environment, project = "") => [project, environment].filter(Boolean).join(" · ") || "Agent journal";
