@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.registry.window_listing import WindowListing
+from engine.registry.window_listing import WindowListing
 
 
 @dataclass(frozen=True)

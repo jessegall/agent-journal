@@ -2,7 +2,7 @@ import pytest
 from datetime import timedelta
 
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.drivers.support.hook_cost_tool import HOOK_LIMIT_POINTS
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.tool_type import ToolType

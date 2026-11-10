@@ -23,8 +23,8 @@ from core.base.module.dock_check import DockCheck
 from core.base.module.inspector_check import InspectorCheck
 from core.base.module.move_check import MoveCheck
 from core.base.module.skill_check import SkillCheck
-from core.base.registry.driver_rule_entry import DriverRuleEntry
-from core.base.registry.event_key_entry import EventKeyEntry
+from engine.registry.driver_rule_entry import DriverRuleEntry
+from engine.registry.event_key_entry import EventKeyEntry
 from core.base.module.setting_check import SettingCheck
 from core.base.module.template_check import TemplateCheck
 from core.base.module.button_check import ButtonCheck

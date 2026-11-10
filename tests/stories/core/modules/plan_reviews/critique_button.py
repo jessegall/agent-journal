@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules import DEFAULT_MODULES
 from core.modules.plan_reviews.plan_reviews_module import PlanReviewsModule
 from core.testing.expect_row import expect_row

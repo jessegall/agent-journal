@@ -1,5 +1,5 @@
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from tests.stories.engine.chat.support.mark_faults import PATH
 from tests.stories.core.support.fixtures import MainEnvironment
 from core.testing.expect_row import expect_row

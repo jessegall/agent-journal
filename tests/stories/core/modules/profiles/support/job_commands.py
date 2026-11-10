@@ -6,7 +6,7 @@ from core.base.driver.command_category import CommandCategory
 from engine.journal.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from engine.text.text_digest import TextDigest
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.profiles.support.profile_files import ProfileFiles
 from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES
 

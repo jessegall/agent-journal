@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
-from core.base.registry.event_key_entry import EventKeyEntry
-from core.base.registry.registry import Registry
+from engine.registry.event_key_entry import EventKeyEntry
+from engine.registry.registry import Registry
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple

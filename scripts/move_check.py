@@ -23,7 +23,7 @@ def registry_text() -> str:
     from engine.container.journal_container import opened_container, synced_container
     from engine.journal.journal_home import JournalHome
     from core.base.module.module_sync import ModuleSync
-    from core.base.registry.registry import Registry
+    from engine.registry.registry import Registry
 
     with tempfile.TemporaryDirectory() as folder:
         home = JournalHome(Path(folder) / ".journal")

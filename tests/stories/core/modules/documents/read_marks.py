@@ -6,7 +6,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.database.database import Database
 from engine.query.queries import Queries
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.chat.models.chat_mark import ChatMark
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.documents.support.read_marks import ReadableTexts

@@ -9,7 +9,7 @@ from engine.guard.guards import LIFECYCLE_GUARD
 from engine.query.conditions.has_value import HasValue
 from engine.query.queries import Queries
 from engine.log.refusal_log import RefusalLog
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.drivers.commands.skip_refusal.skip_refusal import SkipRefusal
 from core.modules.drivers.commands.use_refusal_skip.use_refusal_skip import UseRefusalSkip
 from engine.enums.hook_answer import HookAnswer

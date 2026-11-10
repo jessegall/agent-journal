@@ -6,7 +6,7 @@ from core.base.driver.layers import Layers
 from core.base.driver.open_row import OpenRow
 from core.base.driver.overlay import Overlay
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.registry.overlay_entry import OverlayEntry
+from engine.registry.overlay_entry import OverlayEntry
 from engine.time.timestamp import Timestamp
 from tests.unit.core.base.sample_container import empty_registry
 

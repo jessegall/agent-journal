@@ -12,7 +12,7 @@ from engine.query.conditions.has_value import HasValue
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.log.refusal_log import RefusalLog
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.skip_refusal.skip_refusal import SkipRefusal

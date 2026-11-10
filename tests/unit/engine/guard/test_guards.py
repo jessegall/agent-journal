@@ -16,8 +16,8 @@ from engine.guard.guards import Guards
 from engine.guard.guard_refusal import GuardRefusal
 from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.registry.guard_entry import GuardEntry
-from core.base.registry.registry import Registry
+from engine.registry.guard_entry import GuardEntry
+from engine.registry.registry import Registry
 from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
 from tests.unit.engine.command.test_commands import MakeItem

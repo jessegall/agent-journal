@@ -2,7 +2,7 @@ from engine.scope.scopes import Scopes
 from dataclasses import replace
 
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners

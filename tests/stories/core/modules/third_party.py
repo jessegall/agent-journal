@@ -1,7 +1,7 @@
 import json
 
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.testing.expect_row import expect_row
 from tests.stories.fixtures.third_party import third_party, third_party_cookie, viewer_body
 from tests.stories.server.support.browser_story import expect_browser

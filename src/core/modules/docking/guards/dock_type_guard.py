@@ -1,6 +1,6 @@
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.docking.guards.support.docking_arrival import DockingArrival
 from engine.change.changed import Changed
 from engine.command.context import Context

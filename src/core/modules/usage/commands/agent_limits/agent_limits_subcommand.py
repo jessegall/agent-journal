@@ -7,7 +7,7 @@ from core.base.profile.agent_profile import AgentProfile
 from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple

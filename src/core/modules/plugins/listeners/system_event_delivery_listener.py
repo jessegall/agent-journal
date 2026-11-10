@@ -10,7 +10,7 @@ from engine.listener.commit_listener import CommitListener
 from engine.model.event_form import EventForm
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event import DeliverPluginEvent
 from core.modules.plugins.support.plugin_payload import PluginPayload

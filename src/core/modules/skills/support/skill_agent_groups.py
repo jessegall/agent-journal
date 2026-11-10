@@ -1,7 +1,7 @@
 from collections import defaultdict
 from collections.abc import Mapping
 
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_problem import ProfileProblem
 from core.modules.skills.support.profile_skills import ProfileSkills

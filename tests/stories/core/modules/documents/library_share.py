@@ -1,5 +1,5 @@
 from engine.command.context import Context
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.documents.commands.edit_text.edit_text import EditText
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.support.doc_library_share import DocLibraryShare

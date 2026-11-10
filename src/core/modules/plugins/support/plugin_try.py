@@ -3,7 +3,7 @@ from engine.time.clock import Clock
 from engine.model.event_form import EventForm
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.environments.models.environment import Environment

@@ -2,7 +2,7 @@ import json
 from dataclasses import asdict
 
 from engine.helper_type.helper_type import HelperType
-from core.base.registry.helper_type_entry import HelperTypeEntry
+from engine.registry.helper_type_entry import HelperTypeEntry
 
 
 def test_job_commands_and_task_flags_survive_registry_storage():

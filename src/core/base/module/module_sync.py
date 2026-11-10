@@ -3,9 +3,9 @@ from engine.file.file_access import FileAccess
 from collections.abc import Sequence
 
 from engine.time.clock import Clock
-from core.base.registry.agent_group_entry import AgentGroupEntry
-from core.base.registry.helper_type_entry import HelperTypeEntry
-from core.base.registry.profile_entry import ProfileEntry
+from engine.registry.agent_group_entry import AgentGroupEntry
+from engine.registry.helper_type_entry import HelperTypeEntry
+from engine.registry.profile_entry import ProfileEntry
 from engine.command.delete_command import DeleteCommand
 from engine.command.edit_command import EditCommand
 from engine.command.handlers.delete_handler import DeleteHandler
@@ -27,7 +27,7 @@ from engine.command.move_row import MoveRow
 from engine.guard.lifecycle_guard import LifecycleGuard
 from core.base.module.module_states import modules_book
 from core.base.module.state_retirement import StateRetirement
-from core.base.registry.state_addition_entry import StateAdditionEntry
+from engine.registry.state_addition_entry import StateAdditionEntry
 from engine.listener.deletion_listener import DeletionListener
 from engine.database.actor_table import ActorTable
 from engine.database.listener_cursor_table import ListenerCursorTable
@@ -37,28 +37,28 @@ from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.window_extensions import WindowExtensions
 from engine.dotted_path.dotted_path import DottedPath
 from engine.change.event_pattern import EventPattern
-from core.base.registry.guard_entry import GuardEntry
-from core.base.registry.listener_entry import ListenerEntry
-from core.base.registry.listener_timing import ListenerTiming
-from core.base.registry.model_entry import ModelEntry
-from core.base.registry.registry import Registry
-from core.base.registry.dock_entry import DockEntry
-from core.base.registry.template_entry import TemplateEntry
-from core.base.registry.button_entry import ButtonEntry
-from core.base.registry.inspector_entry import InspectorEntry
-from core.base.registry.move_entry import MoveEntry
-from core.base.registry.skill_entry import SkillEntry
+from engine.registry.guard_entry import GuardEntry
+from engine.registry.listener_entry import ListenerEntry
+from engine.registry.listener_timing import ListenerTiming
+from engine.registry.model_entry import ModelEntry
+from engine.registry.registry import Registry
+from engine.registry.dock_entry import DockEntry
+from engine.registry.template_entry import TemplateEntry
+from engine.registry.button_entry import ButtonEntry
+from engine.registry.inspector_entry import InspectorEntry
+from engine.registry.move_entry import MoveEntry
+from engine.registry.skill_entry import SkillEntry
 from engine.skill.skill_declaration import SKILLS_FOLDER
-from core.base.registry.mark_entry import MarkEntry
-from core.base.registry.nudge_entry import NudgeEntry
-from core.base.registry.window_entry import WindowEntry
+from engine.registry.mark_entry import MarkEntry
+from engine.registry.nudge_entry import NudgeEntry
+from engine.registry.window_entry import WindowEntry
 from core.base.module.window_check import unavailable_reason
 from core.base.module.module import ListenerClass, Module
 from core.base.module.button_slots import ButtonSlots
 from core.base.module.inspector_slots import InspectorSlots
 from core.base.module.driver_entries import DriverEntries
 from core.base.module.provider_entries import ProviderEntries
-from core.base.registry.driver_rule_entry import DriverRuleEntry
+from engine.registry.driver_rule_entry import DriverRuleEntry
 from core.base.module.module_check import ModuleCheck
 from core.base.module.subcommand_line import subcommand_line
 from core.base.module.module_finder import ModuleFinder
@@ -68,8 +68,8 @@ from core.base.module.sync_notes import SyncNotes
 from core.base.module.sync_report import SyncReport
 from engine.journal.journal_home import JournalHome
 from core.base.provider.program_table import ProgramTable
-from core.base.registry.setting_tree import SettingTree
-from core.base.registry.tunnel_entry import TunnelEntry
+from engine.registry.setting_tree import SettingTree
+from engine.registry.tunnel_entry import TunnelEntry
 
 
 DEFAULT_HANDLERS = {DottedPath.class_path(command).text: DottedPath.class_path(handler)

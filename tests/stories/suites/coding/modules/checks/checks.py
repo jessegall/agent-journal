@@ -4,7 +4,7 @@ import json
 from datetime import timedelta
 
 from engine.check.periodic_checks import PeriodicChecks
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
 from core.testing.expect_row import expect_row

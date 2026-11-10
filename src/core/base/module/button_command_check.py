@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from core.base.module.module import Module
-from core.base.registry.button_line import ButtonLine
+from engine.registry.button_line import ButtonLine
 from core.base.viewer.person_lines import PERSON_LINES
 
 

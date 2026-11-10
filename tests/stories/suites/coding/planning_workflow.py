@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from engine.database.database import Database
 from core.base.profile.model_tier import ModelTier
 from engine.query.queries import Queries
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
 from core.testing.fake_launcher import FakeLauncher

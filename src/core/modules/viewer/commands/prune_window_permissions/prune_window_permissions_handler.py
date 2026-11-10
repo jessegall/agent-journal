@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.repository.repository import Repository
 from engine.scope.environment_scope import EnvironmentScope
 from engine.scope.scopes import Scopes

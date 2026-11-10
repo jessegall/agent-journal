@@ -1,6 +1,6 @@
 from collections.abc import Iterator, Sequence
 
-from core.base.registry.setting_entry import SettingEntry
+from engine.registry.setting_entry import SettingEntry
 from engine.setting.setting_node import SettingNode
 
 

@@ -5,7 +5,7 @@ import pytest
 from core.base.module.button_check import ButtonCheck
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
-from core.base.registry.button_window import ButtonWindow
+from engine.registry.button_window import ButtonWindow
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.subcommand.subcommand import Subcommand
 from core.base.viewer.button_declaration import ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TemplateField, TextField

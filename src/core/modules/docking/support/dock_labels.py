@@ -1,7 +1,7 @@
 from engine.errors.missing_rows_error import MissingRowsError
 from engine.model.model import Model
 from engine.listener.event_rows import EventRows
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 
 TITLE_FIELDS = ("title", "name", "text", "label")
 TEXT_FIELDS = ("brief", "abstract", "text", "goal", "outcome", "detail")

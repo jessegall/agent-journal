@@ -4,7 +4,7 @@ import pytest
 
 from engine.command.bus import Bus
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart

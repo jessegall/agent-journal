@@ -1,5 +1,5 @@
-from core.base.registry.registry import Registry
-from core.base.registry.window_entry import WindowEntry
+from engine.registry.registry import Registry
+from engine.registry.window_entry import WindowEntry
 
 
 class SharedWindows:

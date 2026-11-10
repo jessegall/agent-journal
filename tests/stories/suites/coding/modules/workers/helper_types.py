@@ -8,7 +8,7 @@ from engine.enums.agent_role import AgentRole
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.database.database import Database
 from engine.query.queries import Queries
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.drivers.models.agent_line import AgentLine
 from engine.scope.scopes import Scopes
 from core.modules.drivers.support.suite_choice import SuiteChoice

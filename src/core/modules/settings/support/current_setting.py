@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.registry.setting_entry import SettingEntry
+from engine.registry.setting_entry import SettingEntry
 
 
 @dataclass(frozen=True)

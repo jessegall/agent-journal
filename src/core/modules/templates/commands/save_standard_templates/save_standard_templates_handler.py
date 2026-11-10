@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.repository.standard_rows import StandardRows
 from core.modules.templates.commands.save_standard_templates.save_standard_templates import SaveStandardTemplates
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.templates.models.template import Template
 
 STANDARD_TEMPLATE_FIELDS = ("brief", "targets", "purpose", "parts", "commands", "module")

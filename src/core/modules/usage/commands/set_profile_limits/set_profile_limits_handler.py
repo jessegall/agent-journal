@@ -4,7 +4,7 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.types.type_guards import is_list, is_tuple
 from core.modules.settings.commands.set_setting.set_setting import SetSetting
 from core.modules.settings.support.current_setting import CurrentSetting

@@ -1,4 +1,4 @@
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.scope.scopes import Scopes
 from core.modules.drivers.support.suite_choice import SuiteChoice
 

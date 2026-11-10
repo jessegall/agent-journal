@@ -1,13 +1,13 @@
 from engine.database.database import Database
 from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from server.viewer.session_answer import SessionAnswer
 from server.viewer.share_answer import ShareAnswer
 from server.viewer.shared_row import SharedRow
 from server.viewer.shared_windows import SharedWindows
 from server.viewer.viewer_login import ViewerLogin
-from core.base.registry.window_listing import WindowListing
+from engine.registry.window_listing import WindowListing
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 

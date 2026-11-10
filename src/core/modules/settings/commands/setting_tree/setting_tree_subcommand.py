@@ -2,7 +2,7 @@ from argparse import Namespace
 from collections.abc import Sequence
 
 from engine.caller.caller import Caller
-from core.base.registry.setting_entry import SettingEntry
+from engine.registry.setting_entry import SettingEntry
 from engine.setting.setting_declaration import ANY_KEY, GROUP_TYPE, REFERENCE_TYPE
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand

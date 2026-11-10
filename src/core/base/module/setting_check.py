@@ -1,10 +1,10 @@
 from collections.abc import Iterator, Sequence
 
 from core.base.module.module import Module
-from core.base.registry.setting_entry import SettingEntry
+from engine.registry.setting_entry import SettingEntry
 from engine.setting.setting_declaration import GROUP_TYPE, REFERENCE_TYPE
 from engine.setting.setting_node import SettingNode
-from core.base.registry.setting_tree import SettingTree
+from engine.registry.setting_tree import SettingTree
 
 
 class SettingCheck:

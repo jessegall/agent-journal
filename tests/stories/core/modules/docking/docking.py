@@ -7,7 +7,7 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.scope.scopes import Scopes
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from engine.errors.refusal import Refusal
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem

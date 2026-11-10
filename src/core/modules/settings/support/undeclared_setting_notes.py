@@ -1,6 +1,6 @@
 from core.base.module.module import Module
 from core.base.module.sync_notes import SyncNotes
-from core.base.registry.setting_tree import SettingTree
+from engine.registry.setting_tree import SettingTree
 from core.modules.settings.support.undeclared_settings import UndeclaredSettings
 
 

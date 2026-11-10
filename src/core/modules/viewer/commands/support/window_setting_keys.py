@@ -1,5 +1,5 @@
 from engine.errors.refusal import Refusal
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.setting.setting_group import SettingGroup
 from engine.setting.setting_scope import SettingScope
 from engine.setting.setting_type import SettingType

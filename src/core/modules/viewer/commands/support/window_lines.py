@@ -6,7 +6,7 @@ from engine.cli.parsed_line import ParsedLine
 from engine.cli.usage_error import UsageError
 from engine.cli.write_flags import WriteFlags
 from engine.environment.environment_names import EnvironmentNames
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.base.viewer.person_lines import PERSON_LINES
 from core.modules.viewer.commands.support.window_allowances import WindowAllowances
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType

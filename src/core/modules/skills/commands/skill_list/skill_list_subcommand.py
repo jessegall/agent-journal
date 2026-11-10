@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.row.page import Page
-from core.base.registry.skill_entry import SkillEntry
+from engine.registry.skill_entry import SkillEntry
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple

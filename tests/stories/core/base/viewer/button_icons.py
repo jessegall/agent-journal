@@ -1,7 +1,7 @@
 import re
 
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.base.viewer.window_icon import WindowIcon
 from tests.stories.core.base.viewer.support.button_icon_modules import PATH
 from tests.stories.core.support.fixtures import MainEnvironment

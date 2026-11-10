@@ -11,9 +11,9 @@ from engine.journal.journal_home import JournalHome
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_sync import ModuleSync
-from core.base.registry.registry import Registry
-from core.base.registry.stale_registry_error import StaleRegistryError
-from core.base.registry.template_entry import TemplateEntry
+from engine.registry.registry import Registry
+from engine.registry.stale_registry_error import StaleRegistryError
+from engine.registry.template_entry import TemplateEntry
 from engine.template.template_declaration import TemplateDeclaration
 
 from tests.unit.core.base.samples.module_copy import items_module_copy

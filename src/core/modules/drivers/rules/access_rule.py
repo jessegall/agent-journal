@@ -12,7 +12,7 @@ from core.base.driver.tool_type import ToolType
 from core.base.provider.providers import Providers
 from engine.query.queries import Queries
 from core.base.driver.run_owners import RunOwners
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from engine.plan.plan_authors import PLAN_AUTHOR_LINES, PlanAuthors, PlanEdit

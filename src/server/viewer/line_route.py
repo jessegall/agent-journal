@@ -22,7 +22,7 @@ from engine.environment.environment_names import EnvironmentNames
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from engine.caller.caller import Caller
-from core.base.registry.stale_registry_error import StaleRegistryError
+from engine.registry.stale_registry_error import StaleRegistryError
 from engine.subcommand.subcommand import Subcommand
 from core.modules.viewer.commands.support.window_lines import WindowLines
 from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS

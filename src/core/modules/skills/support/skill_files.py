@@ -8,7 +8,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.driver.agent_hook import AgentHook
 from core.base.provider.providers import Providers
-from core.base.registry.skill_entry import SkillEntry
+from engine.registry.skill_entry import SkillEntry
 from engine.skill.skill_declaration import SKILL_FILE
 from engine.skill.skill_digest import SkillDigest
 from core.base.module.skill_check import FOLDER_PREFIX

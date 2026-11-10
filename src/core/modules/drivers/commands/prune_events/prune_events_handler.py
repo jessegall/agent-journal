@@ -5,7 +5,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.model.model import Model
 from engine.model.tables import Tables
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.commands.prune_events.prune_events import PruneEvents
 from core.modules.drivers.support.driver_settings import EVENT_HOURS_SETTING

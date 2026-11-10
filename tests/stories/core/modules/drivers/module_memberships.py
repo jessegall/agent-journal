@@ -3,7 +3,7 @@ import pytest
 from engine.database.database import Database
 from core.base.module.module_error import ModuleError
 from core.base.module.module_removal import ModuleRemoval
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from tests.stories.core.modules.drivers.support.module_memberships import PATH
 from tests.stories.core.support.fixtures import MainEnvironment
 

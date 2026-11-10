@@ -2,7 +2,7 @@ from engine.container.container import Container
 from engine.journal.journal_home import JournalHome
 from core.base.provider.provider import Provider
 from core.base.provider.unknown_program_error import UnknownProgramError
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.errors.refusal import Refusal
 
 

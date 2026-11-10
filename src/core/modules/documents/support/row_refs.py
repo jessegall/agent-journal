@@ -6,7 +6,7 @@ from engine.model.tables import Tables
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among
 from engine.errors.refusal import Refusal
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.documents.references.row_ref import RowRef
 from core.modules.documents.support.resolved_row_ref import ResolvedRowRef
 

@@ -1,5 +1,5 @@
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.report import Report
 from tests.stories.core.support.fixtures import MainEnvironment

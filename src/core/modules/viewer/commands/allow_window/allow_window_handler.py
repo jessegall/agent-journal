@@ -4,7 +4,7 @@ import json
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.repository.repository import Repository
 from core.modules.viewer.commands.allow_window.allow_window import AllowWindow
 from core.modules.viewer.commands.support.window_allowances import WindowAllowances

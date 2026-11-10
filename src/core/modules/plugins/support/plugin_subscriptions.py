@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 
 from engine.model.event_form import EventForm
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.plugins.support.plugin_subscription import PluginSubscription
 from core.modules.plugins.support.runnable_plugin import RunnablePlugin
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins

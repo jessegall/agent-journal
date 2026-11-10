@@ -2,7 +2,7 @@ import ast
 from dataclasses import dataclass
 from pathlib import Path
 
-from core.base.registry.setting_tree import SettingTree
+from engine.registry.setting_tree import SettingTree
 from engine.setting.setting_declaration import GROUP_TYPE, REFERENCE_TYPE
 from core.modules import DEFAULT_MODULES
 from suites import DEFAULT_SUITES

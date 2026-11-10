@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.modules.agents.models.agent import Agent
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from engine.caller.caller import Caller
 from engine.subcommand.subcommand import Subcommand

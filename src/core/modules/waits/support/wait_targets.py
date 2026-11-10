@@ -4,7 +4,7 @@ from engine.model.model import Model
 from engine.model.state_book import StateBook
 from engine.model.tables import Tables
 from engine.query.queries import Queries
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 
 
 class WaitTargets:

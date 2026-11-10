@@ -7,7 +7,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.docking.commands.keep_dock_item.keep_dock_item import KeepDockItem
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.run_visibility import RunVisibility

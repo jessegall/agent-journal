@@ -1,8 +1,8 @@
 from engine.container.container import Container
 from core.base.driver.layer import Layer
 from core.base.driver.overlay import Overlay
-from core.base.registry.overlay_entry import OverlayEntry
-from core.base.registry.registry import Registry
+from engine.registry.overlay_entry import OverlayEntry
+from engine.registry.registry import Registry
 
 
 class Layers:

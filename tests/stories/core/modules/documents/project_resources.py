@@ -1,7 +1,7 @@
 import pytest
 
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.base.viewer.window_place import WindowPlace
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture

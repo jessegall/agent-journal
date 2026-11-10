@@ -1,5 +1,5 @@
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.agents.models.agent import Agent
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.support.story_checks import expect_value

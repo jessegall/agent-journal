@@ -5,8 +5,8 @@ from functools import lru_cache
 from pathlib import Path
 from engine.journal.journal_home import JournalHome
 from core.base.provider.providers import Providers
-from core.base.registry.registry import Registry
-from core.base.registry.skill_entry import SkillEntry
+from engine.registry.registry import Registry
+from engine.registry.skill_entry import SkillEntry
 from engine.request.request_values import RequestValues
 from engine.skill.skill_declaration import SKILL_FILE
 from engine.skill.skill_digest import SkillDigest

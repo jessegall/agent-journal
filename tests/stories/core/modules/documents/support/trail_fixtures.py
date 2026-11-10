@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import pytest
 
 from engine.database.reported_findings import ReportedFindings
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.query.queries import Queries
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story

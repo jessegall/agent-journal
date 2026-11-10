@@ -1,5 +1,5 @@
-from core.base.registry.inspector_entry import InspectorEntry
-from core.base.registry.registry import Registry
+from engine.registry.inspector_entry import InspectorEntry
+from engine.registry.registry import Registry
 from core.base.viewer.inspector_declaration import InspectorDeclaration
 
 

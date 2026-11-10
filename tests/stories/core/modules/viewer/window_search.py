@@ -1,7 +1,7 @@
 from core.testing.story_fixture import StoryFixture
 
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.fixtures import UserJoined

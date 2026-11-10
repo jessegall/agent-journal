@@ -6,10 +6,10 @@ from engine.environment.environment_names import EnvironmentNames
 from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from core.base.registry.inspector_defaults import InspectorDefaults
-from core.base.registry.inspector_listing import InspectorListing
-from core.base.registry.registry import Registry
-from core.base.registry.suite_windows import SuiteWindows
+from engine.registry.inspector_defaults import InspectorDefaults
+from engine.registry.inspector_listing import InspectorListing
+from engine.registry.registry import Registry
+from engine.registry.suite_windows import SuiteWindows
 from core.base.viewer.window_place import WindowPlace
 from core.modules.drivers.support.active_modules import ActiveModules
 from core.modules.drivers.support.suite_choice import SuiteChoice
@@ -17,7 +17,7 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 from engine.scope.scopes import Scopes
 from engine.container.container import Container
 from server.viewer.unknown_environment_error import UnknownEnvironmentError
-from core.base.registry.window_listing import WindowListing
+from engine.registry.window_listing import WindowListing
 
 
 class WindowsRoute:

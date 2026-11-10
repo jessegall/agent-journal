@@ -2,7 +2,7 @@ import hashlib
 
 from engine.command.context import Context
 from engine.errors.refusal import Refusal
-from core.base.registry.setting_entry import SettingEntry
+from engine.registry.setting_entry import SettingEntry
 from engine.setting.setting_scope import SettingScope
 from engine.setting.setting_type import SettingType
 from core.modules.settings.commands.set_setting.set_setting_handler import SetSettingHandler

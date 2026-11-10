@@ -8,7 +8,7 @@ from engine.model.added_state import AddedState
 from engine.model.model import Model
 from engine.model.state_book import StateBook
 from engine.model.tables import Tables
-from core.base.registry.state_addition_entry import StateAdditionEntry
+from engine.registry.state_addition_entry import StateAdditionEntry
 
 
 class StateRetirement:

@@ -16,9 +16,9 @@ from engine.listener.listeners import Listeners
 from engine.listener.save_listener import SaveListener
 from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.registry.listener_entry import ListenerEntry
-from core.base.registry.listener_timing import ListenerTiming
-from core.base.registry.registry import Registry
+from engine.registry.listener_entry import ListenerEntry
+from engine.registry.listener_timing import ListenerTiming
+from engine.registry.registry import Registry
 from engine.time.timestamp import Timestamp
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.engine.model.test_model import Item

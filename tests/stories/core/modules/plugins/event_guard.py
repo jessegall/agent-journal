@@ -8,7 +8,7 @@ import pytest
 from engine.enums.agent_role import AgentRole
 from engine.model.event_form import EventForm
 from engine.query.queries import Queries
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.scope.scopes import Scopes
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from engine.enums.script_stop import ScriptStop

@@ -7,8 +7,8 @@ from engine.cli.move_subcommand import MoveSubcommand
 from engine.cli.subcommand_lookup import SubcommandLookup
 from engine.cli.usage_error import UsageError
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.registry.model_entry import ModelEntry
-from core.base.registry.registry import Registry
+from engine.registry.model_entry import ModelEntry
+from engine.registry.registry import Registry
 from tests.unit.core.base.sample_container import sample_container
 
 UNUSED = "tests.unit.core.base.samples.lookup_unused_sample"

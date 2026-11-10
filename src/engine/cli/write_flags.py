@@ -1,6 +1,6 @@
 from argparse import ArgumentError, ArgumentParser, Namespace
 
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 
 
 class WriteFlags:

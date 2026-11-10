@@ -2,7 +2,7 @@ from dataclasses import replace
 
 import pytest
 
-from core.base.registry.button_line import ButtonLine
+from engine.registry.button_line import ButtonLine
 from core.base.viewer.choice import Choice
 from core.base.viewer.choice_field import ChoiceField
 from core.base.viewer.agent_field import AgentField

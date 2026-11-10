@@ -13,7 +13,7 @@
         ],
         "reject": [
             {
-                "fileMatches": "(^|/)src/core/base/registry/"
+                "fileMatches": "(^|/)src/engine/registry/"
             },
             {
                 "testCode": true

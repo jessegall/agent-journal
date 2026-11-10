@@ -11,7 +11,7 @@ from engine.database.shared_tables import SharedTables
 from core.base.module.code_fingerprint import PINNED_CODE_VARIABLE
 from core.base.module.source_hash import SourceHash
 
-from core.base.registry.lazy_loading import LazyLoading
+from engine.registry.lazy_loading import LazyLoading
 from core.testing.heavy_run_gate import HeavyRunGate
 from core.testing.template_cache import python_source_folders
 from core.testing.run_cpu import RunCpu

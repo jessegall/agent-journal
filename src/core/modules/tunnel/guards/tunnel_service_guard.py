@@ -5,7 +5,7 @@ from engine.change.updated import Updated
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.settings.models.setting import Setting
 from core.modules.tunnel.support.tunnels import SERVICE_SETTING
 

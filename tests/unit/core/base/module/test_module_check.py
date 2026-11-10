@@ -32,7 +32,7 @@ from core.base.module.helper_type_check import HelperTypeCheck
 from core.base.module.profile_check import ProfileCheck
 from core.base.module.template_check import TemplateCheck
 from engine.model.event_form import EventForm
-from core.base.registry.event_key_entry import EventKeyEntry
+from engine.registry.event_key_entry import EventKeyEntry
 from tests.unit.engine.model.test_lifecycle import ItemState
 from tests.unit.engine.model.test_model import Item
 from engine.change.moved import Moved

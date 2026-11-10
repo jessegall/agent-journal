@@ -1,5 +1,5 @@
-from core.base.registry.registry import Registry
-from core.base.registry.suite_windows import SuiteWindows
+from engine.registry.registry import Registry
+from engine.registry.suite_windows import SuiteWindows
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from tests.stories.core.support.fixtures import UserJoined

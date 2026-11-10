@@ -4,7 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.part import Part
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.subcommand.subcommand import is_subcommand_class
 from core.modules.processes.support.background_commands import JOURNAL
 

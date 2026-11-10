@@ -13,7 +13,7 @@ from engine.listener.save_listener import SaveListener
 from engine.model.event_form import EventForm
 from engine.model.model import Model
 from engine.model.tables import Tables
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event import DeliverPluginEvent
 from core.modules.plugins.support.plugin_code_faults import PLUGIN_CODE_FAULTS
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault

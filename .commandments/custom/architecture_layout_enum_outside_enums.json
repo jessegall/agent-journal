@@ -95,10 +95,10 @@
                 "file": "src/core/base/provider/managed_state.py"
             },
             {
-                "file": "src/core/base/registry/button_window.py"
+                "file": "src/engine/registry/button_window.py"
             },
             {
-                "file": "src/core/base/registry/listener_timing.py"
+                "file": "src/engine/registry/listener_timing.py"
             },
             {
                 "file": "src/engine/setting/setting_scope.py"

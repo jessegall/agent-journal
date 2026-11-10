@@ -10,10 +10,10 @@ from engine.database.statement import Statement
 from engine.guard.guard_refusal import GuardRefusal
 from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.registry.guard_entry import GuardEntry
-from core.base.registry.listener_entry import ListenerEntry
-from core.base.registry.listener_timing import ListenerTiming
-from core.base.registry.registry import Registry
+from engine.registry.guard_entry import GuardEntry
+from engine.registry.listener_entry import ListenerEntry
+from engine.registry.listener_timing import ListenerTiming
+from engine.registry.registry import Registry
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from engine.repository.stale_row_error import StaleRowError

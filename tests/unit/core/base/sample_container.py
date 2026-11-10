@@ -13,7 +13,7 @@ from engine.database.schema import Schema
 from engine.database.statement import Statement
 from engine.journal.journal_home import JournalHome
 from engine.model.tables import Tables
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.time.timestamp import Timestamp
 
 TIMESTAMP = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))

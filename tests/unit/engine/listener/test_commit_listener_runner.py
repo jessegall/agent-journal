@@ -23,9 +23,9 @@ from engine.listener.commit_listener import CommitListener
 from engine.listener.commit_listener_runner import PLUGIN_RUN_ORDER, CommitListenerRunner
 from engine.performance.performance_state import PerformanceState
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.registry.listener_entry import ListenerEntry
-from core.base.registry.listener_timing import ListenerTiming
-from core.base.registry.registry import Registry
+from engine.registry.listener_entry import ListenerEntry
+from engine.registry.listener_timing import ListenerTiming
+from engine.registry.registry import Registry
 from tests.unit.core.base.sample_container import sample_container
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.engine.model.test_lifecycle import ItemLifecycle

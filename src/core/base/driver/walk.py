@@ -6,7 +6,7 @@ from core.base.driver.layer import Layer
 from core.base.driver.overlay import Overlay
 from core.base.driver.rule_answers import RuleAnswers
 from core.base.driver.rule_outcome import RAISED, SILENCED, RuleOutcome
-from core.base.registry.driver_rule_entry import DriverRuleEntry
+from engine.registry.driver_rule_entry import DriverRuleEntry
 
 
 class Walk:

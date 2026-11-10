@@ -3,7 +3,7 @@ from dataclasses import replace
 
 from engine.caller.caller import Caller
 from core.base.library.library_lookup import LibraryLookup
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.search.support.row_search import RowSearch

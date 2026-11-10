@@ -6,7 +6,7 @@ from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.errors.refusal import Refusal
 from engine.log.refusal_log import RefusalLog
 from tests.unit.core.base.sample_container import sample_container

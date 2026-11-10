@@ -7,11 +7,11 @@ from engine.agent.agent_roster import AgentRoster
 from engine.agent.agent_group_book import AgentGroupBook
 from engine.helper_type.helper_type import HelperType
 from core.base.profile.agent_profile import AgentProfile
-from core.base.registry.agent_group_entry import AgentGroupEntry
+from engine.registry.agent_group_entry import AgentGroupEntry
 from engine.helper_type.helper_type_book import MAIN_KEY, HelperTypeBook
 from core.base.module.module import Module
-from core.base.registry.helper_type_entry import HelperTypeEntry
-from core.base.registry.driver_rule_entry import DriverRuleEntry
+from engine.registry.helper_type_entry import HelperTypeEntry
+from engine.registry.driver_rule_entry import DriverRuleEntry
 
 HELPER_TYPE_WORD = re.compile(r"[a-z]+(-[a-z]+)*")
 AGENTS_MODULE = "journal.core.agents"

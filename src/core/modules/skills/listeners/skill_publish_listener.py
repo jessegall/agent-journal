@@ -1,6 +1,6 @@
 from engine.change.logged_event import LoggedEvent
 from engine.listener.commit_listener import CommitListener
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.skills.support.skill_files import SkillFiles
 from engine.change.file_publishing import FilePublishing
 from engine.change.upgrade_finished import UpgradeFinished

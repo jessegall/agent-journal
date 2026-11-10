@@ -9,8 +9,8 @@ from engine.command.move_command import MoveCommand
 from engine.guard.lifecycle_guard import LifecycleGuard
 from engine.guard.guard_refusal import GuardRefusal
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.registry.guard_entry import GuardEntry
-from core.base.registry.registry import Registry
+from engine.registry.guard_entry import GuardEntry
+from engine.registry.registry import Registry
 from engine.time.timestamp import Timestamp
 from engine.repository.repository import Repository
 from tests.unit.core.base.sample_container import context, sample_container

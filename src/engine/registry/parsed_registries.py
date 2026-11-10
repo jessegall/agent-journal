@@ -3,10 +3,10 @@ from collections import OrderedDict
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from core.base.registry.lazy_loading import LazyLoading
+from engine.registry.lazy_loading import LazyLoading
 
 if TYPE_CHECKING:
-    from core.base.registry.registry import Registry
+    from engine.registry.registry import Registry
 
 
 class ParsedRegistries:

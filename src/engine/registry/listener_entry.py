@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from engine.actor.actor import CORE_ACTOR_ID
 from engine.change.event_pattern import EventPattern
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.registry.listener_timing import ListenerTiming
+from engine.registry.listener_timing import ListenerTiming
 
 
 @dataclass(frozen=True)

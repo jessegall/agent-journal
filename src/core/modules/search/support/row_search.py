@@ -8,7 +8,7 @@ from engine.query.conditions.prefix import Prefix
 from engine.query.queries import Queries
 from engine.query.query import Query
 from engine.errors.refusal import Refusal
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.search.support.search_hit import SearchHit
 from core.modules.search.support.search_result import SearchResult
 

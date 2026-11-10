@@ -1,7 +1,7 @@
 from engine.errors.refusal import Refusal
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.types.type_guards import is_list, is_tuple
-from core.base.registry.helper_type_entry import HelperTypeEntry
+from engine.registry.helper_type_entry import HelperTypeEntry
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.agents.support.type_limits import TypeLimits
 

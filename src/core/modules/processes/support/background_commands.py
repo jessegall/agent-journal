@@ -3,7 +3,7 @@ from engine.cli.shell_aliases import ShellAliases
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.part import Part
 from core.base.driver.shell_line import ShellLine
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.processes.support.part_command import PartCommand
 
 JOURNAL = "journal"

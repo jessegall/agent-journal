@@ -12,7 +12,7 @@ from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
 from engine.model.event_form import EventForm
 from engine.model.model import Model
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults

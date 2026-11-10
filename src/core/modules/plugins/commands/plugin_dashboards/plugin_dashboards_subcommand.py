@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.subcommand.row_list import RowList
 from core.modules.plugins.support.manifest_dashboard import ManifestDashboard

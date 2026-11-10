@@ -2,8 +2,8 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.driver.essential_allowances import EssentialAllowances
 from engine.errors.refusal import Refusal
-from core.base.registry.driver_rule_entry import DriverRuleEntry
-from core.base.registry.registry import Registry
+from engine.registry.driver_rule_entry import DriverRuleEntry
+from engine.registry.registry import Registry
 from engine.caller.caller import Caller
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.drivers.commands.support.driver_description import DriverDescription

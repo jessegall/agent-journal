@@ -33,11 +33,11 @@ from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.model.tables import Tables
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.cli.read_limit_bypass import ReadLimitBypass
 from core.base.driver.refusal_skips import RefusalSkips
 from engine.errors.read_limit_error import ReadLimitError
-from core.base.registry.stale_registry_error import StaleRegistryError
+from engine.registry.stale_registry_error import StaleRegistryError
 from engine.errors.refusal import Refusal
 from engine.log.refusal_log import RefusalLog
 from engine.scope.scopes import Scopes

@@ -10,7 +10,7 @@ from engine.model.model_error import ModelError
 from engine.model.move import Move
 from engine.model.state_addition import StateAddition
 from engine.model.state_holder import StateHolder
-from core.base.registry.state_move_entry import StateMoveEntry
+from engine.registry.state_move_entry import StateMoveEntry
 
 
 @dataclass(frozen=True)

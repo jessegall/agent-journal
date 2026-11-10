@@ -11,7 +11,7 @@ from core.base.module.module import Module
 from core.base.module.name_groups import NameGroups
 from core.base.module.template_check import TemplateCheck
 from core.base.module.window_check import WindowCheck
-from core.base.registry.button_line import BLANK
+from engine.registry.button_line import BLANK
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.base.viewer.button_field import ButtonField
 from core.base.viewer.panel_labels import PanelLabels

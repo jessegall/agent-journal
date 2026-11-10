@@ -1,5 +1,5 @@
-from core.base.registry.registry import Registry
-from tests.unit.core.base.registry.test_suite_windows import suite
+from engine.registry.registry import Registry
+from tests.unit.engine.registry.test_suite_windows import suite
 from dataclasses import replace
 
 REGISTRY = Registry("", {}, {}, {}, (), (), suites=(suite("coding", ()), suite("agency", (), requires=tuple(["coding"])), suite("studio", (), requires=tuple(["agency"])), suite("lone", ())))

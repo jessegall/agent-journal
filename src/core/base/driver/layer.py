@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.driver.open_row import OpenRow
-from core.base.registry.overlay_entry import OverlayEntry
+from engine.registry.overlay_entry import OverlayEntry
 
 
 @dataclass(frozen=True)

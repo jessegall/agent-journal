@@ -6,7 +6,7 @@ from engine.change.updated import Updated
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
 from engine.repository.repository import Repository
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.support.alias_names import AliasNames

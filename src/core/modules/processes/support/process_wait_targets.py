@@ -2,7 +2,7 @@ from engine.model.model import Model
 from engine.model.state_book import StateBook
 from engine.model.tables import Tables
 from engine.query.queries import Queries
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.waits.support.wait_targets import WaitTargets

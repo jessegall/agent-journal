@@ -28,8 +28,8 @@ from engine.guard.guard_switches import GuardSwitches
 from engine.journal.journal_home import JournalHome
 from engine.dotted_path.dotted_path import DottedPath
 from engine.dotted_path.wrong_base_error import WrongBaseError
-from core.base.registry.driver_rule_entry import DriverRuleEntry
-from core.base.registry.overlay_entry import OverlayEntry
+from engine.registry.driver_rule_entry import DriverRuleEntry
+from engine.registry.overlay_entry import OverlayEntry
 from engine.time.timestamp import Timestamp
 from tests.unit.core.base.sample_container import empty_registry
 

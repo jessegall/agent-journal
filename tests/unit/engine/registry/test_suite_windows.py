@@ -1,8 +1,8 @@
-from core.base.registry.registry import Registry
-from core.base.registry.suite_entry import SuiteEntry
-from core.base.registry.window_entry import WindowEntry
+from engine.registry.registry import Registry
+from engine.registry.suite_entry import SuiteEntry
+from engine.registry.window_entry import WindowEntry
 from core.base.viewer.layout_shape import LayoutShape, split, tabs
-from core.base.registry.suite_windows import SuiteWindows
+from engine.registry.suite_windows import SuiteWindows
 
 HOME = tabs("notes.board")
 ORCHESTRATOR_HOME = split("row", 0.5, tabs("notes.board"), tabs("notes.list"))

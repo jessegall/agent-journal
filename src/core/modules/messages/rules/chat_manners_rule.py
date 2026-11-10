@@ -7,7 +7,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.rule_answer import RuleAnswer
 from engine.query.queries import Queries
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_nudges import PARAGRAPH_NUDGE, EM_DASH_NUDGE, SHOP_TALK_NUDGE, THIRD_PERSON_NUDGE

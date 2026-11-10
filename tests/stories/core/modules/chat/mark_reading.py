@@ -1,5 +1,5 @@
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.command.bus import Bus
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from tests.stories.core.modules.chat.support.mark_samples import SAMPLE, SampleMarkType, SampleMarkVariant, module_actor

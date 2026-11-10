@@ -4,7 +4,7 @@ from contextlib import contextmanager
 
 from engine.scope.scopes import Scopes
 from core.modules.settings.support.setting_rows import SettingRows
-from core.base.registry.setting_entry import SettingEntry
+from engine.registry.setting_entry import SettingEntry
 from engine.types.type_guards import is_list, is_object_mapping
 from engine.setting.setting_value import SettingDefault
 from core.modules.settings.models.secret_setting import SecretSetting

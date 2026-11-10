@@ -10,7 +10,7 @@ from engine.database.reported_findings import ReportedFindings
 from engine.database.request_watch import RequestWatch
 from engine.log.error_log import ErrorLog
 from engine.errors.read_limit_error import ReadLimitError
-from core.base.registry.lazy_loading import LazyLoading
+from engine.registry.lazy_loading import LazyLoading
 from core.modules.developer.support.developer_settings import PREVENT_LAZY_LOADING_SETTING, READ_LIMIT_SETTING, REPEATED_WORK_SETTING
 from core.modules.settings.bindings.support.setting_values import SettingValues
 

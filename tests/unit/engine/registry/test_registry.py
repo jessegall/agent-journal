@@ -15,20 +15,20 @@ from engine.dotted_path.dotted_path import DottedPath
 from engine.dotted_path.dotted_path_error import DottedPathError
 from engine.database.registry_table import RegistryTable
 from engine.model.event_form import EventForm
-from core.base.registry.event_key_entry import EventKeyEntry
-from core.base.registry.listener_timing import ListenerTiming
-from core.base.registry.registry import Registry
-from core.base.registry.stale_registry_error import StaleRegistryError
+from engine.registry.event_key_entry import EventKeyEntry
+from engine.registry.listener_timing import ListenerTiming
+from engine.registry.registry import Registry
+from engine.registry.stale_registry_error import StaleRegistryError
 from core.base.profile.agent_profile import AgentProfile
 from engine.enums.access import Access
-from core.base.registry.profile_entry import ProfileEntry
-from core.base.registry.suite_entry import SuiteEntry
+from engine.registry.profile_entry import ProfileEntry
+from engine.registry.suite_entry import SuiteEntry
 from engine.template.template_declaration import TemplateDeclaration
-from core.base.registry.template_entry import TemplateEntry
-from core.base.registry.button_entry import ButtonEntry
+from engine.registry.template_entry import TemplateEntry
+from engine.registry.button_entry import ButtonEntry
 from core.base.viewer.button_declaration import AgentField, ButtonCondition, ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TemplateField, TextField
 from engine.agent.agent_policy import AgentPolicy
-from core.base.registry.window_entry import WindowEntry
+from engine.registry.window_entry import WindowEntry
 from dataclasses import replace
 from tests.unit.engine.command.test_commands import MakeItem
 

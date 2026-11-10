@@ -9,8 +9,8 @@ from core.base.module.module_states import modules_book
 from core.base.module.name_groups import NameGroups
 from core.base.module.subcommand_line import subcommand_line
 from core.base.module.version_requirement import VersionRequirement
-from core.base.registry.button_line import ButtonLine
-from core.base.registry.button_window import ButtonWindow
+from engine.registry.button_line import ButtonLine
+from engine.registry.button_window import ButtonWindow
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.base.viewer.viewer_kit import VIEWER_KIT
 from core.base.viewer.registry_lines import RegistryLines

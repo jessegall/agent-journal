@@ -17,8 +17,8 @@ from core.base.provider.transcript_entries import TranscriptEntries
 from engine.container.journal_container import synced_database_container
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
-from core.base.registry.registry import Registry
-from core.base.registry.stale_registry_error import StaleRegistryError
+from engine.registry.registry import Registry
+from engine.registry.stale_registry_error import StaleRegistryError
 from engine.time.timing import Timing
 from core.base.module.performance_tools import PerformanceTools
 from engine.performance.route_cost_tool import RouteCostTool

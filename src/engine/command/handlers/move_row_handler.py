@@ -5,7 +5,7 @@ from engine.model.model import Model
 from engine.model.state_book import StateBook
 from engine.model.unknown_state_error import UnknownStateError
 from engine.listener.event_rows import EventRows
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.repository.repository import Repository
 
 

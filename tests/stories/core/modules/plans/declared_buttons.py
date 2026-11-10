@@ -1,4 +1,4 @@
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.testing.expect_row import expect_row
 from tests.stories.core.modules.plans.support.approval_fixtures import ReadyApprovalPlan
 

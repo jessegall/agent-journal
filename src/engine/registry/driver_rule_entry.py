@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from engine.enums.agent_role import AgentRole
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.registry.driver_patterns import DriverPatterns
+from engine.registry.driver_patterns import DriverPatterns
 from engine.enums.role_group import RoleGroup
 
 ANY_HOOK = "*"

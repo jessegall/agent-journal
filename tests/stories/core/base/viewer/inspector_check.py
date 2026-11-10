@@ -1,5 +1,5 @@
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from tests.stories.core.base.viewer.support.inspector_faults import PATH, NoIconModule, PanelWordModule
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.support.story_checks import expect_value

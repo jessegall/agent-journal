@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.testing.story import Story
 
 

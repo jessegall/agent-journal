@@ -11,7 +11,7 @@ from engine.container.container import Container
 from engine.database.database import Database
 from engine.container.journal_container import sync_modules, synced_container
 from engine.journal.journal_home import JournalHome
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.upgrade.move_map import MoveMap
 from engine.upgrade.move_runner import MoveRunner
 from engine.upgrade.upgrade_failed_error import UpgradeFailedError

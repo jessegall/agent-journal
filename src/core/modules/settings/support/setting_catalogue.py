@@ -2,8 +2,8 @@ from collections.abc import Iterator
 from dataclasses import replace
 
 from engine.errors.refusal import Refusal
-from core.base.registry.registry import Registry
-from core.base.registry.setting_entry import SettingEntry
+from engine.registry.registry import Registry
+from engine.registry.setting_entry import SettingEntry
 from engine.setting.setting_declaration import ANY_KEY, GROUP_TYPE, REFERENCE_TYPE
 
 

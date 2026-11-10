@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from core.base.profile.agent_profile import AgentProfile
 from engine.errors.refusal import Refusal
-from core.base.registry.skill_entry import SkillEntry
+from engine.registry.skill_entry import SkillEntry
 from core.modules.profiles.support.profile_skill import ProfileSkill
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.start_skills import StartSkills

@@ -3,7 +3,7 @@ import pytest
 from core.base.viewer.inspector_width import InspectorWidth
 from core.base.viewer.panel_labels import PanelLabels
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.reminders.models.reminder import Reminder
 from tests.stories.core.base.viewer.support.inspector_modules import PATH
 from tests.stories.core.support.fixtures import MainEnvironment

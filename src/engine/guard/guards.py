@@ -6,9 +6,9 @@ from engine.guard.guard import Guard
 from engine.guard.guard_switches import GuardSwitches
 from engine.guard.guard_refusal import GuardRefusal
 from engine.model.model import Model
-from core.base.registry.guard_entry import GuardEntry
-from core.base.registry.listener_timing import ListenerTiming
-from core.base.registry.registry import Registry
+from engine.registry.guard_entry import GuardEntry
+from engine.registry.listener_timing import ListenerTiming
+from engine.registry.registry import Registry
 from engine.errors.refusal import Refusal
 
 LIFECYCLE_GUARD = "core.lifecycle"

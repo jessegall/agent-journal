@@ -4,7 +4,7 @@ from engine.actor.actor import CORE_ACTOR_ID
 from engine.cli.console import Console
 from engine.database.database import Database
 from engine.database.statement import Statement
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from tests.stories.core.modules.chat.support.mark_samples import EXCEPTION_SAMPLE, marks_text
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_count_marks, expect_system_log_with, expect_value

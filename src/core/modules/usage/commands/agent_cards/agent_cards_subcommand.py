@@ -9,7 +9,7 @@ from engine.enums.agent_role import AgentRole
 from engine.enums.helper_role import HelperRole
 from engine.caller.caller import Caller
 from core.base.provider.providers import Providers
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.agents.models.agent import Agent, UPGRADE_RETIREMENT_REASON
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.usage.commands.usage_agents.usage_agents_subcommand import UsageAgentsSubcommand

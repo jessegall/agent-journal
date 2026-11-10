@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple

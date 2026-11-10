@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.row.page import Page
 from engine.query.queries import Queries
-from core.base.registry.suite_windows import SuiteWindows
+from engine.registry.suite_windows import SuiteWindows
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.base.viewer.layout_shape import stored_layout
 from core.modules.drivers.commands.support.page_preset import PagePreset

@@ -10,7 +10,7 @@ from engine.journal.journal_home import JournalHome
 from core.base.profile.agent_profile import AgentProfile
 from core.base.profile.profile_name import PROFILE_NAME
 from engine.errors.refusal import Refusal
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.text.text_digest import TextDigest
 from core.modules.profiles.support.profile_format import ProfileFormat
 from core.modules.profiles.support.profile_fields import ProfileFields

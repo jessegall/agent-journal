@@ -8,7 +8,7 @@ from core.base.library.library_lookup import LibraryLookup
 from engine.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from engine.query.queries import Queries
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.scope.actor_scope import ActorScope
 from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions
 from core.modules.documents.references.row_ref import RowRef

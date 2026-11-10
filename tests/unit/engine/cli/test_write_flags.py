@@ -16,10 +16,10 @@ from engine.guard.guard import Guard
 from engine.guard.guard_refusal import GuardRefusal
 from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.registry.guard_entry import GuardEntry
-from core.base.registry.listener_entry import ListenerEntry
-from core.base.registry.listener_timing import ListenerTiming
-from core.base.registry.registry import Registry
+from engine.registry.guard_entry import GuardEntry
+from engine.registry.listener_entry import ListenerEntry
+from engine.registry.listener_timing import ListenerTiming
+from engine.registry.registry import Registry
 from engine.errors.refusal import Refusal
 from tests.unit.core.base.sample_container import sample_container
 from tests.unit.core.base.samples.listener_sample import ShelfCounter

@@ -1,6 +1,6 @@
 from functools import cached_property
 
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 
 

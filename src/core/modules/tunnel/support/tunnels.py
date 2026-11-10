@@ -1,6 +1,6 @@
 from engine.container.container import Container
 from engine.errors.refusal import Refusal
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from engine.tunnel.tunnel import Tunnel
 from core.modules.settings.bindings.support.setting_values import SettingValues
 

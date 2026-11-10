@@ -136,13 +136,13 @@
                 "file": "src/engine/query/unknown_column_error.py"
             },
             {
-                "file": "src/core/base/registry/lazy_load_error.py"
+                "file": "src/engine/registry/lazy_load_error.py"
             },
             {
-                "file": "src/core/base/registry/stale_registry_error.py"
+                "file": "src/engine/registry/stale_registry_error.py"
             },
             {
-                "file": "src/core/base/registry/unscanned_event_error.py"
+                "file": "src/engine/registry/unscanned_event_error.py"
             },
             {
                 "file": "src/engine/repository/stale_row_error.py"

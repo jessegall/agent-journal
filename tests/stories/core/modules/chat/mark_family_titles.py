@@ -1,7 +1,7 @@
 from collections import Counter
 
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from tests.stories.core.support.fixtures import UserJoined
 
 

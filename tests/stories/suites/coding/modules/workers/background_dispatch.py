@@ -1,6 +1,6 @@
 from engine.database.database import Database
 from core.base.driver.command_category import CommandCategory
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner

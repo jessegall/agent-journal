@@ -1,6 +1,6 @@
-from core.base.registry.registry import Registry
-from core.base.registry.suite_entry import SuiteEntry
-from core.base.registry.window_entry import WindowEntry
+from engine.registry.registry import Registry
+from engine.registry.suite_entry import SuiteEntry
+from engine.registry.window_entry import WindowEntry
 from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import LayoutShape
 

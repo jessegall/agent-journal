@@ -1,4 +1,4 @@
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from server.viewer.module_files import ModuleFiles
 from tests.stories.core.support.fixtures import UserJoined
 

@@ -7,9 +7,9 @@ from engine.change.event_log import EventLog
 from engine.time.clock import Clock
 from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
-from core.base.registry.move_entry import MoveEntry
-from core.base.registry.setting_entry import GROUP_TYPE
-from core.base.registry.registry import Registry
+from engine.registry.move_entry import MoveEntry
+from engine.registry.setting_entry import GROUP_TYPE
+from engine.registry.registry import Registry
 from engine.upgrade.dry_run_end_error import DryRunEndError
 from engine.upgrade.move_context import MoveContext
 from engine.upgrade.move_map import MoveMap

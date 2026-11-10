@@ -1,6 +1,6 @@
 from engine.container.container import Container
 from engine.dotted_path.dotted_path import DottedPath
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.tasks.support.task_assigner import TaskAssigner
 

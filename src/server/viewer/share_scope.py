@@ -3,7 +3,7 @@ from engine.environment.environment_names import EnvironmentNames
 from engine.container.container import Container
 from engine.query.shared_rows import SharedRows
 from engine.errors.refusal import Refusal
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.modules.viewer.commands.support.window_lines import WindowLines
 from server.viewer.shared_windows import SharedWindows
 from server.viewer.share_refusal import ShareRefusal

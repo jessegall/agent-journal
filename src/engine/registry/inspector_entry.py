@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from core.base.registry.inspector_listing import InspectorListing
+from engine.registry.inspector_listing import InspectorListing
 from core.base.viewer.inspector_declaration import InspectorDeclaration
 
 

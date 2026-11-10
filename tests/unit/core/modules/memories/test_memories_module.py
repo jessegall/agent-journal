@@ -1,5 +1,5 @@
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from tests.unit.core.modules.memories.support.memory_journal import MemoryJournal
 
 

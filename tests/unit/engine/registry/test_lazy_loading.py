@@ -1,7 +1,7 @@
 import pytest
 
-from core.base.registry.lazy_load_error import LazyLoadError
-from core.base.registry.lazy_loading import LazyLoading
+from engine.registry.lazy_load_error import LazyLoadError
+from engine.registry.lazy_loading import LazyLoading
 
 
 def test_a_registry_built_twice_from_the_same_rows_stops_the_work():

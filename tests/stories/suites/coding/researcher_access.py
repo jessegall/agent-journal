@@ -3,7 +3,7 @@ import pytest
 from engine.database.database import Database
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.tool_type import ToolType
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent

@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from engine.database.database import Database
-from core.base.registry.registry import Registry
+from engine.registry.registry import Registry
 from core.testing.expect_row import expect_row
 from tests.stories.core.modules.viewer.support import section_modules
 from tests.stories.core.support.fixtures import MainEnvironment
