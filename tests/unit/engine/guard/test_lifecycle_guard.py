@@ -16,7 +16,7 @@ from engine.guard.lifecycle_guard import LifecycleGuard
 from engine.model.added_state import AddedState
 from engine.model.move import Move
 from engine.model.state_book import StateBook
-from engine.model.unknown_state_error import UnknownStateError
+from engine.model.errors.unknown_state_error import UnknownStateError
 from engine.guard.errors.guard_refusal import GuardRefusal
 from engine.row.metadata import Metadata
 from engine.model.model import Model

@@ -19,15 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/engine/model/model_error.py"
-            },
-            {
-                "file": "src/engine/model/unknown_state_error.py"
-            },
-            {
-                "file": "src/engine/model/unsupported_column_type_error.py"
-            },
-            {
                 "file": "src/engine/module/module_error.py"
             },
             {

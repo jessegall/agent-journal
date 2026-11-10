@@ -3,7 +3,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import END_CHANGE, Model
-from engine.model.model_error import ModelError
+from engine.model.errors.model_error import ModelError
 from engine.time.timestamp import Timestamp
 from engine.agent.agent_policy import AgentPolicy
 from core.modules.agents.models.enums.agent_activity import AgentActivity

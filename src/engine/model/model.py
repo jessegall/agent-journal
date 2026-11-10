@@ -7,7 +7,7 @@ from engine.model.added_state import StateValue
 from engine.model.lifecycle import Lifecycle
 from engine.model.move import Move
 from engine.time.timestamp import Timestamp
-from engine.model.model_error import ModelError
+from engine.model.errors.model_error import ModelError
 from engine.text.search_term import SearchTerm
 
 

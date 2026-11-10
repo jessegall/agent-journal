@@ -3,7 +3,7 @@ from engine.command.handler import Handler
 from engine.command.move_row import MoveRow
 from engine.model.model import Model
 from engine.model.state_book import StateBook
-from engine.model.unknown_state_error import UnknownStateError
+from engine.model.errors.unknown_state_error import UnknownStateError
 from engine.listener.event_rows import EventRows
 from engine.registry.registry import Registry
 from engine.repository.repository import Repository

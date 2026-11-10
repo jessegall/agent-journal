@@ -12,7 +12,7 @@ from engine.model.added_state import AddedState
 from engine.model.model import Model, STATE
 from engine.model.view_model import ViewModel
 from engine.time.timestamp import Timestamp
-from engine.model.unsupported_column_type_error import UnsupportedColumnTypeError
+from engine.model.errors.unsupported_column_type_error import UnsupportedColumnTypeError
 
 R = TypeVar("R", bound=Model | ViewModel, covariant=True)
 T = TypeVar("T", bound=Model | ViewModel)

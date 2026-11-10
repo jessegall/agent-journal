@@ -6,7 +6,7 @@ from typing import Any
 from engine.dotted_path.dotted_path import DottedPath
 from engine.model.added_state import AddedState, StateValue
 from engine.model.model import Model
-from engine.model.model_error import ModelError
+from engine.model.errors.model_error import ModelError
 from engine.model.move import Move
 from engine.model.state_addition import StateAddition
 from engine.model.state_holder import StateHolder

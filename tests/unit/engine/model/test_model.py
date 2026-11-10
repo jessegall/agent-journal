@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import pytest
 
 from engine.model.model import Model
-from engine.model.model_error import ModelError
+from engine.model.errors.model_error import ModelError
 from engine.model.move import Move
 from engine.time.timestamp import Timestamp
 from tests.unit.engine.model.test_lifecycle import ItemLifecycle, ItemState
