@@ -1,4 +1,3 @@
-import ast
 import importlib.util
 import subprocess
 from pathlib import Path
@@ -60,8 +59,8 @@ def sample_repository(root, importer_text):
 
 
 def imported_files(folder):
-    tree = ast.parse((folder / IMPORTER).read_text())
-    return [folder / "src" / f"{node.module.replace('.', '/')}.py" for node in ast.walk(tree) if isinstance(node, ast.ImportFrom) and node.module is not None]
+    import_lines = [line for line in (folder / IMPORTER).read_text().splitlines() if line.startswith("from ")]
+    return [folder / "src" / f"{line.split()[1].replace('.', '/')}.py" for line in import_lines]
 
 
 def commit(repository, message):
