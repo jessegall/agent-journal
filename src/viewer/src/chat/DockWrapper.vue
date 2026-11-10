@@ -140,7 +140,7 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
                     <FoldSign :open="!folded" />
                 </Btn>
             </template>
-            <span class="dock-acts">
+            <span class="dock-acts" @click.stop>
                 <span ref="actions" class="dock-module-actions" />
                 <ButtonSlot
                     :name="`dock.${item.type}`"

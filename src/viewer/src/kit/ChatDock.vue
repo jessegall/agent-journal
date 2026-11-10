@@ -196,12 +196,17 @@ defineExpose({card});
     border-block: 0;
     opacity: 0;
 }
-.chat-dock.collapsed .chat-dock-foot {
+/* a collapsed card keeps the buttons of its footer, on the right, and hides the rest of it; one with no button has no footer */
+.chat-dock.collapsed .chat-dock-foot:not(:has(.dock-acts button)) {
     max-height: 0;
     min-height: 0;
     margin-bottom: 0;
     overflow: hidden;
     opacity: 0;
+}
+.chat-dock.collapsed .chat-dock-foot :deep(.dock-facts),
+.chat-dock.collapsed .chat-dock-foot :deep(.dock-fold) {
+    display: none;
 }
 .chat-dock.collapsed :deep(.dock-failure) { display: none; }
 .chat-dock.collapsed .chat-dock-head { margin-top: 0; }
