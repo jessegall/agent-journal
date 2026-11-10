@@ -16,9 +16,6 @@
                 "testCode": true
             },
             {
-                "file": "src/install/backup_result.py"
-            },
-            {
                 "file": "src/install/built_bundle.py"
             },
             {
@@ -65,9 +62,6 @@
             },
             {
                 "file": "src/install/version_four.py"
-            },
-            {
-                "file": "src/install/version_four_backup.py"
             },
             {
                 "file": "src/install/version_four_files.py"

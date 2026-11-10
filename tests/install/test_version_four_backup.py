@@ -3,7 +3,7 @@ import sqlite3
 import pytest
 
 from install.errors.backup_mismatch_error import BackupMismatchError
-from install.version_four_backup import VersionFourBackup
+from install.backup.version_four_backup import VersionFourBackup
 from tests.stories.fixtures.version_four import version_four_fixture
 
 

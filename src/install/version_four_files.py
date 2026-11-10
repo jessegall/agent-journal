@@ -1,7 +1,7 @@
 import shutil
 from pathlib import Path
 
-from install.version_four_backup import BACKUP_FOLDER, DATABASE, VERSION_FILE
+from install.backup.version_four_backup import BACKUP_FOLDER, DATABASE, VERSION_FILE
 
 SIDE_FILES = ("-wal", "-shm")
 CODE_FOLDER = VERSION_FILE.parent

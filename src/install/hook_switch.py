@@ -4,7 +4,7 @@ from pathlib import Path
 
 from engine.provider.program_hooks import ProgramHooks
 from install.hook_writer import HookWriter
-from install.version_four_backup import BACKUP_FOLDER
+from install.backup.version_four_backup import BACKUP_FOLDER
 
 SETTINGS_FILES = (Path(".claude") / "settings.json", Path(".claude") / "settings.local.json", Path(".codex") / "hooks.json")
 SAVED_FOLDER = "hooks"

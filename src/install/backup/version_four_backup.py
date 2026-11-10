@@ -7,7 +7,7 @@ from engine.database.version_four_tables import VersionFourTables
 from engine.file.file_access import FileAccess
 from install.errors.backup_mismatch_error import BackupMismatchError
 from install.errors.backup_write_error import BackupWriteError
-from install.backup_result import BackupResult
+from install.backup.backup_result import BackupResult
 
 BACKUP_FOLDER = "version-4"
 DATABASE = "journal.db"

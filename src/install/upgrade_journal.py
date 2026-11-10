@@ -29,7 +29,7 @@ from engine.connection.unix_connection import UnixConnection
 from install.upgrade_outcome import UpgradeOutcome
 from install.upgrade_report_file import UpgradeReportFile
 from install.upgrade_text import UpgradeText
-from install.version_four_backup import BACKUP_FOLDER, DATABASE, VersionFourBackup
+from install.backup.version_four_backup import BACKUP_FOLDER, DATABASE, VersionFourBackup
 from install.version_four_files import VersionFourFiles
 from core.base.serving.server_files import ServerFiles
 
