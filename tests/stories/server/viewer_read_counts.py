@@ -324,7 +324,7 @@ def workload_server(new_story, *, listen: bool = False):
     story.advance(datetime.now(timezone.utc) - story.clock.timestamp().value)
     build_workload(story)
     try:
-        with server_story(story, listener_thread_started=listen) as server:
+        with server_story(story, listener_thread_started=listen, real_time=True) as server:
             yield WorkloadServer(server, initial_values)
     finally:
         for key, setting in initial_values.items():
@@ -386,7 +386,7 @@ def validate_sample(evidence: dict[str, object]) -> None:
     if retention["retained"] < retention["required"] or retention["required"] < losses["recorded"]:
         raise IncompleteViewerSample.with_reason("retention cannot cover the interval")
     if evidence["attribution"] != evidence["funnel"]:
-        raise IncompleteViewerSample.with_reason("the attributed log and funnel counters disagree")
+        raise IncompleteViewerSample.with_reason(f"the attributed log counted {evidence['attribution']} and the funnel counted {evidence['funnel']}")
 
 
 def validate_workload_sample(sample_data: dict[str, object]) -> None:
