@@ -10,7 +10,7 @@ def handler(label, seconds, starts_immediately=False):
 
 
 def labels(handlers):
-    return [each.label for each in handlers]
+    return [tick_handler.label for tick_handler in handlers]
 
 
 def test_a_handler_is_due_once_its_interval_has_passed_since_the_beginning():
