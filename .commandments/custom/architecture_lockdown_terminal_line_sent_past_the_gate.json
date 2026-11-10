@@ -1,0 +1,33 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "send_line"
+            },
+            {
+                "of": "receiver",
+                "typeLike": "*TerminalTyping"
+            }
+        ],
+        "reject": [
+            {
+                "of": "enclosingType",
+                "nameIn": [
+                    "TerminalTyping"
+                ]
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "terminal-line-sent-past-the-gate",
+        "description": "Code calls TerminalTyping.send_line itself, which types into the agent's terminal without asking whether its program is at a usage limit.",
+        "rule": "Call TerminalTyping.type_line with the agent: it asks ProgramLockdown and refuses with the stop line.",
+        "skill": "drivers-architecture"
+    }
+}

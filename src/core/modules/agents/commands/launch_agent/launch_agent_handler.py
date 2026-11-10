@@ -2,6 +2,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from engine.enums.agent_role import AgentRole
+from core.base.driver.program_lockdown import ProgramLockdown
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -24,11 +25,14 @@ class LaunchAgentHandler(Handler[LaunchAgent, Agent]):
 
     command = LaunchAgent
 
-    def __init__(self, bus: Bus, queries: Queries, providers: Providers, home: JournalHome, link: LauncherLink) -> None:
-        self.bus, self.queries, self.providers, self.home, self.link = bus, queries, providers, home, link
+    def __init__(self, bus: Bus, queries: Queries, providers: Providers, home: JournalHome, link: LauncherLink, lockdown: ProgramLockdown) -> None:
+        self.bus, self.queries, self.providers, self.home, self.link, self.lockdown = bus, queries, providers, home, link, lockdown
 
     def handle(self, command: LaunchAgent, context: Context) -> Agent:
         provider = self.providers.provider(command.program)
+        lockdown = self.lockdown.lockdown(command.program)
+        if lockdown.is_active:
+            raise lockdown.start_refusal("agent")
         if context.environment_id is None:
             raise Refusal("an agent starts in an environment", "start it from an environment")
         environment = self.queries.query(Environment).find(context.environment_id)

@@ -175,6 +175,8 @@
         "architecture_processes_slot_written_outside_the_queue",
         "architecture_nudges_agent_line_outside_nudger",
         "architecture_agents_launcher_stop_outside_agent_program",
+        "architecture_lockdown_launcher_asked_outside_the_launch_door",
+        "architecture_lockdown_terminal_line_sent_past_the_gate",
         "architecture_agents_main_agent_query_by_hand",
         "architecture_scopes_environment_filtered_by_hand",
         "architecture_scopes_model_without_environment_scope",
