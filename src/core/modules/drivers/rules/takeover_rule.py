@@ -3,28 +3,28 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from engine.query.conditions.equal import Equal
-from engine.query.queries import Queries
-from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_sessions import AgentSessions
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.driver_nudges import TAKEOVER
 
 
 class TakeoverRule(DriverRule):
-    """A new main session in an environment that had another is told the chat above it is history; a session
-    that has hooks already, after a compaction or a resume, is the same agent and is told nothing."""
+    """A new session of the main agent is told at its first hook that the chat above it is history; a session
+    that has hooks already, after a compaction or a resume, and the agent's first session are told nothing."""
 
     name = "drivers.takeover"
     hook = HookEventName.SESSION_START
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries, hook_calls: HookCallQuery) -> None:
-        self.queries, self.hook_calls = queries, hook_calls
+    def __init__(self, sessions: AgentSessions, hook_calls: HookCallQuery) -> None:
+        self.sessions, self.hook_calls = sessions, hook_calls
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if self.hook_calls.newest_agent_hook(hook.agent_id) is not None:
+        current = self.sessions.current(hook.agent_id)
+        if current is None or self.sessions.earlier_session_count(hook.agent_id) < 1:
             return RuleAnswer.allowed()
-        remaining = self.queries.query(Agent).filter(role=AgentRole.MAIN).matching(Equal("id", hook.agent_id, negated=True))
-        newest = remaining.newest().first()
-        return RuleAnswer.with_nudges(TAKEOVER.nudge(agent=newest.number)) if newest is not None else RuleAnswer.allowed()
+        newest_hook = self.hook_calls.newest_agent_hook(hook.agent_id)
+        if newest_hook is not None and newest_hook.created_at.value >= current.started_at.value:
+            return RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(TAKEOVER.nudge())

@@ -90,13 +90,13 @@ def test_a_plan_approved_or_cancelled_since_the_last_hook_is_named(new_story):
     story.expect_hook_allowed("s-1", VIEW_LINE, "plan:1 is cancelled")
 
 
-def test_a_new_main_session_is_told_it_took_over_and_a_session_again_is_not(new_story):
+def test_a_new_main_session_is_told_it_is_a_new_session_and_a_session_again_is_not(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
     first = story.hook("s-1", HookSamples.session_start())
-    expect_absent_reply_line(first, "you took over")
-    story.expect_hook_allowed("s-2", HookSamples.session_start(), "you took over from agent")
+    expect_absent_reply_line(first, "you are a new session")
+    story.expect_hook_allowed("s-2", HookSamples.session_start(), "you are a new session of the main agent")
     story.hook("s-2", VIEW_LINE)
-    story.expect_absent_hook_line("s-2", HookSamples.session_start(), "you took over")
+    story.expect_absent_hook_line("s-2", HookSamples.session_start(), "you are a new session")
 
 
 def test_blocking_another_task_does_not_repeat_the_task_already_in_hand(started_cart_plan):

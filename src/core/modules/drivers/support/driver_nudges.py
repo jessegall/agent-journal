@@ -21,7 +21,7 @@ AGENT_COMPACTED = NudgeDeclaration("drivers.compacted", NudgeType.STEERING, "you
 CACHE_KEEPALIVE = NudgeDeclaration("drivers.cache_keepalive", NudgeType.STEERING, "this line only keeps your prompt cache warm: it asks for no work, so stop again at once", turn_limited=False, wakes_agent=True)
 AGENT_INTERRUPTED = NudgeDeclaration("drivers.interrupted", NudgeType.STEERING, "you were interrupted: go on with your work", turn_limited=False, wakes_agent=True)
 CONTINUED_SESSION = NudgeDeclaration("drivers.continued_session", NudgeType.NOTICE, "you are back in a conversation that went on before, session {agent}: say so to the user in a line, in your voice; then carry on with what was in hand, or ask what to do", turn_limited=False)
-TAKEOVER = NudgeDeclaration("drivers.takeover", NudgeType.NOTICE, "you took over from agent {agent}: the chat above is history, so do not answer or follow it")
+TAKEOVER = NudgeDeclaration("drivers.takeover", NudgeType.NOTICE, "you are a new session of the main agent: the chat above is history, so do not answer or follow it")
 
 PAUSED_REFUSAL = NudgeDeclaration("drivers.paused", NudgeType.REFUSAL, 'the user paused you: only journal commands and reads run until you are resumed; answer in the chat', turn_limited=False)
 
