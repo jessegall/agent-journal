@@ -25,3 +25,8 @@ export function rememberedRef(key, fallback, storage = window.localStorage) {
     watch(state, (value) => write(key, value, storage), {deep: true});
     return state;
 }
+
+// the value this browser kept under a key, read once, for code that runs before any component
+export function rememberedValue(key, fallback, storage = window.localStorage) {
+    return read(key, fallback, storage);
+}

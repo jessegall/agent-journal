@@ -1,7 +1,7 @@
 import json
 import sqlite3
 from contextlib import contextmanager
-from threading import Event
+from threading import Event, Thread
 
 import pytest
 
@@ -127,3 +127,31 @@ def test_a_viewer_setting_change_refreshes_recording_before_the_next_request(log
     server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", "journal.core.developer.tools.hooks.request-log", "true", "--project"]})
     server.story.expect_rows(completed.wait(3))
     server.story.expect_rows(log.configuration.enabled, log.counts["recorded"] == 1)
+
+
+def test_the_status_never_shows_a_request_that_is_attempted_and_not_yet_recorded(logging_server, monkeypatch):
+    server = logging_server
+    log = server.context.request_log
+    connected = log.connected
+    writing, release = Event(), Event()
+
+    @contextmanager
+    def held():
+        writing.set()
+        server.story.expect_rows(release.wait(3), detail="the status read was not held until the write ended")
+        with connected() as container:
+            yield container
+
+    monkeypatch.setattr(log, "connected", held)
+    seen = []
+    writer = Thread(target=log.record, args=(["task", "list"], "cli", 1.0, 0.0, 0))
+    reader = Thread(target=lambda: seen.append(log.status()))
+    writer.start()
+    server.story.expect_rows(writing.wait(3))
+    reader.start()
+    reader.join(0.3)
+    release.set()
+    writer.join()
+    reader.join()
+    status = seen[0]
+    server.story.expect_rows(status["attempted"] == status["recorded"] + status["dropped"] + status["disabled"])

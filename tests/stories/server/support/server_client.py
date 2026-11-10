@@ -346,10 +346,10 @@ def local_viewer(login: ViewerLogin, routes: ViewerRoutes) -> ViewerEndpoint:
 
 
 @contextmanager
-def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor()):
+def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), real_time: bool = False):
     without_start_skills(story)
     story.run("setting make journal.core.voices.avatar false")
-    with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door, story.clock) as (socket_path, context):
+    with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door, SYSTEM_CLOCK if real_time else story.clock) as (socket_path, context):
         yield ServerStory(story, socket_path, context)
 
 

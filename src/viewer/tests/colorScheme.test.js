@@ -63,6 +63,7 @@ test("the scheme moves on to the next and is kept for the next visit", () => {
 });
 
 test("every page's title names the project and the environment", () => {
-    expect(pageTitle("development")).toBe("agent-journal · development");
-    expect(pageTitle("")).toBe("agent-journal");
+    expect(pageTitle("development", "Worldwatch Market")).toBe("Worldwatch Market · development");
+    expect(pageTitle("development")).toBe("development");
+    expect(pageTitle("")).toBe("Agent journal");
 });
