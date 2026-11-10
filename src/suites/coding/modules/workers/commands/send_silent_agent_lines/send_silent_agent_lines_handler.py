@@ -15,7 +15,7 @@ from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.drivers.support.main_agent_line import MainAgentLine
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.commands.send_silent_agent_lines.send_silent_agent_lines import SendSilentAgentLines
 from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent

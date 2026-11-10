@@ -3,7 +3,7 @@ from engine.change.logged_event import LoggedEvent
 from engine.change.moved import Moved
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree

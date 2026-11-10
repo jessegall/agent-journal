@@ -23,7 +23,7 @@ from core.modules.plugins.support.plugin_program import PluginProgram
 from core.modules.plugins.support.plugin_socket import PluginSocket
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from core.modules.plugins.support.service_processes import ServiceProcesses
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 CONDITION_LIMIT_SETTING = "journal.core.plugins.condition_limit_seconds"
 CONDITION_RECHECK = timedelta(minutes=10)

@@ -1,7 +1,7 @@
 from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import PHASE_TESTS_ENABLED, TEST_BATCH_SIZE
 from suites.coding.modules.workers.support.worker_test_group import WorkerTestGroup
 from core.modules.plans.models.enums.plan_state import PlanState

@@ -8,7 +8,7 @@ from engine.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.commands.end_inactive_worker.end_inactive_worker import EndInactiveWorker
 from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.drivers.support.agent_activities import AgentActivities
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
 from suites.coding.modules.workers.support.worker_nudges import WORKER_IDLE_STOPPED

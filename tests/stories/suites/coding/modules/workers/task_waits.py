@@ -2,7 +2,7 @@ import pytest
 
 from datetime import timedelta
 
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from engine.enums.duration_unit import DurationUnit
 from suites.coding.modules.workers.support.worker_settings import WORKER_IDLE_HOURS
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

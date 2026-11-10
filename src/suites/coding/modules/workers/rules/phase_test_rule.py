@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.models.worker_test_run import WorkerTestRun
 from suites.coding.modules.workers.commands.record_worker_test_run.record_worker_test_run import RecordWorkerTestRun
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS

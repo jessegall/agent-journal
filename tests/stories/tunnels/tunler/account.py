@@ -4,7 +4,7 @@ from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 
 from engine.tunnel.tunnel_state import TunnelState
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.tunnels.tunler.support.fake_tunler_client import ACCOUNT, TUNLER_HOST, FakeTunlerClient

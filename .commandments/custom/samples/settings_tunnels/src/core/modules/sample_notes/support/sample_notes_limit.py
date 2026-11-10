@@ -1,4 +1,4 @@
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 
 class SampleNotesLimit:

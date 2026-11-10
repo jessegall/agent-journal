@@ -1,7 +1,7 @@
 from engine.journal.journal_home import JournalHome
 from engine.provider.context_window import ContextWindow
 from engine.provider.providers import Providers
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.settings.support.context_reading import ContextReading
 
 CONTEXT_LIMIT_ENABLED = "journal.core.helpers.context-limit-on"

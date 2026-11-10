@@ -7,7 +7,7 @@ from core.modules.messages.commands.record_parent_report.record_parent_report im
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.report_nudges import REPORT_FIELD
 from core.modules.tasks.queries.task_query import TaskQuery
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 

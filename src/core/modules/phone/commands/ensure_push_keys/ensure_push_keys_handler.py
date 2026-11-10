@@ -3,7 +3,7 @@ from engine.command.handler import Handler
 from core.modules.phone.commands.ensure_push_keys.ensure_push_keys import EnsurePushKeys
 from core.modules.phone.commands.support.push_key_pair import PushKeyPair
 from core.modules.phone.support.push_keys import PushKeys
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.settings.commands.support.setting_store import SettingStore
 
 PRIVATE_KEY = "journal.core.phone.push-private-key"

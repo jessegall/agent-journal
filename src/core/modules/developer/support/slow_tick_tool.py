@@ -5,7 +5,7 @@ from engine.performance.performance_tool import PerformanceTool
 from engine.query.queries import Queries
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.developer.support.developer_settings import SLOW_TICKS_SETTING
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 TICK_LIMIT_POINTS = 50
 

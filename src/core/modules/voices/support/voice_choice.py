@@ -1,7 +1,7 @@
 import subprocess
 
 from engine.journal.journal_home import JournalHome
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.voices.support.builtin_catalogue import BuiltinCatalogue
 from core.modules.voices.support.voice import Voice
 from core.modules.voices.support.voices_settings import AVATAR_KEY, AVATAR_SHOWN_KEY, NAME_KEY, PROFILE_KEY, TITLE_KEY, VOICE_SWITCH_KEY

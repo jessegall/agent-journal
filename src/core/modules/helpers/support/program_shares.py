@@ -5,7 +5,7 @@ from engine.scope.scopes import Scopes
 from engine.time.timestamp import Timestamp
 from core.modules.helpers.support.helper_settings import PROGRAM_SPLIT
 from core.modules.helpers.support.program_share import ProgramShare
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.setting_rows import SettingRows
 

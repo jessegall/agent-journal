@@ -1,6 +1,6 @@
 from engine.time.clock import Clock
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_WAIT
 
 POLL_SECONDS = 0.5

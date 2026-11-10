@@ -9,7 +9,7 @@ from engine.time.timing import Timing
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.nudge_log import NudgeLog
 from core.modules.drivers.support.suite_choice import SuiteChoice
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 
 class HookRuleAnswers:

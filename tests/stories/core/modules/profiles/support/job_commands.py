@@ -10,7 +10,7 @@ from engine.registry.registry import Registry
 from core.modules.profiles.support.profile_files import ProfileFiles
 from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES
 
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment, dispatched_worker

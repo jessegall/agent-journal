@@ -18,7 +18,7 @@ from core.modules.processes.support.process_queue_page import ProcessQueuePage
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.queue_inspector_json import QueueInspectorJson
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 
 MAX_PAGE_SIZE = 100

@@ -1,5 +1,5 @@
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from engine.setting.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
 

@@ -7,7 +7,7 @@ from engine.driver.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule
 from engine.driver.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 HELPER_START_ARGUMENTS = ("helper", "start")
 

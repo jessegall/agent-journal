@@ -5,7 +5,7 @@ from engine.driver.hook_event import HookEvent
 from engine.module.performance_tools import PerformanceTools
 from core.modules.developer.support.developer_settings import HOOK_DURATIONS_SETTING, HOOK_NUDGES_SETTING
 from core.modules.drivers.support.hook_cost_tool import HookCostTool
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 TERMINAL_NUDGE_CHARACTERS = 300
 

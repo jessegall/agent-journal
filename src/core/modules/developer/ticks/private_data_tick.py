@@ -6,7 +6,7 @@ from core.modules.developer.commands.record_private_data_finding.record_private_
 from core.modules.developer.support.developer_settings import PRIVATE_DATA_SETTING, TOOLS_SETTING
 from core.modules.developer.support.private_data_pass import PrivateDataPass
 from core.modules.environments.models.environment import Environment
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 
 class PrivateDataTick:

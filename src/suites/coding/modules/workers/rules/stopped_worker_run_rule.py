@@ -9,7 +9,7 @@ from engine.driver.span_queries import SpanQueries
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RUN_RUNS_AFTER_STOP
 from suites.coding.modules.workers.support.worker_settings import STOPPED_WORKER_RUN_MINUTES
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks

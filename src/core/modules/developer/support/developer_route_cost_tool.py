@@ -2,7 +2,7 @@ from engine.database.points import Points
 from engine.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.developer_settings import HOOK_DURATIONS_SETTING
 from core.modules.developer.support.hook_numbers_file import HookNumbersFile
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 
 class DeveloperRouteCostTool(RouteCostTool):

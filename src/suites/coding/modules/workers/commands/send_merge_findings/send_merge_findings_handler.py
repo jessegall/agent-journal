@@ -8,7 +8,7 @@ from engine.driver.times_span import TimesSpan
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.countdowns import Countdowns
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from suites.coding.modules.workers.commands.send_merge_findings.send_merge_findings import SendMergeFindings
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger

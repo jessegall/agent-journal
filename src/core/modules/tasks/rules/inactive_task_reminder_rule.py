@@ -8,7 +8,7 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.driver.span_queries import SpanQueries
 from engine.time.timestamp import MINUTE_SECONDS
 from core.modules.drivers.support.agent_activities import AgentActivities
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.task_nudges import INACTIVE_TASK
 from core.modules.tasks.support.task_settings import QUIET_TASK_MINUTES

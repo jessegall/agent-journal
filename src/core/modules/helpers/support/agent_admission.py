@@ -1,7 +1,7 @@
 from engine.errors.refusal import Refusal
 from core.modules.helpers.support.agent_options import AgentOptions
 from core.modules.helpers.support.helper_settings import ALLOWED_MODELS
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 
 class AgentAdmission:

@@ -12,7 +12,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from core.modules.processes.support.run_counts import RunCounts
 from core.modules.processes.support.reader_selection import ReaderSelection

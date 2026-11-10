@@ -1,5 +1,5 @@
 from engine.tunnel.tunnel_state import TunnelState
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.tunnels.tunler.support.fake_tunler_client import TUNLER_HOST, FakeTunlerClient
 from tests.stories.tunnels.tunler.support.set_clock import SetClock

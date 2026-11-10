@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from engine.driver.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED

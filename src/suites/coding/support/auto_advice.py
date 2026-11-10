@@ -1,4 +1,4 @@
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.support.coding_settings import WRITES_CODE_SETTING
 
 

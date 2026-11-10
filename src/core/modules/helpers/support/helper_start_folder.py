@@ -9,7 +9,7 @@ from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.helpers.support.helper_settings import HELPER_INSTRUCTION_FILES
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_problem import ProfileProblem
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.skills.support.agent_profile_skills import AgentProfileSkills
 
 PROGRAM_FOLDERS = (".claude", ".agents")

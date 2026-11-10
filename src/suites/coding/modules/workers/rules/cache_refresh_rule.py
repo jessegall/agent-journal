@@ -13,7 +13,7 @@ from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.driver_nudges import CACHE_KEEPALIVE
 from core.modules.helpers.support.helper_settings import COLD_SESSION_MINUTES
 from core.modules.processes.support.output_check_schedule import MINUTE_SECONDS
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from engine.enums.agent_role import AgentRole
 
 RETRY_SECONDS = Seconds(600)

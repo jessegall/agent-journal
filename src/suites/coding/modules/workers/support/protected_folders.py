@@ -2,7 +2,7 @@ from fnmatch import fnmatchcase
 from os.path import abspath
 from pathlib import Path
 
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import PROTECTED_FOLDERS
 
 

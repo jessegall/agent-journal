@@ -23,7 +23,7 @@ from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.commands.edit_message_text.edit_message_text import EditMessageText
 from core.modules.messages.support.agent_text_filter import AgentTextFilter
 from core.modules.messages.support.message_settings import TRANSCRIPT_LOOKBACK_SECONDS, TRANSCRIPT_OLDEST_MINUTES, TRANSCRIPT_WAIT_SECONDS
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 
 class TranscriptMessageRule(DriverRule):

@@ -12,7 +12,7 @@ from engine.log.error_log import ErrorLog
 from engine.errors.read_limit_error import ReadLimitError
 from engine.registry.lazy_loading import LazyLoading
 from core.modules.developer.support.developer_settings import PREVENT_LAZY_LOADING_SETTING, READ_LIMIT_SETTING, REPEATED_WORK_SETTING
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 
 class ReportingRequestWatch(RequestWatch):

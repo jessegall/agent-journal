@@ -9,7 +9,7 @@ from engine.provider.hook_manager import HookManager
 from engine.driver.driver_rule import DriverRule
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.providers import Providers
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.skills.support.skill_files import SkillFiles
 from core.modules.tools.support.tools import Tools
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree

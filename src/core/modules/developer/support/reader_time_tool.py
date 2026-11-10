@@ -1,7 +1,7 @@
 from engine.performance.performance_tool import PerformanceTool
 from core.modules.developer.support.developer_settings import HOOK_DURATIONS_SETTING
 from core.modules.developer.support.hook_numbers_file import HookNumbersFile
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 
 class ReaderTimeTool(PerformanceTool):

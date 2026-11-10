@@ -10,7 +10,7 @@ from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING, TOOLS_SETTING
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 
 class RequestQueueSubcommand(ReadSubcommand[RequestQueueStatus]):

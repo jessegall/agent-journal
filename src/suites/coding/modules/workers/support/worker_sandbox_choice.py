@@ -5,7 +5,7 @@ from engine.sandbox.agent_sandbox_choice import AgentSandboxChoice
 from engine.sandbox.sandboxed_agent import SandboxedAgent
 from engine.helper_type.helper_type_book import HelperTypeBook
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import MODULE_KEY, WORKER_SANDBOX
 
 SANDBOX_KEY = "sandbox"

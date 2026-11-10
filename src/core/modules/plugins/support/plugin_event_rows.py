@@ -12,7 +12,7 @@ from core.modules.plugins.support.plugin_event_state import PluginEventState
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_event_entry import CEILING_SETTING
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 READS_FORM = "reads"
 FILES_FORM = "files"

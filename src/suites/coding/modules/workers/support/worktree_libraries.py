@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from core.modules.environments.support.environment_rows import EnvironmentRows
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES, LIBRARY_LINKS

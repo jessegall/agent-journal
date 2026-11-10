@@ -5,7 +5,7 @@ from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.questions.models.question import Question
 from core.modules.questions.models.enums.question_state import QuestionState
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from tests.stories.core.modules.approvals.support.legacy_setting_requests import MODULE, SETTING, UPGRADE, LegacySettingQuestion
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 

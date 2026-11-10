@@ -10,7 +10,7 @@ from engine.subcommand.subcommand import Subcommand
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.modules.agents.models.agent import Agent
 from core.modules.messages.models.message import Message
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.commands.send_merger_input.send_merger_input import SendMergerInput
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 

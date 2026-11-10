@@ -30,7 +30,7 @@ from core.modules.drivers.commands.record_hook_call.record_hook_call import Reco
 from core.modules.drivers.commands.record_hook_timeout.record_hook_timeout import RecordHookTimeout
 from core.modules.drivers.support.hook_durations import HookDurations
 from core.modules.environments.models.environment import Environment
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 
 MAIN_HOOK_SECONDS = 5

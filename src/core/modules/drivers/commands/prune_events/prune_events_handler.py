@@ -9,7 +9,7 @@ from engine.registry.registry import Registry
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.commands.prune_events.prune_events import PruneEvents
 from core.modules.drivers.support.driver_settings import EVENT_HOURS_SETTING
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 MOST_EVENTS_PRUNED = 5000
 

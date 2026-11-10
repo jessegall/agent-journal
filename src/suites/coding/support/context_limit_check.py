@@ -3,7 +3,7 @@ from engine.time.timestamp import Timestamp
 from engine.provider.providers import Providers
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.tasks.queries.task_query import TaskQuery
 
 REQUEST_RETRY_SECONDS = 180

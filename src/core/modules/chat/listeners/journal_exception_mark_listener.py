@@ -11,7 +11,7 @@ from core.modules.chat.models.enums.chat_mark_type import ChatMarkType
 from core.modules.chat.models.enums.chat_mark_variant import ChatMarkVariant
 from core.modules.chat.models.journal_exception import JournalException
 from core.modules.chat.support.chat_settings import EXCEPTION_MARK_SECONDS
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from engine.change.created import Created
 
 LISTENER_SOURCE = "listener"

@@ -22,7 +22,7 @@ from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.drivers.support.driver_settings import BLOCK_CARD_SECONDS
 from core.modules.profiles.support.profile_files import ProfileFiles
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from engine.profile.agent_profile import AgentProfile
 from core.modules.usage.models.agent_card import AgentCard
 from core.modules.usage.support.agent_blocked import AgentBlocked

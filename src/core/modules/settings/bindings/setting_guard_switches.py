@@ -1,5 +1,5 @@
 from engine.guard.guard_switches import GuardSwitches
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.settings.support.settings_tree import GUARD_SETTINGS
 
 

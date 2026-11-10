@@ -28,7 +28,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
 from core.modules.drivers.support.agent_activities import AgentActivities
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.processes.queries.process_query import ProcessQuery
 from suites.coding.modules.workers.support.queue_run_workers import QueueRunWorkers
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery

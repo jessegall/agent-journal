@@ -2,7 +2,7 @@ from engine.container.container import Container
 from engine.errors.refusal import Refusal
 from engine.registry.registry import Registry
 from engine.tunnel.tunnel import Tunnel
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 SERVICE_SETTING = "journal.core.tunnel.service"
 

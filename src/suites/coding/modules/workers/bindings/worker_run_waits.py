@@ -2,7 +2,7 @@ from engine.enums.agent_role import AgentRole
 from engine.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.support.run_waits import RunWaits
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_WAIT
 
 

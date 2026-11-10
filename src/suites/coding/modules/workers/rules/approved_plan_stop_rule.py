@@ -5,7 +5,7 @@ from engine.driver.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.queries.plan_query import PlanQuery
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import APPROVED_PLAN_WAIT

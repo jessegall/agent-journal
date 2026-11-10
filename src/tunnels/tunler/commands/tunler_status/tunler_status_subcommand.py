@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.tunnel.support.tunnels import SERVICE_SETTING
 from tunnels.tunler.support.tunler_account import TunlerAccount
 from tunnels.tunler.support.tunler_client import TunlerClient

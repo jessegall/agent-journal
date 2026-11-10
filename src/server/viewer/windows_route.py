@@ -13,7 +13,7 @@ from engine.registry.suite_windows import SuiteWindows
 from engine.viewer.window_place import WindowPlace
 from core.modules.drivers.support.active_modules import ActiveModules
 from core.modules.drivers.support.suite_choice import SuiteChoice
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from engine.scope.scopes import Scopes
 from engine.container.container import Container
 from server.errors.unknown_environment_error import UnknownEnvironmentError

@@ -8,7 +8,9 @@ from engine.viewer.key_loading import KeyLoading
 from engine.viewer.window_place import WindowPlace
 from engine.guard.guard_switches import GuardSwitches
 from core.modules.settings.migrations.m001_settings import SettingsTableMigration
+from core.modules.settings.bindings.reader_setting_source import ReaderSettingSource
 from core.modules.settings.bindings.setting_guard_switches import SettingGuardSwitches
+from engine.setting.setting_source import SettingSource
 from engine.module.module import Module
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.sync_notes import SyncNotes
@@ -56,7 +58,7 @@ class SettingsModule(Module):
                WindowDeclaration("settings.project-hooks", "Hooks", "project_hooks.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU, skeleton=PROJECT_HOOKS_SKELETON,
                                  reads=["managed-hook list", "hook-call feed"], keys=[WindowKey("hooks", "managed-hook list", events=["managed-hook.*"])], runs=["managed-hook set", "managed-hook scan", "managed-hook give-back"], events=["managed-hook.*", "hook_call.*"])]
     subcommands = [SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand, ListManagedHooksSubcommand, SetManagedHookSubcommand, RemoveManagedHooksSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand]
-    bindings = {GuardSwitches: SettingGuardSwitches, SyncNotes: UndeclaredSettingNotes}
+    bindings = {GuardSwitches: SettingGuardSwitches, SyncNotes: UndeclaredSettingNotes, SettingSource: ReaderSettingSource}
     guards = [PersonSetSettingGuard]
     listeners = [SettingRowsListener]
     moves = [SettingsMove]

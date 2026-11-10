@@ -31,7 +31,7 @@ from core.modules.plugins.support.plugin_run_request import PluginRunRequest
 from core.modules.plugins.support.runnable_plugin import RunnablePlugin
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from engine.model.event_form import EventForm
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 
 class PluginRule(DriverRule):

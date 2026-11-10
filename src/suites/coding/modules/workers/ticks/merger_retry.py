@@ -10,7 +10,7 @@ from engine.command.bus import Bus
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.environments.support.environment_rows import EnvironmentRows
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.commands.read_next_merge.read_next_merge_handler import ReadNextMergeHandler
 from suites.coding.modules.workers.commands.return_unhandled_merger_lines.return_unhandled_merger_lines import ReturnUnhandledMergerLines
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger

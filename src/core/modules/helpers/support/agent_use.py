@@ -11,7 +11,7 @@ from core.modules.agents.models.agent import MAIN_ROLE, Agent
 from core.modules.helpers.queries.agent_job_counts import AgentJobCounts
 from core.modules.helpers.support.helper_settings import AGENT_USE_DAYS
 from core.modules.helpers.support.model_use import ModelUse
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 DAY_SECONDS = 86400
 MAX_IDLE_AGENTS = 4

@@ -7,7 +7,7 @@ from engine.query.queries import Queries
 from engine.enums.log_level import LogLevel
 from engine.repository.repository import Repository
 from engine.log.system_log_writer import SystemLogWriter
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.models.enums.test_failure_source import TestFailureSource
 from suites.coding.modules.workers.models.worker_test_failure import WorkerTestFailure
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox

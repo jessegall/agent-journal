@@ -17,7 +17,7 @@ from core.modules.agents.support.agent_program import AgentProgram
 from core.modules.agents.support.agent_session_state import AgentSessionState
 from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_recovery_reports import WorkerRecoveryReports
 from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES
 

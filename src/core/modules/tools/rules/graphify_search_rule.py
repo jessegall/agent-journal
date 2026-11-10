@@ -6,7 +6,7 @@ from engine.journal.journal_home import JournalHome
 from engine.enums.role_group import RoleGroup
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from engine.driver.search_category import CODE, SearchCategory
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.tools.support.tool_catalogue import GRAPHIFY
 from core.modules.tools.support.tool_nudges import GRAPHIFY_FIRST, USE_GRAPHIFY
 from core.modules.tools.support.tool_setting import GRAPHIFY_BLOCK_AFTER, GRAPHIFY_NUDGE_AFTER

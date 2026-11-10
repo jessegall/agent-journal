@@ -10,7 +10,7 @@ from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.overview.support.overview_page import OverviewPage
 from core.modules.overview.support.overview_section import OverviewSection
 from core.modules.overview.support.overview_settings import COMMANDS_KEY
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 
 class OverviewSubcommand(OverviewCommand, ReadSubcommand[OverviewPage]):

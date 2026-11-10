@@ -2,7 +2,7 @@ from engine.errors.refusal import Refusal
 from engine.registry.registry import Registry
 from engine.types.type_guards import is_list, is_tuple
 from engine.registry.helper_type_entry import HelperTypeEntry
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.agents.support.type_limits import TypeLimits
 
 UNLIMITED_AGENT_COUNT = 0

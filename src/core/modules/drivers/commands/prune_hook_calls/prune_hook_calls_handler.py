@@ -9,7 +9,7 @@ from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.commands.prune_hook_calls.prune_hook_calls import PruneHookCalls
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.drivers.support.driver_settings import DAYS_SETTING
 
 

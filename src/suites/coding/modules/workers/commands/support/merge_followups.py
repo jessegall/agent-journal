@@ -2,7 +2,7 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.settings.support.setting_revision import SettingRevision
 from suites.coding.modules.workers.commands.record_followup_step.record_followup_step import RecordFollowupStep
 from suites.coding.modules.workers.commands.record_merge_followup.record_merge_followup import RecordMergeFollowup

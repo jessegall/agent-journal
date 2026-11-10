@@ -11,7 +11,7 @@ from engine.driver.span_queries import SpanQueries
 from engine.scope.actor_scope import ActorScope
 from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.drivers.support.agent_activities import AgentActivities
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import UNSTARTED_WORKER_SECONDS
 
 

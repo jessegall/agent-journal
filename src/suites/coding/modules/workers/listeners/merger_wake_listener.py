@@ -4,7 +4,7 @@ from engine.change.created import Created
 from engine.command.bus import Bus
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.listener.commit_listener import CommitListener
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED

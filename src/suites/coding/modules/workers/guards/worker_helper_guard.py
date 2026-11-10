@@ -4,7 +4,7 @@ from engine.guard.guard import Guard
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import WORKERS_START_HELPERS
 from suites.coding.support.coding_helper_role import CodingHelperRole
 

@@ -19,7 +19,7 @@ from core.modules.helpers.support.helper_settings import PROGRAM_WINDOW_PERCENT
 from core.modules.helpers.support.program_state import ProgramState
 from core.modules.helpers.support.program_readiness import ProgramReadiness
 from core.modules.helpers.support.usage_limits import UsageLimits
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.usage.support.status_files import StatusFiles
 from core.modules.usage.support.plan_window import PlanWindow
 

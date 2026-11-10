@@ -9,7 +9,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.chat.models.journal_exception import JournalException
 from core.modules.developer.commands.send_exception_line.send_exception_line import SendExceptionLine
 from core.modules.developer.support.developer_settings import EXCEPTION_LINES_SETTING
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 
 class ExceptionLineListener(CommitListener[Created[JournalException]]):

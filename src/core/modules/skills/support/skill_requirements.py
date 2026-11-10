@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.settings.support.setting_reader import SettingReader, ENVIRONMENT_SOURCE
 from core.modules.skills.support.start_skills import SESSION_START_KEY, AFTER_COMPACTION_KEY, MAIN_AGENT_KEY
 
@@ -17,7 +17,7 @@ class SkillRequirements:
     environment_overrides: bool
 
     @classmethod
-    def read(cls, reader: SettingReader) -> "SkillRequirements":
-        project = SettingValues(reader).project
+    def read(cls, reader: SettingReader, values: SettingValues) -> "SkillRequirements":
+        project = values.project
         return cls(project.texts(SESSION_START_KEY), project.texts(AFTER_COMPACTION_KEY), project.texts(MAIN_AGENT_KEY),
                    any(reader.current(key).source == ENVIRONMENT_SOURCE for key in SKILL_LIST_KEYS))

@@ -12,7 +12,7 @@ from core.modules.approvals.models.enums.approval_decision import ApprovalDecisi
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.approvals.models.standing_approval import StandingApproval
 from core.modules.drivers.support.driver_settings import AUTOMATIC_APPROVAL
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.settings.models.setting import Setting
 
 

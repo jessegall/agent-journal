@@ -31,7 +31,7 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.setting.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.change.created import Created

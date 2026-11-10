@@ -16,7 +16,7 @@ from core.modules.helpers.commands.send_helper_limit_warning.send_helper_limit_w
 from core.modules.helpers.support.agent_options import AgentOptions
 from core.modules.helpers.support.helper_settings import HELPER_MAX_COST, HELPER_MAX_MINUTES
 from core.modules.helpers.support.helper_spend import HelperSpend
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.usage.support.status_files import StatusFiles
 from core.modules.agents.support.agent_rows import AgentRows
 

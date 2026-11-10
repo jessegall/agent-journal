@@ -3,7 +3,7 @@ from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from engine.tunnel.tunnel import Tunnel
 from engine.tunnel.tunnel_state import TunnelState
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.tunnel.support.tunnels import SERVICE_SETTING, Tunnels
 
 

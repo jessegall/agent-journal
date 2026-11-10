@@ -19,7 +19,7 @@ from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.environments.models.environment import Environment
 from core.modules.environments.support.environment_rows import EnvironmentRows
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.support.available_workers import AvailableWorkers
 from suites.coding.modules.workers.support.worker_request import WorkerRequest

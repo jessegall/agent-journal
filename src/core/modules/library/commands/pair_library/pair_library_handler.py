@@ -19,7 +19,7 @@ from core.modules.library.errors.library_stopped_error import LibraryStoppedErro
 from core.modules.library.errors.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.server_info import ServerInfo
 from core.modules.library.support.server_user import ServerUser
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 
 class PairLibraryHandler(Handler[PairLibrary, LibraryConnection]):

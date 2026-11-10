@@ -29,7 +29,7 @@ from core.modules.library.support.library_user import LibraryUser
 from core.modules.library.support.library_users import LibraryUsers
 from core.modules.library.support.new_library_user import NewLibraryUser
 from core.modules.library.support.server_state import ServerState
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 LIMIT_SECONDS = 5
 PROTOCOL = "1"

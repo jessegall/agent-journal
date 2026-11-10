@@ -19,7 +19,7 @@ from core.modules.helpers.support.allowed_models import AllowedModels
 from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.modules.helpers.support.profile_model import ProfileModel
 from core.modules.agents.support.launcher_link import LauncherLink
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 RUNNING_NAMES_CHARACTERS = 60
 TERMINAL_LIMIT_TEXT = "stop now: each report wakes you, then start again"

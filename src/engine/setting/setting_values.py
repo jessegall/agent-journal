@@ -5,8 +5,8 @@ from typing import TypeVar
 
 from engine.driver.seconds import Seconds
 from engine.types.type_guards import is_list, is_tuple
-from core.modules.settings.support.setting_reader import SettingReader
-from core.modules.settings.errors.setting_type_error import SettingTypeError
+from engine.setting.setting_source import SettingSource
+from engine.setting.errors.setting_type_error import SettingTypeError
 
 T = TypeVar("T")
 
@@ -16,14 +16,14 @@ class SettingValues:
     its declared default, as the type the reader needs; a stored value of another type raises, since setting
     set checks every value against its type."""
 
-    def __init__(self, values: SettingReader) -> None:
+    def __init__(self, values: SettingSource) -> None:
         self.values = values
-        self.reads = values.current
+        self.reads = values.current_value
 
     @property
     def project(self) -> "SettingValues":
         project_values = copy(self)
-        project_values.reads = self.values.project
+        project_values.reads = self.values.project_value
         return project_values
 
     @contextmanager
@@ -32,10 +32,10 @@ class SettingValues:
             yield
 
     def value(self, key: str) -> object:
-        return self.reads(key).value
+        return self.reads(key)
 
     def project_value(self, key: str) -> object:
-        return self.values.project(key).value
+        return self.values.project_value(key)
 
     def text(self, key: str) -> str:
         return self.typed(key, str, "text")

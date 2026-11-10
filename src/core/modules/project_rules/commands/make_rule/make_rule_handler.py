@@ -6,7 +6,7 @@ from core.modules.project_rules.commands.make_rule.make_rule import MakeRule
 from core.modules.project_rules.models.enums.rule_state import RuleState
 from core.modules.project_rules.models.project_rule import ProjectRule
 from core.modules.project_rules.support.rule_settings import RULE_APPROVAL_SETTING
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 
 
 class MakeRuleHandler(Handler[MakeRule, ProjectRule]):

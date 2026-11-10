@@ -13,7 +13,7 @@ from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_nudges import WORKER_ASKING_STOPPED, WORKER_LIMIT_STOPPED
 from suites.coding.modules.workers.support.worker_settings import MERGER_WAIT_MINUTES
 from suites.coding.modules.workers.support.worker_started_work import WorkerStartedWork

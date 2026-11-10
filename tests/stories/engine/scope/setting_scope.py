@@ -1,6 +1,6 @@
 from engine.scope.scopes import Scopes
 from core.modules.drivers.support.suite_choice import SuiteChoice
-from core.modules.settings.bindings.support.setting_values import SettingValues
+from engine.setting.setting_values import SettingValues
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.scope.environment_rows import TwoWorkingEnvironments, staging_agent
 
