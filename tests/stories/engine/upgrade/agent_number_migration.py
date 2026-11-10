@@ -31,7 +31,8 @@ def migrated(story: Story) -> None:
 
 
 class AgentsWithoutNumbers(StoryFixture):
-    """Three environments as a journal from before the number: main had three main sessions, shop has only two
+    """Three environments as a journal from before the number: main had three main sessions, each a row of
+    its own as a main session was then, shop has only two
     workers and never a main agent, depot has a main agent and two workers. No agent has a number."""
 
     parent = MainEnvironment
@@ -40,7 +41,8 @@ class AgentsWithoutNumbers(StoryFixture):
         story.run("environment make shop /work/shop")
         story.run("environment make depot /work/depot")
         for session in MAIN_SESSIONS:
-            story.run(f"agent end {started(story, session, 'main', 'main')}")
+            story.run(f"agent end {started(story, session, 'worker', 'main')}")
+        story.container.get(Database).update(Statement("UPDATE agents SET role = 'main' WHERE session IN ('s-1', 's-2', 's-3')"))
         for session in SHOP_WORKER_SESSIONS:
             started(story, session, "worker", "shop")
         started(story, DEPOT_MAIN_SESSION, "main", "depot")
