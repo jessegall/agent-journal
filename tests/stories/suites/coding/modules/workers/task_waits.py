@@ -155,4 +155,4 @@ def test_a_task_waits_for_both_the_worker_and_its_other_target(new_story):
 def test_the_command_help_and_task_skill_name_worker_waits(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_text("task block --help", "worker:<n>", actor=story.agent)
-    story.expect_text("skill show journal-workers", "--on worker:<m>", actor=story.agent)
+    story.expect_text("skill show journal-workers", "--on worker:<number>", actor=story.agent)

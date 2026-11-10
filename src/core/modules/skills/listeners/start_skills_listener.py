@@ -12,12 +12,14 @@ from core.modules.skills.support.agent_profile_skills import AgentProfileSkills
 from core.modules.skills.support.main_agent_skills import MainAgentSkills
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.start_skills import StartSkills
+from core.modules.skills.commands.reset_skills.reset_skills import ResetSkills
 from core.modules.drivers.events.session_started import SessionStarted
 
 
 
 class StartSkillsListener(SkillListener[SessionStarted]):
-    """Requires startup skills for the prompt recipients declared by the suite."""
+    """Requires startup skills for the prompt recipients declared by the suite. A new program session of an
+    agent has read none of the skills the session before it loaded, so they are reset first."""
 
     name = "skills.start"
 
@@ -29,16 +31,19 @@ class StartSkillsListener(SkillListener[SessionStarted]):
         call = event.row
         if call.is_resumed:
             return
+        previous_call = self.previous_call(call)
+        if previous_call is not None and previous_call.program_session not in ("", call.program_session):
+            self.run(logged, ResetSkills(call.session_agent_id))
         takes_start_skills = self.agents.find(call.session_agent_id).role in self.suites.agent_policy().prompt_roles
-        start = self.skills(call) if takes_start_skills else []
+        start = self.skills(call, previous_call) if takes_start_skills else []
         for skill in dict.fromkeys((*start, *self.profile_skills.required(call.session_agent_id))):
             self.run(logged, RequireSkill(call.session_agent_id, skill))
 
-    def skills(self, call: HookCall) -> list[str]:
-        start = self.start.after_compaction() if self.compacted(call) else self.start.session_start()
+    def skills(self, call: HookCall, previous_call: HookCall | None) -> list[str]:
+        start = self.start.after_compaction() if previous_call is not None and previous_call.is_compaction else self.start.session_start()
         is_main = self.agents.find(call.session_agent_id).role == AgentRole.MAIN
         return [*start, *self.start.main_agent()] if is_main and self.main_skills.is_required else start
 
-    def compacted(self, call: HookCall) -> bool:
+    def previous_call(self, call: HookCall) -> HookCall | None:
         recent = self.queries.query(HookCall).filter(session_agent_id=call.session_agent_id).newest().limited(2)
-        return len(recent) == 2 and recent[1].is_compaction
+        return recent[1] if len(recent) == 2 else None
