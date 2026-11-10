@@ -10,7 +10,8 @@ from core.modules.demo.support.demo_scratch import DemoScratch
 
 class DemoStartSubcommand(DemoReportWriting, ReadSubcommand[DemoReport]):
     """`journal demo start`: makes a scratch journal in a folder of its own, seeds the demo in it, runs a
-    server on it and prints the link that logs you into its viewer."""
+    server on it and prints the link that logs you into its viewer. With --stop-with <pid> the server stops
+    when that process ends."""
 
     cli_name = "demo"
     name = "start"
@@ -18,7 +19,8 @@ class DemoStartSubcommand(DemoReportWriting, ReadSubcommand[DemoReport]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--with-module", type=Path, dest="module_folder", help="Install a module folder in the demo before seeding it")
+        parser.add_argument("--stop-with", type=int, dest="owner_pid", help="Stop the demo's server when the process with this pid ends")
 
     def read(self, arguments: Namespace, caller: Caller) -> DemoReport:
-        session = DemoScratch().start(arguments.module_folder)
+        session = DemoScratch(owner_pid=arguments.owner_pid).start(arguments.module_folder)
         return DemoReport([f"the demo runs in {session.folder} (server pid {session.pid})", session.link, f"stop it with: kill {session.pid}"])

@@ -48,6 +48,16 @@ def test_a_rollback_discards_a_saved_cached_row(entries, event_rows):
     assert event_rows.required(LogEntry, 1).title == "Book 1"
 
 
+def test_a_write_after_a_rollback_that_reuses_the_version_replaces_the_rolled_back_row(entries, event_rows):
+    row = event_rows.required(LogEntry, 1)
+    with pytest.raises(RuntimeError), entries.database.transaction():
+        entries.database.update(Statement("UPDATE log_entries SET title = 'Temporary', version = version + 1 WHERE id = 1"))
+        event_rows.remember(row.changed(title="Temporary", version=row.version + 1))
+        raise RuntimeError()
+    entries.database.update(Statement("UPDATE log_entries SET title = 'Other', version = version + 1 WHERE id = 1"))
+    assert event_rows.required(LogEntry, 1).title == "Other"
+
+
 def test_an_external_commit_refreshes_the_cached_row(entries, event_rows, tmp_path):
     assert event_rows.required(LogEntry, 1).title == "Book 1"
     external = Database.opened(JournalHome(tmp_path))

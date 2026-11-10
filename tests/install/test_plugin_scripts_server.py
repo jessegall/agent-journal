@@ -116,7 +116,7 @@ def test_s29_a_script_that_writes_the_same_row_causes_no_stale_row_error(journal
     start_with_plugin(journal, client, {"event": TASK_UPDATED, "listen": "script.sh"}, plugin_journal_line(journal, client, "task", "edit", "1", "--brief", "Changed by the script"))
     expect_line(journal, client, "task", "edit", "1", "--title", "A new title")
     details = expect_line(journal, client, "task", "show", "1")
-    assert "A new title" in details and "Changed by the script" in details, details
+    assert "A new title" in details and "Changed by the script" in details
     assert len(script_calls(journal, "script.sh")) == 1
 
 

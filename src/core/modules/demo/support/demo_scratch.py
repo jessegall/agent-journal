@@ -12,6 +12,7 @@ from engine.errors.refusal import Refusal
 from engine.seed.demo import DEMO_ENVIRONMENT
 from engine.seed.demo_link import DemoLink
 from engine.connection.unix_connection import UnixConnection
+from core.modules.demo.support.demo_owner import DemoOwner
 from core.modules.demo.support.demo_session import DemoSession
 
 STEP_SECONDS = 120
@@ -24,15 +25,18 @@ SOURCE = Path(__file__).resolve().parents[4]  # the src folder
 class DemoScratch:
     """A scratch journal in a folder of its own with its own copy of the code: modules synced, the demo
     seeded by `journal demo seed`, and a server started on it; its viewer listens on a port the system
-    picks, which is checked to be none of 8420 to 8429."""
+    picks, which is checked to be none of 8420 to 8429. A demo started for a process stops when that process ends."""
 
-    def __init__(self, parent: Path | None = None) -> None:
+    def __init__(self, parent: Path | None = None, owner_pid: int | None = None) -> None:
+        self.owner_pid = owner_pid
         self.folder = Path(tempfile.mkdtemp(prefix="journal-demo-", dir=parent))
         self.home = JournalHome(self.folder / ".journal")
         self.code = CodeCopy(SOURCE, self.home)
 
     def start(self, module_folder: Path | None = None) -> DemoSession:
         self.home.folder.mkdir(parents=True, exist_ok=True)
+        if self.owner_pid is not None:
+            DemoOwner(self.home.folder).keep(self.owner_pid)
         self.code.make()
         arguments = ["module", "sync"] if module_folder is None else ["module", "add", str(module_folder.resolve())]
         self.journal(arguments)

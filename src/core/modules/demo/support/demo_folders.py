@@ -7,13 +7,13 @@ import tempfile
 from collections.abc import Sequence
 from pathlib import Path
 
-DEMO_LIFE_SECONDS = 24 * 3600
+DEMO_LIFE_SECONDS = 3600
 START_SECONDS = 600
 SCRATCH_ROOT = "/tmp"
 
 
 class DemoFolders:
-    """The scratch folders demos leave in the temp folders: a demo older than a day is stopped, and a folder
+    """The scratch folders demos leave in the temp folders: a demo older than an hour is stopped, and a folder
     whose demo no longer runs is removed, whether it ended or crashed. A folder too recent to have a server
     yet stays."""
 

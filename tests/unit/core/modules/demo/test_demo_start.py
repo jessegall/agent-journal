@@ -8,7 +8,7 @@ from core.modules.demo.support.demo_scratch import DemoScratch
 
 
 def test_a_demo_starts_with_a_server_and_a_login_link_on_a_port_of_its_own(tmp_path):
-    scratch = DemoScratch(tmp_path)
+    scratch = DemoScratch(tmp_path, os.getpid())
     session = scratch.start()
     try:
         link = re.fullmatch(r"http://127\.0\.0\.1:(\d+)/\?key=(\S+)&environment=demo", session.link)
