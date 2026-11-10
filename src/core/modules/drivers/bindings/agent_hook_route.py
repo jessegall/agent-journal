@@ -14,6 +14,7 @@ from core.base.driver.hook_route import HookRoute
 from core.base.driver.lockdown import Lockdown
 from core.base.driver.program_lockdown import ProgramLockdown
 from core.modules.agents.commands.halt_agent.halt_agent import HaltAgent
+from core.modules.drivers.rules.panic_file_rule import PanicFileRule
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
@@ -61,7 +62,7 @@ class AgentHookRoute(HookRoute):
 
     def answered(self, event: HookEvent) -> HookReply:
         lockdown = self.lockdown.lockdown(event.program)
-        if lockdown.stops(event.event):
+        if lockdown.stops(event.event) and not self.passes_lockdown(event):
             return self.halted(event, lockdown)
         stored_call = self.queries.query(HookCall).filter(firing=event.firing).first()
         if stored_call is not None:
@@ -94,6 +95,12 @@ class AgentHookRoute(HookRoute):
             return HookReply.allowed()
         self.program.request_stop(row)
         return HookReply(refusal=ENDED_AGENT.nudge().text)
+
+    def passes_lockdown(self, event: HookEvent) -> bool:
+        agent = self.open_agent(event.session)
+        if agent is None or agent.role != AgentRole.MAIN:
+            return False
+        return event.event is HookEventName.PROMPT or (event.event is HookEventName.PRE_TOOL_USE and PanicFileRule.names_panic_file(event))
 
     def halted(self, event: HookEvent, lockdown: Lockdown) -> HookReply:
         agent = self.open_agent(event.session) or self.launch_name_agent(event)

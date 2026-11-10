@@ -82,11 +82,11 @@ def test_an_agent_with_a_task_in_hand_is_let_stop_and_its_task_stays_started(new
     story.expect_success("task show 1", "state: started")
 
 
-def test_a_prompt_and_a_compaction_and_the_tick_are_stopped_and_leave_no_hook_call(new_story):
+def test_a_compaction_and_the_tick_are_stopped_and_leave_no_hook_call(new_story):
     story = lockdown_story(new_story)
     report(story, 55)
     count = hook_call_count(story)
-    replies = [story.hook("s-1", HookSamples.prompt("go on")), story.hook("s-1", HookSamples.sample("compact")), story.tick("s-1")]
+    replies = [story.hook("s-1", HookSamples.sample("compact")), story.tick("s-1")]
     story.expect_rows(all(reply.halt.startswith(STOP_LINE) and not reply.lines for reply in replies), hook_call_count(story) == count)
 
 
