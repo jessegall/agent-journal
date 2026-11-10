@@ -5,7 +5,7 @@ import pytest
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run
-from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.core.support.coding_fixtures import BuilderHelper, BuilderStarted
 
 LONG_OUTPUT = "a line\n" * 400
 REPEAT_REFUSAL = "already and it is still in your context"
@@ -27,9 +27,18 @@ def test_a_running_output_the_agent_read_once_is_refused_in_every_form_until_it_
     process = moved_run(story, "make test", category=CommandCategory.TEST_RUN)
     story.expect_success(f"output read {process.id} --summary", actor=story.agent)
     for form in ("--summary", "--tail 3", "--lines 1-3", "--all"):
-        story.expect_refusal(f"output read {process.id} {form}", POLL_REFUSAL, actor=story.agent)
+        story.expect_refusal(f"output read {process.id} {form}", f"{POLL_REFUSAL}: set a monitor with journal output monitor {process.id}", actor=story.agent)
+        story.expect_no_text(f"output read {process.id} {form}", "go idle", "a helper", actor=story.agent)
     end_run(story, process, LONG_OUTPUT)
     story.expect_success(f"output read {process.id} --summary", actor=story.agent)
+
+
+def test_a_helper_is_told_to_go_idle_and_not_what_a_main_agent_does(new_story):
+    story = install_runner(new_story(fixture=BuilderHelper))
+    process = moved_run(story, "make test", category=CommandCategory.TEST_RUN)
+    story.expect_success(f"output read {process.id} --summary", actor=story.helper)
+    story.expect_refusal(f"output read {process.id} --summary", "go idle: the journal wakes you when it ends", actor=story.helper)
+    story.expect_no_text(f"output read {process.id} --summary", "a main agent", "monitor", actor=story.helper)
 
 
 def test_other_commands_between_reads_do_not_lift_the_refusal_of_a_running_output(new_story):

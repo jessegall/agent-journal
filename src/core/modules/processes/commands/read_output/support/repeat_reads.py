@@ -2,12 +2,19 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.context import Context
 from engine.query.queries import Queries
+from engine.enums.agent_role import AgentRole
 from engine.errors.refusal import Refusal
+from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.context_resets import ContextResets
 from core.modules.processes.commands.read_output.read_output import ReadOutput
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.held_runs import LOOKED_MARK
 from core.modules.processes.support.output_folder import OutputFolder
+
+POLL_ADVICE = {
+    AgentRole.MAIN: "set a monitor with journal output monitor {process}",
+    AgentRole.HELPER: "go idle: the journal wakes you when it ends",
+}
 
 
 class RepeatReads:
@@ -25,7 +32,8 @@ class RepeatReads:
             return
         if not self.has_ended(command.process_id):
             if self.folder.read_mark(command.process_id, self.running_mark(context.actor)):
-                raise Refusal(f"output {command.process_id} is still running and you read it already: stop polling it", f"a main agent sets a monitor with journal output monitor {command.process_id}; a helper goes idle: the journal wakes you when it ends")
+                role = self.queries.query(Agent).find(context.actor.id).role
+                raise Refusal(f"output {command.process_id} is still running and you read it already: stop polling it", POLL_ADVICE[role].format(process=command.process_id))
             return
         if command.is_repeat_allowed:
             return

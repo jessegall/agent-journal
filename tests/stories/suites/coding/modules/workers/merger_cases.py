@@ -25,7 +25,7 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST
 from tests.stories.support.story_checks import expect_value, expect_value_with
 
 MERGER_ROLE_REFUSAL = "only the merger runs this"
-LOG_REVIEW_REFUSAL = "reviews a worker's logs"
+LOG_REVIEW_REFUSAL = "reviews no worker's logs"
 LOG_LINE = "The cart total rounds down"
 FULL_SUITE = "pytest"
 WHY = "the rounding only shows in a real run"

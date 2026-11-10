@@ -25,7 +25,7 @@ class AskMergerSubcommand(Subcommand[AskMerger, str]):
 
     def command(self, arguments: Namespace, caller: Caller) -> AskMerger:
         if not self.queries.query(Agent).filter(id=caller.actor.id, role=CodingHelperRole.WORKER).exists():
-            raise Refusal("only a worker asks the merger", "journal message send reaches an agent")
+            raise Refusal("journal worker ask is for workers", "journal message send reaches an agent")
         if arguments.about not in AskTopic:
             raise Refusal(f"{arguments.about} is not a topic", f"name one of: {', '.join(AskTopic)}")
         if not arguments.text.strip():
