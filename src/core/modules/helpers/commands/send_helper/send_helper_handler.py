@@ -20,6 +20,7 @@ from engine.scope.scopes import Scopes
 from engine.scope.actor_scope import ActorScope
 from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.modules.helpers.support.occupant_rotation import OccupantRotation
+from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.usage.support.status_files import StatusFiles
 from core.modules.agents.support.agent_label import AgentLabel
 
@@ -33,12 +34,12 @@ class SendHelperHandler(Handler[SendHelper, int]):
 
     command = SendHelper
 
-    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: Nudger, repository: Repository, folders: AgentFolders, sources: WorkSources, scopes: Scopes, providers: Providers, kept: KeptHelpers, files: StatusFiles, occupants: OccupantRotation) -> None:
+    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: Nudger, repository: Repository, folders: AgentFolders, sources: WorkSources, scopes: Scopes, providers: Providers, kept: KeptHelpers, files: StatusFiles, occupants: OccupantRotation, profiles: ProfileFiles) -> None:
         self.reach, self.limits, self.jobs, self.nudger, self.repository, self.folders = reach, limits, jobs, nudger, repository, folders
         self.sources = sources
         self.scopes = scopes
         self.providers = providers
-        self.kept, self.files, self.occupants = kept, files, occupants
+        self.kept, self.files, self.occupants, self.profiles = kept, files, occupants, profiles
 
     def handle(self, command: SendHelper, context: Context) -> int:
         helper = self.reach.checked_helper(command.helper_id, context.actor, context.command)
@@ -46,8 +47,8 @@ class SendHelperHandler(Handler[SendHelper, int]):
         if not jobs:
             raise Refusal(f"{AgentLabel.from_agent(helper).text} has no job to go on from", "journal helper start starts a new one")
         last_job = jobs[-1]
-        if command.review_plan_id is not None and any(job.review_plan_id == command.review_plan_id for job in jobs):
-            raise Refusal(f"{AgentLabel.from_agent(helper).text} reviewed plan {command.review_plan_id} already", "an independent review needs another helper: journal helper start")
+        if command.review_plan_id is not None and self.reviewed(helper, command.review_plan_id):
+            raise Refusal(f"{AgentLabel.from_agent(helper).text} reviewed plan {command.review_plan_id} already", self.other_reviewer_step(helper, command.review_plan_id))
         is_idle = helper.ended_at is not None and last_job.ended_at is not None
         rotating_profile = self.occupants.profile(helper) if is_idle else None
         if rotating_profile is None:
@@ -75,6 +76,19 @@ class SendHelperHandler(Handler[SendHelper, int]):
         self.repository.save(next_job.changed(session_agent_id=parent_id, review_plan_id=command.review_plan_id, source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp, cost_baseline=cost_baseline), context)
         self.sources.use_copy(source, source_context)
         return helper.id
+
+    def reviewed(self, helper: Agent, plan_id: int) -> bool:
+        return any(job.review_plan_id == plan_id for job in self.jobs.helper_jobs(helper.id))
+
+    def other_reviewer_step(self, helper: Agent, plan_id: int) -> str:
+        start = f'journal helper start {helper.profile} --plan {plan_id} --fresh "<why>" starts another reviewer'
+        if not helper.profile:
+            return start
+        occupant = self.profiles.effective(helper.profile).occupant
+        idle = [reviewer for reviewer in self.kept.idle_of_profile(helper.profile, occupant) if not self.reviewed(reviewer, plan_id)]
+        if not idle:
+            return start
+        return f'journal helper send {idle[0].number} "<job>" --plan {plan_id} gives it to an idle reviewer that has not, or {start}'
 
     def running_helper_job(self, helper: Agent, last_job: HelperJob, source: WorkSourceCopy, source_context: Context, command: SendHelper, context: Context) -> int:
         if last_job.ended_at is None and not command.steer and context.actor.type is ActorType.AGENT:

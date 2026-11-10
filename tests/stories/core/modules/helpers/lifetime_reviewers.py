@@ -156,6 +156,13 @@ def test_three_reviews_at_once_run_on_three_reviewers_and_a_fourth_is_refused_at
     story.expect_rows(f"3 of {REVIEWER} exist" in refusal, "wait for a report" in refusal, len(reviewers(story)) == 3, detail=refusal)
 
 
+def test_a_reviewer_start_at_the_kept_limit_names_the_idle_reviewer_to_send_to(idle_reviewer):
+    story = idle_reviewer
+    story.expect_success(LIMITS.replace(":8:3", ":8:1"), actor=story.user)
+    refusal = refusal_text(story, START_REVIEW.format(plan=6))
+    story.expect_rows(f'journal helper send {reviewers(story)[0].number} "<job>"' in refusal, len(reviewers(story)) == 1, detail=refusal)
+
+
 def test_many_reviews_one_after_another_leave_one_reviewer_agent_with_its_number(idle_reviewer):
     story = idle_reviewer
     reviewer = reviewers(story)[0]

@@ -20,7 +20,9 @@ dispatch`, and work that writes goes to one or stays with you.
 - `journal helper start <profile> --brief "<the job>"` starts one; `--program`, `--model` and `--name` choose how, and
   `journal profile list` names the profiles. It works in your folder, on the profile's model. When a compatible idle
   helper can take the job, a start is refused with its send command. Use `--fresh "<why>"` only when a separate
-  session is needed; its reason stays on the job. An independent review may use another helper.
+  session is needed; its reason stays on the job. A reviewer is kept like every helper: a new review goes to
+  the lowest-numbered idle reviewer, which gets a new session for it, and `--fresh "<why>"` is the only way to
+  a second reviewer. A reviewer is not given a plan it already reviewed; the refusal names who can take it.
 - `journal helper start journal-researcher --tier general --brief "Read the task's call sites"` asks for a tier of
   the chosen program. Tiers are `fast`, `general` and `strongest`; a rare model must be named with `--model`.
   The program order is a named `--program`, the profile's program, the split, then the parent's program. A profile

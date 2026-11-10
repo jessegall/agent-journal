@@ -60,7 +60,6 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
             raise Refusal(f"{profile.name} is a {agent_type.label}: use {agent_type.start_line}")
         self.limits.checked_launcher()
         parent = self.limits.checked_parent(context)
-        self.limits.checked_new_place(profile.name)
         self.limits.checked_new_session(profile.name)
         reuses_helpers = not command.new_agent_reason.strip()
         if reuses_helpers:
@@ -68,6 +67,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         selection = self.choice.startable(profile, parent, ProgramRequest(command.program, command.program_model, command.tier))
         if reuses_helpers:
             self.check_idle(profile, selection)
+        self.limits.checked_new_place(profile.name)
         start = StartAgent(str(uuid4()), selection.program, agent_type.key, parent.id, program_model=selection.model, profile=profile.name, given_name=command.given_name, access=profile.access or agent_type.access)
         source_context = replace(context, environment_id=parent.environment_id)
         source = self.sources.source_copy(source_context)

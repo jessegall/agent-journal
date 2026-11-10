@@ -40,10 +40,18 @@ class KeptHelpers:
         return tuple(self.queries.query(Agent).filter(role=HelperRole.HELPER, profile=profile).matching(IsNull("retired_at")).newest().all_rows())
 
     def idle(self, selection: ProfileModel, occupant: Occupant) -> tuple[Agent, ...]:
-        open_jobs = self.with_open_jobs(selection.profile)
-        stopped = [helper for helper in self.kept(selection.profile) if helper.ended_at is not None and helper.id not in open_jobs]
+        stopped = self.stopped(selection.profile)
         idle_helpers = stopped if occupant.may_change_program else [helper for helper in stopped if self.resumes(helper, selection.program, selection.model)]
         return tuple(sorted(idle_helpers, key=lambda helper: helper.number))
+
+    def idle_of_profile(self, profile: str, occupant: Occupant) -> tuple[Agent, ...]:
+        stopped = self.stopped(profile)
+        idle_helpers = stopped if occupant.may_change_program else [helper for helper in stopped if self.resumes(helper, helper.program, helper.program_model)]
+        return tuple(sorted(idle_helpers, key=lambda helper: helper.number))
+
+    def stopped(self, profile: str) -> list[Agent]:
+        open_jobs = self.with_open_jobs(profile)
+        return [helper for helper in self.kept(profile) if helper.ended_at is not None and helper.id not in open_jobs]
 
     def resumes(self, helper: Agent, program: str, model: str) -> bool:
         if (program and helper.program != program) or (model and helper.program_model != model):
