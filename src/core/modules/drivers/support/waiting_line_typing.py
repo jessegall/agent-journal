@@ -20,7 +20,7 @@ TERMINAL_SOURCES = (PAUSE_SOURCE, RESUME_SOURCE, IDLE_MESSAGE_SOURCE, "tasks.wai
 
 class WaitingLineTyping:
     """Types a waiting line into its agent's terminal when the line wakes the agent or is of a kind typed, the
-    agent sits idle, and its program's plan allowance is not used up; a line that is not typed stays
+    agent sits between turns (a silent agent in a turn is never typed to), and its program's plan allowance is not used up; a line that is not typed stays
     waiting for the agent's next hook, or for the end of its usage limit. The same line is typed once
     between two hooks of the agent: a repeat is entered without being typed again."""
 
@@ -30,7 +30,7 @@ class WaitingLineTyping:
     def type(self, line: AgentLine, actor_id: int, timestamp: Timestamp) -> None:
         if not (line.wakes_agent or line.source in TERMINAL_SOURCES) or line.state is not AgentLineState.WAITING:
             return
-        if line.source not in (PAUSE_SOURCE, RESUME_SOURCE, COMPACTED_WAKE_SOURCE) and not self.hook_calls.is_idle(line.session_agent_id, timestamp):
+        if line.source not in (PAUSE_SOURCE, RESUME_SOURCE, COMPACTED_WAKE_SOURCE) and not self.hook_calls.is_between_turns(line.session_agent_id):
             return
         actor = Actor(actor_id, ActorType.USER)
         if self.has_entered_repeat(line):

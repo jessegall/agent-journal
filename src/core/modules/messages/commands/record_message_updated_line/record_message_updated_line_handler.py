@@ -29,5 +29,5 @@ class RecordMessageUpdatedLineHandler(Handler[RecordMessageUpdatedLine, None]):
         agent = self.targets.recipient(message)
         if agent is None:
             return
-        source = IDLE_MESSAGE_SOURCE if self.hook_calls.is_idle(agent.id, context.timestamp) else UPDATED_SOURCE
+        source = IDLE_MESSAGE_SOURCE if self.hook_calls.is_between_turns(agent.id) else UPDATED_SOURCE
         self.nudger.send(agent.id, MESSAGE_UPDATED, source, context, message=command.message_id)
