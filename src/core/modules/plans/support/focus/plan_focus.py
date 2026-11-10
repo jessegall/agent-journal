@@ -3,8 +3,10 @@ from core.modules.agents.models.agent import Agent
 from core.modules.plans.models.enums.focus_source import FocusSource
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
+from core.modules.plans.support.focus.focus_overview import FocusOverview
 from core.modules.plans.support.focus.focused_plan import FocusedPlan
 from core.modules.plans.support.focus.plan_unblockers import PlanUnblockers
+from core.modules.plans.support.focus.plan_work import PlanWork
 from core.modules.plans.support.next_plan_tasks import NextPlanTasks
 
 
@@ -17,11 +19,11 @@ class PlanFocus:
         self.queries, self.next_tasks, self.unblockers = queries, next_tasks, unblockers
 
     def current(self, agent: Agent) -> FocusedPlan | None:
-        default = next((plan for plan in self.started_plans() if self.is_workable(plan.id, agent)), None)
-        return None if default is None else FocusedPlan(default, FocusSource.DEFAULT)
+        return self.overview(agent).current
 
-    def started_plans(self) -> tuple[Plan, ...]:
-        return tuple(self.queries.query(Plan).filter(state=PlanState.STARTED).ordered("started_at", "id").all_rows())
-
-    def is_workable(self, plan_id: int, agent: Agent) -> bool:
-        return bool(self.next_tasks.ready(plan_id, agent)) or bool(self.unblockers.unblockers(plan_id, agent).candidates)
+    def overview(self, agent: Agent) -> FocusOverview:
+        plans = tuple(self.queries.query(Plan).filter(state=PlanState.STARTED).ordered("started_at", "id").all_rows())
+        unblockers = self.unblockers.of_plans([plan.id for plan in plans], agent)
+        started = tuple(PlanWork(plan, self.next_tasks.ready(plan.id, agent), unblockers[plan.id]) for plan in plans)
+        default = next((work.plan for work in started if work.is_workable), None)
+        return FocusOverview(None if default is None else FocusedPlan(default, FocusSource.DEFAULT), started)

@@ -59,12 +59,12 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
                       process_started_at=command.process_started_at or self.chain.start_timestamp(command.pid),
                       program_model=command.program_model, profile=command.profile, given_name=command.given_name)
         try:
-            return self.numbered(agent, context)
+            return self.numbered(agent, context.environment_id, context)
         except Refusal:
-            return self.numbered(agent, context)
+            return self.numbered(agent, context.environment_id, context)
 
-    def numbered(self, agent: Agent, context: Context) -> Agent:
-        return self.repository.save(replace(agent, number=self.numbers.next_number(agent.environment_id, agent.role)), context)
+    def numbered(self, agent: Agent, environment_id: int, context: Context) -> Agent:
+        return self.repository.save(replace(agent, number=self.numbers.next_number(environment_id, agent.role)), context)
 
     def check_resume(self, agent: Agent, command: StartAgent, environment_id: int) -> None:
         if agent.environment_id != environment_id:

@@ -28,8 +28,9 @@ class StartedPlanRows:
 
 
 def focus(ready=(), unblocked=(), plans=STARTED_PLANS):
-    next_tasks = SimpleNamespace(ready=lambda plan_id, agent: tuple(["a task"]) if (plan_id, agent.id) in ready else ())
-    unblockers = SimpleNamespace(unblockers=lambda plan_id, agent: Unblockers(tuple([Unblocker(40, 2)])) if (plan_id, agent.id) in unblocked else Unblockers())
+    next_tasks = SimpleNamespace(ready=lambda plan_id, agent: tuple(["a place"]) if (plan_id, agent.id) in ready else ())
+    unblockers = SimpleNamespace(of_plans=lambda plan_ids, agent: {
+        plan_id: Unblockers(tuple([Unblocker(40, 2)])) if (plan_id, agent.id) in unblocked else Unblockers() for plan_id in plan_ids})
     return PlanFocus(StartedPlanRows(plans), next_tasks, unblockers)
 
 
@@ -54,3 +55,9 @@ def test_no_started_plan_or_none_with_work_gives_no_focus():
 def test_the_default_of_another_agent_skips_the_plans_with_nothing_it_may_take():
     plans = focus(ready={(3, 1), (5, 2)})
     assert (plans.current(MAIN).plan.id, plans.current(HELPER).plan.id) == (3, 5)
+
+
+def test_the_overview_holds_the_work_of_every_started_plan_and_the_plans_beside_the_focus():
+    overview = focus(ready={(5, 1)}).overview(MAIN)
+    assert [work.plan.id for work in overview.started] == [3, 5, 8]
+    assert (overview.focus_work.plan.id, [work.plan.id for work in overview.remaining]) == (5, [3, 8])

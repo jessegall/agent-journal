@@ -1,7 +1,8 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.testing.stories.story import Story
-from tests.stories.core.modules.plans.support.started_plans import DEFAULT_FOCUS, PLAN_FOCUS, ThreeStartedPlans
+from tests.stories.core.modules.agents.support.numbered_agents import worker_of
+from tests.stories.core.modules.plans.support.started_plans import DEFAULT_FOCUS, PLAN_FOCUS, PlanWaitsOnAnAssignedTask, ThreeStartedPlans
 from tests.stories.core.support.plan_steps import ready_plan
 
 FOCUS_ON_FIRST_PLAN = f"plan 1 is your focus: {DEFAULT_FOCUS}"
@@ -10,10 +11,6 @@ LONGEST_CHAIN = 10
 
 def outside_task(story: Story, title: str) -> int:
     return story.new_row_id(f'task make "{title}" --environment main', actor=story.user)
-
-
-def second_agent(story: Story) -> Actor:
-    return Actor(story.new_row_id(f"agent start s-2 claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
 
 
 def test_c1_a_task_of_a_plan_nobody_approved_is_not_handed_out_and_the_read_names_that_plan(new_story):
@@ -42,22 +39,14 @@ def test_c2_a_task_behind_the_checkpoint_of_another_plan_is_not_handed_out_and_t
 
 
 def test_c3_a_task_reserved_for_another_agent_is_not_handed_out_and_the_read_names_that_agent(new_story):
-    story = new_story(fixture=ThreeStartedPlans)
-    second_agent(story)
-    task_id = outside_task(story, "Supplier contract")
-    story.run(f"task assign {task_id} --to 2", actor=story.agent)
-    story.run(f"task depend 2 --on {task_id}", actor=story.user)
-    story.expect_success(PLAN_FOCUS, FOCUS_ON_FIRST_PLAN, f"it waits on task {task_id}, which is reserved for worker 2", actor=story.agent)
+    story = new_story(fixture=PlanWaitsOnAnAssignedTask)
+    story.expect_success(PLAN_FOCUS, FOCUS_ON_FIRST_PLAN, "it waits on task 7, which is reserved for worker 2", actor=story.agent)
 
 
 def test_c4_a_task_another_agent_started_is_not_handed_out_and_the_read_names_its_holder(new_story):
-    story = new_story(fixture=ThreeStartedPlans)
-    holder = second_agent(story)
-    task_id = outside_task(story, "Supplier contract")
-    story.run(f"task assign {task_id} --to 2", actor=story.agent)
-    story.run(f"task start {task_id}", actor=holder)
-    story.run(f"task depend 2 --on {task_id}", actor=story.user)
-    story.expect_success(PLAN_FOCUS, FOCUS_ON_FIRST_PLAN, f"it waits on task {task_id}, which worker 2 holds", actor=story.agent)
+    story = new_story(fixture=PlanWaitsOnAnAssignedTask)
+    story.run("task start 7", actor=Actor(worker_of(story, "main"), ActorType.AGENT))
+    story.expect_success(PLAN_FOCUS, FOCUS_ON_FIRST_PLAN, "it waits on task 7, which worker 2 holds", actor=story.agent)
 
 
 def test_c5_a_task_that_waits_on_a_command_is_not_handed_out_and_the_read_says_what_it_waits_on(new_story):

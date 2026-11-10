@@ -2,8 +2,10 @@ from types import SimpleNamespace
 
 from core.modules.plans.models.enums.focus_source import FocusSource
 from core.modules.plans.models.enums.waiting_reason import WaitingReason
+from core.modules.plans.support.focus.focus_overview import FocusOverview
 from core.modules.plans.support.focus.focused_plan import FocusedPlan
 from core.modules.plans.support.focus.plan_focus_report import PlanFocusReport
+from core.modules.plans.support.focus.plan_work import PlanWork
 from core.modules.plans.support.focus.unblocker import Unblocker
 from core.modules.plans.support.focus.unblockers import Unblockers
 from core.modules.plans.support.focus.waiting_line import WaitingLine
@@ -14,10 +16,10 @@ PERSON_WAIT = WaitingLine(40, WaitingReason.NON_TASK_WAIT, "which waits on a per
 
 
 def report(focus_plan_id, source=FocusSource.DEFAULT, workable=(), unblockers=None, plans=PLANS):
-    current = None if focus_plan_id is None else FocusedPlan(next(plan for plan in plans if plan.id == focus_plan_id), source)
-    focus = SimpleNamespace(current=lambda agent: current, started_plans=lambda: tuple(plans), is_workable=lambda plan_id, agent: plan_id in workable)
     plan_unblockers = unblockers or {}
-    return PlanFocusReport(focus, SimpleNamespace(unblockers=lambda plan_id, agent: plan_unblockers.get(plan_id, Unblockers()))).lines(AGENT)
+    started = tuple(PlanWork(plan, tuple(["a place"]) if plan.id in workable else (), plan_unblockers.get(plan.id, Unblockers())) for plan in plans)
+    current = None if focus_plan_id is None else FocusedPlan(next(plan for plan in plans if plan.id == focus_plan_id), source)
+    return PlanFocusReport(SimpleNamespace(overview=lambda agent: FocusOverview(current, started))).lines(AGENT)
 
 
 def test_the_default_focus_and_a_focus_the_agent_set_read_differently():

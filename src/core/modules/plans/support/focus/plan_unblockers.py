@@ -5,14 +5,12 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.modules.plans.models.enums.waiting_reason import WaitingReason
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_task import PlanTask
-from core.modules.plans.support.focus.unblocker import Unblocker
+from core.modules.plans.support.focus.plan_wait_walk import PlanWaitWalk
 from core.modules.plans.support.focus.unblocker_facts import UnblockerFacts
 from core.modules.plans.support.focus.unblockers import Unblockers
-from core.modules.plans.support.focus.wait_graph import LONGEST_CHAIN, WaitGraph
-from core.modules.plans.support.focus.waiting_line import WaitingLine
+from core.modules.plans.support.focus.wait_graph import WaitGraph
 from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES
 from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.models.task import Task
@@ -21,8 +19,6 @@ from core.modules.tasks.queries.task_query import TaskQuery
 
 GRAPH_REASON = "Every open wait between tasks, read once to follow the waits of a plan in memory instead of one read for each task."
 PLAN_REASON = "Every place of the plans the tasks at the end of the waits sit in, to know each plan's working phase and checkpoint."
-CIRCLE_TEXT = "which waits in a circle of tasks"
-LONG_CHAIN_TEXT = f"whose chain of waits is longer than {LONGEST_CHAIN} tasks"
 
 
 class PlanUnblockers:
@@ -34,29 +30,21 @@ class PlanUnblockers:
         self.queries, self.tasks = queries, tasks
 
     def unblockers(self, plan_id: int, agent: Agent) -> Unblockers:
-        unfinished_ids = [row.task_id for row in self.queries.query(PlanTask).filter(plan_id=plan_id).full_table(PLAN_REASON).all_rows() if row.state in UNFINISHED_STATES]
+        return self.of_plans([plan_id], agent)[plan_id]
+
+    def of_plans(self, plan_ids: Sequence[int], agent: Agent) -> dict[int, Unblockers]:
+        if not plan_ids:
+            return {}
+        unfinished_ids: dict[int, list[int]] = defaultdict(list)
+        for row in self.queries.query(PlanTask).matching(Among("plan_id", plan_ids)).full_table(PLAN_REASON).all_rows():
+            if row.state in UNFINISHED_STATES:
+                unfinished_ids[row.plan_id].append(row.task_id)
         graph = self.wait_graph()
-        waiting_tasks: dict[int, set[int]] = defaultdict(set)
-        lines: dict[int, WaitingLine] = {}
-        for task_id in unfinished_ids:
-            for dependency_id in graph.dependencies(task_id):
-                ends = graph.ends(dependency_id)
-                if ends.has_circle:
-                    lines[dependency_id] = WaitingLine(dependency_id, WaitingReason.CIRCLE, CIRCLE_TEXT)
-                elif ends.has_long_chain:
-                    lines[dependency_id] = WaitingLine(dependency_id, WaitingReason.LONG_CHAIN, LONG_CHAIN_TEXT)
-                for end_id in () if ends.has_circle else ends.task_ids:
-                    waiting_tasks[end_id].add(task_id)
-        end_tasks = self.tasks.matching(Among("id", sorted(waiting_tasks))).all_rows() if waiting_tasks else ()
-        facts = self.facts(end_tasks, agent)
-        candidates = []
-        for task in end_tasks:
-            line = facts.waiting_line(task)
-            if line is None:
-                candidates.append(Unblocker(task.id, len(waiting_tasks[task.id])))
-            else:
-                lines[task.id] = line
-        return Unblockers(tuple(candidates), tuple(lines[task_id] for task_id in sorted(lines)))
+        walks = {plan_id: PlanWaitWalk.walked(unfinished_ids[plan_id], graph) for plan_id in plan_ids}
+        end_ids = sorted({task_id for walk in walks.values() for task_id in walk.waiting_tasks})
+        end_tasks = {task.id: task for task in self.tasks.matching(Among("id", end_ids)).all_rows()} if end_ids else {}
+        facts = self.facts(tuple(end_tasks.values()), agent)
+        return {plan_id: walk.unblockers(end_tasks, facts) for plan_id, walk in walks.items()}
 
     def wait_graph(self) -> WaitGraph:
         waits: dict[int, list[int]] = defaultdict(list)
