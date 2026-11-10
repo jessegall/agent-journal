@@ -1,5 +1,5 @@
 from core.base.module.module import Module
-from core.base.template.template_declaration import TemplateDeclaration
+from engine.template.template_declaration import TemplateDeclaration
 from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration
 
 from .audit_plan_handler import AuditPlanHandler

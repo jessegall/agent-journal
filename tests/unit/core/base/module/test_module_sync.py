@@ -14,7 +14,7 @@ from core.base.module.module_sync import ModuleSync
 from core.base.registry.registry import Registry
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.registry.template_entry import TemplateEntry
-from core.base.template.template_declaration import TemplateDeclaration
+from engine.template.template_declaration import TemplateDeclaration
 
 from tests.unit.core.base.samples.module_copy import items_module_copy
 from tests.unit.core.base.samples.sync_sample import ItemsModule

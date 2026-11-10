@@ -23,7 +23,7 @@ from core.base.profile.agent_profile import AgentProfile
 from engine.enums.access import Access
 from core.base.registry.profile_entry import ProfileEntry
 from core.base.registry.suite_entry import SuiteEntry
-from core.base.template.template_declaration import TemplateDeclaration
+from engine.template.template_declaration import TemplateDeclaration
 from core.base.registry.template_entry import TemplateEntry
 from core.base.registry.button_entry import ButtonEntry
 from core.base.viewer.button_declaration import AgentField, ButtonCondition, ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TemplateField, TextField

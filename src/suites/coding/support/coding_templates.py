@@ -1,4 +1,4 @@
-from core.base.template.template_declaration import TemplateDeclaration
+from engine.template.template_declaration import TemplateDeclaration
 
 CRITIQUE = "critique"
 TESTING = "testing"

@@ -40,7 +40,7 @@ from core.base.tunnel.tunnel import Tunnel
 from core.base.driver.block_condition import BlockCondition
 from engine.check.step_condition import StepCondition
 from engine.performance.performance_tool import PerformanceTool
-from core.base.template.template_declaration import TemplateDeclaration
+from engine.template.template_declaration import TemplateDeclaration
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.base.viewer.inspector_declaration import InspectorDeclaration
 

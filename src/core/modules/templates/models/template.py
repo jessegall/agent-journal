@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from core.base.model.model import Model
 from engine.actor.actor import CORE_ACTOR_ID
-from core.base.template.template_declaration import TemplateDeclaration
+from engine.template.template_declaration import TemplateDeclaration
 
 
 @dataclass(frozen=True, kw_only=True)
