@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from core.base.library.library_hits import LibraryHits
+from engine.library.library_hits import LibraryHits
 from core.modules.search.support.search_hit import SearchHit
 
 

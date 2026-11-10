@@ -2,9 +2,9 @@ from argparse import Namespace
 from typing import ClassVar, Generic, TypeVar
 
 from engine.caller.caller import Caller
-from core.base.library.library_lookup import LibraryLookup
-from core.base.library.library_reading import LibraryReading
-from core.base.library.library_ref import LibraryRef
+from engine.library.library_lookup import LibraryLookup
+from engine.library.library_reading import LibraryReading
+from engine.library.library_ref import LibraryRef
 from engine.errors.refusal import Refusal
 
 

@@ -5,7 +5,7 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.support.library_client import LibraryClient
-from core.base.library.library_item import LibraryItem
+from engine.library.library_item import LibraryItem
 from core.modules.library.support.library_page import LibraryPage
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.library_versions import LibraryVersions

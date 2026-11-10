@@ -1,7 +1,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 
-from core.base.library.library_hit import LibraryHit
+from engine.library.library_hit import LibraryHit
 from core.modules.library.support.library_answer import LibraryAnswer
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.item_summary import ItemSummary

@@ -4,7 +4,7 @@ from engine.caller.caller import Caller
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.library.support.item_arguments import ItemArguments
 from core.modules.library.support.library_browse import LibraryBrowse
-from core.base.library.library_item import LibraryItem
+from engine.library.library_item import LibraryItem
 
 
 class LibraryShowSubcommand(ItemArguments, ReadSubcommand[LibraryItem]):

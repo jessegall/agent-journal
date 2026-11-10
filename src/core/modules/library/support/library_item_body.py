@@ -1,4 +1,4 @@
-from core.base.library.library_item import LibraryItem
+from engine.library.library_item import LibraryItem
 from core.modules.library.support.library_answer import LibraryAnswer
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 

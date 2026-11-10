@@ -32,7 +32,7 @@ from engine.viewer.window_extension import WindowExtension
 from engine.subcommand.subcommand import Subcommand
 from engine.seed.seeder import Seeder
 from engine.subcommand.read_subcommand import ReadSubcommand
-from core.base.library.library_share_class import LibraryShareClass
+from engine.library.library_share_class import LibraryShareClass
 from engine.query.shared_rows import SharedRows
 from engine.setting.setting_node import SettingNode
 from engine.ticker.tick_handler import TickHandler

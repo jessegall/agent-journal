@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 
-from core.base.library.library_hits import LibraryHits
-from core.base.library.library_item import LibraryItem
-from core.base.library.library_ref import LibraryRef
+from engine.library.library_hits import LibraryHits
+from engine.library.library_item import LibraryItem
+from engine.library.library_ref import LibraryRef
 
 
 class LibraryLookup:

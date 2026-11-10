@@ -6,7 +6,7 @@ from engine.viewer.window_key import WindowKey
 from engine.viewer.key_loading import KeyLoading
 from engine.viewer.window_place import WindowPlace
 from engine.viewer.window_read_search import WindowReadSearch
-from core.base.library.library_lookup import LibraryLookup
+from engine.library.library_lookup import LibraryLookup
 from core.modules.library.support.server_library_lookup import ServerLibraryLookup
 from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from engine.module.module import Module

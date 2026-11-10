@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.library.library_ref import LibraryRef
+from engine.library.library_ref import LibraryRef
 
 
 def test_a_library_item_has_its_own_form_and_a_plain_number_is_the_local_row():

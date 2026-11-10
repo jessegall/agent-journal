@@ -2,10 +2,10 @@ import json
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.library.library_lookup import LibraryLookup
-from core.base.library.library_aware_show import LibraryAwareShow
-from core.base.library.library_reading import LibraryReading
-from core.base.library.library_ref import LibraryRef
+from engine.library.library_lookup import LibraryLookup
+from engine.library.library_aware_show import LibraryAwareShow
+from engine.library.library_reading import LibraryReading
+from engine.library.library_ref import LibraryRef
 from engine.query.queries import Queries
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand

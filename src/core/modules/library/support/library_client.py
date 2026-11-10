@@ -13,7 +13,7 @@ from core.modules.library.support.library_certificate import LibraryCertificate
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
 from core.modules.library.support.library_address import ADDRESS_SETTING, LibraryAddress
 from core.modules.library.support.library_failures import LibraryFailures
-from core.base.library.library_item import LibraryItem
+from engine.library.library_item import LibraryItem
 from core.modules.library.support.library_item_body import LibraryItemBody
 from core.modules.library.support.library_page import LibraryPage
 from core.modules.library.support.page_request import PageRequest

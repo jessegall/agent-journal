@@ -1,4 +1,4 @@
-from core.base.library.library_share import LibraryShare
+from engine.library.library_share import LibraryShare
 from engine.model.model import Model
 from engine.query.queries import Queries
 from core.modules.library.models.enums.copy_progress import CopyProgress

@@ -2,12 +2,12 @@ from argparse import Namespace
 
 from engine.caller.caller import Caller
 from engine.cli.row_links import RowLinks
-from core.base.library.library_lookup import LibraryLookup
-from core.base.library.library_aware_show import LibraryAwareShow
-from core.base.library.library_ref import LibraryRef
+from engine.library.library_lookup import LibraryLookup
+from engine.library.library_aware_show import LibraryAwareShow
+from engine.library.library_ref import LibraryRef
 from engine.query.queries import Queries
 from engine.subcommand.output import Output
-from core.base.library.library_reading import LibraryReading
+from engine.library.library_reading import LibraryReading
 from core.modules.documents.commands.support.text_reading import TextReading
 from core.modules.documents.commands.support.text_show_subcommand import TextShowSubcommand
 from core.modules.documents.models.doc import Doc

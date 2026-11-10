@@ -1,7 +1,7 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
 from core.modules.library.commands.remove_library_item.remove_library_item import RemoveLibraryItem
-from core.base.library.library_item import LibraryItem
+from engine.library.library_item import LibraryItem
 from core.modules.library.support.library_person import LibraryPerson
 from core.modules.library.support.library_writes import LibraryWrites
 

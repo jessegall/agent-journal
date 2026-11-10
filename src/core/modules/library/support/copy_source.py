@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from engine.command.context import Context
-from core.base.library.library_share import LibraryShare
+from engine.library.library_share import LibraryShare
 from engine.model.model import Model
 
 if TYPE_CHECKING:

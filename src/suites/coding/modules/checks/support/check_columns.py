@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.library.library_share import Fields
+from engine.library.library_share import Fields
 
 
 @dataclass(frozen=True)

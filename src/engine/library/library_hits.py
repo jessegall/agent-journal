@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.library.library_hit import LibraryHit
+from engine.library.library_hit import LibraryHit
 
 
 @dataclass(frozen=True)

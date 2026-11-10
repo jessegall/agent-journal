@@ -1,5 +1,5 @@
 from engine.container.container import Container
-from core.base.library.library_share import LibraryShare
+from engine.library.library_share import LibraryShare
 from engine.model.model import Model
 from engine.errors.refusal import Refusal
 from engine.registry.registry import Registry

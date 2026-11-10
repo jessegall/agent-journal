@@ -1,9 +1,9 @@
 from collections.abc import Sequence
 
-from core.base.library.library_hits import LibraryHits
-from core.base.library.library_item import LibraryItem
-from core.base.library.library_lookup import LibraryLookup
-from core.base.library.library_ref import LibraryRef
+from engine.library.library_hits import LibraryHits
+from engine.library.library_item import LibraryItem
+from engine.library.library_lookup import LibraryLookup
+from engine.library.library_ref import LibraryRef
 from engine.query.queries import Queries
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.support.kept_library_failure import KeptLibraryFailure

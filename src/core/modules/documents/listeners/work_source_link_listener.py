@@ -4,7 +4,7 @@ from engine.change.updated import Updated
 from engine.command.context import Context
 from engine.command.edit_command import EditCommand
 from engine.command.make_command import MakeCommand
-from core.base.library.library_lookup import LibraryLookup
+from engine.library.library_lookup import LibraryLookup
 from engine.listener.save_listener import SaveListener
 from engine.model.model import Model
 from core.modules.documents.commands.edit_text.edit_text import EditText

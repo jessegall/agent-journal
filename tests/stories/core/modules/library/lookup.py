@@ -6,9 +6,9 @@ from datetime import timedelta
 import pytest
 
 from engine.container.container import Container
-from core.base.library.library_hits import LibraryHits
-from core.base.library.library_lookup import LibraryLookup
-from core.base.library.library_ref import LibraryRef
+from engine.library.library_hits import LibraryHits
+from engine.library.library_lookup import LibraryLookup
+from engine.library.library_ref import LibraryRef
 from tests.stories.core.modules.library.support.saved_connection import saved_connection
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.core.support.fixtures import UserJoined

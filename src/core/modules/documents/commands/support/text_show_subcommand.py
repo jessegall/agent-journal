@@ -6,7 +6,7 @@ from engine.cli.row_links import LINKS_SHOWN, RowLinks
 from engine.query.queries import Queries
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
-from core.base.library.library_reading import LibraryReading
+from engine.library.library_reading import LibraryReading
 from core.modules.documents.commands.support.text_reading import TextReading
 from core.modules.documents.models.text_row import TextRow
 from core.modules.documents.support.text_lines import TextLines
