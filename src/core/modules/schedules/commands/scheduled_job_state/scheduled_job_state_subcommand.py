@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 from datetime import timedelta
 
@@ -15,7 +16,7 @@ RECURRING_LIFETIME_DAYS = 7
 
 
 class ScheduledJobStateSubcommand(ReadSubcommand[RowList]):
-    """`journal scheduled-job running --agent <id>`: the jobs an agent has scheduled that still run; a
+    """`journal scheduled-job running --agent <number>`: the jobs an agent has scheduled that still run; a
     repeating job lapses seven days after it was made."""
 
     cli_name = "scheduled-job"
@@ -25,7 +26,7 @@ class ScheduledJobStateSubcommand(ReadSubcommand[RowList]):
         self.queries, self.clock = queries, clock
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--agent", type=int, required=True)
+        parser.add_argument("--agent", type=AgentNumber, required=True)
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
         oldest = self.clock.timestamp().value - timedelta(days=RECURRING_LIFETIME_DAYS)
