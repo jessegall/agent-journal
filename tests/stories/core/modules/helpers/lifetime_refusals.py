@@ -1,15 +1,19 @@
 import pytest
 
+from core.modules.agents.models.agent import Agent
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.actor.actor import Actor
+from engine.query.queries import Queries
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.agents.agent_kind_controls import ALLOWED_MODELS, set_options
 from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.occupant_rotation import job_launch
-from tests.stories.core.modules.helpers.support.rotating_helper import EndedEachLaunchHelper, story_with_profile_file
+from tests.stories.core.modules.helpers.support.rotating_helper import START_ROTATING, EndedEachLaunchHelper, story_with_profile_file
 from tests.stories.core.support.agent_labels import agent_number
 
 CODEX_MODELS = "codex gpt-6-luna,codex gpt-6.1-terra,codex gpt-6.1-sol,codex gpt-6-astra"
 UNUSED_MODEL = "claude fable"
+TILL_START = START_ROTATING.replace("src/cart.py", "src/till.py")
 
 
 @pytest.fixture
@@ -61,3 +65,14 @@ def test_a_worker_that_sends_a_job_to_the_each_launch_agent_is_refused_and_start
     worker = Actor(rotating.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
     rotating.expect_refusal(f"{job_line(rotating)} --reason needed", "The main agent was asked to review this request", actor=worker)
     rotating.expect_rows(helper_agent(rotating).session == helper.session, len(read_jobs(rotating, helper)) == 1)
+
+
+def test_a_start_of_the_profile_is_refused_with_the_send_line_of_the_idle_agent_though_its_conversation_is_gone(new_story):
+    story = story_with_profile_file(new_story, EndedEachLaunchHelper)
+    number = agent_number(story, helper_agent(story).id)
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    story.expect_refusal(TILL_START, f'helper {number} is idle: journal helper send {number} "<job>"', actor=story.agent)
+    story.expect_success(f'{TILL_START} --fresh "A second view"', actor=story.agent)
+    launcher.drain_requests()
+    helpers = list(story.container.get(Queries).query(Agent).filter(role="helper").all_rows())
+    story.expect_rows(len(helpers) == 2, detail=str(helpers))

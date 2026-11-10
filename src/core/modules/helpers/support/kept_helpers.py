@@ -1,6 +1,7 @@
 from engine.driver.program_lockdown import ProgramLockdown
 from core.modules.settings.bindings.support.context_share import ContextShare
 from engine.enums.helper_role import HelperRole
+from engine.enums.occupant import Occupant
 from engine.database.kept_rows import KeptRows
 from engine.provider.providers import Providers
 from engine.query.conditions.is_null import IsNull
@@ -19,8 +20,9 @@ FULL_SESSION_PERCENT = 80
 
 class KeptHelpers:
     """Reads the idle helpers of a profile that can take a new job: not retired, process ended, no open job, on
-    the program and model asked for, with a session that resumes in its folder and is not nearly full. The
-    newest comes first."""
+    the program and model asked for, with a session that resumes in its folder and is not nearly full. A helper
+    whose profile replaces its session at each launch is idle on any program, model and session, because its
+    next launch picks its own. The lowest number comes first."""
 
     def __init__(self, queries: Queries, providers: Providers, folders: AgentFolders, kept_rows: KeptRows, states: ProgramStates, share: ContextShare, lockdown: ProgramLockdown) -> None:
         self.lockdown = lockdown
@@ -37,13 +39,14 @@ class KeptHelpers:
     def query_kept(self, profile: str) -> tuple[Agent, ...]:
         return tuple(self.queries.query(Agent).filter(role=HelperRole.HELPER, profile=profile).matching(IsNull("retired_at")).newest().all_rows())
 
-    def idle(self, selection: ProfileModel) -> tuple[Agent, ...]:
-        kept = self.kept(selection.profile)
+    def idle(self, selection: ProfileModel, occupant: Occupant) -> tuple[Agent, ...]:
         open_jobs = self.with_open_jobs(selection.profile)
-        return tuple(helper for helper in kept if self.is_available(helper, open_jobs, selection.program, selection.model))
+        stopped = [helper for helper in self.kept(selection.profile) if helper.ended_at is not None and helper.id not in open_jobs]
+        idle_helpers = stopped if occupant.may_change_program else [helper for helper in stopped if self.resumes(helper, selection.program, selection.model)]
+        return tuple(sorted(idle_helpers, key=lambda helper: helper.number))
 
-    def is_available(self, helper: Agent, open_jobs: set[int], program: str, model: str) -> bool:
-        if helper.ended_at is None or helper.id in open_jobs or (program and helper.program != program) or (model and helper.program_model != model):
+    def resumes(self, helper: Agent, program: str, model: str) -> bool:
+        if (program and helper.program != program) or (model and helper.program_model != model):
             return False
         provider = self.providers.provider(helper.program)
         if not provider.session_matches_folder(self.folders.folder(helper), helper.session):

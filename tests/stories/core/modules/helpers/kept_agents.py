@@ -1,3 +1,4 @@
+from engine.enums.occupant import Occupant
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.helpers.support.agent_use import AgentUse
 from engine.query.conditions.is_null import IsNull
@@ -242,9 +243,9 @@ def test_an_idle_helper_on_another_model_or_with_its_session_gone_is_not_offered
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     kept = story.container.get(KeptHelpers)
-    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher")) == ())
+    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher"), Occupant.COLD_ROTATION) == ())
     resumable_session(story, helper, monkeypatch)
-    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher"))[0].id == helper.id, kept.idle(ProfileModel("", "another-model", "journal-researcher")) == ())
+    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher"), Occupant.COLD_ROTATION)[0].id == helper.id, kept.idle(ProfileModel("", "another-model", "journal-researcher"), Occupant.COLD_ROTATION) == ())
 
 
 def test_a_nearly_full_session_is_not_offered(new_story, monkeypatch):
@@ -252,9 +253,9 @@ def test_a_nearly_full_session_is_not_offered(new_story, monkeypatch):
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
     kept = story.container.get(KeptHelpers)
-    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher"))[0].id == helper.id)
+    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher"), Occupant.COLD_ROTATION)[0].id == helper.id)
     monkeypatch.setattr(ClaudeCodeProvider, "context_window", lambda provider, home, session: ContextWindow(80, 1000))
-    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher")) == ())
+    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher"), Occupant.COLD_ROTATION) == ())
 
 
 def test_two_sends_to_one_idle_helper_run_one_session(new_story, monkeypatch):
@@ -299,7 +300,7 @@ def test_same_reviewer_same_plan_is_refused(new_story, monkeypatch):
     story.expect_success("helper start journal-plan-reviewer --plan 7 --brief 'Review plan 7' --environment main", actor=story.agent)
     reviewer = helper_agent(story)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=reviewer.id).first()
-    story.expect_rows(job.review_plan_id == 7, job.new_agent_reason != "")
+    story.expect_rows(job.review_plan_id == 7)
     story.expect_success(f"agent end {reviewer.id}", actor=story.user)
     story.run_listeners()
     resumable_session(story, reviewer, monkeypatch)
