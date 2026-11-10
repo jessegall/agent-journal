@@ -30,7 +30,8 @@ and then it is followed.
 - A helper that makes a plan may also run `plan edit`, `phase edit`, `task edit` and `plan ready` on it.
 - `journal plan outline <n>` lists its phases and tasks, `journal plan progress <n>` its counts,
   `journal plan inspect <n>` both, and `journal plan list` every plan.
-- `journal plan block <n> --reason "<why>"` when one thing stops all of it; `journal plan unblock <n>` opens it.
+- `journal plan block <n> --reason "<why>"` when one thing stops all of it; `journal plan unblock <n>` opens it. `journal plan block <n> --on plan:<m>`
+  (repeat it for each plan) opens the plan by itself once every plan it waits on is completed or cancelled, and tells the main agent.
 - `journal plan cancel <n>` abandons it. When the user asks for something that makes a plan no longer right, cancel that plan
   yourself, at once and without asking.
 - On each actual start or unblock, a main agent receives a pointer to `journal plan context <n>` and reads it

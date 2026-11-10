@@ -1,6 +1,11 @@
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.module.model_declaration import ALL_SUBCOMMANDS
 from core.modules.plans.migrations.m008_plan_context_reads import PlanContextReadsMigration
+from core.modules.plans.migrations.m009_plan_waits import PlanWaitsMigration
+from core.modules.plans.models.plan_wait import PlanWait
+from core.modules.plans.commands.wait_plan.wait_plan_handler import WaitPlanHandler
+from core.modules.plans.commands.wait_plan.wait_plan_subcommand import WaitPlanSubcommand
+from core.modules.plans.listeners.plan_wait_listener import PlanWaitListener
 from core.modules.plans.models.plan_context_read import PlanContextRead
 from core.modules.plans.support.block_conditions.plan_context_read import PlanContextRead as PlanContextReadCondition
 from core.modules.plans.rules.plan_context_rule import PlanContextRule
@@ -102,16 +107,16 @@ class PlansModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers", "journal.core.messages"]
     skills = [SkillDeclaration("journal-plans", "Build and follow a plan of ordered tasks; read it before the first plan command of a session, or when the user asks for a plan or a roadmap", keywords=("plan", "plans", "roadmap", "phases"), commands=("plan", "phase")),
               SkillDeclaration("journal-planning", "Build a thorough plan with real steps in each phase, one task per step, and a brief each worker can carry out alone; read it before you make a plan or a phase", keywords=("plan", "phases"), commands=("plan make", "phase make"))]
-    models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]), ModelDeclaration(PlanContextRead, excluded_subcommands=ALL_SUBCOMMANDS)]
-    migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration]
-    handlers = [AssignPlanHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
+    models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]), ModelDeclaration(PlanContextRead, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PlanWait, excluded_subcommands=ALL_SUBCOMMANDS)]
+    migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration]
+    handlers = [WaitPlanHandler, AssignPlanHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
     moves = [PlansMove]
-    subcommands = [AssignPlanSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
+    subcommands = [WaitPlanSubcommand, AssignPlanSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand]
     views = [PlanTask, PlanProgress, PlanCard, PlanOutlineTask, PlanEventRow]
     guards = [PhasePositionGuard, PlanCloseGuard, OneTaskPhaseGuard, UnorderedTasksGuard]
     step_conditions = [PlanBriefSet, PlanHasPhases, PlanPhasesHaveTasks, PlanTasksOrdered]
-    listeners = [TaskPlanRowsListener, ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
+    listeners = [PlanWaitListener, TaskPlanRowsListener, ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
                  FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener, ReadyPlanSyncListener]
     marks = PLAN_MARKS
     nudges = PLAN_NUDGES

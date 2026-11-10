@@ -13,11 +13,12 @@ from core.modules.plans.support.plan_outline import PlanOutline
 @dataclass(frozen=True)
 class PlanInspection:
     """What the plan inspector draws: the plan, its phases and tasks, how far it has come and the phase it is
-    in."""
+    in, and the plans it waits on while blocked."""
 
     plan: Plan
     outline: PlanOutline
     assignee: Agent | None = None
+    waits_on: tuple[int, ...] = ()
 
     def current_phase(self) -> int:
         if self.plan.state != PlanState.STARTED:
@@ -35,4 +36,4 @@ class PlanInspection:
         agents = self.outline.agents()
         return {"id": self.plan.id, "title": self.plan.title, "brief": self.plan.brief, "state": self.plan.state.value, "reason": self.plan.reason,
                 "total": len(tasks), "finished": sum(task.is_closed() for task in tasks), "current_phase": self.current_phase(), "document_id": self.plan.document_id,
-                "assignee": self.assignee_json(), "delegated": bool(agents), "agents": [agent.json() for agent in agents], "phases": [phase.json() for phase in self.outline.phases]}
+                "assignee": self.assignee_json(), "waits_on": list(self.waits_on), "delegated": bool(agents), "agents": [agent.json() for agent in agents], "phases": [phase.json() for phase in self.outline.phases]}

@@ -12,9 +12,10 @@ PLAN_APPROVED_WITH_MESSAGE = NudgeDeclaration("plans.plan_approved_message", Nud
 PLAN_WAITING = NudgeDeclaration("plans.plan_waiting", NudgeType.NOTICE, "plan {plan} is ready: a person approves it on its plan card", turn_limited=False)
 PLAN_CANCELLED = NudgeDeclaration("plans.plan_cancelled", NudgeType.NOTICE, "plan:{plan} is cancelled", turn_limited=False)
 PLAN_BLOCKED = NudgeDeclaration("plans.plan_blocked", NudgeType.NOTICE, "plan:{plan} is blocked", turn_limited=False)
+PLAN_OPENED = NudgeDeclaration("plans.plan_opened", NudgeType.STEERING, "plan:{plan} is open again: the plans it waited on have ended", turn_limited=False)
 PLAN_CONTEXT = NudgeDeclaration("plans.start_context", NudgeType.STEERING,
                                "plan {plan} started: read its context before changing project files", turn_limited=False)
 UNLINKED_TASKS = NudgeDeclaration("plans.unlinked_tasks", NudgeType.STEERING, "plan {plan}: {count} open tasks, none blocked; set what each waits on", turn_limited=False)
 
 PLAN_NUDGES = [UNLINKED_TASKS, PLAN_FINISHED, PHASE_FINISHED, CHECKPOINT_FINISHED, PLAN_STALLED, PLAN_APPROVED,
-               PLAN_WAITING, PLAN_APPROVED_WITH_MESSAGE, PLAN_CANCELLED, PLAN_BLOCKED, PLAN_CONTEXT]
+               PLAN_WAITING, PLAN_APPROVED_WITH_MESSAGE, PLAN_CANCELLED, PLAN_BLOCKED, PLAN_OPENED, PLAN_CONTEXT]

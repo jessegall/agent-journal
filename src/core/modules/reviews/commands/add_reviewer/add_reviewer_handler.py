@@ -30,7 +30,7 @@ class AddReviewerHandler(Handler[AddReviewer, Reviewer]):
         if context.environment_id is None:
             raise Refusal("a reviewer is added in an environment", "name one with --environment")
         program = self.settings.program()
-        session = f"reviewer-{self.reviewers.count() + 1}"
+        session = f"reviewer-{self.reviewers.in_environment(context.environment_id).count() + 1}"
         agent = self.bus.dispatch(StartAgent(session, program, HelperRole.REVIEWER, access="read-only"), context)
         return self.repository.save(Reviewer(id=agent.id, creator_id=context.actor.id, program=program,
                                              model=self.settings.model()), context)
