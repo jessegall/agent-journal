@@ -137,3 +137,55 @@ func TestAMainAgentsToolWithNoAnswerGoesOnWithItsLine(t *testing.T) {
 		t.Fatalf("code %d, stdout %s", code, stdout.String())
 	}
 }
+
+const stopLine = "[journal] Claude is at your usage limit until 14:00."
+
+func TestAHaltedClaudeToolUseIsDeniedAndClaudeIsStoppedInOneAnswer(t *testing.T) {
+	stdout, stderr, code := shippedAnswer("claude", "PreToolUse", "pre_tool_use", Reply{Halt: stopLine})
+	if code != 0 || stderr != "" || !strings.Contains(stdout, `"continue":false`) || !strings.Contains(stdout, `"permissionDecision":"deny"`) || !strings.Contains(stdout, `"stopReason":"[journal] Claude is at your usage limit`) {
+		t.Fatalf("printed %q %q %d", stdout, stderr, code)
+	}
+}
+
+func TestAHaltStopsClaudeAtEveryOtherEventAndNeverBlocksItsStop(t *testing.T) {
+	for hookName, event := range map[string]string{"Stop": "stop", "UserPromptSubmit": "prompt", "PostToolUse": "post_tool_use", "SessionStart": "session_start", "PreCompact": "compact"} {
+		stdout, stderr, code := shippedAnswer("claude", hookName, event, Reply{Halt: stopLine})
+		if code != 0 || stderr != "" || !strings.Contains(stdout, `"continue":false`) || strings.Contains(stdout, `"decision":"block"`) || strings.Contains(stdout, "permissionDecision") {
+			t.Fatalf("%s printed %q %q %d", event, stdout, stderr, code)
+		}
+	}
+}
+
+func TestAHaltBeatsTheLinesTheRefusalAndTheNewInputOfTheSameReply(t *testing.T) {
+	reply := Reply{Halt: stopLine, Refusal: "no git here", Lines: []string{"a waiting line"}, UpdatedInput: map[string]any{"command": "ls"}}
+	stdout, _, _ := shippedAnswer("claude", "PreToolUse", "pre_tool_use", reply)
+	if strings.Contains(stdout, "no git here") || strings.Contains(stdout, "a waiting line") || strings.Contains(stdout, "updatedInput") || !strings.Contains(stdout, `"continue":false`) {
+		t.Fatalf("printed %q", stdout)
+	}
+}
+
+func TestAProjectHooksAnswerCannotOverturnAHalt(t *testing.T) {
+	reply := withForeign(Reply{Halt: stopLine}, Reply{UpdatedInput: map[string]any{"command": "ls"}, Lines: []string{"go ahead"}})
+	stdout, _, _ := shippedAnswer("claude", "PreToolUse", "pre_tool_use", reply)
+	if strings.Contains(stdout, "updatedInput") || strings.Contains(stdout, "go ahead") || !strings.Contains(stdout, `"continue":false`) {
+		t.Fatalf("printed %q", stdout)
+	}
+}
+
+func TestAHaltedCodexToolUseAndPromptAreRefusedSinceCodexCannotStopThere(t *testing.T) {
+	for hookName, event := range map[string]string{"PreToolUse": "pre_tool_use", "UserPromptSubmit": "prompt"} {
+		stdout, stderr, code := shippedAnswer("codex", hookName, event, Reply{Halt: stopLine})
+		if code != 2 || stdout != "" || stderr != stopLine {
+			t.Fatalf("%s printed %q %q %d", event, stdout, stderr, code)
+		}
+	}
+}
+
+func TestAHaltStopsCodexAtItsStopAndAfterATool(t *testing.T) {
+	for hookName, event := range map[string]string{"Stop": "stop", "PostToolUse": "post_tool_use"} {
+		stdout, _, code := shippedAnswer("codex", hookName, event, Reply{Halt: stopLine})
+		if code != 0 || !strings.Contains(stdout, `"continue":false`) || strings.Contains(stdout, `"decision":"block"`) {
+			t.Fatalf("%s printed %q %d", event, stdout, code)
+		}
+	}
+}

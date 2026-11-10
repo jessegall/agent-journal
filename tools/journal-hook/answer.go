@@ -19,6 +19,7 @@ type Reply struct {
 	UpdatedInput map[string]any `json:"updated_input"`
 	Terminal     string         `json:"terminal"`
 	HookCallID   *int64         `json:"hook_call_id"`
+	Halt         string         `json:"halt"`
 }
 
 // nativeReply reads a project hook's own answer on stdout into a reply.
@@ -112,6 +113,9 @@ func withTerminal(stdout, terminal string) string {
 }
 
 func answered(program programs.Program, hookName, event string, reply Reply) (string, string, int) {
+	if reply.Halt != "" {
+		return halted(program.Halts[event], program.Refusals[event], hookName, reply.Halt)
+	}
 	lines := strings.Join(reply.Lines, "\n")
 	if len(reply.UpdatedInput) > 0 {
 		return rewritten(program.Rewrites[event], hookName, reply.UpdatedInput, lines), "", 0
@@ -140,6 +144,18 @@ func rewritten(extras map[string]any, hookName string, input map[string]any, lin
 		output["additionalContext"] = lines
 	}
 	return jsonText(map[string]any{"hookSpecificOutput": output})
+}
+
+// halted is the answer that stops a program at a usage limit. The plain style stops it outright; a tool is denied and the
+// program stopped in one answer; a program that cannot be stopped at this event is refused in its own way.
+func halted(style, refusalStyle, hookName, line string) (string, string, int) {
+	switch style {
+	case "refuse":
+		return refused(refusalStyle, hookName, line)
+	case "deny":
+		return jsonText(map[string]any{"continue": false, "stopReason": line, "hookSpecificOutput": map[string]any{"hookEventName": hookName, "permissionDecision": "deny", "permissionDecisionReason": line}}), "", 0
+	}
+	return jsonText(map[string]any{"continue": false, "stopReason": line}), "", 0
 }
 
 func refused(style, hookName, reason string) (string, string, int) {

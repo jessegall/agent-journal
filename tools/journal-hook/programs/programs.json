@@ -26,15 +26,14 @@
         "StopFailure": "stop_failure",
         "UserPromptSubmit": "prompt"
       },
+      "halts": {
+        "pre_tool_use": "deny"
+      },
       "line_events": [
         "session_start",
         "prompt",
         "pre_tool_use",
         "post_tool_use"
-      ],
-      "plain_output_events": [
-        "session_start",
-        "prompt"
       ],
       "matchers": {
         "PostToolUse": "tool_name",
@@ -44,6 +43,10 @@
         "SessionEnd": "reason",
         "SessionStart": "source"
       },
+      "plain_output_events": [
+        "session_start",
+        "prompt"
+      ],
       "refusals": {
         "pre_tool_use": "deny",
         "prompt": "block",
@@ -82,15 +85,15 @@
         "Stop": "stop",
         "UserPromptSubmit": "prompt"
       },
+      "halts": {
+        "pre_tool_use": "refuse",
+        "prompt": "refuse"
+      },
       "line_events": [
         "session_start",
         "prompt",
         "pre_tool_use",
         "post_tool_use"
-      ],
-      "plain_output_events": [
-        "session_start",
-        "prompt"
       ],
       "matchers": {
         "PostToolUse": "tool_name",
@@ -98,6 +101,10 @@
         "SessionEnd": "reason",
         "SessionStart": "source"
       },
+      "plain_output_events": [
+        "session_start",
+        "prompt"
+      ],
       "refusals": {
         "stop": "block"
       },
@@ -107,8 +114,8 @@
         "apply_patch": "edit",
         "collaborationspawn_agent": "agent",
         "read_file": "read",
-        "view_image": "read",
         "request_user_input": "question",
+        "view_image": "read",
         "write_file": "write"
       }
     }

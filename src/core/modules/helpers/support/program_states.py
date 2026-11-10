@@ -14,6 +14,7 @@ from core.base.timestamp import Timestamp
 from core.modules.agents.queries.agent_query import AgentQuery
 from core.modules.helpers.models.provider_outage import ProviderOutage
 from core.modules.helpers.support.helper_programs import HelperPrograms
+from core.modules.helpers.support.limit_end import LimitEnd
 from core.modules.helpers.support.helper_settings import PROGRAM_WINDOW_PERCENT
 from core.modules.helpers.support.program_state import ProgramState
 from core.modules.helpers.support.program_readiness import ProgramReadiness
@@ -61,10 +62,14 @@ class ProgramStates:
         return ProgramState.unavailable(window.line, Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc)))
 
     def limit_reset_timestamp(self, program: str) -> Timestamp | None:
+        end = self.limit_end(program)
+        return end.ends_at if end is not None else None
+
+    def limit_end(self, program: str) -> LimitEnd | None:
         window = self.window_reaching(program, LIMIT_PERCENT)
-        plan_end = None if window is None else Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc))
-        ends = [end for end in (plan_end, self.custom_limit_reset_timestamp(program)) if end is not None]
-        return max(ends, key=lambda end: end.value) if ends else None
+        plan_end = None if window is None else LimitEnd(Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc)))
+        ends = [end for end in (plan_end, self.limits.last_reached_end(program, self.windows(program), self.clock.timestamp())) if end is not None]
+        return max(ends, key=lambda end: end.ends_at.value) if ends else None
 
     def custom_limit_reset_timestamp(self, program: str) -> Timestamp | None:
         return self.limits.reached_limit_ends(program, self.windows(program), self.clock.timestamp())

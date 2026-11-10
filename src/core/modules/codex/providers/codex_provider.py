@@ -28,6 +28,7 @@ from core.base.provider.program_folders import ProgramFolders
 from core.base.profile.agent_profile import AgentProfile
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.provider import Provider
+from engine.enums.halt_style import HaltStyle
 from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.transcript_author import JOURNAL_AUTHOR, TRANSCRIPT_AUTHORS, TranscriptAuthor
 from core.base.provider.transcript_row import TranscriptRow
@@ -58,6 +59,7 @@ class CodexProvider(Provider):
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
     plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT]
     refusals = {HookEventName.STOP: RefusalStyle.BLOCK}
+    halts = {HookEventName.PRE_TOOL_USE: HaltStyle.REFUSE, HookEventName.PROMPT: HaltStyle.REFUSE}
     tool_categories = {"Bash": ToolType.SHELL, "apply_patch": ToolType.EDIT, "write_file": ToolType.NEW_FILE,
                        "read_file": ToolType.READ, "view_image": ToolType.READ, "collaborationspawn_agent": ToolType.AGENT,
                        "request_user_input": ToolType.QUESTION}

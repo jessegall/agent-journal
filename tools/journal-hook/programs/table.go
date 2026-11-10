@@ -23,6 +23,7 @@ type Program struct {
 	ToolCategories map[string]string         `json:"tool_categories"`
 	Decoder        string                    `json:"decoder"`
 	Rewrites       map[string]map[string]any `json:"rewrites"`
+	Halts          map[string]string         `json:"halts"`
 }
 
 // Table is every agent program the hook knows: the shipped ones, with the project's own laid over them.

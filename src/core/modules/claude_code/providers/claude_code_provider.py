@@ -26,6 +26,7 @@ from core.base.provider.program_model import ProgramModel
 from core.base.provider.control_choice import ControlChoice
 from core.base.provider.control_group import ControlGroup
 from core.base.provider.provider import Provider
+from engine.enums.halt_style import HaltStyle
 from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
 from core.base.provider.peer_note import PeerNote
@@ -73,6 +74,7 @@ class ClaudeCodeProvider(Provider):
     skills_folder = ".claude/skills"
     profile_model_setting = "journal.core.profiles.model-claude"
 
+    halts = {HookEventName.PRE_TOOL_USE: HaltStyle.DENY}
     rewrites = {HookEventName.PRE_TOOL_USE: {"run_in_background": False}}
     refusal_output_tools = [ToolType.SHELL]
     monitor_tool = ToolType.MONITOR

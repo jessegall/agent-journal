@@ -11,6 +11,7 @@ from core.base.system_log_writer import SystemLogWriter
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
+from core.base.driver.program_lockdown import ProgramLockdown
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
@@ -35,14 +36,17 @@ MILLISECONDS = 1000
 
 
 class AgentHookRoute(HookRoute):
-    """Answers a hook as the agent that sent it: finds its open agent by session, then by the launch name it
+    """Stops every hook but a session end of a program that is locked down at a usage limit, before anything
+    else: no agent is looked up or started, no rule is asked and no hook call is recorded. Otherwise answers a
+    hook as the agent that sent it: finds its open agent by session, then by the launch name it
     was started under, saving the real session on it when it is a main agent or runs a program that does not
     take a session from the journal, starts the main agent at its session's first hook, gives back the stored
     answer of a hook sent twice, refuses the tools of a program whose agent has ended and asks the launcher to
     stop it, and lets through, without a record, a hook from an unknown agent when the event does not require
     an agent check."""
 
-    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues, clock: Clock, providers: Providers) -> None:
+    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues, clock: Clock, providers: Providers, lockdown: ProgramLockdown) -> None:
+        self.lockdown = lockdown
         self.clock, self.providers = clock, providers
         self.rule_answers, self.request_values = rule_answers, request_values
         self.bus, self.queries, self.system_log, self.durations, self.settings = bus, queries, system_log, durations, settings
@@ -54,6 +58,9 @@ class AgentHookRoute(HookRoute):
             return self.answered(event)
 
     def answered(self, event: HookEvent) -> HookReply:
+        lockdown = self.lockdown.lockdown(event.program)
+        if lockdown.stops(event.event):
+            return HookReply.halted(lockdown.stop_line)
         stored_call = self.queries.query(HookCall).filter(firing=event.firing).first()
         if stored_call is not None:
             return HookReply.stored(stored_call)

@@ -6,6 +6,7 @@ from core.base.timestamp import Timestamp
 from core.modules.helpers.models.enums.usage_limit_mode import UsageLimitMode
 from core.modules.helpers.models.enums.usage_limit_window import UsageLimitWindow
 from core.modules.helpers.models.usage_limit import UsageLimit
+from core.modules.helpers.support.limit_end import LimitEnd
 from core.modules.usage.support.plan_window import PlanWindow
 
 HOUR_SECONDS = 3600
@@ -41,10 +42,17 @@ class UsageLimits:
         return max(0.0, window.used_percent - min(baseline, window.used_percent))
 
     def reached_limit_ends(self, program: str, windows: Sequence[PlanWindow], checked_at: Timestamp) -> Timestamp | None:
+        end = self.last_reached_end(program, windows, checked_at)
+        return end.ends_at if end is not None else None
+
+    def last_reached_end(self, program: str, windows: Sequence[PlanWindow], checked_at: Timestamp) -> LimitEnd | None:
         current_epoch = checked_at.value.timestamp()
-        ends = [self.reset_epoch(limit, window, current_epoch) for limit in self.program_limits(program)
+        ends = [(self.reset_epoch(limit, window, current_epoch), limit.id) for limit in self.program_limits(program)
                 if (window := self.matching_window(limit, windows)) is not None and window.reset_epoch_seconds > current_epoch and self.used(limit, window, current_epoch) >= limit.percent]
-        return Timestamp(datetime.fromtimestamp(max(ends), timezone.utc)) if ends else None
+        if not ends:
+            return None
+        reset_epoch, limit_id = max(ends)
+        return LimitEnd(Timestamp(datetime.fromtimestamp(reset_epoch, timezone.utc)), limit_id)
 
     def stale_hourly(self, program: str, windows: Sequence[PlanWindow], checked_at: Timestamp) -> tuple[tuple[UsageLimit, PlanWindow], ...]:
         current_epoch = checked_at.value.timestamp()

@@ -23,6 +23,7 @@ from core.base.profile.model_tier import ModelTier
 from core.base.provider.peer_note import PeerNote
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.program_server_file import ProgramServerFile
+from engine.enums.halt_style import HaltStyle
 from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
 from core.base.provider.transcript_author import AGENT_AUTHOR, USER_AUTHOR
@@ -52,6 +53,7 @@ class Provider(ABC):
     web_reader_agents: ClassVar[tuple[str, ...]] = ()
     monitor_tool: ClassVar[ToolType | None] = None
     rewrites: ClassVar[Mapping[HookEventName, Mapping[str, object]]] = {}
+    halts: ClassVar[Mapping[HookEventName, HaltStyle]] = {}
     refusal_output_tools: ClassVar[Sequence[ToolType]] = ()
     decoder: ClassVar[HookDecoder] = HookDecoder.COMMON
     skills_folder: ClassVar[str] = ".agents/skills"
