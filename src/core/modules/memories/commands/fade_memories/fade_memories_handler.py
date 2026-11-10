@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.base.scope.scopes import Scopes
 from core.modules.memories.models.memory import Memory

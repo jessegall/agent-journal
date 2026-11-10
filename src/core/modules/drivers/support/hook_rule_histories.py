@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.rule_history import RuleHistory
 
 RULE_COUNT_REASON = "An agent has one history row for each driver rule and layer, so the read is bounded by the number of rules, and a hook checks every rule."

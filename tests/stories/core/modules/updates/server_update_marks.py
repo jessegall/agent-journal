@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value

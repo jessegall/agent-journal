@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, OpenTaskOrchestrator

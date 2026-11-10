@@ -29,7 +29,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from tests.stories.server.support.story_line_route import StoryLineRoute
 from core.testing.line_outcome import LineOutcome
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.base.module.code_fingerprint import CodeFingerprint

@@ -14,7 +14,7 @@ from engine.enums.actor_type import ActorType
 from core.base.change.event_log import EventLog
 from core.base.change.logged_event import LoggedEvent
 from core.base.database.reported_findings import ReportedFindings
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.pins.models.pin import Pin
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_delivery import PluginDelivery

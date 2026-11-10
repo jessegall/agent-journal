@@ -1,7 +1,7 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
@@ -9,7 +9,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.line_typing import LineTyping
-from core.base.query.conditions.greater import Greater
+from engine.query.conditions.greater import Greater
 
 PAUSE_SOURCE = "drivers.pause"
 RESUME_SOURCE = "drivers.resume"

@@ -1,8 +1,8 @@
 from dataclasses import dataclass, replace
 
 from core.base.database.statement import Statement
-from core.base.query.condition import Condition
-from core.base.query.order import Order
+from engine.query.condition import Condition
+from engine.query.order import Order
 
 
 @dataclass(frozen=True)

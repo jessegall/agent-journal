@@ -6,11 +6,11 @@ from engine.enums.actor_type import ActorType
 from engine.helper_type.helper_type_book import HelperTypeBook
 from core.base.caller.caller import Caller
 from engine.row.page import Page
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.contains_every import ContainsEvery
-from core.base.query.conditions.has_value import HasValue
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.conditions.contains_every import ContainsEvery
+from engine.query.conditions.has_value import HasValue
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.base.subcommand.page_arguments import page_arguments
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.memories.models.memory_holder import MemoryHolder

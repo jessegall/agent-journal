@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from core.base.caller.caller import Caller
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.documents.commands.plan_context.read_plan_context import ReadPlanContext
 from core.modules.documents.support.work_context_page import WorkContextPage
 from core.modules.documents.support.work_context_text import WorkContextText

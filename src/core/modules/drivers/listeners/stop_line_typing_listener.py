@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.listeners.typed_line_listener import TERMINAL_SOURCES
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState

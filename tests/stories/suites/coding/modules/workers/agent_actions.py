@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
 from tests.stories.core.support.coding_fixtures import UserBuilder

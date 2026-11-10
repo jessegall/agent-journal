@@ -3,7 +3,7 @@ import subprocess
 import pytest
 
 from core.base.driver.command_category import CommandCategory
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.runner_binary import RunnerBinary

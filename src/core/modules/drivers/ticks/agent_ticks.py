@@ -3,7 +3,7 @@ from engine.time.clock import Clock
 from engine.container.container import Container
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_route import HookRoute
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.time.timestamp import MINUTE_SECONDS, Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.models.environment import Environment

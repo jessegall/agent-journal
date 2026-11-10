@@ -4,7 +4,7 @@ from typing import ClassVar
 from core.base.database.database import READ_LIMIT_ROWS
 from core.base.caller.caller import Caller
 from engine.row.page import Page, is_page
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.documents.models.text_row import TextRow

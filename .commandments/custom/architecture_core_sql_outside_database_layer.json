@@ -13,7 +13,7 @@
         ],
         "reject": [
             {
-                "fileMatches": "(^|/)core/base/(database|query)/"
+                "fileMatches": "(^|/)(core/base|engine)/(database|query)/"
             },
             {
                 "fileMatches": "(^|/)migrations/"

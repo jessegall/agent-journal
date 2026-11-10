@@ -4,7 +4,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.seconds import Seconds
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.commands.wake_inactive_agent.wake_inactive_agent import WakeInactiveAgent
 from core.modules.drivers.models.agent_activity import AgentActivity

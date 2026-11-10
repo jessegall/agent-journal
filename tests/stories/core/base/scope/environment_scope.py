@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.memories.models.memory import Memory
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.memories.support.memory_owners import MAIN_FACT, MAIN_MEMORY, MainAndWorkerMemories

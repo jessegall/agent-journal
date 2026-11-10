@@ -5,7 +5,7 @@
         "select": "member-access",
         "where": [
             {
-                "fileMatches": "(^|/)src/core/(base/chat|modules/(chat|docking))/"
+                "fileMatches": "(^|/)src/(engine/chat|core/modules/(chat|docking))/"
             },
             {
                 "nameMatches": "(?i)^(shipped|is_core|is_third_party|third_party|core_module|module_kind)$"

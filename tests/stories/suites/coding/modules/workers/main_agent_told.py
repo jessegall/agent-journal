@@ -3,7 +3,7 @@ from datetime import timedelta
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport

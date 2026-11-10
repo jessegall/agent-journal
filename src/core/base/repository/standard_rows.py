@@ -5,7 +5,7 @@ from engine.actor.actor import CORE_ACTOR_ID, Actor
 from core.base.command.context import Context
 from core.base.database.kept_rows import KeptRows
 from core.base.model.model import Model
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 

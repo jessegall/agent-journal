@@ -7,8 +7,8 @@ from core.base.driver.nudge import Nudge
 from core.base.driver.nudge_type import NudgeType
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.module.block_conditions import BlockConditions
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
 from core.modules.drivers.models.agent_block import AgentBlock, OPEN_BLOCKS_REASON
 

@@ -2,7 +2,7 @@ from core.base.cli.view_rows_subcommand import ViewRowsSubcommand
 from core.modules.messages.models.chat_message import ChatMessage
 from argparse import Namespace
 from core.base.model.view_model import ViewModel
-from core.base.query.query import Query
+from engine.query.query import Query
 from core.modules.messages.conditions.main_message_target import MainMessageTarget
 
 

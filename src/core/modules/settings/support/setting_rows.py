@@ -1,7 +1,7 @@
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.database.shared_tables import SharedTables
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.settings.models.secret_setting import SecretSetting
 from core.modules.settings.models.setting import Setting
 

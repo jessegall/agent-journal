@@ -6,7 +6,7 @@ from core.base.caller.caller_request import SESSION_VARIABLE, CallerRequest
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.caller.process_row import ProcessRow
 from core.base.model.event_form import EventForm
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.drivers.models.agent_line import AgentLine
 from engine.time.timestamp import Timestamp

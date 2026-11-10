@@ -5,10 +5,10 @@ from core.base.command.context import Context
 from engine.time.clock import Clock
 from core.base.listener.event_rows import EventRows
 from core.base.database.kept_rows import KeptRows
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.has_value import HasValue
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.conditions.has_value import HasValue
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent

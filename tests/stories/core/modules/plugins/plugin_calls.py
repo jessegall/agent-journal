@@ -7,7 +7,7 @@ import sys
 
 from core.base.caller.caller import Caller
 from core.base.cli.console import Console
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.models.plugin_output import PluginOutput
 from core.modules.processes.models.process import Process

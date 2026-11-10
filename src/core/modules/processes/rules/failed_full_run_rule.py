@@ -3,7 +3,7 @@ from core.base.driver.command_category import CommandCategory
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.greater import Greater
+from engine.query.conditions.greater import Greater
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.process_nudges import FAILED_FULL_RUN

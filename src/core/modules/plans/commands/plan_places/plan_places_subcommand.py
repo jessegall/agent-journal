@@ -1,9 +1,9 @@
 from argparse import Namespace
 
 from core.base.caller.caller import Caller
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
-from core.base.query.query import PAGE_SIZE_ROWS
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
+from engine.query.query import PAGE_SIZE_ROWS
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.subcommand.row_list import RowList
 from core.modules.plans.models.phase import Phase

@@ -5,10 +5,10 @@ from core.base.command.handler import Handler
 from core.base.driver.nudge import Nudge
 from core.base.driver.nudge_type import NudgeType
 from core.base.driver.nudge_declaration import NudgeDeclaration
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.agents.support.agent_rows import AgentRows
-from core.base.query.conditions.is_null import IsNull
+from engine.query.conditions.is_null import IsNull
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.merger_line import MergerLine

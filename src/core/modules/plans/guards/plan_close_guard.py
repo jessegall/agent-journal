@@ -1,5 +1,5 @@
 from core.base.guard.guard import Guard
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.plans.models.plan_progress import PlanProgress
 from core.base.change.moved import Moved

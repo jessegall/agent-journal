@@ -2,7 +2,7 @@ from pathlib import Path
 
 from engine.actor.actor import Actor
 from core.base.command.bus import Bus
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.scope.scopes import Scopes

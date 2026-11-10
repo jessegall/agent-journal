@@ -2,10 +2,10 @@ from typing import Self
 
 from core.base.database.database import Database
 from core.base.model.tables import Tables
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.conditions.has_value import HasValue
-from core.base.query.conditions.maximum import Maximum
-from core.base.query.query import Query
+from engine.query.conditions.is_null import IsNull
+from engine.query.conditions.has_value import HasValue
+from engine.query.conditions.maximum import Maximum
+from engine.query.query import Query
 from engine.time.timestamp import Timestamp
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState

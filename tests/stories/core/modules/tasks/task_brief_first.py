@@ -1,7 +1,7 @@
 import sqlite3
 
 from engine.errors.refusal import Refusal
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.documents.models.link import Link
 from core.modules.tasks.models.task_read import TaskRead
 

@@ -4,8 +4,8 @@ from argparse import ArgumentParser, Namespace
 from engine.enums.actor_type import ActorType
 from engine.helper_type.helper_type_book import HelperTypeBook
 from core.base.caller.caller import Caller
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.memories.commands.memory_list.memory_list_subcommand import MemoryListSubcommand

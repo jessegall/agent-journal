@@ -1,5 +1,5 @@
 from core.base.listener.deletion_listener import DeletionListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.processes.models.process import Process
 from core.modules.triggers.models.trigger_action_run import TriggerActionRun

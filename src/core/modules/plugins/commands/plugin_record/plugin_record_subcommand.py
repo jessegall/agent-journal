@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.base.subcommand.output import Output

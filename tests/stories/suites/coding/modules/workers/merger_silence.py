@@ -4,7 +4,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.agents.models.agent import Agent
 from core.modules.helpers.support.helper_programs import HelperPrograms

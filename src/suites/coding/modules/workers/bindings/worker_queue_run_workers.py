@@ -1,5 +1,5 @@
 from engine.row.page import Page
-from core.base.query.conditions.among import Among
+from engine.query.conditions.among import Among
 from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.support.queue_run_workers import QueueRunWorkers
 from suites.coding.modules.workers.models.proof import Proof

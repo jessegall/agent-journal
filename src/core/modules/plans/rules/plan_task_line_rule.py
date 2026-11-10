@@ -4,9 +4,9 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.nudge import Nudge
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
-from core.base.query.query import Query
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
+from engine.query.query import Query
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.plan_progress import PlanProgress
 from core.modules.plans.models.plan_task import PlanTask

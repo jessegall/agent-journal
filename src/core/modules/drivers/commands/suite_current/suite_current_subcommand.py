@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.scope.scopes import Scopes
 from engine.errors.refusal import Refusal
 from core.base.caller.caller import Caller

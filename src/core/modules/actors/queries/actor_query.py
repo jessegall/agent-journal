@@ -1,7 +1,7 @@
 from engine.enums.actor_type import ActorType
 from core.base.database.database import Database
 from core.base.model.tables import Tables
-from core.base.query.query import Query
+from engine.query.query import Query
 from core.modules.actors.models.actor_record import ActorRecord
 
 

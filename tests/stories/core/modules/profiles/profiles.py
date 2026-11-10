@@ -11,7 +11,7 @@ from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client

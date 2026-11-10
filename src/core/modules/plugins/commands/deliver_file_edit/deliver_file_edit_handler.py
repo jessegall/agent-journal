@@ -8,7 +8,7 @@ from core.base.model.event_form import EventForm
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.plugins.support.plugin_answer import OLD_TYPE_KEY
 from core.modules.plugins.commands.deliver_file_edit.deliver_file_edit import DeliverFileEdit

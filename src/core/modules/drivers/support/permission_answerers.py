@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from core.base.command.context import Context
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.permission_request import PermissionRequest
 
 

@@ -4,7 +4,7 @@ from engine.version.code_versions import CodeVersions
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.journal.journal_home import JournalHome
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.updates.commands.record_release_install.record_release_install import RecordReleaseInstall

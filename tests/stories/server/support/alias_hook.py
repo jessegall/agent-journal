@@ -2,7 +2,7 @@ import json
 import shlex
 import subprocess
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart

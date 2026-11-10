@@ -7,7 +7,7 @@ from engine.container.container import Container
 from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.log.system_log_writer import SystemLogWriter
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.messages.commands.reset_message_deliveries.reset_message_deliveries import ResetMessageDeliveries

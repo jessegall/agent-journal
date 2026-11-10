@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.commands.wake_safeguards_stopped_agent.wake_safeguards_stopped_agent_handler import WAKE_SOURCE
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.models.enums.message_type import MessageType

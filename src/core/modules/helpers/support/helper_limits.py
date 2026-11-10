@@ -3,9 +3,9 @@ from engine.enums.helper_role import HelperRole
 from core.base.command.context import Context
 from core.base.caller.caller import Caller
 from core.base.provider.providers import Providers
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
-from core.base.query.query import Query
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
+from engine.query.query import Query
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows

@@ -8,7 +8,7 @@ from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.base.module.performance_tools import PerformanceTools
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput

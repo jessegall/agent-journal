@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from core.base.driver.open_row import OpenRow
 from core.base.driver.overlay import Overlay
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.waits.models.wait import Wait
 from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.enums.wait_type import WaitType

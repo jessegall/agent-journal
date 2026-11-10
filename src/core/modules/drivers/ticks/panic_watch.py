@@ -8,7 +8,7 @@ from core.base.module.module_actors import ModuleActors
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
 from engine.log.system_log_writer import SystemLogWriter
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.drivers.support.driver_settings import MODULE_KEY
 from core.modules.environments.models.environment import Environment

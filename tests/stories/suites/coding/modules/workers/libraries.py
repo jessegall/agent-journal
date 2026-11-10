@@ -1,5 +1,5 @@
 import pytest
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

@@ -8,7 +8,7 @@ from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestr
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, PLAN_DISPATCH, SECOND_TEST_LINE, TEST_LINE, start_planned_worker, unplanned_worker
 from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfinished_tasks_line import UNFINISHED_TASKS_SOURCE
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 
 BATCH_SETTING = "setting set journal.suites.coding.workers.test-batch-size 2 --environment main"

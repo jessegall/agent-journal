@@ -1,9 +1,9 @@
 from collections import defaultdict
 from collections.abc import Sequence
 
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.greater import Greater
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.conditions.greater import Greater
+from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.queries.process_query import ProcessQuery

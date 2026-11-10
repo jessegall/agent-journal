@@ -8,7 +8,7 @@ from engine.chat.mark_outcome import MarkOutcome
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.chat.models.chat_mark import ChatMark

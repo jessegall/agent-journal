@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 
 from core.base.database.kept_rows import KeptRows
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.modules.plans.conditions.shared_plan_tasks import SharedPlanTasks
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan

@@ -1,4 +1,4 @@
-from core.base.query.conditions.is_null import IsNull
+from engine.query.conditions.is_null import IsNull
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
 

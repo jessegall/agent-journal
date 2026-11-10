@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture

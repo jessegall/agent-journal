@@ -4,7 +4,7 @@ from unittest.mock import Mock
 from core.base.driver.interval import Interval
 from core.base.driver.seconds import Seconds
 from core.base.driver.span import Span
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 
 

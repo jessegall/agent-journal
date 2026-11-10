@@ -9,7 +9,7 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.model.event_form import EventForm
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event import DeliverPluginEvent

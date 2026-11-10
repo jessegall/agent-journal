@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from core.base.caller.caller import Caller
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.command.bus import Bus
 from core.modules.tasks.commands.record_task_read.record_task_read import RecordTaskRead
 from core.modules.tasks.commands.read_task_brief.read_task_brief import ReadTaskBrief

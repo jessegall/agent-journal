@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.subcommand.row_list import RowList
 from core.modules.tasks.models.task_tag import TaskTag

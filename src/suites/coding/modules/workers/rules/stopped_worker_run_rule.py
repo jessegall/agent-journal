@@ -6,7 +6,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.interval import Interval
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.span_queries import SpanQueries
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.settings.bindings.support.setting_values import SettingValues

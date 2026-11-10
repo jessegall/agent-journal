@@ -1,6 +1,6 @@
 from core.base.driver.stop_blockers import StopBlockers
 from core.base.driver.watched_runs import WatchedRuns
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question

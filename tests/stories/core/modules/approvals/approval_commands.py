@@ -3,7 +3,7 @@ import json
 import pytest
 
 from core.base.command.bus import Bus
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.commands.resume_agent.resume_agent import ResumeAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.approvals.models.approval_request import ApprovalRequest

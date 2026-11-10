@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.database.kept_rows import KeptRows
 from core.base.listener.event_rows import EventRows
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.enums.agent_role import AgentRole
 from core.base.scope.environment_scope import EnvironmentScope

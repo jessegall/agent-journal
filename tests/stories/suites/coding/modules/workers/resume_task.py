@@ -11,7 +11,7 @@ from core.base.command.bus import Bus
 from engine.file.file_access import FileAccess
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from engine.json.json_settings import JsonSettings
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine

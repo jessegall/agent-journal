@@ -1,6 +1,6 @@
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
 from tests.stories.core.modules.chat.support.mark_samples import SampleMarkType

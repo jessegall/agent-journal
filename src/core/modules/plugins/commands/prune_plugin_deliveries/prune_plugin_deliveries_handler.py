@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveries import PrunePluginDeliveries
 from core.modules.plugins.models.plugin import Plugin

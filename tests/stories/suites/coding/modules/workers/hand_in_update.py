@@ -4,7 +4,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from install.run_drain import RunDrain
 from suites.coding.modules.workers.models.proof import Proof

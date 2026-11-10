@@ -3,7 +3,7 @@ import shutil
 
 from tests.stories.core.modules.plugins.support.plugin_samples import MANIFEST, sample_plugin_folder
 from tests.stories.core.support.fixtures import UserJoined
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 

@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from engine.actor.actor import Actor
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.testing.story import Story
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit

@@ -6,10 +6,10 @@ from engine.time.clock import Clock
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.project_paths import ProjectPaths
 from core.base.provider.transcript_author import MONITOR_OPENINGS
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.contains_some import ContainsSome
-from core.base.query.conditions.minimum import Minimum
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.conditions.contains_some import ContainsSome
+from engine.query.conditions.minimum import Minimum
+from engine.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand

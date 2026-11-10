@@ -2,7 +2,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.change.event_log import EventLog
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.listener.event_rows import EventRows
 from core.modules.chat.listeners.mark_listener import MarkListener
 from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMarkType

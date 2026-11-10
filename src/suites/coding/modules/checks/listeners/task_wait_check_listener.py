@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from core.base.listener.save_listener import SaveListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.tasks.models.task_wait import TaskWait
 from suites.coding.modules.checks.models.check import Check

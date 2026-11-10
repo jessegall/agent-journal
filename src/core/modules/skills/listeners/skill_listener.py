@@ -5,7 +5,7 @@ from core.base.command.bus import Bus
 from core.base.command.command import Command
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.drivers.support.suite_choice import SuiteChoice

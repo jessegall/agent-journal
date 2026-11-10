@@ -2,7 +2,7 @@ from engine.time.clock import Clock
 from core.base.command.bus import Bus
 from engine.container.container import Container
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.docking.commands.remove_dock_item.remove_dock_item import RemoveDockItem
 from core.modules.docking.listeners.environment_dock_listener import MODULE_NAME
 from core.modules.docking.models.dock import Dock

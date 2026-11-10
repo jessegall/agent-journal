@@ -4,7 +4,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 
 
 # @sin architecture_core_second_class_in_a_file

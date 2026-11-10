@@ -12,7 +12,7 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from engine.enums.actor_type import ActorType
 from datetime import timedelta
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worker_resume import WorkerResume

@@ -1,6 +1,6 @@
 from engine.enums.agent_role import AgentRole
 from engine.enums.access import Access
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 from tests.stories.support.story_checks import expect_value_with

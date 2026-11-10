@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.database.statement import Statement
-from core.base.query.select import Select
+from engine.query.select import Select
 from core.modules.documents.references.row_ref import RowRef
 
 

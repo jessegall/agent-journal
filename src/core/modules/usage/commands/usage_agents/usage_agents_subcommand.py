@@ -11,13 +11,13 @@ from engine.sandbox.agent_sandbox_choice import AgentSandboxChoice
 from engine.helper_type.helper_type_book import HelperTypeBook
 from core.base.caller.caller import Caller
 from engine.time.clock import Clock
-from core.base.query.conditions.excluding import Excluding
+from engine.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from engine.journal.journal_home import JournalHome
 from core.base.provider.context_window import ContextWindow
 from core.base.provider.providers import Providers
-from core.base.query.conditions.greater import Greater
-from core.base.query.queries import Queries
+from engine.query.conditions.greater import Greater
+from engine.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.drivers.support.driver_settings import BLOCK_CARD_SECONDS

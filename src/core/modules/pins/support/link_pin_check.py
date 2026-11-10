@@ -8,11 +8,11 @@ from core.base.database.kept_rows import KeptRows
 from core.base.driver.nudge import Nudge
 from core.base.driver.tool import Tool
 from core.base.driver.tool_type import ToolType
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.conditions.prefix import Prefix
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.conditions.greater import Greater
+from engine.query.conditions.is_null import IsNull
+from engine.query.conditions.prefix import Prefix
+from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from engine.types.type_guards import is_list, is_mapping
 from core.modules.pins.commands.make_pin.make_pin import MakePin

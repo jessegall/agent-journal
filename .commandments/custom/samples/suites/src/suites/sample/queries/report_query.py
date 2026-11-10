@@ -1,4 +1,4 @@
-from core.base.query.query import Query
+from engine.query.query import Query
 
 
 class ReportQuery(Query):

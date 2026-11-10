@@ -5,7 +5,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.scope.scopes import Scopes
 from core.modules.environments.models.environment import Environment

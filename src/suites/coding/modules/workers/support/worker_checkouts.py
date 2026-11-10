@@ -6,7 +6,7 @@ from engine.checkout.checkout_file import CheckoutFile
 from engine.file.file_state import FileState
 from engine.enums.file_status import FileStatus
 from engine.errors.missing_file_refusal import MissingFileRefusal
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.bindings.agent_project_checkouts import AgentProjectCheckouts
 from core.modules.agents.models.agent import Agent

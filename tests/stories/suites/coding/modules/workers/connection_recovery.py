@@ -11,7 +11,7 @@ from engine.enums.actor_type import ActorType
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from engine.process.leftover_process import LeftoverProcess
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.drivers.models.agent_line import AgentLine

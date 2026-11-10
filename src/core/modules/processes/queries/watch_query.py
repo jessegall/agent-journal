@@ -2,7 +2,7 @@ from typing import Self
 
 from core.base.database.database import Database
 from core.base.model.tables import Tables
-from core.base.query.query import Query
+from engine.query.query import Query
 from core.modules.processes.models.enums.watch_state import WatchState
 from core.modules.processes.models.watch import Watch
 from core.modules.processes.queries.conditions.watch_progress_due import WatchProgressDue

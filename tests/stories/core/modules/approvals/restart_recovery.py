@@ -4,7 +4,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from core.base.command.bus import Bus
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from core.modules.approvals.commands.answer_approval.answer_approval_handler import AnswerApprovalHandler

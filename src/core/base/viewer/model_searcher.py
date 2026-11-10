@@ -3,9 +3,9 @@ from typing import ClassVar
 
 from core.base.model.model import Model
 from engine.row.page import Page
-from core.base.query.conditions.contains_every import ContainsEvery
-from core.base.query.queries import Queries
-from core.base.query.query import Query
+from engine.query.conditions.contains_every import ContainsEvery
+from engine.query.queries import Queries
+from engine.query.query import Query
 from core.base.viewer.window_searcher import WindowSearcher
 
 MAX_ROWS = 1000

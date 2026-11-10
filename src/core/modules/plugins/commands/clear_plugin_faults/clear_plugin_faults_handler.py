@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.models.plugin import Plugin

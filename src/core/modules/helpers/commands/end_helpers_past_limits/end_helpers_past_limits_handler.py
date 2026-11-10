@@ -3,7 +3,7 @@ from engine.enums.helper_role import HelperRole
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.scope.scopes import Scopes
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport

@@ -4,7 +4,7 @@ from core.base.library.library_hits import LibraryHits
 from core.base.library.library_item import LibraryItem
 from core.base.library.library_lookup import LibraryLookup
 from core.base.library.library_ref import LibraryRef
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.support.kept_library_failure import KeptLibraryFailure
 from core.modules.library.support.library_browse import LibraryBrowse

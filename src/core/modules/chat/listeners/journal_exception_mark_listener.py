@@ -3,7 +3,7 @@ from engine.time.clock import Clock
 from engine.log.exception_sink import CLOCK_TICK_SOURCE
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.listener.event_rows import EventRows
 from core.base.scope.actor_scope import ActorScope
 from core.modules.chat.listeners.mark_listener import MarkListener

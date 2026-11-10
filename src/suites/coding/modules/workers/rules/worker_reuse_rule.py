@@ -5,7 +5,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.path_mentions import PathMentions
 from core.base.driver.part import Part
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.worktree import Worktree

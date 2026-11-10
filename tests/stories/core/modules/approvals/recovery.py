@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.approvals.commands.answer_approval.answer_approval_handler import AnswerApprovalHandler
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState

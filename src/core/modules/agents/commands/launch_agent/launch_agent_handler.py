@@ -10,7 +10,7 @@ from engine.journal.journal_home import JournalHome
 from core.base.provider.launch import Launch
 from core.base.provider.providers import Providers
 from core.base.provider.session_start import SessionStart
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.commands.launch_agent.launch_agent import LaunchAgent
 from core.modules.agents.commands.start_agent.start_agent import StartAgent

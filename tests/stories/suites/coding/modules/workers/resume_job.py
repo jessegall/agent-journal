@@ -7,7 +7,7 @@ from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.commands.record_agent_process.record_agent_process import RecordAgentProcess
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.agent_line import AgentLine

@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from core.base.command.context import Context
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_tag import TaskTag

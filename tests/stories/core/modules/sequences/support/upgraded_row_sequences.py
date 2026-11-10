@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.testing.hook_samples import HookSamples

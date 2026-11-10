@@ -7,9 +7,9 @@ from core.base.command.handler import Handler
 from core.base.command.request_user_approval import RequestUserApproval
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.base.guard.guard import Guard
-from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.has_value import HasValue
-from core.base.query.queries import Queries
+from engine.query.conditions.greater import Greater
+from engine.query.conditions.has_value import HasValue
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.log.refusal_log import RefusalLog
 from core.base.registry.registry import Registry

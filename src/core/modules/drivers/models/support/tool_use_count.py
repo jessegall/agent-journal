@@ -1,6 +1,6 @@
 from core.base.driver.hook_event_name import HookEventName
-from core.base.query.conditions.greater import Greater
-from core.base.query.queries import Queries
+from engine.query.conditions.greater import Greater
+from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.hook_call import HookCall
 

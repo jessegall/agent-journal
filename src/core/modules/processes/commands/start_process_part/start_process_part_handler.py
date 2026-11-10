@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart

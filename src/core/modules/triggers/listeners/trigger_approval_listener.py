@@ -6,7 +6,7 @@ from core.base.command.close_user_approval import CloseUserApproval
 from core.base.command.request_user_approval import RequestUserApproval
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.environment_scope import EnvironmentScope
 from engine.errors.user_approval_refusal import UserApprovalRefusal

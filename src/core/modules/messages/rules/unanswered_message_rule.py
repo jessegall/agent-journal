@@ -4,11 +4,11 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.greater import Greater
-from core.base.query.queries import Queries
-from core.base.query.conditions.equal import Equal
-from core.base.query.conditions.excluding import Excluding
+from engine.query.conditions.among import Among
+from engine.query.conditions.greater import Greater
+from engine.query.queries import Queries
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.excluding import Excluding
 from core.modules.agents.conditions.active_agent_rows import ActiveAgentRows
 from core.modules.agents.models.agent import Agent
 from core.modules.messages.queries.message_query import MessageQuery

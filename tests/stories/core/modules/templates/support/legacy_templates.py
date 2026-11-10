@@ -1,7 +1,7 @@
 import shlex
 
 from engine.actor.actor import Actor
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.templates.models.template import Template
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import UserJoined

@@ -1,6 +1,6 @@
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.modules.processes.models.process_part import ProcessPart
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from datetime import timedelta
 
 import shlex

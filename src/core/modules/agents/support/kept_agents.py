@@ -1,5 +1,5 @@
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 
 

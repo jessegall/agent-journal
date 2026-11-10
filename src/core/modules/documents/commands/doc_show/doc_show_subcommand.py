@@ -5,7 +5,7 @@ from core.base.cli.row_links import RowLinks
 from core.base.library.library_lookup import LibraryLookup
 from core.base.library.library_aware_show import LibraryAwareShow
 from core.base.library.library_ref import LibraryRef
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.library.library_reading import LibraryReading
 from core.modules.documents.commands.support.text_reading import TextReading

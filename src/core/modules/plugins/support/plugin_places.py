@@ -4,8 +4,8 @@ from collections.abc import Collection, Iterable
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.base.module.module_actors import ModuleActors
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder

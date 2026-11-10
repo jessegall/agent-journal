@@ -4,15 +4,15 @@ from datetime import timedelta
 
 from core.base.database.database import Database
 from core.base.model.tables import Tables
-from core.base.query.condition import Condition
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.subquery_match import SubqueryMatch
-from core.base.query.query import Query
-from core.base.query.select import Select
+from engine.query.condition import Condition
+from engine.query.conditions.among import Among
+from engine.query.conditions.greater import Greater
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.query import Query
+from engine.query.select import Select
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
-from core.base.query.conditions.maximum import Maximum
+from engine.query.conditions.maximum import Maximum
 from engine.time.timestamp import Timestamp
 from core.modules.processes.queries.conditions.long_run_candidate import LongRunCandidate
 from core.modules.processes.queries.conditions.part_run_seconds import PartRunSeconds

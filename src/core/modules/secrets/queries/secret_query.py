@@ -1,10 +1,10 @@
-from core.base.query.conditions.greater import Greater
+from engine.query.conditions.greater import Greater
 from typing import Self
 
 from core.base.database.database import Database
 from core.base.model.tables import Tables
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.query import Query
+from engine.query.conditions.is_null import IsNull
+from engine.query.query import Query
 from engine.errors.refusal import Refusal
 from core.modules.secrets.models.secret import Secret
 

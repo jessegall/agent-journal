@@ -1,6 +1,6 @@
 import json
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.tool_type import ToolType
 from core.modules.processes.models.process import Process

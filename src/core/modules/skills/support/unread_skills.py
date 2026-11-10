@@ -1,5 +1,5 @@
 from core.base.database.kept_rows import KeptRows
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
 from core.modules.skills.support.agent_profile_skills import AgentProfileSkills

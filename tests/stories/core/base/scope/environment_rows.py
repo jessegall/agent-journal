@@ -8,7 +8,7 @@ from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.model.view_model import ViewModel
 from core.base.module.module_finder import ModuleFinder
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
 from core.testing.hook_samples import HookSamples

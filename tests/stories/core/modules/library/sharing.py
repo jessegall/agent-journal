@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.support.doc_library_share import DocLibraryShare
 from core.modules.library.models.library_copy import LibraryCopy

@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.worktree import Worktree

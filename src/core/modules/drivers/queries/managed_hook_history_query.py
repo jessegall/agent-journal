@@ -2,7 +2,7 @@ from core.base.driver.foreign_answer import ForeignAnswer
 from core.base.driver.foreign_outcome import ForeignOutcome
 from core.base.database.database import Database
 from core.base.model.tables import Tables
-from core.base.query.query import Query
+from engine.query.query import Query
 from core.base.provider.managed_hook import ManagedHook
 from core.modules.drivers.conditions.foreign_hook import ForeignHook
 from core.base.provider.managed_hook_history import ManagedHookHistory

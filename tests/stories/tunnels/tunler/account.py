@@ -1,6 +1,6 @@
 import json
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 
 from core.base.tunnel.tunnel_state import TunnelState

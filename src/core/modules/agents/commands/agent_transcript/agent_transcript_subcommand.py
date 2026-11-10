@@ -7,7 +7,7 @@ from engine.row.page import Page
 from core.base.provider.providers import Providers
 from core.base.provider.transcript_index import TranscriptIndex
 from core.base.provider.transcript_row import TranscriptRow
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.subcommand.page_arguments import page_arguments
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent

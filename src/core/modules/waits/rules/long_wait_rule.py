@@ -4,7 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.nudge import Nudge
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.wait import Wait
 from core.modules.waits.support.wait_nudges import WAIT_CHECK

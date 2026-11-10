@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.documents.models.doc import Doc
 from core.modules.sequences.models.sequence import Sequence

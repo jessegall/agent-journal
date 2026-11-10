@@ -3,9 +3,9 @@ from argparse import Namespace
 
 from engine.enums.actor_type import ActorType
 from core.base.caller.caller import Caller
-from core.base.query.conditions.has_value import HasValue
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.has_value import HasValue
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.memories.models.enums.memory_state import MemoryState
 from core.modules.memories.models.memory import Memory

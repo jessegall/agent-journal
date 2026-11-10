@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from core.base.database.statement import Statement
-from core.base.query.conditions.among import Among
+from engine.query.conditions.among import Among
 
 
 @dataclass(frozen=True)

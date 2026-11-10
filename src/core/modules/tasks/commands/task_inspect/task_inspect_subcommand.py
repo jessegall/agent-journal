@@ -2,7 +2,7 @@ import json
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.tasks.support.task_opener import TaskOpener

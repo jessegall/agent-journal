@@ -4,7 +4,7 @@ from core.base.repository.repository import Repository
 from core.modules.skills.commands.reset_skills.reset_skills import ResetSkills
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 
 
 class ResetSkillsHandler(Handler[ResetSkills, AgentSkill | None]):

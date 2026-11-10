@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.assign_rules.commands.record_assign_decision.record_assign_decision import RecordAssignDecision
 from core.modules.assign_rules.models.assign_decision import AssignDecision
 from core.modules.assign_rules.support.assign_rules import AssignRules

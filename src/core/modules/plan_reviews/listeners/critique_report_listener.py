@@ -3,7 +3,7 @@ from core.base.command.bus import Bus
 from core.base.command.move_row import MoveRow
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.documents.models.enums.link_type import LinkType

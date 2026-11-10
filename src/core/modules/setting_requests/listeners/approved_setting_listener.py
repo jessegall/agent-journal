@@ -6,7 +6,7 @@ from core.base.command.bus import Bus
 from core.base.command.close_user_approval import CloseUserApproval
 from core.base.module.module_actors import ModuleActors
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.questions.models.lifecycles.question_lifecycle import QuestionLifecycle
 from core.modules.questions.models.question import Question
 from core.modules.setting_requests.commands.request_setting.request_setting_handler import APPROVE_OPTION

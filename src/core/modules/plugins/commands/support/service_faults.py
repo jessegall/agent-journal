@@ -1,6 +1,6 @@
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults

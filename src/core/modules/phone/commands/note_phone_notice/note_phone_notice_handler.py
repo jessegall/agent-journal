@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.phone.commands.note_phone_notice.note_phone_notice import NotePhoneNotice
 from core.modules.phone.models.enums.phone_state import PhoneState

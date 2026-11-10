@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.modules.tasks.support.task_wait_attempts import TaskWaitAttempts
 from suites.coding.modules.checks.models.check import Check
 

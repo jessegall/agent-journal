@@ -5,7 +5,7 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.model.model import Model
 from core.base.model.table import Table
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 
 
 class ShowSubcommand(ReadSubcommand[Model]):

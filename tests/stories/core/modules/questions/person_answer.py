@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.models.message import Message
 from core.testing.hook_samples import HookSamples

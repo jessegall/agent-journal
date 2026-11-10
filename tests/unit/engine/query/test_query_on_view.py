@@ -9,7 +9,7 @@ from core.base.listener.event_rows import EventRows
 from engine.errors.missing_rows_error import MissingRowsError
 from core.base.model.tables import Tables
 from core.base.model.view_model import ViewModel
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 
 
 @dataclass(frozen=True, kw_only=True)

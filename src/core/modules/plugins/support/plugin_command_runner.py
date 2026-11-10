@@ -11,7 +11,7 @@ from core.base.command.context import Context
 from core.base.driver.command_category import CommandCategory
 from core.base.model.event_form import EventForm
 from engine.file.project_reads import ProjectReads
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from engine.enums.script_stop import ScriptStop

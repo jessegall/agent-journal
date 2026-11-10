@@ -3,7 +3,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_history import HookHistory
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.greater import Greater
+from engine.query.conditions.greater import Greater
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.ended_output_text import EndedOutputText
 

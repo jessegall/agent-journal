@@ -3,7 +3,7 @@ from typing import NamedTuple
 import pytest
 
 from core.base.model.model import Model
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.phone.models.phone_code import PhoneCode
 from core.modules.viewer.models.person_preset import PersonPreset

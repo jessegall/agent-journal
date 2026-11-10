@@ -2,9 +2,9 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from engine.row.page import Page
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
-from core.base.query.query import Query
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
+from engine.query.query import Query
 from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand

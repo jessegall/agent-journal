@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.support.plugin_folders import PluginFolders

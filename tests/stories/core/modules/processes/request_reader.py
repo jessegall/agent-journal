@@ -1,6 +1,6 @@
 import json
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.viewer.commands.support.window_lines import WindowLines
 from core.modules.viewer.commands.support.window_refusal import WindowRefusal
 from core.modules.messages.models.message import Message

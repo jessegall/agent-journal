@@ -9,7 +9,7 @@ from core.base.command.bus import Bus
 from core.base.command.command import Command
 from core.base.model.event_form import EventForm
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.support.plugin_event import PluginEvent

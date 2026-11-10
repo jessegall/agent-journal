@@ -3,8 +3,8 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.modules.dumps.models.dump import Dump
 from core.modules.dumps.support.dump_nudges import DUMP_OPEN
 

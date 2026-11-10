@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.commands.type_terminal_line.type_terminal_line import TypeTerminalLine
 from core.modules.agents.models.agent import Agent

@@ -7,7 +7,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.provider.providers import Providers
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.listener.event_rows import EventRows
 from engine.helper_type.helper_type_book import HelperTypeBook
 from core.base.profile.agent_profile import AgentProfile

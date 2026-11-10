@@ -1,6 +1,6 @@
 from engine.enums.agent_role import AgentRole
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.queries.agent_query import AgentQuery
 

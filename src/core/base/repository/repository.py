@@ -16,7 +16,7 @@ from engine.row.metadata import Metadata
 from core.base.model.model import Model
 from core.base.model.table import Table
 from core.base.model.tables import Tables
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.stale_row_error import StaleRowError
 from core.base.scope.scopes import Scopes
 

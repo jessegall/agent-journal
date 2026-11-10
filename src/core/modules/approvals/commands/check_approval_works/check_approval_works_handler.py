@@ -12,7 +12,7 @@ from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.command.dry_run import DryRunReachedEffect, dry_run
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.actors.models.actor_record import ActorRecord

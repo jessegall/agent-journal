@@ -8,7 +8,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.plugins.support.plugin_manifest import PluginManifest

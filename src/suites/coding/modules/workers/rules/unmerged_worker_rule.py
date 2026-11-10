@@ -1,8 +1,8 @@
 from dataclasses import replace
 
 from core.base.driver.nudge import Nudge
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
 from core.modules.drivers.models.agent_block import AgentBlock, OPEN_BLOCKS_REASON
 from core.modules.drivers.support.driver_nudges import REQUIRED_COMMAND_REFUSAL

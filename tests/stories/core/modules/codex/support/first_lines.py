@@ -2,7 +2,7 @@ import json
 import subprocess
 
 from core.base.driver.tool_type import ToolType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
 from core.modules.skills.support.skill_files import SkillFiles

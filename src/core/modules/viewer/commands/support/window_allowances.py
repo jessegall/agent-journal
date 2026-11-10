@@ -1,7 +1,7 @@
 import json
 from core.base.database.kept_rows import KeptRows
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.modules.viewer.models.window_permission import WindowPermission
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType

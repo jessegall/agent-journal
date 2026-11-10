@@ -5,7 +5,7 @@ from pathlib import Path
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from core.modules.processes.ticks.run_slot_grant import RunSlotGrant
 from suites.coding.modules.workers.models.proof import Proof

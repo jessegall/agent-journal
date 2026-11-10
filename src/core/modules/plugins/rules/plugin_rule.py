@@ -10,8 +10,8 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from core.modules.plugins.commands.clear_plugin_queue_file.clear_plugin_queue_file import ClearPluginQueueFile
 from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event import DeliverPluginEvent

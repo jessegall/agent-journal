@@ -5,7 +5,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.driver.command_category import CommandCategory
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.helpers.commands.run_granted_command.run_granted_command import RunGrantedCommand
 from core.modules.helpers.models.helper_grant import HelperGrant

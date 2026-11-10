@@ -1,5 +1,5 @@
 from core.base.driver.hook_event_name import HookEventName
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 
 RECENT_STARTS = 50

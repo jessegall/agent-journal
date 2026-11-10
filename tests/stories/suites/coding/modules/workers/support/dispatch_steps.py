@@ -3,7 +3,7 @@ from pathlib import Path
 
 from engine.actor.actor import Actor
 from engine.container.container import UNBUILT_MODULES, needed_values
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from engine.enums.actor_type import ActorType
 from core.testing.story import Story

@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.database.kept_rows import KeptRows
 from core.modules.tasks.rules.support.current_task import CurrentTask
 from core.modules.tasks.models.task import Task

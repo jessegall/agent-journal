@@ -12,7 +12,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.part import Part
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.shell_line import ShellLine
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from suites.coding.modules.workers.support.worker_test_group import WorkerTestGroup
 from core.modules.processes.support.background_commands import BackgroundCommands
 from core.modules.processes.support.reader_demands import ASKING_FLAGS

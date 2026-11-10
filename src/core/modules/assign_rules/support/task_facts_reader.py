@@ -1,6 +1,6 @@
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent
 from core.modules.assign_rules.models.enums.creator_type import CreatorType

@@ -2,7 +2,7 @@ from argparse import Namespace
 import json
 
 from core.base.caller.caller import Caller
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.processes.commands.page_output.page_output_subcommand import PageOutputSubcommand
 from core.modules.processes.models.process import Process
 from core.modules.drivers.models.hook_call import HookCall

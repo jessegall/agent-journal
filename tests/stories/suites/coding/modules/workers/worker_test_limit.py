@@ -10,7 +10,7 @@ from core.base.command.bus import Bus
 from engine.actor.actor import Actor
 from core.base.driver.command_category import CommandCategory
 from engine.journal.journal_home import LAUNCHER_SOCKET
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process

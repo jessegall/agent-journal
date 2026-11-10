@@ -6,7 +6,7 @@ import pytest
 from engine.actor.actor import Actor
 from core.base.command.context import Context
 from engine.check.periodic_checks import PeriodicChecks
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.library.models.enums.copy_state import CopyState
 from core.modules.library.models.library_copy import LibraryCopy

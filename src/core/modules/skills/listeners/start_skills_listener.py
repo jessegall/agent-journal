@@ -3,7 +3,7 @@ from engine.enums.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.commands.require_skill.require_skill import RequireSkill

@@ -2,7 +2,7 @@ import json
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.plugins.models.plugin_delivery import PluginDelivery
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from tests.stories.core.support.scanned_edits import scanned_edit

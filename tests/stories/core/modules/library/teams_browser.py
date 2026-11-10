@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.library.models.library_copy import LibraryCopy
 from tests.stories.core.modules.library.support.stored_text import stored_texts
 from tests.stories.core.modules.secrets.support.private_home import private_folder

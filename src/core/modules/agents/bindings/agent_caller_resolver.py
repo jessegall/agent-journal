@@ -9,7 +9,7 @@ from core.base.caller.process_row import ProcessRow
 from core.base.cli.shell_handoff import RUNNER_VARIABLE
 from core.base.cli.usage_error import UsageError
 from core.base.provider.providers import Providers
-from core.base.query.conditions.among import Among
+from engine.query.conditions.among import Among
 from core.base.command.script_policy import ScriptPolicy
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.base.caller.caller import Caller

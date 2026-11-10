@@ -4,7 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.tool import Tool
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.documents.models.open_document import OpenDocument
 from core.modules.documents.support.document_nudges import DOCUMENT_OPEN
 

@@ -3,8 +3,8 @@ from engine.container.container import Container
 from core.base.driver.program_lockdown import ProgramLockdown
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.profiles.support.profile_files import ProfileFiles
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.base.scope.scopes import Scopes
 from core.base.command.bus import Bus
 from core.modules.agents.models.agent import Agent

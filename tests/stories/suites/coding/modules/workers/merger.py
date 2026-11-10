@@ -11,7 +11,7 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.driver.nudge import Nudge
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.file.file_access import FileAccess
 from core.modules.agents.models.agent import Agent

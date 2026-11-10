@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.base.repository.stale_row_error import StaleRowError
 from core.modules.library.commands.merge_library_item.merge_library_item import MergeLibraryItem

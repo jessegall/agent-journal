@@ -6,7 +6,7 @@ import json
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from core.modules.drivers.rules.repeated_stop_release_rule import STOP_REFUSAL_COUNT

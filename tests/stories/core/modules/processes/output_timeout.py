@@ -3,7 +3,7 @@ from datetime import timedelta
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.tool_type import ToolType
 from core.base.module.module_finder import ModuleFinder
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.testing.hook_samples import HookSamples

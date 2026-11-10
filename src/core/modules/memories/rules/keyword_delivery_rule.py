@@ -3,8 +3,8 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.modules.memories.models.enums.delivery_cause import DeliveryCause
 from core.base.driver.hook_keywords import hook_keywords
 from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery

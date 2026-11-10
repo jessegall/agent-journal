@@ -6,9 +6,9 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge import Nudge
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.greater import Greater
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan

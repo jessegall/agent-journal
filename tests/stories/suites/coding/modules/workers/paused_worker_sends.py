@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation

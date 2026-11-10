@@ -2,7 +2,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.among import Among
+from engine.query.conditions.among import Among
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.support.message_nudges import UNREAD_DISPLAY_REFUSAL
 

@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.processes.commands.ask_agent_to_look.ask_agent_to_look import AskAgentToLook
 from core.modules.processes.models.enums.process_state import RUNNING_STATES

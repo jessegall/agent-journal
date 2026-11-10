@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.drivers.commands.decline_permission.decline_permission import DeclinePermission
 from core.modules.drivers.models.lifecycles.permission_lifecycle import PermissionLifecycle

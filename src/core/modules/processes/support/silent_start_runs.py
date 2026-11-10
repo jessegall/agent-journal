@@ -1,7 +1,7 @@
 
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.shell_line import JOURNAL_PROGRAM
-from core.base.query.conditions.prefix import Prefix
+from engine.query.conditions.prefix import Prefix
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.process_query import ProcessQuery

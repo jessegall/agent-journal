@@ -4,8 +4,8 @@ from core.base.command.accept_covered_approval import AcceptCoveredApproval
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.conditions.has_value import HasValue
-from core.base.query.queries import Queries
+from engine.query.conditions.has_value import HasValue
+from engine.query.queries import Queries
 from core.modules.approvals.commands.answer_approval.answer_approval import AnswerApproval
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_decision import ApprovalDecision

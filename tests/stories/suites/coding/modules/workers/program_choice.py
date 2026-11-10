@@ -6,7 +6,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from core.testing.fake_launcher import FakeLauncher
 from core.modules.helpers.support.helper_programs import HelperPrograms

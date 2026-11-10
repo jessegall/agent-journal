@@ -9,7 +9,7 @@ from core.base.cli.console import Console
 from core.base.caller.caller import Caller
 from engine.actor.actor import Actor
 from core.base.listener.commit_listener_runner import CommitListenerRunner
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.environments.models.environment import Environment
 from core.base.database.repeated_calls_error import RepeatedCallsError
 from core.base.database.repeated_work import COMMAND_LIMIT_REPEATS, READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS
@@ -145,4 +145,4 @@ def test_a_repeat_names_the_code_that_asked_not_the_layers_between(new_story):
     with pytest.raises(RepeatedCallsError) as raised:
         repeat_read(story, 2)
     text = str(raised.value)
-    story.expect_rows("repeated_calls.py" in text, "repeat_read" in text, "core/base/database" not in text, "core/base/query" not in text)
+    story.expect_rows("repeated_calls.py" in text, "repeat_read" in text, "core/base/database" not in text, "engine/query" not in text)

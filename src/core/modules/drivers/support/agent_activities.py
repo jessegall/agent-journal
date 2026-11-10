@@ -1,7 +1,7 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.hook_event import HookEvent
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.modules.drivers.conditions.agent_family import AgentFamily
 from core.modules.drivers.models.agent_activity import AgentActivity
 

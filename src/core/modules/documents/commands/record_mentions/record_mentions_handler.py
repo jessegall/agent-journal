@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions
 from core.modules.documents.models.enums.link_type import LinkType

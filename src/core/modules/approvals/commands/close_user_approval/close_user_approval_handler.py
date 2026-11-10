@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from core.base.command.close_user_approval import CloseUserApproval
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.approvals.models.approval_request import ApprovalRequest

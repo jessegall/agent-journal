@@ -9,7 +9,7 @@ from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from engine.process.leftover_process import LeftoverProcess
 from core.base.provider.providers import Providers
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard

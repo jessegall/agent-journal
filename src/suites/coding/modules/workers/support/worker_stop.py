@@ -6,9 +6,9 @@ from core.base.database.kept_rows import KeptRows
 from core.base.model.model import Model
 from core.base.model.tables import Tables
 from engine.time.timestamp import Timestamp
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.minimum import Minimum
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.conditions.minimum import Minimum
+from engine.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import ENDED_FIELD, Agent
 from core.modules.waits.models.enums.wait_state import WaitState

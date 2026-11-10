@@ -2,7 +2,7 @@ import json
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.documents.models.report import Report
 from tests.stories.core.modules.plan_reviews.review_rounds import CRITIQUE_COMMAND, REPORT, CritiquePlanReady, start_helper
 from tests.stories.server.support.server_client import server_story

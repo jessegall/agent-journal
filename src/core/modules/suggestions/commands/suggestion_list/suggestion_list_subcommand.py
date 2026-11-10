@@ -3,8 +3,8 @@ from argparse import ArgumentParser, Namespace
 from core.base.database.database import READ_LIMIT_ROWS
 from core.base.caller.caller import Caller
 from engine.row.page import Page, is_page
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.suggestions.models.suggestion import Suggestion

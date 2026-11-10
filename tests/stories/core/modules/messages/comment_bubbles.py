@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.messages.models.chat_message import ChatMessage
 from tests.stories.core.modules.templates.support.sending_templates import SendingTemplates
 

@@ -5,8 +5,8 @@ from engine.version.code_versions import CodeVersions
 from core.base.command.bus import Bus
 from engine.journal.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.modules.updates.commands.record_release_install.record_release_install import RecordReleaseInstall
 from core.modules.updates.models.enums.update_step import UpdateStep
 from core.modules.updates.models.release_install import ReleaseInstall

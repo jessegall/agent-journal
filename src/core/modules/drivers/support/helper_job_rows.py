@@ -1,7 +1,7 @@
 from core.base.database.kept_rows import KeptRows
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.conditions.has_value import HasValue
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.conditions.has_value import HasValue
+from engine.query.queries import Queries
 from core.modules.drivers.models.helper_job import HelperJob
 
 

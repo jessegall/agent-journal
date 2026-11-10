@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from typing import ClassVar
 
 from core.base.model.model import Model
-from core.base.query.model_row_ids import ModelRowIds
+from engine.query.model_row_ids import ModelRowIds
 
 
 class SharedRows:

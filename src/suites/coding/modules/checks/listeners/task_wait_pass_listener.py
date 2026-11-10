@@ -1,5 +1,5 @@
 from core.base.listener.save_listener import SaveListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.tasks.support.task_waits import TaskWaits

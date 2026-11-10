@@ -3,7 +3,7 @@ from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.base.listener.save_listener import SaveListener
 from core.base.listener.event_rows import EventRows
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.nudger import Nudger

@@ -3,7 +3,7 @@ import pytest
 from engine.time.clock import Clock
 from core.base.database.database import Database
 from core.base.driver.tool_type import ToolType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import SUMMARY_CHARACTERS, HookCall
 from core.testing.hook_samples import HookSamples
 from core.modules.drivers.queries.hook_call_query import HookCallQuery

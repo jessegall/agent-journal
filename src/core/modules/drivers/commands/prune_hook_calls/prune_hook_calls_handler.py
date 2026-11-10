@@ -2,8 +2,8 @@ from datetime import timedelta
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.conditions.less import Less
-from core.base.query.queries import Queries
+from engine.query.conditions.less import Less
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.agent_line import AgentLine

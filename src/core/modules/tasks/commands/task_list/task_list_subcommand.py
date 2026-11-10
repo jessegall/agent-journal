@@ -4,8 +4,8 @@ from core.base.cli.list_subcommand import ListSubcommand
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
-from core.base.query.queries import Queries
-from core.base.query.query import Query
+from engine.query.queries import Queries
+from engine.query.query import Query
 from core.modules.tasks.conditions.task_tag_match import TaskTagMatch
 from core.modules.tasks.models.task import Task
 

@@ -1,5 +1,5 @@
 from core.base.command.bus import Bus
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATED, NOTES, EventNote, ManyNotes
 from tests.stories.core.modules.plugins.support.event_stories import (
     NOTES_PIN_TITLE, REFUSAL, SECOND_JOB, server_commands, SECOND_JOB_TITLE, TASK_CREATED, EventWorkerStarted, answer_with_commands, deliveries, event_page, event_plugin_story, install_event_plugin, pins_titled,

@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID, start_launcher, worker_story

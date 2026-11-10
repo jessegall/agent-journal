@@ -4,11 +4,11 @@ from core.base.cli.list_subcommand import ListSubcommand
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
-from core.base.query.conditions.contains_every import ContainsEvery
-from core.base.query.conditions.has_value import HasValue
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
-from core.base.query.query import Query
+from engine.query.conditions.contains_every import ContainsEvery
+from engine.query.conditions.has_value import HasValue
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
+from engine.query.query import Query
 from core.modules.memories.models.enums.memory_order import MemoryOrder
 from core.modules.memories.models.memory import Memory
 

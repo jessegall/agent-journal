@@ -6,9 +6,9 @@ from core.base.command.handler import Handler
 from engine.enums.connection_status import ConnectionStatus
 from engine.connection.internet_connection import InternetConnection
 from engine.journal.journal_home import JournalHome
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_activity import AgentActivity

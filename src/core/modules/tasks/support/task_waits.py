@@ -4,9 +4,9 @@ from core.modules.tasks.support.task_nudges import TASK_REOPENED
 from core.base.database.kept_rows import KeptRows
 from core.base.command.context import Context
 from core.modules.drivers.support.nudger import Nudger
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle

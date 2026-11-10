@@ -5,7 +5,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.database.database import Database
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.modules.chat.models.chat_mark import ChatMark
 from core.testing.hook_samples import HookSamples

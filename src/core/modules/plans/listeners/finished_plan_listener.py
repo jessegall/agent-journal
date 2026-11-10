@@ -5,7 +5,7 @@ from engine.actor.actor import Actor
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.plans.commands.cancel_plan.cancel_plan import CancelPlan
 from core.modules.plans.commands.close_plan.close_plan import ClosePlan
 from core.modules.plans.models.enums.plan_state import PlanState

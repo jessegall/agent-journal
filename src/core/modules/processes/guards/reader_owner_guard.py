@@ -1,6 +1,6 @@
 from engine.enums.actor_type import ActorType
 from core.base.guard.guard import Guard
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.processes.models.reader import Reader

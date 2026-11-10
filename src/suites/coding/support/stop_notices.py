@@ -1,6 +1,6 @@
 from core.base.driver.hook_event_name import HookEventName
-from core.base.query.conditions.contains_some import ContainsSome
-from core.base.query.queries import Queries
+from engine.query.conditions.contains_some import ContainsSome
+from engine.query.queries import Queries
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 

@@ -4,7 +4,7 @@ from core.base.command.command import Command
 from core.base.library.library_item import LibraryItem
 from core.base.model.model import Model
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.repository.stale_row_error import StaleRowError
 from core.modules.library.commands.delete_library_copy.delete_library_copy import DeleteLibraryCopy

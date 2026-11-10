@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from engine.journal.journal_home import LAUNCHER_SOCKET
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.ticks.interrupted_agent_wake import InterruptedAgentWake

@@ -14,7 +14,7 @@ from core.base.database.reported_findings import ReportedFindings
 from server.listener_thread import ListenerThread
 from server.viewer.line_route import LineRoute
 from core.base.database.statement import Statement
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
 from core.modules.developer.support.developer_settings import REPEATED_WORK_SETTING, TOOLS_SETTING
 from core.modules.drivers.bindings.agent_hook_route import AgentHookRoute

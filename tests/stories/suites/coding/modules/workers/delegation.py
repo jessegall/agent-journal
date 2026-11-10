@@ -4,8 +4,8 @@ import pytest
 from core.modules.plans.support.next_plan_tasks import NextPlanTasks
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType

@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.viewer.commands.rename_person_preset.rename_person_preset import RenamePersonPreset
 from core.modules.viewer.models.person_preset import PersonPreset

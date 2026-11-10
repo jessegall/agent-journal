@@ -1,19 +1,19 @@
-from core.base.query.conditions.equal import Equal
-from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.maximum import Maximum
-from core.base.query.conditions.minimum import Minimum
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.greater import Greater
+from engine.query.conditions.maximum import Maximum
+from engine.query.conditions.minimum import Minimum
 from typing import Self
 
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
 from engine.time.timestamp import Timestamp
-from core.base.query.query import Query
+from engine.query.query import Query
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.is_null import IsNull
+from engine.query.conditions.among import Among
+from engine.query.conditions.is_null import IsNull
 from core.modules.messages.conditions.message_target import MessageTarget
 from core.modules.messages.conditions.message_text_segment import MessageTextSegment
 

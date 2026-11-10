@@ -5,8 +5,8 @@ from core.base.change.event_log import EventLog
 from core.base.change.logged_event import LoggedEvent
 from core.base.model.model import Model
 from core.base.model.tables import Tables
-from core.base.query.conditions.minimum import Minimum
-from core.base.query.queries import Queries
+from engine.query.conditions.minimum import Minimum
+from engine.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent
 from core.modules.documents.models.enums.link_type import LinkType

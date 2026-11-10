@@ -1,7 +1,7 @@
 from collections import Counter
 
-from core.base.query.conditions.minimum import Minimum
-from core.base.query.queries import Queries
+from engine.query.conditions.minimum import Minimum
+from engine.query.queries import Queries
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob

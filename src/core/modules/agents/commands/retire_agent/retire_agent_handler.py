@@ -5,7 +5,7 @@ from engine.enums.agent_role import AgentRole
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.container.container import Container
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.base.registry.registry import Registry

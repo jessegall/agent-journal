@@ -4,7 +4,7 @@ from core.base.command.bus import Bus
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.start_process.start_process import StartProcess

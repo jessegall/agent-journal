@@ -2,8 +2,8 @@ import re
 from collections.abc import Mapping, Sequence
 
 from core.base.command.context import Context
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from engine.enums.log_level import LogLevel
 from core.base.repository.repository import Repository
 from engine.log.system_log_writer import SystemLogWriter

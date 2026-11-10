@@ -1,6 +1,6 @@
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart

@@ -5,7 +5,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.change.created import Created
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.documents.commands.record_subject_link.record_subject_link import RecordSubjectLink
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES, MessageType
 from core.modules.messages.models.message import Message

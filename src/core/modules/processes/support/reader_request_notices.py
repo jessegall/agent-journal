@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.nudge_records import NudgeRecords

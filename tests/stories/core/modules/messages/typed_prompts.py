@@ -1,7 +1,7 @@
 import pytest
 
 from core.base.provider.transcript_entries import TranscriptEntries
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.messages.lost_hooks import TOOL_FINISHED, codex_row, expect_chat_count, run_hook, transcript, prompt_row, entry_timestamp

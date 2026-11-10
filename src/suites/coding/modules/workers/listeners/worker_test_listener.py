@@ -9,8 +9,8 @@ from core.base.change.updated import Updated
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.event_rows import EventRows
-from core.base.query.queries import Queries
-from core.base.query.conditions.among import Among
+from engine.query.queries import Queries
+from engine.query.conditions.among import Among
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process

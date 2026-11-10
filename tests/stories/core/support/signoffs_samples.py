@@ -10,7 +10,7 @@ from core.base.model.model import Model
 from core.base.model.move import Move
 from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.change.moved import Moved

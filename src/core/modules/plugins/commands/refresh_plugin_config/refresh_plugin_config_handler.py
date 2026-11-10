@@ -9,7 +9,7 @@ from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from engine.json.json_pointer import JsonPointer
 from engine.json.json_schema import JsonSchema
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.skill.skill_digest import SkillDigest

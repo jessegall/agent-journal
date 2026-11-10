@@ -1,6 +1,6 @@
 from tests.stories.core.support.fixtures import UserJoined
 from core.modules.processes.models.reader import Reader
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 import pytest
 
 from core.base.driver.command_category import CommandCategory

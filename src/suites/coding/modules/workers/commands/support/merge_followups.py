@@ -1,6 +1,6 @@
 from core.base.command.bus import Bus
 from core.base.command.context import Context
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.settings.support.setting_revision import SettingRevision

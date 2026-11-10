@@ -11,7 +11,7 @@ from core.base.provider.provider import Provider
 from core.base.provider.providers import Providers
 from core.base.provider.transcript_entry import TranscriptEntry
 from core.base.provider.transcript_entries import TranscriptEntries
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.record_missing_prompt.record_missing_prompt import RecordMissingPrompt

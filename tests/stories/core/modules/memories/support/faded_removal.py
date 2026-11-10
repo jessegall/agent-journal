@@ -1,6 +1,6 @@
 import sqlite3
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.memories.models.enums.memory_state import MemoryState
 from core.modules.memories.models.memory import Memory
 

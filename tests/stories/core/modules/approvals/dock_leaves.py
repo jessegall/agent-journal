@@ -1,6 +1,6 @@
 from core.base.command.bus import Bus
 from core.base.command.close_user_approval import CloseUserApproval
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState

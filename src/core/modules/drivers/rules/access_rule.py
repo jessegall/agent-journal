@@ -10,7 +10,7 @@ from core.base.driver.shell_line import ShellLine
 from core.base.driver.tool import Tool
 from core.base.driver.tool_type import ToolType
 from core.base.provider.providers import Providers
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.driver.run_owners import RunOwners
 from core.base.registry.registry import Registry
 from core.modules.agents.models.agent import Agent

@@ -13,7 +13,7 @@
         ],
         "reject": [
             {"testCode": true},
-            {"fileMatches": "(^|/)src/core/base/query/query\\.py$"}
+            {"fileMatches": "(^|/)src/engine/query/query\\.py$"}
         ]
     },
     "sin": {

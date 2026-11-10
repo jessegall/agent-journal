@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from engine.row.page import Page
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.registry.suite_windows import SuiteWindows
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.viewer.layout_shape import stored_layout

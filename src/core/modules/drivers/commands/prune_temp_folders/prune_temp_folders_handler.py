@@ -6,7 +6,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.journal.journal_home import JournalHome
 from core.base.provider.providers import Providers
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.prune_temp_folders.prune_temp_folders import PruneTempFolders
 

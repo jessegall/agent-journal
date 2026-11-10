@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.check.step_condition import StepCondition
 from core.modules.plans.models.phase import Phase
 

@@ -1,5 +1,5 @@
-from core.base.query.conditions.equal import Equal
-from core.base.query.conditions.excluding import Excluding
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.excluding import Excluding
 from core.base.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.docking.guards.support.docking_arrival import DockingArrival

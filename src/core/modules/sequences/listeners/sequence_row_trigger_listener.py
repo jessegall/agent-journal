@@ -3,7 +3,7 @@ from engine.enums.actor_type import ActorType
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.documents.models.link import Link
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun, START
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery

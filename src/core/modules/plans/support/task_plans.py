@@ -2,8 +2,8 @@ from collections.abc import Sequence
 
 from core.base.database.kept_rows import KeptRows
 from core.base.listener.event_rows import EventRows
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.phase_task import PhaseTask
 from core.modules.plans.models.plan import Plan

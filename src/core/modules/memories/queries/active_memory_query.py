@@ -3,11 +3,11 @@ from typing import Self
 
 from core.base.database.database import Database
 from core.base.model.tables import Tables
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.equal import Equal
-from core.base.query.conditions.subquery_match import SubqueryMatch
-from core.base.query.query import Query
-from core.base.query.select import Select
+from engine.query.conditions.among import Among
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.query import Query
+from engine.query.select import Select
 from core.modules.memories.models.context_memory import ContextMemory
 from core.modules.memories.models.active_memory import ActiveMemory
 

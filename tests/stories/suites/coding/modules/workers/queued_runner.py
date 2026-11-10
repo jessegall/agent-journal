@@ -9,7 +9,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from core.base.caller.caller_request import SESSION_VARIABLE
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process
 from core.testing.story import Story

@@ -34,7 +34,7 @@ from core.modules import DEFAULT_MODULES
 from core.base.module.module import Module
 from core.base.model.tables import Tables
 from core.base.subcommand.output import Output
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.log.refusal_log import RefusalLog
 from engine.log.recorded_refusal import RecordedRefusal
 from core.base.caller.caller import Caller

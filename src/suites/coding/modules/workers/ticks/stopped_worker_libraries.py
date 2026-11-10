@@ -5,7 +5,7 @@ from engine.time.clock import Clock
 from core.base.command.bus import Bus
 from engine.container.container import Container
 from core.modules.agents.models.agent import Agent
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from suites.coding.modules.workers.commands.record_worktree_libraries.record_worktree_libraries import RecordWorktreeLibraries
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.library_folders import LibraryFolders

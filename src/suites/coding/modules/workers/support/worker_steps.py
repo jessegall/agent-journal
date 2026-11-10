@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery

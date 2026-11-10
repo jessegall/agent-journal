@@ -5,7 +5,7 @@
         "select": "import",
         "where": [
             {
-                "fileMatches": "src/core/(base/provider|modules/[a-z_]+/providers)/"
+                "fileMatches": "src/((core/base|engine)/provider|core/modules/[a-z_]+/providers)/"
             },
             {
                 "any": [

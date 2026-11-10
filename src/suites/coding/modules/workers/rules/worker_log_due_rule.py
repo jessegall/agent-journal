@@ -3,7 +3,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LOG_DUE

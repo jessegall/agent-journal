@@ -1,6 +1,6 @@
 import json
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.settings.models.setting import Setting
 from core.testing.story import Story
 from tests.stories.fixtures.unsupported_settings import UNSUPPORTED_SETTINGS

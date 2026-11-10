@@ -6,7 +6,7 @@ import pytest
 
 from core.base.caller.caller_request import CallerRequest
 from core.base.change.event_log import EventLog
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.scopes import Scopes
 from core.modules.chat.models.chat_mark import ChatMark

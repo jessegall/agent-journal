@@ -3,7 +3,7 @@ from dataclasses import asdict
 
 from engine.agent.agent_brief_points import AgentBriefPoints
 from core.base.caller.caller import Caller
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.commands.agent_programs.agent_programs_subcommand import AgentProgramsSubcommand

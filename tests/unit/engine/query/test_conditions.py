@@ -3,16 +3,16 @@ import pytest
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from engine.journal.journal_home import JournalHome
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.equal import Equal
-from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.subquery_match import SubqueryMatch
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.conditions.less import Less
-from core.base.query.conditions.maximum import Maximum
-from core.base.query.conditions.metadata_equal import MetadataEqual
-from core.base.query.conditions.metadata_key_error import MetadataKeyError
-from core.base.query.conditions.prefix import Prefix
+from engine.query.conditions.among import Among
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.greater import Greater
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.conditions.is_null import IsNull
+from engine.query.conditions.less import Less
+from engine.query.conditions.maximum import Maximum
+from engine.query.conditions.metadata_equal import MetadataEqual
+from engine.query.conditions.metadata_key_error import MetadataKeyError
+from engine.query.conditions.prefix import Prefix
 
 
 def test_each_condition_gives_its_sql_and_parameters():

@@ -15,7 +15,7 @@ from core.base.driver.nudge_type import NudgeType
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.rule_answers import RuleAnswers
 from core.base.driver.rule_record import RuleRecord
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.modules.drivers.support.nudge_log import NudgeLog
 from core.modules.messages.commands.read_message.read_message import ReadMessage

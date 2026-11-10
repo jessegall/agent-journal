@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event, Lock
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.documents.support.work_context_reader import WorkContextReader
 from core.modules.tasks.models.task_read import TaskRead
 from core.testing.hook_samples import HookSamples

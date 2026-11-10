@@ -4,7 +4,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.event_rows import EventRows
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.tasks.models.task import Task

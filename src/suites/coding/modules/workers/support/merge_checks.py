@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from suites.coding.modules.workers.support.worker_review import WorkerReview
 from core.base.database.kept_rows import KeptRows
 from core.modules.environments.support.environment_rows import EnvironmentRows

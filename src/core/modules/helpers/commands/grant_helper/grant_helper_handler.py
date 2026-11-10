@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.helpers.commands.grant_helper.grant_helper import GrantHelper

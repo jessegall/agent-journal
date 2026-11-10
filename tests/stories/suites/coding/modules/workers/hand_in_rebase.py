@@ -5,7 +5,7 @@ import pytest
 
 from suites.coding.modules.workers.support.worktree_git import STASH_MESSAGE, WorktreeGit
 from suites.coding.modules.workers.models.worktree import Worktree
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, dispatched_worker, repository_environment

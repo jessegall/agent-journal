@@ -5,7 +5,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.driver.command_category import CommandCategory
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.processes.commands.start_process.start_process import StartProcess

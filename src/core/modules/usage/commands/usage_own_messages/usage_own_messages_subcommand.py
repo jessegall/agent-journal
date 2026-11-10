@@ -5,7 +5,7 @@ from core.modules.messages.support.recent_conversation import SHOWN_CHARACTERS
 from core.base.caller.caller import Caller
 from core.base.provider.providers import Providers
 from core.base.provider.transcript_row import TranscriptRow
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple

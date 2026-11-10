@@ -1,7 +1,7 @@
 import json
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.settings.models.setting import Setting
 from tests.stories.core.modules.usage.agent_rows import StatesAgents
 from tests.stories.server.support.server_client import server_story

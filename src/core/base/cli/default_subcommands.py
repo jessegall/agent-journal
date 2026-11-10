@@ -8,7 +8,7 @@ from core.base.model.state_book import StateBook
 from core.base.model.table import Table
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.model.tables import Tables
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.cli.make_subcommand import MakeSubcommand
 from core.base.cli.row_links import RowLinks
 from core.base.cli.show_subcommand import ShowSubcommand

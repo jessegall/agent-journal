@@ -6,10 +6,10 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.nudge import Nudge
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.has_value import HasValue
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.conditions.has_value import HasValue
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task

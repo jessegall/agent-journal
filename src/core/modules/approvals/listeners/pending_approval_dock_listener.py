@@ -3,8 +3,8 @@ from core.base.change.registry_synced import RegistrySynced
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
-from core.base.query.conditions.among import Among
+from engine.query.queries import Queries
+from engine.query.conditions.among import Among
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.environment_scope import EnvironmentScope
 from core.modules.approvals.models.approval_request import ApprovalRequest

@@ -7,7 +7,7 @@ from engine.actor.actor import Actor
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.tool_type import ToolType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.models.process import Process
 from core.testing.hook_samples import HookSamples

@@ -9,8 +9,8 @@ from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.interval import Interval
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.span_queries import SpanQueries
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.docking.support.dock_room import DockRoom

@@ -13,7 +13,7 @@ from core.base.command.outside_runs import MAX_ROUNDS, OutsideRuns
 from core.base.command.outside_turn import OutsideTurn
 from core.base.command.script_policy import ScriptPolicy
 from core.base.database.kept_rows import KeptRows
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.command.handlers.make_handler import MakeHandler

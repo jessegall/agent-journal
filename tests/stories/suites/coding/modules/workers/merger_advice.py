@@ -5,7 +5,7 @@ import pytest
 
 import suites.coding.modules.workers as workers_package
 from core.base.driver.tool_type import ToolType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from core.testing.hook_samples import HookSamples
 from core.testing.line_outcome import LineOutcome

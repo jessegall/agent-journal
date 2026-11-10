@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from core.base.command.context import Context
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.documents.models.link import Link
 from core.modules.documents.models.link_correction import LinkCorrection

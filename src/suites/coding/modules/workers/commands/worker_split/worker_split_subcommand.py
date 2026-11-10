@@ -2,7 +2,7 @@ from suites.coding.modules.workers.support.worker_split_problem import WorkerSpl
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.errors.refusal import Refusal
 from core.base.scope.scopes import Scopes
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder

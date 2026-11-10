@@ -5,8 +5,8 @@ from engine.enums.actor_type import ActorType
 from core.base.caller.caller import Caller
 from core.base.command.context import Context
 from core.base.database.kept_rows import KeptRows
-from core.base.query.queries import Queries
-from core.base.query.conditions.among import Among
+from engine.query.queries import Queries
+from engine.query.conditions.among import Among
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES

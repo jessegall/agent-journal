@@ -3,7 +3,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.driver.command_category import CommandCategory
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.event_rows import EventRows
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.models.affected_test import AffectedTest

@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from suites.coding.modules.checks.commands.record_check_progress.record_check_progress import RecordCheckProgress
 from suites.coding.modules.checks.models.check import Check
 from core.base.change.journal_booting import JournalBooting

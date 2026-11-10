@@ -4,7 +4,7 @@ from core.base.database.database import Database
 from core.base.model.model import Model
 from core.base.model.tables import Tables
 from core.base.model.view_model import ViewModel
-from core.base.query.query import Query
+from engine.query.query import Query
 
 M = TypeVar("M", bound=Model | ViewModel)
 

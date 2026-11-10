@@ -7,8 +7,8 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.span_queries import SpanQueries
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.support.reminder_passes import ReminderPasses
 from core.modules.drivers.support.reminder_subject import ReminderSubject

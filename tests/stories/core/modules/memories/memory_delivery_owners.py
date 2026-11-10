@@ -2,7 +2,7 @@ import pytest
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.scope.scopes import Scopes
 from core.modules.memories.migrations.m006_memory_owner import MemoryOwnerMigration
 from core.modules.memories.models.memory import Memory

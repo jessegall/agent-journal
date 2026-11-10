@@ -8,7 +8,7 @@ from core.base.listener.commit_listener import CommitListener
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.log.system_log_writer import SystemLogWriter
 from core.modules.agents.models.agent import Agent
 from core.modules.chat.commands.show_mark.show_mark import ShowMark

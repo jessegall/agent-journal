@@ -3,7 +3,7 @@ import pytest
 from engine.actor.actor import Actor
 from core.base.command.context import Context
 from core.base.database.database import Database
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.accounts.guards.account_rows_guard import AccountRowsGuard

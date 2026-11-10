@@ -1,5 +1,5 @@
 from core.base.database.kept_rows import KeptRows
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.support.sequence_event_index import SequenceEventIndex
 from core.modules.sequences.support.triggered_sequence import TriggeredSequence

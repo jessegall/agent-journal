@@ -4,7 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.models.task_wait import TaskWait
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from suites.coding.modules.checks.queries.check_query import CheckQuery
 from suites.coding.modules.checks.support.check_nudges import BROKEN_TASK_WAIT
 

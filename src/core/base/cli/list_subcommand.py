@@ -9,10 +9,10 @@ from core.base.model.model import STATE, Model
 from core.base.model.state_book import StateBook
 from core.base.model.table import Table
 from engine.row.page import Page, is_page
-from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.less import Less
-from core.base.query.queries import Queries
-from core.base.query.query import PAGE_SIZE_ROWS, Query
+from engine.query.conditions.greater import Greater
+from engine.query.conditions.less import Less
+from engine.query.queries import Queries
+from engine.query.query import PAGE_SIZE_ROWS, Query
 from core.base.cli.subcommand_columns import FOREIGN_KEY_SUFFIX, parser_argument
 from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
 

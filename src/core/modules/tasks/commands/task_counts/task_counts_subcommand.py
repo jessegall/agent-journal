@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from core.base.caller.caller import Caller
 from engine.time.clock import Clock
-from core.base.query.conditions.greater import Greater
+from engine.query.conditions.greater import Greater
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from engine.time.timestamp import Timestamp

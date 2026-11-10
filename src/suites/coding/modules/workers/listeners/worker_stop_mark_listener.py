@@ -4,7 +4,7 @@ from core.base.change.logged_event import LoggedEvent
 from engine.chat.mark_outcome import MarkOutcome
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.listener.event_rows import EventRows
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.scopes import DisabledScopes

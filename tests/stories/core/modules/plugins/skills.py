@@ -13,7 +13,7 @@ from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.skills.models.agent_skill import AgentSkill

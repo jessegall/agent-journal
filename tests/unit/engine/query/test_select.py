@@ -1,8 +1,8 @@
 from core.base.database.statement import Statement
-from core.base.query.conditions.equal import Equal
-from core.base.query.conditions.subquery_match import SubqueryMatch
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.select import Select
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.conditions.is_null import IsNull
+from engine.query.select import Select
 
 
 def test_a_bare_select_reads_the_full_table():

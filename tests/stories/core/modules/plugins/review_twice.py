@@ -4,7 +4,7 @@ import pytest
 
 from core.base.command.bus import Bus
 from engine.errors.refusal import Refusal
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.process_group import ProcessGroup
 from tests.stories.core.modules.plugins.support.refusing_modules import REFUSING, DeleteProcessRow, SlotsCreateNote, OrphanProcessRow

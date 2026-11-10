@@ -2,7 +2,7 @@ import secrets
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from engine.text.text_digest import TextDigest
 from engine.time.timestamp import Timestamp

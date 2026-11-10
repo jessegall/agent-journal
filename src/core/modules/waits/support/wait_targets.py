@@ -3,7 +3,7 @@ from collections.abc import Mapping
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.registry.registry import Registry
 
 

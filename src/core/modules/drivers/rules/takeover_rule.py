@@ -3,8 +3,8 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.equal import Equal
-from core.base.query.queries import Queries
+from engine.query.conditions.equal import Equal
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.driver_nudges import TAKEOVER

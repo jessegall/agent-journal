@@ -2,8 +2,8 @@ from core.base.change.changed import Changed
 from core.base.change.logged_event import LoggedEvent
 from engine.enums.helper_role import HelperRole
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.conditions.greater import Greater
-from core.base.query.queries import Queries
+from engine.query.conditions.greater import Greater
+from engine.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.helper_job_rows import HelperJobRows

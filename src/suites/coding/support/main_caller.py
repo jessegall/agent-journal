@@ -1,5 +1,5 @@
 from core.base.command.context import Context
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 

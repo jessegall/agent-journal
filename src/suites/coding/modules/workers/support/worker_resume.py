@@ -13,8 +13,8 @@ from core.modules.tasks.support.block_conditions.task_brief_read import TaskBrie
 from core.base.listener.event_rows import EventRows
 from engine.time.clock import Clock
 from core.base.command.bus import Bus
-from core.base.query.conditions.greater import Greater
-from core.base.query.queries import Queries
+from engine.query.conditions.greater import Greater
+from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_program import AgentProgram

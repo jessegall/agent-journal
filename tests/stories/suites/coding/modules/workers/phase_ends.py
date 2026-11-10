@@ -3,7 +3,7 @@ import pytest
 from engine.actor.actor import Actor
 from core.base.command.context import Context
 from core.base.database.database import Database
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.plans.models.phase import Phase
 from suites.coding.modules.workers.support.worker_test_group import WorkerTestGroup

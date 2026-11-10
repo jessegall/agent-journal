@@ -5,7 +5,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.driver.nudge import Nudge
 from core.base.provider.providers import Providers
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.profiles.support.profile_files import ProfileFiles
 from engine.errors.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
@@ -14,8 +14,8 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.conditions.minimum import Minimum
+from engine.query.conditions.is_null import IsNull
+from engine.query.conditions.minimum import Minimum
 from core.modules.helpers.commands.send_helper.send_helper import SendHelper
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from suites.coding.modules.workers.support.merger_nudges import MERGER_JOB, MERGER_PROFILE, MERGER_SOURCE

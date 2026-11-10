@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from suites.coding.modules.checks.commands.report_check.report_check import ReportCheck
 from suites.coding.modules.checks.models.check import Check

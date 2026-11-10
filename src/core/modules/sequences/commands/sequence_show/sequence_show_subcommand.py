@@ -6,7 +6,7 @@ from core.base.library.library_lookup import LibraryLookup
 from core.base.library.library_aware_show import LibraryAwareShow
 from core.base.library.library_reading import LibraryReading
 from core.base.library.library_ref import LibraryRef
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.sequences.models.sequence import Sequence

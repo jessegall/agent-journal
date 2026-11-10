@@ -4,10 +4,10 @@ import pytest
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.query.conditions.contains_every import ContainsEvery
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
-from core.base.query.select import Select
+from engine.query.conditions.contains_every import ContainsEvery
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
+from engine.query.select import Select
 from core.modules.messages.models.message import Message
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.sequences.models.sequence_run_row import SequenceRunRow

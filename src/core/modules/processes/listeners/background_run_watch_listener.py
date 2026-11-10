@@ -8,7 +8,7 @@ from core.base.driver.block_until import BlockUntil
 from core.base.driver.tool_type import ToolType
 from core.base.listener.save_listener import SaveListener
 from core.base.provider.providers import Providers
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process

@@ -4,7 +4,7 @@ from core.base.cli.read_limit_bypass import ALLOW_LARGE_READ_FLAG
 from core.base.database.database import READ_LIMIT_ROWS, Database
 from core.base.database.request_watch import RequestWatch
 from core.base.database.statement import Statement
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
 from core.modules.developer.support.developer_settings import READ_LIMIT_SETTING, TOOLS_SETTING
 from core.testing.story_fixture import StoryFixture

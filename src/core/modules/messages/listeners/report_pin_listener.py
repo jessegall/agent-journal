@@ -4,7 +4,7 @@ from core.base.change.created import Created
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message

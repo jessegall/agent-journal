@@ -1,5 +1,5 @@
 from core.modules.agents.models.agent import Agent
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.drivers.queries.hook_call_query import HookCallQuery

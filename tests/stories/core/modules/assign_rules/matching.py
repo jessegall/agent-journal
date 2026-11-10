@@ -12,7 +12,7 @@ from core.modules.assign_rules.models.enums.decision_outcome import DecisionOutc
 from core.modules.assign_rules.models.support.condition_checks import check_condition
 from core.modules.assign_rules.models.support.task_facts import TaskFacts
 from core.modules.assign_rules.support.task_facts_reader import TaskFactsReader
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.tasks.models.support.task_priority import TaskPriority
 from core.modules.tasks.models.task import Task
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

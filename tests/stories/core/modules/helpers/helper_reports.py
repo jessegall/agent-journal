@@ -4,7 +4,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.support.report_nudges import EMPTY_REPORT_TEXT
 from core.modules.messages.models.message import Message
 from core.modules.drivers.ticks.end_silent_helpers_tick import EndSilentHelpersTick

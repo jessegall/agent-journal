@@ -1,5 +1,5 @@
 from core.base.listener.event_rows import EventRows
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.database.kept_rows import KeptRows
 
 

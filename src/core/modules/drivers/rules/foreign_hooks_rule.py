@@ -6,8 +6,8 @@ from core.base.driver.foreign_answer import ForeignAnswer
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.provider.providers import Providers
-from core.base.query.conditions.contains_some import ContainsSome
-from core.base.query.queries import Queries
+from engine.query.conditions.contains_some import ContainsSome
+from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice
 from core.modules.drivers.support.driver_nudges import MANAGED_HOOK_LINE, MANAGED_HOOK_REFUSAL

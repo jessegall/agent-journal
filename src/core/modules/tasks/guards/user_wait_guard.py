@@ -1,6 +1,6 @@
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.tasks.support.task_opener import USER_TARGET

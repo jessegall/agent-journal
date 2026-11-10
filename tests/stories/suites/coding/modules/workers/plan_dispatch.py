@@ -2,7 +2,7 @@ import json
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text

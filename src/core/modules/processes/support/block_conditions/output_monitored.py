@@ -4,9 +4,9 @@ from core.base.driver.block_check import BlockCheck
 from core.base.driver.block_condition import BlockCondition
 from core.base.driver.tool_type import ToolType
 from core.base.provider.providers import Providers
-from core.base.query.conditions.contains_some import ContainsSome
-from core.base.query.conditions.minimum import Minimum
-from core.base.query.queries import Queries
+from engine.query.conditions.contains_some import ContainsSome
+from engine.query.conditions.minimum import Minimum
+from engine.query.queries import Queries
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.base.driver.hook_event_name import HookEventName

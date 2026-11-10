@@ -1,8 +1,8 @@
 from dataclasses import replace
 
 from core.base.command.context import Context
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.models.merger_visit import MergerVisit

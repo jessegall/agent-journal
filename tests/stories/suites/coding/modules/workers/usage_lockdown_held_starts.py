@@ -5,7 +5,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from core.base.provider.launch_command import LaunchCommand
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from core.modules.agents.support.launch_answer import LaunchAnswer

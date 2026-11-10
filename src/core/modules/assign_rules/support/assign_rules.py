@@ -1,5 +1,5 @@
 from core.base.command.context import Context
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.assign_rules.models.assign_decision import AssignDecision
 from core.modules.assign_rules.models.assign_rule import AssignRule

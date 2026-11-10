@@ -3,8 +3,8 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.agents.models.agent import Agent

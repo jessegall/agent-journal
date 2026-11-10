@@ -3,9 +3,9 @@ from argparse import ArgumentParser, Namespace
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from core.base.caller.caller import Caller
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.greater import Greater
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.conditions.greater import Greater
+from engine.query.queries import Queries
 from core.base.subcommand.output import Output
 from engine.time.timestamp import Timestamp
 from core.base.subcommand.read_subcommand import ReadSubcommand

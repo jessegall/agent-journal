@@ -5,9 +5,9 @@ from core.base.command.handler import Handler
 from core.base.command.request_user_approval import RequestUserApproval
 from core.base.database.actor_table import ActorTable
 from core.base.listener.event_rows import EventRows
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.greater import Greater
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.conditions.greater import Greater
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.approvals.models.approval_request import ApprovalRequest

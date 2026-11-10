@@ -5,8 +5,8 @@ from engine.enums.helper_role import HelperRole
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.greater import Greater
+from engine.query.conditions.among import Among
+from engine.query.conditions.greater import Greater
 from engine.time.timestamp import Timestamp
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent

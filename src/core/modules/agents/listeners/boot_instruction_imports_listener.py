@@ -3,7 +3,7 @@ from core.base.change.journal_booting import JournalBooting
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.commands.warn_instruction_imports.warn_instruction_imports import WarnInstructionImports
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 

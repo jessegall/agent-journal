@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples

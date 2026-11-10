@@ -1,6 +1,6 @@
 import json
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.testing.hook_samples import HookSamples
 from suites.coding.commands.record_file_edit import record_file_edit_handler

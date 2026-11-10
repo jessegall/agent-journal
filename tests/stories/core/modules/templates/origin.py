@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.templates.models.template import Template
 from tests.stories.core.modules.templates.support.active_template_fixture import installed_review
 

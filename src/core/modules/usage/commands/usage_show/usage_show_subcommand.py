@@ -5,14 +5,14 @@ from argparse import ArgumentParser, Namespace
 from dataclasses import replace
 
 from engine.enums.helper_role import HelperRole
-from core.base.query.conditions.excluding import Excluding
+from engine.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from core.base.caller.caller import Caller
 from core.base.driver.program_lockdown import ProgramLockdown
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.greater import Greater
-from core.base.query.queries import Queries
-from core.base.query.query import Query
+from engine.query.conditions.among import Among
+from engine.query.conditions.greater import Greater
+from engine.query.queries import Queries
+from engine.query.query import Query
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.driver.hook_event_name import HookEventName

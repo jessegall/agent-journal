@@ -1,6 +1,6 @@
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.events.agent_ended import AgentEnded
 from core.modules.documents.models.open_document import OpenDocument
 from core.modules.documents.actions.ended_documents import EndedDocuments

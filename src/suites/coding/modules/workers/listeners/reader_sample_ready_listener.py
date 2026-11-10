@@ -1,6 +1,6 @@
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.listener.save_listener import SaveListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.nudger import Nudger

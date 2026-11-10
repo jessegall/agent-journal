@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from core.testing.story import Story
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.core.modules.library.support.copy_stories import connected, shared_server
 from tests.stories.core.modules.library.support.stored_text import stored_texts

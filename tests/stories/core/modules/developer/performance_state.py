@@ -2,7 +2,7 @@ import os
 
 from core.base.driver.command_category import CommandCategory
 from engine.log.exception_sink import CLOCK_TICK_SOURCE
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
 from core.base.module.performance_tools import PerformanceTools
 from engine.time.timing import Timing

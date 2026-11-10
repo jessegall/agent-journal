@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.driver.hook_timeouts import HookTimeouts
 from core.base.driver.rule_timings import RuleTimings
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.models.hook_timeout_notice import HookTimeoutNotice

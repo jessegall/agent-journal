@@ -8,7 +8,7 @@ from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from core.base.caller.process_table import ProcessTable
 from core.testing.fixed_process_table import FixedProcessTable
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 from tests.stories.core.base.module.folder_modules import source_folder

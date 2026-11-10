@@ -1,7 +1,7 @@
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
-from core.base.query.query import Query
+from engine.query.query import Query
 from core.modules.library.models.library_connection import LibraryConnection
 
 

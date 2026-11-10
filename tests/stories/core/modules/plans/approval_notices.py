@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from core.base.driver.command_category import CommandCategory
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.docking.models.dock_item import DockItem

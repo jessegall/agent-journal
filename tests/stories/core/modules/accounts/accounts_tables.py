@@ -1,7 +1,7 @@
 import pytest
 
 from core.base.database.database import Database
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.accounts.models.person_login import PersonLogin
 from core.modules.accounts.models.person_session import PersonSession
 from core.modules.accounts.models.login_attempt import LoginAttempt

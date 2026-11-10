@@ -3,7 +3,7 @@ from core.testing.story_fixture import StoryFixture
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.commands.react_message.react_message_handler import REACTION_SOURCE
 from core.testing.hook_samples import HookSamples

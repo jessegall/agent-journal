@@ -4,7 +4,7 @@ from datetime import timedelta
 
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.documents.models.doc import Doc
 from suites.coding.modules.checks.models.check import Check
 from core.modules.library.models.enums.copy_state import CopyState

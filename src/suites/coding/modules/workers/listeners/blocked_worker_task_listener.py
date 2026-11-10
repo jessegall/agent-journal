@@ -1,6 +1,6 @@
 from engine.enums.agent_role import AgentRole
 from core.base.listener.save_listener import SaveListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.support.main_agent_line import MainAgentLine

@@ -2,7 +2,7 @@ import shlex
 
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.modules.aliases.running import worker_actor
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.server.support.alias_hook import AliasHook

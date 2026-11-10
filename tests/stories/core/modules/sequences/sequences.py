@@ -8,7 +8,7 @@ import shlex
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.database.database import Database
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.sequences.models.sequence_run import SequenceRun
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined

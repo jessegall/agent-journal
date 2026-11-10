@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.tasks.rules.log_request_rule import LOG_REQUEST_WRITES
 from core.modules.tasks.rules.unlogged_write_rule import UNLOGGED_WRITES_CEILING
 from core.modules.drivers.models.nudge_record import NudgeRecord

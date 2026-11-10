@@ -18,7 +18,7 @@ from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.repository.stale_row_error import StaleRowError
 from engine.row.metadata import Metadata
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.guard.guard import Guard
 from core.base.listener.save_listener import SaveListener
 from tests.unit.core.base.sample_container import context, empty_registry, sample_container

@@ -6,7 +6,7 @@ from engine.enums.agent_role import AgentRole
 from core.base.change.changed import Changed
 from core.base.change.logged_event import LoggedEvent
 from core.base.driver.hook_event_name import HookEventName
-from core.base.query.conditions.maximum import Maximum
+from engine.query.conditions.maximum import Maximum
 from core.modules.agents.models.agent import Agent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.chat.models.chat_mark import ChatMark

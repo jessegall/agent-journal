@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType

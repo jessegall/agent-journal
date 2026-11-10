@@ -1,7 +1,7 @@
 import pytest
 import json
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.settings.models.setting import Setting
 from tests.stories.core.support.fixtures import UserJoined

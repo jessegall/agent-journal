@@ -3,7 +3,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.prefix import Prefix
+from engine.query.conditions.prefix import Prefix
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.process_nudges import ALIAS_SUGGESTION
 

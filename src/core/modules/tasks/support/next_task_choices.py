@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from engine.row.metadata import Metadata
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.enums.task_state import TaskState

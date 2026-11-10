@@ -2,7 +2,7 @@ from core.base.change.created import Created
 from core.base.change.updated import Updated
 from core.base.command.context import Context
 from core.base.listener.save_listener import SaveListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.enums.link_type import LinkType

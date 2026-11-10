@@ -1,7 +1,7 @@
 import json
 from collections.abc import Sequence
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.memories.models.enums.memory_mark_type import MemoryMarkType
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant

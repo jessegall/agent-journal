@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from core.base.caller.caller import Caller
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.documents.support.work_context_page import WorkContextPage
 from core.modules.documents.support.work_context_text import WorkContextText

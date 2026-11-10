@@ -130,10 +130,10 @@
                 "file": "src/core/base/provider/unknown_program_error.py"
             },
             {
-                "file": "src/core/base/query/conditions/metadata_key_error.py"
+                "file": "src/engine/query/conditions/metadata_key_error.py"
             },
             {
-                "file": "src/core/base/query/unknown_column_error.py"
+                "file": "src/engine/query/unknown_column_error.py"
             },
             {
                 "file": "src/core/base/registry/lazy_load_error.py"

@@ -2,8 +2,8 @@ from collections.abc import Sequence
 
 from core.base.driver.open_row import OpenRow
 from core.base.driver.overlay import Overlay
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.overview.support.overview_nudges import OVERVIEW_REFUSAL
 

@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment

@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.plan_outline_task import PlanOutlineTask
 from core.modules.plans.support.plan_outline import PlanOutline

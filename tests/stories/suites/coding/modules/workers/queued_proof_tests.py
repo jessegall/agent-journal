@@ -2,7 +2,7 @@ import json
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.processes.support.process_samples import end_run

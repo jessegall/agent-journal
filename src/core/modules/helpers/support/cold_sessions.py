@@ -6,7 +6,7 @@ from core.base.command.bus import Bus
 from engine.journal.journal_home import JournalHome
 from core.base.listener.event_rows import EventRows
 from core.base.provider.providers import Providers
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.commands.replace_agent_session.replace_agent_session import ReplaceAgentSession
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_activity import AgentActivity

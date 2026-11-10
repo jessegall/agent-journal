@@ -20,7 +20,7 @@ from core.base.driver.rule_answers import RuleAnswers
 from engine.errors.refusal import Refusal
 from engine.row.metadata import Metadata
 from core.base.provider.providers import Providers
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from engine.time.timing import Timing
 from core.modules.agents.support.agent_rows import AgentRows

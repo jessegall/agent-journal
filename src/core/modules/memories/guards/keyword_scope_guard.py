@@ -1,6 +1,6 @@
 from engine.enums.actor_type import ActorType
 from core.base.guard.guard import Guard
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.memories.models.memory import Memory
 from core.modules.memories.models.memory_keyword import MemoryKeyword
 from core.modules.memories.guards.support.memory_scope import MemoryScope

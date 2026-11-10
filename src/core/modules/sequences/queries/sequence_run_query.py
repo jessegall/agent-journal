@@ -1,8 +1,8 @@
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.query import Query
+from engine.query.conditions.is_null import IsNull
+from engine.query.query import Query
 from core.modules.sequences.models.sequence_run import SequenceRun
 
 

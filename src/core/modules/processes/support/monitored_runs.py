@@ -4,7 +4,7 @@ from engine.enums.hook_answer import HookAnswer
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.watched_runs import WatchedRuns
 from core.base.model.tables import Tables
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import OPEN, ProcessQuery

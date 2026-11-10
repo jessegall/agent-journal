@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from core.base.change.created import Created
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine

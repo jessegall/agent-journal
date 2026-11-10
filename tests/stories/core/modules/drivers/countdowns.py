@@ -3,7 +3,7 @@ from core.base.command.context import Context
 from core.base.database.database import Database
 from core.base.driver.count_down import CountDown
 from core.base.driver.times_span import TimesSpan
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.rules.agent_block_rule import AgentBlockRule

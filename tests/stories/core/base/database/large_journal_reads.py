@@ -4,8 +4,8 @@ from core.base.cli.usage_error import UsageError
 from engine.actor.actor import Actor
 from core.base.cli.line_parser import LineParser
 from core.base.database.database import READ_LIMIT_ROWS, Database
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples

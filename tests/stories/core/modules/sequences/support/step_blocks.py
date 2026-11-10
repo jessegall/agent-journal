@@ -6,7 +6,7 @@ from core.base.database.statement import Statement
 from core.base.driver.block_until import BlockUntil
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.conditions.ran_command import RanCommand
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
 from core.modules.sequences.sequences_module import SequencesModule

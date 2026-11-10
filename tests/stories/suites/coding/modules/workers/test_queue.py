@@ -9,7 +9,7 @@ from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch

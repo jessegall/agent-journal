@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 
-from core.base.query.query import Query
+from engine.query.query import Query
 from core.modules.messages.models.message import Message
 from core.testing.story_fixture import StoryFixture
 

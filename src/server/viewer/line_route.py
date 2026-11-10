@@ -8,7 +8,7 @@ from engine.request.request_queue import RequestQueue
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.database.kept_rows import KeptRows
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from core.base.cli.console import USAGE_CODE, Console
 from core.base.cli.line_run import LineRun, ignore_completed

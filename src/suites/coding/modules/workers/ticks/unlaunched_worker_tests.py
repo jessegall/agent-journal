@@ -1,6 +1,6 @@
 from engine.time.clock import Clock
 from engine.container.container import Container
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process

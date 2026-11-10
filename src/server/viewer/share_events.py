@@ -2,7 +2,7 @@ from core.base.change.logged_event import LoggedEvent
 from engine.container.container import Container
 from core.base.model.model import Model
 from core.base.model.tables import Tables
-from core.base.query.shared_rows import SharedRows
+from engine.query.shared_rows import SharedRows
 from core.base.registry.registry import Registry
 from server.viewer.shared_row import SharedRow
 

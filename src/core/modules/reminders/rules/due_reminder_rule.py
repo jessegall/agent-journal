@@ -7,8 +7,8 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.module.block_conditions import BlockConditions
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.reminders.commands.record_reminder_fired.record_reminder_fired import RecordReminderFired
 from core.modules.reminders.models.reminder import Reminder

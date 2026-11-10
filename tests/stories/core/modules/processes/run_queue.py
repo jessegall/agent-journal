@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.driver.command_category import CommandCategory
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.command.bus import Bus
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.commands.start_process.start_process import StartProcess

@@ -1,6 +1,6 @@
 from engine.enums.actor_type import ActorType
 from engine.enums.access import Access
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task

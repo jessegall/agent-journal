@@ -6,7 +6,7 @@ import pytest
 
 from core.base.database.reported_findings import ReportedFindings
 from core.base.registry.registry import Registry
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture

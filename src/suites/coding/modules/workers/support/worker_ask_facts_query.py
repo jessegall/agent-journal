@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.processes.queries.process_query import ProcessQuery
 from suites.coding.modules.workers.models.worker_refusal_count import WorkerRefusalCount
 from suites.coding.modules.workers.models.worktree import Worktree

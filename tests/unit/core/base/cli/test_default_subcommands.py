@@ -15,7 +15,7 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.command.move_command import MoveCommand
 from engine.errors.missing_rows_error import MissingRowsError
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.model.model import Model
 from tests.unit.core.base.command.test_commands import MakeItem

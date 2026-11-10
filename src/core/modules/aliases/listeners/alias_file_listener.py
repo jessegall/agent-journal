@@ -14,7 +14,7 @@ from core.base.change.file_publishing import FilePublishing
 from core.base.change.touched import Touched
 from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.models.command_type import CommandType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 
 
 class AliasFileListener(CommitListener[FilePublishing | Touched[Alias] | Touched[CommandType]]):

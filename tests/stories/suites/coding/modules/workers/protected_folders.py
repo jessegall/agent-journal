@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.modules.approvals.models.approval_request import ApprovalRequest

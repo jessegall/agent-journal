@@ -3,11 +3,11 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.cli.number_list import number_list
 from core.base.cli.view_row_page import ViewRowPage
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.less import Less
-from core.base.query.queries import Queries
-from core.base.query.query import PAGE_SIZE_ROWS
+from engine.query.conditions.among import Among
+from engine.query.conditions.greater import Greater
+from engine.query.conditions.less import Less
+from engine.query.queries import Queries
+from engine.query.query import PAGE_SIZE_ROWS
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.messages.models.main_chat_mark import MainChatMark

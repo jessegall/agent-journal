@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from typing import TypeVar
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.support.library_client import LibraryClient

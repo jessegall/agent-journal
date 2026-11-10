@@ -2,7 +2,7 @@ from argparse import Namespace
 
 from core.base.cli.view_rows_subcommand import ViewRowsSubcommand
 from core.base.model.view_model import ViewModel
-from core.base.query.query import Query
+from engine.query.query import Query
 from core.modules.agents.conditions.main_agent_rows import MainAgentRows
 from core.modules.processes.models.process_row import ProcessRow
 

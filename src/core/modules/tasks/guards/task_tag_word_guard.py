@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from core.base.change.created import Created
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.tasks.models.task_tag import TaskTag
 from core.modules.tasks.models.task_tag_word import TaskTagWord

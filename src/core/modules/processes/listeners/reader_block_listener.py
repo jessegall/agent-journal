@@ -5,7 +5,7 @@ from core.base.command.bus import Bus
 from core.base.driver.block_until import BlockUntil
 from core.base.driver.conditions.time_reached import TimeReached
 from core.base.listener.save_listener import SaveListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart

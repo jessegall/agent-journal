@@ -5,7 +5,7 @@ from core.base.command.context import Context
 from core.base.driver.rule_answers import RuleAnswers
 from core.base.driver.rule_outcome import SILENCED
 from core.base.driver.rule_record import RuleRecord
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.base.repository.stale_row_error import StaleRowError
 from core.base.driver.hook_history import HookHistory

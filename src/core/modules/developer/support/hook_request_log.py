@@ -4,8 +4,8 @@ from datetime import timedelta
 
 from engine.time.clock import Clock
 from core.base.database.hook_requests_table import HookRequestsTable
-from core.base.query.queries import Queries
-from core.base.query.conditions.among import Among
+from engine.query.queries import Queries
+from engine.query.conditions.among import Among
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING, HOOK_REQUEST_LOG_SIZE_SETTING
 from core.modules.developer.models.hook_request import HookRequest

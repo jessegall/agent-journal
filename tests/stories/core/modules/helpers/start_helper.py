@@ -10,7 +10,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.listener.commit_listener_runner import CommitListenerRunner
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob
 from core.testing.fake_launcher import FakeLauncher

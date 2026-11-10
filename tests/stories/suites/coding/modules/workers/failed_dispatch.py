@@ -5,7 +5,7 @@ import pytest
 from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from engine.errors.refusal import Refusal
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.drivers.commands.record_bypass_line.record_bypass_line import RecordBypassLine
 from suites.coding.modules.workers.commands.open_worker_worktree.open_worker_worktree import OpenWorkerWorktree

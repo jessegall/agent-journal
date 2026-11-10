@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.time.clock import Clock
 from core.base.command.bus import Bus
 from engine.container.container import Container
-from core.base.query.conditions.has_value import HasValue
+from engine.query.conditions.has_value import HasValue
 from core.modules.processes.commands.stop_timed_process.stop_timed_process import StopTimedProcess
 from core.modules.processes.queries.process_query import ProcessQuery
 

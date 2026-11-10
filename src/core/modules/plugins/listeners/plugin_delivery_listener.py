@@ -14,7 +14,7 @@ from core.base.listener.commit_listener_runner import PLUGIN_RUN_ORDER
 from core.base.command.command import Command
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.types.type_guards import is_mapping, is_object_mapping
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput

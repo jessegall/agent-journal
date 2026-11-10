@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from core.base.command.move_command import MoveCommand
 from core.base.model.model import Model
-from core.base.query.query import Query
+from engine.query.query import Query
 
 ALL_SUBCOMMANDS = ["make", "edit", "show", "list", "delete"]
 

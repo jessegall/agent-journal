@@ -6,7 +6,7 @@ from engine.file.file_version import NANOSECONDS
 from core.base.driver.rule_answer import RuleAnswer
 from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.instruction.instruction_imports import InstructionImports
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.support.driver_nudges import FILE_LOADED

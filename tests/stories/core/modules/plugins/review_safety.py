@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
 from tests.stories.core.modules.plugins.support.event_stories import REFUSAL, SECOND_JOB, TASK_CREATED, event_page, event_plugin_story, install_event_plugin, logged_events
 from tests.stories.core.modules.plugins.event_manifest import replace_module

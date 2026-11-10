@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.memories.commands.fade_memories.fade_memories import FadeMemories
 from core.modules.drivers.events.agent_compacted import AgentCompacted
 

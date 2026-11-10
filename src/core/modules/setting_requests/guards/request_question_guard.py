@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from core.base.change.changed import Changed
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question

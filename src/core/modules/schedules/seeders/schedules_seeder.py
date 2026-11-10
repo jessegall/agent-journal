@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.seed.demo import Demo
 from core.base.seed.seeder import Seeder
 from core.modules.agents.models.agent import Agent

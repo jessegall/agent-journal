@@ -5,7 +5,7 @@ from core.base.command.bus import Bus
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.plugins.commands.switch_off_changed_plugin.switch_off_changed_plugin import SwitchOffChangedPlugin
 from core.modules.plugins.models.plugin import Plugin

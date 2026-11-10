@@ -9,8 +9,8 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.provider.peer_note import PeerNote
 from core.base.provider.providers import Providers
 from core.base.provider.transcript_entries import TranscriptEntries
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.modules.messages.commands.record_peer_message.record_peer_message import RecordPeerMessage
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message

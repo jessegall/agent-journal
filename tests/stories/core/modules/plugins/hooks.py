@@ -11,7 +11,7 @@ from engine.file.file_access import FileAccess
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
 from core.modules.plugins.support.login_path import LoginPath
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.testing.expect_reply import expect_reply_allowed, expect_absent_reply_line
 from core.testing.hook_samples import HookSamples

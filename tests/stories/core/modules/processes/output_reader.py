@@ -1,6 +1,6 @@
 from dataclasses import replace
 from core.modules.processes.models.reader import Reader
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 import stat
 import pytest
 from unittest.mock import patch

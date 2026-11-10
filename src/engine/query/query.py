@@ -11,15 +11,15 @@ from core.base.model.model import Model
 from core.base.model.view_model import ViewModel
 from core.base.model.table import stored
 from core.base.model.tables import Tables
-from core.base.query.condition import Condition
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.equal import Equal
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.conditions.session_rows import SessionRows
+from engine.query.condition import Condition
+from engine.query.conditions.among import Among
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.is_null import IsNull
+from engine.query.conditions.session_rows import SessionRows
 from engine.row.page import Page
-from core.base.query.select import Select
+from engine.query.select import Select
 from engine.row.row_owner import RowOwner
-from core.base.query.unknown_column_error import UnknownColumnError
+from engine.query.unknown_column_error import UnknownColumnError
 
 
 M = TypeVar("M", bound=Model | ViewModel, covariant=True)

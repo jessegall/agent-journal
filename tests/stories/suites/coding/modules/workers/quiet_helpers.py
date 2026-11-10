@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
 
 from core.base.database.database import Database
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture

@@ -2,7 +2,7 @@ import subprocess
 
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.processes.support.runner_binary import RunnerBinary
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker

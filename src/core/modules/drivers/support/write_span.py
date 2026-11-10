@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from core.base.driver.span import Span
 
-from core.base.query.conditions.greater import Greater
+from engine.query.conditions.greater import Greater
 from core.base.driver.span_queries import SpanQueries
 from engine.time.timestamp import Timestamp
 from engine.enums.hook_answer import HookAnswer

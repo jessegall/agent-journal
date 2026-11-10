@@ -1,10 +1,10 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.less import Less
-from core.base.query.queries import Queries
-from core.base.query.query import PAGE_SIZE_ROWS
+from engine.query.conditions.greater import Greater
+from engine.query.conditions.less import Less
+from engine.query.queries import Queries
+from engine.query.query import PAGE_SIZE_ROWS
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.documents.models.document_row import DocumentRow

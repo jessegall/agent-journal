@@ -5,7 +5,7 @@ from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from engine.file.file_access import FileAccess
 from engine.journal.journal_home import LAUNCHER_SOCKET
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.enums.agent_activity import AgentActivity
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice

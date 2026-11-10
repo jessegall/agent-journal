@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.agent_stops import AgentStops

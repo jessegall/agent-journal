@@ -4,8 +4,8 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.provider.transcript_author import USER_AUTHOR, TranscriptAuthor
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.modules.messages.commands.record_typed_prompt.record_typed_prompt import RecordTypedPrompt
 from core.modules.schedules.models.scheduled_job import ScheduledJob
 

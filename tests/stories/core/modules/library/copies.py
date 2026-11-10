@@ -5,7 +5,7 @@ import pytest
 
 from core.base.command.bus import Bus
 from core.base.command.context import Context
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.documents.models.doc import Doc
 from suites.coding.modules.checks.models.check import Check

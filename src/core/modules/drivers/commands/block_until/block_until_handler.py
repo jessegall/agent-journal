@@ -4,8 +4,8 @@ from core.base.database.kept_rows import KeptRows
 from core.base.driver.block_until import BlockUntil
 from core.base.driver.interval import Interval
 from core.base.driver.seconds import Seconds
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan

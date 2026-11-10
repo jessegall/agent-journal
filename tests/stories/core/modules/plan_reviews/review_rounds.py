@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.documents.models.report import Report
 from core.testing.fake_launcher import FakeLauncher

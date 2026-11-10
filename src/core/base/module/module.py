@@ -33,7 +33,7 @@ from core.base.subcommand.subcommand import Subcommand
 from core.base.seed.seeder import Seeder
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.library.library_share_class import LibraryShareClass
-from core.base.query.shared_rows import SharedRows
+from engine.query.shared_rows import SharedRows
 from core.base.setting.setting_node import SettingNode
 from core.base.ticker.tick_handler import TickHandler
 from core.base.tunnel.tunnel import Tunnel

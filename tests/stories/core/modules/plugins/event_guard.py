@@ -7,7 +7,7 @@ import pytest
 
 from engine.enums.agent_role import AgentRole
 from core.base.model.event_form import EventForm
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.base.scope.scopes import Scopes
 from engine.process.plugin_script_processes import PluginScriptProcesses

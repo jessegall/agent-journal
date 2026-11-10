@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.enums.actor_type import ActorType
 from core.base.caller.caller import Caller
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand

@@ -4,7 +4,7 @@ from core.base.caller.caller_resolver import CallerResolver
 from core.base.database.database import Database
 from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.environments.models.environment import Environment

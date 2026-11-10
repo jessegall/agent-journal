@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.plans.support.next_plan_tasks import NextPlanTasks
 from core.modules.plans.support.plan_task_order import PlanTaskOrder
 from core.modules.settings.bindings.support.setting_values import SettingValues

@@ -13,7 +13,7 @@ from core.testing.story_helper_programs import StoryHelperPrograms
 from core.testing.story_shell_sandbox import StoryShellSandbox
 from core.testing.expect_reply import expect_reply_allowed, expect_reply_refusal
 from core.testing.shell_part import ShellPart
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.testing.story import Story
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder

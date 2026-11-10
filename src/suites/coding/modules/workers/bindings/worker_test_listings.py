@@ -2,7 +2,7 @@ from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.driver.command_category import CommandCategory
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.listener.event_rows import EventRows

@@ -2,8 +2,8 @@ from typing import Self
 
 from core.base.database.database import Database
 from core.base.model.tables import Tables
-from core.base.query.conditions.among import Among
-from core.base.query.query import Query
+from engine.query.conditions.among import Among
+from engine.query.query import Query
 from core.modules.reviews.models.enums.review_state import ReviewState
 from core.modules.reviews.models.review import Review
 

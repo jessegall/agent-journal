@@ -5,8 +5,8 @@ from engine.time.clock import Clock
 from engine.actor.actor import Actor
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from engine.container.container import Container
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState

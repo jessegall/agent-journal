@@ -10,11 +10,11 @@ from engine.journal.journal_home import JournalHome
 from engine.errors.missing_rows_error import MissingRowsError
 from core.base.model.tables import Tables
 from engine.time.timestamp import Timestamp
-from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.less import Less
-from core.base.query.queries import Queries
-from core.base.query.query import Query
-from core.base.query.unknown_column_error import UnknownColumnError
+from engine.query.conditions.greater import Greater
+from engine.query.conditions.less import Less
+from engine.query.queries import Queries
+from engine.query.query import Query
+from engine.query.unknown_column_error import UnknownColumnError
 from tests.unit.core.base.model.test_table import LogEntry
 
 FIXED_TIME = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))

@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from core.base.caller.caller import Caller
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple

@@ -1,5 +1,5 @@
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task

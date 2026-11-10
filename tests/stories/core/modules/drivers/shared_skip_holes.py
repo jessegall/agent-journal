@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.refusal_skip import RefusalSkip
 from tests.stories.core.modules.drivers.support.confirmed_skips import TRIED
 from tests.stories.core.support.fixtures import MessageAnswered

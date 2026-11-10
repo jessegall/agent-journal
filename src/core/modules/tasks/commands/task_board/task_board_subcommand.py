@@ -1,12 +1,12 @@
-from core.base.query.conditions.less import Less
-from core.base.query.condition import Condition
+from engine.query.conditions.less import Less
+from engine.query.condition import Condition
 from core.modules.tasks.conditions.closed_task_cursor import ClosedTaskCursor
 from core.modules.tasks.conditions.planless_task import PlanlessTask
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.model.state_book import StateBook
-from core.base.query.query import PAGE_SIZE_ROWS, Query
+from engine.query.query import PAGE_SIZE_ROWS, Query
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.tasks.models.enums.task_state import TaskState

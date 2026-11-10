@@ -2,7 +2,7 @@ import pytest
 
 from datetime import timedelta
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.testing.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNMERGED

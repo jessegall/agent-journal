@@ -3,7 +3,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.support.plan_nudges import UNLINKED_TASKS
 from core.modules.tasks.models.enums.task_state import TaskState

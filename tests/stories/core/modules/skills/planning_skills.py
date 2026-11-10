@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from core.base.command.context import Context
 from core.base.database.database import Database
 from core.base.driver.command_category import CommandCategory
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.messages.commands.read_message.read_message import ReadMessage

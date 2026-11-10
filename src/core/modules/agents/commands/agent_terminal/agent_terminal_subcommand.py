@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from engine.journal.journal_home import JournalHome
 from core.base.provider.transcript_tail import TranscriptTail
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.row.page import Page
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.commands.support.terminal_line import TerminalLine

@@ -3,10 +3,10 @@ from collections.abc import Sequence
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
-from core.base.query.query import Query
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.less import Less
-from core.base.query.conditions.minimum import Minimum
+from engine.query.query import Query
+from engine.query.conditions.among import Among
+from engine.query.conditions.less import Less
+from engine.query.conditions.minimum import Minimum
 from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree

@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.secrets.models.secret import Secret
 from tests.stories.core.modules.secrets.support.secret_fixtures import SecretMade

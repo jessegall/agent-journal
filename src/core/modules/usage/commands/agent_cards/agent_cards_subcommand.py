@@ -1,4 +1,4 @@
-from core.base.query.conditions.is_null import IsNull
+from engine.query.conditions.is_null import IsNull
 from pathlib import Path
 from argparse import ArgumentParser, Namespace
 import json
@@ -14,10 +14,10 @@ from core.modules.agents.models.agent import Agent, UPGRADE_RETIREMENT_REASON
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.usage.commands.usage_agents.usage_agents_subcommand import UsageAgentsSubcommand
 from engine.row.page import Page, is_page
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.equal import Equal
-from core.base.query.conditions.contains_every import ContainsEvery
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.contains_every import ContainsEvery
+from engine.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.usage.models.agent_filter_options_view import AgentFilterOptionsView

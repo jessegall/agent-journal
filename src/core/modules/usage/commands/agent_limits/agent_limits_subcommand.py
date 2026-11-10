@@ -4,9 +4,9 @@ from dataclasses import asdict
 from core.base.caller.caller import Caller
 from engine.agent.agent_work import AgentWork
 from core.base.profile.agent_profile import AgentProfile
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand

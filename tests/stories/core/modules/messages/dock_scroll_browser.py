@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.documents.models.doc import Doc
 from core.modules.docking.models.dock_item import DockItem
 from tests.stories.core.support.fixtures import UserJoined

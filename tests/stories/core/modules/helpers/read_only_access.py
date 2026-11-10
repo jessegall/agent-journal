@@ -9,7 +9,7 @@ from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
 from core.base.driver.tool_type import ToolType
 from core.modules.drivers.support.access_nudges import ENDED_AGENT, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, UNJUDGED_LINE
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.documents.models.report import Report
 from core.testing.expect_reply import expect_reply_allowed
 from core.testing.fake_launcher import FakeLauncher

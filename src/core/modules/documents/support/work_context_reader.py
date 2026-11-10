@@ -7,10 +7,10 @@ from dataclasses import replace
 
 from core.base.caller.caller import Caller
 from engine.enums.actor_type import ActorType
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.subquery_match import SubqueryMatch
-from core.base.query.queries import Queries
-from core.base.query.query import Query
+from engine.query.conditions.among import Among
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.queries import Queries
+from engine.query.query import Query
 from engine.errors.refusal import Refusal
 from core.base.scope.scopes import Scopes
 from core.modules.actors.models.actor_record import ActorRecord

@@ -1,7 +1,7 @@
 from core.base.driver.block_check import BlockCheck
 from core.base.driver.block_condition import BlockCondition
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_replies import MessageReplies
 

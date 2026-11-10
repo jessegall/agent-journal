@@ -2,8 +2,8 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.command.request_user_approval import RequestUserApproval
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 from core.base.repository.repository import Repository
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.support.main_agent_finder import MainAgentFinder

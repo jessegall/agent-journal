@@ -3,7 +3,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.process_nudges import READER_HINT

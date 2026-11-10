@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.caller.caller import Caller
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand

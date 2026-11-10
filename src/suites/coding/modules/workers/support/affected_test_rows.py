@@ -1,5 +1,5 @@
 from core.base.database.kept_rows import KeptRows
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
 from suites.coding.modules.workers.support.replaced_rows import replaced_rows
 

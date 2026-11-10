@@ -2,8 +2,8 @@ from core.base.change.changed import Changed
 from core.base.command.context import Context
 from core.base.listener.deletion_listener import DeletionListener
 from core.base.model.model import Model
-from core.base.query.queries import Queries
-from core.base.query.conditions.among import Among
+from engine.query.queries import Queries
+from engine.query.conditions.among import Among
 from core.base.repository.repository import Repository
 from core.modules.documents.models.link import Link
 from collections.abc import Sequence

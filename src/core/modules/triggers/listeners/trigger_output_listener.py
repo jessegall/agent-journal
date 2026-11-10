@@ -2,7 +2,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.triggers.commands.deliver_trigger_output.deliver_trigger_output import DeliverTriggerOutput
 from core.modules.triggers.models.trigger_action_run import TriggerActionRun
 from core.base.change.moved import Moved

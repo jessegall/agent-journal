@@ -1,7 +1,7 @@
 from collections.abc import Mapping, Sequence
 
 from engine.agent.agent_brief_points import AgentBriefPoints
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from suites.coding.modules.workers.models.worker_points import WorkerPoints
 from suites.coding.modules.workers.support.worker_point_list import WorkerPointList
 

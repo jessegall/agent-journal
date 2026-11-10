@@ -4,7 +4,7 @@ from core.modules.sequences.commands.save_standard_sequences.save_standard_seque
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.documents.models.link import Link
 from core.modules.messages.models.message import Message
 from core.modules.templates.models.template import Template

@@ -6,7 +6,7 @@ import shlex
 import subprocess
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.base.provider.program_hooks import ProgramHooks
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.codex.providers.codex_provider import CodexProvider
 from core.modules.codex.providers.support.codex_trust import CodexTrust
 from core.modules.drivers.models.hook_call import HookCall

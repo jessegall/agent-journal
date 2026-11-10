@@ -18,7 +18,7 @@ from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart

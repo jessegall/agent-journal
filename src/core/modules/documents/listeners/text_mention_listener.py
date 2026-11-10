@@ -7,7 +7,7 @@ from core.base.command.bus import Bus
 from core.base.library.library_lookup import LibraryLookup
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.base.scope.actor_scope import ActorScope
 from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions

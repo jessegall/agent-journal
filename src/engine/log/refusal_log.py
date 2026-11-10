@@ -1,5 +1,5 @@
-from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.equal import Equal
+from engine.query.conditions.greater import Greater
+from engine.query.conditions.equal import Equal
 from engine.actor.actor import Actor
 from engine.time.clock import Clock
 from core.base.database.bookkeeping_table import BookkeepingTable
@@ -8,8 +8,8 @@ from core.base.guard.guard_refusal import GuardRefusal
 from engine.row.page import Page
 from engine.errors.refusal import Refusal
 from engine.log.recorded_refusal import RecordedRefusal
-from core.base.query.conditions.prefix import Prefix
-from core.base.query.select import Select
+from engine.query.conditions.prefix import Prefix
+from engine.query.select import Select
 
 
 class RefusalLog:

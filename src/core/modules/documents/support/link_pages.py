@@ -3,9 +3,9 @@ from collections.abc import Sequence
 from dataclasses import asdict
 
 from engine.row.page import Page
-from core.base.query.conditions.among import Among
-from core.base.query.queries import Queries
-from core.base.query.query import Query
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
+from engine.query.query import Query
 from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.modules.documents.conditions.first_link_counterpart import FirstLinkCounterpart

@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.cli.view_rows_subcommand import ViewRowsSubcommand
 from core.base.driver.hook_event_name import HookEventName
 from core.base.model.view_model import ViewModel
-from core.base.query.query import Query
+from engine.query.query import Query
 from core.modules.drivers.models.hook_call_row import HookCallRow
 
 

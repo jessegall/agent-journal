@@ -3,7 +3,7 @@ import sqlite3
 import pytest
 
 from core.base.database.database import Database
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.pins.models.pin import Pin

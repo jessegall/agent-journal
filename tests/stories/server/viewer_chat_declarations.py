@@ -5,7 +5,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, worker_run
 from tests.stories.core.modules.processes.support.process_samples import end_run

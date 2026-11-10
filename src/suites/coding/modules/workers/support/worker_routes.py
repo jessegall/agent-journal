@@ -4,9 +4,9 @@ from dataclasses import replace
 from core.base.database.kept_rows import KeptRows
 from core.base.profile.model_tier import ModelTier
 from core.base.provider.providers import Providers
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.minimum import Minimum
-from core.base.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.query.conditions.minimum import Minimum
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_tag import TaskTag

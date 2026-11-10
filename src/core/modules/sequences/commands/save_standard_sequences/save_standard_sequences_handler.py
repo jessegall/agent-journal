@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.base.repository.standard_rows import StandardRows
 from core.modules.sequences.commands.save_standard_sequences.save_standard_sequences import SaveStandardSequences
 from core.modules.sequences.models.sequence import Sequence

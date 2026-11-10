@@ -8,7 +8,7 @@ from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.chat.commands.show_mark.show_mark import ShowMark

@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 from core.base.change.event_log import EventLog
-from core.base.query.query import Query
+from engine.query.query import Query
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors

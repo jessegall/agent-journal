@@ -1,4 +1,4 @@
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob
 from tests.stories.core.modules.helpers.kept_agents import helper_form_server

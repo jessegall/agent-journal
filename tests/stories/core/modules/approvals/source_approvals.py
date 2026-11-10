@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.docking.queries.dock_item_query import DockItemQuery

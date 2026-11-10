@@ -3,7 +3,7 @@ from engine.enums.actor_type import ActorType
 from core.base.change.changed import Changed
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
-from core.base.query.queries import Queries
+from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.support.task_creation import TaskCreation
