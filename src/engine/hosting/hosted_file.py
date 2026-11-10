@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from engine.file.file_access import FileAccess
-from engine.hosting.hosted_file_refusal import HostedFileRefusal
+from engine.hosting.errors.hosted_file_refusal import HostedFileRefusal
 from engine.hosting.hosted_mode import HostedMode
 from engine.hosting.hosting import Hosting
 from engine.journal.journal_home import JournalHome

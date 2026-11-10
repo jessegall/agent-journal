@@ -1,10 +1,10 @@
 import pytest
 
 from engine.hosting.hosted_file import HostedFile
-from engine.hosting.hosted_file_refusal import HostedFileRefusal
+from engine.hosting.errors.hosted_file_refusal import HostedFileRefusal
 from engine.hosting.hosted_mode import HostedMode
 from engine.hosting.hosting import Hosting
-from engine.hosting.local_journal_refusal import LocalJournalRefusal
+from engine.hosting.errors.local_journal_refusal import LocalJournalRefusal
 from tests.stories.support.story_checks import expect_value
 
 HOSTED_TEXT = """public_origin = "https://journal.example.com"

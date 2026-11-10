@@ -5,12 +5,12 @@ import pytest
 from engine.hosting.hosted_mode import HostedMode
 from engine.hosting.hosted_start_check import CGROUP_CONTROLLERS, HostedStartCheck, SYSTEMD_FOLDER
 from engine.hosting.hosting import Hosting
-from engine.hosting.missing_cgroup_refusal import MissingCgroupRefusal
-from engine.hosting.missing_systemd_refusal import MissingSystemdRefusal
-from engine.hosting.shared_user_refusal import SharedUserRefusal
-from engine.hosting.unsupported_kernel_refusal import UnsupportedKernelRefusal
-from engine.hosting.writable_hosted_file_refusal import WritableHostedFileRefusal
-from engine.hosting.wrong_socket_mode_refusal import WrongSocketModeRefusal
+from engine.hosting.errors.missing_cgroup_refusal import MissingCgroupRefusal
+from engine.hosting.errors.missing_systemd_refusal import MissingSystemdRefusal
+from engine.hosting.errors.shared_user_refusal import SharedUserRefusal
+from engine.hosting.errors.unsupported_kernel_refusal import UnsupportedKernelRefusal
+from engine.hosting.errors.writable_hosted_file_refusal import WritableHostedFileRefusal
+from engine.hosting.errors.wrong_socket_mode_refusal import WrongSocketModeRefusal
 from tests.stories.engine.hosting.support.fake_host import FakeHost
 
 HOSTED_FILE = Path("/etc/journal/hosted.toml")
