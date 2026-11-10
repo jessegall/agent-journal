@@ -9,6 +9,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from engine.enums.actor_type import ActorType
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from tests.stories.core.support.agent_labels import agent_number
 
 ROWS_WANTED = 130
 COPY_ROUNDS = 8
@@ -39,7 +40,7 @@ class LargeJournal(StoryFixture):
         for number in range(COMMAND_ROWS):
             story.expect_success(f'task make "Cart part {number}" --brief "Part {number} of the cart; done when it counts" --environment main', actor=story.agent)
             story.expect_success(f"task block {number + 3} --on task:1 --environment main", actor=story.agent)
-            story.expect_success(f'message send "Cart note {number}" --to agent:{story.agent.id} --environment main', actor=story.user)
+            story.expect_success(f'message send "Cart note {number}" --to agent:{agent_number(story, story.agent.id)} --environment main', actor=story.user)
             story.expect_success(f"agent start s-helper-{number} claude helper --parent {story.agent.id} --environment main")
         for session in ("s-1", "s-helper", "s-worker"):
             for sample in (HookSamples.session_start(), HookSamples.prompt("go on"), EDIT, HookSamples.stop()):
