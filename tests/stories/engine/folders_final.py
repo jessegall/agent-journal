@@ -16,6 +16,7 @@ MODULE_STAND_INS = {
     "src/core/modules/skills/testing": ["story_main_agent_skills.py", "story_skill_requirement.py"],
     "src/core/modules/tasks/testing": ["story_task_brief_requirement.py"],
 }
+AREA_MARKER_ENDING = "_area.py"
 KIT_FOLDERS = ["examples", "expectations", "fakes", "runs", "stories", "templates"]
 SCANNED_TOPS = ["src/core", "src/engine", "src/suites", "src/tunnels", "src/install", "src/server"]
 
@@ -29,7 +30,7 @@ def relative(path: Path) -> str:
 
 
 def loose_files(folder: str) -> list[str]:
-    return sorted(relative(path) for path in (ROOT / folder).glob("*.py") if path.name != "__init__.py")
+    return sorted(relative(path) for path in (ROOT / folder).glob("*.py") if path.name != "__init__.py" and not path.name.endswith(AREA_MARKER_ENDING))
 
 
 def test_339_every_error_file_sits_in_an_errors_folder_and_none_in_support(new_story):

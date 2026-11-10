@@ -121,3 +121,20 @@ def test_a_dry_run_names_the_files_and_changes_nothing(tmp_path):
     report = script.move_path(tmp_path, tmp_path / SOURCE, tmp_path / TARGET, dry_run=True)
     assert report == ["change src/core/user.py", "1 Python files and 0 other files change"]
     assert importer.read_text() == "from core.former.sample_error import SampleError\n" and (tmp_path / SOURCE).is_file()
+
+
+def test_a_list_of_moves_is_made_in_one_pass_with_every_import_rewritten(tmp_path):
+    importer = project(tmp_path, "from core.former.sample_error import SampleError\nfrom core.former.sample_state import SampleState\n")
+    write(tmp_path, "src/core/former/sample_state.py", "from core.former.sample_error import SampleError\n\n\nclass SampleState:\n    pass\n")
+    pairs = [(tmp_path / SOURCE, tmp_path / TARGET), (tmp_path / "src/core/former/sample_state.py", tmp_path / "src/engine/enums/sample_state.py")]
+    report = script.move_listed(tmp_path, pairs)
+    assert report[0] == "2 moves in one pass"
+    assert importer.read_text() == "from engine.errors.sample_error import SampleError\nfrom engine.enums.sample_state import SampleState\n"
+    assert (tmp_path / "src/engine/enums/sample_state.py").read_text().startswith("from engine.errors.sample_error import SampleError\n")
+    assert not (tmp_path / SOURCE).exists() and (tmp_path / TARGET).is_file()
+
+
+def test_a_list_line_without_a_target_is_refused(tmp_path):
+    list_file = write(tmp_path, "moves.txt", "src/core/former/sample_error.py\n")
+    with pytest.raises(script.MoveError, match="names a source and a target"):
+        script.listed_pairs(tmp_path, list_file)

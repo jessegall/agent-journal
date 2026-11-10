@@ -1,4 +1,5 @@
-"""Moves a Python file or a whole folder to another path, with its test files, and rewrites every reference in the same pass."""
+"""Moves a Python file or a whole folder to another path, with its test files, and rewrites every reference in the same pass.
+With --list <file> it makes many moves, one source and target on each line, in one pass over the tree."""
 
 import argparse
 import ast
@@ -447,10 +448,26 @@ def applied_move(root: Path, plan: MovePlan, changed: dict[Path, str]) -> None:
         package_file.write_text("")
 
 
-def move_path(root: Path, source: Path, target: Path, leave_alias: bool = False, dry_run: bool = False) -> list[str]:
-    if leave_alias:
-        raise MoveError(f"{relative_text(root, source)}: a move leaves no alias at the old path")
-    plan = move_plan(root, source, target)
+def merged_plan(plans: Sequence[MovePlan]) -> MovePlan:
+    return MovePlan(
+        {source: target for plan in plans for source, target in plan.file_targets.items()},
+        tuple(path for plan in plans for path in plan.dropped_files),
+        tuple(folder for plan in plans for folder in plan.emptied_folders),
+        tuple(rename for plan in plans for rename in plan.renames),
+        all(plan.guards_moved_lines for plan in plans),
+        tuple(line for plan in plans for line in plan.report_lines),
+    )
+
+
+def listed_pairs(root: Path, list_file: Path) -> list[tuple[Path, Path]]:
+    pairs = [line.split() for line in list_file.read_text().splitlines() if line.strip()]
+    wrong = [" ".join(pair) for pair in pairs if len(pair) != 2]
+    if wrong:
+        raise MoveError("each line of the list names a source and a target:\n" + "\n".join(wrong))
+    return [(root / source, root / target) for source, target in pairs]
+
+
+def move_planned(root: Path, plan: MovePlan, dry_run: bool) -> list[str]:
     changed = planned_files(root, plan)
     report = [*plan.report_lines, *(f"change {relative_text(root, path)}" for path in changed)]
     report += listed_files(root, RECORDING_FILE_PATTERNS, plan.renames, "not rewritten, a recording:")
@@ -460,6 +477,17 @@ def move_path(root: Path, source: Path, target: Path, leave_alias: bool = False,
     if not dry_run:
         applied_move(root, plan, changed)
     return report
+
+
+def move_path(root: Path, source: Path, target: Path, leave_alias: bool = False, dry_run: bool = False) -> list[str]:
+    if leave_alias:
+        raise MoveError(f"{relative_text(root, source)}: a move leaves no alias at the old path")
+    return move_planned(root, move_plan(root, source, target), dry_run)
+
+
+def move_listed(root: Path, pairs: Sequence[tuple[Path, Path]], dry_run: bool = False) -> list[str]:
+    plan = merged_plan([move_plan(root, source, target) for source, target in pairs])
+    return [f"{len(pairs)} moves in one pass", *move_planned(root, plan, dry_run)]
 
 
 def git_output(folder: Path, *arguments: str) -> str:
@@ -497,15 +525,21 @@ def main() -> int:
     parser.add_argument("source", nargs="?")
     parser.add_argument("target", nargs="?")
     parser.add_argument("--branch", help="applies the move to this open branch in a temporary worktree and commits it there")
+    parser.add_argument("--list", help="a file with one move on each line, source and target: all are made in one pass over the tree")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--leave-alias", action="store_true")
     arguments = parser.parse_args()
-    source, target = arguments.source, arguments.target
-    if source is None or target is None:
-        parser.error("name a source and a target")
+    parser_error = "name a source and a target, or a list of them"
+    if arguments.list is None and (arguments.source is None or arguments.target is None):
+        parser.error(parser_error)
     root = Path(__file__).resolve().parents[1]
     try:
-        report = move_branch(root, arguments.branch, source, target) if arguments.branch else move_path(root, root / source, root / target, arguments.leave_alias, arguments.dry_run)
+        if arguments.list is not None:
+            report = move_listed(root, listed_pairs(root, Path(arguments.list)), arguments.dry_run)
+        elif arguments.branch:
+            report = move_branch(root, arguments.branch, arguments.source, arguments.target)
+        else:
+            report = move_path(root, root / arguments.source, root / arguments.target, arguments.leave_alias, arguments.dry_run)
     except MoveError as refusal:
         print(f"refused: {refusal}", file=sys.stderr)
         return 1

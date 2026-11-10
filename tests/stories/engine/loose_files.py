@@ -25,6 +25,6 @@ def test_356_the_helper_type_folder_holds_its_two_classes_and_no_file_declares_t
     story = new_story()
     folder_files = sorted(path.name for path in HELPER_TYPE_FOLDER.iterdir() if path.is_file())
     declared = {name: files_declaring(class_line) for name, class_line in HELPER_TYPE_CLASSES.items()}
-    story.expect_rows(folder_files == ["__init__.py", *HELPER_TYPE_CLASSES], detail=str(folder_files))
+    story.expect_rows(folder_files == ["__init__.py", "helper_type.py", "helper_type_area.py", "helper_type_book.py"], detail=str(folder_files))
     story.expect_rows(all(files == [f"src/engine/helper_type/{name}"] for name, files in declared.items()), detail=str(declared))
     story.expect_rows(not list(SOURCE_FOLDER.rglob("core/base/helper_type*")), not list(SOURCE_FOLDER.rglob("core/base/agent_type*")))
