@@ -8,7 +8,7 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 
-class StalledWorkerTests:
+class StalledWorkerTestRuns:
     """Every minute, tests no run holds are moved along: a proof of a task in testing whose test nothing queued, as
     after a proof edit, is queued, and a queued test a server update left behind is started."""
 

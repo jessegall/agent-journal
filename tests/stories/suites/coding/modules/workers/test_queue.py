@@ -357,11 +357,11 @@ def test_a_queued_proof_survives_the_workers_first_hook_on_a_freshly_started_ser
 
 
 def test_a_queued_proof_whose_runner_never_started_is_launched_again_and_counts(new_story, monkeypatch):
-    from suites.coding.modules.workers.ticks.unlaunched_worker_tests import UnlaunchedWorkerTests
+    from suites.coding.modules.workers.ticks.unlaunched_worker_test_runs import UnlaunchedWorkerTestRuns
     story, _, _, started = queued_story(new_story, monkeypatch)
     expect_answers(started, 1)
     story.advance(timedelta(seconds=40))
-    UnlaunchedWorkerTests()(story.container)
+    UnlaunchedWorkerTestRuns()(story.container)
     expect_answers(started, 2)
     expect_answers(set(started), 1)
     story.expect_text("proof show 1", "state: running", actor=story.agent)

@@ -9,7 +9,7 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from core.modules.plans.support.task_plans import TaskPlans
 from core.modules.tasks.models.task import Task
-from suites.coding.modules.workers.ticks.stalled_worker_tests import StalledWorkerTests
+from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_folder, story_repository
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
@@ -114,7 +114,7 @@ def test_a_clash_with_the_base_branch_stops_the_move(conflict_waiting):
 
 
 def test_the_stalled_test_tick_does_not_start_the_proofs_of_a_task_moved_past(advanced_with_test):
-    StalledWorkerTests()(advanced_with_test.story.container)
+    StalledWorkerTestRuns()(advanced_with_test.story.container)
     advanced_with_test.story.expect_rows(advanced_with_test.started == [])
     advanced_with_test.story.expect_text("proof show 1", "state: shown", actor=advanced_with_test.story.agent)
 
@@ -124,7 +124,7 @@ def test_the_stalled_test_tick_starts_a_test_left_behind_after_the_hand_in_of_a_
         stopped_server.setattr(WorkerTestListener, "start_next", lambda listener, logged: None)
         last_task.story.expect_text("worker next --wait --differences none", "queued", actor=last_task.worker)
     last_task.story.expect_text("proof show 1", "state: queued", actor=last_task.story.agent)
-    StalledWorkerTests()(last_task.story.container)
+    StalledWorkerTestRuns()(last_task.story.container)
     last_task.story.expect_text("proof show 1", "state: running", actor=last_task.story.agent)
 
 

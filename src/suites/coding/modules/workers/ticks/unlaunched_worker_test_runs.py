@@ -13,7 +13,7 @@ from suites.coding.modules.workers.support.worker_test_launch import WorkerTestL
 LAUNCH_GRACE_SECONDS = 30
 
 
-class UnlaunchedWorkerTests:
+class UnlaunchedWorkerTestRuns:
     """Every 15 seconds, a worker test whose run is open but whose runner never started, as when a server update came
     between the run and its launch, is launched a second time, before the run is ended as lost."""
 

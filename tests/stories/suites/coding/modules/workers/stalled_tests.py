@@ -3,7 +3,9 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from suites.coding.modules.workers.listeners.worker_test_listener import WorkerTestListener
-from suites.coding.modules.workers.ticks.stalled_worker_tests import StalledWorkerTests
+from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
+from suites.coding.modules.workers.ticks.unlaunched_worker_test_runs import UnlaunchedWorkerTestRuns
+from suites.coding.modules.workers.workers_module import WorkersModule
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, recording_launch
@@ -29,7 +31,7 @@ def test_a_queued_test_a_server_update_left_behind_is_started_by_the_tick(two_ta
         stopped_server.setattr(WorkerTestListener, "start_next", lambda listener, logged: None)
         story.expect_text("worker next --wait --differences none", "are queued", actor=worker)
     story.expect_text("proof show 1 --environment main", "state: queued")
-    StalledWorkerTests()(story.container)
+    StalledWorkerTestRuns()(story.container)
     story.expect_text("proof show 1", "state: running", actor=story.agent)
 
 
@@ -56,7 +58,7 @@ def edited_proof(two_tasks):
 
 def test_the_tick_queues_a_test_a_proof_edit_left_behind(edited_proof):
     story, _, _ = edited_proof
-    StalledWorkerTests()(story.container)
+    StalledWorkerTestRuns()(story.container)
     story.expect_text("proof show 1", "state: running", actor=story.agent)
 
 
@@ -71,3 +73,17 @@ def test_with_nothing_to_run_and_a_proof_left_to_check_the_worker_goes_on(new_st
     story.expect_success("worker next --wait --differences none", actor=worker)
     story.expect_text("task show 1", "state: testing", actor=story.agent)
     story.expect_text("task show 2", "state: started", actor=story.agent)
+
+
+def minute_tick_names():
+    return {type(tick.handler).__name__ for tick in WorkersModule.tick_handlers}
+
+
+def test_the_tick_that_starts_waiting_test_runs_is_named_for_test_runs(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    story.expect_rows(StalledWorkerTestRuns.__name__ in minute_tick_names(), "StalledWorkerTests" not in minute_tick_names())
+
+
+def test_the_tick_that_launches_a_test_run_again_is_named_for_test_runs(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    story.expect_rows(UnlaunchedWorkerTestRuns.__name__ in minute_tick_names(), "UnlaunchedWorkerTests" not in minute_tick_names())
