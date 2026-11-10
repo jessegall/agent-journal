@@ -10,6 +10,7 @@ from engine.profile.agent_profile import AgentProfile
 from engine.registry.agent_group_entry import AgentGroupEntry
 from engine.helper_type.helper_type_book import MAIN_KEY, HelperTypeBook
 from engine.module.module import Module
+from engine.module.suite_list import SuiteList
 from engine.registry.helper_type_entry import HelperTypeEntry
 from engine.registry.driver_rule_entry import DriverRuleEntry
 
@@ -20,20 +21,20 @@ AGENTS_MODULE = "journal.core.agents"
 class HelperTypeCheck:
     """Checks helper type declarations and every role modules use before a sync writes anything."""
 
-    def problems(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
+    def problems(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry], suites: SuiteList) -> tuple[str, ...]:
         claimed: dict[str, str] = {}
         problems: list[str] = []
         for module in modules:
-            for declaration in module.declared_helper_types():
+            for declaration in suites.helper_types(module):
                 problems.extend(self.declaration_problems(module, declaration, claimed))
         if problems:
             return tuple(problems)
-        entries = tuple(HelperTypeEntry.declared(module.name, declaration) for module in modules for declaration in module.declared_helper_types())
+        entries = tuple(HelperTypeEntry.declared(module.name, declaration) for module in modules for declaration in suites.helper_types(module))
         book = HelperTypeBook(entries)
-        problems.extend(problem for module in modules for declaration in module.declared_helper_types()
+        problems.extend(problem for module in modules for declaration in suites.helper_types(module)
                         for problem in self.inheritance_problems(module.name, declaration, book))
         profiles = {profile.name: profile for module in modules for profile in module.profiles}
-        for declaration in (declaration for module in modules for declaration in module.declared_helper_types() if declaration.default_profile):
+        for declaration in (declaration for module in modules for declaration in suites.helper_types(module) if declaration.default_profile):
             if declaration.default_profile not in profiles:
                 problems.append(f"{declaration.key}: default profile {declaration.default_profile} is not registered")
                 continue
@@ -42,8 +43,8 @@ class HelperTypeCheck:
                 problems.append(f"{declaration.key}: default profile {profile.name} has type {profile.agent_type}, not {declaration.key}")
         names = frozenset(book.entries)
         uses = [(driver.name, driver.role) for module in modules for driver in module.drivers]
-        uses.extend((suite.name, role) for module in modules for suite in module.suites for role in suite.defaults)
-        uses.extend((suite.name, role) for module in modules for suite in module.suites
+        uses.extend((suite.name, role) for module in modules for suite in suites.shipped_suites(module) for role in suite.defaults)
+        uses.extend((suite.name, role) for module in modules for suite in suites.shipped_suites(module)
                     for field in fields(suite.agent_policy) if field.name.endswith("_roles")
                     for role in getattr(suite.agent_policy, field.name))
         uses.extend((rule.name, role) for rule in rules for role in rule.roles)

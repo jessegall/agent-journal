@@ -3,6 +3,7 @@ from dataclasses import replace
 
 from engine.driver.driver_rule import DriverRule
 from engine.module.module import Module
+from engine.module.suite_list import SuiteList
 from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.driver_entry import DriverEntry
 from engine.registry.driver_rule_entry import DriverRuleEntry
@@ -16,12 +17,12 @@ class DriverEntries:
     """The registry entries of the modules' suites, drivers, overlays and driver rules, in sync order: per
     module, each driver's rules, each overlay's rules, then the rules the module adds."""
 
-    def suites(self, modules: Sequence[type[Module]], shipped_modules: Sequence[type[Module]]) -> tuple[SuiteEntry, ...]:
+    def suites(self, modules: Sequence[type[Module]], shipped_modules: Sequence[type[Module]], suites: SuiteList) -> tuple[SuiteEntry, ...]:
         return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), {str(role): driver for role, driver in suite.defaults.items()}, suite.complete_control, tuple(suite.included_overlays),
                                       tuple(suite.windows), dict(suite.layouts), {page: tuple(presets) for page, presets in suite.presets.items()},
                                       suite.agent_policy,
                                       DottedPath.class_path(suite.task_assigner).text if suite.task_assigner else "", shipped=module in shipped_modules)
-                     for module in modules for suite in module.suites)
+                     for module in modules for suite in suites.shipped_suites(module))
 
     def drivers(self, modules: Sequence[type[Module]]) -> tuple[DriverEntry, ...]:
         return tuple(DriverEntry(driver.name, DottedPath.class_path(driver), module.name, driver.suite.name, driver.role, tuple(driver.opening_lines),

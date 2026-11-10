@@ -11,6 +11,7 @@ from engine.driver.suite import Suite
 from engine.module.driver_entries import DriverEntries
 from engine.module.module import Module
 from engine.module.suite_check import SuiteCheck
+from engine.module.suite_list import SuiteList
 from engine.enums.agent_role import AgentRole
 
 
@@ -78,7 +79,7 @@ def module(name: str, dependencies: Sequence[str] = (), **lists: object) -> type
 
 
 def problems(*modules: type[Module]) -> list[str]:
-    return list(SuiteCheck().problems(modules, DriverEntries().rules(modules)))
+    return list(SuiteCheck().problems(modules, DriverEntries().rules(modules), SuiteList([])))
 
 
 def test_a_suite_with_its_drivers_passes_and_a_default_may_name_a_driver_not_installed_yet():

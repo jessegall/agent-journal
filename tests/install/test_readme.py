@@ -20,10 +20,11 @@ def documented_commands() -> set[str]:
 
     sys.path.insert(0, str(ROOT / "src"))
     from core.modules import DEFAULT_MODULES
+    from engine.module.suite_list import SuiteList
     from suites import DEFAULT_SUITES
 
     documented = set(CLI_ENTRY_COMMANDS)
-    for module in (*DEFAULT_MODULES, *DEFAULT_SUITES):
+    for module in (*DEFAULT_MODULES, *SuiteList(DEFAULT_SUITES).modules()):
         documented |= {subcommand.cli_name for subcommand in module.subcommands} | {declaration.model.cli_name for declaration in module.models}
     return documented
 

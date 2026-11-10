@@ -7,8 +7,10 @@ from engine.dotted_path.errors.dotted_path_error import DottedPathError
 
 from engine.journal.journal_home import JournalHome
 from engine.dotted_path.dotted_path import DottedPath
+from engine.driver.suite import Suite
 from engine.module.module import Module
 from engine.module.errors.module_error import ModuleError
+from engine.module.suite_list import SuiteList
 from engine.module.version_requirement import VersionRequirement
 from engine.version.version import CORE_VERSION
 from engine.types.type_guards import is_list, is_tuple
@@ -17,25 +19,39 @@ DEFAULT_MODULE_LISTS = [DottedPath("core.modules:DEFAULT_MODULES"), DottedPath("
 
 
 class ModuleFinder:
-    """Finds the modules to load: the core's default modules, the suites and the tunnels shipped beside the
-    core, then the plugins the project's modules.json lists, each refused if it needs a core version this
-    core is not."""
+    """Finds the modules to load: the core's default modules, the modules of the suites and the tunnels shipped
+    beside the core, then the plugins the project's modules.json lists, each refused if it needs a core
+    version this core is not. A list entry is a module, or a suite, which loads with the modules it lists."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home
         self.plugin_lists: dict[FileVersion, tuple[str, ...]] = {}
 
     def modules(self) -> tuple[type[Module], ...]:
-        return (*self.default_modules(), *(self.checked(DottedPath(path)) for path in self.plugin_paths()))
+        plugin_modules = (module for path in self.plugin_paths() for module in self.entry_modules(self.loaded_entry(DottedPath(path)), path))
+        return tuple(dict.fromkeys((*self.default_modules(), *plugin_modules)))
 
     def default_modules(self) -> tuple[type[Module], ...]:
-        return tuple(module for path in DEFAULT_MODULE_LISTS for module in self.listed_modules(path))
+        return tuple(dict.fromkeys(module for path in DEFAULT_MODULE_LISTS for module in self.listed_modules(path)))
 
     def listed_modules(self, path: DottedPath) -> tuple[type[Module], ...]:
+        return tuple(module for item in self.listed_entries(path) for module in self.entry_modules(item, path.text))
+
+    def listed_entries(self, path: DottedPath) -> tuple[object, ...]:
         listed = path.value()
         if not (is_tuple(listed) or is_list(listed)):
             raise ModuleError(f"{path.text} is no list of modules")
-        return tuple(self.module(item, path.text) for item in listed)
+        return tuple(listed)
+
+    def entry_modules(self, entry: object, source: str) -> tuple[type[Module], ...]:
+        if isinstance(entry, type) and issubclass(entry, Suite):
+            return tuple(self.module(module, f"suite {entry.name}") for module in entry.modules)
+        return tuple([self.module(entry, source)])
+
+    def suite_list(self) -> SuiteList:
+        default_entries = [entry for path in DEFAULT_MODULE_LISTS for entry in self.listed_entries(path)]
+        entries = [*default_entries, *(self.loaded_entry(DottedPath(path)) for path in self.plugin_paths())]
+        return SuiteList([entry for entry in entries if isinstance(entry, type) and issubclass(entry, Suite)])
 
     def plugin_paths(self) -> tuple[str, ...]:
         if not self.home.module_list.exists():
@@ -54,13 +70,12 @@ class ModuleFinder:
         self.plugin_lists = {version: tuple(paths)}
         return self.plugin_lists[version]
 
-    def checked(self, path: DottedPath) -> type[Module]:
+    def loaded_entry(self, path: DottedPath) -> object:
         self.enable_imports()
         try:
-            loaded = path.loaded()
+            return path.loaded()
         except (ImportError, DottedPathError, SyntaxError) as error:
             raise ModuleError.import_failed(path.text, error) from error
-        return self.module(loaded, path.text)
 
     def enable_imports(self) -> None:
         folder = str(self.home.modules_folder.resolve())

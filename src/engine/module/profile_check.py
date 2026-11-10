@@ -2,6 +2,7 @@ from collections.abc import Sequence
 
 from engine.enums.access import Access
 from engine.module.module import Module
+from engine.module.suite_list import SuiteList
 from engine.profile.agent_profile import AgentProfile
 from engine.profile.profile_name import PROFILE_NAME
 from engine.helper_type.helper_type import HelperType
@@ -10,10 +11,10 @@ from engine.helper_type.helper_type import HelperType
 class ProfileCheck:
     """Checks module profiles and refuses old suite declarations before sync writes anything."""
 
-    def problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
-        types = {declaration.key: declaration for module in modules for declaration in module.declared_helper_types()}
+    def problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
+        types = {declaration.key: declaration for module in modules for declaration in suites.helper_types(module)}
         claimed: dict[str, str] = {}
-        problems = [f"{suite.name}: register profiles on the module, not the suite" for module in modules for suite in module.suites
+        problems = [f"{suite.name}: register profiles on the module, not the suite" for module in modules for suite in suites.shipped_suites(module)
                     if hasattr(suite, "profiles") or hasattr(suite, "profile_types")]
         for module in modules:
             for profile in module.profiles:

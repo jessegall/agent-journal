@@ -62,11 +62,11 @@ class WindowCheck:
         return [f"{window.name} is a section and names no slot" for module in modules for window in module.windows
                 if window.place is WindowPlace.SECTION and not window.slots and window.name not in component_windows]
 
-    @staticmethod
-    def suite_section_problems(modules: Sequence[type[Module]]) -> list[str]:
+    def suite_section_problems(self, modules: Sequence[type[Module]]) -> list[str]:
+        suites = self.finder.suite_list()
         sections = {window.name for module in modules for window in module.windows if window.place is WindowPlace.SECTION}
         return [f"suite {suite.name} names the section {name}, which an inspector draws and no pane offers"
-                for module in modules for suite in module.suites for name in suite.windows if name in sections]
+                for module in modules for suite in suites.shipped_suites(module) for name in suite.windows if name in sections]
 
     def button_problems(self, modules: Sequence[type[Module]], shipped: set[str]) -> list[str]:
         buttons = self.mark_dock_lines(modules, shipped)

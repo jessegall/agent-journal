@@ -5,6 +5,7 @@ from pathlib import Path
 from core.modules.viewer.commands.support.window_lines import WINDOW_SETTING_LINES
 from core.modules.viewer.viewer_module import ViewerModule
 from core.modules import DEFAULT_MODULES
+from engine.module.suite_list import SuiteList
 from suites import DEFAULT_SUITES
 from engine.module.window_extensions import WindowExtensions
 from engine.enums.window_place import WindowPlace
@@ -17,7 +18,7 @@ BUILD_ENTRIES = {"main.js", "index.js", "vite.config.js", "vitest.config.js", "b
 READ_LINE = re.compile(r"""(?:context\.read\(|useRows\()[`"']([a-z-]+ [a-z-]+)""")
 RUN_LINE = re.compile(r"""context\.run\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
 SHELL_LINE = re.compile(r"""\b(?:read|shellRead|shellLine)\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
-EXTENSIONS = WindowExtensions((*DEFAULT_MODULES, *DEFAULT_SUITES))
+EXTENSIONS = WindowExtensions((*DEFAULT_MODULES, *SuiteList(DEFAULT_SUITES).modules()))
 INTERNAL_WINDOWS = {"questions.question", "viewer.shell", "suggestions.suggestions", "reviews.reviewer", "reviews.reviewers", "phone.phones", "usage.fitness"}
 SKIPPED_FOLDERS = {"node_modules", "dist", "__pycache__", "tests"}
 

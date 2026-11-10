@@ -110,10 +110,6 @@ class Module:
         return getattr(cls, "plugin_moments", cls.declared_plugin_events)
 
     @classmethod
-    def declared_helper_types(cls) -> list[HelperType]:
-        return [*cls.helper_types, *(declaration for suite in cls.suites for declaration in suite.helper_types)]
-
-    @classmethod
     def declared_buttons(cls) -> list[ButtonDeclaration]:
         return [*cls.buttons, *(action for inspector in cls.inspectors for action in inspector.slotted_actions())]
 

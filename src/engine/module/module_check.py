@@ -77,11 +77,11 @@ class ModuleCheck:
 
     def check(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> None:
         problems = (self.duplicate_names(modules, rules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.duplicate_event_keys(modules) + self.duplicate_handlers(modules)
-                    + self.duplicate_subcommands(modules) + self.suites.problems(modules, rules) + self.windows.problems(modules, self.known_events(modules)) + self.inspectors.problems(modules, self.known_events(modules))
+                    + self.duplicate_subcommands(modules) + self.suites.problems(modules, rules, self.finder.suite_list()) + self.windows.problems(modules, self.known_events(modules)) + self.inspectors.problems(modules, self.known_events(modules))
                     + self.providers.problems(modules) + self.marks.problems(modules) + self.docks.problems(modules) + self.settings.problems(modules)
                     + self.skills.problems(modules, self.known_events(modules)) + self.moves.problems(modules) + self.templates.problems(modules) + self.states.problems(modules)
                     + self.buttons.declared_problems(modules, frozenset(module.name for module in self.finder.default_modules()))
-                    + self.helper_types.problems(modules, rules) + self.profiles.problems(modules))
+                    + self.helper_types.problems(modules, rules, self.finder.suite_list()) + self.profiles.problems(modules, self.finder.suite_list()))
         if problems:
             raise ModuleError("the modules cannot be synced: " + "; ".join(problems))
 

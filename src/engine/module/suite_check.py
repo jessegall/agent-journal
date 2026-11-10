@@ -4,6 +4,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.suite import Suite
 from engine.module.module import Module
 from engine.module.name_groups import NameGroups
+from engine.module.suite_list import SuiteList
 from engine.registry.driver_rule_entry import ANY_HOOK, DriverRuleEntry
 from engine.viewer.layout_shape import layout_windows
 
@@ -13,16 +14,16 @@ class SuiteCheck:
     through dependencies, defaults that fit their role and suite, presets that show only the suite's windows
     under keys of their own, and who owns each rule."""
 
-    def problems(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
-        return (self.duplicates(modules) + self.unknown_requirements(modules) + self.requirement_loops(modules) + self.driver_suites(modules)
-                + self.wrong_suite_drivers(modules) + self.wrong_defaults(modules) + self.preset_problems(modules) + self.rule_owners(modules, rules)
-                + self.unknown_hooks(rules) + self.module_memberships(modules))
+    def problems(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry], suites: SuiteList) -> tuple[str, ...]:
+        return (suites.problems() + self.duplicates(modules, suites) + self.unknown_requirements(modules, suites) + self.requirement_loops(modules, suites)
+                + self.driver_suites(modules, suites) + self.wrong_suite_drivers(modules) + self.wrong_defaults(modules, suites) + self.preset_problems(modules, suites)
+                + self.rule_owners(modules, rules) + self.unknown_hooks(rules) + self.module_memberships(modules, suites))
 
-    def module_memberships(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
-        owners = self.suite_modules(modules)
+    def module_memberships(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
+        owners = self.suite_modules(modules, suites)
         problems: list[str] = []
         for module in modules:
-            suite = module.parent_suite
+            suite = suites.parent_name(module)
             if suite is None:
                 continue
             if suite not in owners:
@@ -33,21 +34,21 @@ class SuiteCheck:
                                 "which it does not depend on")
         return tuple(problems)
 
-    def suite_modules(self, modules: Sequence[type[Module]]) -> Mapping[str, str]:
-        return {suite.name: module.name for module in modules for suite in module.suites}
+    def suite_modules(self, modules: Sequence[type[Module]], suites: SuiteList) -> Mapping[str, str]:
+        return {suite.name: module.name for module in modules for suite in suites.shipped_suites(module)}
 
-    def duplicates(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
-        groups = (("suites", [suite.name for module in modules for suite in module.suites]), ("drivers", [driver.name for module in modules for driver in module.drivers]),
+    def duplicates(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
+        groups = (("suites", [suite.name for module in modules for suite in suites.shipped_suites(module)]), ("drivers", [driver.name for module in modules for driver in module.drivers]),
                   ("overlays", [overlay.name for module in modules for overlay in module.overlays]))
         return NameGroups.duplicates(groups)
 
-    def unknown_requirements(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
-        shipped = self.suite_modules(modules)
+    def unknown_requirements(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
+        shipped = self.suite_modules(modules, suites)
         return tuple(f"suite {suite.name} requires suite {required}: install the module that ships it first"
-                     for module in modules for suite in module.suites for required in suite.requires if required not in shipped)
+                     for module in modules for suite in suites.shipped_suites(module) for required in suite.requires if required not in shipped)
 
-    def requirement_loops(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
-        requires = {suite.name: tuple(suite.requires) for module in modules for suite in module.suites}
+    def requirement_loops(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
+        requires = {suite.name: tuple(suite.requires) for module in modules for suite in suites.shipped_suites(module)}
         return tuple(f"suite {name} requires itself through {' -> '.join(path)}" for name in sorted(requires) if (path := self.loop(name, requires)))
 
     def loop(self, start: str, requires: Mapping[str, Sequence[str]]) -> list[str]:
@@ -59,8 +60,8 @@ class SuiteCheck:
             paths += [[*path, required] for required in requires.get(path[-1], ()) if required not in path[1:]]
         return []
 
-    def driver_suites(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
-        owners = self.suite_modules(modules)
+    def driver_suites(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
+        owners = self.suite_modules(modules, suites)
         problems: list[str] = []
         for module in modules:
             reachable = {module.name, *module.dependencies}
@@ -75,9 +76,9 @@ class SuiteCheck:
         return tuple(f"driver {driver.name} belongs to suite {driver.suite.name}, so its name starts {driver.suite.name}."
                      for module in modules for driver in module.drivers if driver.name.partition(".")[0] != driver.suite.name)
 
-    def wrong_defaults(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
+    def wrong_defaults(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
         roles = {driver.name: driver.role for module in modules for driver in module.drivers}
-        return tuple(problem for module in modules for suite in module.suites for role, driver in suite.defaults.items()
+        return tuple(problem for module in modules for suite in suites.shipped_suites(module) for role, driver in suite.defaults.items()
                      for problem in self.default_problems(suite, role, driver, roles))
 
     def default_problems(self, suite: type[Suite], role: str, driver: str, roles: Mapping[str, str]) -> Iterator[str]:
@@ -86,11 +87,11 @@ class SuiteCheck:
         elif driver in roles and roles[driver] != role:
             yield f"suite {suite.name} gives role {role} driver {driver}, which drives role {roles[driver]}"
 
-    def preset_problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
-        suites = {suite.name: suite for module in modules for suite in module.suites}
+    def preset_problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
+        loaded_suites = {suite.name: suite for module in modules for suite in suites.shipped_suites(module)}
         problems: list[str] = []
-        for suite in suites.values():
-            offered = {window for name in (suite.name, *suite.requires) if name in suites for window in suites[name].windows}
+        for suite in loaded_suites.values():
+            offered = {window for name in (suite.name, *suite.requires) if name in loaded_suites for window in loaded_suites[name].windows}
             for page, presets in suite.presets.items():
                 keys = [preset.key for preset in presets]
                 problems += [f"suite {suite.name} offers two presets keyed {key} for {page}" for key in dict.fromkeys(keys) if keys.count(key) > 1]

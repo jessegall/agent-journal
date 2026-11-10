@@ -5,6 +5,7 @@ from pathlib import Path
 from engine.registry.setting_tree import SettingTree
 from engine.setting.setting_declaration import GROUP_TYPE, REFERENCE_TYPE
 from core.modules import DEFAULT_MODULES
+from engine.module.suite_list import SuiteList
 from suites import DEFAULT_SUITES
 from tests.unit.source_tree import source_tree
 from tunnels import DEFAULT_TUNNELS
@@ -78,7 +79,7 @@ def source_index() -> CodeIndex:
 
 
 def declared_settings() -> dict[str, str]:
-    modules = (*DEFAULT_MODULES, *DEFAULT_SUITES, *DEFAULT_TUNNELS)
+    modules = (*DEFAULT_MODULES, *SuiteList(DEFAULT_SUITES).modules(), *DEFAULT_TUNNELS)
     return {entry.key: entry.key.removeprefix(f"{module.name}.") for module in modules for entry in SettingTree().entries(module.name, module.settings)
             if entry.type not in (GROUP_TYPE, REFERENCE_TYPE) and "*" not in entry.key}
 

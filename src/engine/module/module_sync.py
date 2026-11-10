@@ -130,6 +130,7 @@ class ModuleSync:
     def registry(self, modules: tuple[type[Module], ...], rules: tuple[DriverRuleEntry, ...], actor_ids: dict[str, int]) -> Registry:
         guards = sorted((guard for module in modules for guard in module.guards), key=lambda guard: guard.runs_last)
         listeners = [(module, listener) for module in modules for listener in module.listeners]
+        suites = self.finder.suite_list()
         return Registry(
             fingerprint=self.fingerprint.text(modules),
             events=self.check.known_events(modules),
@@ -137,9 +138,7 @@ class ModuleSync:
             declared_plugin_events=tuple(event for module in modules for event in module.plugin_event_names()),
             former_event_keys={former: current for module in modules for former, current in module.former_event_keys.items()},
             module_fingerprints={module.name: self.fingerprint.module_text(module) for module in modules},
-            module_suites={module.name: tuple(dict.fromkeys([suite for suite in
-                           (module.parent_suite, *(suite.name for suite in module.suites)) if suite is not None]))
-                           for module in modules},
+            module_suites={module.name: suites.suite_names(module) for module in modules},
             models={declaration.model.cli_name: ModelEntry(module.name, DottedPath.class_path(declaration.model), tuple(DottedPath.class_path(command).text for command in declaration.commands),
                                                   declaration.excluded_subcommands) for module in modules for declaration in module.models},
             handlers={**DEFAULT_HANDLERS, **{DottedPath.class_path(handler.command).text: DottedPath.class_path(handler) for module in modules for handler in module.handlers}},
@@ -154,7 +153,7 @@ class ModuleSync:
             bindings={DottedPath.class_path(interface).text: DottedPath.class_path(implementation) for module in modules for interface, implementation in module.bindings.items()},
             overlays=self.entries.overlays(modules),
             rules=rules,
-            suites=self.entries.suites(modules, self.finder.default_modules()),
+            suites=self.entries.suites(modules, self.finder.default_modules(), suites),
             drivers=self.entries.drivers(modules),
             windows=self.windows(modules),
             marks=self.marks(modules),
@@ -166,7 +165,7 @@ class ModuleSync:
             inspectors=self.inspectors(modules),
             inspector_slots=tuple(sorted(InspectorSlots(modules).owners)),
             state_additions=tuple(StateAdditionEntry.declared(module.name, addition, module not in self.finder.default_modules()) for module in modules for addition in module.added_states),
-            helper_types=tuple(HelperTypeEntry.declared(module.name, declaration) for module in modules for declaration in module.declared_helper_types()),
+            helper_types=tuple(HelperTypeEntry.declared(module.name, declaration) for module in modules for declaration in suites.helper_types(module)),
             agent_groups=tuple(AgentGroupEntry.declared(module.name, group) for module in modules for group in module.agent_groups),
             profiles=tuple(ProfileEntry.declared(module.name, profile) for module in modules for profile in module.profiles),
             providers=self.providers.providers(modules),
