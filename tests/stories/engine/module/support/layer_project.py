@@ -23,7 +23,7 @@ class LayerProject:
         target.write_text(source)
 
     @staticmethod
-    def declaration(name: str, dotted_folder: str, dependencies: tuple[str, ...] = ()) -> type[Module]:
+    def declaration(name: str, dotted_folder: str, *dependencies: str) -> type[Module]:
         class SampleModule(Module):
             pass
 
@@ -34,7 +34,7 @@ class LayerProject:
 
     def check(self, *declarations: type[Module]) -> list[str]:
         failures = LayerCheck(self.folder, LayerTable(), declarations).failures()
-        reasons = "; ".join(failure.partition(": ")[2] for failure in failures)
+        reasons = "; ".join(failures)
         self.story.steps.append(f"layer check of {self.folder.name}")
         self.story.path.append(f"layer check fails: {reasons}" if failures else "layer check passes")
         return failures
