@@ -1,8 +1,8 @@
 from core.base.module.module import Module
-from core.base.tunnel.tunnel import Tunnel
-from core.base.tunnel.tunnel_state import TunnelState
+from engine.tunnel.tunnel import Tunnel
+from engine.tunnel.tunnel_state import TunnelState
 
-PATH = "tests.stories.core.base.tunnel.support.tunnel_samples"
+PATH = "tests.stories.engine.tunnel.support.tunnel_samples"
 SAMPLE_ADDRESS = "https://sample.tunnel.example"
 
 

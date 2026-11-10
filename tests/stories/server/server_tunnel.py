@@ -1,6 +1,6 @@
 import pytest
 
-from tests.stories.core.base.tunnel.support.tunnel_samples import PATH, SAMPLE_ADDRESS
+from tests.stories.engine.tunnel.support.tunnel_samples import PATH, SAMPLE_ADDRESS
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story
 

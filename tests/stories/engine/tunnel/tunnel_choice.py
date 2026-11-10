@@ -1,6 +1,6 @@
-from core.base.tunnel.tunnel_state import TunnelState
+from engine.tunnel.tunnel_state import TunnelState
 from core.modules.tunnel.support.tunnels import Tunnels
-from tests.stories.core.base.tunnel.support.tunnel_samples import PATH, SAMPLE_ADDRESS
+from tests.stories.engine.tunnel.support.tunnel_samples import PATH, SAMPLE_ADDRESS
 from tests.stories.core.support.fixtures import UserJoined
 
 SERVICE = "journal.core.tunnel.service"

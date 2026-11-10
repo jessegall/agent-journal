@@ -8,7 +8,7 @@ from engine.process.child_process import ChildProcess
 from engine.journal.journal_home import JournalHome
 from engine.process.leftover_process import LeftoverProcess
 from engine.errors.refusal import Refusal
-from core.base.tunnel.tunnel_state import TunnelState
+from engine.tunnel.tunnel_state import TunnelState
 from core.base.serving.server_files import ServerFiles
 from tunnels.tunler.support.tunler_answer import TunlerAnswer
 from tunnels.tunler.support.tunler_installer import TunlerInstaller

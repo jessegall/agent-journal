@@ -1,5 +1,5 @@
-from core.base.tunnel.tunnel import Tunnel
-from core.base.tunnel.tunnel_state import TunnelState
+from engine.tunnel.tunnel import Tunnel
+from engine.tunnel.tunnel_state import TunnelState
 
 
 class NoTunnel(Tunnel):

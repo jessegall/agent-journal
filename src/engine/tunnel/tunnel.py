@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from core.base.tunnel.tunnel_state import TunnelState
+from engine.tunnel.tunnel_state import TunnelState
 
 
 class Tunnel:

@@ -1,4 +1,4 @@
-from core.base.tunnel.tunnel import Tunnel
+from engine.tunnel.tunnel import Tunnel
 # @sin architecture_tunnels_tunnel_module_imported_outside_tunnels
 from tunnels.sample_link.sample_link_module import SampleLinkModule
 
