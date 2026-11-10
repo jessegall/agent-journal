@@ -20,6 +20,7 @@ from suites.coding.modules.workers.support.worker_route_policy import WorkerRout
 from suites.coding.modules.workers.support.worker_route_request import WorkerRouteRequest
 from suites.coding.modules.workers.support.test_command_entry import TEST_COMMAND_EXAMPLE, TestCommandEntry
 from suites.coding.modules.workers.support.plan_worker_tasks import PlanWorkerTasks
+from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 from core.modules.agents.support.agent_label import AgentLabel
 
@@ -27,15 +28,15 @@ from core.modules.agents.support.agent_label import AgentLabel
 class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
     """`journal worker send <n> ["<job>"] [--task <task> ...]`: a worker that reported takes its next job or
     tasks, with its memory of the last, and the answer says whether it runs, is started again or cannot be
-    told."""
+    told. A worker whose program is out keeps the job waiting, and the answer names the program."""
 
     cli_name = "worker"
     name = "send"
     outward = True
 
     def __init__(self, home: JournalHome, agents: AgentRows, requests: WorkerCommandRequest,
-                 tasks: KeptWorkerTasks, policy: WorkerRoutePolicy, flags: WriteFlags, scopes: Scopes, plan_tasks: PlanWorkerTasks, test_names: WorkerTestNames) -> None:
-        self.test_names = test_names
+                 tasks: KeptWorkerTasks, policy: WorkerRoutePolicy, flags: WriteFlags, scopes: Scopes, plan_tasks: PlanWorkerTasks, test_names: WorkerTestNames, resume: WorkerResume) -> None:
+        self.test_names, self.resume = test_names, resume
         self.requests = requests
         self.home, self.agents = home, agents
         self.tasks, self.policy, self.flags, self.scopes = tasks, policy, flags, scopes
@@ -101,6 +102,9 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
             return f"{AgentLabel.from_agent(worker).text} is paused: the job waits until journal agent resume {worker.number}"
         if worker.ended_at is None:
             return f"{AgentLabel.from_agent(worker).text} takes the job" if worker.pid is not None else f"{AgentLabel.from_agent(worker).text} takes the job at its next hook; its process is not recorded, so the journal cannot say whether it runs: journal worker status {worker.number}"
+        program_state = self.resume.program_state(worker)
+        if not program_state.is_ready:
+            return f"{AgentLabel.from_agent(worker).text} waits on {worker.program}: {program_state.wait_line}; the job starts when it is back"
         if not self.home.socket(LAUNCHER_SOCKET).exists():
             return f"{AgentLabel.from_agent(worker).text} is not running and has the job waiting; an ended worker needs the launcher to start again"
         return f"{AgentLabel.from_agent(worker).text} was not running: the job waits until it starts, and you are told if it does not"
