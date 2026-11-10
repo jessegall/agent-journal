@@ -40,3 +40,18 @@ class EndedColdRotationHelper(EndedEachLaunchHelper):
 
     save_line = 'profile save cooling --description "Reads one file" --body "' + ROTATING_BODY + '" --occupant when-cold --program claude --reason needed'
     start_line = 'helper start cooling --brief "Read src/cart.py" --environment main'
+
+
+class StartedEachLaunchHelper(StoryFixture):
+    """A helper of the personal profile rotating, whose occupant is each-launch, with its first job still open."""
+
+    parent = UserBuilder
+
+    def steps(self, story):
+        story.expect_success(SAVE_ROTATING, actor=story.user)
+        launcher = FakeLauncher.listening(story.home.socket("launcher"))
+        story.run(START_ROTATING, actor=story.agent)
+        story.run_listeners()
+        launcher.drain_requests()
+        launcher.server.close()
+        story.home.socket("launcher").unlink()
