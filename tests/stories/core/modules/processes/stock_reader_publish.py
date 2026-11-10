@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.stock_reader import STOCK_READERS, StockReader
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 

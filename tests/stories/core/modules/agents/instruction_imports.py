@@ -2,7 +2,7 @@ from engine.journal.journal_home import JournalHome
 from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from engine.testing.examples.hook_samples import HookSamples
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.fixtures import UserJoined

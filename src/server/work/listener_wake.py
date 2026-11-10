@@ -1,4 +1,4 @@
-from server.listener_thread import ListenerThread
+from server.work.listener_thread import ListenerThread
 from engine.listener.commit_listener_runner import CommitListenerRunner
 
 

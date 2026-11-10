@@ -22,7 +22,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.engine.driver.support.fixtures import LeadStarted, SampleSuiteChoice
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.engine.driver.support.samples import SAMPLES

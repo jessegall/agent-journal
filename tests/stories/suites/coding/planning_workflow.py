@@ -10,7 +10,7 @@ from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.stories.story_fixture import StoryFixture
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import UserBuilder

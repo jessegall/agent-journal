@@ -1,5 +1,5 @@
 from core.modules.profiles.support.profile_files import ProfileFiles
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.core.support.fixtures import UserJoined
 
 NOTES_MODULE = "tests.stories.core.modules.profiles.support.notes_module:NotesModule"

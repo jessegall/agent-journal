@@ -1,7 +1,7 @@
 import pytest
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from engine.testing.examples.hook_samples import HookSamples
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
 from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story
 from tests.stories.core.modules.skills.due import drain_countdown as exhaust_countdown

@@ -73,13 +73,7 @@
                 "file": "src/server/handover_descriptors.py"
             },
             {
-                "file": "src/server/journal_round.py"
-            },
-            {
                 "file": "src/server/journal_server.py"
-            },
-            {
-                "file": "src/server/listener_thread.py"
             },
             {
                 "file": "src/server/request_handler.py"

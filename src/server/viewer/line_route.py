@@ -26,8 +26,8 @@ from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.subcommand.subcommand import Subcommand
 from core.modules.viewer.commands.support.window_lines import WindowLines
 from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS
-from server.listener_thread import ListenerThread
-from server.listener_wake import ListenerWake
+from server.work.listener_thread import ListenerThread
+from server.work.listener_wake import ListenerWake
 from server.viewer.line_answer import LineAnswer
 from server.errors.share_refusal import ShareRefusal
 from server.viewer.share_scope import ShareScope

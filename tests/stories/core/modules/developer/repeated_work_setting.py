@@ -11,7 +11,7 @@ from engine.cli.console import Console
 from engine.cli.line_run import LineRun
 from engine.database.repeated_work import READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS
 from engine.database.reported_findings import ReportedFindings
-from server.listener_thread import ListenerThread
+from server.work.listener_thread import ListenerThread
 from server.viewer.line_route import LineRoute
 from engine.database.statement import Statement
 from engine.query.queries import Queries

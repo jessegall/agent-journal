@@ -76,13 +76,7 @@
                 "file": "src/install/working_tree_install.py"
             },
             {
-                "file": "src/server/booting_work.py"
-            },
-            {
                 "file": "src/server/code_folders.py"
-            },
-            {
-                "file": "src/server/code_sync_work.py"
             },
             {
                 "file": "src/server/code_version.py"
@@ -91,28 +85,7 @@
                 "file": "src/server/handover_descriptors.py"
             },
             {
-                "file": "src/server/journal_round.py"
-            },
-            {
                 "file": "src/server/journal_server.py"
-            },
-            {
-                "file": "src/server/listener_thread.py"
-            },
-            {
-                "file": "src/server/listener_wake.py"
-            },
-            {
-                "file": "src/server/listener_work.py"
-            },
-            {
-                "file": "src/server/ordinary_listener_work.py"
-            },
-            {
-                "file": "src/server/plugin_listener_work.py"
-            },
-            {
-                "file": "src/server/program_stop_listener_work.py"
             },
             {
                 "file": "src/server/request_handler.py"
@@ -125,9 +98,6 @@
             },
             {
                 "file": "src/server/request_log_settings.py"
-            },
-            {
-                "file": "src/server/round_work.py"
             },
             {
                 "file": "src/server/server_backup.py"
@@ -155,9 +125,6 @@
             },
             {
                 "file": "src/server/tracked_requests.py"
-            },
-            {
-                "file": "src/server/urgent_listener_work.py"
             },
             {
                 "file": "src/server/waiting_server.py"

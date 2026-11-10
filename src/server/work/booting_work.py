@@ -5,7 +5,7 @@ from engine.container.container import Container
 from engine.database.database import Database
 from engine.performance.performance_state import PerformanceState
 from engine.process.plugin_script_processes import PluginScriptProcesses
-from server.round_work import RoundWork
+from server.work.round_work import RoundWork
 
 
 class BootingWork(RoundWork):

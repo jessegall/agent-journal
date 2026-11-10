@@ -22,9 +22,6 @@
                 "file": "src/server/client_disconnected.py"
             },
             {
-                "file": "src/server/journal_round.py"
-            },
-            {
                 "file": "src/server/request_log.py"
             },
             {

@@ -4,7 +4,7 @@ from engine.database.registry_table import RegistryTable
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
 from engine.module.module_sync import ModuleSync
-from server.round_work import RoundWork
+from server.work.round_work import RoundWork
 
 
 class CodeSyncWork(RoundWork):

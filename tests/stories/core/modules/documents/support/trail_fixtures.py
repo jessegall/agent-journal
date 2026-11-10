@@ -10,7 +10,7 @@ from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
-from server.listener_thread import ListenerThread
+from server.work.listener_thread import ListenerThread
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.story_line_route import StoryLineRoute
 from tests.stories.server.support.server_client import server_story

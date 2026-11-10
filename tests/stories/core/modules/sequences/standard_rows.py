@@ -9,7 +9,7 @@ from core.modules.sequences.commands.save_standard_sequences.standard_sequences 
 from core.modules.templates.models.template import Template
 from suites.coding.support.coding_templates import CODING_TEMPLATES
 from suites.coding.modules.workers.support.worker_templates import WORKER_TEMPLATES
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 PLAN_BUILDING = "Building a plan"

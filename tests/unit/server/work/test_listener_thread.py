@@ -1,7 +1,7 @@
 import threading
 import time
 
-from server.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
+from server.work.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
 
 TIMEOUT_SECONDS = 10
 

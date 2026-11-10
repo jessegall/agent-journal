@@ -1,5 +1,5 @@
 from core.modules.drivers.support.driver_nudges import JOURNAL_STARTED
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.fixtures import MainEnvironment
 

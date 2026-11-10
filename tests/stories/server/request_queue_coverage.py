@@ -7,8 +7,8 @@ from server.endpoints.cli_endpoint import CliEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
 from server.hook.queue_priority import QueuePriority
 from server.hook.queue_request import QueueRequest
-from server.journal_round import JournalRound
-from server.round_work import RoundWork
+from server.work.journal_round import JournalRound
+from server.work.round_work import RoundWork
 from server.viewer.windows_route import WindowsRoute
 from tests.stories.server.developer_hook_requests import recording_server
 from tests.stories.server.support.server_client import viewer_answer

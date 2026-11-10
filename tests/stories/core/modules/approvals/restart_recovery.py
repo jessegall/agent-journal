@@ -16,7 +16,7 @@ from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.approvals.models.lifecycles.approval_lifecycle import ApprovalLifecycle
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.core.modules.approvals.standing_approvals import ResumeFixedSession, resume_approved
 from tests.stories.core.modules.viewer.support.window_samples import NOTES
 from tests.stories.core.support.fixtures import UserJoined

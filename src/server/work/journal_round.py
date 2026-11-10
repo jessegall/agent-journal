@@ -11,7 +11,7 @@ from engine.container.journal_container import synced_database_container
 from engine.journal.journal_home import JournalHome
 from engine.listener.round_yield import RoundYield
 from server.hook.queue_round_yield import QueueRoundYield
-from server.round_work import RoundWork
+from server.work.round_work import RoundWork
 from server.hook.server_queue import ServerQueue
 from server.hook.queue_request import QueueRequest
 

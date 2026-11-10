@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 from engine.container.container import Container
 from engine.ticker.tick_handler import TickHandler
-from server.round_work import RoundWork
+from server.work.round_work import RoundWork
 
 
 class TickHandlerWork(RoundWork):

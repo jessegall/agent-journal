@@ -1,7 +1,7 @@
 from engine.query.queries import Queries
 from core.modules.templates.models.template import Template
 from engine.testing.expectations.expect_row import expect_row
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.core.modules.templates.support.legacy_templates import LegacyTemplates, TEMPLATE_MODULES
 from tests.stories.core.support.fixtures import UserJoined
 

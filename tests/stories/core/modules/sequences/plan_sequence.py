@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
 from core.modules.sequences.models.sequence_run import SequenceRun
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import UserBuilder

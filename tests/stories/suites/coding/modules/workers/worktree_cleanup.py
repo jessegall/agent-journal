@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from suites.coding.modules.workers.support.worker_settings import WORKER_IDLE_HOURS
 from engine.testing.examples.hook_samples import HookSamples
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit

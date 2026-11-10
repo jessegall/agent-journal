@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 import json
 
 from engine.change.event_log import HIDDEN

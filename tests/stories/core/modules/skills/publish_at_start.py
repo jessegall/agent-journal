@@ -1,5 +1,5 @@
 from engine.change.event_log import EventLog
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.core.modules.plugins.hooks import installed_story
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_absent_exists_parent_stale, expect_changed_with, expect_file_2

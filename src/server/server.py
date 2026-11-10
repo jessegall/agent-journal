@@ -30,8 +30,8 @@ from engine.time.timing_log import TimingLog
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
 from engine.database.reported_findings import ReportedFindings
-from server.booting_work import BootingWork
-from server.code_sync_work import CodeSyncWork
+from server.work.booting_work import BootingWork
+from server.work.code_sync_work import CodeSyncWork
 from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
 from server.handover_descriptors import HandoverDescriptors
@@ -44,13 +44,13 @@ from server.server_plugin_services import ServerPluginServices
 from server.server_tunnel import ServerTunnel
 from server.hook.hook_database import HookDatabase
 from server.request_log import SETTINGS_REFRESH_SECONDS
-from server.journal_round import JournalRound
-from server.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
+from server.work.journal_round import JournalRound
+from server.work.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
 from engine.process.plugin_script_processes import PluginScriptProcesses
-from server.ordinary_listener_work import OrdinaryListenerWork
-from server.plugin_listener_work import PluginListenerWork
-from server.program_stop_listener_work import ProgramStopListenerWork
-from server.urgent_listener_work import UrgentListenerWork
+from server.work.ordinary_listener_work import OrdinaryListenerWork
+from server.work.plugin_listener_work import PluginListenerWork
+from server.work.program_stop_listener_work import ProgramStopListenerWork
+from server.work.urgent_listener_work import UrgentListenerWork
 from server.ticker import Ticker
 from server.viewer.session_file import SessionFile
 from server.viewer.closed_service import ClosedService

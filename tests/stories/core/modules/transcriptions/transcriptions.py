@@ -2,7 +2,7 @@ import pytest
 
 from engine.testing.stories.story_fixture import StoryFixture
 
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_count_output
 

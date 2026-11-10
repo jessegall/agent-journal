@@ -2,7 +2,7 @@ import pytest
 
 from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES
 
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES)

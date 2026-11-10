@@ -9,8 +9,8 @@ from engine.container.container import Container
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS
-from server.listener_thread import ListenerThread
-from server.listener_wake import ListenerWake
+from server.work.listener_thread import ListenerThread
+from server.work.listener_wake import ListenerWake
 from server.viewer.paired_phone import PairedPhone
 from server.errors.phone_module_error import PhoneModuleError
 from server.viewer.wrong_code_limit import WrongCodeLimit

@@ -10,7 +10,7 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_subscription import PluginSubscription
 from core.modules.plugins.support.plugin_subscriptions import PluginSubscriptions
 from engine.testing.examples.hook_samples import HookSamples
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.modules.plugins.support.event_modules import FORMER_NOTE_CREATED, NOTE_CREATED, NOTES, REMOVED_NOTES_MODULE

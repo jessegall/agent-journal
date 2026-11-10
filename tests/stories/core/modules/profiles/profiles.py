@@ -8,7 +8,7 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES
 
 from engine.testing.examples.hook_samples import HookSamples
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value
 from engine.query.queries import Queries

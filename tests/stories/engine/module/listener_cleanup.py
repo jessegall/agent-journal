@@ -5,7 +5,7 @@ from engine.database.database import Database
 from engine.database.listener_cursor_table import ListenerCursorTable
 from engine.database.statement import Statement
 from engine.performance.performance_state import PerformanceState
-from server.booting_work import BootingWork
+from server.work.booting_work import BootingWork
 from tests.stories.engine.module.support.listener_changes import (
     PATH, KeptListener, ListenerChangesModule, OldListener, RenamedListener, SavedListener,
 )
