@@ -1,3 +1,4 @@
+import json
 from datetime import timedelta
 
 from core.base.actor import Actor
@@ -77,3 +78,13 @@ def test_a_stopped_helper_is_not_ended_for_silence_or_its_job_minutes_and_the_st
     bus.run(EndSilentHelpers(), Actor.core())
     job = read_jobs(story, helper)[0]
     story.expect_rows(story.row(Agent, helper.id).ended_at is None, job.halted_seconds >= STOPPED_TIME.total_seconds(), lockdown_ended_line_count(story, helper.id) == 1, detail=str(job.halted_seconds))
+
+
+def test_the_usage_read_names_the_stopped_program_with_its_end_its_limit_and_the_count_of_stopped_agents(new_story):
+    story = lockdown_story(new_story)
+    story.expect_rows(json.loads(story.run("usage show --json --environment main").output_text)["lockdowns"] == [])
+    report(story, 55)
+    story.hook("s-1", EDIT)
+    lockdowns = json.loads(story.run("usage show --json --environment main").output_text)["lockdowns"]
+    story.expect_rows(len(lockdowns) == 1, detail=str(lockdowns))
+    story.expect_rows(lockdowns[0]["program"] == "claude", lockdowns[0]["limit_id"] == 1, lockdowns[0]["halted_count"] == 1, lockdowns[0]["reason"].startswith("Claude is at your usage limit until"), detail=str(lockdowns))

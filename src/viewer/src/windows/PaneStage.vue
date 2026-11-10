@@ -28,6 +28,7 @@ import PhoneBar from "./PhoneBar.vue";
 import PhoneNotify from "./PhoneNotify.vue";
 import AgentBar from "../shell/AgentBar.vue";
 import InformationBar from "../shell/InformationBar.vue";
+import LockdownBand from "../shell/LockdownBand.vue";
 import WindowDropdown from "./WindowDropdown.vue";
 import ResourcePanel from "../resource/ResourcePanel.vue";
 import {RESOURCE_SUBSCRIPTIONS} from "../resource/resourceEvents.js";
@@ -147,7 +148,7 @@ const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_
 const COUNT_WINDOWS = {workers: "workers.workers", skills: "skills.skills", jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", cost: "usage.cost", context: "usage.context", fitness: "usage.fitness", load: "usage.load"};
 // the agents an agent sends off, one umbrella in the bar: each type is a group of its dropdown
 const HELPER_WINDOW = "agents.helpers";
-const usage = propData("usage", {agents: [], windows: []});
+const usage = propData("usage", {agents: [], windows: [], lockdowns: []});
 const fitness = propData("fitness", null);
 const branchData = propData("branch", {branch: ""});
 const branch = computed(() => branchData.value.branch);
@@ -362,6 +363,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                         </template>
                     </span>
             </InformationBar>
+            <LockdownBand :lockdowns="usage.lockdowns ?? []" @open="(anchor) => openCount('usage', anchor)" />
             </template>
         </template>
         <template v-if="store.layout.value && !phone && store.ready?.value !== false">

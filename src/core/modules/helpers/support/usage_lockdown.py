@@ -28,4 +28,4 @@ class UsageLockdown(ProgramLockdown):
             return Lockdown()
         lift = LIFT_TEXT.format(limit=end.limit_id) if end.limit_id is not None else ""
         reason = REASON.format(program=program.capitalize(), ends_at=end.ends_at.value.astimezone().strftime("%H:%M on %d %b"))
-        return Lockdown(end.ends_at, STOP_LINE.format(reason=reason, lift=lift), reason, SUGGESTION.format(lift=lift))
+        return Lockdown(end.ends_at, STOP_LINE.format(reason=reason, lift=lift), reason, SUGGESTION.format(lift=lift), end.limit_id)
