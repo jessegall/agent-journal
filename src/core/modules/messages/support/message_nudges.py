@@ -18,6 +18,7 @@ MESSAGE_FILE = NudgeDeclaration("messages.message_file", NudgeType.STEERING, '  
 MESSAGE_NOTE = NudgeDeclaration("messages.act_on_messages", NudgeType.NOTICE, 'act on what you read: steering you follow, an update you give now, work you file as a task; else answer it', turn_limited=False)
 IMAGE_TAG_REQUEST = NudgeDeclaration("messages.tag_the_image", NudgeType.STEERING, 'message:{message} has an image "{name}": tag it with what it shows', required_command="journal message tag {message}")
 REPEATED_CLOSING = NudgeDeclaration("messages.repeated_closing", NudgeType.STEERING, "your closing words say much the same as message {message}, so they were not shown")
+CLOSING_CHOICE = NudgeDeclaration("messages.closing_choice", NudgeType.STEERING, "your closing words ask the user to choose: they are shown in the chat, and a choice belongs in the question tool")
 CLOSING_LINE_HIDDEN = NudgeDeclaration("messages.one_line_closing", NudgeType.STEERING, "your reply is sent, so your one closing line was not shown")
 REPLY_COMMAND = NudgeDeclaration("messages.reply_command", NudgeType.STEERING, "your chat words are your reply; in a turn that goes on, reply first", interval=Interval(Seconds(1800)))
 UNANSWERED = NudgeDeclaration("messages.unanswered", NudgeType.STEERING, "answer message {messages} before you go on", interval=Interval(Seconds(300)))
@@ -35,5 +36,5 @@ JOURNAL_LAWS = NudgeDeclaration("messages.journal_laws", NudgeType.NOTICE, "the 
 REPLY_NOTE = NudgeDeclaration("messages.reply_note", NudgeType.STEERING, "message {message} answered: go on", turn_limited=False)
 PLAIN_CODE_NUDGE = NudgeDeclaration("messages.plain_code", NudgeType.STEERING, "in code, identifiers and text state literally what a thing is or does, in plain words", interval=Interval(Seconds(1800)))
 
-MESSAGE_NUDGES = [MESSAGE_REACTION, MESSAGE_UPDATED, UNREAD_MESSAGE_STOP, UNREAD_DISPLAY_REFUSAL, NEW_MESSAGE, NEW_MESSAGES, MESSAGE_FILE, MESSAGE_NOTE, IMAGE_TAG_REQUEST, REPEATED_CLOSING, CLOSING_LINE_HIDDEN, REPLY_COMMAND, UNANSWERED, UNANSWERED_COUNTDOWN.declaration, UNANSWERED_REFUSAL,
+MESSAGE_NUDGES = [MESSAGE_REACTION, MESSAGE_UPDATED, UNREAD_MESSAGE_STOP, UNREAD_DISPLAY_REFUSAL, NEW_MESSAGE, NEW_MESSAGES, MESSAGE_FILE, MESSAGE_NOTE, IMAGE_TAG_REQUEST, REPEATED_CLOSING, CLOSING_LINE_HIDDEN, CLOSING_CHOICE, REPLY_COMMAND, UNANSWERED, UNANSWERED_COUNTDOWN.declaration, UNANSWERED_REFUSAL,
                   UNREAD_COUNTDOWN.declaration, UNREAD_REFUSAL, SHOP_TALK_NUDGE, THIRD_PERSON_NUDGE, EM_DASH_NUDGE, PARAGRAPH_NUDGE, JOURNAL_LINE_NOTE, JOURNAL_CHAT_RULE, JOURNAL_LAWS, PLAIN_CODE_NUDGE, REPLY_NOTE]
