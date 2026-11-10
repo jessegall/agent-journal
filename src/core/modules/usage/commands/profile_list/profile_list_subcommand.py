@@ -5,6 +5,7 @@ from dataclasses import replace
 from core.base.helper_type_book import HelperTypeBook
 from core.base.caller.caller import Caller
 from core.base.profile.agent_profile import AgentProfile
+from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -12,6 +13,9 @@ from core.base.type_guards import is_tuple
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_problem import ProfileProblem
 from core.modules.usage.models.statistic import Statistic
+
+PROFILE_COUNTERS = ("uses", "last_used")
+PROFILE_COUNTERS_REASON = "Two counters for each profile, and the profiles are files a person keeps by hand."
 
 
 class ProfileListSubcommand(ReadSubcommand[Sequence[AgentProfile | ProfileProblem]]):
@@ -27,8 +31,10 @@ class ProfileListSubcommand(ReadSubcommand[Sequence[AgentProfile | ProfileProble
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[AgentProfile | ProfileProblem]:
-        counts = {row.key: row.value for row in self.queries.query(Statistic).all_rows()}
-        return tuple(replace(profile, uses=counts.get(f"profiles.{profile.name}.uses", 0), last_used=counts.get(f"profiles.{profile.name}.last_used", 0)) if isinstance(profile, AgentProfile) else profile for profile in self.files.listed())
+        listed = self.files.listed()
+        keys = [f"profiles.{profile.name}.{counter}" for profile in listed for counter in PROFILE_COUNTERS]
+        counts = {row.key: row.value for row in self.queries.query(Statistic).matching(Among("key", keys)).full_table(PROFILE_COUNTERS_REASON).all_rows()}
+        return tuple(replace(profile, uses=counts.get(f"profiles.{profile.name}.uses", 0), last_used=counts.get(f"profiles.{profile.name}.last_used", 0)) if isinstance(profile, AgentProfile) else profile for profile in listed)
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [row for row in value if isinstance(row, (AgentProfile, ProfileProblem))] if is_tuple(value) else []

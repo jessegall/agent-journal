@@ -14,6 +14,8 @@ from core.base.change.changed import Changed
 from core.base.change.deleted import Deleted
 from core.base.command.context import Context
 
+OPEN_TARGETS_REASON = "Every save of a row asks whether an open wait waits on it, so the unresolved targets are one kept load that the open waits bound."
+
 
 class TargetResolutionListener(SaveListener[Changed[Model]]):
     """A row a wait waits on resolves when it leaves its lifecycle's editable states; the wait ends once
@@ -50,5 +52,5 @@ class TargetResolutionListener(SaveListener[Changed[Model]]):
             self.repository.save_change(wait, wait.end(context.timestamp, context.actor, outcome), context)
 
     def pending_targets(self) -> tuple[WaitTarget, ...]:
-        return self.kept.read("wait_targets", lambda: tuple(self.queries.query(WaitTarget).matching(IsNull("resolved_at")).oldest().all_rows()),
+        return self.kept.read("wait_targets", lambda: tuple(self.queries.query(WaitTarget).matching(IsNull("resolved_at")).oldest().full_table(OPEN_TARGETS_REASON).all_rows()),
                               "resolved_at IS NULL", name="waits.open_targets")

@@ -15,30 +15,7 @@ from tests.stories.core.base.support.large_journal import EDIT, HELPER_PROFILES,
 SESSIONS = ("s-1", "s-helper", "s-worker")
 
 OPEN_LARGE_READS: tuple[str, ...] = ()
-OPEN_COMMAND_READS = (
-    "FROM environments LIMIT",
-    "FROM tasks WHERE created_at > ?",
-    "FROM agents WHERE environment_id = ? LIMIT",
-    "FROM helper_jobs WHERE created_at > ?",
-    "FROM agents WHERE ended_at IS NULL AND environment_id = ? ORDER BY id ASC LIMIT 200",
-    "FROM checks WHERE hidden",
-    "FROM docs ORDER BY",
-    "FROM reports ORDER BY",
-    "FROM dock_items WHERE dock_id",
-    "FROM wait_targets WHERE resolved_at IS NULL",
-    "FROM environment_menu_rows",
-    "FROM messages WHERE created_at >= ?",
-    "FROM nudge_totals",
-    "FROM person_presets",
-    "FROM suggestions WHERE",
-    "FROM task_cards WHERE state",
-    "FROM task_edges",
-    "FROM agent_cards WHERE ended_at IS NULL",
-    "FROM agents WHERE ended_at IS NULL AND retired_at IS NULL",
-    "FROM hook_calls WHERE hook IN",
-    "FROM viewer_layouts",
-    "FROM statistics",
-)
+OPEN_COMMAND_READS: tuple[str, ...] = ()
 
 
 """The reads of OPEN_LARGE_READS and OPEN_COMMAND_READS loaded more than the limit when this test was written (task 8753). Each is

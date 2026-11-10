@@ -55,7 +55,7 @@ def test_a_closing_text_repeating_the_reply_stays_out_of_chat(reply_ready):
 def reaction_turn(new_story, monkeypatch):
     story = new_story(fixture=UserBuilder)
     lines = []
-    monkeypatch.setattr(TerminalTyping, "type_line", lambda _typing, agent_id, line: lines.append((agent_id, line)))
+    monkeypatch.setattr(TerminalTyping, "type_line", lambda _typing, agent, line: lines.append((agent.id, line)))
     story.expect_success('message send "The cart is ready" --environment main', actor=story.agent)
     story.hook("s-1", HookSamples.stop())
     viewer(story, "messages.chat", ["message", "react", "1", "👍"])

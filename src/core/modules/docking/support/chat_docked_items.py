@@ -6,6 +6,8 @@ from core.modules.docking.queries.dock_item_query import DockItemQuery
 
 DOCKED = "dock_id = ? AND state = ?"
 
+DOCKED_REASON = "The items docked in one chat, which the dock's capacity bounds; the dock reads them from this one kept load."
+
 
 class ChatDockedItems:
     """The items docked in the chat of the agent in scope, oldest first, read once and kept: the dock keeps
@@ -17,7 +19,7 @@ class ChatDockedItems:
 
     def read(self, dock_id: int) -> list[DockItem]:
         agent_id = self.scopes.actor_id
-        return self.kept.read("dock_items", lambda: list(self.items.docked(dock_id).same_chat(agent_id).oldest().all_rows()), DOCKED,
+        return self.kept.read("dock_items", lambda: list(self.items.docked(dock_id).same_chat(agent_id).oldest().full_table(DOCKED_REASON).all_rows()), DOCKED,
                                      [dock_id, DockItemState.DOCKED.value], name=self.name(agent_id))
 
     def docked(self, item: DockItem) -> None:

@@ -1,3 +1,4 @@
+from core.modules.agents.support.agent_rows import RUNNING_AGENTS_REASON
 from core.modules.settings.bindings.support.context_share import ContextShare
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice
@@ -63,7 +64,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         if agent_id is not None:
             cards = cards.filter(id=agent_id)
         activity = self.activity.current()
-        running = tuple(cards.matching(activity).oldest().all_rows())
+        running = tuple(cards.matching(activity).oldest().full_table(RUNNING_AGENTS_REASON).all_rows())
         ended = tuple(cards.matching(Greater("ended_at", "")).matching(Excluding(activity)).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if closed else ()
         pending = activity.pending
         policy = self.suites.agent_policy()

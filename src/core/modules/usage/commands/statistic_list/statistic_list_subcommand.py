@@ -8,6 +8,8 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple
 from core.modules.usage.models.statistic import Statistic
 
+COUNTERS_REASON = "One number for each counter the code and the profiles name, never for stored journal rows."
+
 
 class StatisticListSubcommand(ReadSubcommand[Sequence[Statistic]]):
     """`journal statistic list [--prefix <start of the key>]`: the project's counts by key."""
@@ -22,7 +24,7 @@ class StatisticListSubcommand(ReadSubcommand[Sequence[Statistic]]):
         parser.add_argument("--prefix", default="")
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[Statistic]:
-        return tuple(row for row in self.queries.query(Statistic).ordered("key").all_rows() if row.key.startswith(arguments.prefix))
+        return tuple(row for row in self.queries.query(Statistic).ordered("key").full_table(COUNTERS_REASON).all_rows() if row.key.startswith(arguments.prefix))
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [row for row in value if isinstance(row, Statistic)] if is_tuple(value) else []

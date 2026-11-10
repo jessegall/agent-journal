@@ -1,3 +1,4 @@
+from core.modules.agents.support.agent_rows import RUNNING_AGENTS_REASON
 from argparse import Namespace
 
 from core.base.caller.caller import Caller
@@ -22,7 +23,7 @@ class ActiveAgentListSubcommand(ReadSubcommand[Page[Agent]]):
         self.agents = agents
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[Agent]:
-        return self.agents.running().oldest().page(1, ACTIVE_AGENTS_LIMIT_COUNT)
+        return self.agents.running().oldest().full_table(RUNNING_AGENTS_REASON).page(1, ACTIVE_AGENTS_LIMIT_COUNT)
 
     def write_output(self, value: object, output: Output) -> None:
         if is_page(value):

@@ -37,4 +37,4 @@ their own numbers, so write the type with the number: doc 12, report 3.
 - `journal doc revisions <n>` lists its revisions and `journal doc revision <n> <k>` reads one whole.
 - `journal doc settle <n> --why "<reason>"` marks it as needing no action; `journal report close` takes the same reason.
 - `journal doc comments <n>` reads what the user wrote on it; answer in the text.
-- `journal doc list` and `journal report list` name every one.
+- `journal doc list` and `journal report list` name the newest 50; `--page 2` names the 50 before them.

@@ -23,6 +23,8 @@ WORKING_STATES = (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED)
 def board_group(text: str) -> TaskState | str:
     return TaskState(text) if text in TaskState._value2member_map_ else text
 
+WORKING_TASKS_REASON = "The board shows every task that is being worked on; the columns of open and closed tasks are read a page at a time."
+
 
 class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
     """Reads task board groups with state counts. The tasks in progress, in testing and blocked come whole on
@@ -66,7 +68,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         previous_id = arguments.before_id if arguments.state is not None else None
         limit = arguments.limit or PAGE_SIZE_ROWS
         rows = (cards.matching(Less("id", previous_id)) if previous_id is not None else cards).newest()
-        return TaskGroup(str(state), cards.count(), tuple(rows.all_rows() if state in WORKING_STATES else rows.limited(limit)))
+        return TaskGroup(str(state), cards.count(), tuple(rows.full_table(WORKING_TASKS_REASON).all_rows() if state in WORKING_STATES else rows.limited(limit)))
 
     @staticmethod
     def finished_cursor(arguments: Namespace) -> Condition | None:

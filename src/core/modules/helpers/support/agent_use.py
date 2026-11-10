@@ -3,49 +3,36 @@ from collections import defaultdict
 from datetime import timedelta
 
 from core.base.clock import Clock
-from core.base.query.conditions.greater import Greater
+from core.base.query.conditions.equal import Equal
+from core.base.query.conditions.excluding import Excluding
+from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import MAIN_ROLE, Agent
-from core.modules.drivers.models.helper_job import HelperJob
+from core.modules.helpers.queries.agent_job_counts import AgentJobCounts
 from core.modules.helpers.support.helper_settings import AGENT_USE_DAYS
 from core.modules.helpers.support.model_use import ModelUse
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from core.modules.tasks.models.task import Task
 
 DAY_SECONDS = 86400
 MAX_IDLE_AGENTS = 4
+KEPT_AGENTS_REASON = "The helpers and workers that are not retired, which the kept limit of each agent type bounds."
 
 
 class AgentUse:
     """Counts the jobs of each type of agent by model over the last days, with the agents kept of it, so the main
     agent can decide what to retire; the journal retires nothing itself."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, clock: Clock) -> None:
-        self.queries, self.settings, self.clock = queries, settings, clock
+    def __init__(self, queries: Queries, settings: SettingValues, clock: Clock, job_counts: AgentJobCounts) -> None:
+        self.queries, self.settings, self.clock, self.job_counts = queries, settings, clock, job_counts
 
     def models(self) -> tuple[ModelUse, ...]:
-        agents = tuple(agent for agent in self.queries.query(Agent).all_rows() if agent.role != MAIN_ROLE)
-        job_counts = self.job_counts()
-        agent_types = {agent.id: (agent.profile or agent.role, agent.program_model or "default") for agent in agents}
-        jobs: dict[tuple[str, str], int] = defaultdict(int)
+        oldest_created_at = (self.clock.timestamp().value - timedelta(days=self.settings.number(AGENT_USE_DAYS))).isoformat()
+        jobs = self.job_counts.counted_after(oldest_created_at)
         unretired_agents: dict[tuple[str, str], list[Agent]] = defaultdict(list)
-        for agent in agents:
-            jobs[agent_types[agent.id]] += job_counts[agent.id]
-            if agent.retired_at is None:
-                unretired_agents[agent_types[agent.id]].append(agent)
+        for agent in self.queries.query(Agent).matching(IsNull("retired_at")).matching(Excluding(Equal("role", MAIN_ROLE))).full_table(KEPT_AGENTS_REASON).all_rows():
+            unretired_agents[(agent.profile or agent.role, agent.program_model or "default")].append(agent)
         model_keys = sorted(key for key in {*jobs, *unretired_agents} if jobs[key] or unretired_agents[key])
         return tuple(ModelUse(agent_type, model, jobs[(agent_type, model)], tuple(unretired_agents[(agent_type, model)])) for agent_type, model in model_keys)
-
-    def job_counts(self) -> dict[int, int]:
-        oldest_created_at = (self.clock.timestamp().value - timedelta(days=self.settings.number(AGENT_USE_DAYS))).isoformat()
-        counts: dict[int, int] = defaultdict(int)
-        for job in self.queries.query(HelperJob).matching(Greater("created_at", oldest_created_at)).all_rows():
-            if job.helper_id is not None:
-                counts[job.helper_id] += 1
-        for task in self.queries.query(Task).matching(Greater("created_at", oldest_created_at)).all_rows():
-            if task.delegated_to is not None:
-                counts[task.delegated_to] += 1
-        return counts
 
     def retire_suggestion(self, agent_type: str) -> str:
         candidates = [model_use for model_use in self.models() if model_use.agent_type == agent_type and model_use.idle()]

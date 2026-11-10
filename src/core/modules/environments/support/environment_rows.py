@@ -3,6 +3,8 @@ from engine.errors.missing_rows_error import MissingRowsError
 from core.base.query.queries import Queries
 from core.modules.environments.models.environment import Environment
 
+CATALOGUE_REASON = "The environments of a project are a catalogue a person makes by hand, and every request reads them from this one kept load."
+
 
 class EnvironmentRows:
     """Shares the project's environment catalogue until an environment changes."""
@@ -11,7 +13,7 @@ class EnvironmentRows:
         self.queries, self.kept = queries, kept
 
     def all(self) -> tuple[Environment, ...]:
-        return self.kept.read("environments", lambda: tuple(self.queries.query(Environment).all_rows()), name="environments.rows")
+        return self.kept.read("environments", lambda: tuple(self.queries.query(Environment).full_table(CATALOGUE_REASON).all_rows()), name="environments.rows")
 
     def find(self, environment_id: int) -> Environment:
         environment = next((row for row in self.all() if row.id == environment_id), None)

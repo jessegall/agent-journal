@@ -1,3 +1,5 @@
+from core.base.query.conditions.equal import Equal
+from core.base.query.conditions.excluding import Excluding
 from core.base.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.docking.guards.support.docking_arrival import DockingArrival
@@ -21,6 +23,5 @@ class TypeCapacityGuard(Guard[Changed[DockItem]]):
         capacity = self.limits.type_capacity(item.type) if item is not None else None
         if item is None or capacity is None or self.limits.requires_user(item.type):
             return
-        docked_items = [sibling for sibling in self.items.docked(item.dock_id).same_chat(item.session_agent_id).type_items(item.type).all_rows() if sibling.id != item.id]
-        if len(docked_items) >= capacity:
+        if self.items.docked(item.dock_id).same_chat(item.session_agent_id).type_items(item.type).matching(Excluding(Equal("id", item.id))).count() >= capacity:
             raise Refusal(f"{item.type} allows at most {capacity} items", "undock one, or keep fewer items of this type")

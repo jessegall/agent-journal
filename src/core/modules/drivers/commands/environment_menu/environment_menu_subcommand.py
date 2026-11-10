@@ -10,6 +10,8 @@ from core.modules.drivers.commands.support.environment_menu_choice import Enviro
 from core.modules.drivers.models.environment_menu_row import EnvironmentMenuRow
 from core.modules.drivers.support.suite_choice import SuiteChoice
 
+MENU_REASON = "The menu names every environment of the project, a catalogue a person makes by hand."
+
 
 class EnvironmentMenuSubcommand(ReadSubcommand[EnvironmentMenu]):
     """`journal environment menu`: every environment with its suite and whether a main agent runs in it, oldest
@@ -26,7 +28,7 @@ class EnvironmentMenuSubcommand(ReadSubcommand[EnvironmentMenu]):
         pass
 
     def read(self, arguments: Namespace, caller: Caller) -> EnvironmentMenu:
-        rows = self.queries.query(EnvironmentMenuRow).oldest().all_rows()
+        rows = self.queries.query(EnvironmentMenuRow).oldest().full_table(MENU_REASON).all_rows()
         return EnvironmentMenu(tuple(EnvironmentMenuChoice(row, self.suites.suite_name(row.suite_setting)) for row in rows))
 
     def write_output(self, value: object, output: Output) -> None:

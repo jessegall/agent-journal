@@ -1,5 +1,6 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.viewer.migrations.m003_helpers_window_key import HelpersWindowKeyMigration
+from core.modules.viewer.migrations.m004_person_row_indexes import PersonRowIndexesMigration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
@@ -57,7 +58,7 @@ class ViewerModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.drivers"]
     models = [ModelDeclaration(ViewerLayout, excluded_subcommands=["make", "edit"]), ModelDeclaration(PersonPreset, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WindowPermission, excluded_subcommands=["edit"])]
     move_reason = "each suite carries the layouts of the application it replaces"
-    migrations = [ViewerTablesMigration, PersonPresetsMigration, HelpersWindowKeyMigration]
+    migrations = [ViewerTablesMigration, PersonPresetsMigration, HelpersWindowKeyMigration, PersonRowIndexesMigration]
     handlers = [SaveViewerLayoutHandler, SavePersonPresetHandler, RenamePersonPresetHandler, RemovePersonPresetHandler, AllowWindowHandler, TrustWindowHandler, PruneWindowPermissionsHandler, SaveWindowSettingHandler]
     subcommands = [SaveViewerLayoutSubcommand, SavePersonPresetSubcommand, RenamePersonPresetSubcommand, RemovePersonPresetSubcommand, PersonPresetListSubcommand, ViewerLayoutCurrentSubcommand, AllowWindowSubcommand, TrustWindowSubcommand, WindowPermissionsSubcommand,
                    SaveWindowSettingSubcommand, WindowSettingSubcommand, WindowSearchSubcommand]

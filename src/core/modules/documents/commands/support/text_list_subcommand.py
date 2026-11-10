@@ -1,17 +1,17 @@
 from argparse import ArgumentParser, Namespace
-from collections.abc import Sequence
 from typing import ClassVar
 
+from core.base.database.database import READ_LIMIT_ROWS
 from core.base.caller.caller import Caller
+from core.base.page import Page, is_page
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_tuple
 from core.modules.documents.models.text_row import TextRow
 
 
-class TextListSubcommand(ReadSubcommand[Sequence[TextRow]]):
-    """`journal <doc or report> list`: every one, its number and title, oldest first."""
+class TextListSubcommand(ReadSubcommand[Page[TextRow]]):
+    """`journal <doc or report> list [--page <n>]`: the number and title of each, newest first, a page at a time."""
 
     model: ClassVar[type[TextRow]]
     name = "list"
@@ -20,11 +20,16 @@ class TextListSubcommand(ReadSubcommand[Sequence[TextRow]]):
         self.queries = queries
 
     def arguments(self, parser: ArgumentParser) -> None:
-        return
+        parser.add_argument("--page", type=int, default=1)
 
-    def read(self, arguments: Namespace, caller: Caller) -> Sequence[TextRow]:
-        return tuple(self.queries.query(self.model).oldest().all_rows())
+    def read(self, arguments: Namespace, caller: Caller) -> Page[TextRow]:
+        return self.queries.query(self.model).newest().page(arguments.page, READ_LIMIT_ROWS)
 
     def write_output(self, value: object, output: Output) -> None:
-        listed = [row for row in value if isinstance(row, TextRow)] if is_tuple(value) else []
-        output.write("\n".join(f"{row.id:>4}  {row.title}" for row in listed), {"rows": [output.values(row) for row in listed]})
+        if not is_page(value):
+            return
+        listed = [row for row in value.rows if isinstance(row, TextRow)]
+        lines = [f"{row.id:>4}  {row.title}" for row in listed]
+        if not value.is_last:
+            lines.append(f"page {value.number}, {len(listed)} of {value.total}: --page {value.number + 1} for the next")
+        output.write("\n".join(lines), {"rows": [output.values(row) for row in listed], "page": value.number, "size": value.size, "total": value.total})

@@ -18,6 +18,8 @@ RECENT = timedelta(hours=1)
 CONVERSATION_TYPES = (*PERSON_MESSAGE_TYPES, MessageType.AGENT)
 USER = "user"
 
+RECENT_MESSAGES = 50
+
 
 class MessageConversationsSubcommand(ReadSubcommand[tuple[RecentConversation, ...]]):
     """`journal message conversations`: for each party that spoke with the agent in the last hour, the last five
@@ -37,7 +39,7 @@ class MessageConversationsSubcommand(ReadSubcommand[tuple[RecentConversation, ..
         if agent_id is None:
             return ()
         latest_messages = self.messages.matching(Minimum("created_at", Timestamp(self.clock.timestamp().value - RECENT).text)).matching(Among("type", CONVERSATION_TYPES))
-        rows = {message.id: message for query in (latest_messages.addressed(agent_id), latest_messages.filter(creator_id=agent_id)) for message in query.all_rows()}
+        rows = {message.id: message for query in (latest_messages.addressed(agent_id), latest_messages.filter(creator_id=agent_id)) for message in query.newest().limited(RECENT_MESSAGES)}
         grouped: dict[str, list[Message]] = {}
         for message in sorted(rows.values(), key=lambda row: row.id):
             grouped.setdefault(self.actor(message, agent_id), []).append(message)
