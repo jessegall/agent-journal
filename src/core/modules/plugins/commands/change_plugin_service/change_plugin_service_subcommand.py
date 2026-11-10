@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.plugins.commands.change_plugin_service.change_plugin_service import ChangePluginService
 from core.modules.plugins.models.enums.service_change import ServiceChange

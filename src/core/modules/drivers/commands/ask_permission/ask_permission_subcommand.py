@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.modules.drivers.commands.ask_permission.ask_permission import AskPermission
 from core.modules.drivers.commands.support.change_permission_request_subcommand import ChangePermissionRequestSubcommand
 

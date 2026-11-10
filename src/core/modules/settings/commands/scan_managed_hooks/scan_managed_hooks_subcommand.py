@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.settings.commands.scan_managed_hooks.scan_managed_hooks import ScanManagedHooks

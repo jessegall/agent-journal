@@ -3,7 +3,7 @@ from pathlib import Path
 from engine.file.file_access import FileAccess
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.row.page import Page
 from core.base.registry.skill_entry import SkillEntry
 from core.base.subcommand.output import Output

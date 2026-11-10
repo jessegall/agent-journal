@@ -1,6 +1,6 @@
 from argparse import Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from suites.coding.commands.support.git_page_subcommand import GitPageSubcommand
 from suites.coding.support.git_rows import GitRows
 

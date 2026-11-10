@@ -4,7 +4,7 @@ from datetime import timedelta
 
 import pytest
 
-from core.base.caller.caller_request import CallerRequest
+from engine.caller.caller_request import CallerRequest
 from core.base.change.event_log import EventLog
 from engine.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope

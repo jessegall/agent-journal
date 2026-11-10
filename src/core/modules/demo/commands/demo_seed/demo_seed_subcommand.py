@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.enums.actor_type import ActorType
 from engine.container.container import Container
 from engine.errors.refusal import Refusal

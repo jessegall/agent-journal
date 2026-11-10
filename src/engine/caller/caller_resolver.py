@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
-from core.base.caller.caller_request import CallerRequest
-from core.base.caller.caller import Caller
+from engine.caller.caller_request import CallerRequest
+from engine.caller.caller import Caller
 
 
 class CallerResolver:

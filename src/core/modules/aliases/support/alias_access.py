@@ -1,6 +1,6 @@
 from engine.enums.actor_type import ActorType
 from core.modules.drivers.support.suite_choice import SuiteChoice
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent

@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_model import Item

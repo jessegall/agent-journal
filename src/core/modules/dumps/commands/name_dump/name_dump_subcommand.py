@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.modules.dumps.commands.name_dump.name_dump import NameDump
 from core.modules.dumps.commands.dump_row.dump_row_subcommand import DumpRowSubcommand
 

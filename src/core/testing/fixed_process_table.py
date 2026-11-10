@@ -1,5 +1,5 @@
-from core.base.caller.process_table import ProcessTable
-from core.base.caller.process_row import ProcessRow
+from engine.caller.process_table import ProcessTable
+from engine.caller.process_row import ProcessRow
 
 
 class FixedProcessTable(ProcessTable):

@@ -1,6 +1,6 @@
 from argparse import Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.reviews.commands.support.reviewer_listing import ReviewerListing

@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.apply_work_preset.apply_work_preset import ApplyWorkPreset
 from suites.coding.support.work_settings import WorkSettings

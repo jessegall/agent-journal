@@ -4,8 +4,8 @@ import json
 
 import pytest
 
-from core.base.caller.caller_request import CallerRequest
-from core.base.caller.caller_request_error import CallerRequestError
+from engine.caller.caller_request import CallerRequest
+from engine.caller.caller_request_error import CallerRequestError
 from core.base.cli.line_run import LineRun
 from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome

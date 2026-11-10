@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from suites.coding.modules.workers.support.injection_list import InjectionList

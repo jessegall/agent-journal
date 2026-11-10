@@ -2,7 +2,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.command.context import Context
 from core.base.database.kept_rows import KeptRows
 from engine.query.queries import Queries

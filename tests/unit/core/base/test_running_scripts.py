@@ -2,7 +2,7 @@ import subprocess
 
 import pytest
 
-from core.base.caller.process_row import ProcessRow
+from engine.caller.process_row import ProcessRow
 from core.base.database.database import Database
 from engine.container.journal_container import database_container
 from engine.journal.journal_home import JournalHome

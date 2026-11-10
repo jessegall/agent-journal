@@ -66,7 +66,7 @@ from core.modules.agents.support.agent_marks import AGENT_MARKS
 from core.modules.agents.support.agent_inspector import AGENT_INSPECTOR
 from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.viewer.window_place import WindowPlace
-from core.base.caller.caller_resolver import CallerResolver
+from engine.caller.caller_resolver import CallerResolver
 from core.base.module.module import Module
 from core.modules.agents.migrations.m009_agent_access import AgentAccessMigration
 from core.modules.agents.commands.record_agent_launch_failure.launch_nudges import AGENT_START_FAILED

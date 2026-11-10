@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from core.modules.messages.support.recent_conversation import SHOWN_CHARACTERS
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.provider.providers import Providers
 from core.base.provider.transcript_row import TranscriptRow
 from engine.query.queries import Queries

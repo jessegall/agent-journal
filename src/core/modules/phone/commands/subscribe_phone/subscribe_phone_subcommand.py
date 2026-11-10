@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.phone.commands.subscribe_phone.subscribe_phone import SubscribePhone
 from core.modules.phone.models.phone import Phone

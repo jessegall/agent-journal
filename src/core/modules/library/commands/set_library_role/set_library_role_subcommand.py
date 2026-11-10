@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.modules.library.commands.support.show_library_line_subcommand import ShowLibraryLineSubcommand
 from core.modules.library.commands.set_library_role.set_library_role import SetLibraryRole
 from core.modules.library.models.enums.library_role import LibraryRole

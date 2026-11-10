@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from typing import TextIO
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.cli.line_run import LineRun
 from engine.container.container import Container
 from core.base.database.database import Database

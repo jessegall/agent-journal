@@ -4,7 +4,7 @@ from core.modules.tasks.conditions.closed_task_cursor import ClosedTaskCursor
 from core.modules.tasks.conditions.planless_task import PlanlessTask
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.model.state_book import StateBook
 from engine.query.query import PAGE_SIZE_ROWS, Query
 from core.base.subcommand.output import Output

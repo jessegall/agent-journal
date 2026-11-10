@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.subcommand.page_arguments import page_arguments
 from engine.row.page import Page
 from engine.query.queries import Queries
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.memories.commands.support.faded_memory import FadedMemory
 from core.modules.memories.models.memory import FADING_REMOVAL_REASON, LOWEST_WEIGHT, Memory

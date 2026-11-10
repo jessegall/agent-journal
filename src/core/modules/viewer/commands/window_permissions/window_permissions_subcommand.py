@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.viewer.commands.support.window_access import WindowAccess
 from core.modules.viewer.commands.support.window_allowances import WindowAllowances

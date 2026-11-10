@@ -7,7 +7,7 @@ from dataclasses import replace
 from engine.enums.helper_role import HelperRole
 from engine.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.driver.program_lockdown import ProgramLockdown
 from engine.query.conditions.among import Among
 from engine.query.conditions.greater import Greater

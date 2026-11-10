@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from core.base.caller.process_row import ProcessRow
+from engine.caller.process_row import ProcessRow
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from engine.process.leftover_process import LeftoverProcess
 from engine.time.timestamp import Timestamp

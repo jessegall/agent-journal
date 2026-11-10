@@ -1,6 +1,6 @@
 from argparse import Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.settings.support.setting_reader import SettingReader
 from core.modules.skills.support.skill_requirements import SkillRequirements

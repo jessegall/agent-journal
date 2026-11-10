@@ -2,9 +2,9 @@ import json
 import os
 import subprocess
 
-from core.base.caller.caller_request import SESSION_VARIABLE, CallerRequest
-from core.base.caller.caller_resolver import CallerResolver
-from core.base.caller.process_row import ProcessRow
+from engine.caller.caller_request import SESSION_VARIABLE, CallerRequest
+from engine.caller.caller_resolver import CallerResolver
+from engine.caller.process_row import ProcessRow
 from core.base.model.event_form import EventForm
 from engine.query.queries import Queries
 from engine.process.plugin_script_processes import PluginScriptProcesses

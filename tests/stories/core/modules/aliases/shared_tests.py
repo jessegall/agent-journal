@@ -5,7 +5,7 @@ import venv
 
 import pytest
 
-from core.base.caller.caller_request import CallerRequest
+from engine.caller.caller_request import CallerRequest
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskOrchestrator

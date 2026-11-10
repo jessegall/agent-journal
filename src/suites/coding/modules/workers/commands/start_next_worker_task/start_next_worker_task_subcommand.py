@@ -3,7 +3,7 @@ from suites.coding.modules.workers.support.worker_command_request import WorkerC
 from suites.coding.modules.workers.support.worker_run_answer import WorkerRunAnswer
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.tasks.models.enums.task_state import TaskState

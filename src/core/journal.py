@@ -5,7 +5,7 @@ from pathlib import Path
 if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from core.base.caller.caller_request import CallerRequest
+from engine.caller.caller_request import CallerRequest
 from core.base.cli.line_run import LineRun
 from engine.journal.journal_home import HOME_VARIABLE, JournalHome
 

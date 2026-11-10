@@ -5,7 +5,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from engine.time.timestamp import Timestamp
-from core.base.caller.process_row import ProcessRow
+from engine.caller.process_row import ProcessRow
 
 
 PS_TIMEOUT_SECONDS = 5

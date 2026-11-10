@@ -2,17 +2,17 @@ from collections.abc import Sequence
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.caller.caller_request import CallerRequest, SESSION_VARIABLE
-from core.base.caller.caller_resolver import CallerResolver
-from core.base.caller.process_chain import ProcessChain
-from core.base.caller.process_row import ProcessRow
+from engine.caller.caller_request import CallerRequest, SESSION_VARIABLE
+from engine.caller.caller_resolver import CallerResolver
+from engine.caller.process_chain import ProcessChain
+from engine.caller.process_row import ProcessRow
 from core.base.cli.shell_handoff import RUNNER_VARIABLE
 from core.base.cli.usage_error import UsageError
 from core.base.provider.providers import Providers
 from engine.query.conditions.among import Among
 from core.base.command.script_policy import ScriptPolicy
 from engine.process.plugin_script_processes import PluginScriptProcesses
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.modules.actors.queries.actor_query import ActorQuery
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.queries.environment_query import EnvironmentQuery

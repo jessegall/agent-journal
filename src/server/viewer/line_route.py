@@ -21,7 +21,7 @@ from core.base.database.reported_findings import ReportedFindings
 from engine.environment.environment_names import EnvironmentNames
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.viewer.commands.support.window_lines import WindowLines

@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.voices.support.builtin_catalogue import BuiltinCatalogue
 from core.modules.voices.support.voice_choice import VoiceChoice

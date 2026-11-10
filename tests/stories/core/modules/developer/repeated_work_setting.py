@@ -5,8 +5,8 @@ import os
 import pytest
 
 from engine.actor.actor import Actor
-from core.base.caller.caller import Caller
-from core.base.caller.caller_request import CallerRequest
+from engine.caller.caller import Caller
+from engine.caller.caller_request import CallerRequest
 from core.base.cli.console import Console
 from core.base.cli.line_run import LineRun
 from core.base.database.repeated_work import READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS

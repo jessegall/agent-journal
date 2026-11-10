@@ -2,8 +2,8 @@ from core.modules.agents.support.agent_conversations import AgentConversations
 import pytest
 
 from engine.actor.actor import Actor
-from core.base.caller.caller_request import CallerRequest
-from core.base.caller.process_row import ProcessRow
+from engine.caller.caller_request import CallerRequest
+from engine.caller.process_row import ProcessRow
 from core.base.driver.command_category import CommandCategory
 from core.testing.shell_part import ShellPart
 from core.modules.processes.models.output import Output

@@ -1,7 +1,7 @@
 import io
 
 from engine.enums.actor_type import ActorType
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.cli.console import Console, SUCCESS_CODE
 from core.base.cli.module_remove_line import MODULE_REMOVAL_ARGUMENTS, ModuleRemoveLine
 from core.base.command.bus import Bus

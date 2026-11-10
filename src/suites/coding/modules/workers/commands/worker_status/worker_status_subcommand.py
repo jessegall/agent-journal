@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.enums.actor_type import ActorType
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.row.page import Page
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries

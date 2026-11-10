@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from typing import TextIO
 
-from core.base.caller.caller_request import CallerRequest
+from engine.caller.caller_request import CallerRequest
 from core.base.cli.console import USAGE_CODE, Console
 from core.base.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
 from core.base.cli.module_add_line import MODULE_ADDITION_ARGUMENTS, ModuleAddLine
@@ -20,7 +20,7 @@ from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.performance_tools import PerformanceTools
 from core.base.performance.route_cost_tool import RouteCostTool
 from core.base.registry.stale_registry_error import StaleRegistryError
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.time.timing import Timing
 from engine.request.request_queue import RequestQueue
 

@@ -4,9 +4,9 @@ from dataclasses import replace
 from contextlib import redirect_stderr, redirect_stdout
 from typing import TextIO
 
-from core.base.caller.caller_request import CallerRequest
-from core.base.caller.caller_resolver import CallerResolver
-from core.base.caller.caller import Caller
+from engine.caller.caller_request import CallerRequest
+from engine.caller.caller_resolver import CallerResolver
+from engine.caller.caller import Caller
 from core.base.change.event_log import EventLog
 from core.base.change.touched_rows import TouchedRows
 from core.base.subcommand.output import Output

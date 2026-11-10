@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.caller.caller_request import CallerRequest
+from engine.caller.caller_request import CallerRequest
 from engine.query.queries import Queries
 from core.modules.templates.models.template import Template
 from tests.stories.core.modules.drivers.support.extended_suites import PATH as EXTENDED_SUITES

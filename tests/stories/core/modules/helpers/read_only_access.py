@@ -4,7 +4,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.caller.caller_request import SESSION_VARIABLE
+from engine.caller.caller_request import SESSION_VARIABLE
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
 from core.base.driver.tool_type import ToolType

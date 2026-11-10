@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from suites.coding.modules.checks.commands.edit_check.edit_check import EditCheck
 from suites.coding.modules.checks.commands.support.show_check_line_subcommand import ShowCheckLineSubcommand
 

@@ -17,7 +17,7 @@ MOVED_ENUM_COUNT = 13
 SAMPLE_SOURCE = "src/core/base/sample_error.py"
 SAMPLE_TARGET = "src/engine/errors/sample_error.py"
 SAMPLE_CLASS = "class SampleError(Exception):\n    pass\n"
-REGISTRY_PATH = "core.base.caller.caller_resolver"
+REGISTRY_PATH = "engine.caller.caller_resolver"
 PREVIOUS_PATH = "core.previous.caller_resolver"
 REGISTRY_ROW = Statement("SELECT fingerprint, entries FROM registry WHERE id = 1")
 COUNTED_TABLES = ("actors", "migrations", "registry")

@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.modules.triggers.commands.make_trigger.make_trigger import MakeTrigger
 from core.modules.triggers.commands.support.show_trigger_line_subcommand import ShowTriggerLineSubcommand
 from core.modules.triggers.commands.support.trigger_details import TriggerDetails

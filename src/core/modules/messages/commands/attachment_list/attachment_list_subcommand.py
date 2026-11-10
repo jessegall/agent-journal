@@ -2,7 +2,7 @@ from core.modules.messages.support.attachment_list_row import AttachmentListRow
 import re
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.messages.models.attached_file import AttachedFile

@@ -2,7 +2,7 @@ from core.base.command.command import Command
 from suites.coding.modules.workers.support.worker_command_request import WorkerCommandRequest
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.cli.write_flags import WriteFlags
 from core.base.scope.scopes import Scopes
 from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome

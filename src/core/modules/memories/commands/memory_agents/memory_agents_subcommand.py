@@ -4,7 +4,7 @@ from argparse import ArgumentParser, Namespace
 from engine.enums.access import Access
 from engine.enums.actor_type import ActorType
 from engine.helper_type.helper_type_book import HelperTypeBook
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.row.page import Page
 from engine.query.conditions.among import Among
 from engine.query.conditions.contains_every import ContainsEvery

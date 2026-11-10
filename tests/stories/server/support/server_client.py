@@ -8,7 +8,7 @@ import subprocess
 import socket
 import time
 from unittest.mock import patch
-from core.base.caller.process_table import ProcessTable
+from engine.caller.process_table import ProcessTable
 from engine.time.clock import Clock
 from core.testing.fixed_process_table import FixedProcessTable
 from contextlib import contextmanager

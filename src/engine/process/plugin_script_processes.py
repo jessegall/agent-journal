@@ -7,7 +7,7 @@ from collections.abc import Mapping, Sequence
 from functools import cache
 from pathlib import Path
 
-from core.base.caller.process_row import ProcessRow
+from engine.caller.process_row import ProcessRow
 from engine.journal.journal_home import JournalHome
 from engine.file.file_access import FileAccess
 from engine.process.leftover_process import LeftoverProcess

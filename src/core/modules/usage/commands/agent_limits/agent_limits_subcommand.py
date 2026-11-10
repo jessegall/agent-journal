@@ -1,7 +1,7 @@
 from argparse import Namespace
 from dataclasses import asdict
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.agent.agent_work import AgentWork
 from core.base.profile.agent_profile import AgentProfile
 from engine.query.conditions.is_null import IsNull

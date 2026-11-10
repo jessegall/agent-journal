@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 
-from core.base.caller.caller_request import CallerRequest
+from engine.caller.caller_request import CallerRequest
 from core.base.cli.line_run import LineRun
 from core.testing.story import Story
 from tests.stories.core.base.driver.support.samples import SAMPLES

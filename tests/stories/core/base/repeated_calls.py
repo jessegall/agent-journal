@@ -6,7 +6,7 @@ import pytest
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.cli.console import Console
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.actor.actor import Actor
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from engine.query.queries import Queries

@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.commands.make_proof.make_proof import MakeProof
 from suites.coding.modules.workers.commands.make_proof.make_proof_subcommand import MakeProofSubcommand

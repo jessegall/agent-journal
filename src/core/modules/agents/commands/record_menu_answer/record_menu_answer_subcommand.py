@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.agents.commands.record_menu_answer.record_menu_answer import RecordMenuAnswer
 from core.modules.agents.models.menu_answer import MenuAnswer

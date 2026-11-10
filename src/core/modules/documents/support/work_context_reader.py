@@ -5,7 +5,7 @@ import shlex
 from collections.abc import Sequence
 from dataclasses import replace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.enums.actor_type import ActorType
 from engine.query.conditions.among import Among
 from engine.query.conditions.subquery_match import SubqueryMatch

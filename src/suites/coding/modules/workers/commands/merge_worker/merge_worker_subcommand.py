@@ -2,7 +2,7 @@ from core.base.command.command import Command
 from suites.coding.modules.workers.support.worker_command_request import WorkerCommandRequest
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.merge_worker.merge_worker import MergeWorker

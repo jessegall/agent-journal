@@ -4,7 +4,7 @@ from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from engine.enums.actor_type import ActorType
-from core.base.caller.process_chain import ProcessChain
+from engine.caller.process_chain import ProcessChain
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.modules.agents.support.agent_rows import AgentRows

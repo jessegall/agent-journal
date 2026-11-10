@@ -1,7 +1,7 @@
 from argparse import Namespace
 from dataclasses import asdict
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal
 from engine.request.request_queue import RequestQueue
 from engine.request.request_queue_entry import RequestQueueEntry

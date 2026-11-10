@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.memories.models.memory_mark import MemoryMark
 from core.modules.memories.commands.skip_memory_mark.skip_memory_mark import SkipMemoryMark

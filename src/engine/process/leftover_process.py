@@ -4,7 +4,7 @@ import signal
 import subprocess
 import time
 
-from core.base.caller.process_table import PS_ENVIRONMENT, PS_TIMEOUT_SECONDS
+from engine.caller.process_table import PS_ENVIRONMENT, PS_TIMEOUT_SECONDS
 
 STOP_LIMIT_SECONDS = 5
 POLL_SECONDS = 0.05

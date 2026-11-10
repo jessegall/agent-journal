@@ -2,9 +2,9 @@ from argparse import ArgumentParser
 from typing import TextIO
 
 from engine.enums.actor_type import ActorType
-from core.base.caller.caller_request import CallerRequest
-from core.base.caller.caller import Caller
-from core.base.caller.caller_resolver import CallerResolver
+from engine.caller.caller_request import CallerRequest
+from engine.caller.caller import Caller
+from engine.caller.caller_resolver import CallerResolver
 from core.base.cli.console import Console, REFUSED_CODE, SUCCESS_CODE, USAGE_CODE
 from core.base.cli.usage_error import UsageError
 from core.base.cli.write_flags import WriteFlags

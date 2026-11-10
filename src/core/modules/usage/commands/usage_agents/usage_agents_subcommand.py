@@ -9,7 +9,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.sandbox.agent_sandbox_choice import AgentSandboxChoice
 from engine.helper_type.helper_type_book import HelperTypeBook
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.time.clock import Clock
 from engine.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity

@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.base.subcommand.output import Output

@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.actor.actor import CORE_ACTOR_ID
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.processes.commands.add_reader.add_reader import AddReader
 from core.modules.processes.models.reader import Reader

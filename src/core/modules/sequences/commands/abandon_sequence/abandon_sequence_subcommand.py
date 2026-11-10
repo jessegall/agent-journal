@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun
 from core.modules.sequences.commands.move_sequence_run.run_move_subcommand import RunMoveSubcommand
 

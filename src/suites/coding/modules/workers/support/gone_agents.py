@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 
-from core.base.caller.process_table import ProcessTable
+from engine.caller.process_table import ProcessTable
 from core.modules.agents.models.agent import Agent
 
 

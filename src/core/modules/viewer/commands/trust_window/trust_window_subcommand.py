@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.viewer.models.window_permission import WindowPermission
 from core.modules.viewer.commands.trust_window.trust_window import TrustWindow

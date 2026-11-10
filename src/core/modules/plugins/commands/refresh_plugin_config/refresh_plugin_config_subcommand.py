@@ -2,7 +2,7 @@ import json
 import sys
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.subcommand.output import Output

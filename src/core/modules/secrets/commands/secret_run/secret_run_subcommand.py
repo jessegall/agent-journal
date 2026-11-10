@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output

@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.processes.commands.skip_reader_request.skip_reader_request import SkipReaderRequest
 from core.modules.processes.models.reader_request import ReaderRequest

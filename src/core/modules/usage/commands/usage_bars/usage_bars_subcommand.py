@@ -1,6 +1,6 @@
 from argparse import Namespace
 from engine.enums.agent_role import AgentRole
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries

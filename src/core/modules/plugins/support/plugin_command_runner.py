@@ -3,7 +3,7 @@ import subprocess
 from pathlib import Path
 
 from engine.agent.agent_checkouts import AgentCheckouts
-from core.base.caller.caller_request import SESSION_VARIABLE
+from engine.caller.caller_request import SESSION_VARIABLE
 from engine.checkout.checkout import Checkout
 from engine.enums.checkout_type import CheckoutType
 from core.base.command.bus import Bus

@@ -1,6 +1,6 @@
 import time
 
-from core.base.caller.process_table import ProcessTable
+from engine.caller.process_table import ProcessTable
 from engine.process.leftover_process import POLL_SECONDS, LeftoverProcess
 from core.base.provider.providers import Providers
 from core.modules.agents.models.agent import Agent

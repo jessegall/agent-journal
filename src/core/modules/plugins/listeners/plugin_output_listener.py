@@ -2,7 +2,7 @@ import io
 import shlex
 
 from engine.enums.agent_role import AgentRole
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.base.change.logged_event import LoggedEvent
 from core.base.cli.console import Console
 from core.base.command.bus import Bus

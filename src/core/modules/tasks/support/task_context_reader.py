@@ -1,6 +1,6 @@
 from typing import Protocol, runtime_checkable
 
-from core.base.caller.caller import Caller
+from engine.caller.caller import Caller
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_conversation import TaskConversation
 
