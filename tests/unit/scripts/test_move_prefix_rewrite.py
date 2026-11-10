@@ -14,8 +14,8 @@ SPECIFICATION.loader.exec_module(script)
 
 AREA = "src/core/base/sample_area"
 AREA_TARGET = "src/engine/sample_area"
-LOOSE_FILE = "src/core/base/deadline.py"
-LOOSE_TARGET = "src/engine/time/deadline.py"
+LOOSE_FILE = "src/core/base/sample_deadline.py"
+LOOSE_TARGET = "src/engine/time/sample_deadline.py"
 LAYER_LINE = 'PATTERN = LayerPattern(re.compile(r"{}/"), LayerTier.ENGINE)\n'
 OLD_LAYER_LINE = LAYER_LINE.format("src/core/base")
 TWO_FOLDERS_LAYER_LINE = LAYER_LINE.format("src/(?:core/base|engine)")
@@ -103,14 +103,14 @@ def test_a_config_rule_is_rewritten_for_a_folder(tmp_path):
 
 def test_a_moved_file_leaves_the_allow_list_of_the_layout_rules(tmp_path):
     write(tmp_path, LOOSE_FILE, "class Deadline:\n    pass\n")
-    rule = write(tmp_path, ".commandments/custom/architecture_layout_base_loose_class.json", '{"find": {"reject": [{"testCode": true}, {"file": "src/core/base/deadline.py"}, {"file": "src/core/base/clock.py"}]}}\n')
+    rule = write(tmp_path, ".commandments/custom/architecture_layout_base_loose_class.json", '{"find": {"reject": [{"testCode": true}, {"file": "src/core/base/sample_deadline.py"}, {"file": "src/core/base/sample_clock.py"}]}}\n')
     script.move_path(tmp_path, tmp_path / LOOSE_FILE, tmp_path / LOOSE_TARGET)
-    assert json.loads(rule.read_text())["find"]["reject"] == [{"testCode": True}, {"file": "src/core/base/clock.py"}]
+    assert json.loads(rule.read_text())["find"]["reject"] == [{"testCode": True}, {"file": "src/core/base/sample_clock.py"}]
 
 
 def test_the_layer_pattern_matches_two_folders_while_engine_files_remain(tmp_path):
     area_project(tmp_path)
-    write(tmp_path, "src/core/base/clock.py", "class Clock:\n    pass\n")
+    write(tmp_path, "src/core/base/sample_clock.py", "class Clock:\n    pass\n")
     table = write(tmp_path, "src/core/layer_table.py", OLD_LAYER_LINE)
     moved_area(tmp_path)
     assert table.read_text() == TWO_FOLDERS_LAYER_LINE
@@ -138,12 +138,12 @@ def test_a_folder_move_takes_its_test_folders(tmp_path):
 
 def test_a_loose_file_takes_its_unit_test_and_story_file(tmp_path):
     write(tmp_path, LOOSE_FILE, "class Deadline:\n    pass\n")
-    write(tmp_path, "tests/unit/core/base/test_deadline.py", "from core.base.deadline import Deadline\n")
-    write(tmp_path, "tests/stories/core/base/deadline.py")
+    write(tmp_path, "tests/unit/core/base/test_sample_deadline.py", "from core.base.sample_deadline import Deadline\n")
+    write(tmp_path, "tests/stories/core/base/sample_deadline.py")
     script.move_path(tmp_path, tmp_path / LOOSE_FILE, tmp_path / LOOSE_TARGET)
-    assert (tmp_path / "tests/unit/engine/time/test_deadline.py").read_text() == "from engine.time.deadline import Deadline\n"
-    assert (tmp_path / "tests/stories/engine/time/deadline.py").is_file() and (tmp_path / "tests/unit/engine/time/__init__.py").is_file()
-    assert not (tmp_path / "tests/unit/core/base/test_deadline.py").exists()
+    assert (tmp_path / "tests/unit/engine/time/test_sample_deadline.py").read_text() == "from engine.time.sample_deadline import Deadline\n"
+    assert (tmp_path / "tests/stories/engine/time/sample_deadline.py").is_file() and (tmp_path / "tests/unit/engine/time/__init__.py").is_file()
+    assert not (tmp_path / "tests/unit/core/base/test_sample_deadline.py").exists()
 
 
 def test_a_test_folder_without_a_source_folder_refuses_the_move(tmp_path):

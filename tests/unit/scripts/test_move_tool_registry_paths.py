@@ -71,3 +71,10 @@ def test_a_plugin_that_names_the_path_is_listed_and_not_rewritten(tmp_path):
     report = moved(tmp_path)
     assert "not rewritten, a plugin: .journal/plugins/sample/journal-plugin.json" in report
     assert manifest.read_text() == text
+
+
+def test_a_file_path_with_its_dot_escaped_for_a_regular_expression_is_rewritten_in_a_rule(tmp_path):
+    write(tmp_path, SOURCE, "class SampleError(Exception):\n    pass\n")
+    rule = write(tmp_path, ".commandments/custom/rule.json", '{"fileMatches": "(^|/)src/core/base/sample_error\\\\.py$"}\n')
+    script.move_path(tmp_path, tmp_path / SOURCE, tmp_path / TARGET)
+    assert rule.read_text() == '{"fileMatches": "(^|/)src/engine/errors/sample_error\\\\.py$"}\n'

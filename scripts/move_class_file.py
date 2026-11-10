@@ -29,6 +29,7 @@ LAYER_PATTERN_TWO_FOLDERS = LAYER_PATTERN_LINE.format("src/(?:core/base|engine)"
 LAYER_PATTERN_NEW_FOLDER = LAYER_PATTERN_LINE.format(ENGINE_TARGET)
 DOTTED_SEPARATORS = ".:"
 PATH_SEPARATORS = "/"
+ESCAPED_DOTS = ("\\\\.", "\\.")
 STRING_OPENING = re.compile(rb"""[rRuU]*('''|\"\"\"|'|\")""")
 
 
@@ -47,6 +48,12 @@ class Rename:
     @property
     def pattern(self) -> re.Pattern[str]:
         return re.compile(rf"(?<![\w.]){re.escape(self.previous)}(?!\w)")
+
+    @property
+    def regular_expression_forms(self) -> list[tuple[str, str]]:
+        if self.separators != PATH_SEPARATORS or "." not in self.previous:
+            return []
+        return [(self.previous.replace(".", escaped_dot), self.moved.replace(".", escaped_dot)) for escaped_dot in ESCAPED_DOTS]
 
     def applied(self, name: str) -> str | None:
         if name == self.previous or name.startswith(tuple(f"{self.previous}{separator}" for separator in self.separators)):
@@ -278,6 +285,8 @@ def file_text(path: Path) -> str | None:
 def rewritten_text(text: str, renames: Sequence[Rename]) -> str:
     for rename in renames:
         text = rename.pattern.sub(rename.moved, text)
+        for previous, moved in rename.regular_expression_forms:
+            text = text.replace(previous, moved)
     return text
 
 
