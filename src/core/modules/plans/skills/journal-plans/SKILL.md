@@ -44,6 +44,17 @@ and then it is followed.
 
 ## How its tasks are handed out
 
-A phase is finished first. Inside a phase the highest priority goes first, then the lowest number. Of several started
-plans, the one started first goes first. A critical task outside the plan goes before all of it. A task waiting on
-another does not hold its phase up; go on with the tasks that can be done.
+Every agent has a plan focus of its own: the plan it works on first. With none named, the focus is the oldest started
+plan that has work you can take.
+
+- `journal plan focus` reads your focus and what each started plan waits on. `journal plan focus <plan>` names a started
+  or approved plan as your focus, and `journal plan focus --clear` brings the default back. A person names the focus of
+  the main agent with the same command.
+- The order of hand-outs: the task you were told to take next, a critical task outside any plan, the work of your focus,
+  the next task of the other started plans, oldest first, the most urgent open task outside any plan, and last a task
+  reserved for you.
+- The work of your focus is a ready task of the plan or an open task the plan waits on, in a plan or outside one. The
+  task the most plan tasks wait on goes first, then the highest priority, then the place in the phase.
+- A phase is finished first, and nothing is handed out past a checkpoint phase with an open task. A task waiting on
+  another does not hold its phase up.
+- A worker takes only the tasks assigned to it; its focus orders those.

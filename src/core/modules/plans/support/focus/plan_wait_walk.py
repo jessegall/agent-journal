@@ -18,15 +18,19 @@ LONG_CHAIN_TEXT = f"whose chain of waits is longer than {LONGEST_CHAIN} tasks"
 @dataclass(frozen=True)
 class PlanWaitWalk:
     """Where the waits of the unfinished tasks of one plan end: for each task at an end, the plan tasks that
-    wait on it, and a line for each wait that runs in a circle or is too long to follow."""
+    wait on it, and a line for each wait that runs in a circle or is too long to follow. A blocked task of
+    the plan that waits on no task is an end itself: the plan waits on what that task waits on."""
 
     waiting_tasks: Mapping[int, frozenset[int]]
     chain_lines: Mapping[int, WaitingLine]
 
     @classmethod
-    def walked(cls, unfinished_ids: Sequence[int], graph: WaitGraph) -> Self:
+    def walked(cls, unfinished_ids: Sequence[int], graph: WaitGraph, blocked_ids: Sequence[int] = ()) -> Self:
         waiting_tasks: dict[int, set[int]] = defaultdict(set)
         chain_lines: dict[int, WaitingLine] = {}
+        for task_id in blocked_ids:
+            if not graph.dependencies(task_id):
+                waiting_tasks[task_id].add(task_id)
         for task_id in unfinished_ids:
             for dependency_id in graph.dependencies(task_id):
                 ends = graph.ends(dependency_id)

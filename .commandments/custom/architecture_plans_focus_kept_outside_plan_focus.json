@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "text": "focus_plan"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/plans/support/focus/plan_focus\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "plan-focus-kept-outside-plan-focus",
+        "description": "The key of the plan focus on the agent row is written out in another file, so the focus of an agent can be read or written in more than one way.",
+        "rule": "Read and change a focus through PlanFocus: explicit_plan_id, choose, clear and overview.",
+        "skill": "plain-code-words"
+    }
+}

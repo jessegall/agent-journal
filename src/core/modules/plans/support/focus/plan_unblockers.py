@@ -11,7 +11,7 @@ from core.modules.plans.support.focus.plan_wait_walk import PlanWaitWalk
 from core.modules.plans.support.focus.unblocker_facts import UnblockerFacts
 from core.modules.plans.support.focus.unblockers import Unblockers
 from core.modules.plans.support.focus.wait_graph import WaitGraph
-from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES
+from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES, TaskState
 from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_wait import TaskWait
@@ -36,14 +36,19 @@ class PlanUnblockers:
         if not plan_ids:
             return {}
         unfinished_ids: dict[int, list[int]] = defaultdict(list)
+        blocked_ids: dict[int, list[int]] = defaultdict(list)
+        plan_rows: dict[int, list[PlanTask]] = defaultdict(list)
         for row in self.queries.query(PlanTask).matching(Among("plan_id", plan_ids)).full_table(PLAN_REASON).all_rows():
+            plan_rows[row.plan_id].append(row)
             if row.state in UNFINISHED_STATES:
                 unfinished_ids[row.plan_id].append(row.task_id)
+            if row.state is TaskState.BLOCKED:
+                blocked_ids[row.plan_id].append(row.task_id)
         graph = self.wait_graph()
-        walks = {plan_id: PlanWaitWalk.walked(unfinished_ids[plan_id], graph) for plan_id in plan_ids}
+        walks = {plan_id: PlanWaitWalk.walked(unfinished_ids[plan_id], graph, blocked_ids[plan_id]) for plan_id in plan_ids}
         end_ids = sorted({task_id for walk in walks.values() for task_id in walk.waiting_tasks})
         end_tasks = {task.id: task for task in self.tasks.unclosed().matching(Among("id", end_ids)).all_rows()} if end_ids else {}
-        facts = self.facts(tuple(end_tasks.values()), agent)
+        facts = self.facts(tuple(end_tasks.values()), agent, plan_rows)
         return {plan_id: walk.unblockers(end_tasks, facts) for plan_id, walk in walks.items()}
 
     def wait_graph(self) -> WaitGraph:
@@ -52,16 +57,19 @@ class PlanUnblockers:
             waits[dependency.task_id].append(dependency.dependency_id)
         return WaitGraph(waits)
 
-    def facts(self, end_tasks: Sequence[Task], agent: Agent) -> UnblockerFacts:
+    def facts(self, end_tasks: Sequence[Task], agent: Agent, plan_rows: dict[int, list[PlanTask]]) -> UnblockerFacts:
         task_ids = [task.id for task in end_tasks]
         if not task_ids:
             return UnblockerFacts(agent, frozenset(), {}, {}, {}, {}, {})
         takeable_ids = frozenset(task.id for task in self.tasks.takeable(agent).matching(Among("id", task_ids)).all_rows())
-        places = {row.task_id: row for row in self.queries.query(PlanTask).matching(Among("task_id", task_ids)).all_rows()}
+        places = {row.task_id: row for rows in plan_rows.values() for row in rows if row.task_id in task_ids}
+        unplaced_ids = [task_id for task_id in task_ids if task_id not in places]
+        for row in self.queries.query(PlanTask).matching(Among("task_id", unplaced_ids)).all_rows() if unplaced_ids else ():
+            places[row.task_id] = row
         plan_ids = sorted({row.plan_id for row in places.values()})
         plans = {plan.id: plan for plan in self.queries.query(Plan).matching(Among("id", plan_ids)).all_rows()} if plan_ids else {}
-        plan_rows: dict[int, list[PlanTask]] = defaultdict(list)
-        for row in self.queries.query(PlanTask).matching(Among("plan_id", plan_ids)).full_table(PLAN_REASON).all_rows() if plan_ids else ():
+        unread_plan_ids = [plan_id for plan_id in plan_ids if plan_id not in plan_rows]
+        for row in self.queries.query(PlanTask).matching(Among("plan_id", unread_plan_ids)).full_table(PLAN_REASON).all_rows() if unread_plan_ids else ():
             plan_rows[row.plan_id].append(row)
         waits: dict[int, list[TaskWait]] = defaultdict(list)
         for wait in self.queries.query(TaskWait).matching(Among("task_id", task_ids)).matching(IsNull("ended_at")).all_rows():

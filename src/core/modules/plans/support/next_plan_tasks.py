@@ -1,5 +1,4 @@
 from engine.query.conditions.among import Among
-from engine.query.conditions.has_value import HasValue
 from engine.query.select import Select
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.condition import Condition
@@ -13,16 +12,10 @@ from core.modules.tasks.queries.task_query import TaskQuery
 
 
 class NextPlanTasks:
-    """Selects the next non-delegated task in the earliest unfinished plan phase, and the tasks of that phase
-    that one agent may take now."""
+    """Selects the tasks of the earliest unfinished phase of a plan that one agent may take now."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
-
-    def following(self, plan_id: int) -> int | None:
-        free = SubqueryMatch("task_id", Select("tasks").matching(HasValue("delegated_to")).column("id"), negated=True)
-        first = min(self.ready_places(plan_id, free), key=lambda place: (-place.priority, place.task_id), default=None)
-        return first.task_id if first is not None else None
 
     def ready(self, plan_id: int, agent: Agent) -> tuple[PlanTask, ...]:
         return self.ready_places(plan_id, SubqueryMatch("task_id", Select("tasks").matching(TaskQuery.takeable_condition(agent)).column("id")))

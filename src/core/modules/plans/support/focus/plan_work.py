@@ -33,7 +33,7 @@ class PlanWork:
         return tuple(place.task_id for place in self.ready_places)
 
     @staticmethod
-    def most_urgent(tasks: Sequence[Task]) -> Task | None:
+    def highest_priority(tasks: Sequence[Task]) -> Task | None:
         return min(tasks, key=lambda task: (-task.priority, task.id), default=None)
 
     def focus_lines(self) -> list[str]:

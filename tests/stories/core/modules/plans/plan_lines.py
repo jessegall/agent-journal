@@ -69,7 +69,7 @@ def test_a_plan_whose_tasks_cannot_start_says_so(started_cart_plan):
     story = started_cart_plan
     story.run('task block 2 --reason "waits for a key"')
     lines = closed_lines(story, 1)
-    expect_value_with(lines, "plan 1: no task can start; 1 wait or are blocked")
+    expect_value_with(lines, "plan 1: no task can start; 1 wait or are blocked: task 2, which is blocked with a reason")
     expect_value_with(lines, "plan 1: phase Build done")
 
 

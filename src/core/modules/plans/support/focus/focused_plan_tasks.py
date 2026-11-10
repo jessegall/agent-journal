@@ -39,7 +39,7 @@ class FocusedPlanTasks:
     def free_task(self, plans: Sequence[PlanWork], excluded_id: int | None) -> Task | None:
         for work in plans:
             task_ids = [task_id for task_id in work.ready_task_ids() if task_id != excluded_id]
-            free = work.most_urgent(self.tasks.matching(IsNull("delegated_to")).matching(Among("id", task_ids)).all_rows()) if task_ids else None
+            free = work.highest_priority(self.tasks.matching(IsNull("delegated_to")).matching(Among("id", task_ids)).all_rows()) if task_ids else None
             if free is not None:
                 return free
         return None
