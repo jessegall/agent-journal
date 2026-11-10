@@ -11,7 +11,7 @@ from tests.stories.core.large_journal.support import EDIT, LargeJournal, TableCo
 
 SESSIONS = ("s-1", "s-helper", "s-worker")
 
-KNOWN_LARGE_READS = (
+OPEN_LARGE_READS = (
     "FROM agent_skills WHERE session_agent_id = ? AND state = ?",
     "FROM reminders WHERE ended_at IS NULL AND creator_id NOT IN",
     "FROM agent_blocks WHERE session_agent_id = ? AND closed_at IS NULL",
@@ -24,7 +24,7 @@ KNOWN_LARGE_READS = (
 )
 
 
-"""The reads of KNOWN_LARGE_READS loaded more than the limit when this test was written (task 8753). Each is
+"""The reads of OPEN_LARGE_READS loaded more than the limit when this test was written (task 8753). Each is
 fixed under task 8738 and then taken out; a read that is not listed fails the test."""
 
 
@@ -63,7 +63,7 @@ def test_no_read_command_and_no_hook_loads_more_rows_than_the_read_limit_on_a_la
             findings += large_reads(story, database, f"hook {sample.body.get('event', '')} of {session}", lambda: story.hook(session, sample))
     findings += large_reads(story, database, "the commit listeners", story.run_listeners)
     distinct = sorted(set(findings))
-    unlisted = [finding for finding in distinct if not any(known in finding for known in KNOWN_LARGE_READS)]
-    fixed = [known for known in KNOWN_LARGE_READS if not any(known in finding for finding in distinct)]
+    unlisted = [finding for finding in distinct if not any(fragment in finding for fragment in OPEN_LARGE_READS)]
+    fixed = [fragment for fragment in OPEN_LARGE_READS if not any(fragment in finding for finding in distinct)]
     story.expect_rows(not unlisted, detail=f"{len(unlisted)} new reads over the limit; small tables {TableCopies(database).small_tables()}:\n" + "\n".join(unlisted))
-    story.expect_rows(not fixed, detail="these reads are fixed, so take them out of KNOWN_LARGE_READS:\n" + "\n".join(fixed))
+    story.expect_rows(not fixed, detail="these reads are fixed, so take them out of OPEN_LARGE_READS:\n" + "\n".join(fixed))
