@@ -19,12 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/engine/listener/commit_listener_error.py"
-            },
-            {
-                "file": "src/engine/listener/listener_class_error.py"
-            },
-            {
                 "file": "src/engine/model/model_error.py"
             },
             {

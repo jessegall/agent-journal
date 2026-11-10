@@ -18,7 +18,7 @@ from engine.registry.listener_entry import ListenerEntry
 from engine.registry.listener_timing import ListenerTiming
 from engine.registry.registry import Registry
 from engine.scope.scopes import Scopes
-from engine.listener.commit_listener_error import CommitListenerError
+from engine.listener.errors.commit_listener_error import CommitListenerError
 from engine.listener.event_builder import EventBuilder
 from engine.database.performance_costs import PerformanceCosts
 from engine.performance.performance_state import PerformanceState

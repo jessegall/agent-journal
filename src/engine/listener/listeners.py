@@ -7,7 +7,7 @@ from engine.model.model import Model
 from engine.registry.listener_timing import ListenerTiming
 from engine.registry.registry import Registry
 from engine.scope.scopes import Scopes
-from engine.listener.listener_class_error import ListenerClassError
+from engine.listener.errors.listener_class_error import ListenerClassError
 from collections.abc import Sequence
 
 
