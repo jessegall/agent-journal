@@ -54,7 +54,7 @@ class UnansweredMessageRule(DriverRule):
         return tuple(message for message in candidates if message.id not in answered)
 
     def from_running_agents(self, messages: tuple[Message, ...]) -> tuple[Message, ...]:
-        writers = self.queries.query(Agent).find_many(list(dict.fromkeys(message.creator_id for message in messages)))
+        writers = self.queries.query(Agent).matching(Among("id", tuple(dict.fromkeys(message.creator_id for message in messages)))).all_rows()
         running_ids = {writer.id for writer in writers if writer.ended_at is None and writer.retired_at is None}
         return tuple(message for message in messages if message.creator_id in running_ids)
 
