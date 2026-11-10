@@ -1,3 +1,4 @@
+from tests.stories.core.support.agent_labels import agent_label
 from tests.stories.core.support.agent_labels import agent_number
 import json
 from datetime import datetime, timedelta, timezone
