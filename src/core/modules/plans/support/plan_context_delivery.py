@@ -1,6 +1,6 @@
 from engine.change.event_log import EventLog
 from engine.command.context import Context
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.plans.models.plan import Plan

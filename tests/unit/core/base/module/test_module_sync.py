@@ -3,9 +3,9 @@ import json
 import pytest
 
 from engine.container.container import Container
-from core.base.database.database import Database
-from core.base.database.listener_cursor_table import ListenerCursorTable
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.listener_cursor_table import ListenerCursorTable
+from engine.database.statement import Statement
 from engine.journal.journal import Journal
 from engine.journal.journal_home import JournalHome
 from core.base.module.code_fingerprint import CodeFingerprint

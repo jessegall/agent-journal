@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.plans.conditions.shared_plan_tasks import SharedPlanTasks

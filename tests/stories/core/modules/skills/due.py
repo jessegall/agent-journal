@@ -3,7 +3,7 @@ from datetime import timedelta
 import pytest
 
 from engine.command.bus import Bus
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples

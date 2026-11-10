@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import replace
 
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from core.base.profile.model_tier import ModelTier
 from core.base.provider.providers import Providers
 from engine.query.conditions.among import Among

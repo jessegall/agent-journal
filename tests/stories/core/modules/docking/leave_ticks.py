@@ -4,7 +4,7 @@ import pytest
 
 from engine.change.event_log import EventLog
 from engine.change.touched import Touched
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.modules.docking.listeners.dock_item_leave_listener import DockItemLeaveListener
 from core.modules.docking.models.dock_item import DockItem
 from tests.stories.core.modules.docking.support.dock_samples import SAMPLE, TIMEOUT_SECONDS, docked, ended_task, expect_docked_state, leave_tick, running_task

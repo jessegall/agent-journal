@@ -2,7 +2,7 @@ import sqlite3
 
 import pytest
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from suites.coding.modules.workers.migrations.m010_alias_access import AliasAccessMigration
 from suites.coding.modules.workers.migrations.m011_process_owner import ProcessOwnerMigration
 

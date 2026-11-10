@@ -2,7 +2,7 @@ import sqlite3
 
 import pytest
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository

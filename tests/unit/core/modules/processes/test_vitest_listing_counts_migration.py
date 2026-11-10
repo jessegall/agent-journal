@@ -2,7 +2,7 @@ import re
 import sqlite3
 import subprocess
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.modules.processes.migrations.m054_vitest_listing_counts import VitestListingCountsMigration
 from core.modules.processes.migrations.m055_vitest_summary_counts import VitestSummaryCountsMigration
 from core.modules.processes.support.count_command import CountCommand

@@ -1,5 +1,5 @@
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
 from engine.enums.agent_role import AgentRole

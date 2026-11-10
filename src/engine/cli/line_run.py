@@ -7,9 +7,9 @@ from engine.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
 from engine.cli.module_add_line import MODULE_ADDITION_ARGUMENTS, ModuleAddLine
 from engine.cli.module_remove_line import MODULE_REMOVAL_ARGUMENTS, ModuleRemoveLine
 from engine.container.container import Container
-from core.base.database.database import BUSY_TIMEOUT_SECONDS, Database
-from core.base.database.reported_findings import ReportedFindings
-from core.base.database.request_watch import RequestWatch
+from engine.database.database import BUSY_TIMEOUT_SECONDS, Database
+from engine.database.reported_findings import ReportedFindings
+from engine.database.request_watch import RequestWatch
 from engine.time.deadline import Deadline
 from engine.container.journal_container import opened_container, synced_container
 from engine.journal.journal_home import JournalHome

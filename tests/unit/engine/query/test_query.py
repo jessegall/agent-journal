@@ -3,9 +3,9 @@ from datetime import datetime, timezone
 import pytest
 
 from engine.container.container import Container
-from core.base.database.database import Database
-from core.base.database.statement import Statement
-from core.base.database.table_statements import TableStatements
+from engine.database.database import Database
+from engine.database.statement import Statement
+from engine.database.table_statements import TableStatements
 from engine.journal.journal_home import JournalHome
 from engine.errors.missing_rows_error import MissingRowsError
 from engine.model.tables import Tables

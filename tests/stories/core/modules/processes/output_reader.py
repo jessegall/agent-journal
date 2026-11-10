@@ -6,7 +6,7 @@ import pytest
 from unittest.mock import patch
 
 from engine.command.bus import Bus
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.support.output_folder import OutputFolder

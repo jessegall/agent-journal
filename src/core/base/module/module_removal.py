@@ -4,11 +4,11 @@ import importlib
 import shutil
 import sys
 
-from core.base.database.database import Database
-from core.base.database.migration import Migration
-from core.base.database.listener_cursor_table import ListenerCursorTable
-from core.base.database.schema import Schema
-from core.base.database.table_statements import TableStatements
+from engine.database.database import Database
+from engine.database.migration import Migration
+from engine.database.listener_cursor_table import ListenerCursorTable
+from engine.database.schema import Schema
+from engine.database.table_statements import TableStatements
 from engine.journal.journal_home import JournalHome
 from engine.model.tables import Tables
 from engine.dotted_path.dotted_path import DottedPath

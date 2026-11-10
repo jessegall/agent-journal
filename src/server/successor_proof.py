@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 
 from engine.time.clock import Clock
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.container.journal_container import opened_container, sync_modules
 from engine.journal.journal_home import JournalHome
 from core.base.module.module_sync import ModuleSync

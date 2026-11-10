@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import TypeVar, cast
 
-from core.base.database.kept_rows import KEPT_ROW_COUNT
+from engine.database.kept_rows import KEPT_ROW_COUNT
 from engine.model.model import Model
 from engine.model.view_model import ViewModel
 from engine.errors.missing_rows_error import MissingRowsError

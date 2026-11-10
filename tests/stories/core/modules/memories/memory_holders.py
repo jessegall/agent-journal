@@ -1,7 +1,7 @@
 import json
 
 from engine.actor.actor import Actor
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.modules.memories.support.memory_owners import MAIN_FACT, MAIN_MEMORY, MainAndWorkerMemories, WORKER_FACT, WORKER_MEMORY, read_agent, started_agent
 from tests.stories.core.modules.viewer.support.window_story import WindowStory

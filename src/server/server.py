@@ -29,7 +29,7 @@ from engine.ticker.tick_interval import TickInterval
 from engine.time.timing_log import TimingLog
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
-from core.base.database.reported_findings import ReportedFindings
+from engine.database.reported_findings import ReportedFindings
 from server.booting_work import BootingWork
 from server.code_sync_work import CodeSyncWork
 from server.code_version import CodeVersion

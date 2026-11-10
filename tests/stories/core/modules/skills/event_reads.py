@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from engine.change.event_log import EventLog
 from engine.change.touched import Touched
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.modules.skills.listeners.skill_event_listener import SkillEventListener
 from tests.stories.core.modules.skills.due import DUE
 from tests.stories.core.support.coding_fixtures import CodingEnvironment

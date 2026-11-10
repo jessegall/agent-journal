@@ -12,9 +12,9 @@ from unittest.mock import patch
 
 import pytest
 
-from core.base.database.database import Database
-from core.base.database.point_tally import PointTally
-from core.base.database.points import Points
+from engine.database.database import Database
+from engine.database.point_tally import PointTally
+from engine.database.points import Points
 from engine.file.file_access import FileAccess
 from core.modules.processes.support.output_folder import OutputFolder
 from core.testing.story_fixture import StoryFixture

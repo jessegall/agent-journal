@@ -2,9 +2,9 @@ import re
 
 import pytest
 
-from core.base.database.database import Database
-from core.base.database.repeated_calls_error import RepeatedCallsError
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.repeated_calls_error import RepeatedCallsError
+from engine.database.statement import Statement
 from engine.file.file_access import FileAccess
 from tests.stories.support.story_checks import expect_value
 

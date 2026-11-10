@@ -1,4 +1,4 @@
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.scope.scopes import Scopes
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState

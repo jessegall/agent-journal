@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from engine.enums.actor_type import ActorType
 from engine.change.event_log import EventLog
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.model.model import Model
 from engine.model.tables import Tables
 from engine.time.timestamp import Timestamp

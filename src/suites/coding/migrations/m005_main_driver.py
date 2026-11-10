@@ -1,4 +1,4 @@
-from core.base.database.migration import Migration
+from engine.database.migration import Migration
 
 OLD_RULES = ("coding.builder-next-task-at-stop", "coding.orchestrator-open-tasks-at-stop", "coding.orchestrator-starts-no-task")
 OLD_RULE_LIST = ", ".join(f"'{name}'" for name in OLD_RULES)

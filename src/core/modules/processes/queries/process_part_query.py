@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import Self
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.model.tables import Tables
 from engine.query.query import Query
 from core.modules.processes.models.process_part import ProcessPart

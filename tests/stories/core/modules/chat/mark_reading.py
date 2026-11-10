@@ -1,4 +1,4 @@
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from engine.command.bus import Bus
 from core.modules.chat.commands.show_mark.show_mark import ShowMark

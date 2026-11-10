@@ -3,7 +3,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from tests.stories.support.story_checks import expect_value
 
 from engine.command.bus import Bus

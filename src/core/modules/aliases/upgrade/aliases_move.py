@@ -2,8 +2,8 @@ import json
 import sqlite3
 from functools import partial
 
-from core.base.database.database import Database
-from core.base.database.row_insert import RowInsert
+from engine.database.database import Database
+from engine.database.row_insert import RowInsert
 from engine.upgrade.creator_resolver import CreatorResolver
 from engine.upgrade.move_context import MoveContext
 from engine.upgrade.move_map import MoveMap

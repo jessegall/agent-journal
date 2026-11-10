@@ -1,8 +1,8 @@
 from collections.abc import Iterator, Sequence
 from copy import copy
 from typing import Generic, Self, TypeVar
-from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
-from core.base.database.database import Database
+from engine.database.constraint_refusals import ENVIRONMENT_COLUMN
+from engine.database.database import Database
 from engine.errors.missing_rows_error import MissingRowsError
 from engine.model.agent_scoped import AgentScoped
 from engine.model.removable import Removable

@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from core.modules.profiles.support.profile_files import ProfileFiles
 from tests.stories.core.support.fixtures import UserJoined

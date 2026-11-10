@@ -7,8 +7,8 @@ from contextlib import contextmanager
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.listener.commit_listener_runner import CommitListenerRunner
 from core.base.module.module_removal import ModuleRemoval
 from engine.errors.refusal import Refusal

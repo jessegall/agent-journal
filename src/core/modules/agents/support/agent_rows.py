@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.listener.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal

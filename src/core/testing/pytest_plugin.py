@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from core.base.database.shared_tables import SharedTables
+from engine.database.shared_tables import SharedTables
 from core.base.module.code_fingerprint import PINNED_CODE_VARIABLE
 from core.base.module.source_hash import SourceHash
 

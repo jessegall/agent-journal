@@ -1,6 +1,6 @@
 from dataclasses import dataclass, replace
 
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 from engine.query.condition import Condition
 from engine.query.order import Order
 

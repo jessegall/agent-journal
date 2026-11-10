@@ -1,8 +1,8 @@
 import sqlite3
 from pathlib import Path
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from install.upgrade_journal import UpgradeJournal
 from install.upgrade_outcome import UpgradeOutcome
 from tests.stories.engine.upgrade.support.move_samples import FAILURES, ORDER, PATH, version_four_database

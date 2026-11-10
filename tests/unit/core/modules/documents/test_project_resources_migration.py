@@ -1,9 +1,9 @@
 from engine.time.clock import Clock
 import sqlite3
 
-from core.base.database.database import Database
-from core.base.database.module_migrations import ModuleMigrations
-from core.base.database.schema import Schema
+from engine.database.database import Database
+from engine.database.module_migrations import ModuleMigrations
+from engine.database.schema import Schema
 from engine.model.tables import Tables
 from core.modules.documents.migrations.m001_documents import DocumentsTablesMigration
 from core.modules.documents.migrations.m005_project_documents import ProjectDocumentsMigration

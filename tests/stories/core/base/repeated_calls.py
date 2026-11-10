@@ -3,16 +3,16 @@ import subprocess
 
 import pytest
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.cli.console import Console
 from engine.caller.caller import Caller
 from engine.actor.actor import Actor
 from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.query.queries import Queries
 from core.modules.environments.models.environment import Environment
-from core.base.database.repeated_calls_error import RepeatedCallsError
-from core.base.database.repeated_work import COMMAND_LIMIT_REPEATS, READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS
+from engine.database.repeated_calls_error import RepeatedCallsError
+from engine.database.repeated_work import COMMAND_LIMIT_REPEATS, READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS
 from core.testing.story_line_run import StoryLineRun
 
 REPEATED_READ = Statement("SELECT 1")
@@ -145,4 +145,4 @@ def test_a_repeat_names_the_code_that_asked_not_the_layers_between(new_story):
     with pytest.raises(RepeatedCallsError) as raised:
         repeat_read(story, 2)
     text = str(raised.value)
-    story.expect_rows("repeated_calls.py" in text, "repeat_read" in text, "core/base/database" not in text, "engine/query" not in text)
+    story.expect_rows("repeated_calls.py" in text, "repeat_read" in text, "engine/database" not in text, "engine/query" not in text)

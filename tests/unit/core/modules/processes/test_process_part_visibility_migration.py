@@ -1,6 +1,6 @@
 import sqlite3
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.modules.processes.migrations.m028_process_part_visibility import ProcessPartVisibilityMigration
 
 

@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.database.actor_table import ActorTable
+from engine.database.actor_table import ActorTable
 
 
 class ModuleActors:

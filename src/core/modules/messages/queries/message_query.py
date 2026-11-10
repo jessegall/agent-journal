@@ -4,8 +4,8 @@ from engine.query.conditions.maximum import Maximum
 from engine.query.conditions.minimum import Minimum
 from typing import Self
 
-from core.base.database.database import Database
-from core.base.database.kept_rows import KeptRows
+from engine.database.database import Database
+from engine.database.kept_rows import KeptRows
 from engine.model.tables import Tables
 from engine.time.timestamp import Timestamp
 from engine.query.query import Query

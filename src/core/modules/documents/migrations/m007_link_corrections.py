@@ -1,4 +1,4 @@
-from core.base.database.migration import Migration
+from engine.database.migration import Migration
 from core.modules.documents.migrations.m001_documents import ROW_COLUMNS
 
 

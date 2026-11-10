@@ -1,4 +1,4 @@
-from core.base.database.rebuild_migration import RebuildMigration
+from engine.database.rebuild_migration import RebuildMigration
 
 
 class MemoryTypesDropFadesMigration(RebuildMigration):

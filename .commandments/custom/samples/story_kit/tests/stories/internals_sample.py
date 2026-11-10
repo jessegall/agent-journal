@@ -1,5 +1,5 @@
 # @sin testing_story_imports_journal_internals
-from core.base.database.database import Database
+from engine.database.database import Database
 
 # @righteous testing_story_imports_journal_internals
 from core.testing.story_fixture import StoryFixture

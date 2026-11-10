@@ -1,4 +1,4 @@
-from core.base.database.migration import Migration
+from engine.database.migration import Migration
 
 UNHANDLED = "id > (SELECT coalesce(min(event_id), 0) FROM listener_cursors)"
 

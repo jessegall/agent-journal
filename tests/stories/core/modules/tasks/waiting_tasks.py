@@ -1,7 +1,7 @@
 import pytest
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.modules.tasks.migrations.m017_block_waiting_tasks import BlockWaitingTasksMigration
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.testing.story_fixture import StoryFixture

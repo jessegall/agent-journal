@@ -14,7 +14,7 @@ from engine.query.conditions.less import Less
 from engine.query.queries import Queries
 from engine.query.query import PAGE_SIZE_ROWS, Query
 from engine.cli.subcommand_columns import FOREIGN_KEY_SUFFIX, parser_argument
-from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
+from engine.database.constraint_refusals import ENVIRONMENT_COLUMN
 
 
 SESSION_PREFIX = "session_"

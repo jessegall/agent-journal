@@ -8,7 +8,7 @@ import pytest
 
 from engine.caller.caller_request import CallerRequest
 from engine.cli.line_run import LineRun
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from core.testing.expect_row import expect_row
 from tests.stories.core.support.fixtures import MainEnvironment

@@ -90,15 +90,15 @@ def test_an_allow_listed_file_that_stopped_being_loose_is_reported(tmp_path):
 
 
 def test_a_class_of_the_wrong_sort_in_a_kind_folder_is_refused():
-    assert flagged(WRONG_SORT_RULE, "src/core/base/database/errors/plain_row.py")
-    assert flagged(WRONG_SORT_RULE, "src/core/base/database/enums/plain_value.py", ERROR_PARENT)
-    assert not flagged(WRONG_SORT_RULE, "src/core/base/database/errors/copy_error.py", ERROR_PARENT)
-    assert not flagged(WRONG_SORT_RULE, "src/core/base/database/enums/row_state.py", ENUM_PARENT)
+    assert flagged(WRONG_SORT_RULE, "src/engine/database/errors/plain_row.py")
+    assert flagged(WRONG_SORT_RULE, "src/engine/database/enums/plain_value.py", ERROR_PARENT)
+    assert not flagged(WRONG_SORT_RULE, "src/engine/database/errors/copy_error.py", ERROR_PARENT)
+    assert not flagged(WRONG_SORT_RULE, "src/engine/database/enums/row_state.py", ENUM_PARENT)
 
 
 def test_a_nested_errors_folder_is_accepted_and_a_folder_below_it_is_refused():
-    assert not flagged(ERROR_RULE, "src/core/base/database/errors/copy_error.py", ERROR_PARENT)
-    assert flagged(ERROR_RULE, "src/core/base/database/errors/helpers/copy_error.py", ERROR_PARENT)
+    assert not flagged(ERROR_RULE, "src/engine/database/errors/copy_error.py", ERROR_PARENT)
+    assert flagged(ERROR_RULE, "src/engine/database/errors/helpers/copy_error.py", ERROR_PARENT)
 
 
 @pytest.mark.parametrize("rule", ALLOW_LISTED_RULES)

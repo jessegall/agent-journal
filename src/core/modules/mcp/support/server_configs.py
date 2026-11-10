@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from engine.query.queries import Queries
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.journal.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.base.provider.program_server_file import ProgramServerFile

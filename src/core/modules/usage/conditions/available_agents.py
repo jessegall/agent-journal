@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from core.modules.usage.conditions.agent_activity_condition import AgentActivityCondition
 

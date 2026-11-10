@@ -1,6 +1,6 @@
 from typing import TypeVar
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.model.model import Model
 from engine.model.tables import Tables
 from engine.model.view_model import ViewModel

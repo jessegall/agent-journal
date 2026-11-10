@@ -14,8 +14,8 @@ from engine.chat.mark_button import MarkButton
 from engine.chat.mark_declaration import MarkDeclaration
 from engine.chat.mark_family import MarkFamily
 from engine.chat.mark_group import MarkGroup
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.base.module.module import Module
 from core.testing.story import Story
 

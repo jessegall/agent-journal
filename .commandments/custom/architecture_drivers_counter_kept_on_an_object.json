@@ -25,7 +25,7 @@
                 "file": "**/ticks/**"
             },
             {
-                "file": "**/core/base/database/**"
+                "file": "**/engine/database/**"
             },
             {
                 "file": "**/src/server/**"

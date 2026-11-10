@@ -13,7 +13,7 @@
                 "fileMatches": "(^|/)src/core/modules/[a-z_]+/upgrade/"
             },
             {
-                "fileMatches": "(^|/)src/core/base/database/version_four_tables\\.py$"
+                "fileMatches": "(^|/)src/engine/database/version_four_tables\\.py$"
             },
             {
                 "fileMatches": "(^|/)migrations/"

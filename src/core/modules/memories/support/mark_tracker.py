@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from core.base.driver.hook_event_name import HookEventName
 from engine.query.conditions.greater import Greater
 from engine.query.conditions.minimum import Minimum
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.memories.models.enums.mark_state import MarkState

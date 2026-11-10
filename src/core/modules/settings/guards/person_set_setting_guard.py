@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from engine.change.changed import Changed
 from engine.command.context import Context
 from engine.guard.guard import Guard
-from core.base.database.actor_table import ActorTable
+from engine.database.actor_table import ActorTable
 from engine.errors.refusal import Refusal
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.settings.models.setting import Setting

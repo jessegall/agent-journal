@@ -11,8 +11,8 @@ from engine.subcommand.subcommand import Subcommand
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.command.bus import Bus
 from engine.container.container import Container
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.command.move_command import MoveCommand
 from engine.errors.missing_rows_error import MissingRowsError
 from engine.query.queries import Queries

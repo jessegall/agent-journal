@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.tunnels.tunler.support.fake_tunler_client import FakeTunlerClient, TUNLER_HOST, ACCOUNT
 from tunnels.tunler.support.tunler_client import TunlerClient

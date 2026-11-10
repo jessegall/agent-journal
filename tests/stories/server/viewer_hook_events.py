@@ -1,7 +1,7 @@
 import pytest
 
 from engine.change.event_log import EventLog
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.base.driver.support.fixtures import LeadStarted

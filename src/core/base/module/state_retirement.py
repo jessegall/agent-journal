@@ -1,9 +1,9 @@
 import json
 from collections.abc import Sequence
 
-from core.base.database.database import Database
-from core.base.database.registry_table import RegistryTable
-from core.base.database.table_statements import TableStatements
+from engine.database.database import Database
+from engine.database.registry_table import RegistryTable
+from engine.database.table_statements import TableStatements
 from engine.model.added_state import AddedState
 from engine.model.model import Model
 from engine.model.state_book import StateBook

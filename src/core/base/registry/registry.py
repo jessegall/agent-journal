@@ -14,10 +14,10 @@ from functools import cached_property, lru_cache
 from core.base.registry.parsed_registries import ParsedRegistries
 
 from engine.change.event_pattern import EventPattern
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.container.container import Container
-from core.base.database.registry_table import RegistryTable
-from core.base.database.registry_version import RegistryVersion
+from engine.database.registry_table import RegistryTable
+from engine.database.registry_version import RegistryVersion
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.driver_entry import DriverEntry
 from core.base.registry.driver_rule_entry import DriverRuleEntry

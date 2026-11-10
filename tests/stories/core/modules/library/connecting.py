@@ -2,8 +2,8 @@ import shutil
 
 import pytest
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.private.secret_values import SecretValues
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery

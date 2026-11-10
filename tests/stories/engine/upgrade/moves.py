@@ -1,7 +1,7 @@
 import pytest
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.upgrade.move_map import MoveMap
 from engine.upgrade.upgrade_failed_error import UpgradeFailedError
 from engine.upgrade.move_runner import MoveRunner

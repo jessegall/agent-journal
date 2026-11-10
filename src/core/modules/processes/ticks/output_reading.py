@@ -4,7 +4,7 @@ from engine.container.container import Container
 from core.base.module.performance_tools import PerformanceTools
 from engine.repository.stale_row_error import StaleRowError
 from engine.scope.scopes import Scopes
-from core.base.database.points import Points
+from engine.database.points import Points
 from core.modules.developer.support.slow_tick_tool import SlowTickTool, TICK_LIMIT_POINTS
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 from core.modules.processes.models.process import Process

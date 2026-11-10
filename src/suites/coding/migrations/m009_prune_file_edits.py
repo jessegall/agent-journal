@@ -1,4 +1,4 @@
-from core.base.database.migration import Migration
+from engine.database.migration import Migration
 
 ROWS_KEPT = 1000
 

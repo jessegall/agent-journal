@@ -1,6 +1,6 @@
 import sqlite3
 
-from core.base.database.row_insert import RowInsert
+from engine.database.row_insert import RowInsert
 
 TABLE = "docs"
 TITLE_START_CHARACTERS = 80

@@ -1,4 +1,4 @@
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.engine.setting.support.setting_samples import PATH
 from tests.stories.core.support.fixtures import MainEnvironment

@@ -4,7 +4,7 @@ from pathlib import Path
 import shutil
 import sqlite3
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.testing.story_journal import StoryJournal
 
 LOG_ENDINGS = ("-wal", "-shm")

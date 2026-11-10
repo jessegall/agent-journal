@@ -2,8 +2,8 @@ import sqlite3
 from argparse import ArgumentParser
 
 from engine.actor.actor import Actor
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture

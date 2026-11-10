@@ -1,4 +1,4 @@
-from core.base.database.migration import Migration
+from engine.database.migration import Migration
 
 
 # @sin architecture_layout_suite_top_folder_file

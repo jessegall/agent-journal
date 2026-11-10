@@ -4,7 +4,7 @@ from enum import StrEnum
 from types import new_class
 from typing import Any
 from engine.command.handlers.make_handler import CREATOR_COLUMN
-from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
+from engine.database.constraint_refusals import ENVIRONMENT_COLUMN
 from engine.model.model import Model
 from engine.model.table import Table
 from engine.time.timestamp import Timestamp

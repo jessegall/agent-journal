@@ -1,6 +1,6 @@
 from tests.unit.engine.listener.test_commit_listener_runner import PausedItemCounter
 from tests.unit.core.base.module.test_module_check import PausedItemGuard
-from core.base.database.migration import Migration
+from engine.database.migration import Migration
 from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
 from tests.unit.core.base.sample_container import ITEMS

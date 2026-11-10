@@ -1,5 +1,5 @@
 from core.base.driver.agent_hook import AgentHook
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.tasks.rules.support.current_task import CurrentTask

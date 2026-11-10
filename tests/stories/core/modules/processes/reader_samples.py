@@ -1,4 +1,4 @@
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.driver.command_category import CommandCategory
 from engine.scope.scopes import Scopes
 from core.modules.processes.queries.process_part_query import ProcessPartQuery

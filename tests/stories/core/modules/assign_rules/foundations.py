@@ -2,8 +2,8 @@ import sqlite3
 
 import pytest
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.modules.tasks.support.task_match import matches_complexity_range
 from suites.coding.modules.workers.models.worker_route import WorkerRoute
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

@@ -3,8 +3,8 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.registry import Registry
 from engine.errors.refusal import Refusal

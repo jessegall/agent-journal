@@ -1,6 +1,6 @@
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 

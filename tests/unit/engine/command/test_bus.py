@@ -12,7 +12,7 @@ from engine.command.command import Command
 from engine.command.outside_runs import MAX_ROUNDS, OutsideRuns
 from engine.command.outside_turn import OutsideTurn
 from engine.command.script_policy import ScriptPolicy
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -20,8 +20,8 @@ from engine.command.handlers.make_handler import MakeHandler
 from engine.command.handlers.move_handler import MoveHandler
 from engine.command.make_command import MakeCommand
 from engine.command.move_command import MoveCommand
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.listener.save_listener import SaveListener
 from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath

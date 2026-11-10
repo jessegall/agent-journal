@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from typing import Self
 from datetime import timedelta
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.model.tables import Tables
 from engine.query.condition import Condition
 from engine.query.conditions.among import Among

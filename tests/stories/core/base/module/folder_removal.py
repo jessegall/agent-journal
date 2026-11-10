@@ -4,7 +4,7 @@ import pytest
 
 from engine.caller.caller_request import CallerRequest
 from engine.cli.line_run import LineRun
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from engine.caller.process_table import ProcessTable
 from core.testing.fixed_process_table import FixedProcessTable

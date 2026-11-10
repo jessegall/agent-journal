@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.database.points import Points
+from engine.database.points import Points
 from core.base.driver.hook_event import HookEvent
 from core.base.module.performance_tools import PerformanceTools
 from core.modules.developer.support.developer_settings import HOOK_DURATIONS_SETTING, HOOK_NUDGES_SETTING

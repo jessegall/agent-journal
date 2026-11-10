@@ -2,7 +2,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.command.context import Context
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository

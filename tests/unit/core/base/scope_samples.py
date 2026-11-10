@@ -1,7 +1,7 @@
 import sqlite3
 
 from engine.container.container import Container
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.scope.scopes import Scopes
 
 

@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from engine.actor.actor import Actor
 from engine.command.context import Context
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.driver.driver_rules import DriverRules
 from engine.journal.journal_home import JournalHome
 from core.base.driver.interval import Interval

@@ -3,7 +3,7 @@ from engine.cli.line_run import LineRun, ignore_completed
 from collections.abc import Callable
 from engine.container.container import Container
 from engine.request.request_queue import RequestQueue
-from core.base.database.reported_findings import ReportedFindings
+from engine.database.reported_findings import ReportedFindings
 from engine.journal.journal_home import JournalHome
 from engine.listener.commit_listener_runner import CommitListenerRunner
 from server.endpoints.cli_request import CliRequest

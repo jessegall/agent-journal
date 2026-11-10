@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.modules.docking.queries.dock_item_query import DockItemQuery

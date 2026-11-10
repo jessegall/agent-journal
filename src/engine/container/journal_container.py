@@ -2,8 +2,8 @@ from engine.container.container import Container
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.hosting.hosted_file import HostedFile
 from engine.hosting.hosting import Hosting
-from core.base.database.database import Database
-from core.base.database.shared_tables import SharedTables
+from engine.database.database import Database
+from engine.database.shared_tables import SharedTables
 from engine.journal.journal_home import JournalHome
 from engine.model.state_book import StateBook
 from core.base.module.module_sync import ModuleSync

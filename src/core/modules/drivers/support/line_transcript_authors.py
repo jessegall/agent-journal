@@ -1,6 +1,6 @@
 from core.base.provider.transcript_author import JOURNAL_AUTHOR
 from core.base.provider.transcript_row import TranscriptRow
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.transcript_authors import TranscriptAuthors

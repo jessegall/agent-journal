@@ -1,5 +1,5 @@
 from engine.time.clock import Clock
-from core.base.database.reported_findings import ReportedFindings
+from engine.database.reported_findings import ReportedFindings
 from engine.journal.journal_home import JournalHome
 from server.listener_thread import ListenerThread
 from server.viewer.buttons_route import ButtonsRoute

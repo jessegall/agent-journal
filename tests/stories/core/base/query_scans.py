@@ -2,8 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.query.conditions.contains_every import ContainsEvery
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
@@ -12,7 +12,7 @@ from core.modules.messages.models.message import Message
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.sequences.models.sequence_run_row import SequenceRunRow
 from engine.scope.scopes import Scopes
-from core.base.database.repeated_calls_error import RepeatedCallsError
+from engine.database.repeated_calls_error import RepeatedCallsError
 from tests.stories.support.story_checks import expect_value
 
 
@@ -32,7 +32,7 @@ def test_a_declared_small_table_may_be_scanned(new_story, statement):
 
 
 def test_a_statement_is_explained_once_per_request(new_story, monkeypatch):
-    monkeypatch.setattr("core.base.database.repeated_work.READ_LIMIT_REPEATS", 3)
+    monkeypatch.setattr("engine.database.repeated_work.READ_LIMIT_REPEATS", 3)
     story = new_story()
     database = story.container.get(Database)
     statement = Statement("SELECT * FROM tasks WHERE id = ?", [0])

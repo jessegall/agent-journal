@@ -1,4 +1,4 @@
-from core.base.database.migration import Migration
+from engine.database.migration import Migration
 
 MOVED_KEYS = [("journal.core.helpers.helper-run-limit", "journal.core.helpers.read-only-helper-run-limit"),
               ("journal.core.helpers.helper-kept-limit", "journal.core.helpers.read-only-helper-kept-limit"),

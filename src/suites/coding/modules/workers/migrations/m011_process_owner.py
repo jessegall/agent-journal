@@ -1,6 +1,6 @@
-from core.base.database.rebuild_migration import RebuildMigration
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.rebuild_migration import RebuildMigration
+from engine.database.database import Database
+from engine.database.statement import Statement
 
 
 class ProcessOwnerMigration(RebuildMigration):

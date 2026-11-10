@@ -1,8 +1,8 @@
 import json
 import sqlite3
 
-from core.base.database.database import Database
-from core.base.database.row_insert import RowInsert
+from engine.database.database import Database
+from engine.database.row_insert import RowInsert
 from engine.errors.refusal import Refusal
 from core.modules.sequences.models.support.sequence_guards import SequenceGuards
 from core.modules.sequences.models.support.sequence_triggers import SequenceTriggers

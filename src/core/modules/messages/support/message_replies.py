@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from engine.enums.actor_type import ActorType
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries
 from core.modules.agents.support.agent_rows import AgentRows

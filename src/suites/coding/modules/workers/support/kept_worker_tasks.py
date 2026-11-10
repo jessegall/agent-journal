@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from engine.command.context import Context
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository

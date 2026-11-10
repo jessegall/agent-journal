@@ -8,8 +8,8 @@ from engine.enums.actor_type import ActorType
 from engine.change.change import Change
 from engine.change.event_log import EventLog
 from engine.change.logged_event import LoggedEvent
-from core.base.database.actor_table import ActorTable
-from core.base.database.database import Database
+from engine.database.actor_table import ActorTable
+from engine.database.database import Database
 from engine.model.agent_scoped import AgentScoped
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model

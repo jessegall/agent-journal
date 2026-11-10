@@ -1,6 +1,6 @@
 import json
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from tests.stories.core.modules.questions.fixtures import AnsweredQuestion, OpenQuestion
 
 

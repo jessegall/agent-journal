@@ -1,7 +1,7 @@
 from collections.abc import Generator
 from contextlib import contextmanager
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
 from server.hook.queue_priority import QueuePriority
 from server.hook.queue_request import QueueRequest

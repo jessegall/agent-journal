@@ -1,4 +1,4 @@
-from core.base.database.migration import Migration
+from engine.database.migration import Migration
 
 OPEN_DEPENDENCIES = """SELECT task_dependencies.task_id, task_dependencies.dependency_id FROM task_dependencies
     JOIN tasks AS blocker ON blocker.id = task_dependencies.dependency_id

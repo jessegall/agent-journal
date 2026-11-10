@@ -5,7 +5,7 @@ import json
 
 from engine.actor.actor import Actor
 from engine.command.context import Context
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.repository.repository import Repository
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.commands.read_message.read_message import ReadMessage

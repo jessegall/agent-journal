@@ -10,8 +10,8 @@ from engine.cli.write_flags import WriteFlags
 from engine.command.bus import Bus
 from engine.command.handlers.make_handler import MakeHandler
 from engine.command.make_command import MakeCommand
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.guard.guard import Guard
 from engine.guard.guard_refusal import GuardRefusal
 from engine.model.model import Model

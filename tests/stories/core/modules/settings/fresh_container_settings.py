@@ -1,4 +1,4 @@
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from core.modules.settings.models.setting import Setting

@@ -1,5 +1,5 @@
 from engine.caller.caller import Caller
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.scope.scopes import Scopes
 from engine.errors.read_limit_error import ReadLimitError
 from engine.errors.refusal import Refusal

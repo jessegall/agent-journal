@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from core.base.database.reported_findings import ReportedFindings
+from engine.database.reported_findings import ReportedFindings
 import http.client
 import json
 import os

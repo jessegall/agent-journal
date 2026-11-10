@@ -1,6 +1,6 @@
 from engine.time.clock import Clock
 from engine.command.bus import Bus
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.log.exception_sink import CLOCK_TICK_SOURCE, ExceptionSink
 from core.base.module.module_actors import ModuleActors
 from engine.time.timestamp import Timestamp

@@ -1,5 +1,5 @@
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.modules.drivers.migrations.m019_hook_change_names import HookChangeNamesMigration
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted

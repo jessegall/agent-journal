@@ -8,8 +8,8 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.process.leftover_process import LeftoverProcess
 from engine.query.queries import Queries
 from core.modules.agents.support.launcher_link import LauncherLink

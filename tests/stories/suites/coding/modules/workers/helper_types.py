@@ -6,7 +6,7 @@ import pytest
 from engine.enums.access import Access
 from engine.enums.agent_role import AgentRole
 from engine.helper_type.helper_type_book import HelperTypeBook
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.modules.drivers.models.agent_line import AgentLine

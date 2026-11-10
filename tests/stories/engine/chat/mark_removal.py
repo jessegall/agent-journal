@@ -1,6 +1,6 @@
 import json
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.engine.chat.support.mark_faults import PATH
 from tests.stories.core.support.fixtures import MainEnvironment

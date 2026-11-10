@@ -3,7 +3,7 @@ from collections import Counter
 
 import pytest
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from tests.stories.core.modules.plugins.support.event_modules import CLASHING, CLASHING_KEY, NOTE_CREATED, NOTES, NOTES_MOVED

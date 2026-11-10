@@ -5,15 +5,15 @@ import sys
 
 import pytest
 
-from core.base.database.core_tables_migration import CORE_MIGRATIONS
-from core.base.database.database import Database
-from core.base.database.schema import Schema
-from core.base.database.statement import Statement
+from engine.database.core_tables_migration import CORE_MIGRATIONS
+from engine.database.database import Database
+from engine.database.schema import Schema
+from engine.database.statement import Statement
 from engine.journal.journal_home import JournalHome
 from engine.model.tables import Tables
 from engine.dotted_path.dotted_path import DottedPath
 from engine.dotted_path.dotted_path_error import DottedPathError
-from core.base.database.registry_table import RegistryTable
+from engine.database.registry_table import RegistryTable
 from engine.model.event_form import EventForm
 from core.base.registry.event_key_entry import EventKeyEntry
 from core.base.registry.listener_timing import ListenerTiming

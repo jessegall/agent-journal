@@ -1,4 +1,4 @@
-from core.base.database.migration import Migration
+from engine.database.migration import Migration
 from core.modules.agents.models.agent import UPGRADE_RETIREMENT_REASON
 
 KEPT = 8

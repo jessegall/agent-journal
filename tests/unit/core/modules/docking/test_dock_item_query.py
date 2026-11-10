@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
 from engine.model.tables import Tables
 from engine.time.timestamp import Timestamp

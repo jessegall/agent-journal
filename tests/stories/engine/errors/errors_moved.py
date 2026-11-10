@@ -3,8 +3,8 @@ import json
 import re
 from pathlib import Path
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.base.module.module_sync import ModuleSync
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 

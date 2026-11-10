@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.journal.journal_home import JournalHome
 from engine.row.metadata import Metadata
 from engine.model.model import Model

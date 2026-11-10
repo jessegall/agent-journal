@@ -1,4 +1,4 @@
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.upgrade.move_context import MoveContext
 from engine.upgrade.move_map import MoveMap
 from engine.upgrade.move_report import MoveReport

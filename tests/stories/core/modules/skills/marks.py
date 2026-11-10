@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text, expect_mark_count, expect_marks_text
 from tests.stories.core.modules.skills.agent_skills import read_row

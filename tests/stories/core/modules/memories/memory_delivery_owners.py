@@ -1,7 +1,7 @@
 import pytest
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.query.queries import Queries
 from engine.scope.scopes import Scopes
 from core.modules.memories.migrations.m006_memory_owner import MemoryOwnerMigration

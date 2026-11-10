@@ -5,8 +5,8 @@ from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.cli.console import Console
 from engine.container.container import Container
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.journal.journal_home import JournalHome
 from core.base.module.code_fingerprint import CodeFingerprint
 from engine.listener.commit_listener_runner import CommitListenerRunner

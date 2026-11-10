@@ -8,8 +8,8 @@ from threading import RLock
 from uuid import uuid4
 from time import perf_counter
 
-from core.base.database.database import Database
-from core.base.database.hook_requests_table import HookRequestsTable
+from engine.database.database import Database
+from engine.database.hook_requests_table import HookRequestsTable
 from engine.container.journal_container import synced_database_container
 from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel

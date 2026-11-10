@@ -1,5 +1,5 @@
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.modules.messages.migrations.m015_main_message_targets import MainMessageTargetsMigration
 from core.modules.messages.models.message import Message
 from core.testing.hook_samples import HookSamples

@@ -5,7 +5,7 @@ from engine.actor.actor import CORE_ACTOR_ID
 from engine.change.event_log import EventLog
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.repository.repository import Repository
 from core.modules.processes.commands.update_stock_readers.update_stock_readers import UpdateStockReaders
 from core.modules.processes.models.enums.reader_type import ReaderType

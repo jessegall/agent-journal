@@ -9,11 +9,11 @@ from engine.caller.caller import Caller
 from engine.caller.caller_request import CallerRequest
 from engine.cli.console import Console
 from engine.cli.line_run import LineRun
-from core.base.database.repeated_work import READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS
-from core.base.database.reported_findings import ReportedFindings
+from engine.database.repeated_work import READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS
+from engine.database.reported_findings import ReportedFindings
 from server.listener_thread import ListenerThread
 from server.viewer.line_route import LineRoute
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 from engine.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
 from core.modules.developer.support.developer_settings import REPEATED_WORK_SETTING, TOOLS_SETTING

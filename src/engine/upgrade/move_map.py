@@ -1,8 +1,8 @@
 from collections.abc import Callable
 
-from core.base.database.database import Database
-from core.base.database.upgrade_map_table import UpgradeMapTable
-from core.base.database.moved_row import MovedRow
+from engine.database.database import Database
+from engine.database.upgrade_map_table import UpgradeMapTable
+from engine.database.moved_row import MovedRow
 from engine.upgrade.version_four_ref import VersionFourRef
 
 

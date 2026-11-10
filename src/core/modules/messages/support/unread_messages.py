@@ -1,5 +1,5 @@
 from engine.enums.agent_role import AgentRole
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries

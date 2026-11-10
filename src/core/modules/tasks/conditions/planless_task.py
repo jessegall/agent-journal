@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.select import Select
 

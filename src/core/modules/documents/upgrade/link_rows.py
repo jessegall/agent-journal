@@ -1,9 +1,9 @@
 import sqlite3
 from collections.abc import Iterable
 
-from core.base.database.database import Database
-from core.base.database.moved_row import MovedRow
-from core.base.database.row_insert import RowInsert
+from engine.database.database import Database
+from engine.database.moved_row import MovedRow
+from engine.database.row_insert import RowInsert
 from engine.upgrade.creator_resolver import CreatorResolver
 from engine.upgrade.move_context import MoveContext
 from engine.upgrade.move_map import MoveMap

@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.database.actor_table import ActorTable
+from engine.database.actor_table import ActorTable
 from engine.errors.refusal import Refusal
 from engine.enums.agent_role import AgentRole
 from engine.command.bus import Bus

@@ -55,16 +55,16 @@
                 "file": "src/engine/command/transaction_error.py"
             },
             {
-                "file": "src/core/base/database/foreign_key_error.py"
+                "file": "src/engine/database/foreign_key_error.py"
             },
             {
-                "file": "src/core/base/database/nesting_error.py"
+                "file": "src/engine/database/nesting_error.py"
             },
             {
-                "file": "src/core/base/database/repeated_calls_error.py"
+                "file": "src/engine/database/repeated_calls_error.py"
             },
             {
-                "file": "src/core/base/database/schema_mismatch_error.py"
+                "file": "src/engine/database/schema_mismatch_error.py"
             },
             {
                 "file": "src/engine/dotted_path/dotted_path_error.py"

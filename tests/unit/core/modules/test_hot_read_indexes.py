@@ -1,7 +1,7 @@
 import pytest
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.container.journal_container import opened_container
 from engine.journal.journal_home import JournalHome
 from core.base.module.module_sync import ModuleSync

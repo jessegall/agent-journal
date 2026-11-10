@@ -4,11 +4,11 @@ import sqlite3
 from unittest.mock import patch
 from datetime import timedelta
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 from engine.query.queries import Queries
 from engine.scope.scopes import Scopes
 from core.modules.tasks.models.task import Task

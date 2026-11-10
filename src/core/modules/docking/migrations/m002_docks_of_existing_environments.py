@@ -1,6 +1,6 @@
 from engine.actor.actor import CORE_ACTOR_ID
-from core.base.database.migration import Migration
-from core.base.database.timestamp_sql import TIMESTAMP_SQL
+from engine.database.migration import Migration
+from engine.database.timestamp_sql import TIMESTAMP_SQL
 
 
 class ExistingEnvironmentDocksMigration(Migration):

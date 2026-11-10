@@ -1,4 +1,4 @@
-from core.base.database.database import Database
+from engine.database.database import Database
 from install.restore_version_four import RestoreVersionFour
 from tests.stories.engine.upgrade.upgrade import expect_upgrade, upgrading
 from tests.stories.engine.upgrade.support.move_samples import PATH

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from server.viewer.viewer_http_request import ViewerHttpRequest
 
-from core.base.database.points import Points
+from engine.database.points import Points
 from server.viewer.viewer_line_request import ViewerLineRequest
 
 

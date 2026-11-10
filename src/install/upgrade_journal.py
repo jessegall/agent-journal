@@ -8,7 +8,7 @@ from engine.actor.actor import CORE_ACTOR_ID
 from engine.change.event_log import EventLog
 from engine.time.clock import Clock
 from engine.container.container import Container
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.container.journal_container import sync_modules, synced_container
 from engine.journal.journal_home import JournalHome
 from core.base.registry.registry import Registry

@@ -1,5 +1,5 @@
-from core.base.database.migration import Migration
-from core.base.database.timestamp_sql import TIMESTAMP_SQL
+from engine.database.migration import Migration
+from engine.database.timestamp_sql import TIMESTAMP_SQL
 
 PERMANENT_MEMORIES = "state = 'active' AND (environment_id IS NULL OR type = 'rule')"
 MOVED_REASON = "moved to rules"

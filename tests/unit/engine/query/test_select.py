@@ -1,4 +1,4 @@
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.conditions.is_null import IsNull

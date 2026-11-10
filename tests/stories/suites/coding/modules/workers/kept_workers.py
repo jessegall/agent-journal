@@ -12,7 +12,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from engine.command.bus import Bus
-from core.base.database.database import Database
+from engine.database.database import Database
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.commands.end_inactive_worker.end_inactive_worker import EndInactiveWorker
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

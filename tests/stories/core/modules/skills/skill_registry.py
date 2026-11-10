@@ -1,4 +1,4 @@
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from engine.skill.skill_digest import SkillDigest
 from tests.stories.core.modules.skills.support.skill_samples import PATH

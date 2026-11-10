@@ -4,8 +4,8 @@ from engine.query.queries import Queries
 import pytest
 
 from core.base.driver.command_category import CommandCategory
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.migrations.m030_stock_reader_catalog import StockReaderCatalogMigration
 from core.modules.processes.migrations.m037_more_tool_stock_readers import FIRST_BATCH_READERS, NEW_READERS

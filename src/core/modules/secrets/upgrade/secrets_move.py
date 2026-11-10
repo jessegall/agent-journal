@@ -1,7 +1,7 @@
 import sqlite3
 
-from core.base.database.database import Database
-from core.base.database.row_insert import RowInsert
+from engine.database.database import Database
+from engine.database.row_insert import RowInsert
 from engine.time.timestamp import Timestamp
 from engine.upgrade.creator_resolver import CreatorResolver
 from engine.upgrade.move_context import MoveContext

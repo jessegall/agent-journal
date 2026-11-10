@@ -20,7 +20,7 @@ from engine.caller.process_table import ProcessTable
 from engine.caller.process_row import ProcessRow
 from engine.time.clock import Clock
 from engine.container.container import Container
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
@@ -44,7 +44,7 @@ from core.testing.story_helper_programs import StoryHelperPrograms
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.modules.skills.support.main_agent_skills import MainAgentSkills
 from core.modules.plugins.support.login_path import LoginPath
-from core.base.database.repeated_work import RepeatedWork
+from engine.database.repeated_work import RepeatedWork
 from core.testing.story_login_path import StoryLoginPath
 from core.testing.story_main_agent_skills import StoryMainAgentSkills
 from core.testing.story_overview_first import StoryOverviewFirst

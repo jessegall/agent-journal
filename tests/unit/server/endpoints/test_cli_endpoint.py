@@ -1,4 +1,4 @@
-from core.base.database.reported_findings import ReportedFindings
+from engine.database.reported_findings import ReportedFindings
 import io
 import json
 

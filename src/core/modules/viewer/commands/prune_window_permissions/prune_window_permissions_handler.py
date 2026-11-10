@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from core.base.registry.registry import Registry
 from engine.repository.repository import Repository

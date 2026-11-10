@@ -4,10 +4,10 @@ from typing import TextIO
 from engine.caller.caller import Caller
 from engine.cli.line_run import LineRun
 from engine.container.container import Container
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.time.deadline import Deadline
 from engine.time.timing import Timing
-from core.base.database.repeated_work import OPEN_REQUEST, RepeatedWork
+from engine.database.repeated_work import OPEN_REQUEST, RepeatedWork
 
 
 class StoryLineRun(LineRun):

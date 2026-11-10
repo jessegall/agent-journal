@@ -2,9 +2,9 @@ from collections.abc import Iterator, Sequence
 from itertools import takewhile
 from typing import Self
 
-from core.base.database.database import Database
-from core.base.database.kept_rows import KeptRows
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.kept_rows import KeptRows
+from engine.database.statement import Statement
 from engine.time.timestamp import Timestamp
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_name import HookEventName

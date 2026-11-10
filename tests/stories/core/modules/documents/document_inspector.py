@@ -1,4 +1,4 @@
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.report import Report

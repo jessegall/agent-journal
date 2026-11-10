@@ -4,7 +4,7 @@ from dataclasses import replace
 from engine.command.context import Context
 from engine.time.clock import Clock
 from engine.listener.event_rows import EventRows
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.query.conditions.among import Among
 from engine.query.conditions.has_value import HasValue
 from engine.query.conditions.is_null import IsNull

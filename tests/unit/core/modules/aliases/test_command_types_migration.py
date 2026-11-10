@@ -1,6 +1,6 @@
 import sqlite3
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.modules.aliases.migrations.m004_command_kinds import CommandPrefixesMigration
 from core.modules.aliases.migrations.m006_command_types import CommandTypesMigration
 

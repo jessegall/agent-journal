@@ -1,4 +1,4 @@
-from core.base.database.database import Database
+from engine.database.database import Database
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_endswith_authorization, expect_startswith_listed, expect_value_with, expect_value_without, expect_visited_limit

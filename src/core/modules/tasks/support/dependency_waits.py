@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from engine.command.context import Context
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.listener.event_rows import EventRows
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries

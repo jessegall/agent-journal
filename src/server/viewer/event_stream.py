@@ -4,7 +4,7 @@ from collections.abc import Callable
 
 from engine.change.event_log import EventLog
 from engine.change.logged_event import LoggedEvent
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.environment.environment_names import EnvironmentNames
 from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome

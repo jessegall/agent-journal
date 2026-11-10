@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 
 CHAT_ITEMS = ("(session_agent_id = ? OR (NOT EXISTS (SELECT 1 FROM agents WHERE id = ? AND role <> 'main')"
              " AND (session_agent_id IS NULL OR session_agent_id IN (SELECT id FROM agents WHERE role = 'main'))))")

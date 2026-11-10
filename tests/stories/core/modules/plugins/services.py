@@ -17,8 +17,8 @@ from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.modules.plugins.commands.support.plugin_health_check import PluginHealthCheck
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound
 from core.modules.plugins.support.plugin_digest import PluginDigest

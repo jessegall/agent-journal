@@ -1,7 +1,7 @@
 import pytest
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.modules.drivers.models.support.views import AGENT_ACTIVITIES_SELECT
 from tests.stories.core.support.fixtures import AgentStarted
 

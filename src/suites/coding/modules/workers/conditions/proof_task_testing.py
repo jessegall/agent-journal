@@ -1,4 +1,4 @@
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 from core.modules.tasks.models.enums.task_state import TaskState
 
 

@@ -6,7 +6,7 @@ from engine.command.bus import Bus
 from engine.command.command import Command
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.listener.event_rows import EventRows
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter

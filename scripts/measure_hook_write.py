@@ -7,8 +7,8 @@ import threading
 import time
 from pathlib import Path
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.journal.journal_home import JournalHome
 
 HOOKS = 200

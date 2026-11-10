@@ -1,6 +1,6 @@
 from core.testing.story_fixture import StoryFixture
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.modules.chat.support.v4_looks import TASK, expect_declared_appearance
 import pytest

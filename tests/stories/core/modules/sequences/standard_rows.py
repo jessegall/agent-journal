@@ -2,7 +2,7 @@ from core.testing.story_fixture import StoryFixture
 
 from dataclasses import replace
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.query.queries import Queries
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.commands.save_standard_sequences.standard_sequences import STANDARD_SEQUENCES

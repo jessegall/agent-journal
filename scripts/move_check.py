@@ -19,7 +19,7 @@ IMPORT_LINE = re.compile(r"\s*(from|import)\s")
 
 
 def registry_text() -> str:
-    from core.base.database.database import Database
+    from engine.database.database import Database
     from engine.container.journal_container import opened_container, synced_container
     from engine.journal.journal_home import JournalHome
     from core.base.module.module_sync import ModuleSync

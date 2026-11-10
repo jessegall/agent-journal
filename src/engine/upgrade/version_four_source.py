@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 from types import TracebackType
 
-from core.base.database.version_four_tables import VersionFourTables
+from engine.database.version_four_tables import VersionFourTables
 from engine.upgrade.source_row import SourceRow
 
 

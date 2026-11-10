@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from datetime import datetime, timezone
 
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.helpers.models.enums.usage_limit_mode import UsageLimitMode

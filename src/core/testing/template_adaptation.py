@@ -3,7 +3,7 @@ import pickle
 import shutil
 from pathlib import Path
 
-from core.base.database.database_text_replacement import DatabaseTextReplacement
+from engine.database.database_text_replacement import DatabaseTextReplacement
 from engine.file.file_access import FileAccess
 from engine.types.type_guards import is_frozenset, is_list, is_mapping, is_set, is_tuple
 

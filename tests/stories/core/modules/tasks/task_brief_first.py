@@ -10,7 +10,7 @@ from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from unittest.mock import patch
 
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from core.base.database.database import Database
+from engine.database.database import Database
 from datetime import timedelta
 
 from core.base.driver.command_category import CommandCategory

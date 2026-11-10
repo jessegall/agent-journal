@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 from engine.text.search_term import SearchTerm
 
 

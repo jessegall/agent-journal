@@ -1,5 +1,5 @@
-from core.base.database.database import Database
-from core.base.database.kept_rows import KeptRows
+from engine.database.database import Database
+from engine.database.kept_rows import KeptRows
 from engine.model.tables import Tables
 from engine.query.query import Query
 from core.modules.library.models.library_connection import LibraryConnection

@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import UserJoined
 

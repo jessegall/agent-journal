@@ -5,8 +5,8 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.query.queries import Queries
 from core.modules.agents.commands.record_agent_process.record_agent_process import RecordAgentProcess
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine

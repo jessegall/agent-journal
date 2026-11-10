@@ -2,8 +2,8 @@ from datetime import timedelta
 
 from engine.actor.actor import CORE_ACTOR_ID
 from engine.cli.console import Console
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.base.registry.registry import Registry
 from tests.stories.core.modules.chat.support.mark_samples import EXCEPTION_SAMPLE, marks_text
 from tests.stories.core.support.fixtures import UserJoined

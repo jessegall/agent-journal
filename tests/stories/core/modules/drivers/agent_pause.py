@@ -10,7 +10,7 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.shell_part import ShellPart
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows

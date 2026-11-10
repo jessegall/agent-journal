@@ -1,6 +1,6 @@
 from engine.listener.event_rows import EventRows
 from engine.query.queries import Queries
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 
 
 class SpanQueries:

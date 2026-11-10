@@ -2,8 +2,8 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.modules.assign_rules.commands.record_assign_decision.record_assign_decision import RecordAssignDecision
 from core.modules.assign_rules.models.enums.condition_field import ConditionField
 from core.modules.assign_rules.models.enums.condition_operator import ConditionOperator

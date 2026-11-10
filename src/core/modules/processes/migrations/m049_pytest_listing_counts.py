@@ -1,4 +1,4 @@
-from core.base.database.migration import Migration
+from engine.database.migration import Migration
 from core.modules.processes.migrations.m003_stock_readers import quoted
 from core.modules.processes.support.stock_reader import STOCK_READERS
 

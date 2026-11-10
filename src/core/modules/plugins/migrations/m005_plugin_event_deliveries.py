@@ -1,4 +1,4 @@
-from core.base.database.rebuild_migration import RebuildMigration
+from engine.database.rebuild_migration import RebuildMigration
 
 ROW_COLUMNS = "version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)), created_at TEXT NOT NULL, updated_at TEXT NOT NULL"
 SHARED_COLUMNS = "id, plugin_id, environment_id, session_agent_id, creator_id"

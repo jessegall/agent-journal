@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.testing.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

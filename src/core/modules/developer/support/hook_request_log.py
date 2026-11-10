@@ -3,7 +3,7 @@ from collections.abc import Mapping
 from datetime import timedelta
 
 from engine.time.clock import Clock
-from core.base.database.hook_requests_table import HookRequestsTable
+from engine.database.hook_requests_table import HookRequestsTable
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among
 from core.modules.agents.support.agent_rows import AgentRows

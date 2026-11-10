@@ -3,7 +3,7 @@ from collections.abc import Callable, Sequence
 
 from engine.actor.actor import CORE_ACTOR_ID, Actor
 from engine.command.context import Context
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.model.model import Model
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal

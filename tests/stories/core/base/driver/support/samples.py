@@ -8,7 +8,7 @@ from engine.command.command import Command
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.command.move_command import MoveCommand
-from core.base.database.migration import Migration
+from engine.database.migration import Migration
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect

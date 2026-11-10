@@ -1,6 +1,6 @@
 from typing import Any
 
-from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
+from engine.database.constraint_refusals import ENVIRONMENT_COLUMN
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.command.make_command import MakeCommand

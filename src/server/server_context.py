@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from core.base.database.reported_findings import ReportedFindings
+from engine.database.reported_findings import ReportedFindings
 from engine.journal.journal_home import JournalHome
 from core.base.provider.transcript_entries import TranscriptEntries
 from engine.time.timestamp import Timestamp

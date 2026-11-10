@@ -6,7 +6,7 @@ import pytest
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.scope.scopes import Scopes
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from engine.errors.refusal import Refusal

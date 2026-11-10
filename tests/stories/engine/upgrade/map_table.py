@@ -1,5 +1,5 @@
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.upgrade.move_map import MoveMap
 from tests.stories.core.support.fixtures import MainEnvironment
 from core.testing.expect_row import expect_row

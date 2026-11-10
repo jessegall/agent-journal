@@ -2,7 +2,7 @@ import json
 from unittest.mock import patch
 
 from engine.command.bus import Bus
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.modules.documents.commands.record_subject_link.record_subject_link import RecordSubjectLink
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value

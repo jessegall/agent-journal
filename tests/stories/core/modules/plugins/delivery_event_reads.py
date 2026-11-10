@@ -3,7 +3,7 @@ import json
 import pytest
 
 from engine.change.event_log import EventLog
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.modules.tasks.models.task import Task
 from engine.query.queries import Queries
 from tests.stories.core.modules.plugins.support.event_stories import SECOND_JOB, SECOND_JOB_TITLE, deliveries, event_plugin_story, tasks_titled

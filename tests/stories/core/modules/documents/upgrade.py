@@ -9,9 +9,9 @@ from engine.upgrade.version_four_move import VersionFourMove
 from engine.upgrade.version_four_source import VersionFourSource
 from engine.upgrade.creator_resolver import CreatorResolver
 from engine.upgrade.upgrade_failed_error import UpgradeFailedError
-from core.base.database.database import Database
-from core.base.database.row_insert import RowInsert
-from core.base.database.moved_row import MovedRow
+from engine.database.database import Database
+from engine.database.row_insert import RowInsert
+from engine.database.moved_row import MovedRow
 from core.base.module.move_check import MoveCheck
 from core.base.module.module_finder import ModuleFinder
 from core.base.registry.registry import Registry

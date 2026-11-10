@@ -8,8 +8,8 @@ from engine.command.edit_command import EditCommand
 from engine.command.handlers.delete_handler import DeleteHandler
 from engine.command.handlers.edit_handler import EditHandler
 from engine.command.handlers.make_handler import MakeHandler
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.guard.lifecycle_guard import LifecycleGuard
 from engine.guard.guard_refusal import GuardRefusal
 from engine.dotted_path.dotted_path import DottedPath

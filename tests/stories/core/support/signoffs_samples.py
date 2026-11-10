@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from engine.command.move_command import MoveCommand
-from core.base.database.migration import Migration
+from engine.database.migration import Migration
 from engine.guard.guard import Guard
 from engine.listener.deletion_listener import DeletionListener
 from engine.model.lifecycle import Lifecycle

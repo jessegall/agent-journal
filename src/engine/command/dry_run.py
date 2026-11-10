@@ -6,7 +6,7 @@ from contextvars import ContextVar
 from functools import cache
 
 from engine.command.dry_run_reached_effect import DryRunReachedEffect
-from core.base.database.repeated_work import OPEN_REQUEST
+from engine.database.repeated_work import OPEN_REQUEST
 
 DRY_RUN: ContextVar[bool] = ContextVar("dry_run", default=False)
 OPEN_FLAGS = os.O_WRONLY | os.O_RDWR | os.O_CREAT | os.O_APPEND | os.O_TRUNC

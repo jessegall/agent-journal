@@ -1,4 +1,4 @@
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.messages.queries.message_query import MessageQuery

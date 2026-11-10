@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.query.condition import Condition
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 
 
 @dataclass(frozen=True)

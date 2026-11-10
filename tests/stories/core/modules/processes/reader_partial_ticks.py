@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.modules.processes.support.grown_outputs import GrownOutputs
 from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.processes.output_reader import append

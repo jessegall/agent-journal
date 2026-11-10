@@ -3,7 +3,7 @@ import pytest
 
 from core.testing.fake_launcher import FakeLauncher
 from engine.change.event_log import EventLog
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.modules.profiles.support.profile_files import ProfileFiles
 from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES
 

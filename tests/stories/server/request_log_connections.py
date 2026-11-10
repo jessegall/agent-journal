@@ -5,7 +5,7 @@ from threading import Event
 
 import pytest
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.server.support.server_client import server_story, viewer_answer

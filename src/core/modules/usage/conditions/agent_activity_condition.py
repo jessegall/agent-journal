@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 
 
 class AgentActivityCondition:

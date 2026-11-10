@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.model.tables import Tables
 from suites.coding.modules.workers.models.worktree import Worktree
 from tests.stories.core.modules.plugins.support.checkout_stories import ORDER, checkout_story, edit_event, removed_worktree_rows

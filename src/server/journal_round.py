@@ -4,7 +4,7 @@ from contextlib import nullcontext
 from engine.time.clock import Clock
 from engine.container.container import Container
 from engine.log.exception_sink import ExceptionSink
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.log.error_log import ErrorLog
 from engine.log.system_log_writer import SystemLogWriter
 from engine.container.journal_container import synced_database_container

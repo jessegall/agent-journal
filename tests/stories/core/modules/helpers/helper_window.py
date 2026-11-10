@@ -1,4 +1,4 @@
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.viewer.person_lines import PERSON_LINES
 from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT
 from core.testing.fake_launcher import FakeLauncher

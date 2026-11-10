@@ -2,8 +2,8 @@ import sqlite3
 
 import pytest
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from tests.unit.core.modules.memories.support.memory_journal import FIXED_TIME, MemoryJournal
 
 

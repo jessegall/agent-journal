@@ -1,4 +1,4 @@
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.has_value import HasValue
 from engine.query.queries import Queries

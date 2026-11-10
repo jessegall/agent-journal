@@ -1,5 +1,5 @@
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.file.file_access import FileAccess
 from engine.query.queries import Queries
 from core.modules.drivers.commands.support.rule_history_writer import RuleHistoryWriter

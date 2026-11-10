@@ -1,6 +1,6 @@
-from core.base.database.database import Database
-from core.base.database.migration import Migration
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.migration import Migration
+from engine.database.statement import Statement
 
 NOTICES_TABLE = Statement("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'notices'")
 

@@ -5,8 +5,8 @@ from dataclasses import fields
 
 from engine.change.change import BOOKKEEPING_FIELDS, Change
 from engine.change.logged_event import CREATION, LoggedEvent
-from core.base.database.bookkeeping_table import BookkeepingTable
-from core.base.database.database import Database
+from engine.database.bookkeeping_table import BookkeepingTable
+from engine.database.database import Database
 from engine.command.context import Context
 from engine.row.page import Page
 from engine.model.table import stored

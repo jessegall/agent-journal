@@ -3,7 +3,7 @@ from typing import TextIO
 from engine.cli.console import REFUSED_CODE, SUCCESS_CODE
 from engine.subcommand.output import Output
 from engine.model.tables import Tables
-from core.base.database.schema_mismatch_error import SchemaMismatchError
+from engine.database.schema_mismatch_error import SchemaMismatchError
 from core.base.module.module_error import ModuleError
 from core.base.module.module_sync import ModuleSync
 

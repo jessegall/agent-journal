@@ -8,7 +8,7 @@ from engine.caller.caller_resolver import CallerResolver
 from engine.cli.console import Console, REFUSED_CODE, SUCCESS_CODE, USAGE_CODE
 from engine.cli.usage_error import UsageError
 from engine.cli.write_flags import WriteFlags
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from engine.model.tables import Tables

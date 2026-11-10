@@ -1,6 +1,6 @@
 import json
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.modules.processes.migrations.m021_stock_reader_test_counts import StockReaderTestCountsMigration
 from install.restore_version_four import RestoreVersionFour
 from install.upgrade_journal import UpgradeJournal

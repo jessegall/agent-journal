@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 
 CHAIN = ("id IN (WITH RECURSIVE chain(id) AS (SELECT dependency_id FROM task_dependencies WHERE task_id = ?"
          " UNION SELECT task_dependencies.dependency_id FROM task_dependencies JOIN chain ON task_dependencies.task_id = chain.id)"

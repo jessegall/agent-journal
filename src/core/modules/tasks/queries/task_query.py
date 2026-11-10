@@ -1,12 +1,12 @@
 from collections.abc import Sequence
 from engine.enums.agent_role import AgentRole
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 from engine.time.timestamp import Timestamp
 from core.modules.tasks.models.support.views import closed_task_counts_select
 from typing import Self
 
-from core.base.database.database import Database
-from core.base.database.kept_rows import KeptRows
+from engine.database.database import Database
+from engine.database.kept_rows import KeptRows
 from engine.model.tables import Tables
 from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull

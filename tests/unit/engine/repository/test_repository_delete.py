@@ -3,8 +3,8 @@ import pytest
 from engine.change.event_log import EventLog
 from engine.change.event_pattern import EventPattern
 from engine.container.container import Container
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.listener.deletion_listener import DeletionListener
 from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath

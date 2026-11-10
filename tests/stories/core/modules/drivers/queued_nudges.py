@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.command.context import Context
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 from core.base.driver.driver_rules import DriverRules

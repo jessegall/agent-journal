@@ -1,6 +1,6 @@
-from core.base.database.rebuild_migration import RebuildMigration
-from core.base.database.database import Database
-from core.base.database.index_table import IndexTable
+from engine.database.rebuild_migration import RebuildMigration
+from engine.database.database import Database
+from engine.database.index_table import IndexTable
 
 
 class PlainMemoriesMigration(RebuildMigration):

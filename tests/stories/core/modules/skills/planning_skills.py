@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from engine.actor.actor import Actor
 from engine.command.context import Context
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.driver.command_category import CommandCategory
 from engine.query.queries import Queries
 from engine.repository.repository import Repository

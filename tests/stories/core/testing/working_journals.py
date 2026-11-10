@@ -1,6 +1,6 @@
 import sqlite3
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.container.journal_container import synced_container
 from engine.query.queries import Queries
 from core.modules.messages.models.message import Message

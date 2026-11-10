@@ -1,13 +1,13 @@
 from collections.abc import Generator
 from contextlib import contextmanager
 
-from core.base.database.repeated_lines import RepeatedLines
-from core.base.database.collecting_repeated_work import CollectingRepeatedWork
-from core.base.database.database import READ_LIMIT_ROWS, Database
-from core.base.database.repeated_calls_error import RepeatedCallsError
-from core.base.database.repeated_finding import RepeatedFinding
-from core.base.database.reported_findings import ReportedFindings
-from core.base.database.request_watch import RequestWatch
+from engine.database.repeated_lines import RepeatedLines
+from engine.database.collecting_repeated_work import CollectingRepeatedWork
+from engine.database.database import READ_LIMIT_ROWS, Database
+from engine.database.repeated_calls_error import RepeatedCallsError
+from engine.database.repeated_finding import RepeatedFinding
+from engine.database.reported_findings import ReportedFindings
+from engine.database.request_watch import RequestWatch
 from engine.log.error_log import ErrorLog
 from engine.errors.read_limit_error import ReadLimitError
 from core.base.registry.lazy_loading import LazyLoading

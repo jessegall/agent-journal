@@ -25,7 +25,7 @@ from core.modules.developer.commands.record_mark_motion.record_mark_motion_handl
 from core.modules.developer.commands.record_mark_motion.record_mark_motion_subcommand import RecordMarkMotionSubcommand
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_handler import ResetHookNumbersHandler
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_subcommand import ResetHookNumbersSubcommand
-from core.base.database.request_watch import RequestWatch
+from engine.database.request_watch import RequestWatch
 from core.base.module.module import Module
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval

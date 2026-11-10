@@ -2,12 +2,12 @@ import io
 import json
 from time import perf_counter
 
-from core.base.database.repeated_lines import RepeatedLines
-from core.base.database.request_watch import RequestWatch
+from engine.database.repeated_lines import RepeatedLines
+from engine.database.request_watch import RequestWatch
 from engine.request.request_queue import RequestQueue
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from engine.cli.console import USAGE_CODE, Console
@@ -16,8 +16,8 @@ from collections.abc import Callable
 from engine.cli.subcommand_lookup import SubcommandLookup
 from engine.cli.usage_error import UsageError
 from engine.container.container import Container
-from core.base.database.database import Database
-from core.base.database.reported_findings import ReportedFindings
+from engine.database.database import Database
+from engine.database.reported_findings import ReportedFindings
 from engine.environment.environment_names import EnvironmentNames
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal

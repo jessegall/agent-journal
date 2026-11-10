@@ -1,4 +1,4 @@
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.file.file_access import FileAccess
 from core.base.provider.context_window import ContextWindow
 from tests.stories.core.support.fixtures import UserJoined

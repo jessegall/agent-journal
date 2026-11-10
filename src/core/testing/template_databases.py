@@ -9,7 +9,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 from engine.time.clock import Clock
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.container.journal_container import opened_container
 from engine.journal.journal_home import JournalHome
 from core.base.module.code_fingerprint import CORE_FOLDER

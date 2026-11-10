@@ -5,7 +5,7 @@ from engine.change.logged_event import LoggedEvent
 from engine.command.command import Command
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.database.migration import Migration
+from engine.database.migration import Migration
 from engine.listener.commit_listener import CommitListener
 from engine.listener.save_listener import SaveListener
 from engine.model.model import Model

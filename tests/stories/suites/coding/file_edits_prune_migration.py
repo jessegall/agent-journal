@@ -1,5 +1,5 @@
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from suites.coding.migrations.m009_prune_file_edits import PruneFileEditsMigration
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.scanned_edits import scanned_edit

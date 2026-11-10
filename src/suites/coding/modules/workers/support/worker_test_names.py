@@ -3,7 +3,7 @@ from core.modules.processes.support.background_commands import JOURNAL
 import shlex
 from collections.abc import Sequence
 
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.models.worker_test_command import WorkerTestCommand

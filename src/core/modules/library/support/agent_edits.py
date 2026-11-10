@@ -1,5 +1,5 @@
 from engine.change.event_log import EventLog
-from core.base.database.actor_table import ActorTable
+from engine.database.actor_table import ActorTable
 from engine.model.model import Model
 from engine.model.tables import Tables
 from core.modules.settings.bindings.support.setting_values import SettingValues

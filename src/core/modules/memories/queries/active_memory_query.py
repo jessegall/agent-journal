@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import Self
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.model.tables import Tables
 from engine.query.conditions.among import Among
 from engine.query.conditions.equal import Equal

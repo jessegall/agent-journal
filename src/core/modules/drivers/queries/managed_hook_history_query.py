@@ -1,6 +1,6 @@
 from core.base.driver.foreign_answer import ForeignAnswer
 from core.base.driver.foreign_outcome import ForeignOutcome
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.model.tables import Tables
 from engine.query.query import Query
 from core.base.provider.managed_hook import ManagedHook

@@ -1,5 +1,5 @@
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState

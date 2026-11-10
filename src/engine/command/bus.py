@@ -8,7 +8,7 @@ from engine.command.outside_run_rollback_error import OutsideRunRollbackError
 from engine.command.outside_runs import SERVER_THREAD_REASON, SINGLE_RUN_REASON, OutsideRuns
 from engine.command.script_policy import ScriptPolicy
 from engine.container.container import Container
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.time.deadline import Deadline
 from engine.text.explanation import Explanation
 from core.base.registry.registry import Registry

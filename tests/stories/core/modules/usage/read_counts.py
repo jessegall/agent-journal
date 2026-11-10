@@ -2,8 +2,8 @@ import json
 
 from engine.actor.actor import Actor
 from engine.command.context import Context
-from core.base.database.actor_table import ActorTable
-from core.base.database.database import Database
+from engine.database.actor_table import ActorTable
+from engine.database.database import Database
 from engine.repository.repository import Repository
 from core.modules.drivers.models.nudge_record import NudgeRecord
 from core.modules.messages.commands.read_message.read_message import ReadMessage

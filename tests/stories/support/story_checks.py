@@ -1,5 +1,5 @@
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.program_hooks import ProgramHooks
 from core.testing.hook_samples import HookSamples

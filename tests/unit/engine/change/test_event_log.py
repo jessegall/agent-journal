@@ -9,9 +9,9 @@ from engine.enums.actor_type import ActorType
 from engine.change.change import Change
 from engine.change.event_log import EventLog
 from engine.command.context import Context
-from core.base.database.core_tables_migration import CORE_MIGRATIONS
-from core.base.database.database import Database
-from core.base.database.schema import Schema
+from engine.database.core_tables_migration import CORE_MIGRATIONS
+from engine.database.database import Database
+from engine.database.schema import Schema
 from engine.journal.journal_home import JournalHome
 from engine.errors.missing_rows_error import MissingRowsError
 from engine.model.tables import Tables

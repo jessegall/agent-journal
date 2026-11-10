@@ -1,6 +1,6 @@
 from tests.stories.core.support import story_lines as lines
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 
 TRIGGERS = Statement("SELECT name FROM sqlite_master WHERE type = 'trigger' ORDER BY name")
 

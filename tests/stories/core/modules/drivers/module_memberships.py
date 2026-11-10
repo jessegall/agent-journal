@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.module.module_error import ModuleError
 from core.base.module.module_removal import ModuleRemoval
 from core.base.registry.registry import Registry

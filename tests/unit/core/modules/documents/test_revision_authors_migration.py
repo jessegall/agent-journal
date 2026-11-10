@@ -1,6 +1,6 @@
 import sqlite3
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.modules.documents.migrations.m001_documents import DocumentsTablesMigration
 from core.modules.documents.migrations.m006_revision_authors import RevisionAuthorsMigration
 

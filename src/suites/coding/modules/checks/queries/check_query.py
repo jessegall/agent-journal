@@ -1,5 +1,5 @@
 from engine.query.conditions.greater import Greater
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.model.tables import Tables
 from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.less import Less

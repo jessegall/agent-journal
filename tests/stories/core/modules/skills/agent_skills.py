@@ -3,7 +3,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.tool_type import ToolType
 from engine.skill.skill_digest import SkillDigest

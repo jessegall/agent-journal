@@ -1,7 +1,7 @@
 from collections import defaultdict
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.modules.helpers.models.support.views import job_counts_select
 
 WORK_SOURCES = (("helper_jobs", "helper_id"), ("tasks", "delegated_to"))

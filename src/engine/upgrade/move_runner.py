@@ -5,7 +5,7 @@ from pathlib import Path
 from engine.actor.actor import CORE_ACTOR_ID
 from engine.change.event_log import EventLog
 from engine.time.clock import Clock
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
 from core.base.registry.move_entry import MoveEntry
 from core.base.registry.setting_entry import GROUP_TYPE

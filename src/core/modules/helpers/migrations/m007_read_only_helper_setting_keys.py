@@ -1,4 +1,4 @@
-from core.base.database.migration import Migration
+from engine.database.migration import Migration
 
 KEYS = ["run-limit", "kept-limit", "profile-limits", "max-minutes", "max-cost", "instruction-files"]
 

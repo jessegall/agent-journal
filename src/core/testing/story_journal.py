@@ -1,4 +1,4 @@
-from core.base.database.database import Database
+from engine.database.database import Database
 
 
 class StoryJournal:

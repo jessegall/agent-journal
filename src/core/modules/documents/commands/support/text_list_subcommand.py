@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from typing import ClassVar
 
-from core.base.database.database import READ_LIMIT_ROWS
+from engine.database.database import READ_LIMIT_ROWS
 from engine.caller.caller import Caller
 from engine.row.page import Page, is_page
 from engine.query.queries import Queries

@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 
 
 class Condition(Protocol):

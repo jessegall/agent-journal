@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.row.row_owner import RowOwner
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture

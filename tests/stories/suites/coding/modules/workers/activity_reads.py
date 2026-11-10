@@ -2,7 +2,7 @@ from datetime import timedelta
 from unittest.mock import patch
 import pytest
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus

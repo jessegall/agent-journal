@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.command.context import Context
-from core.base.database.kept_rows import KeptRows
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among
 from engine.errors.refusal import Refusal

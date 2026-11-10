@@ -6,8 +6,8 @@ from engine.enums.actor_type import ActorType
 from engine.enums.access import Access
 from engine.enums.agent_role import AgentRole
 from engine.enums.helper_role import HelperRole
-from core.base.database.database import Database
-from core.base.database.row_insert import RowInsert
+from engine.database.database import Database
+from engine.database.row_insert import RowInsert
 from engine.upgrade.creator_resolver import AGENT, CreatorResolver
 from engine.upgrade.move_context import MoveContext
 from engine.upgrade.move_map import MoveMap

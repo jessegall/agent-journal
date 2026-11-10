@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from core.base.database.database import Database
+from engine.database.database import Database
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.support.story_checks import expect_value

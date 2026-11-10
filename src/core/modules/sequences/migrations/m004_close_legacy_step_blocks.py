@@ -1,5 +1,5 @@
-from core.base.database.migration import Migration
-from core.base.database.timestamp_sql import TIMESTAMP_SQL
+from engine.database.migration import Migration
+from engine.database.timestamp_sql import TIMESTAMP_SQL
 from core.modules.sequences.support.sequence_nudges import STEP_WAITS
 
 

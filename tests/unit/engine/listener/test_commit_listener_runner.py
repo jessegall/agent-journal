@@ -16,9 +16,9 @@ from engine.command.handlers.make_handler import MakeHandler
 from engine.command.handlers.move_handler import MoveHandler
 from engine.command.make_command import MakeCommand
 from engine.command.move_command import MoveCommand
-from core.base.database.database import Database
-from core.base.database.listener_cursor_table import ListenerCursorTable
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.listener_cursor_table import ListenerCursorTable
+from engine.database.statement import Statement
 from engine.listener.commit_listener import CommitListener
 from engine.listener.commit_listener_runner import PLUGIN_RUN_ORDER, CommitListenerRunner
 from engine.performance.performance_state import PerformanceState

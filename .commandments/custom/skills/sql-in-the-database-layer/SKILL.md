@@ -8,7 +8,7 @@ languages: [python]
 
 # SQL in the database layer
 
-SQL text is written in five places only: `core/base/database/`, `engine/query/`, a module's `migrations/`,
+SQL text is written in five places only: `engine/database/`, `engine/query/`, a module's `migrations/`,
 the views a module declares in its `views.py`, and a module's `conditions/`. Everywhere else the code calls a method that says what it reads or writes.
 
 ## When it fires
@@ -22,6 +22,6 @@ the views a module declares in its `views.py`, and a module's `conditions/`. Eve
 
 - A model's rows go through its query (`Queries.query(Model)`) and the repository; never a statement of your own.
 - The core's own bookkeeping tables (events, refusals, the registry, listener cursors, actors) are read and
-  written by a class in `core/base/database/` that names each operation: `BookkeepingTable.row(id)`,
+  written by a class in `engine/database/` that names each operation: `BookkeepingTable.row(id)`,
   `ListenerCursorTable.start(listener)`.
 - A condition a query needs and lacks is a new condition in `engine/query/conditions/`.

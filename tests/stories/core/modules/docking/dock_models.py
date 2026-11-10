@@ -1,7 +1,7 @@
 import pytest
 
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.modules.docking.migrations.m002_docks_of_existing_environments import ExistingEnvironmentDocksMigration
 from tests.stories.core.modules.docking.support.dock_samples import SAMPLE
 from tests.stories.core.support.fixtures import UserJoined

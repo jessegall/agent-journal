@@ -3,9 +3,9 @@ import traceback
 from time import perf_counter
 from collections.abc import Mapping
 
-from core.base.database.database import Database
-from core.base.database.reported_findings import ReportedFindings
-from core.base.database.request_watch import RequestWatch
+from engine.database.database import Database
+from engine.database.reported_findings import ReportedFindings
+from engine.database.request_watch import RequestWatch
 from engine.enums.log_level import LogLevel
 from engine.container.container import Container
 from core.base.driver.hook_event import HookEvent

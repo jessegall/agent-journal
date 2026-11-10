@@ -1,4 +1,4 @@
-from core.base.database.rebuild_migration import RebuildMigration
+from engine.database.rebuild_migration import RebuildMigration
 
 PROOF_COLUMNS = "id, task_id, worktree_id, creator_id, point, text, shortfall, state, version, metadata, created_at, updated_at, test_command, process_id"
 

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 
 TASK_PLAN_IDS = "SELECT phases.plan_id FROM phase_tasks JOIN phases ON phases.id = phase_tasks.phase_id WHERE phase_tasks.task_id IN ({marks})"
 PLAN_TASK_IDS = "id IN (SELECT phase_tasks.task_id FROM phase_tasks JOIN phases ON phases.id = phase_tasks.phase_id WHERE phases.plan_id IN ({plan_ids}))"

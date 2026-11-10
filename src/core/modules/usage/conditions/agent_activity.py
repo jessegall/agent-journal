@@ -1,4 +1,4 @@
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 from engine.agent.agent_work import AgentWork
 from core.modules.usage.conditions.agent_activity_condition import AgentActivityCondition
 

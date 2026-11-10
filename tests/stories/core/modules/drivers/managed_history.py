@@ -1,5 +1,5 @@
-from core.base.database.database import Database
-from core.base.database.statement import Statement
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.base.provider.managed_hook import ManagedHook
 from core.modules.drivers.conditions.foreign_hook import ForeignHook
 from core.base.driver.foreign_outcome import ForeignOutcome

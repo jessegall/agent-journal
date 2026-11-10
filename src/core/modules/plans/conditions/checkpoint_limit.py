@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.database.statement import Statement
+from engine.database.statement import Statement
 
 CHECKPOINT_LIMIT = ("phase_position <= coalesce((SELECT min(checkpoints.phase_position) FROM plan_tasks AS checkpoints"
                     " WHERE checkpoints.plan_id = ? AND checkpoints.checkpoint = 1 AND checkpoints.closed_at IS NULL), phase_position)")

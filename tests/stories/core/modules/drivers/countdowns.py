@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.command.context import Context
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.driver.count_down import CountDown
 from core.base.driver.times_span import TimesSpan
 from engine.query.queries import Queries

@@ -1,4 +1,4 @@
-from core.base.database.database import Database
+from engine.database.database import Database
 from core.base.registry.registry import Registry
 from core.modules.tasks.models.task import Task
 from tests.stories.core.support.fixtures import MainEnvironment

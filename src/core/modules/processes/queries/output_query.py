@@ -1,7 +1,7 @@
 from typing import Self
 
-from core.base.database.database import Database
-from core.base.database.kept_rows import KeptRows
+from engine.database.database import Database
+from engine.database.kept_rows import KeptRows
 from engine.model.tables import Tables
 from engine.query.conditions.greater import Greater
 from engine.query.conditions.is_null import IsNull
