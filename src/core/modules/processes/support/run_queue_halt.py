@@ -1,6 +1,6 @@
 from engine.time.clock import Clock
 from engine.journal.journal_home import JournalHome
-from core.base.server_restart_state import ServerRestartState
+from engine.hosting.server_restart_state import ServerRestartState
 from core.base.file_access import FileAccess
 from core.modules.processes.support.output_folder import OutputFolder
 

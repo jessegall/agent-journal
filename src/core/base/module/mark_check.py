@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.declaration_names import DeclarationNames
+from engine.module.declaration_names import DeclarationNames
 from core.base.chat.mark_click import MarkClick
 from core.base.chat.mark_family import MarkFamily
 from core.base.module.button_check import ButtonCheck

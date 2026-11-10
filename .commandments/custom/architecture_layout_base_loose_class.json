@@ -49,15 +49,6 @@
                 "file": "src/core/base/conflict_files.py"
             },
             {
-                "file": "src/core/base/declaration_names.py"
-            },
-            {
-                "file": "src/core/base/environment_names.py"
-            },
-            {
-                "file": "src/core/base/event_listeners.py"
-            },
-            {
                 "file": "src/core/base/file_access.py"
             },
             {
@@ -89,9 +80,6 @@
             },
             {
                 "file": "src/core/base/rotated_file.py"
-            },
-            {
-                "file": "src/core/base/server_restart_state.py"
             }
         ]
     },

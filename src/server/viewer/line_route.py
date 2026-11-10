@@ -18,7 +18,7 @@ from core.base.cli.usage_error import UsageError
 from engine.container.container import Container
 from core.base.database.database import Database
 from core.base.database.reported_findings import ReportedFindings
-from core.base.environment_names import EnvironmentNames
+from engine.environment.environment_names import EnvironmentNames
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from core.base.caller.caller import Caller

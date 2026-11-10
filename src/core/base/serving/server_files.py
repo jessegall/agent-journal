@@ -11,7 +11,7 @@ from core.base.file_access import FileAccess
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
 from engine.log.system_log_writer import LOG_LIMIT_BYTES, SystemLogWriter
-from core.base.server_restart_state import ServerRestartState
+from engine.hosting.server_restart_state import ServerRestartState
 from engine.errors.server_files_error import ServerFilesError
 
 

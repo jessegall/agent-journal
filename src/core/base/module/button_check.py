@@ -3,7 +3,7 @@ import re
 import shlex
 from string import Formatter
 
-from core.base.declaration_names import DeclarationNames
+from engine.module.declaration_names import DeclarationNames
 from core.base.chat.mark_button import MarkButton
 from core.base.module.button_command_check import ButtonCommandCheck
 from core.base.module.button_slots import ButtonSlots

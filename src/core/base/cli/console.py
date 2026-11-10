@@ -27,7 +27,7 @@ from core.base.command.accept_covered_approval import AcceptCoveredApproval
 from core.base.command.request_user_approval import RequestUserApproval
 from core.base.command.server_stopping_error import ServerStoppingError
 from engine.errors.deadline_passed_error import DeadlinePassedError
-from core.base.environment_names import EnvironmentNames
+from engine.environment.environment_names import EnvironmentNames
 from engine.log.error_log import ErrorLog
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.model.tables import Tables

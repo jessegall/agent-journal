@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.declaration_names import DeclarationNames
+from engine.module.declaration_names import DeclarationNames
 from core.base.module.button_check import ButtonCheck
 from core.base.module.module import Module
 from core.base.module.name_groups import NameGroups

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from core.base.guard.guard_refusal import GuardRefusal
-from core.base.event_listeners import EventListeners
+from engine.listener.event_listeners import EventListeners
 
 
 @dataclass

@@ -5,7 +5,7 @@ from core.base.cli.line_parser import LineParser
 from core.base.cli.parsed_line import ParsedLine
 from core.base.cli.usage_error import UsageError
 from core.base.cli.write_flags import WriteFlags
-from core.base.environment_names import EnvironmentNames
+from engine.environment.environment_names import EnvironmentNames
 from core.base.registry.registry import Registry
 from core.base.viewer.person_lines import PERSON_LINES
 from core.modules.viewer.commands.support.window_allowances import WindowAllowances

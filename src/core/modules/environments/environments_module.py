@@ -1,4 +1,4 @@
-from core.base.environment_names import EnvironmentNames
+from engine.environment.environment_names import EnvironmentNames
 from core.modules.environments.bindings.environment_table_names import EnvironmentTableNames
 from core.modules.environments.guards.test_grant_guard import TestGrantGuard
 from core.modules.environments.migrations.m001_environments import EnvironmentsTableMigration

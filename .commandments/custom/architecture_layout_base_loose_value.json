@@ -38,9 +38,6 @@
             },
             {
                 "file": "src/core/base/helper_type_book.py"
-            },
-            {
-                "file": "src/core/base/server_restart_state.py"
             }
         ]
     },
