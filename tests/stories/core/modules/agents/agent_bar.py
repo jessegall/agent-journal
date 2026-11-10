@@ -24,7 +24,7 @@ class FakeTyping(TerminalTyping):
     def __init__(self) -> None:
         self.typed: list[tuple[int, str]] = []
 
-    def type_line(self, agent_id: int, line: str) -> None:
+    def send_line(self, agent_id: int, line: str) -> None:
         self.typed.append((agent_id, line))
 
 

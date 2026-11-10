@@ -25,7 +25,7 @@ class RecordedTyping(TerminalTyping):
     def __init__(self) -> None:
         self.typed: list[str] = []
 
-    def type_line(self, agent_id: int, line: str) -> None:
+    def send_line(self, agent_id: int, line: str) -> None:
         self.typed.append(line)
 
 

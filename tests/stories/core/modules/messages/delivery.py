@@ -90,7 +90,7 @@ class KeptTyping(TerminalTyping):
         self.typed: list[tuple[int, str]] = []
         self.working = working
 
-    def type_line(self, agent_id: int, line: str) -> None:
+    def send_line(self, agent_id: int, line: str) -> None:
         if not self.working:
             raise Refusal("no launcher is running here", "start the agent with journal launch")
         self.typed.append((agent_id, line))
@@ -181,8 +181,8 @@ class PromptDuringTerminalLine(KeptTyping):
         super().__init__()
         self.story = story
 
-    def type_line(self, agent_id: int, line: str) -> None:
-        super().type_line(agent_id, line)
+    def send_line(self, agent_id: int, line: str) -> None:
+        super().send_line(agent_id, line)
         if len(self.typed) == 1:
             self.story.hook("s-1", HookSamples.prompt(line))
 
@@ -206,9 +206,9 @@ class HookDuringTerminalLine(KeptTyping):
         self.story = story
         self.hook_lines: list[str] = []
 
-    def type_line(self, agent_id: int, line: str) -> None:
+    def send_line(self, agent_id: int, line: str) -> None:
         self.hook_lines.extend(self.story.hook("s-1", HookSamples.edit("src/cart.py")).lines)
-        super().type_line(agent_id, line)
+        super().send_line(agent_id, line)
 
 
 def test_a_hook_during_the_typing_does_not_give_the_line_too(new_story):
@@ -234,7 +234,7 @@ class BrokenTyping(TerminalTyping):
     def __init__(self) -> None:
         pass
 
-    def type_line(self, agent_id: int, line: str) -> None:
+    def send_line(self, agent_id: int, line: str) -> None:
         raise OSError("the launcher's socket broke")
 
 
@@ -513,9 +513,9 @@ class RefusingThenTyping(KeptTyping):
         super().__init__(working=False)
         self.asked = 0
 
-    def type_line(self, agent_id: int, line: str) -> None:
+    def send_line(self, agent_id: int, line: str) -> None:
         self.asked += 1
-        super().type_line(agent_id, line)
+        super().send_line(agent_id, line)
 
 
 def test_a_line_that_could_not_be_typed_is_typed_at_a_later_tick_and_then_never_again(new_story):

@@ -197,8 +197,8 @@ def test_e4_a_reading_over_the_limit_older_than_the_end_of_the_newest_compaction
 
 
 class MissingLauncherTyping(RecordedTyping):
-    def type_line(self, agent_id: int, line: str) -> None:
-        super().type_line(agent_id, line)
+    def send_line(self, agent_id: int, line: str) -> None:
+        super().send_line(agent_id, line)
         raise Refusal(LAUNCHER_MISSING, "start the agent with journal launch")
 
 

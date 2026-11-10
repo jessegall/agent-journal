@@ -38,7 +38,7 @@ class FakeTyping(TerminalTyping):
     def __init__(self) -> None:
         self.typed: list[tuple[int, str]] = []
 
-    def type_line(self, agent_id: int, line: str) -> None:
+    def send_line(self, agent_id: int, line: str) -> None:
         self.typed.append((agent_id, line))
 
 
@@ -164,9 +164,9 @@ def watched_paused_agent(new_story):
     transaction_flags: list[bool] = []
 
     class WatchedTyping(FakeTyping):
-        def type_line(self, agent_id: int, line: str) -> None:
+        def send_line(self, agent_id: int, line: str) -> None:
             transaction_flags.append(database.has_transaction)
-            super().type_line(agent_id, line)
+            super().send_line(agent_id, line)
 
     story.container.bind(TerminalTyping, WatchedTyping())
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)

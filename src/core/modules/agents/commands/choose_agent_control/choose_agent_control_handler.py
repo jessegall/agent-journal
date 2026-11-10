@@ -25,5 +25,5 @@ class ChooseAgentControlHandler(Handler[ChooseAgentControl, Agent]):
             raise Refusal(f"{command.key} {command.value} is not a choice the agent bar offers", f"journal agent controls {agent.id} lists them")
         if agent.ended_at is not None:
             raise Refusal(f"agent {agent.id} has ended")
-        self.typing.type_line(agent.terminal_id, choices[0].line)
+        self.typing.type_line(agent, choices[0].line)
         return agent

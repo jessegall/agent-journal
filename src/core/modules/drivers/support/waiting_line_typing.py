@@ -32,8 +32,6 @@ class WaitingLineTyping:
             return
         if line.source not in (PAUSE_SOURCE, RESUME_SOURCE, COMPACTED_WAKE_SOURCE) and not self.hook_calls.is_idle(line.session_agent_id, timestamp):
             return
-        if self.agents.find(line.session_agent_id).usage_limit_ends_at is not None:
-            return
         actor = Actor(actor_id, ActorType.USER)
         if self.has_entered_repeat(line):
             self.bus.run(EnterAgentLine(line.id), actor)
