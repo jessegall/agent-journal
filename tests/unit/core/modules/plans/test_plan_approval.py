@@ -5,7 +5,7 @@ import pytest
 from engine.row.metadata import Metadata
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_approval import MESSAGE_KEY, MODULE_KEY, PlanApproval
-from core.modules.plans.support.plan_approval_error import PlanApprovalError
+from core.modules.plans.errors.plan_approval_error import PlanApprovalError
 
 
 def test_the_approval_note_preserves_other_metadata():

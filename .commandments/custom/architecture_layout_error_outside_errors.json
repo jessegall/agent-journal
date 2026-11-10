@@ -19,9 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/core/modules/plans/support/plan_approval_error.py"
-            },
-            {
                 "file": "src/core/modules/plugins/support/plugin_fault_error.py"
             },
             {
