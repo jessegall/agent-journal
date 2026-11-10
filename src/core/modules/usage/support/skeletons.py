@@ -3,13 +3,17 @@ from core.base.viewer.skeleton_size import SkeletonSize
 
 USAGE_USAGE_SKELETON = [
     SkeletonPart.stack([
-        SkeletonPart.line(SkeletonSize.SMALL, "110px"),
+        SkeletonPart.stack([SkeletonPart.line(SkeletonSize.LARGE, "110px")], padding="2px 0 6px"),
         SkeletonPart.stack([
-            SkeletonPart.row([SkeletonPart.line(SkeletonSize.MEDIUM, "30%"), SkeletonPart.grow(), SkeletonPart.line(SkeletonSize.MEDIUM, "30px")]),
+            SkeletonPart.row([SkeletonPart.line(SkeletonSize.LARGE, "30%"), SkeletonPart.grow(), SkeletonPart.line(SkeletonSize.LARGE, "30px")]),
             SkeletonPart.block(4),
-            SkeletonPart.line(SkeletonSize.SMALL, "25%"),
+            SkeletonPart.block(13, "45%"),
         ], spacing=4, padding="6px 0", count=2),
-    ], spacing=6, padding="14px 16px"),
+        SkeletonPart.stack([
+            SkeletonPart.line(SkeletonSize.LARGE, "70%"),
+            SkeletonPart.row([SkeletonPart.block(24, "30%"), SkeletonPart.block(24, "30%"), SkeletonPart.block(24, "15%"), SkeletonPart.block(24, "20%")], spacing=6),
+        ], spacing=6, padding="8px 0"),
+    ], padding="14px 16px"),
 ]
 
 USAGE_COST_SKELETON = [
@@ -42,11 +46,11 @@ USAGE_MACHINE_SKELETON = [
 
 USAGE_CONTEXT_SKELETON = [
     SkeletonPart.stack([
-        SkeletonPart.line(SkeletonSize.SMALL, "110px"),
+        SkeletonPart.stack([SkeletonPart.line(SkeletonSize.LARGE, "110px")], padding="2px 0 6px"),
         SkeletonPart.stack([
-            SkeletonPart.row([SkeletonPart.line(SkeletonSize.MEDIUM, "40px"), SkeletonPart.grow(), SkeletonPart.line(SkeletonSize.MEDIUM, "30px")]),
+            SkeletonPart.row([SkeletonPart.line(SkeletonSize.LARGE, "40px"), SkeletonPart.grow(), SkeletonPart.line(SkeletonSize.LARGE, "30px")]),
             SkeletonPart.block(4),
-            SkeletonPart.line(SkeletonSize.SMALL, "30%"),
+            SkeletonPart.block(13, "60%"),
         ], spacing=4, padding="6px 0"),
-    ], spacing=6, padding="14px 16px"),
+    ], padding="14px 16px"),
 ]
