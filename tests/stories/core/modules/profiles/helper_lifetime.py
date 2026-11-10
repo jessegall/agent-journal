@@ -33,10 +33,10 @@ def test_a_personal_file_with_occupant_each_launch_shows_in_profile_show(person)
 
 
 def test_profile_save_with_an_occupant_writes_the_file_and_the_list_shows_it(person):
-    person.expect_success("profile save journal-merger --occupant each-launch --reason needed", actor=person.user)
-    person.expect_rows('occupant: "each-launch"' in profile_path(person, "journal-merger").read_text())
+    person.expect_success("profile save journal-merger --occupant continue --reason needed", actor=person.user)
+    person.expect_rows('occupant: "continue"' in profile_path(person, "journal-merger").read_text())
     merger_line = next(line for line in person.run("profile list", actor=person.user).output_text.splitlines() if line.startswith("journal-merger"))
-    person.expect_rows("each-launch" in merger_line, detail=merger_line)
+    person.expect_rows("continue" in merger_line, detail=merger_line)
 
 
 def test_a_profile_with_no_occupant_field_is_when_cold(person):

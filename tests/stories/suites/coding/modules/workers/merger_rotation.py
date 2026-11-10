@@ -27,8 +27,8 @@ def merging(new_story, monkeypatch):
     return story
 
 
-def declared_occupant(story, occupant: str = "each-launch") -> None:
-    """Saves the merger's occupant as a person's change, until the shipped profile declares it."""
+def declared_occupant(story, occupant: str) -> None:
+    """Saves the merger's occupant as a person's change over the shipped profile, which declares each-launch."""
     story.expect_success(OCCUPANT_SAVE.format(occupant=occupant), actor=story.user)
 
 
@@ -58,13 +58,11 @@ def ended_merger(story, monkeypatch) -> Agent:
 
 
 def test_the_first_merger_start_gives_one_agent_with_a_new_session(merging):
-    declared_occupant(merging)
     command = merger_launch(merging)["command"]
     merging.expect_rows(len(mergers(merging)) == 1, "--resume" not in command, mergers(merging)[0].session in command, detail=str(command[:4]))
 
 
 def test_a_later_merger_start_opens_a_job_on_the_idle_merger_under_a_new_session(merging, monkeypatch):
-    declared_occupant(merging)
     merger = ended_merger(merging, monkeypatch)
     command = merger_launch(merging)["command"]
     current = mergers(merging)
@@ -73,7 +71,6 @@ def test_a_later_merger_start_opens_a_job_on_the_idle_merger_under_a_new_session
 
 
 def test_a_merger_profile_changed_to_codex_gives_the_same_agent_a_codex_session_and_retires_nobody(merging, monkeypatch):
-    declared_occupant(merging)
     merger = ended_merger(merging, monkeypatch)
     merging.expect_success(f'memory make "{MEMORY_TEXT}" --weight 5', actor=Actor(merger.id, ActorType.AGENT))
     merging.expect_success(PROGRAM_SAVE.format(program="codex"), actor=merging.user)
@@ -84,8 +81,9 @@ def test_a_merger_profile_changed_to_codex_gives_the_same_agent_a_codex_session_
 
 
 def test_a_merger_kept_since_before_the_declaration_gets_a_new_session_at_its_next_start(merging, monkeypatch):
+    declared_occupant(merging, "when-cold")
     merger = ended_merger(merging, monkeypatch)
-    declared_occupant(merging)
+    declared_occupant(merging, "each-launch")
     command = merger_launch(merging)["command"]
     current = mergers(merging)
     merging.expect_rows(len(current) == 1, current[0].id == merger.id, current[0].retired_at is None, current[0].session != merger.session, "--resume" not in command, detail=str(command[:4]))
