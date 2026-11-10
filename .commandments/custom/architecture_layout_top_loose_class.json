@@ -16,12 +16,6 @@
                 "testCode": true
             },
             {
-                "file": "src/install/hook_switch.py"
-            },
-            {
-                "file": "src/install/hook_writer.py"
-            },
-            {
                 "file": "src/install/working_tree_install.py"
             }
         ]

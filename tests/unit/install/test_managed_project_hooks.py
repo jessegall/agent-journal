@@ -4,8 +4,8 @@ from engine.journal.journal_home import JournalHome
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.managed_state import ManagedState
-from install.hook_switch import HookSwitch
-from install.hook_writer import HookWriter
+from install.hook.hook_switch import HookSwitch
+from install.hook.hook_writer import HookWriter
 from install.version_four.restore_version_four import RestoreVersionFour
 
 FILES = (".claude/settings.json", ".claude/settings.local.json", ".codex/hooks.json")

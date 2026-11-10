@@ -1,6 +1,6 @@
 import sqlite3
 
-from install.version_four.version_four import VersionFour
+from install.backup.version_four import VersionFour
 
 
 def test_a_journal_folder_with_a_journal_db_is_a_version_4_journal(tmp_path):

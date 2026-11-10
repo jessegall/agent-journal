@@ -57,7 +57,7 @@ def test_the_archive_the_release_script_packs_holds_what_the_release_runs_and_no
     dist_folder = tmp_path / "dist"
     subprocess.run(["sh", str(checkout / "scripts" / "build_archive.sh"), str(dist_folder)], cwd=checkout, check=True, capture_output=True, timeout=TIMEOUT_SECONDS)
     names = subprocess.run(["tar", "-tzf", str(dist_folder / ARCHIVE)], capture_output=True, text=True, check=True, timeout=TIMEOUT_SECONDS).stdout.splitlines()
-    assert "src/engine/cli/journal.py" in names and "src/install/hook.sh" in names
+    assert "src/engine/cli/journal.py" in names and "src/install/hook/hook.sh" in names
     assert not [name for name in names if any(excluded in name for excluded in EXCLUDED_NAMES) or name.endswith((".pyc", ".bak", ".orig", ".swp", "~"))], names[:5]
     sums = (dist_folder / "checksums.txt").read_text().splitlines()
     assert sum(line.endswith(f"  {ARCHIVE}") for line in sums) == 1

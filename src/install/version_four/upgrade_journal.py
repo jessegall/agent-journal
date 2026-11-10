@@ -20,7 +20,7 @@ from engine.upgrade.version_four_move import VersionFourMove
 from install.errors.backup_mismatch_error import BackupMismatchError
 from install.errors.backup_write_error import BackupWriteError
 from install.update.code_replacement import CodeReplacement
-from install.hook_switch import HookSwitch
+from install.hook.hook_switch import HookSwitch
 from install.update.install_journal import InstallJournal
 from install.version_four.restore_version_four import RestoreVersionFour
 from install.errors.stray_version_four_error import StrayVersionFourError

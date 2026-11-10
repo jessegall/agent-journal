@@ -5,8 +5,8 @@ from engine.journal.journal_home import JournalHome
 from engine.provider.managed_hook import ManagedHook
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.program_hooks import ProgramHooks
-from install.hook_switch import HookSwitch
-from install.hook_writer import HookWriter
+from install.hook.hook_switch import HookSwitch
+from install.hook.hook_writer import HookWriter
 
 
 def store_managed_hook(root: Path) -> None:

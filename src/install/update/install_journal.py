@@ -9,7 +9,7 @@ from engine.version.code_versions import CodeVersions
 from engine.errors.refusal import Refusal
 from engine.journal.journal_home import HOME_VARIABLE, JournalHome
 from install.update.code_replacement import CodeReplacement
-from install.version_four.version_four import ANSWER, VersionFour
+from install.backup.version_four import ANSWER, VersionFour
 
 INSTALLED = 3
 REFUSED = 1

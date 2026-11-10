@@ -41,7 +41,7 @@ def failures(project, *modules, allow_list=()):
     ("src/suites/coding/modules/workers/workers_module.py", Layer(LayerTier.SUITE_MODULE, "coding/workers")),
     ("src/tunnels/tunler/tunler_module.py", Layer(LayerTier.TUNNEL, "tunler")),
     ("src/server/viewer/page.py", Layer(LayerTier.HOST, "server")),
-    ("src/install/hook_switch.py", Layer(LayerTier.HOST, "install")),
+    ("src/install/hook/hook_switch.py", Layer(LayerTier.HOST, "install")),
     ("src/engine/testing/stories/story.py", Layer(LayerTier.TEST_KIT, "test kit")),
     ("src/core/modules/skills/testing/story_skill_requirement.py", Layer(LayerTier.TEST_KIT, "skills")),
     ("src/suites/coding/modules/workers/testing/sample_worker.py", Layer(LayerTier.TEST_KIT, "coding/modules/workers")),

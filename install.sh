@@ -5,7 +5,7 @@
 #
 # Python 3.14 or newer is found first; the code, from the src beside this script or else the release's
 # agent-journal.tar.gz, is copied into .journal/src, its own database .journal/version-5.db
-# synced from the core modules, by src/install/install_journal.py; a project that holds a version 4 journal is left as it
+# synced from the core modules, by src/install/update/install_journal.py; a project that holds a version 4 journal is left as it
 # is and told to run journal upgrade (sh install.sh upgrade, with --dry-run to see the counts and --yes to go on without
 # asking; sh install.sh restore [--yes] puts version 4 back from .journal/version-4), and an install already made says so and changes nothing;
 # sh install.sh update puts this script's newer code into a project already on version 5, rebuilds its programs when
@@ -69,8 +69,8 @@ fall_back() {
     exit 0
   fi
   mkdir -p "$ROOT/.journal/hooks"
-  cp "$SOURCE/install/hook.sh" "$ROOT/.journal/hooks/hook.sh"
-  PYTHONPATH="$SOURCE" "$python" -m install.hook_writer "$ROOT" "sh \"$ROOT/.journal/hooks/hook.sh\""
+  cp "$SOURCE/install/hook/hook.sh" "$ROOT/.journal/hooks/hook.sh"
+  PYTHONPATH="$SOURCE" "$python" -m install.hook.hook_writer "$ROOT" "sh \"$ROOT/.journal/hooks/hook.sh\""
   echo "$1, so the hooks of Claude Code and Codex call $ROOT/.journal/hooks/hook.sh, which the server answers more slowly"
   exit 0
 }
@@ -82,7 +82,7 @@ link_command() {
   chmod +x "$ROOT/.journal/journal"
   shim_folder="${JOURNAL_SHIM_FOLDER:-$HOME/.local/bin}"
   mkdir -p "$shim_folder"
-  cp "$SOURCE/install/shim.sh" "$shim_folder/journal"
+  cp "$SOURCE/install/hook/shim.sh" "$shim_folder/journal"
   chmod +x "$shim_folder/journal"
 }
 
@@ -134,17 +134,17 @@ if [ "${1:-}" = "update" ]; then
 fi
 if [ "${1:-}" = "upgrade" ]; then
   shift
-  env PYTHONPATH="$SOURCE" "$python" -m install.upgrade_journal "$ROOT" "$@" || exit $?
+  env PYTHONPATH="$SOURCE" "$python" -m install.version_four.upgrade_journal "$ROOT" "$@" || exit $?
   case " $* " in *" --dry-run "*) exit 0 ;; esac
   [ -f "$ROOT/.journal/version-5.db" ] || exit 0
   upgraded=1
 fi
 if [ "${1:-}" = "restore" ]; then
   shift
-  exec env PYTHONPATH="$SOURCE" "$python" -m install.upgrade_journal "$ROOT" --restore "$@"
+  exec env PYTHONPATH="$SOURCE" "$python" -m install.version_four.upgrade_journal "$ROOT" --restore "$@"
 fi
 status=0
-PYTHONPATH="$SOURCE" "$python" -m install.install_journal "$ROOT" "$SOURCE" || status=$?
+PYTHONPATH="$SOURCE" "$python" -m install.update.install_journal "$ROOT" "$SOURCE" || status=$?
 case "$status" in
   0) ;;
   3) [ "$upgraded" = 1 ] || exit 0 ;;
@@ -155,7 +155,7 @@ link_command
 # the journal command replaces version 4's script
 if builds_programs; then
   build_programs
-  PYTHONPATH="$SOURCE" "$python" -m install.hook_writer "$ROOT" "\"$BIN/journal-hook\"" "$upgraded"
+  PYTHONPATH="$SOURCE" "$python" -m install.hook.hook_writer "$ROOT" "\"$BIN/journal-hook\"" "$upgraded"
   echo "built journal, journal-hook, journal-run and journal-shared from $HERE/tools into $BIN; the hooks call $BIN/journal-hook"
   exit 0
 fi
@@ -197,5 +197,5 @@ else
   echo "the release has no $runner, so shell lines run as the agent wrote them"
 fi
 
-PYTHONPATH="$SOURCE" "$python" -m install.hook_writer "$ROOT" "\"$BIN/journal-hook\"" "$upgraded"
+PYTHONPATH="$SOURCE" "$python" -m install.hook.hook_writer "$ROOT" "\"$BIN/journal-hook\"" "$upgraded"
 echo "the hooks call $BIN/journal-hook"
