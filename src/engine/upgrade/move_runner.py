@@ -10,11 +10,11 @@ from engine.journal.journal_home import JournalHome
 from engine.registry.move_entry import MoveEntry
 from engine.registry.setting_entry import GROUP_TYPE
 from engine.registry.registry import Registry
-from engine.upgrade.dry_run_end_error import DryRunEndError
+from engine.upgrade.errors.dry_run_end_error import DryRunEndError
 from engine.upgrade.move_context import MoveContext
 from engine.upgrade.move_map import MoveMap
 from engine.upgrade.move_report import MoveReport
-from engine.upgrade.upgrade_failed_error import UpgradeFailedError
+from engine.upgrade.errors.upgrade_failed_error import UpgradeFailedError
 from engine.upgrade.upgrade_report import UpgradeReport
 from engine.upgrade.version_four_move import VersionFourMove
 from engine.upgrade.version_four_source import VersionFourSource

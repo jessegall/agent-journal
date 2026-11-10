@@ -3,7 +3,7 @@ import pytest
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.upgrade.move_map import MoveMap
-from engine.upgrade.upgrade_failed_error import UpgradeFailedError
+from engine.upgrade.errors.upgrade_failed_error import UpgradeFailedError
 from engine.upgrade.move_runner import MoveRunner
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.engine.upgrade.support.move_samples import ORDER, PATH, version_four_database

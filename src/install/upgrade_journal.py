@@ -14,7 +14,7 @@ from engine.journal.journal_home import JournalHome
 from engine.registry.registry import Registry
 from engine.upgrade.move_map import MoveMap
 from engine.upgrade.move_runner import MoveRunner
-from engine.upgrade.upgrade_failed_error import UpgradeFailedError
+from engine.upgrade.errors.upgrade_failed_error import UpgradeFailedError
 from engine.upgrade.upgrade_report import UpgradeReport
 from engine.upgrade.version_four_move import VersionFourMove
 from install.backup_mismatch_error import BackupMismatchError

@@ -8,7 +8,7 @@ from engine.upgrade.move_map import MoveMap
 from engine.upgrade.version_four_move import VersionFourMove
 from engine.upgrade.version_four_source import VersionFourSource
 from engine.upgrade.creator_resolver import CreatorResolver
-from engine.upgrade.upgrade_failed_error import UpgradeFailedError
+from engine.upgrade.errors.upgrade_failed_error import UpgradeFailedError
 from engine.database.database import Database
 from engine.database.row_insert import RowInsert
 from engine.database.moved_row import MovedRow
