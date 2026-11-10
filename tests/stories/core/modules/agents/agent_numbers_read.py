@@ -61,10 +61,10 @@ def test_a_number_that_is_no_positive_whole_number_is_a_usage_refusal(new_story,
 def test_a_message_to_agent_two_reaches_agent_two_of_the_senders_environment_and_agent_one_is_the_main(new_story):
     story = new_story(fixture=TwoEnvironments)
     shop_main, shop_worker = main_of(story, "shop"), Actor(worker_of(story, "shop"), ActorType.AGENT)
-    to_worker = story.new_row_id('message send "Count the till" --to agent:2', actor=shop_main)
-    to_main = story.new_row_id('message send "The till is counted" --to agent:1', actor=shop_worker)
+    worker_message = story.new_row_id('message send "Count the till" --to agent:2', actor=shop_main)
+    main_message = story.new_row_id('message send "The till is counted" --to agent:1', actor=shop_worker)
     targets = {row["id"]: row["target_agent_id"] for row in json.loads(story.run("message list --environment shop --json", actor=story.user).output_text)["rows"]}
-    story.expect_rows(targets[to_worker] == shop_worker.id, targets[to_main] is None, detail=str(targets))
+    story.expect_rows(targets[worker_message] == shop_worker.id, targets[main_message] is None, detail=str(targets))
     story.expect_text("message unread", "The till is counted", actor=shop_main)
 
 

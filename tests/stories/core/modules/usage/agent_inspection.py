@@ -13,7 +13,7 @@ def test_one_read_gives_what_the_inspector_adds_to_the_row_of_an_agent_with_a_ta
     story = new_story(fixture=BriefedTaskBuilder)
     story.run("task start 1", actor=story.agent)
     story.hook("s-1", HookSamples.stop())
-    story.expect_text(f"usage agent {agent_number(story, story.agent.id)}", f"agent {story.agent.id}, started by", "0 failed runs", actor=story.user)
+    story.expect_text(f"usage agent {agent_number(story, story.agent.id)}", "started by core", "0 failed runs", actor=story.user)
     story.expect_text(f"usage agent {agent_number(story, story.agent.id)} --json", '"task": {"id": 1, "title": "Fix the cart"}', '"plan": null', '"failed_runs": 0', '"recent": []', actor=story.user)
     story.expect_text(f"usage agent {agent_number(story, story.agent.id)} --json", '"last_activity": "2026', actor=story.user)
 
