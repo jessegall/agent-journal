@@ -141,10 +141,12 @@ def kept_typing(story) -> list[tuple[int, str]]:
 
 def test_an_idle_agent_is_typed_that_its_task_opened_and_the_line_is_not_said_twice(waiting_task_hook):
     story, entered = waiting_task_hook
+    story.expect_success("wait on 'the task it waits on' --target tasks:2", actor=story.agent)
+    story.hook("s-1", HookSamples.stop())
     story.advance(timedelta(seconds=31))
     story.run('task cancel 2 --reason "no"')
     story.run_listeners()
-    story.expect_rows(entered == [(story.agent.id, "[journal] task:1 is open again: what it waited on has ended")])
+    story.expect_rows(entered == [(story.agent.id, "[journal] task:1 is open again: what it waited on has ended"), (story.agent.id, "[journal] wait:1 is over")], detail=str(entered))
     story.expect_text(f"agent-line list --agent {story.agent.id} --state entered", "task:1 is open again")
 
 
@@ -199,7 +201,7 @@ def waiting_task_hook(new_story):
     story = new_story(fixture=TwoTasks)
     entered = kept_typing(story)
     story.run("task block 1 --on task:2")
-    story.hook("s-1", HookSamples.stop())
+    story.hook("s-1", HookSamples.edit("src/cart.py"))
     return story, entered
 
 
