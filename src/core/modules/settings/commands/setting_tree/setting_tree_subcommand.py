@@ -6,7 +6,7 @@ from core.base.registry.setting_entry import SettingEntry
 from core.base.setting.setting_declaration import ANY_KEY, GROUP_TYPE, REFERENCE_TYPE
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_tuple
+from engine.types.type_guards import is_tuple
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_lines import SettingLines
 from core.modules.settings.commands.support.setting_tree_row import SettingTreeRow

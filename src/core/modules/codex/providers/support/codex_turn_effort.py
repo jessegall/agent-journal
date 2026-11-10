@@ -1,6 +1,6 @@
 import json
 
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 
 TURN_CONTEXT_TYPE = "turn_context"
 

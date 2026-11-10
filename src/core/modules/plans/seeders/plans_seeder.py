@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.seed.demo import Demo
 from core.base.seed.seeder import Seeder
 

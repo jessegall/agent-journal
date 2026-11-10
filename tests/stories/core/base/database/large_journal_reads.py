@@ -1,7 +1,7 @@
 import pytest
 
 from core.base.cli.usage_error import UsageError
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.cli.line_parser import LineParser
 from core.base.database.database import READ_LIMIT_ROWS, Database
 from core.base.query.conditions.among import Among

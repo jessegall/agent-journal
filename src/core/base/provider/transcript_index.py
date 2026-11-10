@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import BinaryIO
 
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.provider.indexed_transcript import IndexedTranscript
 from core.base.provider.provider import Provider
 from core.base.provider.transcript_row import TranscriptRow

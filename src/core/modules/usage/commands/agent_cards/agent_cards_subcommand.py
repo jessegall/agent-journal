@@ -13,7 +13,7 @@ from core.base.registry.registry import Registry
 from core.modules.agents.models.agent import Agent, UPGRADE_RETIREMENT_REASON
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.usage.commands.usage_agents.usage_agents_subcommand import UsageAgentsSubcommand
-from core.base.page import Page, is_page
+from engine.row.page import Page, is_page
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.equal import Equal
 from core.base.query.conditions.contains_every import ContainsEvery

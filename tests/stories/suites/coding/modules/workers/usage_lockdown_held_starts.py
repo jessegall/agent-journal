@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.provider.launch_command import LaunchCommand
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent

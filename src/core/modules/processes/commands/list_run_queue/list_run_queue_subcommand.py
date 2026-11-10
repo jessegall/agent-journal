@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.query.query import Query

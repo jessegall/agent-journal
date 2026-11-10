@@ -19,7 +19,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue

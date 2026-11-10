@@ -1,6 +1,6 @@
 from core.testing.story_fixture import StoryFixture
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.query.queries import Queries
 from core.modules.sequences.models.sequence_run import SequenceRun

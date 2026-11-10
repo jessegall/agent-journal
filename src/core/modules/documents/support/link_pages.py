@@ -2,7 +2,7 @@ from argparse import Namespace
 from collections.abc import Sequence
 from dataclasses import asdict
 
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.query.query import Query

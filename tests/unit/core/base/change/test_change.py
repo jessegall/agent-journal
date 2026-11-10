@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.change.created import Created
@@ -8,7 +8,7 @@ from core.base.change.deleted import Deleted
 from core.base.change.moved import Moved
 from core.base.command.context import Context
 from core.base.timestamp import Timestamp
-from core.base.metadata import Metadata
+from engine.row.metadata import Metadata
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
 from tests.unit.core.base.model.test_model import Item

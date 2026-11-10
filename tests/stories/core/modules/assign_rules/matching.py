@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.base.database.statement import Statement

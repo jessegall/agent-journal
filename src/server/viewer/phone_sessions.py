@@ -2,7 +2,7 @@ import io
 import json
 import secrets
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.caller.caller import Caller
 from core.base.cli.line_run import LineRun
 from core.base.container import Container
@@ -14,7 +14,7 @@ from server.listener_wake import ListenerWake
 from server.viewer.paired_phone import PairedPhone
 from server.viewer.phone_module_error import PhoneModuleError
 from server.viewer.wrong_code_limit import WrongCodeLimit
-from core.base.text_digest import TextDigest
+from engine.text.text_digest import TextDigest
 from core.modules.sharing.commands.make_share_link.make_share_link_handler import TOKEN_BYTES
 
 

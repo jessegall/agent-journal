@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.testing.story import Story
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

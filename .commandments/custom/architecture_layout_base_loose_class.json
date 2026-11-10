@@ -16,9 +16,6 @@
                 "testCode": true
             },
             {
-                "file": "src/core/base/actor.py"
-            },
-            {
                 "file": "src/core/base/adopted_process.py"
             },
             {
@@ -100,9 +97,6 @@
                 "file": "src/core/base/exception_sink.py"
             },
             {
-                "file": "src/core/base/explanation.py"
-            },
-            {
                 "file": "src/core/base/file_access.py"
             },
             {
@@ -142,31 +136,13 @@
                 "file": "src/core/base/journal_home.py"
             },
             {
-                "file": "src/core/base/json_pointer.py"
-            },
-            {
-                "file": "src/core/base/json_schema.py"
-            },
-            {
-                "file": "src/core/base/json_settings.py"
-            },
-            {
                 "file": "src/core/base/kept_file_text.py"
             },
             {
                 "file": "src/core/base/leftover_process.py"
             },
             {
-                "file": "src/core/base/metadata.py"
-            },
-            {
-                "file": "src/core/base/page.py"
-            },
-            {
                 "file": "src/core/base/periodic_checks.py"
-            },
-            {
-                "file": "src/core/base/plan_authors.py"
             },
             {
                 "file": "src/core/base/plugin_script_process.py"
@@ -202,16 +178,7 @@
                 "file": "src/core/base/rotated_file.py"
             },
             {
-                "file": "src/core/base/row_owner.py"
-            },
-            {
                 "file": "src/core/base/sandboxed_agent.py"
-            },
-            {
-                "file": "src/core/base/script_skip.py"
-            },
-            {
-                "file": "src/core/base/search_term.py"
             },
             {
                 "file": "src/core/base/server_restart_state.py"
@@ -227,9 +194,6 @@
             },
             {
                 "file": "src/core/base/system_log_writer.py"
-            },
-            {
-                "file": "src/core/base/text_digest.py"
             },
             {
                 "file": "src/core/base/timestamp.py"

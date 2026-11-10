@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.triggers.support.trigger_settings import AGENTS_ENABLE_SETTING
 from core.modules.triggers.support.trigger_nudges import TRIGGER_LINE as TRIGGER_FIRED

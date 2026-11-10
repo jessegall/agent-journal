@@ -2,8 +2,8 @@ import json
 import re
 from collections.abc import Mapping, Sequence
 
-from core.base.actor import Actor
-from core.base.type_guards import is_list, is_mapping
+from engine.actor.actor import Actor
+from engine.types.type_guards import is_list, is_mapping
 from core.modules.messages.models.message import Message
 
 EMOJI_TEXT = re.compile(r"^[\s\U0001F000-\U0001FAFF☀-➿️‍]+$")

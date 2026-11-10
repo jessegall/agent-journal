@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from core.base.model.model import Model
-from core.base.search_term import SearchTerm
+from engine.text.search_term import SearchTerm
 from core.base.timestamp import Timestamp
 from core.base.driver.nudge_declaration import CUT_MARK
 

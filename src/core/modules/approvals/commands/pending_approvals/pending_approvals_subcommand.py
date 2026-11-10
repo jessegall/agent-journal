@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from core.base.caller.caller import Caller
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.subcommand.read_subcommand import ReadSubcommand

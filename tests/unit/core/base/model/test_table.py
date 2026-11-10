@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
-from core.base.metadata import Metadata
+from engine.row.metadata import Metadata
 from core.base.model.model import Model
 from core.base.model.table import Table, plural
 from core.base.model.tables import Tables

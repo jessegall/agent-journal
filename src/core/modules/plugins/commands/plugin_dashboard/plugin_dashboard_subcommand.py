@@ -6,7 +6,7 @@ from core.base.caller.caller import Caller
 from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_dashboard import PluginDashboard
 from core.modules.plugins.support.plugin_folders import PluginFolders

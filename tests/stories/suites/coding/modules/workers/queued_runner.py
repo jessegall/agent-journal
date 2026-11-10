@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.caller.caller_request import SESSION_VARIABLE
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent

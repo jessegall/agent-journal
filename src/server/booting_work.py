@@ -1,4 +1,4 @@
-from core.base.actor import CORE_ACTOR_ID
+from engine.actor.actor import CORE_ACTOR_ID
 from core.base.change.event_log import EventLog
 from core.base.clock import Clock
 from core.base.container import Container

@@ -1,7 +1,7 @@
 import sqlite3
 from argparse import ArgumentParser
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.testing.fake_launcher import FakeLauncher

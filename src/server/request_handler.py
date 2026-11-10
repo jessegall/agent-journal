@@ -13,7 +13,7 @@ from core.base.timing import TIMING_HEADER, Timing
 from core.base.timing_log import TimingLog
 from core.base.caller.caller_request import CallerRequest
 from engine.errors.refusal import Refusal
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 from server.client_disconnected import client_disconnected
 from server.hook.queue_request import QueueRequest
 from core.base.caller.caller_request import SESSION_VARIABLE

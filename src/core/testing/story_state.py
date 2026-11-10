@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 
 
 @dataclass(frozen=True)

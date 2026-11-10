@@ -3,12 +3,12 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from core.base.json_settings import JsonSettings
+from engine.json.json_settings import JsonSettings
 from core.base.provider.hook_partition import HookPartition
 from core.base.provider.hook_block_partition import HookBlockPartition
 from core.base.provider.managed_hook import ManagedHook
 from core.base.provider.provider import Provider
-from core.base.type_guards import is_list, is_mapping
+from engine.types.type_guards import is_list, is_mapping
 
 JOURNAL_MARKS = ("journal-hook", "hooks/hook.sh")
 # Longer than the hook program's wait for a restarting server and its last ask, so the program never kills that wait.

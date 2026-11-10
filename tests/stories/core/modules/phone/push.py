@@ -1,7 +1,7 @@
 import base64
 import json
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.modules.phone.ticks.phone_notices import PhoneNotices
 from core.base.clock import Clock
 from core.base.command.bus import Bus

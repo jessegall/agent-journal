@@ -13,7 +13,7 @@ from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.helper_type_book import HelperTypeBook
 from engine.enums.access import Access
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.shell_sandbox import ShellSandbox
 
 

@@ -8,7 +8,7 @@ from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.provider import Provider
 from core.base.provider.providers import Providers
-from core.base.type_guards import is_list, is_mapping
+from engine.types.type_guards import is_list, is_mapping
 from core.modules.settings.support.journal_hook import JournalHook
 from core.modules.settings.support.managed_hook_item import ManagedHookItem
 from core.modules.settings.support.project_hook_list import ProjectHookList

@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
 from suites.coding.modules.workers.support.worker_log_lines import WorkerLogLines

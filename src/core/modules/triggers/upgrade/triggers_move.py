@@ -4,7 +4,7 @@ from functools import partial
 
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
-from core.base.type_guards import is_list
+from engine.types.type_guards import is_list
 from core.base.upgrade.creator_resolver import CreatorResolver
 from core.base.upgrade.move_context import MoveContext
 from core.base.upgrade.move_map import MoveMap

@@ -10,7 +10,7 @@ from tests.stories.core.base.driver.support.fixtures import LeadStarted
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from core.base.command.bus import Bus
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.driver.block_until import BlockUntil
 from core.base.driver.nudge import Nudge
 from core.base.driver.nudge_type import NudgeType

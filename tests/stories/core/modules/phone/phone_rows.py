@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from tests.stories.core.support.fixtures import UserJoined
 
 TOKEN_DIGEST = "f00d" * 16

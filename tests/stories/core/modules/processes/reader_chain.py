@@ -1,5 +1,5 @@
 from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory

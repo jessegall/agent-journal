@@ -1,5 +1,5 @@
 from tests.stories.core.support import story_lines as lines
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture

@@ -2,7 +2,7 @@ import pytest
 
 from datetime import timedelta
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from core.base.command.bus import Bus

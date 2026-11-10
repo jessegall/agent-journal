@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.page import Page
+from engine.row.page import Page
 from core.modules.tasks.models.task import Task
 from core.modules.helpers.support.program_state import ProgramState
 from suites.coding.modules.workers.models.proof import Proof

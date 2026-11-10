@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from core.base.database.kept_rows import KeptRows
 from core.base.query.conditions.among import Among
 from core.base.change.moved import Moved
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener

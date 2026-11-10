@@ -3,7 +3,7 @@ import socket
 import threading
 from pathlib import Path
 
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 from core.modules.agents.support.launcher_link import STOP_FIELD, STOPPED_ANSWER
 
 ACCEPT_TIMEOUT_SECONDS = 10

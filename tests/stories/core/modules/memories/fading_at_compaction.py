@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskBuilder

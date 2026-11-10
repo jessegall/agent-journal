@@ -1,5 +1,5 @@
 from core.base.registry.registry import Registry
-from core.base.type_guards import is_text_list, is_tuple
+from engine.types.type_guards import is_text_list, is_tuple
 from core.modules.helpers.support.agent_field_options import AgentFieldOptions
 from core.modules.helpers.support.agent_options_reading import AgentOptionsReading
 from core.modules.helpers.support.agent_options_value import AgentOptionsValue

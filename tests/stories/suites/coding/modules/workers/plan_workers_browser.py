@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story

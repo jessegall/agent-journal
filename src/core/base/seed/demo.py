@@ -3,13 +3,13 @@ import json
 import re
 import shlex
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.caller.caller import Caller
 from core.base.cli.console import Console
 from core.base.command.bus import Bus
 from core.base.container import Container
 from core.base.seed.demo_error import DemoError
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 
 DEMO_ENVIRONMENT = "demo"
 

@@ -7,13 +7,13 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
-from core.base.json_pointer import JsonPointer
-from core.base.json_schema import JsonSchema
+from engine.json.json_pointer import JsonPointer
+from engine.json.json_schema import JsonSchema
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.skill.skill_digest import SkillDigest
-from core.base.type_guards import is_object_mapping
+from engine.types.type_guards import is_object_mapping
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.commands.refresh_plugin_config.refresh_plugin_config import RefreshPluginConfig
 from core.modules.plugins.models.plugin import Plugin

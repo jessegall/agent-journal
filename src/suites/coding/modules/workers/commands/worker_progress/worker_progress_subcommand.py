@@ -5,7 +5,7 @@ from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_tuple
+from engine.types.type_guards import is_tuple
 from suites.coding.modules.workers.models.worker_progress import WorkerProgress
 
 PROGRESS_REASON = "One row for each worker that is not retired, which the kept limit of workers bounds."

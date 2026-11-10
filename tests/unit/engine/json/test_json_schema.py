@@ -1,7 +1,7 @@
 import pytest
 
-from core.base.json_pointer import JsonPointer
-from core.base.json_schema import JsonSchema
+from engine.json.json_pointer import JsonPointer
+from engine.json.json_schema import JsonSchema
 from engine.errors.refusal import Refusal
 
 SCHEMA = JsonSchema({

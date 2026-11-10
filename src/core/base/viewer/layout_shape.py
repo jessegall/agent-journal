@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from core.base.type_guards import is_mapping, is_text_list
+from engine.types.type_guards import is_mapping, is_text_list
 from core.base.viewer.layout_split import LayoutSplit
 from core.base.viewer.layout_tabs import LayoutTabs
 

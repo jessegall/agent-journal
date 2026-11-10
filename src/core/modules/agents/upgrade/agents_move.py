@@ -1,7 +1,7 @@
 import sqlite3
 from collections import Counter
 
-from core.base.actor import CORE_ACTOR_ID
+from engine.actor.actor import CORE_ACTOR_ID
 from engine.enums.actor_type import ActorType
 from engine.enums.access import Access
 from engine.enums.agent_role import AgentRole

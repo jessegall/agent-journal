@@ -2,7 +2,7 @@ from core.base.connection_probe import ConnectionProbe
 from core.base.internet_connection import InternetConnection
 from core.base.journal_home import JournalHome
 from core.base.clock import Clock
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.container import Container
 from core.base.query.conditions.among import Among

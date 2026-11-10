@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.cli.number_list import number_list
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
-from core.base.type_guards import is_list
+from engine.types.type_guards import is_list
 from core.modules.memories.models.memory import Memory
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.memories.models.memory import Memory

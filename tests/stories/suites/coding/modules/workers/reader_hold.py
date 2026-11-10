@@ -13,7 +13,7 @@ from core.modules.processes.queries.reader_request_query import ReaderRequestQue
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory

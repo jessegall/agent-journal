@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.provider.managed_hook import ManagedHook
 from core.base.provider.managed_hooks import ManagedHooks

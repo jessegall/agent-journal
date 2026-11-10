@@ -1,6 +1,6 @@
 import secrets
 
-from core.base.text_digest import TextDigest
+from engine.text.text_digest import TextDigest
 
 CODE_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ"
 HALF_LETTERS = 4

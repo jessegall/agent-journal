@@ -1,7 +1,7 @@
 import json
 from collections.abc import Mapping
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.base.model.event_form import EventForm
 from core.base.timestamp import Timestamp

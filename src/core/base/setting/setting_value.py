@@ -8,7 +8,7 @@ from core.base.setting.setting_rule import SettingRule
 from core.base.setting.setting_rule_text import SettingRuleText
 from core.base.setting.setting_scope import SettingScope
 from core.base.setting.setting_type import SettingType
-from core.base.type_guards import is_list, is_text_list, is_tuple
+from engine.types.type_guards import is_list, is_text_list, is_tuple
 
 
 

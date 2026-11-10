@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.caller import Caller
 

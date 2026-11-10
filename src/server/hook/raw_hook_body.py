@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_event_name import HookEventName

@@ -2,7 +2,7 @@ import re
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 
-from core.base.type_guards import is_list, is_tuple
+from engine.types.type_guards import is_list, is_tuple
 
 
 @dataclass(frozen=True)

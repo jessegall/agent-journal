@@ -4,7 +4,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.base.text_digest import TextDigest
+from engine.text.text_digest import TextDigest
 from core.base.timestamp import Timestamp
 from core.modules.agents.support.person_check import PersonCheck
 from core.modules.sharing.commands.accept_share_link.accept_share_link import AcceptShareLink

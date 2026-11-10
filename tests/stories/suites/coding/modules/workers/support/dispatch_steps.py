@@ -1,7 +1,7 @@
 import shlex
 from pathlib import Path
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.container import UNBUILT_MODULES, needed_values
 from core.base.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine

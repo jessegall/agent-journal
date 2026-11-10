@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.memories.support.memory_owners import MAIN_FACT, MainAndWorkerMemories
 from core.testing.story_fixture import StoryFixture

@@ -5,7 +5,7 @@ import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.database.database import Database
 from core.base.database.statement import Statement

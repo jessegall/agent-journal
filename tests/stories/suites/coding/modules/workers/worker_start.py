@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.journal_home import LAUNCHER_SOCKET
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

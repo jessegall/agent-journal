@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.base.actor import CORE_ACTOR_ID
+from engine.actor.actor import CORE_ACTOR_ID
 from core.base.cli.console import Console
 from core.base.database.database import Database
 from core.base.database.statement import Statement

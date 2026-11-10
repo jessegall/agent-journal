@@ -3,7 +3,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from core.base.caller.caller import Caller
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.provider.providers import Providers
 from core.base.provider.transcript_index import TranscriptIndex
 from core.base.provider.transcript_row import TranscriptRow

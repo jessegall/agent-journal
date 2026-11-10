@@ -7,7 +7,7 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.cli.console import Console
 from core.base.caller.caller import Caller
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.query.queries import Queries
 from core.modules.environments.models.environment import Environment

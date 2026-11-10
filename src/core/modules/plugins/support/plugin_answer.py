@@ -2,7 +2,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
-from core.base.type_guards import is_list, is_mapping
+from engine.types.type_guards import is_list, is_mapping
 from core.modules.plugins.support.plugin_card import PluginCard
 
 OLD_TYPE_KEY = "kind"

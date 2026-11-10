@@ -1,7 +1,7 @@
 import json
 
 from engine.errors.refusal import Refusal
-from core.base.type_guards import is_list, is_mapping
+from engine.types.type_guards import is_list, is_mapping
 from core.modules.sequences.models.support.sequence_guard import SequenceGuard
 
 

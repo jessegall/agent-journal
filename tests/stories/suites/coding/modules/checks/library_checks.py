@@ -3,7 +3,7 @@ from datetime import timedelta
 
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.context import Context
 from core.base.periodic_checks import PeriodicChecks
 from core.base.query.queries import Queries

@@ -3,7 +3,7 @@ from core.base.change.event_log import EventLog
 from core.base.change.logged_event import LoggedEvent
 from core.base.caller.caller import Caller
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.subcommand.page_arguments import page_arguments
 
 

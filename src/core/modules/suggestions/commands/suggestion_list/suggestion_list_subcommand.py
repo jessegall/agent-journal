@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.database.database import READ_LIMIT_ROWS
 from core.base.caller.caller import Caller
-from core.base.page import Page, is_page
+from engine.row.page import Page, is_page
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output

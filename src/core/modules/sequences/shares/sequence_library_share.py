@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from core.base.actor import CORE_ACTOR_ID
+from engine.actor.actor import CORE_ACTOR_ID
 from core.base.command.context import Context
 from core.base.library.library_share import Fields, LibraryShare
 from core.base.repository.repository import Repository

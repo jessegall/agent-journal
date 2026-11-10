@@ -8,7 +8,7 @@ from core.base.provider.transcript_row import TranscriptRow
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_tuple
+from engine.types.type_guards import is_tuple
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.environments.models.environment import Environment

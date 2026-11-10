@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.model.model import Model
 from core.base.model.session_bound import SessionBound
 from core.base.timestamp import Timestamp

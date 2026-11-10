@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.metadata import Metadata
+from engine.row.metadata import Metadata
 
 
 def test_a_module_reads_its_own_part():

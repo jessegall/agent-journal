@@ -16,9 +16,9 @@ from core.base.query.conditions.among import Among
 from core.base.query.conditions.equal import Equal
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.session_rows import SessionRows
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.query.select import Select
-from core.base.row_owner import RowOwner
+from engine.row.row_owner import RowOwner
 from core.base.query.unknown_column_error import UnknownColumnError
 
 

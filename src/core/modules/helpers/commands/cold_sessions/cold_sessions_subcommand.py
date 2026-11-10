@@ -4,7 +4,7 @@ from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_tuple
+from engine.types.type_guards import is_tuple
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.helpers.support.cold_sessions import ColdSessions
 from core.modules.settings.bindings.support.context_share import ContextShare

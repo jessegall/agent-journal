@@ -1,7 +1,7 @@
 import shlex
 from dataclasses import replace
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.caller.caller import Caller
 from core.base.cli.console import Console
 from core.base.cli.usage_error import UsageError

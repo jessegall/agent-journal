@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.core.base.driver.support.samples import SAMPLES

@@ -2,7 +2,7 @@ from core.base.model.model import Model
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.query.query import Query
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.modules.documents.support.comment_read import CommentRead
 from core.modules.messages.conditions.message_text_segment import MessageTextSegment

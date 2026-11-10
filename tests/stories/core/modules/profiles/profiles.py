@@ -1,4 +1,4 @@
-from core.base.actor import CORE_ACTOR_ID
+from engine.actor.actor import CORE_ACTOR_ID
 import pytest
 
 from core.testing.fake_launcher import FakeLauncher

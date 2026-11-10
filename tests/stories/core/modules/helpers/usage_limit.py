@@ -1,7 +1,7 @@
 import json
 from datetime import timedelta
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.base.file_access import FileAccess
 from core.base.journal_home import LAUNCHER_SOCKET

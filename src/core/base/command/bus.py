@@ -1,5 +1,5 @@
 from typing import TypeVar
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.clock import Clock
 from core.base.command.command import Command
 from core.base.command.context import Context
@@ -10,7 +10,7 @@ from core.base.command.script_policy import ScriptPolicy
 from core.base.container import Container
 from core.base.database.database import Database
 from core.base.deadline import Deadline
-from core.base.explanation import Explanation
+from engine.text.explanation import Explanation
 from core.base.registry.registry import Registry
 from core.base.scope.scopes import Scopes
 from core.base.timing import Timing

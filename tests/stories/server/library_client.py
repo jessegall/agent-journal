@@ -2,7 +2,7 @@ import shutil
 from collections.abc import Callable
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.context import Context
 from core.base.repository.repository import Repository
 from core.modules.library.support.library_client import LibraryClient

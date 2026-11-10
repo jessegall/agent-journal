@@ -4,7 +4,7 @@ from typing import ClassVar, Generic, TypeVar
 
 from core.base.command.context import Context
 from core.base.model.model import Model
-from core.base.text_digest import TextDigest
+from engine.text.text_digest import TextDigest
 
 Fields = Mapping[str, object]
 

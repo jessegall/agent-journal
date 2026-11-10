@@ -10,7 +10,7 @@ from core.base.provider.managed_hook import ManagedHook
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.provider import Provider
-from core.base.type_guards import is_list, is_mapping
+from engine.types.type_guards import is_list, is_mapping
 
 
 class HookManager:

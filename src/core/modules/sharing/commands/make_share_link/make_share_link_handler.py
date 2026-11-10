@@ -9,7 +9,7 @@ from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.scope.scopes import Scopes
-from core.base.text_digest import TextDigest
+from engine.text.text_digest import TextDigest
 from core.base.timestamp import Timestamp
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.report import Report

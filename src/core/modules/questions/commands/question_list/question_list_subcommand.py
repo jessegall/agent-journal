@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.page import Page, is_page
+from engine.row.page import Page, is_page
 from core.modules.questions.models.question import Question
 from core.modules.questions.queries.question_query import QuestionQuery
 from core.modules.documents.support.row_refs import RowRefs

@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from typing import ClassVar
 
 from core.base.model.model import Model
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.query.conditions.contains_every import ContainsEvery
 from core.base.query.queries import Queries
 from core.base.query.query import Query

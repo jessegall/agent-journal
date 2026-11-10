@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.chat.dock_declaration import DockDeclaration
 from core.base.command.bus import Bus
 from core.base.module.module import Module

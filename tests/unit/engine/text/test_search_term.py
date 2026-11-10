@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.search_term import SearchTerm
+from engine.text.search_term import SearchTerm
 
 
 @pytest.mark.parametrize("word, stem", [("Hours", "hour"), ("two-hourly", "two-hour"), ("reviewer", "review"), ("reviews", "review"), ("cart", "cart"), ("ads", "ads"), ("rounding", "round")])

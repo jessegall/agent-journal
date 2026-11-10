@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model

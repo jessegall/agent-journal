@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.query.queries import Queries
 from core.testing.story import Story
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation

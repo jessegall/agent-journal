@@ -2,7 +2,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.type_guards import is_list, is_mapping
+from engine.types.type_guards import is_list, is_mapping
 from suites.coding.modules.workers.commands.record_todo_list.record_todo_list import RecordTodoList
 from suites.coding.modules.workers.models.enums.todo_state import TodoState
 

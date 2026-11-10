@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from core.base.model.event_form import EventForm
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 
 
 SERVICE_PREFIX = "service:"

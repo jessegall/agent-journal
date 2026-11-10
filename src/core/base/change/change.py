@@ -1,7 +1,7 @@
 from dataclasses import dataclass, fields
 from typing import Generic, TypeVar
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.change.changed import Changed, is_changed_class
 from core.base.change.created import Created
 from core.base.change.deleted import Deleted

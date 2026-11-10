@@ -3,7 +3,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 
 from engine.errors.refusal import Refusal
-from core.base.type_guards import is_list, is_mapping, is_number, is_text_mapping
+from engine.types.type_guards import is_list, is_mapping, is_number, is_text_mapping
 
 DEFINITIONS = "$defs"
 REFERENCE_PREFIX = "#/$defs/"

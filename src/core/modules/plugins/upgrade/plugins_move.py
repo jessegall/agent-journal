@@ -4,7 +4,7 @@ from pathlib import Path
 
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 from core.base.upgrade.move_context import MoveContext
 from core.base.upgrade.move_map import MoveMap
 from core.base.upgrade.move_report import MoveReport

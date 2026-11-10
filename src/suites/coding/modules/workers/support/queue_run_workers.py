@@ -1,5 +1,5 @@
 from suites.coding.support.coding_helper_role import CodingHelperRole
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent

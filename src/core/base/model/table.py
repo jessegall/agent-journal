@@ -7,7 +7,7 @@ from types import NoneType, UnionType
 from enum import StrEnum
 from functools import cached_property
 from typing import Any, Generic, TypeVar, Union, get_args, get_origin, get_type_hints
-from core.base.metadata import Metadata
+from engine.row.metadata import Metadata
 from core.base.model.added_state import AddedState
 from core.base.model.model import Model, STATE
 from core.base.model.view_model import ViewModel

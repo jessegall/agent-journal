@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.command import Command
 
 

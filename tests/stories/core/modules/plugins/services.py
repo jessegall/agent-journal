@@ -8,7 +8,7 @@ import shutil
 import signal
 from datetime import timedelta
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.file_access import FileAccess
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.plugins.support.plugin_program import SETTINGS_FILE

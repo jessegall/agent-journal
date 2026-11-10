@@ -2,7 +2,7 @@ import json
 from collections.abc import Iterator
 from dataclasses import dataclass
 
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 
 
 @dataclass(frozen=True)

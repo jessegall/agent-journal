@@ -5,7 +5,7 @@ from datetime import timedelta
 from core.base.clock import Clock
 from core.base.timestamp import Timestamp
 from core.base.system_log_writer import SystemLogWriter
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from core.base.command.bus import Bus

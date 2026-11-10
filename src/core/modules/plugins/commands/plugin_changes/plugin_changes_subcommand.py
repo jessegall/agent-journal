@@ -6,7 +6,7 @@ from core.base.checkout_file import CheckoutFile
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_tuple
+from engine.types.type_guards import is_tuple
 from core.modules.plugins.support.plugin_call_access import PluginCallAccess
 
 BASE = "base"

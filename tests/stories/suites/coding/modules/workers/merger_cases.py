@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 import suites.coding.modules.workers as workers_package
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.query.queries import Queries

@@ -3,7 +3,7 @@ import json
 import os
 from pathlib import Path
 
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 
 TRUSTED_KEY = "hasTrustDialogAccepted"
 

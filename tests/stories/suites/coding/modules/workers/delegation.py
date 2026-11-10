@@ -7,7 +7,7 @@ from suites.coding.modules.workers.support.worker_next_task import WorkerNextTas
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.messages.models.message import Message
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples

@@ -3,7 +3,7 @@ import pytest
 from suites.coding.modules.workers.support.worker_launch_failures import WorkerLaunchFailures
 import json
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
 from core.base.query.queries import Queries

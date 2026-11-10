@@ -2,7 +2,7 @@ from core.base.clock import Clock
 from datetime import datetime, timezone
 from pathlib import Path
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.command.command import Command
 from core.base.command.context import Context

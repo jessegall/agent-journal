@@ -5,7 +5,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
-from core.base.type_guards import is_list, is_tuple
+from engine.types.type_guards import is_list, is_tuple
 from core.modules.settings.commands.set_setting.set_setting import SetSetting
 from core.modules.settings.support.current_setting import CurrentSetting
 from core.modules.settings.support.setting_reader import SettingReader

@@ -15,7 +15,7 @@ from core.base.command.command import Command
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.base.type_guards import is_mapping, is_object_mapping
+from engine.types.type_guards import is_mapping, is_object_mapping
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault

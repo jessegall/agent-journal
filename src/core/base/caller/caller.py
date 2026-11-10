@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 
 

@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker
 from tests.stories.suites.coding.modules.workers.support.phase_steps import planned_story
 from tests.stories.support.story_checks import expect_value

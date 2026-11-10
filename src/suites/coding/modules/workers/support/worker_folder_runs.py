@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal

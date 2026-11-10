@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 from enum import StrEnum
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.caller.caller import Caller
 from core.base.command.command import Command

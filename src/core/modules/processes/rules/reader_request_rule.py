@@ -9,7 +9,7 @@ from core.modules.processes.queries.reader_request_query import ReaderRequestQue
 from core.modules.processes.support.reader_request_text import ReaderRequestText
 from core.modules.processes.support.reader_request_notices import ReaderRequestNotices
 from core.modules.processes.commands.send_reader_request_notice.send_reader_request_notice import SendReaderRequestNotice
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.processes.support.reader_writers import ReaderWriters
 from core.modules.processes.support.reader_save_attempts import ReaderSaveAttempts

@@ -9,7 +9,7 @@ from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.support.fixtures import UnansweredMessage
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import UserJoined
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.tasks.task_lifecycle import started_story
 

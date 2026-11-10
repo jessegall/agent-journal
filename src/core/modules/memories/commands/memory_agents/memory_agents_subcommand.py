@@ -5,7 +5,7 @@ from engine.enums.access import Access
 from engine.enums.actor_type import ActorType
 from core.base.helper_type_book import HelperTypeBook
 from core.base.caller.caller import Caller
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.contains_every import ContainsEvery
 from core.base.query.conditions.has_value import HasValue

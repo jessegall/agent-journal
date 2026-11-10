@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.query.queries import Queries
 from core.base.shell_sandbox import ShellSandbox

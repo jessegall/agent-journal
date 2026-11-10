@@ -85,7 +85,7 @@ from core.modules.plans.seeders.plans_seeder import PlansSeeder
 from core.modules.plans.support.block_conditions.plan_approved import PlanApproved
 from core.modules.plans.support.block_conditions.plan_finished import PlanFinished
 from core.modules.plans.support.skeletons import PLANS_PLANS_SKELETON
-from core.base.plan_authors import PlanAuthors
+from engine.plan.plan_authors import PlanAuthors
 from core.modules.plans.bindings.plan_row_authors import PlanRowAuthors
 
 PLAN_COMMANDS = (ApprovePlan, BlockPlan, CancelPlan, ClosePlan, ReturnPlan, StartPlan)

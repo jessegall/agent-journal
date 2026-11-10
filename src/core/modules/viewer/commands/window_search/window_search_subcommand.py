@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.container import Container
 from core.base.model.model import Model
-from core.base.page import Page
+from engine.row.page import Page
 from engine.errors.refusal import Refusal
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.registry import Registry

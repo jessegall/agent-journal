@@ -8,7 +8,7 @@ from dataclasses import asdict
 from uuid import uuid4
 from typing import TypeVar, cast
 from datetime import timedelta
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.shell_sandbox import ShellSandbox
 from core.testing.story_shell_sandbox import StoryShellSandbox
 from core.base.cli.console import Console

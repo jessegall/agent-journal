@@ -10,7 +10,7 @@ from functools import lru_cache
 from core.base.journal_version import JOURNAL_VERSION
 from engine.errors.refusal import Refusal
 from core.modules.plugins.support.plugin_manifest_files import PluginManifestFiles
-from core.base.type_guards import is_list, is_mapping, is_object_mapping
+from engine.types.type_guards import is_list, is_mapping, is_object_mapping
 from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, ManifestListener
 from core.modules.plugins.support.plugin_event_entry import PluginEventEntry
 from core.modules.plugins.support.plugin_answer import PluginAnswer

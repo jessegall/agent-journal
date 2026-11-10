@@ -1,7 +1,7 @@
 import json
 from datetime import timedelta
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import CheckpointPlan, UserJoined

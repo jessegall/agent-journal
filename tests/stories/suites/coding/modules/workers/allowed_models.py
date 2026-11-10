@@ -1,6 +1,6 @@
 import shutil
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.journal_home import JournalHome
 from core.base.provider.managed_hooks import ManagedHooks

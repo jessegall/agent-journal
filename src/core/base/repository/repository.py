@@ -12,7 +12,7 @@ from core.base.database.table_statements import TableStatements
 from core.base.guard.guards import Guards
 from core.base.listener.listeners import Listeners
 from core.base.listener.event_rows import EventRows
-from core.base.metadata import Metadata
+from engine.row.metadata import Metadata
 from core.base.model.model import Model
 from core.base.model.table import Table
 from core.base.model.tables import Tables

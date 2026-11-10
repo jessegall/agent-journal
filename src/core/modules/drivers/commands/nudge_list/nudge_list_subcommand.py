@@ -5,7 +5,7 @@ from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_tuple
+from engine.types.type_guards import is_tuple
 from core.modules.drivers.models.nudge_total import NudgeTotal
 from core.modules.drivers.support.nudge_row import NudgeRow
 

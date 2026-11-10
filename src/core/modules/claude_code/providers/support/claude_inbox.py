@@ -4,7 +4,7 @@ import socket
 from pathlib import Path
 
 from core.base.provider.session_line import SessionLine
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 from core.modules.claude_code.providers.support.claude_session_entry import ClaudeSessionEntry
 
 CONNECT_SECONDS = 5

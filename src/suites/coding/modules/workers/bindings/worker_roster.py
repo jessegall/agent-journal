@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.agent_roster import AgentRoster
 from core.base.command.bus import Bus
 from core.base.command.context import Context

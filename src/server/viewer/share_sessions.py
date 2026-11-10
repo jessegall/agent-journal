@@ -5,7 +5,7 @@ from collections.abc import Callable
 from server.viewer.phone_module_error import PhoneModuleError
 from server.viewer.share_link_session import ShareLinkSession
 from core.base.clock import Clock
-from core.base.text_digest import TextDigest
+from engine.text.text_digest import TextDigest
 
 KEY_BYTES = 32
 

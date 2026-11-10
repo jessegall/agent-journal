@@ -7,7 +7,7 @@ from core.base.database.database import Database
 from tests.stories.support.story_checks import expect_value
 
 from core.base.command.bus import Bus
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.driver.command_category import CommandCategory
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.base.query.queries import Queries

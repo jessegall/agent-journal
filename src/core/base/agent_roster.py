@@ -1,6 +1,6 @@
 from typing import Protocol, TypeVar, runtime_checkable
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.context import Context
 
 AgentRecord = TypeVar("AgentRecord")

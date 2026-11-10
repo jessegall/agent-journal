@@ -1,5 +1,5 @@
 from core.base.command.context import Context
-from core.base.metadata import Metadata
+from engine.row.metadata import Metadata
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent

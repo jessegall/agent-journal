@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.cli.console import Console
 from core.base.cli.read_limit_bypass import ALLOW_LARGE_READ_FLAG
 from core.base.database.database import READ_LIMIT_ROWS, Database

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 
 
 @dataclass(frozen=True)

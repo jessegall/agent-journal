@@ -3,7 +3,7 @@ from typing import TypeVar
 
 from core.base.model.model import Model
 from core.base.subcommand.output import Output
-from core.base.type_guards import is_tuple
+from engine.types.type_guards import is_tuple
 
 M = TypeVar("M", bound=Model)
 

@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from suites.coding.modules.checks.commands.record_check_progress.record_check_progress import RecordCheckProgress
 from suites.coding.modules.checks.commands.support.check_output_percent import CheckOutputPercent

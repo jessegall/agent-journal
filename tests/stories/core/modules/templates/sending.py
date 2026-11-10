@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.modules.sequences.commands.save_standard_sequences.save_standard_sequences import SaveStandardSequences
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery

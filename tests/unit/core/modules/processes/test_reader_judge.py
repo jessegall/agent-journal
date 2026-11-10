@@ -1,7 +1,7 @@
 from unittest.mock import Mock
 
 from core.base.driver.command_category import CommandCategory
-from core.base.page import Page
+from engine.row.page import Page
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.process_part import ProcessPart

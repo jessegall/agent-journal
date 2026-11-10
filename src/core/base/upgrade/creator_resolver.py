@@ -1,4 +1,4 @@
-from core.base.actor import CORE_ACTOR_ID
+from engine.actor.actor import CORE_ACTOR_ID
 from core.base.database.actor_table import ActorTable
 from core.base.database.database import Database
 from core.base.upgrade.move_map import MoveMap

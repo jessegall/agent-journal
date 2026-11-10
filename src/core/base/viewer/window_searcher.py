@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from core.base.model.model import Model
-from core.base.page import Page
+from engine.row.page import Page
 
 
 class WindowSearcher:

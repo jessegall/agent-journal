@@ -1,6 +1,6 @@
 import json
 
-from core.base.type_guards import is_mapping, is_text_list
+from engine.types.type_guards import is_mapping, is_text_list
 
 SPLIT_DIRECTIONS = ("row", "col")
 

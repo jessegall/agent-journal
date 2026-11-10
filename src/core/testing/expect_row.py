@@ -1,6 +1,6 @@
 import sqlite3
 
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 
 
 def expect_row(row: object, **fields: object) -> None:

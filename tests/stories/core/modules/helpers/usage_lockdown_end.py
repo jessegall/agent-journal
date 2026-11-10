@@ -1,7 +1,7 @@
 import json
 from datetime import timedelta
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.enums.agent_activity import AgentActivity

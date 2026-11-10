@@ -8,7 +8,7 @@ from engine.enums.access import Access
 from core.base.caller.caller_request import CallerRequest
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from tests.stories.core.modules.processes.support.process_samples import end_run, start_process
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.driver.nudge import Nudge
 from core.base.query.queries import Queries

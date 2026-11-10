@@ -2,7 +2,7 @@ import json
 from dataclasses import dataclass
 
 from core.base.model.model import Model
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 from core.modules.phone.models.enums.phone_state import PhoneState
 from core.modules.phone.models.lifecycles.phone_lifecycle import PhoneLifecycle
 

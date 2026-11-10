@@ -16,7 +16,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.seconds import Seconds
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.model.state_holder import StateHolder

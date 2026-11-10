@@ -3,7 +3,7 @@ from enum import StrEnum
 from typing import ClassVar
 
 from core.base.timestamp import Timestamp
-from core.base.type_guards import is_tuple
+from engine.types.type_guards import is_tuple
 
 
 @dataclass(frozen=True, kw_only=True)

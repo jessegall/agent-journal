@@ -1,4 +1,4 @@
-from core.base.metadata import Metadata
+from engine.row.metadata import Metadata
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_approval_error import PlanApprovalError
 

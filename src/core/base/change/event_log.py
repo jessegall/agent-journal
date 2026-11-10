@@ -8,7 +8,7 @@ from core.base.change.logged_event import CREATION, LoggedEvent
 from core.base.database.bookkeeping_table import BookkeepingTable
 from core.base.database.database import Database
 from core.base.command.context import Context
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.model.table import stored
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model

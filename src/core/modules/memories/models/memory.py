@@ -4,7 +4,7 @@ from core.base.model.agent_scoped import AgentScoped
 from core.base.model.removable import Removable
 from core.base.model.environment_scoped import EnvironmentScoped
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.model.model import Model
 from engine.errors.refusal import Refusal
 from core.base.timestamp import Timestamp

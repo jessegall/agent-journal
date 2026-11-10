@@ -18,7 +18,7 @@ from core.base.journal_home import JournalHome
 from core.base.driver.refusal_line import RefusalLine
 from core.base.driver.rule_answers import RuleAnswers
 from engine.errors.refusal import Refusal
-from core.base.metadata import Metadata
+from engine.row.metadata import Metadata
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository

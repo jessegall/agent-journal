@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from suites.coding.modules.workers.commands.record_own_test_failure.record_own_test_failure import RecordOwnTestFailure
 from suites.coding.modules.workers.support.worker_test_failures import ALL_RUN_TESTS, WorkerTestFailures

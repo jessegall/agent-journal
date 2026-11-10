@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.driver.driver_rule import DriverRule

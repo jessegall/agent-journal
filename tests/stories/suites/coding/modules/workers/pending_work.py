@@ -3,7 +3,7 @@ from datetime import timedelta
 
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.shell_sandbox import ShellSandbox
 from core.modules.agents.models.agent import Agent

@@ -2,7 +2,7 @@ from dataclasses import is_dataclass
 from core.base.subcommand.lines_value import LinesValue
 from core.base.subcommand.output import Output
 from core.base.model.model import Model
-from core.base.page import is_page
+from engine.row.page import is_page
 
 
 def render_value(value: object, output: Output) -> None:

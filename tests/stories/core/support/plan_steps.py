@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.query.queries import Queries
 from core.modules.plans.models.plan_task import PlanTask
 from core.testing.story import Story

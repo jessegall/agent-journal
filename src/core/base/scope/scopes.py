@@ -3,7 +3,7 @@ from contextlib import contextmanager, nullcontext
 from dataclasses import replace
 from typing import ContextManager, TypeVar
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.change.event_log import EventLog
@@ -19,7 +19,7 @@ from core.base.model.table import indefinite_article
 from engine.errors.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.environment_scope import EnvironmentScope
-from core.base.row_owner import RowOwner
+from engine.row.row_owner import RowOwner
 from core.base.scope.scope import Scope
 from core.base.scope.scope_opening import ScopeOpening
 

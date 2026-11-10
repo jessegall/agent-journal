@@ -3,10 +3,10 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.database.database import Database
-from core.base.row_owner import RowOwner
+from engine.row.row_owner import RowOwner
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder

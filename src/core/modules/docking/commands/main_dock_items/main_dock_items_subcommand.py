@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.page import Page, is_page
+from engine.row.page import Page, is_page
 from core.base.query.queries import Queries
 from core.base.query.query import PAGE_SIZE_ROWS
 from core.base.subcommand.output import Output

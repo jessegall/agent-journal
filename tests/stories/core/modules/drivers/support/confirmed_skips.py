@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 
 TRIED = "read the refusal and found it does not fit this case"
 

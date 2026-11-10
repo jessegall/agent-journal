@@ -1,6 +1,6 @@
 import io
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.caller.caller import Caller
 from core.base.cli.console import Console

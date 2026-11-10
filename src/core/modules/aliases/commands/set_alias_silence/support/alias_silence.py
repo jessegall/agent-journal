@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.base.timestamp import Timestamp
 from core.modules.aliases.commands.set_alias_silence.set_alias_silence import SetAliasSilence

@@ -6,7 +6,7 @@ from core.base.cli.list_subcommand import ListSubcommand
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.query.queries import Queries
 from core.base.query.query import Query
 from core.modules.environments.models.environment import Environment

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.model.model import Model
-from core.base.actor import CORE_ACTOR_ID
+from engine.actor.actor import CORE_ACTOR_ID
 from core.base.template.template_declaration import TemplateDeclaration
 
 

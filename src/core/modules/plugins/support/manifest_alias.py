@@ -3,7 +3,7 @@ from collections.abc import Sequence
 
 from core.base.driver.command_category import CommandCategory
 from engine.errors.refusal import Refusal
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 
 
 @dataclass(frozen=True)

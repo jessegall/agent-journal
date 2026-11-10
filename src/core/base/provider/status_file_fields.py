@@ -5,7 +5,7 @@ from typing import Mapping
 
 from core.base.file_access import FileAccess
 from core.base.file_version import FileVersion
-from core.base.type_guards import is_text_mapping
+from engine.types.type_guards import is_text_mapping
 
 
 STATUS_CACHE_SIZE = 64

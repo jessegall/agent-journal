@@ -1,7 +1,7 @@
 import json
 
 from core.base.cli.invalid_text_list import InvalidTextList
-from core.base.type_guards import is_text_list
+from engine.types.type_guards import is_text_list
 
 
 def json_text_list(text: str) -> list[str]:

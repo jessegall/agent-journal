@@ -3,7 +3,7 @@ import json
 from engine.errors.refusal import Refusal
 from core.base.registry.setting_entry import SettingEntry
 from core.base.setting.setting_type import SettingType
-from core.base.type_guards import is_text_list
+from engine.types.type_guards import is_text_list
 
 JSON_LIST_START = "["
 FLAG_TEXTS = {"on": True, "true": True, "yes": True, "off": False, "false": False, "no": False}

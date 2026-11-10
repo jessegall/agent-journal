@@ -5,7 +5,7 @@ from pathlib import Path
 
 from core.base.database.database_text_replacement import DatabaseTextReplacement
 from core.base.file_access import FileAccess
-from core.base.type_guards import is_frozenset, is_list, is_mapping, is_set, is_tuple
+from engine.types.type_guards import is_frozenset, is_list, is_mapping, is_set, is_tuple
 
 CHECKOUT_FILE = "checkout"
 REWRITTEN_FILES = ("module_list", "program_table")

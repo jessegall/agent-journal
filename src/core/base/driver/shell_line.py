@@ -7,7 +7,7 @@ from core.base.driver.command_effect import CommandEffect
 from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_fields import mapping, text, texts
 from core.base.driver.part import Part
-from core.base.type_guards import is_list
+from engine.types.type_guards import is_list
 
 
 JOURNAL_PROGRAM = "journal"

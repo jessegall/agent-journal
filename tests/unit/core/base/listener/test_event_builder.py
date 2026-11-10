@@ -4,7 +4,7 @@ from types import MappingProxyType
 
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.change.change import Change
 from core.base.change.changed import Changed
 from core.base.change.created import Created

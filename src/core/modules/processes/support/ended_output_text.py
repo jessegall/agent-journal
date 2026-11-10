@@ -1,5 +1,5 @@
 from core.base.driver.nudge import Nudge
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.processes.support.process_nudges import READER_DRAFT, OUTPUT_ENDED, READER_MISSED, READER_PROGRESS_MISSING, READER_SUMMARY_MISSING, READER_WIDTH, SILENT_SAVED_FAILURE
 from pathlib import PurePath

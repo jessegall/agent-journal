@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.page import Page
+from engine.row.page import Page
 from core.modules.documents.conditions.link_scope import LinkScope
 from core.modules.documents.models.link import Link
 from core.modules.documents.references.row_ref import RowRef

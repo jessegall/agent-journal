@@ -1,11 +1,11 @@
-from core.base.actor import CORE_ACTOR_ID
+from engine.actor.actor import CORE_ACTOR_ID
 from collections.abc import Sequence
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.database.statement import Statement
-from core.base.row_owner import MAIN_AGENT, RowOwner
+from engine.row.row_owner import MAIN_AGENT, RowOwner
 
 CORE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, type, name, created_at, updated_at) VALUES (?, ?, 'core', ?, ?)")
 MODULE_ACTOR = Statement("INSERT OR IGNORE INTO actors (creator_id, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")

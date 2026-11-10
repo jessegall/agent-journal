@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.enums.actor_type import ActorType
 from core.base.caller.caller import Caller
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal

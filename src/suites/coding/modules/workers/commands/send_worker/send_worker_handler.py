@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from dataclasses import replace
 import json

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 import pytest
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.testing.story import Story
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder

@@ -4,7 +4,7 @@ from core.base.registry.event_key_entry import EventKeyEntry
 from core.base.registry.registry import Registry
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_tuple
+from engine.types.type_guards import is_tuple
 
 COLUMN_SPACES = "   "
 

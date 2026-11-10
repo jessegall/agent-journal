@@ -17,7 +17,7 @@ from tests.stories.suites.coding.modules.workers.kept_workers import stopped
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.suites.coding.modules.workers.support.route_expectations import expect_model_route_refusal, expect_unmatched_route
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 from tests.stories.suites.coding.modules.workers.support.program_split import (

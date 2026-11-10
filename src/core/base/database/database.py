@@ -7,7 +7,7 @@ from core.base.database.point_tally import PointTally
 from core.base.database.statement import Statement
 from engine.errors.read_limit_error import ReadLimitError
 from core.base.journal_home import JournalHome
-from core.base.row_owner import RowOwner
+from engine.row.row_owner import RowOwner
 
 if TYPE_CHECKING:
     from core.base.database.kept_rows import KeptRows

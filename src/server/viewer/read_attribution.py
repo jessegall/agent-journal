@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 from server.viewer.viewer_request_error import ViewerRequestError
 
 

@@ -3,7 +3,7 @@ from typing import NamedTuple
 
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.query.queries import Queries
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent

@@ -4,7 +4,7 @@ import shutil
 
 import pytest
 
-from core.base.actor import CORE_ACTOR_ID, Actor
+from engine.actor.actor import CORE_ACTOR_ID, Actor
 from core.base.command.context import Context
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository

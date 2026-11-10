@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.cli.row_links import RowLinks
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 from core.modules.messages.support.messages_module_name import MESSAGES_MODULE
 from core.modules.messages.models.message import Message
 

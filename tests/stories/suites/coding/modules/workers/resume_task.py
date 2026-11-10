@@ -6,11 +6,11 @@ import shlex
 
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.base.file_access import FileAccess
 from core.base.journal_home import LAUNCHER_SOCKET
-from core.base.json_settings import JsonSettings
+from engine.json.json_settings import JsonSettings
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launcher import AgentLauncher

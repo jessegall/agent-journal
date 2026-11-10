@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.shell_sandbox import ShellSandbox
 from engine.enums.helper_role import HelperRole
 from core.base.command.bus import Bus

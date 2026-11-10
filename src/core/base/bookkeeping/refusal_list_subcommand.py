@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.refusal_log import RefusalLog
 from core.base.recorded_refusal import RecordedRefusal
 from core.base.subcommand.page_arguments import page_arguments

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.page import Page
+from engine.row.page import Page
 from core.modules.processes.models.process_queue_row import ProcessQueueRow
 from core.modules.processes.support.process_queue_json import ProcessQueueJson
 from core.modules.processes.support.queue_inspector_json import QueueInspectorJson

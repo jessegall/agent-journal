@@ -3,7 +3,7 @@ import shlex
 from dataclasses import dataclass, replace
 from datetime import timedelta
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.tool_type import ToolType

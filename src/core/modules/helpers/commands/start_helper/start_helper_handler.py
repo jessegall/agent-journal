@@ -1,7 +1,7 @@
 from uuid import uuid4
 from dataclasses import replace
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.shell_sandbox import ShellSandbox
 from core.base.command.bus import Bus
 from core.base.driver.program_lockdown import ProgramLockdown

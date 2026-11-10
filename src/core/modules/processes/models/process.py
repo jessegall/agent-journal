@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.sandbox_level import SandboxLevel
 from core.base.driver.command_category import CommandCategory
 from core.base.model.environment_scoped import EnvironmentScoped

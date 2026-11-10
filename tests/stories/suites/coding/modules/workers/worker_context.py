@@ -4,7 +4,7 @@ import base64
 import json
 from datetime import timedelta
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from core.testing.hook_samples import HookSamples

@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.base.query.conditions.is_null import IsNull

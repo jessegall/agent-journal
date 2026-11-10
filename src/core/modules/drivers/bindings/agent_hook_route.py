@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.clock import Clock
 from core.base.command.bus import Bus

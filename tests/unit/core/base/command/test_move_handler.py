@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.change.event_pattern import EventPattern
 from core.base.command.handlers.move_handler import MoveHandler
 from core.base.command.move_command import MoveCommand

@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
-from core.base.type_guards import is_tuple
+from engine.types.type_guards import is_tuple
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plan_reviews.support.plan_round import PlanRound
 from core.modules.plan_reviews.support.plan_rounds import PlanRounds

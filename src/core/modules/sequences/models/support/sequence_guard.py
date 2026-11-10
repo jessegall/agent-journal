@@ -4,7 +4,7 @@ from typing import Self
 import re
 
 from engine.errors.refusal import Refusal
-from core.base.type_guards import is_list
+from engine.types.type_guards import is_list
 
 
 ALLOWED_COMMANDS = "allowed_commands"

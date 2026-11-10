@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.provider.context_window import ContextWindow
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 from core.modules.usage.support.plan_window import PlanWindow
 
 WINDOW_TITLES = {"five_hour": "5 hours", "seven_day": "7 days"}

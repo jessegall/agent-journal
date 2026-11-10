@@ -10,7 +10,7 @@ from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_tuple
+from engine.types.type_guards import is_tuple
 from core.modules.agents.models.agent import Agent
 from core.modules.usage.models.agent_counts import AgentCounts
 from core.modules.usage.support.agent_type_limits import AgentTypeLimits

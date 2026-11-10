@@ -1,5 +1,5 @@
 from core.base.change.logged_event import LoggedEvent
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.chat.models.enums.chat_mark_type import ChatMarkType
 from core.modules.chat.models.enums.upgrade_mark_variant import UpgradeMarkVariant

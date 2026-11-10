@@ -1,7 +1,7 @@
 import socket
 import threading
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.modules.agents.commands.bind_agent_session.bind_agent_session import BindAgentSession
 from core.modules.agents.support.terminal_typing import TerminalTyping

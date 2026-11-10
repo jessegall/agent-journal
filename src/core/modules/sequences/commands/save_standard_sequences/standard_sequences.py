@@ -1,6 +1,6 @@
 import json
 
-from core.base.actor import CORE_ACTOR_ID
+from engine.actor.actor import CORE_ACTOR_ID
 from core.modules.sequences.models.sequence import Sequence
 
 PLAIN_WRITING = "Write in the user's own language in plain words. "

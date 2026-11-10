@@ -1,6 +1,6 @@
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.base.change.moved import Moved
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from core.base.change.logged_event import LoggedEvent

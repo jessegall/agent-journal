@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import IO
 
 from core.base.clock import Clock
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_card_answer import PluginCardAnswer
 from core.modules.plugins.support.plugin_card_claim import PluginCardClaim

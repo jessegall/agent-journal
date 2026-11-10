@@ -1,7 +1,7 @@
 import json
 from datetime import timedelta
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.base.driver.block_until import BlockUntil
 from core.base.driver.conditions.ran_command import RanCommand

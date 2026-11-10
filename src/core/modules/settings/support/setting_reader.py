@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from core.base.scope.scopes import Scopes
 from core.modules.settings.support.setting_rows import SettingRows
 from core.base.registry.setting_entry import SettingEntry
-from core.base.type_guards import is_list, is_object_mapping
+from engine.types.type_guards import is_list, is_object_mapping
 from core.base.setting.setting_value import SettingDefault
 from core.modules.settings.models.secret_setting import SecretSetting
 from core.modules.settings.models.setting import Setting

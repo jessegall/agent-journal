@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from engine.enums.agent_role import AgentRole
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_name import HookEventName
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 from server.hook.queue_priority import QueuePriority
 from server.server_context import AGENT_HOOK_LIMIT_SECONDS, HOOK_LIMIT_SECONDS
 

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from core.base.provider.transcript_tail import TranscriptTail
 from core.base.skill.skill_digest import SkillDigest
-from core.base.type_guards import is_list, is_mapping, is_text_mapping
+from engine.types.type_guards import is_list, is_mapping, is_text_mapping
 
 KEPT_SKILLS_TYPE = "invoked_skills"
 COMPACT_BOUNDARY = "compact_boundary"

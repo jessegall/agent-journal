@@ -8,7 +8,7 @@ from core.testing.story_shell_sandbox import StoryShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.testing.story_helper_programs import StoryHelperPrograms
 import pytest
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.usage.support.agent_type_limits import AgentTypeLimits
 from core.modules.agents.support.type_limits import TypeLimits

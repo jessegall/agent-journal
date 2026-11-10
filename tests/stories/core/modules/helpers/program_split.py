@@ -3,7 +3,7 @@ from datetime import timedelta
 
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.start_helper import START, started

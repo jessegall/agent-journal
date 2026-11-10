@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 
 from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_fields import boolean, mapping, number, text
-from core.base.type_guards import is_list
+from engine.types.type_guards import is_list
 
 REQUIRED_KEYS = ("id", "exit_code", "stdout", "stderr", "milliseconds", "timed_out")
 

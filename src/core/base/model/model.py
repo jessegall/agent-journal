@@ -2,13 +2,13 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 from typing import ClassVar, Self
 from core.base.model.event_form import EventForm
-from core.base.metadata import Metadata
+from engine.row.metadata import Metadata
 from core.base.model.added_state import StateValue
 from core.base.model.lifecycle import Lifecycle
 from core.base.model.move import Move
 from core.base.timestamp import Timestamp
 from core.base.model.model_error import ModelError
-from core.base.search_term import SearchTerm
+from engine.text.search_term import SearchTerm
 
 
 STATE = "state"

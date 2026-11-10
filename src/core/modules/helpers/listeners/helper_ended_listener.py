@@ -1,6 +1,6 @@
 from engine.enums.helper_role import HelperRole
 from core.base.change.logged_event import LoggedEvent
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener

@@ -2,7 +2,7 @@ import pytest
 from datetime import timedelta
 from pathlib import Path
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.base.module.module_finder import ModuleFinder
 from core.modules.agents.commands.end_agent.end_agent import EndAgent

@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.base.driver.hook_event_name import HookEventName
 from core.base.timestamp import Timestamp

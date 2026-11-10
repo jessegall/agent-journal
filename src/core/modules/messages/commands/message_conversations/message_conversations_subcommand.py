@@ -8,7 +8,7 @@ from core.base.query.conditions.minimum import Minimum
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.timestamp import Timestamp
-from core.base.type_guards import is_tuple
+from engine.types.type_guards import is_tuple
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES, MessageType
 from core.modules.messages.models.message import Message
 from core.modules.messages.queries.message_query import MessageQuery

@@ -6,7 +6,7 @@ from core.base.query.queries import Queries
 from core.base.query.conditions.among import Among
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_tuple
+from engine.types.type_guards import is_tuple
 from core.modules.documents.models.doc_revision import DocRevision
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent

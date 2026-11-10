@@ -8,7 +8,7 @@ from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import STATE, Model
 from core.base.model.state_book import StateBook
 from core.base.model.table import Table
-from core.base.page import Page, is_page
+from engine.row.page import Page, is_page
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.less import Less
 from core.base.query.queries import Queries

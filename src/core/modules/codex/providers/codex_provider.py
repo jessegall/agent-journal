@@ -33,7 +33,7 @@ from core.base.driver.refusal_style import RefusalStyle
 from core.base.provider.transcript_author import JOURNAL_AUTHOR, TRANSCRIPT_AUTHORS, TranscriptAuthor
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.provider.transcript_tail import TranscriptTail
-from core.base.type_guards import is_list, is_mapping
+from engine.types.type_guards import is_list, is_mapping
 from core.base.private.server_keys import ServerKeys
 from core.modules.codex.providers.support.codex_token_count import CodexTokenCount
 from core.modules.codex.providers.support.codex_session_effort import CodexSessionEffort

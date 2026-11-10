@@ -1,4 +1,4 @@
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.query.conditions.among import Among
 from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.support.queue_run_workers import QueueRunWorkers

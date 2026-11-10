@@ -14,7 +14,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.prefix import Prefix
 from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
-from core.base.type_guards import is_list, is_mapping
+from engine.types.type_guards import is_list, is_mapping
 from core.modules.pins.commands.make_pin.make_pin import MakePin
 from core.modules.pins.models.pin import Pin
 from core.modules.pins.support.pin_nudges import BANG_BUTTON_REQUEST, LINK_PIN_REQUEST, UNPINNED_CLAIM

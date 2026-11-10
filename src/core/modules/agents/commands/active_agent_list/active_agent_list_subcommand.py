@@ -2,7 +2,7 @@ from core.modules.agents.support.agent_rows import RUNNING_AGENTS_REASON
 from argparse import Namespace
 
 from core.base.caller.caller import Caller
-from core.base.page import Page, is_page
+from engine.row.page import Page, is_page
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent

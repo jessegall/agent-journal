@@ -9,7 +9,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_tuple
+from engine.types.type_guards import is_tuple
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_problem import ProfileProblem
 from core.modules.usage.models.statistic import Statistic

@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from core.base.metadata import Metadata
+from engine.row.metadata import Metadata
 
 
 class SandboxedAgent(Protocol):

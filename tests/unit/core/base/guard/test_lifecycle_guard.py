@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.change.event_pattern import EventPattern
@@ -18,7 +18,7 @@ from core.base.model.move import Move
 from core.base.model.state_book import StateBook
 from core.base.model.unknown_state_error import UnknownStateError
 from core.base.guard.guard_refusal import GuardRefusal
-from core.base.metadata import Metadata
+from engine.row.metadata import Metadata
 from core.base.model.model import Model
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry

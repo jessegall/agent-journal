@@ -1,7 +1,7 @@
 from core.modules.agents.support.agent_conversations import AgentConversations
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.process_row import ProcessRow
 from core.base.driver.command_category import CommandCategory

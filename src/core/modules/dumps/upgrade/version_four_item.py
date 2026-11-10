@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.type_guards import is_list, is_mapping
+from engine.types.type_guards import is_list, is_mapping
 from core.modules.dumps.models.enums.item_state import ItemState
 
 

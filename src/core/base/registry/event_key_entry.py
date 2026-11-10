@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from core.base.model.event_form import EventForm
 from core.base.model.table import indefinite_article
-from core.base.type_guards import is_list
+from engine.types.type_guards import is_list
 
 MODULE_NAME_PREFIX = "journal."
 CHANGE_EVENT_SUFFIXES = {"create": "created", "update": "updated", "delete": "deleted"}

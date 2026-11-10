@@ -1,4 +1,4 @@
-from core.base.actor import CORE_ACTOR_ID
+from engine.actor.actor import CORE_ACTOR_ID
 from core.base.caller.caller_request import CallerRequest
 from core.base.cli.console import REFUSED_CODE, USAGE_CODE
 from core.base.caller.process_row import ProcessRow

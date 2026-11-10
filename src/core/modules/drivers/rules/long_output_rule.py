@@ -3,7 +3,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 from core.modules.drivers.support.driver_nudges import LONG_OUTPUT
 
 LONG_OUTPUT_LINE_COUNT = 400

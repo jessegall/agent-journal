@@ -8,7 +8,7 @@ from typing import NamedTuple
 import pytest
 
 from core.base.caller.caller_request import CallerRequest, SESSION_VARIABLE
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.base.journal_home import LAUNCHER_SOCKET

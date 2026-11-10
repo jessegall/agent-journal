@@ -1,6 +1,6 @@
 import shlex
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.query.queries import Queries
 from core.modules.templates.models.template import Template
 from core.testing.story_fixture import StoryFixture

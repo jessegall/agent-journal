@@ -2,7 +2,7 @@ import json
 import re
 
 from core.base.provider.peer_note import PeerNote
-from core.base.type_guards import is_mapping
+from engine.types.type_guards import is_mapping
 from core.modules.claude_code.providers.support.claude_inbox import ENVELOPE
 
 QUEUE_ROW = "queue-operation"

@@ -4,7 +4,7 @@ from core.base.caller.caller import Caller
 from core.base.journal_home import JournalHome
 from core.base.provider.transcript_tail import TranscriptTail
 from core.base.query.queries import Queries
-from core.base.page import Page
+from engine.row.page import Page
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.commands.support.terminal_line import TerminalLine
 from core.modules.agents.models.agent import Agent

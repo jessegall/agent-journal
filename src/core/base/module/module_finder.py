@@ -11,7 +11,7 @@ from core.base.module.module import Module
 from core.base.module.module_error import ModuleError
 from core.base.module.version_requirement import VersionRequirement
 from core.base.version import CORE_VERSION
-from core.base.type_guards import is_list, is_tuple
+from engine.types.type_guards import is_list, is_tuple
 
 DEFAULT_MODULE_LISTS = [DottedPath("core.modules:DEFAULT_MODULES"), DottedPath("suites:DEFAULT_SUITES"), DottedPath("tunnels:DEFAULT_TUNNELS")]
 

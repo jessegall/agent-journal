@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from core.base.database.statement import Statement
-from core.base.search_term import SearchTerm
+from engine.text.search_term import SearchTerm
 
 
 @dataclass(frozen=True)

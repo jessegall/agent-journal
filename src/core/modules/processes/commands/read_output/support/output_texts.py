@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.errors.refusal import Refusal
 from core.modules.processes.commands.read_output.read_output import ReadOutput
 from core.modules.processes.models.enums.output_state import OutputState

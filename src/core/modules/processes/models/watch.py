@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 from core.modules.processes.models.enums.watch_state import WatchState

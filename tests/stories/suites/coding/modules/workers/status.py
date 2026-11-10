@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples

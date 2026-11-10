@@ -1,6 +1,6 @@
 from urllib.parse import urlsplit
 
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.modules.phone.commands.ensure_push_keys.ensure_push_keys import EnsurePushKeys

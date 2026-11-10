@@ -3,7 +3,7 @@ from typing import ClassVar
 
 from core.base.database.database import READ_LIMIT_ROWS
 from core.base.caller.caller import Caller
-from core.base.page import Page, is_page
+from engine.row.page import Page, is_page
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand

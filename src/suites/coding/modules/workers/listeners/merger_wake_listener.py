@@ -1,4 +1,4 @@
-from core.base.actor import Actor
+from engine.actor.actor import Actor
 from core.base.change.logged_event import LoggedEvent
 from core.base.change.created import Created
 from core.base.command.bus import Bus
