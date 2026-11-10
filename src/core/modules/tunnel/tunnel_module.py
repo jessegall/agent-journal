@@ -5,9 +5,9 @@ from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from core.modules.tunnel.commands.tunnel_status.tunnel_status_subcommand import TunnelStatusSubcommand
 from core.base.module.module import Module
-from core.base.setting.setting_scope import SettingScope
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
+from engine.setting.setting_scope import SettingScope
+from engine.setting.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
 from core.modules.tunnel.guards.tunnel_service_guard import TunnelServiceGuard
 from core.modules.tunnel.support.no_tunnel import NoTunnel
 from core.modules.tunnel.support.skeletons import TUNNEL_TUNNEL_SKELETON

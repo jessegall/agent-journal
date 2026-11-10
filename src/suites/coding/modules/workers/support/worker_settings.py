@@ -1,10 +1,10 @@
-from core.base.setting.ruled_settings import ruled_settings
-from core.base.setting.setting_scope import SettingScope
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
+from engine.setting.ruled_settings import ruled_settings
+from engine.setting.setting_scope import SettingScope
+from engine.setting.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
 from core.modules.helpers.support.command_pair_rule import CommandPairRule
-from core.base.setting.list_rule import ListRule
-from core.base.setting.number_rule import NumberRule
+from engine.setting.list_rule import ListRule
+from engine.setting.number_rule import NumberRule
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 MODULE_KEY = "journal.suites.coding.workers"

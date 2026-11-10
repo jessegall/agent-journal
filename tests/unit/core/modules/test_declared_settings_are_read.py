@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from core.base.registry.setting_tree import SettingTree
-from core.base.setting.setting_declaration import GROUP_TYPE, REFERENCE_TYPE
+from engine.setting.setting_declaration import GROUP_TYPE, REFERENCE_TYPE
 from core.modules import DEFAULT_MODULES
 from suites import DEFAULT_SUITES
 from tests.unit.source_tree import source_tree

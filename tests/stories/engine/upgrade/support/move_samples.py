@@ -6,8 +6,8 @@ from core.base.database.migration import Migration
 from engine.model.model import Model
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
+from engine.setting.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from engine.upgrade.move_context import MoveContext

@@ -1,9 +1,9 @@
 from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
-from core.base.setting.setting_group import SettingGroup
-from core.base.setting.setting_scope import SettingScope
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
+from engine.setting.setting_group import SettingGroup
+from engine.setting.setting_scope import SettingScope
+from engine.setting.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
 
 MODULE_KEY = "journal.core.viewer"
 WINDOW_SETTINGS = f"{MODULE_KEY}.window."

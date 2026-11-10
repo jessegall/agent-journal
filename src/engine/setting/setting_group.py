@@ -1,12 +1,12 @@
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field, replace
 
-from core.base.setting.setting_declaration import ANY_KEY, GROUP_TYPE, SettingDeclaration
-from core.base.setting.setting_node import SettingNode
-from core.base.setting.setting_limits import length_problems
-from core.base.setting.setting_reference import SettingReference
-from core.base.setting.setting_scope import SettingScope
-from core.base.setting.setting_value import SettingValue
+from engine.setting.setting_declaration import ANY_KEY, GROUP_TYPE, SettingDeclaration
+from engine.setting.setting_node import SettingNode
+from engine.setting.setting_limits import length_problems
+from engine.setting.setting_reference import SettingReference
+from engine.setting.setting_scope import SettingScope
+from engine.setting.setting_value import SettingValue
 
 
 @dataclass(frozen=True)

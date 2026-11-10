@@ -29,8 +29,8 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
+from engine.setting.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart

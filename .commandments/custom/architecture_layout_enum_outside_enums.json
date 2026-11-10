@@ -101,10 +101,10 @@
                 "file": "src/core/base/registry/listener_timing.py"
             },
             {
-                "file": "src/core/base/setting/setting_scope.py"
+                "file": "src/engine/setting/setting_scope.py"
             },
             {
-                "file": "src/core/base/setting/setting_type.py"
+                "file": "src/engine/setting/setting_type.py"
             },
             {
                 "file": "src/engine/tunnel/tunnel_state.py"

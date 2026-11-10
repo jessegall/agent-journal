@@ -1,8 +1,8 @@
 from enum import Enum
 
-from core.base.setting.setting_scope import SettingScope
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
+from engine.setting.setting_scope import SettingScope
+from engine.setting.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
 
 
 MODULE_KEY = "journal.core.updates"

@@ -1,5 +1,5 @@
 from core.base.module.module_removal import ModuleRemoval
-from tests.stories.core.base.setting.support.setting_samples import PATH
+from tests.stories.engine.setting.support.setting_samples import PATH
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value, expect_value_with, expect_value_without
 

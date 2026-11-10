@@ -3,7 +3,7 @@ from collections.abc import Sequence
 
 from engine.scope.scopes import Scopes
 from core.base.registry.setting_entry import SettingEntry
-from core.base.setting.setting_declaration import ANY_KEY
+from engine.setting.setting_declaration import ANY_KEY
 from core.modules.settings.models.secret_setting import SecretSetting
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.setting_rows import SettingRows

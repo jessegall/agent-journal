@@ -23,9 +23,9 @@ from core.modules.phone.guards.phone_row_guard import PhoneRowGuard
 from core.modules.phone.guards.phone_code_row_guard import PhoneCodeRowGuard
 from core.modules.phone.upgrade.phone_move import PhoneMove
 from core.modules.phone.seeders.phone_seeder import PhoneSeeder
-from core.base.setting.setting_scope import SettingScope
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
+from engine.setting.setting_scope import SettingScope
+from engine.setting.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
 from core.modules.phone.commands.ensure_push_keys.ensure_push_keys_handler import EnsurePushKeysHandler
 from core.modules.phone.commands.ensure_push_keys.ensure_push_keys_subcommand import EnsurePushKeysSubcommand
 from core.modules.phone.commands.subscribe_phone.subscribe_phone_handler import SubscribePhoneHandler

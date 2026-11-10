@@ -1,7 +1,7 @@
 from collections.abc import Iterator, Sequence
 from typing import Protocol
 
-from core.base.setting.setting_declaration import SettingDeclaration
+from engine.setting.setting_declaration import SettingDeclaration
 
 
 class SettingNode(Protocol):

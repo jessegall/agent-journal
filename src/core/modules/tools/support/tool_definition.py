@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.setting.setting_group import SettingGroup
+from engine.setting.setting_group import SettingGroup
 from core.modules.tools.support.tool_setting import MODULE_KEY
 
 

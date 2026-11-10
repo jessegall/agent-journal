@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from core.base.registry.setting_entry import SettingEntry
-from core.base.setting.setting_scope import SettingScope
+from engine.setting.setting_scope import SettingScope
 from core.modules.settings.commands.set_setting.set_setting import SetSetting
 from core.modules.settings.commands.support.setting_store import SettingStore
 from core.modules.settings.support.setting_catalogue import SettingCatalogue

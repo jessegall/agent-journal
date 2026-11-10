@@ -1,7 +1,7 @@
-from core.base.setting.setting_group import SettingGroup
-from core.base.setting.setting_scope import SettingScope
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
+from engine.setting.setting_group import SettingGroup
+from engine.setting.setting_scope import SettingScope
+from engine.setting.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
 
 
 def test_a_value_is_set_by_the_user_alone_in_both_scopes_unless_it_says_otherwise():

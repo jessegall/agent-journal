@@ -1,8 +1,8 @@
 from core.base.listener.event_rows import EventRows
 from core.base.registry.registry import Registry
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
+from engine.setting.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
 
 MODULE_KEY = "journal.core.docking"
 MOST_ITEMS_SETTING = f"{MODULE_KEY}.most-items"

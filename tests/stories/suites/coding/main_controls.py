@@ -1,7 +1,7 @@
 import json
 import shlex
 
-from core.base.setting.setting_scope import SettingScope
+from engine.setting.setting_scope import SettingScope
 from core.modules.helpers.support.agent_field_options import AgentFieldOptions
 from core.modules.helpers.support.agent_options_value import AgentOptionsValue
 from core.modules.helpers.support.helper_settings import AGENT_OPTIONS

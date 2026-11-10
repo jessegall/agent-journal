@@ -1,8 +1,8 @@
-from core.base.setting.ruled_settings import ruled_settings
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
-from core.base.setting.list_rule import ListRule
-from core.base.setting.number_rule import NumberRule
+from engine.setting.ruled_settings import ruled_settings
+from engine.setting.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
+from engine.setting.list_rule import ListRule
+from engine.setting.number_rule import NumberRule
 
 from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 

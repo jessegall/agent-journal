@@ -2,7 +2,7 @@ import json
 
 from engine.errors.refusal import Refusal
 from core.base.registry.setting_entry import SettingEntry
-from core.base.setting.setting_type import SettingType
+from engine.setting.setting_type import SettingType
 from engine.types.type_guards import is_text_list
 
 JSON_LIST_START = "["

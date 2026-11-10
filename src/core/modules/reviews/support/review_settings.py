@@ -1,5 +1,5 @@
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
+from engine.setting.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 MODULE_KEY = "journal.core.reviews"

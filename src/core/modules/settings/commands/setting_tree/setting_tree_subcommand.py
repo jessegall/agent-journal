@@ -3,7 +3,7 @@ from collections.abc import Sequence
 
 from engine.caller.caller import Caller
 from core.base.registry.setting_entry import SettingEntry
-from core.base.setting.setting_declaration import ANY_KEY, GROUP_TYPE, REFERENCE_TYPE
+from engine.setting.setting_declaration import ANY_KEY, GROUP_TYPE, REFERENCE_TYPE
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple

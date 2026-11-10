@@ -1,7 +1,7 @@
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
+from engine.setting.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
 
 MODULE_KEY = "journal.core.skills"
 SESSION_START_KEY = f"{MODULE_KEY}.session-start"

@@ -2,8 +2,8 @@ import json
 from collections.abc import Iterator
 from dataclasses import asdict
 
-from core.base.setting.list_rule import ListRule
-from core.base.setting.setting_rule import RULE_NAME, RULE_TYPES, SettingRule
+from engine.setting.list_rule import ListRule
+from engine.setting.setting_rule import RULE_NAME, RULE_TYPES, SettingRule
 
 
 class SettingRuleText:

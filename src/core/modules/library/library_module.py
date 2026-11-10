@@ -10,9 +10,9 @@ from core.base.library.library_lookup import LibraryLookup
 from core.modules.library.support.server_library_lookup import ServerLibraryLookup
 from core.base.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from core.base.module.module import Module
-from core.base.setting.setting_scope import SettingScope
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
+from engine.setting.setting_scope import SettingScope
+from engine.setting.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
 from core.modules.library.commands.pair_library.pair_library_handler import PairLibraryHandler
 from core.modules.library.commands.pair_library.pair_library_subcommand import PairLibrarySubcommand
 from core.modules.library.commands.unpair_library.unpair_library_handler import UnpairLibraryHandler

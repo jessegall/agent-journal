@@ -1,4 +1,4 @@
-from core.base.setting.setting_declaration import GROUP_TYPE
+from engine.setting.setting_declaration import GROUP_TYPE
 from core.base.subcommand.output import Output
 from engine.types.type_guards import is_list, is_tuple
 from core.modules.settings.support.current_setting import CurrentSetting

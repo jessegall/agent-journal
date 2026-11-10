@@ -1,6 +1,6 @@
-from core.base.setting.setting_scope import SettingScope
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
+from engine.setting.setting_scope import SettingScope
+from engine.setting.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
 
 MODULE_KEY = "journal.core.profiles"
 CLAUDE_MODEL_SETTING = f"{MODULE_KEY}.model-claude"

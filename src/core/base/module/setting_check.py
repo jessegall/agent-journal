@@ -2,8 +2,8 @@ from collections.abc import Iterator, Sequence
 
 from core.base.module.module import Module
 from core.base.registry.setting_entry import SettingEntry
-from core.base.setting.setting_declaration import GROUP_TYPE, REFERENCE_TYPE
-from core.base.setting.setting_node import SettingNode
+from engine.setting.setting_declaration import GROUP_TYPE, REFERENCE_TYPE
+from engine.setting.setting_node import SettingNode
 from core.base.registry.setting_tree import SettingTree
 
 

@@ -1,11 +1,11 @@
 from core.base.module.module import Module
-from core.base.setting.setting_group import SettingGroup
-from core.base.setting.setting_reference import SettingReference
-from core.base.setting.setting_scope import SettingScope
-from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingValue
+from engine.setting.setting_group import SettingGroup
+from engine.setting.setting_reference import SettingReference
+from engine.setting.setting_scope import SettingScope
+from engine.setting.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
 
-PATH = "tests.stories.core.base.setting.support.setting_samples"
+PATH = "tests.stories.engine.setting.support.setting_samples"
 TUNNEL = SettingGroup("tunnel", "Tunnel", "How a phone reaches this computer from outside.", toggleable=True, children=[
     SettingValue("address", "Address", "The address of the tunnel service.", SettingType.TEXT, default="https://tunnel.example.com", scope=SettingScope.PROJECT),
     SettingValue("token", "Token", "The token the tunnel service gave you.", SettingType.TEXT, secret=True, scope=SettingScope.PROJECT),

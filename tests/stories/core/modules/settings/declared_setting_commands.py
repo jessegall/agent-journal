@@ -1,4 +1,4 @@
-from tests.stories.core.base.setting.support.setting_samples import PATH
+from tests.stories.engine.setting.support.setting_samples import PATH
 from tests.stories.core.support.fixtures import UserJoined
 
 ADDRESS = "good.sharing.tunnel.address"
