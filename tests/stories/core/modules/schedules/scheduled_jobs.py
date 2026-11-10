@@ -66,10 +66,12 @@ def test_an_agent_stops_a_job(new_story):
     story.expect_success("scheduled-job stop 1", actor=story.agent)
 
 
-def test_an_agents_end_ends_its_jobs(new_story):
+def test_an_ended_agent_lists_no_jobs_and_lists_them_again_once_its_session_resumes(new_story):
     story = new_story(fixture=ScheduledBuildJob)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
     story.expect_absent(running(story), JOB)
+    story.hook("s-1", HookSamples.session_start())
+    story.expect_text(running(story), JOB)
 
 
 def test_a_repeating_job_lapses_after_seven_days_and_a_single_one_does_not(new_story):

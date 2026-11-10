@@ -77,7 +77,7 @@ const N = (e, k) => {
       t("span", null, null, -1)
     ])], 10, qe));
   }
-}, re = /* @__PURE__ */ N(Se, [["__scopeId", "data-v-ee9d0e40"]]), xe = ["data-skill"], Ce = ["aria-label"], Te = { class: "name-line" }, Re = {
+}, re = /* @__PURE__ */ N(Se, [["__scopeId", "data-v-37017fe1"]]), xe = ["data-skill"], Ce = ["aria-label"], Te = { class: "name-line" }, Re = {
   key: 0,
   class: "read-dot",
   title: "Read by the main agent"
@@ -127,7 +127,7 @@ const N = (e, k) => {
       }, null, 8, ["folder", "required", "busy"])
     ], 10, xe));
   }
-}, Z = /* @__PURE__ */ N(Ie, [["__scopeId", "data-v-031ec345"]]), Le = { class: "skill-group" }, je = ["aria-expanded"], Ee = ["aria-expanded", "onClick"], We = 3, Ne = {
+}, Z = /* @__PURE__ */ N(Ie, [["__scopeId", "data-v-33ddf837"]]), Le = { class: "skill-group" }, je = ["aria-expanded"], Ee = ["aria-expanded", "onClick"], We = 3, Ne = {
   __name: "SkillListGroup",
   props: { title: { type: String, required: !0 }, skills: { type: Array, required: !0 }, opened: { type: String, default: "" }, busy: { type: Array, default: () => [] }, searching: Boolean },
   emits: ["open", "require"],
@@ -182,7 +182,7 @@ const N = (e, k) => {
       ], 64)) : S("", !0)
     ]));
   }
-}, Ve = /* @__PURE__ */ N(Ne, [["__scopeId", "data-v-968fab13"]]), Be = {
+}, Ve = /* @__PURE__ */ N(Ne, [["__scopeId", "data-v-96419d71"]]), Be = {
   class: "skills-list",
   "data-skills-catalogue": ""
 }, Me = { class: "filters" }, Fe = ["aria-pressed", "onClick"], Pe = { class: "skill-list-scroll" }, Ue = {
@@ -243,7 +243,7 @@ const N = (e, k) => {
       ])
     ]));
   }
-}, Ge = /* @__PURE__ */ N(De, [["__scopeId", "data-v-093ffe0e"]]), oe = (e) => String(e || "").replace(/^---\n[\s\S]*?\n---\n+/, ""), He = { class: "requirements" }, Ke = { class: "block-head" }, Ye = { class: "switch-label" }, ze = {
+}, Ge = /* @__PURE__ */ N(De, [["__scopeId", "data-v-bcdb5e6a"]]), oe = (e) => String(e || "").replace(/^---\n[\s\S]*?\n---\n+/, ""), He = { class: "requirements" }, Ke = { class: "block-head" }, Ye = { class: "switch-label" }, ze = {
   key: 0,
   class: "choices"
 }, Je = ["value", "disabled"], Qe = { key: 0 }, Xe = {
@@ -300,7 +300,7 @@ const N = (e, k) => {
       ])) : S("", !0)
     ]));
   }
-}, et = /* @__PURE__ */ N(_e, [["__scopeId", "data-v-7c679e99"]]), tt = [
+}, et = /* @__PURE__ */ N(_e, [["__scopeId", "data-v-87c0e195"]]), tt = [
   { key: "nudge", value: "nudge", label: "Remind the agent", hint: "A short note only the agent sees. It carries on with its work.", ask: "What to remind the agent of", example: "Add the change to src/CHANGELOG.md in plain words." },
   { key: "instruct", value: "instruct", label: "Tell the agent to do something now", hint: "The agent sees “Do this now:” followed by your text.", ask: "What the agent should do", example: "Stop and ask me before you touch the database." },
   { key: "deny", value: "deny", label: "Block a command or file change", hint: "The command or file change is refused, and the agent is given your reason.", ask: "Reason the agent is given", example: "Never force-push. Ask me first." },
@@ -380,7 +380,7 @@ const ot = {
       ])
     ], 2));
   }
-}, ue = /* @__PURE__ */ N(kt, [["__scopeId", "data-v-8f3251db"]]), mt = { class: "tiles" }, ht = ["onClick"], vt = {
+}, ue = /* @__PURE__ */ N(kt, [["__scopeId", "data-v-a8b11e7d"]]), mt = { class: "tiles" }, ht = ["onClick"], vt = {
   __name: "TriggerTiles",
   props: /* @__PURE__ */ J({ options: { type: Array, required: !0 }, mark: { type: String, required: !0 } }, {
     modelValue: { type: String, required: !0 },
@@ -402,7 +402,7 @@ const ot = {
       ], 16, ht))), 128))
     ]));
   }
-}, yt = /* @__PURE__ */ N(vt, [["__scopeId", "data-v-eb4da38d"]]), pt = { class: "words" }, ft = ["aria-label", "onClick"], bt = ["onKeydown"], $t = {
+}, yt = /* @__PURE__ */ N(vt, [["__scopeId", "data-v-e5657c19"]]), pt = { class: "words" }, ft = ["aria-label", "onClick"], bt = ["onKeydown"], $t = {
   __name: "WatchedWords",
   props: { words: { type: Array, required: !0 } },
   emits: ["words"],
@@ -444,7 +444,7 @@ const ot = {
       ])
     ]));
   }
-}, wt = /* @__PURE__ */ N($t, [["__scopeId", "data-v-7a597156"]]), qt = { class: "field" }, St = { class: "field" }, xt = ["checked", "data-trigger-place", "onChange"], Ct = { class: "field" }, Tt = {
+}, wt = /* @__PURE__ */ N($t, [["__scopeId", "data-v-740e8b19"]]), qt = { class: "field" }, St = { class: "field" }, xt = ["checked", "data-trigger-place", "onChange"], Ct = { class: "field" }, Tt = {
   key: 0,
   class: "pattern-limit",
   "data-trigger-pattern-limit": ""
@@ -496,7 +496,7 @@ const ot = {
       ])
     ], 64));
   }
-}, At = /* @__PURE__ */ N(Rt, [["__scopeId", "data-v-2e25b9b9"]]), Ot = { class: "block" }, It = {
+}, At = /* @__PURE__ */ N(Rt, [["__scopeId", "data-v-3eabab54"]]), Ot = { class: "block" }, It = {
   key: 0,
   class: "field"
 }, Lt = { class: "label" }, jt = {
@@ -550,7 +550,7 @@ const ot = {
       })
     ]));
   }
-}, Vt = /* @__PURE__ */ N(Nt, [["__scopeId", "data-v-1a787719"]]), Bt = {
+}, Vt = /* @__PURE__ */ N(Nt, [["__scopeId", "data-v-cec179d6"]]), Bt = {
   __name: "TriggerConditionFields",
   props: {
     modelValue: { type: Array, required: !0 },
@@ -704,7 +704,7 @@ const ot = {
       ])
     ], 32));
   }
-}, ce = /* @__PURE__ */ N(Xt, [["__scopeId", "data-v-272d3d66"]]), Zt = { class: "skill-details" }, _t = { class: "status" }, el = { class: "block" }, tl = { class: "block-head" }, ll = {
+}, ce = /* @__PURE__ */ N(Xt, [["__scopeId", "data-v-f829b85c"]]), Zt = { class: "skill-details" }, _t = { class: "status" }, el = { class: "block" }, tl = { class: "block-head" }, ll = {
   key: 0,
   class: "help"
 }, sl = {
@@ -825,7 +825,7 @@ const ot = {
       ]);
     };
   }
-}, kl = /* @__PURE__ */ N(gl, [["__scopeId", "data-v-4f1bf52d"]]), ml = { class: "skills" }, hl = { class: "skills-title" }, vl = {
+}, kl = /* @__PURE__ */ N(gl, [["__scopeId", "data-v-bcda4c9c"]]), ml = { class: "skills" }, hl = { class: "skills-title" }, vl = {
   class: "skills-text",
   "data-skill-text": ""
 }, yl = {
@@ -850,7 +850,7 @@ const ot = {
       ])
     ]));
   }
-}, pl = /* @__PURE__ */ N(yl, [["__scopeId", "data-v-d6cfa5ab"]]), fl = { class: "page-head" }, bl = { "aria-label": "Skills views" }, $l = ["aria-pressed"], wl = ["aria-pressed"], ql = {
+}, pl = /* @__PURE__ */ N(yl, [["__scopeId", "data-v-916542ad"]]), fl = { class: "page-head" }, bl = { "aria-label": "Skills views" }, $l = ["aria-pressed"], wl = ["aria-pressed"], ql = {
   key: 0,
   class: "warning",
   role: "status"
@@ -1020,7 +1020,7 @@ const ot = {
       _: 1
     }));
   }
-}, Fl = /* @__PURE__ */ N(Vl, [["__scopeId", "data-v-d59c26e6"]]);
+}, Fl = /* @__PURE__ */ N(Vl, [["__scopeId", "data-v-292001d8"]]);
 export {
   Fl as S
 };

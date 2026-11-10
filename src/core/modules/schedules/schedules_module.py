@@ -16,7 +16,6 @@ from core.modules.schedules.commands.record_scheduled_job_run.record_scheduled_j
 from core.modules.schedules.commands.scheduled_job_state.scheduled_job_state_subcommand import ScheduledJobStateSubcommand
 from core.modules.schedules.commands.stop_scheduled_job.stop_scheduled_job_handler import StopScheduledJobHandler
 from core.modules.schedules.commands.stop_scheduled_job.stop_scheduled_job_subcommand import StopScheduledJobSubcommand
-from core.modules.schedules.listeners.ended_agent_jobs_listener import EndedAgentJobsListener
 from core.modules.schedules.listeners.job_run_mark_listener import JobRunMarkListener
 from core.modules.schedules.migrations.m003_job_run_time import JobRunTimeMigration
 from core.modules.schedules.migrations.m001_scheduled_jobs import ScheduledJobsTableMigration
@@ -43,7 +42,7 @@ class SchedulesModule(Module):
     handlers = [RecordScheduledJobHandler, RecordScheduledJobRunHandler, EndScheduledJobHandler, StopScheduledJobHandler]
     subcommands = [ScheduledJobStateSubcommand, StopScheduledJobSubcommand]
     driver_rules = [ScheduledJobRule, ScheduledJobRunRule]
-    listeners = [EndedAgentJobsListener, JobRunMarkListener]
+    listeners = [JobRunMarkListener]
     marks = SCHEDULE_MARKS
     windows = [WindowDeclaration("schedules.jobs", "Scheduled jobs", "jobs.js", WindowLoading.COMPONENT, skeleton=SCHEDULES_JOBS_SKELETON, icon=WindowIcon.WINDOW, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT,
                                  reads=["scheduled-job running"], runs=["scheduled-job stop"], events=["scheduled_job.*"],

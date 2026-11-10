@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, WindowRoom, useRunLine, useWindow} from "@journal/window-kit";
+import {Btn, TextInput, WindowRoom, useRunLine, useWindow} from "@journal/window-kit";
 
 // the plan allowance as version 4's usage menu drew it: a meter for each window of the plan, with when it starts again;
 // a window used up in full says the agents wait at the usage limit until then
@@ -12,7 +12,7 @@ const limits = computed(() => view.props.limits?.rows?.value ?? []);
 const program = computed(() => usage.value?.agents?.[0]?.program ?? "claude");
 const kind = ref("5 hours");
 const mode = ref("fixed");
-const percent = ref(50);
+const percent = ref("50");
 const {refusal: limitFailure, run} = useRunLine(() => view.reload("limits"));
 
 async function setLimit() {
@@ -46,7 +46,7 @@ const reset = (seconds) => `Starts again ${new Date(seconds * 1000).toLocaleStri
             <p class="current">Stop the agents at your own limit</p>
             <select v-model="kind" aria-label="Window the limit counts"><option>5 hours</option><option>7 days</option><option>hour</option></select>
             <select v-model="mode" aria-label="Type of limit"><option value="fixed">halt at</option><option value="budget">halt after more than</option></select>
-            <input v-model="percent" type="number" min="1" max="100" aria-label="Percent of the window">
+            <TextInput v-model="percent" class="percent" type="number" min="1" max="100" aria-label="Percent of the window" />
             <Btn small @click="setLimit">Set limit</Btn>
             <template v-if="limitFailure">
               <p class="none" data-usage-limit-failure>{{ limitFailure }}</p>
@@ -110,9 +110,16 @@ const reset = (seconds) => `Starts again ${new Date(seconds * 1000).toLocaleStri
 
 .limit-form {
     display: grid;
-    grid-template-columns: 1fr 1fr 5em auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 64px auto;
     gap: 6px;
     padding: 8px 0;
+}
+
+.limit-form select,
+.limit-form .percent {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
 }
 
 .limit-form .current {

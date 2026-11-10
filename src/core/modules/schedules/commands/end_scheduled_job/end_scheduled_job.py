@@ -5,8 +5,7 @@ from engine.command.command import Command
 
 @dataclass(frozen=True)
 class EndScheduledJob(Command[int]):
-    """An agent's program deleted a job; no job id ends every job of the agent, whose program holds them only
-    while it runs."""
+    """An agent's program deleted a job."""
 
     agent_id: int
-    job_id: str | None
+    job_id: str
