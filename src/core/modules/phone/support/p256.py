@@ -1,6 +1,6 @@
 import hashlib
 
-from core.modules.phone.support.infinite_point_error import InfinitePointError
+from core.modules.phone.errors.infinite_point_error import InfinitePointError
 
 Point = tuple[int, int]
 P = 0xFFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF
