@@ -7,8 +7,8 @@ from core.modules.messages.commands.record_parent_report.record_parent_report im
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
-from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import install_runner
+from tests.stories.core.modules.agents.support.numbered_agents import TwoEnvironments, listed, started_worker, worker_of
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.suites.coding.drivers.worker.worker_driver import WORKER_SESSION, WorkingAgent
@@ -20,19 +20,6 @@ NUMBER_REFUSAL = "numbers are only given"
 
 def shown(story: Story, agent_id: int, actor: Actor | None = None) -> dict:
     return json.loads(story.run(f"agent show {agent_id} --json", actor=actor or story.user).output_text)
-
-
-def listed(story: Story, environment: str = "main") -> dict[int, dict]:
-    rows = json.loads(story.run(f"agent list --environment {environment} --json", actor=story.user).output_text)["rows"]
-    return {row["id"]: row for row in rows}
-
-
-def worker_of(story: Story, environment: str) -> int:
-    return next(agent_id for agent_id, row in listed(story, environment).items() if row["role"] == "worker")
-
-
-def started_worker(story: Story, session: str, environment: str, parent_id: int) -> int:
-    return story.new_row_id(f"agent start {session} claude worker --parent {parent_id} --environment {environment}")
 
 
 def test_a_main_agent_reads_a_workers_report_by_the_workers_number_not_its_row_id(new_story):
@@ -77,22 +64,6 @@ def test_an_agent_changing_its_own_number_is_refused_and_nothing_is_written(new_
     story.expect_refusal(f"agent edit {worker.id} --number 1", NUMBER_REFUSAL, actor=worker)
     story.expect_refusal(f"agent edit {story.agent.id} --number 9", NUMBER_REFUSAL, actor=story.agent)
     story.expect_rows(shown(story, worker.id)["number"] == 2, shown(story, story.agent.id)["number"] == 1)
-
-
-class TwoEnvironments(StoryFixture):
-    """Main has its main agent, number 1, and a worker, number 2; shop has its own main, number 1, and
-    worker, number 2."""
-
-    parent = UserBuilder
-
-    def steps(self, story: Story) -> None:
-        story.run("environment make shop /work/shop")
-        started_worker(story, "s-2", "main", story.agent.id)
-        shop_main_id = story.new_row_id("agent start s-3 claude main --environment shop")
-        started_worker(story, "s-4", "shop", shop_main_id)
-
-    def expect(self, story: Story) -> None:
-        story.expect_success("environment show 2", "name: shop")
 
 
 def test_agent_two_in_a_message_links_to_agent_two_of_the_messages_environment(new_story):
