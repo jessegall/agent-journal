@@ -27,7 +27,7 @@ try {
         assert.ok(sizes.body >= 600 && sizes.pane > 500, JSON.stringify(sizes));
         assert.ok(sizes.scroll > sizes.pane, JSON.stringify(sizes));
         assert.ok(sizes.outer <= sizes.height + 2, JSON.stringify(sizes));
-        await card.getByRole("button", {name: "Back to the list"}).click();
+        await card.getByRole("button", {name: "Back", exact: true}).click();
     }
     await window.locator(`[data-agent-open="${worker}"]`).click();
     const card = window.locator(`[data-agent-open="${worker}"]`);
@@ -57,7 +57,7 @@ try {
     await page.setViewportSize({width: 390, height: 844});
     await page.goto(`${address}&windows=agents.agents`);
     await window.locator(`[data-agent-open="${worker}"]`).click();
-    await card.getByRole("button", {name: "Back to the list"}).waitFor();
+    await card.getByRole("button", {name: "Back", exact: true}).waitFor();
     assert.ok(await window.evaluate((element) => element.scrollWidth <= element.clientWidth));
     await page.screenshot({path: capture.replace(".png", "-phone.png"), fullPage: true, animations: "disabled"});
     assert.deepEqual(errors, []);

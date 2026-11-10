@@ -7,7 +7,7 @@ const emit = defineEmits(["back"]);
 
 <template>
     <div class="skills">
-        <template v-if="back"><button type="button" class="skills-back" @click="emit('back')">Back to skills</button></template>
+        <template v-if="back"><button type="button" class="skills-back" @click="emit('back')">Back</button></template>
         <h3 class="skills-title">{{ skill ? skill.folder : "" }}</h3>
         <div class="skills-text" data-skill-text><TextDisplay :text="skill ? skillMarkdown(skill.text) : failure" :row-names="false" /></div>
     </div>

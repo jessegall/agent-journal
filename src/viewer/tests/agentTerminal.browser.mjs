@@ -21,7 +21,7 @@ try {
         await card.getByText(command, {exact: true}).waitFor();
         assert.equal(await card.getByText(other, {exact: true}).count(), 0);
         await page.screenshot({path: `${capture}-${id}.png`, fullPage: true, animations: "disabled"});
-        await card.getByRole("button", {name: "Back to the list"}).click();
+        await card.getByRole("button", {name: "Back", exact: true}).click();
     }
 } finally {
     await browser.close();

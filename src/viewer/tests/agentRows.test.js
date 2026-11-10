@@ -580,7 +580,7 @@ test("an open agent keeps its updated card after it leaves the list", async () =
     await settle();
     expect(cardOf(element, 3).getAttribute("aria-expanded")).toBe("true");
     expect(cardOf(element, 3).textContent).toContain("Finished reading");
-    cardOf(element, 3).querySelector("[aria-label='Back to the list']").click();
+    cardOf(element, 3).querySelector("[aria-label='Back']").click();
     await settle();
     expect(element.querySelector('[data-agent-row="3"]').hasAttribute("data-agent-lingering")).toBe(true);
     expect(cardOf(element, 2)).not.toBeNull();

@@ -12,7 +12,7 @@ try {
         const card = window.locator(`[data-agent-open="${agent}"]`);
         await card.waitFor();
         await card.click();
-        await card.getByRole("button", {name: "Back to the list"}).waitFor();
+        await card.getByRole("button", {name: "Back", exact: true}).waitFor();
         assert.ok(await card.locator(".agent-head").evaluate((element) => element.getAnimations().some((animation) => animation.effect.getTiming().duration === 280)));
         for (const [tab, selector] of [["transcript", ".transcript .row-list-row"], ["file-feed", ".file-feed .row-list-row"]]) {
             await card.locator(`[data-tab="${tab}"]`).click();
@@ -28,7 +28,7 @@ try {
             await card.evaluate((element) => Promise.all(element.getAnimations({subtree: true}).filter((animation) => animation.effect.getComputedTiming().iterations !== Infinity).map((animation) => animation.finished)));
             await page.screenshot({path: `${capture}-${width}-${tab}.png`, animations: "disabled"});
         }
-        await card.getByRole("button", {name: "Back to the list"}).click();
+        await card.getByRole("button", {name: "Back", exact: true}).click();
         await page.waitForFunction((agent) => document.querySelector(`[data-agent-open="${agent}"]`)?.getAttribute("aria-expanded") === "false", agent);
         assert.equal(await window.locator("[data-agents-search]").count(), 1);
     }

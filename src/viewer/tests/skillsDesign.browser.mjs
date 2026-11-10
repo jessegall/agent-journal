@@ -56,7 +56,7 @@ try {
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     await page.emulateMedia({colorScheme: "light"});
     await page.screenshot({path: `${captures}-phone-light.png`, animations: "disabled"});
-    await skills.getByRole("button", {name: "Back to skills", exact: true}).click();
+    await skills.getByRole("button", {name: "Back", exact: true}).click();
     await skills.getByLabel("Find a skill", {exact: true}).fill("nothing-matches-this");
     await skills.getByText("No skill matches", {exact: true}).waitFor();
     await page.screenshot({path: `${captures}-phone-empty.png`, animations: "disabled"});

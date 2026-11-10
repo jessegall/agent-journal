@@ -35,6 +35,9 @@ test("the table has no edit button; the maximums are set on the screen of the op
     input.nextElementSibling.click();
     await settle();
     expect(held.run).toHaveBeenCalledWith(["setting", "set", "sample.run", "2", "--environment", "main"]);
+    expect(element.querySelector(".back").textContent).toContain("Back");
+    expect(element.querySelector(".back").textContent).not.toContain("Back to");
+    expect(element.textContent).not.toContain("Saved.");
 });
 
 test("the screen of a profile sets its own maximums through the profile limits line", async () => {

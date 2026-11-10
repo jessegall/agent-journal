@@ -62,7 +62,7 @@ async function change(kind, value) {
     const answer = await view.run(row.profile
         ? ["agent", "profile-limits", row.type, row.profile, "--running", String(limits.run), "--kept", String(limits.kept), ...environment]
         : ["setting", "set", kind === "run" ? row.run_setting : row.kept_setting, String(number), ...environment]);
-    if (answer.ok) { await view.reload("limits"); notice.value = "Saved."; }
+    if (answer.ok) await view.reload("limits");
     else failure.value = answer.error;
     pending.value = false;
 }
@@ -80,7 +80,7 @@ function openAgent(agent) { close(); emit("open-agent", agent); }
 <template>
     <div class="counts-panel">
         <div :key="screen" :class="['counts', {padded: readFailure || chosen}]" data-counts-screen>
-            <template v-if="chosen"><button class="back" type="button" @click="back">‹ Back to the counts</button></template>
+            <template v-if="chosen"><button class="back" type="button" @click="back">‹ Back</button></template>
             <template v-if="readFailure"><strong>The counts could not be read</strong><p>The journal did not answer.</p><Btn small @click="view.reload('limits')">Try again</Btn></template>
             <template v-else-if="chosen">
                 <AgentLimitEditor :row="chosen" :pending="pending" :read-only="view.readOnly" :environment="view.environment" @change="change" />

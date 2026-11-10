@@ -1493,8 +1493,8 @@ const Ya = ["disabled", "title"], Qa = ["disabled", "title"], Xa = { class: "gau
                 key: 0,
                 type: "button",
                 class: "agent-back",
-                title: "Back to the list",
-                "aria-label": "Back to the list",
+                title: "Back",
+                "aria-label": "Back",
                 onClick: T[0] || (T[0] = ee((be) => g("toggle"), ["stop"]))
               }, [
                 k(i(Le), {
@@ -1595,7 +1595,7 @@ const Ya = ["disabled", "title"], Qa = ["disabled", "title"], Xa = { class: "gau
       ], 42, vn);
     };
   }
-}, xn = /* @__PURE__ */ Q(Mn, [["__scopeId", "data-v-88f21c24"]]), $n = {
+}, xn = /* @__PURE__ */ Q(Mn, [["__scopeId", "data-v-5caf293f"]]), $n = {
   key: 1,
   class: "agents-upgrade",
   "data-agents-upgrade": ""

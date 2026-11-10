@@ -106,23 +106,23 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
     }), H = w(() => F.value.filter((g) => {
       var j, f;
       return (((f = (j = i.data.value) == null ? void 0 : j.depends) == null ? void 0 : f[g.key]) ?? []).every((v) => n[v] !== !1);
-    })), U = (g) => g.type === "flag" ? !!g.value : String(g.value), N = (g) => (g.type === "flag" ? n[g.key] : String(n[g.key])) !== U(g), I = w(() => F.value.filter(N)), E = w(() => I.value.length > 0), M = w(() => {
+    })), U = (g) => g.type === "flag" ? !!g.value : String(g.value), N = (g) => (g.type === "flag" ? n[g.key] : String(n[g.key])) !== U(g), I = w(() => F.value.filter(N)), q = w(() => I.value.length > 0), M = w(() => {
       var g;
-      return E.value && u.value && ((g = i.data.value) == null ? void 0 : g.revision) !== u.value;
+      return q.value && u.value && ((g = i.data.value) == null ? void 0 : g.revision) !== u.value;
     }), R = (g) => g.type === "flag" ? n[g.key] ? "on" : "off" : String(n[g.key]).trim(), z = w(() => I.value.some((g) => g.type !== "flag" && R(g) === ""));
-    function P() {
+    function E() {
       var g;
       for (const j of F.value) n[j.key] = U(j);
       u.value = ((g = i.data.value) == null ? void 0 : g.revision) ?? "", b.value = "";
     }
     ee(() => i.data.value, () => {
-      (!u.value || !E.value) && P();
+      (!u.value || !q.value) && E();
     }, { immediate: !0 });
     const _ = w(() => b.value || (M.value ? "These settings changed since you opened them. Cancel to read them again." : "") || (z.value ? "A number is missing." : ""));
-    async function q() {
+    async function P() {
       B.value = !0;
       const g = await p.run(`work-settings apply --revision ${u.value} ${I.value.map((j) => `${j.key}=${R(j)}`).join(" ")}`);
-      B.value = !1, b.value = g.ok ? "" : g.error, await p.reload("work"), g.ok && P();
+      B.value = !1, b.value = g.ok ? "" : g.error, await p.reload("work"), g.ok && E();
     }
     return (g, j) => (a(), d("section", {
       class: "group",
@@ -179,8 +179,8 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
         pending: B.value,
         problem: _.value,
         blocked: M.value || z.value,
-        onCancel: P,
-        onApply: q
+        onCancel: E,
+        onApply: P
       }, null, 8, ["changes", "pending", "problem", "blocked"])
     ], 8, qe));
   }
@@ -295,13 +295,13 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
   },
   emits: /* @__PURE__ */ ye(["open-agent", "close"], ["update:title"]),
   setup(e, { emit: c }) {
-    const o = c, p = ke(e, "title"), i = G(), n = w(() => i.props.limits.rows.value ?? []), u = w(() => i.props.limits.failure.value), b = C([]), B = C(0), F = C(!1), H = he(), U = C(null), N = C(!1), I = C(""), E = C(""), M = C(null), R = C(""), z = w(() => it(n.value)), P = w(() => n.value.find((r) => r.per_profile)), _ = w(() => z.value.find((r) => r.key === U.value)), q = w(() => b.value.filter((r) => {
+    const o = c, p = ke(e, "title"), i = G(), n = w(() => i.props.limits.rows.value ?? []), u = w(() => i.props.limits.failure.value), b = C([]), B = C(0), F = C(!1), H = he(), U = C(null), N = C(!1), I = C(""), q = C(""), M = C(null), R = C(""), z = w(() => it(n.value)), E = w(() => n.value.find((r) => r.per_profile)), _ = w(() => z.value.find((r) => r.key === U.value)), P = w(() => b.value.filter((r) => {
       var t, s;
       return r.state !== "retired" && r.role === ((t = _.value) == null ? void 0 : t.type) && (!_.value.profile || (((s = r.facts) == null ? void 0 : s.profile) || r.profile) === _.value.profile);
     }).sort((r, t) => (r.state !== "running") - (t.state !== "running") || String(r.ended_at || r.created_at).localeCompare(String(t.ended_at || t.created_at)))), g = w(() => {
       var t;
       const r = /* @__PURE__ */ new Map();
-      for (const s of q.value) {
+      for (const s of P.value) {
         const y = ((t = s.facts) == null ? void 0 : t.model) || s.program_model;
         y && r.set(y, (r.get(y) || 0) + 1);
       }
@@ -339,13 +339,13 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
       }
       N.value = !0, I.value = "";
       const y = _.value, Y = { run: y.run_limit, kept: y.kept_limit, [r]: s }, J = ["--environment", i.environment], Q = await i.run(y.profile ? ["agent", "profile-limits", y.type, y.profile, "--running", String(Y.run), "--kept", String(Y.kept), ...J] : ["setting", "set", r === "run" ? y.run_setting : y.kept_setting, String(s), ...J]);
-      Q.ok ? (await i.reload("limits"), E.value = "Saved.") : I.value = Q.error, N.value = !1;
+      Q.ok ? await i.reload("limits") : I.value = Q.error, N.value = !1;
     }
     async function ge(r) {
       if (!R.value.trim() || N.value) return;
       N.value = !0;
       const t = await i.run(["agent", "retire", String(r.id), "--reason", R.value.trim()]);
-      I.value = t.ok ? "" : "The agent could not be retired. Try again.", t.ok && (M.value = null, R.value = "", E.value = "Agent retired permanently.", await i.reload("limits"), await k(_.value)), N.value = !1;
+      I.value = t.ok ? "" : "The agent could not be retired. Try again.", t.ok && (M.value = null, R.value = "", q.value = "Agent retired permanently.", await i.reload("limits"), await k(_.value)), N.value = !1;
     }
     function ve(r) {
       de(), o("open-agent", r);
@@ -361,7 +361,7 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
           class: "back",
           type: "button",
           onClick: Z
-        }, "‹ Back to the counts")) : x("", !0),
+        }, "‹ Back")) : x("", !0),
         u.value ? (a(), d(T, { key: 1 }, [
           t[5] || (t[5] = l("strong", null, "The counts could not be read", -1)),
           t[6] || (t[6] = l("p", null, "The journal did not answer.", -1)),
@@ -394,11 +394,11 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
             t[8] || (t[8] = S(" kept", -1))
           ]),
           l("p", null, h(g.value), 1),
-          q.value.length ? x("", !0) : (a(), d(T, { key: 0 }, [
+          P.value.length ? x("", !0) : (a(), d(T, { key: 0 }, [
             t[9] || (t[9] = l("strong", null, "No agents here yet", -1)),
             t[10] || (t[10] = l("p", null, "An agent shows here as soon as one of this type starts.", -1))
           ], 64)),
-          (a(!0), d(T, null, L(q.value, (s) => {
+          (a(!0), d(T, null, L(P.value, (s) => {
             var y, Y, J, Q, ne;
             return a(), d("div", {
               key: s.id,
@@ -462,9 +462,9 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
             l("span", null, "Kept"),
             l("span")
           ], -1)),
-          P.value ? (a(), d("div", gt, [
+          E.value ? (a(), d("div", gt, [
             t[14] || (t[14] = l("strong", null, "Read-only helpers", -1)),
-            l("span", null, h(P.value.running) + " running, " + h(P.value.kept) + " kept", 1)
+            l("span", null, h(E.value.running) + " running, " + h(E.value.kept) + " kept", 1)
           ])) : x("", !0),
           (a(!0), d(T, null, L(z.value, (s) => (a(), d("button", {
             key: s.key,
@@ -500,11 +500,11 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
             })
           ], 8, vt))), 128))
         ], 64)),
-        I.value ? (a(), d("p", mt, h(I.value), 1)) : E.value ? (a(), d("p", kt, h(E.value), 1)) : x("", !0)
+        I.value ? (a(), d("p", mt, h(I.value), 1)) : q.value ? (a(), d("p", kt, h(q.value), 1)) : x("", !0)
       ], 2))
     ]));
   }
-}, bt = /* @__PURE__ */ W(yt, [["__scopeId", "data-v-76334cbb"]]), ft = {
+}, bt = /* @__PURE__ */ W(yt, [["__scopeId", "data-v-dc019e75"]]), ft = {
   class: "agents",
   "data-agent-settings-agents": ""
 }, ht = {
@@ -573,11 +573,11 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
     })), U = w(() => H.value.length > 0), N = w(() => U.value && n.data.value && b.value && n.data.value.revision !== b.value), I = w(() => {
       var v;
       return ((v = n.data.value) == null ? void 0 : v.workflow) ?? "";
-    }), E = w(() => {
+    }), q = w(() => {
       var v;
       return ((v = n.data.value) == null ? void 0 : v.depends) ?? {};
-    }), M = (v) => (E.value[v.key] ?? []).every((k) => u[k] !== !1), R = w(() => c.filter((v) => p.includes(v.key) && M(v))), z = w(() => c.filter((v) => !p.includes(v.key) && M(v))), P = w(() => B.value || (N.value ? "These settings changed since you opened them. Cancel to read them again." : "")), _ = w(() => u[le] === !1 && u[jt] === !1);
-    function q() {
+    }), M = (v) => (q.value[v.key] ?? []).every((k) => u[k] !== !1), R = w(() => c.filter((v) => p.includes(v.key) && M(v))), z = w(() => c.filter((v) => !p.includes(v.key) && M(v))), E = w(() => B.value || (N.value ? "These settings changed since you opened them. Cancel to read them again." : "")), _ = w(() => u[le] === !1 && u[jt] === !1);
+    function P() {
       const v = n.data.value;
       if (v) {
         for (const k of c) u[k.key] = v.controls[k.key];
@@ -585,12 +585,12 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
       }
     }
     ee(() => n.data.value, () => {
-      (!b.value || !U.value) && q();
+      (!b.value || !U.value) && P();
     }, { immediate: !0 });
     async function g(v) {
       F.value = !0;
       const k = await i.run(v);
-      F.value = !1, k.ok ? (await i.reload("work"), q()) : (B.value = k.error, await i.reload("work"));
+      F.value = !1, k.ok ? (await i.reload("work"), P()) : (B.value = k.error, await i.reload("work"));
     }
     const j = () => g(`work-settings apply --revision ${b.value} ${H.value.map((v) => `${v.key}=${u[v.key] ? "on" : "off"}`).join(" ")}`), f = (v) => g(`work-settings preset ${v} --revision ${b.value}`);
     return (v, k) => (a(), d("section", Ct, [
@@ -633,9 +633,9 @@ const Te = { class: "step" }, je = ["disabled"], xe = ["value", "disabled"], Ne 
       $(re, {
         changes: H.value.length,
         pending: F.value,
-        problem: P.value,
+        problem: E.value,
         blocked: N.value,
-        onCancel: q,
+        onCancel: P,
         onApply: j
       }, null, 8, ["changes", "pending", "problem", "blocked"])
     ]));
