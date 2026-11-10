@@ -32,7 +32,7 @@ class WorkerFolderRuns:
             owners = self.worktrees.open_worktrees()
         owner = next((row for row in owners if row.id != worktree.id and Path(row.folder).resolve() == folder.resolve()), None)
         if owner is not None:
-            raise Refusal(f"worker {owner.session_agent_id} still owns {folder}", "merge or release its worktree first")
+            raise Refusal(f"a worker still owns {folder}", "merge or release its worktree first")
 
     def stop(self, worktree: Worktree) -> None:
         folder = Path(worktree.folder).resolve()

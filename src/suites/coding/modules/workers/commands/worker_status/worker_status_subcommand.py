@@ -23,13 +23,16 @@ from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from suites.coding.modules.workers.support.worker_status import WorkerStatus, WorkerStatusPhase
 from suites.coding.modules.workers.support.worker_status_page_json import WorkerStatusPageJson
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
+from core.modules.agents.support.agent_label import AgentLabel
+from engine.cli.row_numbers import RowNumbers
 
 
 class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
     cli_name = "worker"
     name = "status"
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, unread_skills: UnreadSkills, files: SkillFiles, phases: WorkerPhases, resume: WorkerResume, guidance: WorkerGuidance) -> None:
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, unread_skills: UnreadSkills, files: SkillFiles, phases: WorkerPhases, resume: WorkerResume, guidance: WorkerGuidance, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.guidance = guidance
         self.queries, self.worktrees, self.proofs = queries, worktrees, proofs
         self.unread_skills, self.files, self.phases, self.resume = unread_skills, files, phases, resume
@@ -47,7 +50,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
         worker_id = arguments.worker_id if arguments.worker_id is not None else caller.actor.id
         worktree = self.worktrees.worker_worktree(worker_id)
         if worktree is None:
-            return Refusal(f"agent {worker_id} has no worker worktree")
+            return Refusal(f"{AgentLabel.from_row_id(worker_id, self.numbers).text} has no worker worktree")
         tests = self.proofs.worktree_proofs(worktree.id).matching(Among("state", TEST_WAITING_STATES)).oldest().page(arguments.page, arguments.limit)
         assignments = self.queries.query(Task).filter(delegated_to=worker_id).matching(Among("state", (TaskState.OPEN, TaskState.BLOCKED))).oldest().page(arguments.page, arguments.limit)
         worker = self.queries.query(Agent).find(worker_id)

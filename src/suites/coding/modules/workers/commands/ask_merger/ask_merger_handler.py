@@ -16,6 +16,8 @@ from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_ask_facts_query import WorkerAskFactsQuery
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_point import WorkerPoint
+from core.modules.agents.support.agent_label import AgentLabel
+from engine.cli.row_numbers import RowNumbers
 
 QUESTION_SOURCE = "workers.ask"
 
@@ -27,7 +29,8 @@ class AskMergerHandler(Handler[AskMerger, str]):
     command = AskMerger
     disabled_scopes = [ActorScope]
 
-    def __init__(self, guidance: WorkerGuidance, facts_query: WorkerAskFactsQuery, inbox: MergerInbox, queries: Queries, bus: Bus) -> None:
+    def __init__(self, guidance: WorkerGuidance, facts_query: WorkerAskFactsQuery, inbox: MergerInbox, queries: Queries, bus: Bus, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.guidance, self.facts_query, self.inbox, self.queries, self.bus = guidance, facts_query, inbox, queries, bus
 
     def handle(self, command: AskMerger, context: Context) -> str:
@@ -47,7 +50,7 @@ class AskMergerHandler(Handler[AskMerger, str]):
         if self.queries.query(MergerLine).filter(worker_id=command.worker_id, group_key=group).count() >= GROUP_MESSAGE_LIMIT_COUNT:
             raise Refusal(f"{GROUP_MESSAGE_LIMIT_COUNT} of {GROUP_MESSAGE_LIMIT_COUNT} asks used in this group", "wait for the merge; the merger has your earlier asks")
         facts = self.facts_query.read(point)
-        self.bus.dispatch(MakeTaskLog(facts.task, f"worker {command.worker_id} asked the merger about {command.topic}: {command.text}"), context)
-        text = f"worker {command.worker_id} asks about {command.topic} on task {facts.task}: {command.text}\n{facts.text()}"
+        self.bus.dispatch(MakeTaskLog(facts.task, f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} asked the merger about {command.topic}: {command.text}"), context)
+        text = f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} asks about {command.topic} on task {facts.task}: {command.text}\n{facts.text()}"
         self.inbox.deliver(MergerLine(text=text, fallback_source=QUESTION_SOURCE, topic=command.topic, facts_json=facts.json_text(), worker_id=command.worker_id, group_key=group), context)
         self.bus.dispatch(OpenWait(WaitType.ANSWER, focus), context)

@@ -22,7 +22,7 @@ class WorkerRound:
 
     def required_worktree(self) -> Worktree:
         if self.worktree is None:
-            raise Refusal(f"worker {self.worker_id} has no worktree", "journal worker-worktree list shows the worktrees")
+            raise Refusal("this worker has no worktree", "journal worker-worktree list shows the worktrees")
         return self.worktree
 
     def has_no_work(self) -> bool:

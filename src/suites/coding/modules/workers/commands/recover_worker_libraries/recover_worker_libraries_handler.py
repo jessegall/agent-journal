@@ -10,6 +10,8 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LIBRARIES_LINKED
 from suites.coding.modules.workers.support.worktree_libraries import WorktreeLibraries
+from core.modules.agents.support.agent_label import AgentLabel
+from engine.cli.row_numbers import RowNumbers
 
 
 class RecoverWorkerLibrariesHandler(Handler[RecoverWorkerLibraries, str]):
@@ -19,14 +21,15 @@ class RecoverWorkerLibrariesHandler(Handler[RecoverWorkerLibraries, str]):
     command = RecoverWorkerLibraries
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, libraries: WorktreeLibraries, nudger: Nudger) -> None:
+    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, libraries: WorktreeLibraries, nudger: Nudger, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.agents, self.worktrees, self.libraries, self.nudger = agents, worktrees, libraries, nudger
 
     def handle(self, command: RecoverWorkerLibraries, context: Context) -> str:
         require_merger(self.agents, context)
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
-            raise Refusal(f"worker {command.worker_id} has no worktree", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has no worktree", "journal worker-worktree list shows the worktrees")
         names = self.libraries.repair(worktree)
         if not names:
             return "nothing missing"

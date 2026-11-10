@@ -13,6 +13,8 @@ from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED, M
 from suites.coding.modules.workers.commands.return_worker.return_worker import ReturnWorker
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
 from suites.coding.modules.workers.support.merger_visits import MergerVisits
+from core.modules.agents.support.agent_label import AgentLabel
+from engine.cli.row_numbers import RowNumbers
 
 
 class ReturnWorkerHandler(Handler[ReturnWorker, None]):
@@ -20,7 +22,8 @@ class ReturnWorkerHandler(Handler[ReturnWorker, None]):
 
     command = ReturnWorker
 
-    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, repository: Repository, main_line: MainAgentLine, visits: MergerVisits) -> None:
+    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, repository: Repository, main_line: MainAgentLine, visits: MergerVisits, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.agents, self.worktrees, self.repository, self.main_line, self.visits = agents, worktrees, repository, main_line, visits
 
     def handle(self, command: ReturnWorker, context: Context) -> None:
@@ -28,7 +31,7 @@ class ReturnWorkerHandler(Handler[ReturnWorker, None]):
         self.visits.close_newest(context)
         worktree: Worktree | None = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
-            raise Refusal(f"worker {command.worker_id} has nothing delivered")
+            raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has nothing delivered")
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.return_worker, returned_at=context.timestamp, pass_reason=command.reason), context)
         line = self.repository.save(MergerLine(text=f"worker:{command.worker_id}: {command.reason}", fallback_source=MERGER_SOURCE, read_at=context.timestamp), context)
         self.main_line.send_nudge(MERGER_PASSED.nudge(worker=command.worker_id), MERGER_SOURCE, context)

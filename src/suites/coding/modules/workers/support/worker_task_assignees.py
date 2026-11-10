@@ -9,13 +9,15 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 from core.modules.agents.support.agent_label import AgentLabel
+from engine.cli.row_numbers import RowNumbers
 
 
 class WorkerTaskAssignees(TaskAssignees):
     """The main agent and a worker whose worktree is cut take a task; a worker whose work is delivered, or any
     other helper, never starts one."""
 
-    def __init__(self, worktrees: WorktreeQuery, tasks: TaskQuery, next_task: WorkerNextTask) -> None:
+    def __init__(self, worktrees: WorktreeQuery, tasks: TaskQuery, next_task: WorkerNextTask, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.next_task = next_task
         self.worktrees, self.tasks = worktrees, tasks
 
@@ -31,4 +33,4 @@ class WorkerTaskAssignees(TaskAssignees):
             return
         if self.tasks.holder(task.holder_id).filter(state=TaskState.TESTING).exists():
             return
-        raise Refusal(f"task {task.id} is the last of worker {task.holder_id}", f"journal worker release {task.holder_id} \"<why>\" takes it back")
+        raise Refusal(f"task {task.id} is the last of {AgentLabel.from_row_id(task.holder_id, self.numbers, "worker").text}", f"journal worker release {AgentLabel.from_row_id(task.holder_id, self.numbers).number} \"<why>\" takes it back")

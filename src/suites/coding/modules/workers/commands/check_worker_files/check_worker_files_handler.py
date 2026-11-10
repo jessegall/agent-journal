@@ -11,6 +11,8 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.refusal_file_paths import RefusalFilePaths
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from core.modules.agents.support.agent_label import AgentLabel
+from engine.cli.row_numbers import RowNumbers
 
 
 class CheckWorkerFilesHandler(Handler[CheckWorkerFiles, str]):
@@ -20,14 +22,15 @@ class CheckWorkerFilesHandler(Handler[CheckWorkerFiles, str]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, queries: Queries, git: WorktreeGit) -> None:
+    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, queries: Queries, git: WorktreeGit, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.agents, self.worktrees, self.queries, self.git = agents, worktrees, queries, git
 
     def handle(self, command: CheckWorkerFiles, context: Context) -> str:
         require_merger(self.agents, context)
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
-            raise Refusal(f"worker {command.worker_id} has no worktree", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has no worktree", "journal worker-worktree list shows the worktrees")
         worker_files = set(self.git.worker_files(worktree))
         refused = set(self.refused_files(worktree))
         lines = [self.line("own and refused", worker_files & refused), self.line("refused only", refused - worker_files), self.line("own only", worker_files - refused)]

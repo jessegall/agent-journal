@@ -49,6 +49,7 @@ from core.modules.messages.support.work_sources import WorkSources
 from suites.coding.modules.workers.bindings.worker_task_sources import WorkerTaskSources
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
 from core.modules.agents.support.agent_label import AgentLabel
+from engine.cli.row_numbers import RowNumbers
 
 
 class SendWorkerHandler(Handler[SendWorker, Model]):
@@ -58,7 +59,8 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission, libraries: LibraryFolders, release: StartedTaskRelease) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission, libraries: LibraryFolders, release: StartedTaskRelease, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.admission, self.libraries, self.release = admission, libraries, release
         self.rows, self.worktrees, self.repository, self.git, self.nudger = rows, worktrees, repository, git, nudger
         self.advance, self.bus, self.missing_agents = advance, bus, missing_agents
@@ -70,7 +72,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
 
     def check_job(self, command: SendWorker, worker: Agent) -> None:
         if worker.retired_at is not None:
-            raise RetiredWorkerRefusal.create(worker.id)
+            raise RetiredWorkerRefusal.create(worker)
         if not command.job.strip() and not command.task_ids:
             raise Refusal("a send needs a job or a task", f'journal worker send {worker.id} "<job>", or --task <task>')
 
@@ -159,7 +161,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         if worktree is None and self.task_ids:
             return self.kept_tasks.waiting(self.rows.required(Agent, command.worker_id), self.task_ids, context)
         if worktree is None:
-            raise Refusal(f"worker {command.worker_id} has no worktree", "journal worker dispatch <task> starts a new one")
+            raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has no worktree", "journal worker dispatch <task> starts a new one")
         worker = self.rows.required(Agent, command.worker_id)
         if not command.sandboxed:
             worker = self.bus.run_with_context(SwitchWorkerSandbox(worker.id, False), context)

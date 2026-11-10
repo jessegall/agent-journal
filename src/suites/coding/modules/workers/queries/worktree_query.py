@@ -11,12 +11,15 @@ from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.replaced_rows import replaced_rows
+from core.modules.agents.support.agent_label import AgentLabel
+from engine.cli.row_numbers import RowNumbers
 
 
 class WorktreeQuery(Query[Worktree]):
     """Reads worktrees, with the one a worker has out and those an environment has out by name."""
 
-    def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:
+    def __init__(self, database: Database, tables: Tables, kept: KeptRows, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         super().__init__(database, tables, Worktree)
         self.kept = kept
 
@@ -27,13 +30,13 @@ class WorktreeQuery(Query[Worktree]):
     def required_worker_worktree(self, agent_id: int) -> Worktree:
         worktree = self.worker_worktree(agent_id)
         if worktree is None:
-            raise Refusal(f"worker {agent_id} has no worktree", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{AgentLabel.from_row_id(agent_id, self.numbers, "worker").text} has no worktree", "journal worker-worktree list shows the worktrees")
         return worktree
 
     def required_newest_worktree(self, agent_id: int) -> Worktree:
         worktree = self.newest_worktree(agent_id)
         if worktree is None:
-            raise Refusal(f"worker {agent_id} has had no worktree", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{AgentLabel.from_row_id(agent_id, self.numbers, "worker").text} has had no worktree", "journal worker-worktree list shows the worktrees")
         return worktree
 
     def is_first_worktree(self, worktree: Worktree) -> bool:

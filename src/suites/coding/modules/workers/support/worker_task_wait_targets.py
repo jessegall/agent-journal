@@ -11,12 +11,15 @@ from core.modules.tasks.support.task_waits import TaskWaits
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from core.modules.agents.support.agent_label import AgentLabel
+from engine.cli.row_numbers import RowNumbers
 
 
 class WorkerTaskWaitTargets(TaskWaitTargets):
     """Validates worker wait targets and resolves them after the worker finishes."""
 
-    def __init__(self, database: Database, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, waits: TaskWaits) -> None:
+    def __init__(self, database: Database, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, waits: TaskWaits, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         super().__init__(database, queries)
         self.queries, self.worktrees, self.proofs, self.waits = queries, worktrees, proofs, waits
 
@@ -29,11 +32,11 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
             return super().target(target_type, row_id)
         worker = self.queries.query(Agent).filter(id=row_id).first()
         if worker is None:
-            raise Refusal(f"worker {row_id} does not exist", "name an existing worker")
+            raise Refusal(f"{AgentLabel.from_row_id(row_id, self.numbers, "worker").text} does not exist", "name an existing worker")
         if worker.role != CodingHelperRole.WORKER:
-            raise Refusal(f"agent {row_id} is not a worker", "name a worker")
+            raise Refusal(f"{AgentLabel.from_row_id(row_id, self.numbers).text} is not a worker", "name a worker")
         if self.is_finished(worker):
-            raise Refusal(f"worker {row_id} has already finished", "nothing waits on it; carry on with the task")
+            raise Refusal(f"{AgentLabel.from_row_id(row_id, self.numbers, "worker").text} has already finished", "nothing waits on it; carry on with the task")
         return f"workers:{row_id}"
 
     def helper_target(self, row_id: int) -> str:

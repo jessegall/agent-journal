@@ -13,6 +13,8 @@ from suites.coding.modules.workers.models.worker_test_failure import WorkerTestF
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.merger_nudges import MERGER_SOURCE
 from suites.coding.modules.workers.support.worker_settings import DELIVERY_FAILURE_LIMIT, WORKER_RUN_FAILURE_LIMIT
+from core.modules.agents.support.agent_label import AgentLabel
+from engine.cli.row_numbers import RowNumbers
 
 TEST_FILE_PATTERN = re.compile(r"[\w./-]*(?:test|stories)[\w./-]*\.(?:py|js|mjs|go)|[\w./-]+_test\.go")
 ALL_RUN_TESTS = "the whole run"
@@ -25,7 +27,8 @@ class WorkerTestFailures:
     every third failed hand-in of a task puts a line before the merger, since only a pass ends a task's run of
     them."""
 
-    def __init__(self, queries: Queries, repository: Repository, settings: SettingValues, system_log: SystemLogWriter, inbox: MergerInbox) -> None:
+    def __init__(self, queries: Queries, repository: Repository, settings: SettingValues, system_log: SystemLogWriter, inbox: MergerInbox, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.queries, self.repository, self.settings, self.system_log, self.inbox = queries, repository, settings, system_log, inbox
 
     def record_delivery(self, worker_id: int, task_id: int, test_name: str, context: Context) -> None:
@@ -39,7 +42,7 @@ class WorkerTestFailures:
             self.record(worker_id, task_id, TestFailureSource.WORKER_RUN, test_name, context)
 
     def record(self, worker_id: int, task_id: int, source: TestFailureSource, test_name: str, context: Context) -> None:
-        self.system_log.write(LogLevel.WARNING, f"worker {worker_id}, task {task_id}: {source} failed: {test_name}")
+        self.system_log.write(LogLevel.WARNING, f"{AgentLabel.from_row_id(worker_id, self.numbers, "worker").text}, task {task_id}: {source} failed: {test_name}")
         self.repository.save(WorkerTestFailure(worker_id=worker_id, task_id=task_id, source=source, test_name=test_name), context)
 
     def flagged_lines(self, task_ids: Sequence[int]) -> Mapping[int, tuple[str, ...]]:

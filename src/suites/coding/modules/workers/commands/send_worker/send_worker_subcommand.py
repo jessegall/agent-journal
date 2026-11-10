@@ -63,8 +63,8 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
         with self.scopes.opened(caller.read_actor_id, caller.environment_id):
             task_ids = self.plan_tasks.task_ids(arguments.plan, arguments.phase) if arguments.plan is not None else tuple(arguments.task)
             if task_ids:
-                self.check_test_commands(arguments.worker_id, commands, caller)
                 worker = self.agents.find(arguments.worker_id)
+                self.check_test_commands(worker, commands, caller)
                 self.policy.check_tasks(self.tasks.check_tasks(task_ids, caller.actor.id),
                                         WorkerRouteRequest(worker.program, caller.actor.type, self.flags.skipped_guards(arguments)))
         job = arguments.job or arguments.job_flag
@@ -86,12 +86,12 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
             argv.extend(("--test-command", value))
         return self.requests.command(command, arguments.worker_id, argv, arguments, caller)
 
-    def check_test_commands(self, worker_id: int, commands: tuple[TestCommandEntry, ...], caller: Caller) -> None:
-        if not commands and caller.actor.type is ActorType.AGENT and not self.test_names.rows(worker_id):
-            raise Refusal(f"worker {worker_id} has no test command for new work", TEST_COMMAND_EXAMPLE)
+    def check_test_commands(self, worker: Agent, commands: tuple[TestCommandEntry, ...], caller: Caller) -> None:
+        if not commands and caller.actor.type is ActorType.AGENT and not self.test_names.rows(worker.id):
+            raise Refusal(f"{AgentLabel.from_agent(worker).text} has no test command for new work", TEST_COMMAND_EXAMPLE)
 
     def write_output(self, value: object, output: Output) -> None:
-        if WorkerCommandRequest.write_output(value, output):
+        if self.requests.write_output(value, output):
             return
         if isinstance(value, AgentLine):
             output.line(self.answer(self.agents.find(value.session_agent_id)))

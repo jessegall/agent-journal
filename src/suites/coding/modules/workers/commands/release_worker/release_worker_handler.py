@@ -12,6 +12,8 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.release_outcome import ReleaseOutcome
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from core.modules.agents.support.agent_label import AgentLabel
+from engine.cli.row_numbers import RowNumbers
 
 
 class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
@@ -21,13 +23,14 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
     runs_once = True
     command = ReleaseWorker
 
-    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, bus: Bus) -> None:
+    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.worktrees, self.git, self.environments, self.bus = worktrees, git, environments, bus
 
     def handle(self, command: ReleaseWorker, context: Context) -> ReleaseOutcome:
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
-            raise Refusal(f"worker {command.worker_id} has no worktree out", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has no worktree out", "journal worker-worktree list shows the worktrees")
         folder = self.environments.find(worktree.environment_id).folder
         if worktree.state is WorktreeState.NEW:
             unmerged = self.git.remove(folder, worktree)
