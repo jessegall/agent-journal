@@ -2,7 +2,7 @@ import time
 
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.folder_listing import FolderListing
-from server.code_folders import CodeFolders
+from server.handover.code_folders import CodeFolders
 
 
 class CodeVersion:

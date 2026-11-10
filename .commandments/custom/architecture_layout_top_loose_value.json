@@ -67,22 +67,10 @@
                 "file": "src/install/working_tree_install.py"
             },
             {
-                "file": "src/server/code_folders.py"
-            },
-            {
-                "file": "src/server/handover_descriptors.py"
-            },
-            {
                 "file": "src/server/server.py"
             },
             {
                 "file": "src/server/server_backup.py"
-            },
-            {
-                "file": "src/server/successor_proof.py"
-            },
-            {
-                "file": "src/server/successor_start.py"
             }
         ]
     },

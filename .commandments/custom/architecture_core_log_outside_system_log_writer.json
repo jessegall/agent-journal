@@ -46,7 +46,7 @@
                 "testCode": true
             },
             {
-                "file": "src/server/successor_start.py"
+                "file": "src/server/handover/successor_start.py"
             }
         ]
     },

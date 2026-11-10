@@ -3,7 +3,7 @@ from engine.database.reported_findings import ReportedFindings
 from engine.journal.journal_home import JournalHome
 from engine.provider.transcript_entries import TranscriptEntries
 from engine.time.timestamp import Timestamp
-from server.code_version import CodeVersion
+from server.handover.code_version import CodeVersion
 from server.hook.hook_database import HookDatabase
 from server.door.journal_door import JournalDoor
 from server.work.listener_thread import ListenerThread

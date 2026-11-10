@@ -2,7 +2,7 @@ import socket
 import time
 from http.server import HTTPServer
 
-from server.handover_descriptors import QUEUED_CONNECTIONS
+from server.handover.handover_descriptors import QUEUED_CONNECTIONS
 from server.viewer.local_door import LocalDoor
 from server.viewer.local_headers import LocalHeaders
 from server.viewer.open_doors import OpenDoors

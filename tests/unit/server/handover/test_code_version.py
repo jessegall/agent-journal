@@ -5,8 +5,8 @@ from engine.journal.journal_home import JournalHome
 from engine.module.code_fingerprint import PINNED_CODE_VARIABLE, CodeFingerprint
 from engine.module.module_finder import ModuleFinder
 from engine.module.source_hash import SourceHash
-from server.code_version import CodeVersion
-from server.code_folders import CodeFolders
+from server.handover.code_version import CodeVersion
+from server.handover.code_folders import CodeFolders
 
 
 class SampleFolders(CodeFolders):

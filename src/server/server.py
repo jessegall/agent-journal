@@ -32,9 +32,9 @@ from engine.module.module_finder import ModuleFinder
 from engine.database.reported_findings import ReportedFindings
 from server.work.booting_work import BootingWork
 from server.work.code_sync_work import CodeSyncWork
-from server.code_version import CodeVersion
-from server.code_folders import CodeFolders
-from server.handover_descriptors import HandoverDescriptors
+from server.handover.code_version import CodeVersion
+from server.handover.code_folders import CodeFolders
+from server.handover.handover_descriptors import HandoverDescriptors
 from server.door.hosted_journal_door import HostedJournalDoor
 from server.door.local_journal_door import LocalJournalDoor
 from server.request.journal_server import JournalServer
@@ -63,7 +63,7 @@ from server.viewer.viewer_routes import ViewerRoutes
 from server.request.request_handler import RequestHandler
 from server.server_backup import ServerBackup
 from core.base.serving.server_files import ServerFiles
-from server.waiting_server import WaitingServer
+from server.handover.waiting_server import WaitingServer
 
 MAX_OPEN_FILES = 10240
 

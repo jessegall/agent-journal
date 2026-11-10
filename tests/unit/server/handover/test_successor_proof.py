@@ -7,8 +7,8 @@ import pytest
 from engine.journal.journal_home import JournalHome
 from engine.module.errors.module_error import ModuleError
 from server.server_backup import ServerBackup
-from server.successor_proof import SuccessorProof
-from server import successor_proof
+from server.handover.successor_proof import SuccessorProof
+from server.handover import successor_proof
 
 
 @pytest.fixture

@@ -4,8 +4,8 @@ from pathlib import Path
 
 from engine.version.code_versions import CodeVersions
 from engine.journal.journal_home import JournalHome
-from server.handover_descriptors import READY_BYTE, HandoverDescriptors
-from server.successor_proof import SuccessorProof
+from server.handover.handover_descriptors import READY_BYTE, HandoverDescriptors
+from server.handover.successor_proof import SuccessorProof
 
 
 class WaitingServer:

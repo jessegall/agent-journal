@@ -34,8 +34,8 @@ from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.models.agent_skill import AgentSkill
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
-from server.code_version import CodeVersion
-from server.code_folders import CodeFolders
+from server.handover.code_version import CodeVersion
+from server.handover.code_folders import CodeFolders
 from server.door.journal_door import JournalDoor
 from server.door.local_journal_door import LocalJournalDoor
 from server.request.journal_server import JournalServer

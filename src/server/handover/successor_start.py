@@ -10,7 +10,7 @@ from pathlib import Path
 from engine.version.code_versions import CodeVersions
 from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel
-from server.handover_descriptors import READY_BYTE, HandoverDescriptors
+from server.handover.handover_descriptors import READY_BYTE, HandoverDescriptors
 from core.base.serving.server_files import ServerFiles
 
 KILLED_WAIT_SECONDS = 5
