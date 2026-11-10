@@ -35,7 +35,7 @@ class TaskQuery(Query[Task]):
                               "holder_id = ? AND state = ?", [agent_id, TaskState.STARTED], name="tasks.current_tasks")
 
     def queued_tasks(self, agent_id: int) -> tuple[Task, ...]:
-        return self.kept.read(self.table.name, lambda: tuple(self.filter(delegated_to=agent_id, state=TaskState.OPEN).oldest().all_rows()),
+        return self.kept.owner_read(self.table.name, lambda: tuple(self.filter(delegated_to=agent_id, state=TaskState.OPEN).oldest().all_rows()),
                               "delegated_to = ? AND state = ?", [agent_id, TaskState.OPEN], name="tasks.queued_tasks")
 
     def remember(self, task: Task) -> None:
@@ -74,7 +74,7 @@ class TaskQuery(Query[Task]):
         return SubqueryMatch("id", Select(OpenDependency.view).column("task_id"), negated=True)
 
     def ready_delegated(self, agent_id: int) -> tuple[Task, ...]:
-        return self.kept.read(self.table.name, lambda: tuple(self.filter(delegated_to=agent_id, state=TaskState.OPEN).matching(self.no_open_dependency()).all_rows()),
+        return self.kept.owner_read(self.table.name, lambda: tuple(self.filter(delegated_to=agent_id, state=TaskState.OPEN).matching(self.no_open_dependency()).all_rows()),
                               f"delegated_to = ? AND state = ? AND {self.no_open_dependency().statement().sql}",
                               [agent_id, TaskState.OPEN], name="tasks.next_delegated")
 

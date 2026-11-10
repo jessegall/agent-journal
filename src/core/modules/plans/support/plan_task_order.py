@@ -51,7 +51,7 @@ class PlanTaskOrder:
 
     def plan_rows(self, task_ids: tuple[int, ...]) -> tuple[PlanTask, ...]:
         condition = SharedPlanTasks(task_ids).statement()
-        return self.kept.read("tasks", lambda: self.loaded_plan_rows(task_ids), condition.sql, condition.parameters, name=f"plans.plan_rows:{task_ids}")
+        return self.kept.owner_read("tasks", lambda: self.loaded_plan_rows(task_ids), condition.sql, condition.parameters, name=f"plans.plan_rows:{task_ids}")
 
     def loaded_plan_rows(self, task_ids: tuple[int, ...]) -> tuple[PlanTask, ...]:
         plan_ids = tuple(sorted({row.plan_id for row in self.queries.query(PlanTask).matching(Among("task_id", task_ids)).all_rows()}))

@@ -25,7 +25,7 @@ class DependencyWaits:
         self.queries, self.repository, self.waits, self.kept, self.rows = queries, repository, waits, kept, rows
 
     def pairs(self, task_ids: Sequence[int]) -> tuple[TaskDependency, ...]:
-        return self.kept.read("task_dependencies", lambda: self.read_pairs(task_ids), name=f"tasks.dependency_pairs:{sorted(task_ids)}")
+        return self.kept.owner_read("task_dependencies", lambda: self.read_pairs(task_ids), name=f"tasks.dependency_pairs:{sorted(task_ids)}")
 
     def read_pairs(self, task_ids: Sequence[int]) -> tuple[TaskDependency, ...]:
         dependencies = self.queries.query(TaskDependency).full_table(PAIRS_REASON)

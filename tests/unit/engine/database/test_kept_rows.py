@@ -196,3 +196,23 @@ def test_current_results_refresh_after_an_external_write(database, tmp_path):
     second_database.update(Statement("UPDATE notes SET text = 'External', version = version + 1"))
     second_database.close()
     assert kept.scoped_current(lambda: texts(database), name="notes.current") == tuple(["External"])
+
+
+def test_a_read_kept_for_its_owner_gives_each_scope_its_own_rows_and_loads_each_once_until_the_table_changes(database):
+    kept = KeptRows(database)
+    loads = []
+
+    def owned_texts():
+        loads.append(database.row_owner)
+        return (*texts(database), str(database.row_owner))
+
+    def read_as(owner):
+        database.row_owner = owner
+        return kept.owner_read("notes", owned_texts, name="notes.owned")
+
+    worker, everyone = RowOwner(7, 1), None
+    assert [read_as(owner)[-1] for owner in (worker, everyone, worker)] == [str(worker), "None", str(worker)]
+    assert loads == [worker, everyone]
+    database.update(Statement("UPDATE notes SET text = 'Changed', version = version + 1"))
+    assert [read_as(owner)[0] for owner in (worker, everyone)] == ["Changed", "Changed"]
+    assert loads == [worker, everyone, worker, everyone]
