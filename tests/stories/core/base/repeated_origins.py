@@ -43,9 +43,11 @@ def test_a_file_read_twice_is_refused_with_the_file_and_the_place_that_read_it(n
     with pytest.raises(RepeatedCallsError) as raised, story.repeated_work.request():
         FileAccess.shared().read(path)
         FileAccess.shared().read(path)
-    message, *caller = str(raised.value).splitlines()
-    expect_value(message, f"one request read file twice: {path.resolve()}")
-    expect_value(place_names("\n".join(caller)), ["test_a_file_read_twice_is_refused_with_the_file_and_the_place_that_read_it"])
+    refusal_text = str(raised.value)
+    first_read, repeated_read = refusal_text.split("first read: ")[1].split("\nrepeated read:\n")
+    expect_value(refusal_text.splitlines()[0], f"one request read file twice: {path.resolve()}")
+    expect_value(place_names(first_read), ["test_a_file_read_twice_is_refused_with_the_file_and_the_place_that_read_it"])
+    expect_value(place_names(repeated_read), ["test_a_file_read_twice_is_refused_with_the_file_and_the_place_that_read_it"])
 
 
 def test_a_file_read_twice_by_an_allowed_reader_is_not_refused(new_story, tmp_path):
