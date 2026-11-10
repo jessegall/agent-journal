@@ -74,11 +74,11 @@ def sample_folders_missing() -> list[str]:
         if "src" not in parts:
             continue
         below = parts[parts.index("src") + 1:-1]
-        if below[:1] == ("engine",) and len(below) > 1:
+        if list(below[:1]) == ["engine"] and len(below) > 1:
             owners.add(f"src/engine/{below[1]}")
         if below[:2] == ("core", "modules") and len(below) > 2:
             owners.add(f"src/core/modules/{below[2]}")
-        if below[:1] == ("suites",) and len(below) > 1:
+        if list(below[:1]) == ["suites"] and len(below) > 1:
             owners.add(f"src/suites/{below[1]}")
     return sorted(owner for owner in owners if not (ROOT / owner).is_dir())
 

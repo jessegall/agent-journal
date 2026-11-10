@@ -122,6 +122,21 @@ class WrongOwnerSurvey:
                 apart.append(f"{test}: tests {files_by_stem[tested_stem][0]}")
         return apart
 
+    def narrow_support_files_used_wider(self) -> list[str]:
+        importers = defaultdict(list)
+        for path in self.source_files:
+            for name in self.imports(path):
+                importers[name].append(path)
+        apart = []
+        for path in self.source_files:
+            if "support" not in path.parts or "commands" not in path.parts[:path.parts.index("support")]:
+                continue
+            folder = Path(*path.parts[:path.parts.index("support")])
+            outside = sorted({str(importer.parent) for importer in importers[".".join(path.with_suffix("").parts[1:])] if folder not in importer.parents})
+            if outside:
+                apart.append(f"{path}: is imported from {outside[0]}")
+        return apart
+
     def enums_apart(self) -> list[str]:
         apart = []
         for path in self.source_files:
@@ -146,6 +161,7 @@ class WrongOwnerSurvey:
             "4. Catch-all support files": self.catch_all_files(),
             "5. Files that repeat the cache code": self.repeated_cache_code(),
             "6. Unit test files that do not mirror the path of their source file": self.tests_apart(),
+            "7. A support file of one command that another folder imports": self.narrow_support_files_used_wider(),
             "8. Enums outside an enums folder": self.enums_apart(),
             "9. Files whose name is not the name of their one class": self.misnamed_files(),
         }

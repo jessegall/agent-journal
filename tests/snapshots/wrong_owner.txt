@@ -121,4 +121,23 @@
 6: tests/unit/suites/coding/modules/workers/test_worker_steps.py: tests src/suites/coding/modules/workers/support/worker_steps.py
 6: tests/unit/suites/coding/modules/workers/test_worker_test_arguments.py: tests src/suites/coding/modules/workers/support/worker_test_arguments.py
 6: tests/unit/suites/coding/modules/workers/test_worker_test_round.py: tests src/suites/coding/modules/workers/support/worker_test_round.py
+7: src/core/modules/agents/commands/remove_instruction_import/support/instruction_import_question.py: is imported from src/core/modules/agents/commands/warn_instruction_imports
+7: src/core/modules/aliases/commands/set_alias_silence/support/alias_silence.py: is imported from src/core/modules/aliases/listeners
+7: src/core/modules/aliases/commands/support/alias_saved_subcommand.py: is imported from src/core/modules/aliases
+7: src/core/modules/drivers/commands/wake_interrupted_agent/support/interrupted_agents.py: is imported from src/core/modules/drivers/ticks
+7: src/core/modules/plugins/commands/support/plugin_health_check.py: is imported from src/server/tick
+7: src/core/modules/plugins/commands/support/plugin_service_round.py: is imported from src/core/modules/plugins/listeners
+7: src/core/modules/processes/commands/read_output/support/output_texts.py: is imported from src/core/modules/processes/commands/peek_output
+7: src/core/modules/processes/commands/support/part_spec.py: is imported from src/core/modules/processes/seeders
+7: src/core/modules/settings/commands/support/current_setting_output.py: is imported from src/core/modules/usage/commands/set_profile_limits
+7: src/core/modules/settings/commands/support/setting_store.py: is imported from src/core/modules/drivers/commands/allow_essential_rule
+7: src/core/modules/sharing/commands/support/share_targets.py: is imported from src/core/modules/sharing/listeners
+7: src/core/modules/skills/commands/load_skill/support/kept_skills.py: is imported from src/core/modules/skills/listeners
+7: src/core/modules/viewer/commands/support/window_allowances.py: is imported from src/server/viewer
+7: src/core/modules/viewer/commands/support/window_lines.py: is imported from src/server/viewer
+7: src/core/modules/viewer/commands/support/window_setting_keys.py: is imported from src/core/modules/viewer
+7: src/suites/coding/modules/checks/commands/support/check_progress.py: is imported from src/suites/coding/modules/checks/support
+7: src/suites/coding/modules/checks/commands/support/check_runner.py: is imported from src/suites/coding/modules/checks/support
+7: src/suites/coding/modules/workers/commands/send_worker/support/inactive_worker_send.py: is imported from src/suites/coding/modules/workers/listeners
+7: src/suites/coding/modules/workers/commands/send_worker/support/worker_queued_start.py: is imported from src/suites/coding/modules/workers/commands/merge_worker
 8: src/suites/coding/modules/workers/models/affected_test.py: AffectedTestState
