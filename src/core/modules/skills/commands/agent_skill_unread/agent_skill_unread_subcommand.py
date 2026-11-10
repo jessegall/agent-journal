@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -18,7 +19,7 @@ class AgentSkillUnreadSubcommand(ReadSubcommand[tuple[str, ...]]):
         self.unread_skills = unread_skills
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=int)
+        parser.add_argument("agent_id", type=AgentNumber)
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[str, ...]:
         return tuple(self.unread_skills.unread(arguments.agent_id))

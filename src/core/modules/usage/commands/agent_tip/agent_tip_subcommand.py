@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -21,7 +22,7 @@ class AgentTipSubcommand(ReadSubcommand[AgentTip]):
         self.queries, self.usage = queries, usage
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=int)
+        parser.add_argument("agent_id", type=AgentNumber)
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentTip:
         agent = self.queries.query(Agent).find(arguments.agent_id)

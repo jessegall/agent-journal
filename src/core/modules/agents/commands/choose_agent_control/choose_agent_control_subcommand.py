@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -16,7 +17,7 @@ class ChooseAgentControlSubcommand(Subcommand[ChooseAgentControl, Agent]):
     outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=int)
+        parser.add_argument("agent_id", type=AgentNumber)
         parser.add_argument("key")
         parser.add_argument("value")
 

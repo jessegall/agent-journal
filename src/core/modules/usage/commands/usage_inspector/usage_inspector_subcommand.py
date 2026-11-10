@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 from dataclasses import asdict
 
@@ -28,7 +29,7 @@ class UsageInspectorSubcommand(ReadSubcommand[AgentInspectorAnswer]):
         self.queries, self.inspection, self.facts, self.tool, self.programs, self.points = queries, inspection, facts, tool, programs, points
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=int)
+        parser.add_argument("agent_id", type=AgentNumber)
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentInspectorAnswer:
         agent = self.queries.query(Agent).find(arguments.agent_id)

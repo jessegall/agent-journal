@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -20,7 +21,7 @@ class AgentControlsSubcommand(ReadSubcommand[AgentControlList]):
         self.queries, self.providers = queries, providers
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=int)
+        parser.add_argument("agent_id", type=AgentNumber)
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentControlList:
         return AgentControlList(self.providers.provider(self.queries.query(Agent).find(arguments.agent_id).program).controls)

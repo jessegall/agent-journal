@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -15,7 +16,7 @@ class RetireAgentSubcommand(Subcommand[RetireAgent, Agent]):
     outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=int)
+        parser.add_argument("agent_id", type=AgentNumber)
         parser.add_argument("--reason", required=True)
 
     def command(self, arguments: Namespace, caller: Caller) -> RetireAgent:

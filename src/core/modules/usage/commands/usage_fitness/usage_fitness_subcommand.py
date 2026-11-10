@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -22,7 +23,7 @@ class UsageFitnessSubcommand(ReadSubcommand[AgentFitness]):
         self.queries, self.measures, self.clock = queries, measures, clock
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--agent", type=int, required=True)
+        parser.add_argument("--agent", type=AgentNumber, required=True)
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentFitness:
         return self.measures.fitness(self.queries.query(Agent).find(arguments.agent), self.clock.timestamp())

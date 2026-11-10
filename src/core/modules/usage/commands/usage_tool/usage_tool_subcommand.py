@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
 
@@ -45,7 +46,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         self.queries, self.processes, self.outputs, self.questions, self.clock = queries, processes, outputs, questions, clock
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--agent", type=int)
+        parser.add_argument("--agent", type=AgentNumber)
 
     def read(self, arguments: Namespace, caller: Caller) -> ToolFacts:
         if arguments.agent is not None:

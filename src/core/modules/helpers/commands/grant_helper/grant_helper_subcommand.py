@@ -1,3 +1,4 @@
+from engine.cli.agent_number import AgentNumber
 from argparse import REMAINDER, ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -13,7 +14,7 @@ class GrantHelperSubcommand(Subcommand[GrantHelper, HelperGrant]):
     name = "grant"
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("helper_id", type=int)
+        parser.add_argument("helper_id", type=AgentNumber)
         parser.add_argument("program")
         parser.add_argument("subcommands")
         parser.add_argument("allowed_arguments", nargs=REMAINDER)
