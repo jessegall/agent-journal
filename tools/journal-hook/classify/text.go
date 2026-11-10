@@ -3,6 +3,7 @@ package classify
 import (
 	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/jessegall/agent-journal/tools/journal-hook/internal/pyre"
 	"github.com/jessegall/agent-journal/tools/journal-hook/shell"
@@ -39,8 +40,12 @@ type pipeMark struct {
 func pipesAt(characters []rune, level int) []pipeMark {
 	var positions []pipeMark
 	quote, depth, passed := rune(0), 0, -1
+	bodies := heredocBodies(string(characters))
 	for index, character := range characters {
 		if index <= passed || index > 0 && characters[index-1] == '\\' && quote != '\'' {
+			continue
+		}
+		if bodies.holds(index) {
 			continue
 		}
 		switch {
@@ -132,6 +137,59 @@ func closingParen(characters []rune) int {
 		}
 	}
 	return -1
+}
+
+// A heredoc with its end word, quoted or not.
+var heredocStart = regexp.MustCompile(`<<-?\s*['"]?(\w+)['"]?`)
+
+// runeSpans are stretches of a text, each from its first character up to the one after its last.
+type runeSpans [][2]int
+
+func (spans runeSpans) holds(index int) bool {
+	for _, span := range spans {
+		if index >= span[0] && index < span[1] {
+			return true
+		}
+	}
+	return false
+}
+
+// heredocBodies are the stretches of text handed to a command as a heredoc: data, in which no pipe, quote or
+// bracket belongs to the shell line. A heredoc with no end word in the text runs to the end.
+func heredocBodies(text string) runeSpans {
+	var bodies runeSpans
+	searched := 0
+	for searched < len(text) {
+		match := heredocStart.FindStringSubmatchIndex(text[searched:])
+		if match == nil {
+			break
+		}
+		word := text[searched+match[2] : searched+match[3]]
+		lineEnd := strings.Index(text[searched+match[1]:], "\n")
+		if lineEnd < 0 {
+			break
+		}
+		bodyStart := searched + match[1] + lineEnd + 1
+		bodyEnd := len(text)
+		if end := strings.Index(text[bodyStart-1:], "\n"+word); end >= 0 {
+			bodyEnd = bodyStart - 1 + end
+		}
+		bodies = append(bodies, [2]int{utf8.RuneCountInString(text[:bodyStart]), utf8.RuneCountInString(text[:bodyEnd])})
+		searched = bodyEnd
+	}
+	return bodies
+}
+
+// withoutHeredocBodies takes out the text of every heredoc, so no redirect sign in it reads as one of the line.
+func withoutHeredocBodies(text string) string {
+	characters := []rune(text)
+	var kept []rune
+	position := 0
+	for _, body := range heredocBodies(text) {
+		kept = append(kept, characters[position:body[0]]...)
+		position = body[1]
+	}
+	return string(append(kept, characters[position:]...))
 }
 
 // A heredoc whose end word is quoted: the shell leaves its text as it stands.

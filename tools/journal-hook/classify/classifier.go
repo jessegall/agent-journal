@@ -327,7 +327,7 @@ func (classifier *Classifier) arguments(text string) []string {
 // redirectTargets are the files a command's redirects write.
 func (classifier *Classifier) redirectTargets(text string) []string {
 	targets := []string{}
-	for _, redirect := range classifier.loaded().redirection.FindAllStringSubmatch(blanked(withoutClosedHeredocs(text)), -1) {
+	for _, redirect := range classifier.loaded().redirection.FindAllStringSubmatch(blanked(withoutHeredocBodies(text)), -1) {
 		if !classifier.loaded().RedirectWrites(redirect[2], redirect[3]) {
 			continue
 		}
