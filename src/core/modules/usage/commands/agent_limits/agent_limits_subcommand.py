@@ -2,7 +2,7 @@ from argparse import Namespace
 from dataclasses import asdict
 
 from core.base.caller.caller import Caller
-from core.base.agent_work import AgentWork
+from engine.agent.agent_work import AgentWork
 from core.base.profile.agent_profile import AgentProfile
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.among import Among

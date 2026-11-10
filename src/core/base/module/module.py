@@ -3,8 +3,8 @@ import inspect
 from collections.abc import Sequence
 from pathlib import Path
 from typing import ClassVar, Never
-from core.base.agent_group import AgentGroup
-from core.base.helper_type import HelperType
+from engine.agent.agent_group import AgentGroup
+from engine.helper_type.helper_type import HelperType
 from core.base.profile.agent_profile import AgentProfile
 
 from core.base.driver.nudge_declaration import NudgeDeclaration

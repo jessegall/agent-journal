@@ -1,7 +1,7 @@
 import shlex
 
 from engine.enums.actor_type import ActorType
-from core.base.agent_checkouts import AgentCheckouts
+from engine.agent.agent_checkouts import AgentCheckouts
 from core.base.caller.caller import Caller
 from core.base.caller.caller_request import CallerRequest
 from core.base.cli.alias_options import AliasOptions

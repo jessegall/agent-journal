@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
 from dataclasses import replace
 
-from core.base.helper_type_book import HelperTypeBook
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.base.caller.caller import Caller
 from core.base.profile.agent_profile import AgentProfile
 from core.base.query.conditions.among import Among

@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 
-from core.base.agent_work import AgentWork
+from engine.agent.agent_work import AgentWork
 from core.base.database.kept_rows import KeptRows
 from core.base.query.queries import Queries
 from suites.coding.modules.workers.models.worker_work_review import WorkerWorkReview

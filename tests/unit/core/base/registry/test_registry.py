@@ -27,7 +27,7 @@ from core.base.template.template_declaration import TemplateDeclaration
 from core.base.registry.template_entry import TemplateEntry
 from core.base.registry.button_entry import ButtonEntry
 from core.base.viewer.button_declaration import AgentField, ButtonCondition, ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TemplateField, TextField
-from core.base.agent_policy import AgentPolicy
+from engine.agent.agent_policy import AgentPolicy
 from core.base.registry.window_entry import WindowEntry
 from dataclasses import replace
 from tests.unit.core.base.command.test_commands import MakeItem

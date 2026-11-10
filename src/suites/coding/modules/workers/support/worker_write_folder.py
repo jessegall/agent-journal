@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.agent_write_folder import AgentWriteFolder
+from engine.agent.agent_write_folder import AgentWriteFolder
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 

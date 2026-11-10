@@ -4,7 +4,7 @@ from core.base.driver.driver import Driver
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.helper_type import HelperType
+from engine.helper_type.helper_type import HelperType
 from core.base.driver.suite import Suite
 from core.base.module.module import Module
 from core.base.profile.agent_profile import AgentProfile

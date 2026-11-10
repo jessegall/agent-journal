@@ -1,6 +1,6 @@
 import shlex
 
-from core.base.agent_checkouts import AgentCheckouts
+from engine.agent.agent_checkouts import AgentCheckouts
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler

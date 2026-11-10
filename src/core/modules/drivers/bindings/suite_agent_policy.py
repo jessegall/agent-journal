@@ -1,4 +1,4 @@
-from core.base.agent_policy import AgentPolicy
+from engine.agent.agent_policy import AgentPolicy
 from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy
 from core.modules.drivers.support.suite_choice import SuiteChoice
 

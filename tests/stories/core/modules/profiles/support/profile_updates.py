@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.base.helper_type import HelperType
+from engine.helper_type.helper_type import HelperType
 from core.base.module.module import Module
 from core.base.profile.agent_profile import AgentProfile
 from core.base.viewer.window_declaration import WindowDeclaration

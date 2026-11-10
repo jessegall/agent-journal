@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.agent_checkouts import AgentCheckouts
+from engine.agent.agent_checkouts import AgentCheckouts
 from engine.checkout.checkout import Checkout
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent

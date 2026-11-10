@@ -1,7 +1,7 @@
 from enum import StrEnum
 
-from core.base.agent_policy import AgentPolicy
-from core.base.helper_type_book import HelperTypeBook
+from engine.agent.agent_policy import AgentPolicy
+from engine.helper_type.helper_type_book import HelperTypeBook
 
 
 class RoleGroup(StrEnum):

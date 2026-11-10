@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.helper_type_book import HelperTypeBook
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.time.timestamp import Timestamp
 from core.modules.memories.models.memory_holder import MemoryHolder
 

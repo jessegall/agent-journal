@@ -1,5 +1,5 @@
 from core.modules.agents.migrations.m021_menu_answer_agent_index import MenuAnswerAgentIndexMigration
-from core.base.agent_role_reader import AgentRoleReader
+from engine.agent.agent_role_reader import AgentRoleReader
 from core.modules.agents.guards.agent_chat_guard import AgentChatGuard
 from core.modules.agents.support.agent_role_rows import AgentRoleRows
 from core.modules.agents.migrations.m015_kept_agents_index import KeptAgentsIndexMigration
@@ -71,7 +71,7 @@ from core.base.module.module import Module
 from core.modules.agents.migrations.m009_agent_access import AgentAccessMigration
 from core.modules.agents.commands.record_agent_launch_failure.launch_nudges import AGENT_START_FAILED
 from core.modules.agents.commands.record_agent_process.record_agent_process_handler import RecordAgentProcessHandler
-from core.base.helper_type import HelperType
+from engine.helper_type.helper_type import HelperType
 from core.base.viewer.auto_scroll import AutoScroll
 from core.base.viewer.window_search import WindowSearch
 from core.modules.agents.support.agent_searcher import AgentSearcher
@@ -81,7 +81,7 @@ from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_shows import WindowShows
 from core.base.viewer.window_tab import WindowTab
-from core.base.agent_checkouts import AgentCheckouts
+from engine.agent.agent_checkouts import AgentCheckouts
 from core.modules.agents.bindings.agent_caller_resolver import AgentCallerResolver
 from core.modules.agents.bindings.agent_project_checkouts import AgentProjectCheckouts
 from core.modules.agents.migrations.m011_helper_rows import HelperRowsMigration

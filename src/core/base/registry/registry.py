@@ -3,10 +3,10 @@ import sqlite3
 from collections.abc import Sequence
 from core.base.registry.profile_entry import ProfileEntry
 from engine.errors.refusal import Refusal
-from core.base.agent_policy import AgentPolicy
+from engine.agent.agent_policy import AgentPolicy
 from engine.enums.role_group import RoleGroup
-from core.base.agent_group_book import AgentGroupBook
-from core.base.helper_type_book import HelperTypeBook
+from engine.agent.agent_group_book import AgentGroupBook
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.base.registry.agent_group_entry import AgentGroupEntry
 from core.base.registry.helper_type_entry import HelperTypeEntry
 from dataclasses import asdict, dataclass, field, replace

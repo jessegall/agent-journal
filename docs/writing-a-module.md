@@ -61,7 +61,7 @@ window, a shipped button, or another module's button, and refuses person-only ad
 type a unique key made of lowercase letters and dashes and a label:
 
 ```python
-from core.base.helper_type import HelperType
+from engine.helper_type.helper_type import HelperType
 from core.base.module.module import Module
 
 

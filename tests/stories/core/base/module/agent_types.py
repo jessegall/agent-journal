@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.helper_type_book import HelperTypeBook
+from engine.helper_type.helper_type_book import HelperTypeBook
 from tests.stories.core.support.fixtures import MainEnvironment
 
 

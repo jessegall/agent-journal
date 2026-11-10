@@ -4,7 +4,7 @@ from engine.enums.access import Access
 from core.base.module.module import Module
 from core.base.profile.agent_profile import AgentProfile
 from core.base.profile.profile_name import PROFILE_NAME
-from core.base.helper_type import HelperType
+from engine.helper_type.helper_type import HelperType
 
 
 class ProfileCheck:

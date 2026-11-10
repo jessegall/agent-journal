@@ -1,7 +1,7 @@
 import json
 
-from core.base.agent_group import AgentGroup
-from core.base.agent_group_book import AgentGroupBook
+from engine.agent.agent_group import AgentGroup
+from engine.agent.agent_group_book import AgentGroupBook
 from core.base.registry.agent_group_entry import AgentGroupEntry
 from core.base.registry.registry import Registry
 from tests.stories.core.support.coding_fixtures import UserBuilder

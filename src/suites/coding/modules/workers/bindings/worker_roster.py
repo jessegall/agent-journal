@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from engine.actor.actor import Actor
-from core.base.agent_roster import AgentRoster
+from engine.agent.agent_roster import AgentRoster
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.query.queries import Queries

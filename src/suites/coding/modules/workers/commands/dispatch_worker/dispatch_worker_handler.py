@@ -9,7 +9,7 @@ from core.base.command.handler import Handler
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.base.listener.event_rows import EventRows
-from core.base.helper_type_book import HelperTypeBook
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.base.profile.agent_profile import AgentProfile
 from engine.errors.refusal import Refusal
 from core.modules.profiles.support.profile_files import ProfileFiles

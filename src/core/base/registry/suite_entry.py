@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import LayoutShape
-from core.base.agent_policy import AgentPolicy
+from engine.agent.agent_policy import AgentPolicy
 
 
 @dataclass(frozen=True)

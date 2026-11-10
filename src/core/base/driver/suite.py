@@ -3,8 +3,8 @@ from typing import ClassVar
 
 from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import LayoutShape
-from core.base.agent_policy import AgentPolicy
-from core.base.helper_type import HelperType
+from engine.agent.agent_policy import AgentPolicy
+from engine.helper_type.helper_type import HelperType
 
 
 class Suite:

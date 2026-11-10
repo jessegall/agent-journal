@@ -5,7 +5,7 @@ from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import split, tabs
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from suites.coding.support.next_task import NextTask
-from core.base.agent_policy import AgentPolicy
+from engine.agent.agent_policy import AgentPolicy
 
 AGENT_WORK_TABS = ("coding.terminal", "coding.file-feed", "tasks.tasks", "drivers.hook-calls", "agents.helpers")
 

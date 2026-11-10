@@ -5,11 +5,11 @@ from core.modules.processes.support.process_nudges import RUNNER_MISSING, SANDBO
 from collections.abc import Mapping, Sequence
 
 from core.base.driver.agent_hook import AgentHook
-from core.base.helper_type_book import HelperTypeBook
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.enums.access import Access
-from core.base.agent_checkouts import AgentCheckouts
+from engine.agent.agent_checkouts import AgentCheckouts
 from engine.sandbox.agent_sandbox_choice import AgentSandboxChoice
-from core.base.agent_write_folder import AgentWriteFolder
+from engine.agent.agent_write_folder import AgentWriteFolder
 from core.base.project_reads import ProjectReads
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.base.driver.driver_rule import DriverRule

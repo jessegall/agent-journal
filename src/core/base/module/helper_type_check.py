@@ -3,12 +3,12 @@ from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import fields
 
 from engine.enums.access import Access
-from core.base.agent_roster import AgentRoster
-from core.base.agent_group_book import AgentGroupBook
-from core.base.helper_type import HelperType
+from engine.agent.agent_roster import AgentRoster
+from engine.agent.agent_group_book import AgentGroupBook
+from engine.helper_type.helper_type import HelperType
 from core.base.profile.agent_profile import AgentProfile
 from core.base.registry.agent_group_entry import AgentGroupEntry
-from core.base.helper_type_book import MAIN_KEY, HelperTypeBook
+from engine.helper_type.helper_type_book import MAIN_KEY, HelperTypeBook
 from core.base.module.module import Module
 from core.base.registry.helper_type_entry import HelperTypeEntry
 from core.base.registry.driver_rule_entry import DriverRuleEntry

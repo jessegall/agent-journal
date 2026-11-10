@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from core.base.agent_group import AgentGroup
+from engine.agent.agent_group import AgentGroup
 
 
 @dataclass(frozen=True)

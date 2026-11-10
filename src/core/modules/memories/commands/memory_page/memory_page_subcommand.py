@@ -2,7 +2,7 @@ from engine.errors.user_approval_refusal import UserApprovalRefusal
 from argparse import ArgumentParser, Namespace
 
 from engine.enums.actor_type import ActorType
-from core.base.helper_type_book import HelperTypeBook
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.base.caller.caller import Caller
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries

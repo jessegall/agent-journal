@@ -7,7 +7,7 @@ import signal
 import subprocess
 from collections.abc import Callable, Mapping
 
-from core.base.agent_checkouts import AgentCheckouts
+from engine.agent.agent_checkouts import AgentCheckouts
 from engine.checkout.checkout import Checkout
 from core.base.driver.command_category import CommandCategory
 from core.base.change.event_log import HIDDEN

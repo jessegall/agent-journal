@@ -1,5 +1,5 @@
 from engine.enums.access import Access
-from core.base.helper_type_book import HelperTypeBook
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.profile.agent_profile import AgentProfile

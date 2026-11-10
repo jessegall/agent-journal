@@ -64,11 +64,11 @@ from suites.coding.modules.workers.models.worker_test_run import WorkerTestRun
 from suites.coding.modules.workers.migrations.m032_worker_phase_test_runs import WorkerPhaseTestRunsMigration
 from suites.coding.modules.workers.commands.record_worker_test_run.record_worker_test_run_handler import RecordWorkerTestRunHandler
 from suites.coding.modules.workers.rules.approved_plan_stop_rule import ApprovedPlanStopRule
-from core.base.agent_work import AgentWork
+from engine.agent.agent_work import AgentWork
 from suites.coding.modules.workers.listeners.merger_tests_passed_listener import MergerTestsPassedListener
 from suites.coding.modules.workers.bindings.worker_agent_work import WorkerAgentWork
 from suites.coding.modules.workers.support.worker_brief_points import WorkerBriefPoints
-from core.base.agent_brief_points import AgentBriefPoints
+from engine.agent.agent_brief_points import AgentBriefPoints
 from suites.coding.modules.workers.models.worker_work_review import WorkerWorkReview
 from suites.coding.modules.workers.migrations.m037_worktree_delivery import WorktreeDeliveryMigration
 from suites.coding.modules.workers.migrations.m048_worktree_libraries import WorktreeLibrariesMigration
@@ -88,8 +88,8 @@ from suites.coding.modules.workers.migrations.m019_worker_logs_read import Worke
 from suites.coding.modules.workers.commands.read_worker_logs.read_worker_logs_handler import ReadWorkerLogsHandler
 from suites.coding.modules.workers.commands.read_worker_logs.read_worker_logs_subcommand import ReadWorkerLogsSubcommand
 from suites.coding.modules.workers.migrations.m016_worker_session import WorkerSessionMigration
-from core.base.agent_checkouts import AgentCheckouts
-from core.base.agent_write_folder import AgentWriteFolder
+from engine.agent.agent_checkouts import AgentCheckouts
+from engine.agent.agent_write_folder import AgentWriteFolder
 from suites.coding.modules.workers.support.worker_checkouts import WorkerCheckouts
 from suites.coding.modules.workers.support.worker_write_folder import WorkerWriteFolder
 from engine.sandbox.agent_sandbox_choice import AgentSandboxChoice
@@ -195,7 +195,7 @@ from core.base.viewer.button_condition import ButtonCondition
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.base.viewer.text_field import TextField
 from engine.enums.access import Access
-from core.base.helper_type import HelperType
+from engine.helper_type.helper_type import HelperType
 from suites.coding.modules.workers.bindings.worker_roster import WorkerRoster
 from core.modules.processes.support.run_counts import RunCounts
 from core.modules.processes.support.part_visibility import PartVisibility

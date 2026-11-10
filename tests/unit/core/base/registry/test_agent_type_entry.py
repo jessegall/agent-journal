@@ -1,7 +1,7 @@
 import json
 from dataclasses import asdict
 
-from core.base.helper_type import HelperType
+from engine.helper_type.helper_type import HelperType
 from core.base.registry.helper_type_entry import HelperTypeEntry
 
 

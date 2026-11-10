@@ -2,7 +2,7 @@ import json
 from collections.abc import Mapping
 from pathlib import Path
 
-from core.base.agent_checkouts import AgentCheckouts
+from engine.agent.agent_checkouts import AgentCheckouts
 from core.base.change.logged_event import LoggedEvent
 from engine.checkout.checkout import Checkout
 from engine.checkout.checkout_file import CheckoutFile

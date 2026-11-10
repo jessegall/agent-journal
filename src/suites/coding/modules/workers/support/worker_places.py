@@ -1,5 +1,5 @@
 from core.modules.helpers.support.agent_use import AgentUse
-from core.base.agent_work import AgentWork
+from engine.agent.agent_work import AgentWork
 from datetime import timedelta
 
 from engine.time.clock import Clock

@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from dataclasses import asdict
 
-from core.base.agent_brief_points import AgentBriefPoints
+from engine.agent.agent_brief_points import AgentBriefPoints
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output

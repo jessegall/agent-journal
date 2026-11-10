@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from core.base.command.command import Command
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
-from core.base.helper_type_book import HelperTypeBook
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.errors.refusal import Refusal
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.models.agent import Agent

@@ -1,5 +1,5 @@
 from engine.time.timestamp import Timestamp
-from core.base.agent_policy import AgentPolicy
+from engine.agent.agent_policy import AgentPolicy
 from core.modules.usage.models.agent_card import AgentCard
 
 TASK_BLOCKED_REASON = "its task is blocked"

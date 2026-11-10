@@ -1,7 +1,7 @@
 from core.base.registry.driver_entry import DriverEntry
 from core.base.registry.registry import Registry
 from core.base.registry.suite_entry import SuiteEntry
-from core.base.agent_policy import AgentPolicy
+from engine.agent.agent_policy import AgentPolicy
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.drivers.support.driver_settings import DRIVER_SETTINGS, SUITE_SETTING
 

@@ -16,33 +16,6 @@
                 "testCode": true
             },
             {
-                "file": "src/core/base/agent_brief_points.py"
-            },
-            {
-                "file": "src/core/base/agent_checkouts.py"
-            },
-            {
-                "file": "src/core/base/agent_group.py"
-            },
-            {
-                "file": "src/core/base/agent_group_book.py"
-            },
-            {
-                "file": "src/core/base/agent_policy.py"
-            },
-            {
-                "file": "src/core/base/agent_role_reader.py"
-            },
-            {
-                "file": "src/core/base/agent_roster.py"
-            },
-            {
-                "file": "src/core/base/agent_work.py"
-            },
-            {
-                "file": "src/core/base/agent_write_folder.py"
-            },
-            {
                 "file": "src/core/base/code_copy.py"
             },
             {
@@ -65,12 +38,6 @@
             },
             {
                 "file": "src/core/base/file_version.py"
-            },
-            {
-                "file": "src/core/base/helper_type.py"
-            },
-            {
-                "file": "src/core/base/helper_type_book.py"
             },
             {
                 "file": "src/core/base/kept_file_text.py"

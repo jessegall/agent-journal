@@ -340,7 +340,7 @@ def test_a_worker_waiting_for_tests_or_merge_is_not_reported_as_stopped(new_stor
 
 
 def test_a_queued_proof_survives_the_workers_first_hook_on_a_freshly_started_server_and_counts(new_story, monkeypatch):
-    from core.base.agent_policy import AgentPolicy
+    from engine.agent.agent_policy import AgentPolicy
     from core.modules.drivers.support.suite_choice import SuiteChoice
     from core.testing.hook_samples import HookSamples
     from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session

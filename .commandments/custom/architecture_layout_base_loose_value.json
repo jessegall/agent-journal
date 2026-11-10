@@ -19,9 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/core/base/agent_roster.py"
-            },
-            {
                 "file": "src/core/base/code_copy.py"
             },
             {
@@ -35,9 +32,6 @@
             },
             {
                 "file": "src/core/base/file_version.py"
-            },
-            {
-                "file": "src/core/base/helper_type_book.py"
             }
         ]
     },

@@ -1,4 +1,4 @@
-from core.base.agent_role_reader import AgentRoleReader
+from engine.agent.agent_role_reader import AgentRoleReader
 from core.base.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 

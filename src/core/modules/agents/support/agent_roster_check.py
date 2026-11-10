@@ -1,6 +1,6 @@
 from typing import TypeGuard
 
-from core.base.agent_roster import AgentRoster
+from engine.agent.agent_roster import AgentRoster
 from core.modules.agents.models.agent import Agent
 
 

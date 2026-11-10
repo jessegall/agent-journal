@@ -1,4 +1,4 @@
-from core.base.agent_checkouts import AgentCheckouts
+from engine.agent.agent_checkouts import AgentCheckouts
 from engine.checkout.checkout import Checkout
 from engine.checkout.checkout_file import CheckoutFile
 from engine.enums.checkout_type import CheckoutType

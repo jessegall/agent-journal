@@ -1,4 +1,4 @@
-from core.base.agent_policy import AgentPolicy
+from engine.agent.agent_policy import AgentPolicy
 
 
 class CurrentAgentPolicy:

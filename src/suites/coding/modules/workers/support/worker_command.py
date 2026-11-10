@@ -1,7 +1,7 @@
 from suites.coding.support.worker_test_rule import WORKER_TEST_RULE
 from pathlib import Path
 
-from core.base.helper_type_book import HelperTypeBook
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.providers import Providers
 from core.base.provider.resumed_session import ResumedSession

@@ -1,5 +1,5 @@
 from engine.container.container import Container
-from core.base.helper_type_book import HelperTypeBook
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.base.hosting.hosted_file import HostedFile
 from core.base.hosting.hosting import Hosting
 from core.base.database.database import Database

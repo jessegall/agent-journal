@@ -2,13 +2,13 @@ from core.modules.agents.support.agent_rows import RUNNING_AGENTS_REASON
 from core.modules.settings.bindings.support.context_share import ContextShare
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice
-from core.base.agent_policy import AgentPolicy
+from engine.agent.agent_policy import AgentPolicy
 import json
 from collections.abc import Mapping, Sequence
 from argparse import ArgumentParser, Namespace
 
 from engine.sandbox.agent_sandbox_choice import AgentSandboxChoice
-from core.base.helper_type_book import HelperTypeBook
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.base.caller.caller import Caller
 from engine.time.clock import Clock
 from core.base.query.conditions.excluding import Excluding

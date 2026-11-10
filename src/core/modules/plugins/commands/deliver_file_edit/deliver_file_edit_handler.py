@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from core.base.agent_checkouts import AgentCheckouts
+from engine.agent.agent_checkouts import AgentCheckouts
 from engine.enums.agent_role import AgentRole
 from engine.checkout.checkout_file import CheckoutFile
 from core.base.model.event_form import EventForm

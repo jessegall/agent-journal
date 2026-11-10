@@ -10,7 +10,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from core.base.agent_checkouts import AgentCheckouts
+from engine.agent.agent_checkouts import AgentCheckouts
 from engine.journal.journal_home import JournalHome
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from engine.time.timestamp import Timestamp

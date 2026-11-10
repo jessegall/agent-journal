@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from engine.enums.access import Access
-from core.base.helper_type import HelperType
+from engine.helper_type.helper_type import HelperType
 from core.base.dotted_path.dotted_path import DottedPath
 
 

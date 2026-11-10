@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.base.agent_checkouts import AgentCheckouts
+from engine.agent.agent_checkouts import AgentCheckouts
 from engine.time.clock import Clock
 from core.base.command.bus import Bus
 from core.modules.environments.support.environment_rows import EnvironmentRows

@@ -2,7 +2,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from core.base.agent_checkouts import AgentCheckouts
+from engine.agent.agent_checkouts import AgentCheckouts
 from core.base.caller.caller_request import SESSION_VARIABLE
 from engine.checkout.checkout import Checkout
 from engine.enums.checkout_type import CheckoutType
