@@ -32,6 +32,6 @@ class StartWorkerRunsHandler(Handler[StartWorkerRuns, tuple[CheckpointReach, ...
             reach = self.checkpoints.reach_worker(window.plan_id, window.checkpoint_id, window.task_ids, context)
             if reach is None:
                 continue
-            self.repository.save(WorktreeReach(creator_id=context.actor.id, reach_id=reach.id, worktree_id=worktree.id, phase_id=window.checkpoint_id, commit_id=command.commit_id), context)
+            self.repository.save(WorktreeReach(reach_id=reach.id, worktree_id=worktree.id, phase_id=window.checkpoint_id, commit_id=command.commit_id), context)
             reaches.append(reach)
         return tuple(reaches)

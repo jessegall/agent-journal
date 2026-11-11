@@ -105,7 +105,7 @@ def scope(unit=LIST_UNIT, worktree=WORKTREE, started=(), blocking=None, conflict
 
 def run(state: CheckpointState) -> tuple[WorktreeReach, CheckpointReach]:
     reach = replace(CheckpointReach.started_worker(1, 2, 3, (7, 8)), id=4, state=state)
-    return WorktreeReach(creator_id=1, reach_id=4, worktree_id=5, phase_id=3, commit_id="9b1e0d2"), reach
+    return WorktreeReach(reach_id=4, worktree_id=5, phase_id=3, commit_id="9b1e0d2"), reach
 
 
 def refusal_of(checked_scope: MergeAskScope, note: str = "the cart", up_to: str = "") -> str:

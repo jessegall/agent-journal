@@ -9,4 +9,3 @@ class WakeWaitingWorker(Command[None]):
 
     worker_id: int
     phase_id: int
-    commit_id: str

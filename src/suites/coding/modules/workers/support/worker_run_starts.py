@@ -29,6 +29,6 @@ class WorkerRunStarts:
         except Refusal:
             worker_id = self.queries.query(Worktree).find(link.worktree_id).session_agent_id
             self.bus.dispatch(FailCheckpoint(reach.id), context)
-            self.nudger.send(worker_id, WORKER_RUN_UNSTARTED, UNSTARTED_SOURCE, context, phase=reach.phase_id, commit=link.commit_id)
-            self.inbox.send_nudge(MERGER_WORKER_RUN_UNSTARTED.nudge(phase=reach.phase_id, commit=link.commit_id, worker=worker_id), UNSTARTED_SOURCE, context)
+            self.nudger.send(worker_id, WORKER_RUN_UNSTARTED, UNSTARTED_SOURCE, context, phase=reach.phase_id)
+            self.inbox.send_nudge(MERGER_WORKER_RUN_UNSTARTED.nudge(phase=reach.phase_id, worker=worker_id), UNSTARTED_SOURCE, context)
             return None

@@ -10,7 +10,7 @@
             {
                 "argument": {
                     "at": 0,
-                    "textMatches": "WorktreeLifecycle\\.deliver$"
+                    "name": "deliver"
                 }
             }
         ],

@@ -62,19 +62,16 @@ WORKER_ENDED_WITH_TASKS = NudgeDeclaration("workers.ended_with_tasks", NudgeType
 WORKER_COMMITTED_UNMERGED = NudgeDeclaration("workers.committed_unmerged", NudgeType.STEERING, 'the code of {tasks} of worker:{worker} is committed and is not merged', turn_limited=False)
 CHECKPOINT_FAILURE_FALLBACK = NudgeDeclaration("workers.checkpoint_failure_fallback", NudgeType.STEERING,
                                              'a failed test of checkpoint phase:{phase} names no task: task:{task} went back, output {outputs}', turn_limited=False)
-WORKER_TASK_AWAITED = NudgeDeclaration("workers.committed_task_awaited", NudgeType.STEERING,
-                                      'worker:{worker} waits on your task:{task}, committed in your worktree. It opens for them when it is merged; if it is ready to share, ask for the merge with --up-to {task}',
+WORKER_TASK_AWAITED = NudgeDeclaration("workers.committed_task_awaited", NudgeType.STEERING, 'worker:{worker} waits on your committed task:{task}; to share it before the rest, ask with --up-to {task}',
                                       turn_limited=False, id_field="task")
-WORKER_TASK_JOINS = NudgeDeclaration("workers.task_joins_unit", NudgeType.STEERING,
-                                    'task:{task} was sent to you and joins your unit. If it must be merged before the rest: commit it, then ask for the merge with --up-to {task}; that carries every earlier commit of your unit',
+WORKER_TASK_JOINS = NudgeDeclaration("workers.task_joins_unit", NudgeType.STEERING, 'task:{task} joins your unit; to merge it before the rest, commit it and ask with --up-to {task}',
                                     turn_limited=False, id_field="task")
-WORKER_UNIT_RUN_PASSED = NudgeDeclaration("workers.unit_run_passed", NudgeType.STEERING, 'the tests of checkpoint phase:{phase} passed on your commit {commit}: {line}',
+WORKER_UNIT_RUN_PASSED = NudgeDeclaration("workers.unit_run_passed", NudgeType.STEERING, 'phase:{phase} tests passed on your commit: {line}',
                                          turn_limited=False, wakes_agent=True, path_fields=["line"])
-WORKER_RUN_UNSTARTED = NudgeDeclaration("workers.worker_run_unstarted", NudgeType.STEERING,
-                                       'the tests of checkpoint phase:{phase} could not start on your commit {commit}: nothing of yours failed; go on with your unit, your next commit starts them again',
+WORKER_RUN_UNSTARTED = NudgeDeclaration("workers.worker_run_unstarted", NudgeType.STEERING, 'phase:{phase} tests could not start on your commit; nothing failed: go on, your next commit starts them',
                                        turn_limited=False)
 MERGER_WORKER_RUN_UNSTARTED = NudgeDeclaration("workers.merger_worker_run_unstarted", NudgeType.STEERING,
-                                              'the tests of checkpoint phase:{phase} could not start on commit {commit} of worker:{worker}', turn_limited=False)
+                                              'the tests of checkpoint phase:{phase} could not start on a commit of worker:{worker}', turn_limited=False)
 WORKER_MERGE_CONFLICT = NudgeDeclaration("workers.merge_clash", NudgeType.STEERING, '{branch} is merged into your worktree and clashes on {lines}: {line}', turn_limited=False, path_fields=["lines", "line"])
 WORKER_TASK_COUNT = NudgeDeclaration("workers.started_task_count", NudgeType.STEERING, 'you hold {count} tasks of the {limit} you may hold at once', turn_limited=False)
 WORKER_COMMIT_PASSED = NudgeDeclaration("workers.commit_tests_passed", NudgeType.STEERING, 'the tests of your commit passed: {line}', turn_limited=False, path_fields=["line"])

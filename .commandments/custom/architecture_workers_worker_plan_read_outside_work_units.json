@@ -9,7 +9,7 @@
             },
             {
                 "of": "receiver",
-                "textMatches": "^PlanAssignee$"
+                "name": "PlanAssignee"
             }
         ],
         "reject": [

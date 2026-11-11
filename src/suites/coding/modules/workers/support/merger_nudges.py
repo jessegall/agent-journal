@@ -8,7 +8,7 @@ NO_WORKER_WAITING = "no worker waits: stop"
 MERGER_FINDINGS_PREFIX = "From the merger, please fix this: "
 WORKER_MERGED = NudgeDeclaration("workers.worker_merged", NudgeType.STEERING, "worker:{worker} was merged", plural_text="workers {worker} were merged", id_field="worker", wakes_agent=True)
 UNIT_MERGE_WAITS = NudgeDeclaration("workers.unit_merge_waits", NudgeType.STEERING, "worker:{worker} waits for the merge of its unit in merge-ask:{merge_ask}; the merger is off", wakes_agent=True)
-UNIT_MERGED = NudgeDeclaration("workers.unit_merged", NudgeType.STEERING, "worker:{worker} merged {unit}: {count} tasks; its note is in merge-ask:{merge_ask}", wakes_agent=True)
+UNIT_MERGED = NudgeDeclaration("workers.unit_merged", NudgeType.STEERING, "worker:{worker} merged {count} tasks; its note is in merge-ask:{merge_ask}", wakes_agent=True)
 MERGER_PASSED = NudgeDeclaration("workers.merger_passed", NudgeType.STEERING, "the merger leaves worker:{worker} to you: its merge waits on you",
                                  plural_text="the merger leaves workers {worker} to you: their merges wait on you", id_field="worker", wakes_agent=True)
 

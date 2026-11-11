@@ -23,5 +23,4 @@ class SendMergedWorkerLineHandler(Handler[SendMergedWorkerLine, None]):
         if merged_ask is None:
             self.main_line.send_nudge(WORKER_MERGED.nudge(worker=worker), WORKER_MERGED.key, context)
             return
-        unit = merged_ask.unit_name
-        self.main_line.send_nudge(UNIT_MERGED.nudge(worker=worker, unit=unit, count=len(merged_ask.tasks()), merge_ask=merged_ask.id), UNIT_MERGED.key, context)
+        self.main_line.send_nudge(UNIT_MERGED.nudge(worker=worker, count=len(merged_ask.tasks()), merge_ask=merged_ask.id), UNIT_MERGED.key, context)

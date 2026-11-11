@@ -5,9 +5,6 @@
         "select": "literal",
         "where": [
             {
-                "fileMatches": "(^|/)src/(core|suites)/"
-            },
-            {
                 "textMatches": "journal worker deliver|deliver again"
             }
         ],

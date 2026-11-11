@@ -35,4 +35,4 @@ def test_no_step_says_say_you_are_stuck(step):
 
 
 def test_step_values_are_stable():
-    assert [step.value for step in WorkerStep] == ["build", "commit", "wait", "fix", "conflict", "question", "blocked"]
+    assert [step.value for step in WorkerStep] == ["build", "commit", "wait", "fix", "conflict", "question", "blocked", "merge_due"]
