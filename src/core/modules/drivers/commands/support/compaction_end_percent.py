@@ -40,8 +40,12 @@ class CompactionEndPercent:
         if tokens is not None:
             self.compactions.record_tokens_after(agent.id, tokens, context)
         start = self.hook_calls.latest_turn_call(agent.id)
-        if start is None or not start.is_compaction_start or start.context_percent is None:
+        if start is None or not start.is_compaction_start:
             self.mark(agent, False, context)
+            return
+        if start.context_percent is None:
+            if tokens is not None:
+                self.mark(agent, False, context)
             return
         percent = self.share.percent(event.program, event.session)
         if percent is None or percent >= start.context_percent:

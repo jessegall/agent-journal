@@ -15,7 +15,8 @@ class ContextCompaction(Model):
     """One compaction or clear of one agent's context, from the line that asked for it to the first context
     size read after it ended. The line is the text typed into the agent's terminal. A compaction that left the
     context at the limit or over it did not help, so the next one is due only once the context has grown by a
-    share of the limit; until the size after it is read, no next one is due."""
+    share of the limit; until the size after it is read, no next one is due. The agent is woken once after the
+    compaction ends, and the row keeps when."""
 
     model_name = "context_compaction"
     cli_name = "context-compaction"
@@ -30,6 +31,7 @@ class ContextCompaction(Model):
     tokens_after: int | None = None
     started_at: Timestamp | None = None
     ended_at: Timestamp | None = None
+    woken_at: Timestamp | None = None
 
     def blocks_request_at(self, timestamp: Timestamp) -> bool:
         if self.state is CompactionState.STARTED:

@@ -1,6 +1,8 @@
 from dataclasses import replace
 
 from engine.command.context import Context
+from engine.database.kept_rows import KeptRows
+from engine.errors.existing_row_refusal import ExistingRowRefusal
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
@@ -17,13 +19,16 @@ class ContextCompactions:
     second one while the first is open: started, or requested less than the retry time ago. A request whose
     line never started by then is given up, and the next request takes its place. The hooks move the newest
     row as the program starts and ends the compaction; a compaction the journal did not ask for gets its row
-    at its first hook, and a row still open when the program's session ends or starts anew is given up."""
+    at its first hook, and a row still open when the program's session ends or starts anew is given up. An agent
+    has one open row at most, kept by the table itself: of two callers asking in the same second, the second one
+    is refused naming the first's row. The wake after a compaction is recorded on its row."""
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, queries: Queries, repository: Repository, kept: KeptRows) -> None:
+        self.queries, self.repository, self.kept = queries, repository, kept
 
     def newest(self, agent_id: int) -> ContextCompaction | None:
-        return self.queries.query(ContextCompaction).filter(session_agent_id=agent_id).descending("id").first()
+        return self.kept.read_newest("context_compactions", lambda: self.queries.query(ContextCompaction).filter(session_agent_id=agent_id).descending("id").first(),
+                                     "session_agent_id = ?", [agent_id], name="context_compactions.newest")
 
     def open_compaction(self, agent_id: int) -> ContextCompaction | None:
         newest = self.newest(agent_id)
@@ -43,7 +48,10 @@ class ContextCompactions:
         if newest is not None and newest.blocks_request_at(context.timestamp):
             raise Refusal(newest.refusal_text(), "wait for it to end before asking again")
         self.abandon_open(agent_id, context)
-        return self.repository.save(ContextCompaction(session_agent_id=agent_id, change=change, reason=reason, line=line, request_tokens=request_tokens), context)
+        try:
+            return self.repository.save(ContextCompaction(session_agent_id=agent_id, change=change, reason=reason, line=line, request_tokens=request_tokens), context)
+        except ExistingRowRefusal as error:
+            raise Refusal(self.open_compaction(agent_id).refusal_text(), "wait for it to end before asking again") from error
 
     def record_start(self, agent_id: int, reason: CompactionReason, context: Context) -> None:
         running = self.open_compaction(agent_id)
@@ -51,6 +59,15 @@ class ContextCompactions:
             self.repository.save(ContextCompaction(session_agent_id=agent_id, change=ContextChange.COMPACT, reason=reason, state=CompactionState.STARTED, started_at=context.timestamp), context)
         elif running.state is CompactionState.REQUESTED:
             self.repository.save(replace(running, state=CompactionState.STARTED, started_at=context.timestamp), context)
+
+    def record_wake(self, agent_id: int, context: Context) -> None:
+        newest = self.newest(agent_id)
+        if newest is not None:
+            self.repository.save(replace(newest, woken_at=context.timestamp), context)
+
+    def is_woken(self, agent_id: int) -> bool:
+        newest = self.newest(agent_id)
+        return newest is not None and newest.woken_at is not None
 
     def record_end(self, agent_id: int, context: Context) -> None:
         running = self.open_compaction(agent_id)
