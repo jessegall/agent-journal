@@ -5,11 +5,9 @@ from core.modules.assignments.models.assignment import Assignment
 
 
 @dataclass(frozen=True)
-class Assign(Command[tuple[Assignment, ...]]):
-    """Gives one row of an assignable model to an actor."""
+class UnassignRow(Command[tuple[Assignment, ...]]):
+    """Removes the assignment of one row from one actor, or from every actor when none is named."""
 
     subject_model: str
     subject_id: int
-    actor_id: int
-    cascade: bool = True
-    override: bool = False
+    actor_id: int | None = None
