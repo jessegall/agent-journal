@@ -4,7 +4,7 @@ from engine.listener.rows.event_rows import EventRows
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.tasks.models.task import Task
-from suites.coding.modules.workers.models.affected_test import AffectedTestState
+from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from suites.coding.modules.workers.models.checkpoint_test import CheckpointTest
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.proof import Proof

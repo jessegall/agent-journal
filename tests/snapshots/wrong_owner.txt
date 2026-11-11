@@ -129,4 +129,3 @@
 7: src/suites/coding/modules/checks/commands/support/check_runner.py: is imported from src/suites/coding/modules/checks/support
 7: src/suites/coding/modules/workers/commands/send_worker/support/inactive_worker_send.py: is imported from src/suites/coding/modules/workers/listeners
 7: src/suites/coding/modules/workers/commands/send_worker/support/worker_queued_start.py: is imported from src/suites/coding/modules/workers/commands/merge_worker
-8: src/suites/coding/modules/workers/models/affected_test.py: AffectedTestState

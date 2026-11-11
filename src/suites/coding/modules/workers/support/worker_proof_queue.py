@@ -19,7 +19,8 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.worker_nudges import PROOF_WAITS
-from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
+from suites.coding.modules.workers.models.affected_test import AffectedTest
+from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND, PROJECT_TEST_COMMAND
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 import shlex

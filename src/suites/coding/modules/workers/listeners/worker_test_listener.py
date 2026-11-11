@@ -21,7 +21,8 @@ from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
-from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
+from suites.coding.modules.workers.models.affected_test import AffectedTest
+from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from suites.coding.modules.workers.commands.queue_worker_tests.record_affected_test import RecordAffectedTest
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 

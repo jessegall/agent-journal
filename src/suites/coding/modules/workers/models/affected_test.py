@@ -1,16 +1,7 @@
 from dataclasses import dataclass
-from enum import StrEnum
 
 from engine.model.model import Model
-
-
-class AffectedTestState(StrEnum):
-    QUEUED = "queued"
-    PICKING = "picking"
-    TESTING = "testing"
-    PASSED = "passed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
+from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 
 
 @dataclass(frozen=True, kw_only=True)
