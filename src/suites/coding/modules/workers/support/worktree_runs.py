@@ -8,14 +8,27 @@ PASSED_TEXT = "checkpoint of phase {phase} passed on your commit {commit}"
 
 
 class WorktreeRuns:
-    """Reads the worker runs of a worktree: which checkpoints passed on which of its commits."""
+    """Reads the worker runs of a worktree: which checkpoints passed on which of its commits, and whether the
+    newest run of a checkpoint still goes or failed, which keeps the worktree from its merge."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
     def passed_text(self, worktree_id: int) -> str:
-        links = tuple(self.queries.query(WorktreeReach).filter(worktree_id=worktree_id).all_rows())
+        links = self.links(worktree_id)
         if not links:
             return ""
-        passed_ids = {reach.id for reach in self.queries.query(CheckpointReach).matching(Among("id", tuple(link.reach_id for link in links))).filter(state=CheckpointState.PASSED).all_rows()}
+        passed_ids = {reach.id for reach in self.reaches(links) if reach.state is CheckpointState.PASSED}
         return "; ".join(PASSED_TEXT.format(phase=link.phase_id, commit=link.commit_id) for link in links if link.reach_id in passed_ids)
+
+    def holds_merge(self, worktree_id: int) -> bool:
+        newest = {reach.phase_id: reach for reach in sorted(self.reaches(self.links(worktree_id)), key=lambda reach: reach.id)}
+        return any(reach.state is not CheckpointState.PASSED for reach in newest.values())
+
+    def links(self, worktree_id: int) -> tuple[WorktreeReach, ...]:
+        return tuple(self.queries.query(WorktreeReach).filter(worktree_id=worktree_id).all_rows())
+
+    def reaches(self, links: tuple[WorktreeReach, ...]) -> tuple[CheckpointReach, ...]:
+        if not links:
+            return ()
+        return tuple(self.queries.query(CheckpointReach).matching(Among("id", tuple(link.reach_id for link in links))).all_rows())

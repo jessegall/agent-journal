@@ -100,6 +100,9 @@ class WorktreeGit:
     def merge_base(self, folder: str, base_branch: str, branch: str) -> str:
         return self.checked(folder, GIT_LIMIT_SECONDS, "merge-base", base_branch, branch).stdout.strip()
 
+    def is_ancestor(self, folder: str, ancestor: str, commit: str) -> bool:
+        return self.git(folder, GIT_LIMIT_SECONDS, "merge-base", "--is-ancestor", ancestor, commit).returncode == 0
+
     def test_checkout(self, worktree: Worktree) -> str:
         return self.commit_checkout(worktree, self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "HEAD").stdout.strip())
 

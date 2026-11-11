@@ -14,7 +14,8 @@ from suites.coding.modules.workers.support.worker_task_access import WORKER_TASK
 
 class WorkerCheckpointGuard(Guard[Moved[Task]]):
     """Refuses a worker the start of a task whose phase comes after a checkpoint phase of its plan that has not
-    passed. The phases up to that checkpoint are free: their order is a suggestion."""
+    passed, unless the worker's unit holds every open task of that checkpoint's window. The phases up to that
+    checkpoint are free: their order is a suggestion."""
 
     name = "workers.task-after-checkpoint"
     moves = tuple([TaskLifecycle.start])
@@ -26,6 +27,6 @@ class WorkerCheckpointGuard(Guard[Moved[Task]]):
         agent = self.rows.find(Agent, context.actor.id)
         if agent is None or agent.role != CodingHelperRole.WORKER:
             return
-        place = self.checkpoints.blocking_places([event.row.id]).get(event.row.id)
+        place = self.checkpoints.blocking_places([event.row.id], agent.id).get(event.row.id)
         if place is not None:
             raise Refusal(f"task {event.row.id} comes after checkpoint phase {place.phase_id}, which has not passed", AskTopic.GENERAL.hint(WORKER_TASKS_HINT))
