@@ -10,6 +10,7 @@ OUTPUT_FOLDER = "graphify-out"
 STAMP_FILE = ".journal-refresh"
 RUNNING_FILE = ".journal-running"
 FAILED_FILE = ".journal-failed"
+REBUILD_LOCK_FILE = ".rebuild.lock"
 CLAIM_GRACE_SECONDS = 30
 
 

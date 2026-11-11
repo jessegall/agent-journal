@@ -10,7 +10,7 @@ from engine.event.change import Change
 from engine.event.event_log import EventLog
 from engine.command.context import Context
 from engine.database.core_tables_migration import CORE_MIGRATIONS
-from engine.database.database import Database
+from engine.database.database import READ_LIMIT_ROWS, Database
 from engine.database.schema import Schema
 from engine.journal.journal_home import JournalHome
 from engine.errors.missing_rows_error import MissingRowsError
@@ -73,3 +73,11 @@ def test_events_caused_by_one_event_exclude_other_changes_and_keep_their_order(l
     log.write(Change(None, row, replace(CONTEXT, cause_id=first)), frozenset())
     last = log.write(Change(None, row, replace(CONTEXT, cause_id=parent)), frozenset())
     assert [event.id for event in log.child_events(parent)] == [first, last]
+
+
+def test_the_events_of_several_rows_are_read_in_order_a_page_at_a_time_under_the_read_limit(log):
+    stored = [Item(id=row_id, version=1, title="Dune") for row_id in (4, 5)]
+    written = [log.write(Change(item, item.moved(ItemLifecycle.pause), CONTEXT), frozenset()) for _ in range(READ_LIMIT_ROWS) for item in stored]
+    log.table.database.read_limit_rows = READ_LIMIT_ROWS
+    events = log.row_events_many("items", [4, 5])
+    assert [event.id for event in events] == written and {event.row_id for event in events} == {4, 5}

@@ -3,7 +3,7 @@ from collections.abc import Callable, Sequence
 from typing import TypeVar
 
 from engine.database.row_history import RowHistory
-from engine.database.database import Database
+from engine.database.database import READ_LIMIT_ROWS, Database
 from engine.database.statement import Statement
 from engine.errors.missing_rows_error import MissingRowsError
 from engine.row.page import Page
@@ -13,7 +13,7 @@ T = TypeVar("T")
 
 class BookkeepingTable:
     """Reads and writes one of the core's own tables, which hold records and no models: a row by id, the rows
-    past an id, a page newest first, the count, and a new row."""
+    past an id, a page newest first, the rows of several rows a page at a time, the count, and a new row."""
 
     def __init__(self, database: Database, table: str, cli_name: str) -> None:
         self.database, self.table, self.cli_name = database, table, cli_name
@@ -55,7 +55,14 @@ class BookkeepingTable:
         if not row_ids:
             return []
         marks = ", ".join("?" for _ in row_ids)
-        return self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE row_table = ? AND row_id IN ({marks}) ORDER BY id", [row_table, *row_ids]))
+        rows: list[sqlite3.Row] = []
+        while True:
+            last_id = rows[-1]["id"] if rows else 0
+            page = self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE row_table = ? AND row_id IN ({marks}) AND id > ? ORDER BY id LIMIT ?",
+                                                [row_table, *row_ids, last_id, READ_LIMIT_ROWS]))
+            rows.extend(page)
+            if len(page) < READ_LIMIT_ROWS:
+                return rows
 
     def child_rows(self, event_id: int) -> list[sqlite3.Row]:
         return self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE id > ? AND cause_id = ? ORDER BY id", (event_id, event_id)))
