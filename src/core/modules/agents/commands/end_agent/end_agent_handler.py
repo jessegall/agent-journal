@@ -9,7 +9,8 @@ from core.modules.agents.support.agent_label import AgentLabel
 
 
 class EndAgentHandler(Handler[EndAgent, Agent]):
-    """Marks a session ended while retaining its process identity for safe resume checks."""
+    """Has the dispatcher end an agent's row, which keeps its process identity for safe resume checks; an agent
+    that ends its own session while the launcher still has its program is ended by the program's exit."""
 
     command = EndAgent
     runs_once = True
@@ -21,4 +22,4 @@ class EndAgentHandler(Handler[EndAgent, Agent]):
         agent = self.rows.required(Agent, command.row_id)
         if agent.ended_at is not None:
             raise CompletedCommandError(f"{AgentLabel.from_agent(agent).text} has ended already", f"journal agent show {agent.number}")
-        return self.dispatcher.end_row(agent, context)
+        return self.dispatcher.end_session(agent, context)

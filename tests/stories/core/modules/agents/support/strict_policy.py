@@ -24,9 +24,10 @@ class StrictPolicy(DispatchPolicy):
 
 
 class StrictPolicyModule(Module):
-    """A sample module of a suite that binds its own dispatch policy."""
+    """A sample module of a suite that binds its own dispatch policy, loaded after the coding suite's workers so
+    that its binding is the one in force."""
 
     name = "acme.strict-policy"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.agents"]
+    dependencies = ["journal.core.agents", "journal.suites.coding.workers"]
     bindings = {DispatchPolicy: StrictPolicy}

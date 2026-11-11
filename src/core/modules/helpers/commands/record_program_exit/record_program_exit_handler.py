@@ -1,5 +1,6 @@
 from engine.profile.agent_profile import AgentProfile
 from engine.enums.log_level import LogLevel
+from dataclasses import replace
 from datetime import timedelta
 
 from engine.time.clock import Clock
@@ -7,13 +8,13 @@ from engine.time.timestamp import Timestamp
 from engine.log.system_log_writer import SystemLogWriter
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.enums.agent_role import AgentRole
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.provider.providers import Providers
 from engine.query.queries import Queries
-from core.modules.agents.commands.end_agent.end_agent import EndAgent
+from core.modules.agents.support.agent_dispatcher import AgentDispatcher
+from core.modules.agents.support.program_exit import ProgramExit
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
@@ -39,13 +40,14 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
 
     command = RecordProgramExit
 
-    def __init__(self, queries: Queries, jobs: HelperJobRows, providers: Providers, folders: AgentFolders, reasons: ExitReasons, bus: Bus, system_log: SystemLogWriter, clock: Clock, profiles: ProfileFiles) -> None:
+    def __init__(self, queries: Queries, jobs: HelperJobRows, providers: Providers, folders: AgentFolders, reasons: ExitReasons, bus: Bus, system_log: SystemLogWriter, clock: Clock, profiles: ProfileFiles, dispatcher: AgentDispatcher) -> None:
+        self.dispatcher = dispatcher
         self.queries, self.jobs, self.providers, self.folders, self.reasons, self.bus, self.system_log = queries, jobs, providers, folders, reasons, bus, system_log
         self.clock, self.profiles = clock, profiles
 
     def handle(self, command: RecordProgramExit, context: Context) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
-        if agent.role == AgentRole.MAIN or self.is_earlier_run(agent, command):
+        if agent.is_main or self.is_earlier_run(agent, command):
             return
         actor = Actor(agent.id, ActorType.AGENT)
         terminal = self.reasons.terminal_tail(agent)
@@ -55,10 +57,9 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
                 ends_at = Timestamp(self.clock.timestamp().value + timedelta(minutes=OUTAGE_MINUTES))
                 self.bus.run(MakeProviderOutage(agent.program, problem, ends_at), Actor.core(), environment_id=agent.environment_id)
         job = self.jobs.open_job(agent.id)
-        if job is not None and agent.parent_id is not None and self.has_no_waiting_job(agent):
-            self.report_exit(agent, agent.parent_id, job, command, actor, terminal)
-        if agent.ended_at is None:
-            self.bus.run(EndAgent(agent.id), actor, environment_id=agent.environment_id)
+        if job is not None and self.needs_exit_report(agent):
+            self.report_exit(agent, job, command, actor, terminal)
+        self.dispatcher.exited(agent, ProgramExit(command.exit_code, command.pid, command.launch_ended), replace(context, actor=actor))
 
     def is_earlier_run(self, agent: Agent, command: RecordProgramExit) -> bool:
         if command.pid is None or agent.pid is None or command.pid == agent.pid:
@@ -66,14 +67,14 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
         self.system_log.write(LogLevel.INFORMATION, f"{AgentLabel.from_agent(agent).text}: the exit of process {command.pid} changed nothing, since process {agent.pid} runs now")
         return True
 
-    def has_no_waiting_job(self, agent: Agent) -> bool:
+    def needs_exit_report(self, agent: Agent) -> bool:
         has_waiting_job = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING, source=HELPER_JOB_SOURCE).exists()
-        return not has_waiting_job
+        return agent.parent_id is not None and not has_waiting_job
 
-    def report_exit(self, agent: Agent, parent_id: int, job: HelperJob, command: RecordProgramExit, actor: Actor, terminal: str) -> None:
+    def report_exit(self, agent: Agent, job: HelperJob, command: RecordProgramExit, actor: Actor, terminal: str) -> None:
         transcript_text = self.providers.provider(agent.program).last_reply(self.folders.folder(agent), agent.session)
         text = transcript_text or self.reasons.reason(agent, command.exit_code, command.launch_ended, terminal)
-        self.bus.run(RecordParentReport(agent.id, parent_id, text, job.id), actor, environment_id=agent.environment_id)
+        self.bus.run(RecordParentReport(agent.id, agent.required_parent_id(), text, job.id), actor, environment_id=agent.environment_id)
         if not command.exit_code:
             return
         profile = self.profiles.registered(agent.profile)

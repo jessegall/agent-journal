@@ -36,6 +36,11 @@ def started_agent(story, role: str) -> tuple[int, FakeLauncher]:
     return agent_id, running_launcher(story)
 
 
+def stops(launcher) -> list[dict[str, object]]:
+    """The stop requests a launcher was sent; the question whether a program of the agent still runs is no stop."""
+    return [request for request in launcher.requests if "stop" in request]
+
+
 @pytest.mark.parametrize("role", ROLES)
 def test_an_agent_another_agent_ended_gets_one_stop(new_story, role):
     story = new_story(fixture=UserJoined)
@@ -60,7 +65,7 @@ def test_an_agent_that_ended_itself_gets_no_stop(new_story, role):
     agent_id, launcher = started_agent(story, role)
     story.expect_success(f"agent end {agent_id}", actor=Actor(agent_id, ActorType.AGENT))
     story.run_listeners()
-    story.expect_rows(launcher.requests == [])
+    story.expect_rows(stops(launcher) == [], detail=str(launcher.requests))
 
 
 def test_a_main_agent_that_ended_itself_gets_no_stop(new_story):
@@ -68,7 +73,7 @@ def test_a_main_agent_that_ended_itself_gets_no_stop(new_story):
     launcher = running_launcher(story)
     story.expect_success(f"agent end {story.agent.id}", actor=story.agent)
     story.run_listeners()
-    story.expect_rows(launcher.requests == [])
+    story.expect_rows(stops(launcher) == [], detail=str(launcher.requests))
 
 
 def test_a_program_stop_waits_for_its_own_round_and_holds_no_ordinary_listener(new_story):
@@ -77,7 +82,7 @@ def test_a_program_stop_waits_for_its_own_round_and_holds_no_ordinary_listener(n
     story.container.get(Bus).run(EndAgent(worker_id), story.user, environment_id=story.row(Agent, worker_id).environment_id)
     runner = story.container.get(CommitListenerRunner)
     runner.run_ordinary()
-    story.expect_rows(launcher.requests == [])
+    story.expect_rows(stops(launcher) == [], detail=str(launcher.requests))
     runner.run_program_stops()
     story.expect_rows(launcher.requests == read_stops(worker_id))
 

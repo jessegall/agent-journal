@@ -7,6 +7,7 @@ from engine.enums.actor_type import ActorType
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
+from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.modules.helpers.helper_reports import stop_with_report
@@ -50,3 +51,12 @@ def test_545_a_row_ended_while_its_program_runs_is_opened_again_within_one_tick_
     story.tick(story.row(Agent, story.agent.id).session)
     story.run_listeners()
     story.expect_rows(ENDED not in shown(story), CORRECTION in story.system_log_text(), detail=f"{shown(story)} | {story.system_log_text()[-400:]}")
+
+
+def test_544_the_exit_of_its_program_ends_an_agents_row_once_and_its_open_job_ends_with_a_report(running_helper):
+    story = running_helper
+    story.expect_success(f"agent exited {story.helper.id} 1", actor=story.user)
+    after_exit = shown(story)
+    story.expect_success(f"agent exited {story.helper.id} 1", actor=story.user)
+    story.expect_rows(ENDED in after_exit, shown(story) == after_exit, story.container.get(HelperJobRows).open_job(story.helper.id) is None, detail=after_exit)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "reports in message:")

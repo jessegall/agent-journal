@@ -88,6 +88,11 @@ class Agent(EnvironmentScoped, Model):
             raise ModelError(f"{self.display_name} has not ended")
         return self.ended_at
 
+    def required_parent_id(self) -> int:
+        if self.parent_id is None:
+            raise ModelError(f"{self.display_name} has no parent agent")
+        return self.parent_id
+
     def ended(self, timestamp: Timestamp, policy: AgentPolicy) -> "Agent":
         return self.changed(ended_at=timestamp, paused_at=self.paused_at if self.role in policy.pause_retention_roles else None)
 
