@@ -57,6 +57,8 @@ from engine.testing.examples.hook_sample import HookSample
 from engine.testing.examples.hook_samples import SAMPLE_FIRING, HookSamples
 from engine.testing.fakes.manual_clock import ManualClock
 from engine.testing.stories.story_journal import StoryJournal
+from engine.testing.seeds.seed import Seed
+from engine.testing.seeds.seeder import Seeder
 from engine.testing.stories.story_path import StoryPath
 from engine.testing.stories.story_state import StoryState
 from engine.testing.fakes.fixed_process_table import FixedProcessTable
@@ -74,7 +76,7 @@ class Story:
     """One story on a journal of its template that rolls back at its end, the public entry a plugin's
     stories use: it loads the modules named, runs command lines as text through the same console, container
     and registry as a real run, moves its clock by hand, reads rows and refusals, and checks what came back.
-    It knows no model of the core."""
+    It fills a table with many made-up rows of a seed in one line. It knows no model of the core."""
 
     def __init__(self, home: JournalHome, container: Container, clock: ManualClock, process_table: "FixedProcessTable", state: StoryState) -> None:
         self.home, self.container, self.clock, self.process_table = home, container, clock, process_table
@@ -119,6 +121,11 @@ class Story:
         self.path.append(StoryPath.command(caller.actor.id, shlex.split(line), code))
         self.results.append(LineOutcome(line, code, stream.getvalue()))
         return self.results[-1]
+
+    def seed(self, seed: type[Seed], count: int, **fixed: object) -> tuple[int, ...]:
+        seeder = Seeder(self.container.get(Database), self.clock.timestamp().text, self.caller_environment_id(None))
+        with seeder.filling():
+            return seeder.seed(seed(), count, **fixed)
 
     def use_fixture_environment(self, name: str | None) -> None:
         self.fixture_environment, self.fixture_environment_id = name, None

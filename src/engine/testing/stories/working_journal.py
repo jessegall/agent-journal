@@ -1,7 +1,7 @@
 import gc
 import os
+from engine.file.file_clone import FileClone
 from pathlib import Path
-import shutil
 import sqlite3
 
 from engine.database.database import Database
@@ -24,7 +24,7 @@ class WorkingJournal(StoryJournal):
         self.restored()
 
     def restored(self) -> None:
-        shutil.copyfile(self.template, self.file)
+        FileClone.copy(self.template, self.file)
         self.file_state = self.current_file_state()
 
     def current_file_state(self) -> tuple[int, int]:

@@ -6,6 +6,7 @@ from pathlib import Path
 
 from engine.module.code_fingerprint import CORE_FOLDER
 from engine.module.source_hash import SourceHash
+from engine.testing.seeds.base_seed_switch import BaseSeedSwitch
 from engine.testing.templates.folder_stat import FolderStat
 
 CACHE_FOLDER = Path.home() / ".cache" / "agent-journal" / "story-templates"
@@ -38,7 +39,7 @@ class TemplateCache:
         checkout = CORE_FOLDER.parent.parent.resolve()
         support_folders = tuple(sorted(folder for folder in (checkout / "tests").rglob("support") if folder.is_dir()))
         source_hash = SourceHash.text((*python_source_folders(), *support_folders))
-        current = self.root / source_hash[:HASH_CHARACTERS]
+        current = self.root / f"{source_hash[:HASH_CHARACTERS]}{BaseSeedSwitch.folder_suffix()}"
         is_new = not current.is_dir()
         current.mkdir(parents=True, exist_ok=True)
         FileAccess.shared().update_timestamp(current)

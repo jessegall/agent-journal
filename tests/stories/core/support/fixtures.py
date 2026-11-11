@@ -1,3 +1,5 @@
+from engine.testing.seeds.base_seed_switch import BaseSeedSwitch
+from tests.stories.core.support.seeds.base_seed import fill_base_seed
 from tests.stories.core.support import story_lines as lines
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -7,12 +9,15 @@ from tests.stories.core.support.plan_steps import ready_plan
 
 
 class MainEnvironment(StoryFixture):
-    """An environment called main, with no agent in it yet."""
+    """An environment called main, with no agent of a story in it yet. In a seeded run it lies on top of the base
+    seed: the many rows of a project that has run for months, numbered zero and below."""
 
     environment = "main"
 
     def steps(self, story: Story) -> None:
         story.run(lines.NEW_ENVIRONMENT)
+        if BaseSeedSwitch.is_enabled():
+            fill_base_seed(story, self.environment)
 
     def expect(self, story: Story) -> None:
         story.expect_success("environment show 1", "name: main")

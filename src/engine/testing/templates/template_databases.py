@@ -18,6 +18,7 @@ from engine.testing.fakes.manual_clock import ManualClock
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_state import StoryState
 from engine.testing.stories.story_fixture import StoryFixture
+from engine.file.file_clone import FileClone
 from engine.testing.templates.template import Template
 from engine.testing.templates.template_adaptation import STATE_FILE, TemplateAdaptation
 from engine.testing.stories.working_journal import WorkingJournal
@@ -128,7 +129,7 @@ class TemplateDatabases:
     def copy(self, template: Template, folder: Path) -> JournalHome:
         home = JournalHome(folder)
         home.folder.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(template.home.database, home.database)
+        FileClone.copy(template.home.database, home.database)
         self.copy_lists(template, home)
         return home
 
