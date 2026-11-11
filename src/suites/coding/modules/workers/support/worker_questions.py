@@ -28,7 +28,8 @@ class WorkerQuestions:
     """The questions workers asked the merger and how each ended. A question is a merger line with a
     worker; it is open until it gets one outcome, and this is the one place that gives it. Closing a
     question ends the wait the worker opened for it, writes a line in the log of its task and, unless the
-    worker is gone, sends the worker the outcome as a message, which wakes it."""
+    worker is gone, sends the worker the outcome as a message, which wakes it. A forwarded question keeps
+    the wait open, since the main agent still answers it."""
 
     def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, numbers: RowNumbers) -> None:
         self.queries, self.repository, self.bus, self.settings, self.numbers = queries, repository, bus, settings, numbers
@@ -75,7 +76,7 @@ class WorkerQuestions:
             raise Refusal(f"line {line.id} is settled: {line.outcome.description()} at {line.closed_at.value.strftime(CLOCK_FORMAT)}")
         closed = self.repository.save_change(line, replace(line, outcome=outcome, closed_at=context.timestamp), context)
         wait = self.queries.query(Wait).filter(id=line.wait_id).first() if line.wait_id is not None else None
-        if wait is not None and wait.state is WaitState.OPEN:
+        if wait is not None and wait.state is WaitState.OPEN and outcome is not AskOutcome.FORWARDED:
             self.bus.dispatch(EndWait(wait.id, outcome=outcome.worker_line(text)), context)
         if line.task_id is not None:
             worker = AgentLabel.from_row_id(line.worker_id, self.numbers, "worker").text
