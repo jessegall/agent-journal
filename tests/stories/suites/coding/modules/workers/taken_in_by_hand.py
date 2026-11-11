@@ -20,8 +20,8 @@ def taken_in_by_hand(story, repository: MemoryRepository) -> Worktree:
 def expect_closed_without_the_merger(story, repository: MemoryRepository, worktree: Worktree) -> None:
     task = story.container.get(Queries).query(Task).find(worktree.task_id)
     closed = story.container.get(Queries).query(Worktree).find(worktree.id)
-    story.expect_rows(task.state.value == "completed", task.outcome == TAKEN_IN_TEXT.format(branch=ENVIRONMENT_BRANCH),
-                      closed.merged_at is not None, closed.removed_at is not None, merger_agent(story) is None,
+    story.expect_rows(task.state.value == "completed", task.outcome in ("its tests passed", TAKEN_IN_TEXT.format(branch=ENVIRONMENT_BRANCH)),
+                      closed.merged_at is not None, closed.commit_before_merge == closed.commit_after_merge, closed.removed_at is not None, merger_agent(story) is None,
                       detail=f"{task.state} {task.outcome!r} {closed}")
     story.expect_success("worker-worktree list", "nothing found")
     repository.expect_no_worktree()
