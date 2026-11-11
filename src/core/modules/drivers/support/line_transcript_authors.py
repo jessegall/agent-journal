@@ -1,5 +1,6 @@
 from engine.provider.transcript_author import JOURNAL_AUTHOR
 from engine.provider.transcript_row import TranscriptRow
+from engine.database.database import READ_LIMIT_ROWS
 from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
@@ -18,7 +19,7 @@ class LineTranscriptAuthors(TranscriptAuthors):
         self.queries, self.kept = queries, kept
 
     def sender(self, agent: Agent, row: TranscriptRow) -> str:
-        lines = self.kept.read("agent_lines", lambda: tuple(self.queries.query(AgentLine).filter(session_agent_id=agent.id).oldest().all_rows()),
+        lines = self.kept.read("agent_lines", lambda: tuple(self.queries.query(AgentLine).filter(session_agent_id=agent.id).oldest().all_rows(READ_LIMIT_ROWS)),
                                "session_agent_id = ?", [agent.id], name="drivers.transcript_lines")
         line = next((candidate for candidate in lines if candidate.text and (candidate.text in row.text or row.text in candidate.text)), None)
         if line is None:
