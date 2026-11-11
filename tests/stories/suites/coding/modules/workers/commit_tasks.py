@@ -4,6 +4,7 @@ import pytest
 
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from tests.stories.core.modules.plugins.support.worker_step_samples import step_plugin_folder
+from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
 from tests.stories.suites.coding.modules.workers.hand_in_rebase import expect_tip
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT, COMMIT_COMMAND
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE
@@ -16,6 +17,7 @@ LEFT_OUT = "the rounding is left out"
 FOUR_POINT_BRIEF = "- the tax is read\n- the tax is added\n- the tax is shown\n- the tax is rounded"
 THREE_POINT_BRIEF = "- the totals are added\n- the totals are shown\n- the totals are stored"
 WAIT_BEFORE_COMMIT = timedelta(minutes=40)
+MERGED_REASON = "merged; its tests run at the checkpoint of phase 2"
 
 
 def prove_both(worker: StoryWorker) -> StoryWorker:
@@ -73,10 +75,17 @@ def test_24_26_proofs_shown_forty_minutes_before_a_commit_of_two_tasks_start_no_
                       len(two_proved_unplanned.started) == 2, detail=f"{outcome.output_text} | {states_before_commit} | {two_proved_unplanned.started}")
 
 
-def test_25_one_commit_in_git_carries_both_tasks_in_its_subject_and_the_worker_in_its_trailer(two_proved):
-    two_proved.story.expect_success(COMMIT, actor=two_proved.worker)
-    two_proved.story.expect_text("worker-worktree show 1", "state: delivered", actor=two_proved.story.agent)
+def test_25_158_163_165_a_commit_of_two_tasks_in_a_started_plan_is_one_git_commit_starts_no_test_and_its_merge_completes_both(two_proved):
+    story = two_proved.story
+    outcome = story.run(COMMIT, actor=two_proved.worker)
+    story.run_listeners()
+    story.expect_text("worker-worktree show 1", "state: delivered", actor=story.agent)
     two_proved.repository.expect_commit(two_proved.repository.worker_branch(two_proved.worker.id), "tasks 1, 2: Fix the cart", f"Journal: worker worker-{two_proved.worker.id}")
+    merge(two_proved)
+    for task_id in (1, 2):
+        story.expect_text(f"task show {task_id}", "state: completed", MERGED_REASON, actor=story.agent)
+    story.expect_rows(outcome.code == 0, "committed tasks 1, 2 as " in outcome.output_text, two_proved.started == [], states(two_proved) == [ProofState.COMMITTED] * 2,
+                      detail=f"{outcome.output_text} | {two_proved.started} | {states(two_proved)}")
 
 
 def test_28_a_commit_is_refused_with_every_missing_point_of_every_task_that_has_a_proof_and_commits_nothing(three_started):
