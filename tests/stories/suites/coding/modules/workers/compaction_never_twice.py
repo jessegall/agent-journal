@@ -213,6 +213,7 @@ def test_a_reading_the_program_rewrote_after_the_compaction_ended_counts_and_the
     has_context(agent, LIMIT_TOKENS - GROWTH_TOKENS)
     modified_at_story_time(agent)
     agent.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
+    agent.advance(STATUS_FILE_AGE)
     has_context(agent, TOKENS_OVER_LIMIT)
     modified_at_story_time(agent)
     stops(agent)

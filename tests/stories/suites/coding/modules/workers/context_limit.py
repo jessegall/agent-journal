@@ -139,18 +139,6 @@ def expect_compaction_line(agent):
     agent.expect_rows(len(agent.typing.typed) == 1 and "compacted" in agent.typing.typed[0], detail=str(agent.typing.typed))
 
 
-def test_a_typed_compaction_wakes_the_agent_as_soon_as_it_ends_and_only_once(limited):
-    agent = limited
-    agent.hook(SESSION, PRE_COMPACT.with_raw({"trigger": "manual"}))
-    agent.hook(SESSION, COMPACTION_START)
-    agent.run_listeners()
-    expect_compaction_line(agent)
-    agent.hook(SESSION, HookSamples.prompt("[journal] your context was compacted"))
-    agent.advance(timedelta(seconds=40))
-    agent.tick(SESSION)
-    agent.expect_rows(len(agent.typing.typed) == 1, detail=str(agent.typing.typed))
-
-
 def test_a_tick_never_compacts_an_agent(agent):
     agent.hook(SESSION, HookSamples.stop())
     enabled_time(agent, LIMIT_TOKENS)

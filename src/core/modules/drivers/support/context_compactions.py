@@ -1,6 +1,7 @@
 from dataclasses import replace
 
 from engine.command.context import Context
+from engine.database.kept_rows import KeptRows
 from engine.errors.existing_row_refusal import ExistingRowRefusal
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
@@ -22,11 +23,12 @@ class ContextCompactions:
     has one open row at most, kept by the table itself: of two callers asking in the same second, the second one
     is refused naming the first's row. The wake after a compaction is recorded on its row."""
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, queries: Queries, repository: Repository, kept: KeptRows) -> None:
+        self.queries, self.repository, self.kept = queries, repository, kept
 
     def newest(self, agent_id: int) -> ContextCompaction | None:
-        return self.queries.query(ContextCompaction).filter(session_agent_id=agent_id).descending("id").first()
+        return self.kept.read_newest("context_compactions", lambda: self.queries.query(ContextCompaction).filter(session_agent_id=agent_id).descending("id").first(),
+                                     "session_agent_id = ?", [agent_id], name="context_compactions.newest")
 
     def open_compaction(self, agent_id: int) -> ContextCompaction | None:
         newest = self.newest(agent_id)

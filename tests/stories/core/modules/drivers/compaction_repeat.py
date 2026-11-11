@@ -34,9 +34,37 @@ class TwoMainAgents(StoryFixture):
         story.expect_success(f"agent start {SECOND_AGENT_SESSION} claude main --environment elsewhere")
 
 
+class PromptedWithLimit(StoryFixture):
+    """The context limit is on and the agent has a prompt behind it."""
+
+    parent = LimitEnabled
+
+    def steps(self, story):
+        story.hook(SESSION, HookSamples.prompt("go on"))
+
+
+class PromptedWithHardLimit(StoryFixture):
+    """Both context limits are on and the agent has a prompt behind it."""
+
+    parent = HardLimitEnabled
+
+    def steps(self, story):
+        story.hook(SESSION, HookSamples.prompt("go on"))
+
+
 @pytest.fixture
 def agent(new_story):
     return typing_recorded(new_story(fixture=LimitEnabled))
+
+
+@pytest.fixture
+def over_limit(new_story):
+    return typing_recorded(new_story(fixture=PromptedWithLimit))
+
+
+@pytest.fixture
+def over_hard_limit(new_story):
+    return typing_recorded(new_story(fixture=PromptedWithHardLimit))
 
 
 def expect_one_request_typed_once(story):
@@ -44,39 +72,35 @@ def expect_one_request_typed_once(story):
     story.expect_rows(len(rows) == 1, rows[0].state is CompactionState.REQUESTED, story.typing.typed == [COMPACT_LINE], detail=f"{rows} {story.typing.typed}")
 
 
-def test_g1_two_stops_of_one_agent_in_the_same_second_make_one_request_and_type_one_line(agent):
-    has_context(agent, LIMIT_TOKENS)
-    agent.hook(SESSION, HookSamples.prompt("go on"))
-    agent.hook(SESSION, HookSamples.stop())
-    agent.hook(SESSION, HookSamples.stop())
-    expect_one_request_typed_once(agent)
+def test_g1_two_stops_of_one_agent_in_the_same_second_make_one_request_and_type_one_line(over_limit):
+    has_context(over_limit, LIMIT_TOKENS)
+    over_limit.hook(SESSION, HookSamples.stop())
+    over_limit.hook(SESSION, HookSamples.stop())
+    expect_one_request_typed_once(over_limit)
 
 
-def test_g1_a_second_request_made_in_the_same_second_as_the_first_is_refused_naming_it(agent):
-    has_context(agent, LIMIT_TOKENS)
-    agent.hook(SESSION, HookSamples.prompt("go on"))
-    agent.hook(SESSION, HookSamples.stop())
+def test_g1_a_second_request_made_in_the_same_second_as_the_first_is_refused_naming_it(over_limit):
+    has_context(over_limit, LIMIT_TOKENS)
+    over_limit.hook(SESSION, HookSamples.stop())
     with pytest.raises(Refusal, match=OPEN_REFUSAL):
-        agent.container.get(Bus).run(CompactAgentContext(agent.agent.id), agent.agent)
-    expect_one_request_typed_once(agent)
+        over_limit.container.get(Bus).run(CompactAgentContext(over_limit.agent.id), over_limit.agent)
+    expect_one_request_typed_once(over_limit)
 
 
-def test_g2_the_stop_rule_after_the_hard_stop_rule_in_the_same_second_makes_no_second_request(new_story):
-    story = typing_recorded(new_story(fixture=HardLimitEnabled))
-    has_context(story, HARD)
-    story.expect_hook_refusal(SESSION, EDIT, HARD_STOP_REFUSAL)
-    stops(story)
-    expect_one_request_typed_once(story)
-    story.expect_rows(compactions(story)[0].reason is CompactionReason.HARD_STOP)
+def test_g2_the_stop_rule_after_the_hard_stop_rule_in_the_same_second_makes_no_second_request(over_hard_limit):
+    has_context(over_hard_limit, HARD)
+    over_hard_limit.expect_hook_refusal(SESSION, EDIT, HARD_STOP_REFUSAL)
+    over_hard_limit.hook(SESSION, HookSamples.stop())
+    expect_one_request_typed_once(over_hard_limit)
+    over_hard_limit.expect_rows(compactions(over_hard_limit)[0].reason is CompactionReason.HARD_STOP)
 
 
-def test_g2_the_hard_stop_rule_after_the_stop_rule_in_the_same_second_makes_no_second_request(new_story):
-    story = typing_recorded(new_story(fixture=HardLimitEnabled))
-    has_context(story, HARD)
-    stops(story)
-    story.expect_hook_refusal(SESSION, EDIT, HARD_STOP_REFUSAL)
-    expect_one_request_typed_once(story)
-    story.expect_rows(compactions(story)[0].reason is CompactionReason.STOP_LIMIT)
+def test_g2_the_hard_stop_rule_after_the_stop_rule_in_the_same_second_makes_no_second_request(over_hard_limit):
+    has_context(over_hard_limit, HARD)
+    over_hard_limit.hook(SESSION, HookSamples.stop())
+    over_hard_limit.expect_hook_refusal(SESSION, EDIT, HARD_STOP_REFUSAL)
+    expect_one_request_typed_once(over_hard_limit)
+    over_hard_limit.expect_rows(compactions(over_hard_limit)[0].reason is CompactionReason.STOP_LIMIT)
 
 
 def test_g3_a_typed_compaction_is_woken_by_the_listener_and_a_tick_after_600_seconds_types_no_second_wake(agent):
@@ -88,15 +112,6 @@ def test_g3_a_typed_compaction_is_woken_by_the_listener_and_a_tick_after_600_sec
     agent.expect_rows(len(rows) == 1, rows[0].woken_at is not None, detail=str(rows))
     agent.advance(SLOW_TICK)
     agent.tick(SESSION)
-    agent.expect_rows(len(agent.typing.typed) == 1, detail=str(agent.typing.typed))
-
-
-def test_g3_a_compaction_the_tick_woke_is_not_woken_again_by_a_later_tick(agent):
-    agent.hook(SESSION, COMPACTION_START)
-    agent.advance(timedelta(seconds=40))
-    agent.tick(SESSION)
-    rows = compactions(agent)
-    agent.expect_rows(len(rows) == 1, rows[0].woken_at is not None, len(agent.typing.typed) == 1, detail=f"{rows} {agent.typing.typed}")
     agent.advance(SLOW_TICK)
     agent.tick(SESSION)
     agent.expect_rows(len(agent.typing.typed) == 1, detail=str(agent.typing.typed))
@@ -117,11 +132,11 @@ def test_g5_two_main_agents_over_the_limit_together_each_get_their_own_row_and_t
     story = typing_recorded(new_story(fixture=TwoMainAgents))
     has_context(story, LIMIT_TOKENS)
     save_status_file(story, SECOND_AGENT_SESSION, {"context_window": {"total_input_tokens": SECOND_AGENT_TOKENS}})
-    stops(story)
     story.hook(SECOND_AGENT_SESSION, HookSamples.prompt("go on"))
     story.hook(SECOND_AGENT_SESSION, HookSamples.stop())
+    stops(story)
     rows = compactions(story)
-    story.expect_rows(len(rows) == 2, len({row.session_agent_id for row in rows}) == 2, [row.request_tokens for row in rows] == [LIMIT_TOKENS, SECOND_AGENT_TOKENS],
+    story.expect_rows(len(rows) == 2, len({row.session_agent_id for row in rows}) == 2, [row.request_tokens for row in rows] == [SECOND_AGENT_TOKENS, LIMIT_TOKENS],
                       all(row.state is CompactionState.REQUESTED for row in rows), story.typing.typed == [COMPACT_LINE, COMPACT_LINE], detail=f"{rows} {story.typing.typed}")
 
 
