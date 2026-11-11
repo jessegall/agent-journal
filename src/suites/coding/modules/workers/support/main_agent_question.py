@@ -4,8 +4,8 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class MainAgentQuestion:
     """A question to the main agent in its four parts: what is wrong, what was tried, the options and the
-    recommendation, followed by the facts of the worker it is about. The merger's own question and the question
-    the journal writes for an unanswered worker are both built here."""
+    recommendation, followed by the facts of the worker it is about. The merger's own question and the
+    question the journal writes for an unanswered worker are both built here."""
 
     problem: str
     tried: str
