@@ -21,7 +21,7 @@ class WorkerTestRound:
             if "state" not in event.data:
                 continue
             state = ProofState(event.data["state"][1])
-            if state in (ProofState.SHOWN, ProofState.RUNNING):
+            if state in (ProofState.SHOWN, ProofState.COMMITTED, ProofState.RUNNING):
                 continue
             match state:
                 case ProofState.QUEUED:

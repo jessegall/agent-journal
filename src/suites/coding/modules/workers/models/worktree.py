@@ -35,6 +35,7 @@ class Worktree(Removable, EnvironmentScoped, Model):
     logs_read_at: Timestamp | None = None
     logs_output_id: int | None = None
     tests_passed_at: Timestamp | None = None
+    merge_ready_at: Timestamp | None = None
     returned_at: Timestamp | None = None
     pass_reason: str = ""
     merged_at: Timestamp | None = None
