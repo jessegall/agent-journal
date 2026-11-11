@@ -1,3 +1,4 @@
+from engine.database.row_history import RowHistory
 from collections.abc import Sequence
 
 from engine.enums.actor_type import ActorType
@@ -30,8 +31,8 @@ class WorkerStop:
         return actor_id != worker.id and self.queries.query(ActorRecord).find(actor_id).type in STOPPING_ACTOR_TYPES
 
     def was_stopped(self, worker: Agent) -> bool:
-        events = self.log.row_events(self.tables.table(Agent).name, worker.id)
-        endings = [event for event in events if event.event in AGENT_ENDING_EVENTS and event.data.get(ENDED_FIELD, (None, None))[1]]
+        events = self.log.newest_row_events(RowHistory(self.tables.table(Agent).name, worker.id, names=AGENT_ENDING_EVENTS))
+        endings = [event for event in events if event.data.get(ENDED_FIELD, (None, None))[1]]
         return bool(endings) and self.is_final(worker, endings[-1].actor_id)
 
     def is_job_due(self, worker: Agent, work: Sequence[Model]) -> bool:

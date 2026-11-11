@@ -1,3 +1,4 @@
+from engine.database.row_history import RowHistory
 from engine.event.event_log import EventLog
 from engine.model.tables import Tables
 from engine.provider.providers import Providers
@@ -25,7 +26,7 @@ class WorkerLaunchFailures:
     def run_started_at(self, worker: Agent) -> Timestamp | None:
         if worker.process_started_at is not None:
             return worker.process_started_at
-        events = self.log.row_events(self.tables.table(Agent).name, worker.id)
+        events = self.log.newest_row_events(RowHistory(self.tables.table(Agent).name, worker.id))
         starts = [event.data[STARTED_FIELD][1] for event in events if event.data.get(STARTED_FIELD, (None, None))[1]]
         return Timestamp.parsed(str(starts[-1])) if starts else None
 

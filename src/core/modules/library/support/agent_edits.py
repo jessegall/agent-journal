@@ -1,3 +1,4 @@
+from engine.database.row_history import RowHistory
 from engine.event.event_log import EventLog
 from engine.database.actor_table import ActorTable
 from engine.model.model import Model
@@ -18,5 +19,5 @@ class AgentEdits:
         return self.settings.project.flag(AGENT_EDITS_WAIT_SETTING) and self.agent_edited_last(row)
 
     def agent_edited_last(self, row: Model) -> bool:
-        history = self.events.row_events(self.tables.table(type(row)).name, row.id)
+        history = self.events.newest_row_events(RowHistory(self.tables.table(type(row)).name, row.id, limit=1))
         return bool(history) and self.actors.is_agent(history[-1].actor_id)

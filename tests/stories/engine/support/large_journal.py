@@ -14,6 +14,7 @@ from tests.stories.core.support.agent_labels import agent_number
 ROWS_WANTED = 130
 COPY_ROUNDS = 8
 COMMAND_ROWS = 60
+ROW_EVENTS = 60
 UNCOPIED_TABLE = "sqlite_sequence"
 EDIT = HookSamples.edit("src/cart.py")
 
@@ -32,6 +33,9 @@ class LargeJournal(StoryFixture):
             story.expect_success(f"{line} --environment main", actor=story.agent)
         for line in PERSON_SEED_LINES:
             story.expect_success(f"{line.format(agent=agent_number(story, story.agent.id))} --environment main", actor=story.user)
+        for number in range(ROW_EVENTS):
+            story.expect_success(f'plan edit 1 --brief "A right cart total, edit {number}" --environment main', actor=story.agent)
+            story.expect_success(f'check edit 1 --brief "Passes when the cart is right, edit {number}" --environment main', actor=story.user)
         launcher = FakeLauncher.listening(story.home.socket("launcher"))
         for profile in HELPER_PROFILES:
             story.expect_success(f'helper start {profile} --brief "Read the cart code" --environment main', actor=story.agent)

@@ -33,8 +33,8 @@ class WorkerTestMarkListener(MarkListener[Moved[Proof]]):
             return
         worktree = self.event_rows.required(Worktree, proof.worktree_id)
         proofs = tuple(self.queries.query(Proof).filter(worktree_id=worktree.id, task_id=proof.task_id).all_rows())
-        round = WorkerTestRound.build(change for row in proofs if row.test_command
-                                           for change in self.events.row_events(logged.row_table, row.id) if change.id <= logged.id)
+        tested_ids = [row.id for row in proofs if row.test_command]
+        round = WorkerTestRound.build(change for change in self.events.row_events_many(logged.row_table, tested_ids) if change.id <= logged.id)
         worker = worktree.session_agent_id
         if event.move is ProofLifecycle.queue:
             self.mark(logged, worktree, proof, WorkerMarkVariant.QUEUED, f"Tests of worker {worker} queued", False)

@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from dataclasses import fields
 
+from engine.database.row_history import RowHistory
 from engine.event.change import BOOKKEEPING_FIELDS, Change
 from engine.event.logged_event import CREATION, LoggedEvent
 from engine.database.bookkeeping_table import BookkeepingTable
@@ -92,7 +93,7 @@ class EventLog:
         data: dict[str, list[object]] = {name: [HIDDEN, HIDDEN] if name in hidden else [stored(getattr(change.old_row, name, None)), stored(getattr(change.new_row, name, None))]
                 for name in names}
         if change.old_row is None and not change.event.endswith(CREATION):
-            data["id"] = [None, change.row.id]
+            return {**data, "id": [None, change.row.id]}
         return data
 
     def event(self, event_id: int) -> LoggedEvent:
@@ -105,8 +106,11 @@ class EventLog:
         row = self.table.latest_event(event)
         return LoggedEvent.parsed(row) if row is not None else None
 
-    def row_events(self, row_table: str, row_id: int) -> list[LoggedEvent]:
-        return [LoggedEvent.parsed(row) for row in self.table.row_rows(row_table, row_id)]
+    def newest_row_events(self, history: RowHistory) -> list[LoggedEvent]:
+        return [LoggedEvent.parsed(row) for row in self.table.newest_row_rows(history)]
+
+    def row_events_past(self, history: RowHistory, event_id: int) -> list[LoggedEvent]:
+        return [LoggedEvent.parsed(row) for row in self.table.row_rows_past(history, event_id)]
 
     def latest_row(self, row_table: str, row_id: int, names: Sequence[str]) -> LoggedEvent | None:
         row = self.table.latest_row(row_table, row_id, names)

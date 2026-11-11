@@ -1,3 +1,4 @@
+from engine.database.row_history import RowHistory
 from collections.abc import Iterator, Mapping, Sequence, Set
 import re
 
@@ -32,7 +33,7 @@ class PlanRounds:
         self.queries, self.log, self.tables = queries, log, tables
 
     def rounds(self, plan: Plan) -> tuple[PlanRound, ...]:
-        events = sorted(self.log.row_events(self.tables.table(Plan).name, plan.id), key=lambda event: event.id)
+        events = self.log.newest_row_events(RowHistory(self.tables.table(Plan).name, plan.id, names=(REVIEW_EVENT, REVIEWED_EVENT)))
         pairs = tuple(self.pairs(events))
         if not pairs:
             return ()
@@ -40,7 +41,7 @@ class PlanRounds:
         link_events = self.creation_events(Link, [link.id for link in links])
         filed = self.queries.query(Report).find_many([link.source_id for link in links])
         pattern = re.compile(rf"\bplan[ :]{plan.id}\b")
-        jobs = [job for job in self.queries.query(HelperJob).filter(environment_id=plan.environment_id).matching(Minimum("created_at", pairs[0][0].timestamp.text)).all_rows() if pattern.search(job.brief)]
+        jobs = [job for job in self.queries.query(HelperJob).matching(Minimum("created_at", pairs[0][0].timestamp.text)).all_rows() if pattern.search(job.brief)]
         job_events = self.creation_events(HelperJob, [job.id for job in jobs])
         helper_ids = [job.helper_id for job in jobs if job.helper_id is not None]
         names = self.actor_names({*helper_ids, *(report.creator_id for report in filed)})

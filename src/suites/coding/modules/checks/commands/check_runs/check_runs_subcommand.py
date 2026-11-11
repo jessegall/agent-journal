@@ -1,3 +1,4 @@
+from engine.database.row_history import RowHistory
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -21,4 +22,4 @@ class CheckRunsSubcommand(ReadSubcommand[CheckRunHistory]):
         parser.add_argument("id", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> CheckRunHistory:
-        return CheckRunHistory.built(self.events.row_events(CHECKS_TABLE, arguments.id))
+        return CheckRunHistory.built(self.events.newest_row_events(RowHistory(CHECKS_TABLE, arguments.id)))

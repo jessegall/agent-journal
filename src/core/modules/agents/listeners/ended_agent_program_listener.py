@@ -1,3 +1,4 @@
+from engine.database.row_history import RowHistory
 from engine.event.event_log import EventLog
 from engine.event.logged_event import LoggedEvent
 from engine.listener.commit_listener import CommitListener
@@ -15,14 +16,14 @@ from core.modules.agents.commands.start_agent.start_agent import StartAgent
 
 
 class EndedAgentProgramListener(CommitListener[AgentEnded]):
-    """Stops the program of an agent that another ended, after the commit, so no hook waits on a
-    process. An agent that ended itself stops by itself, a row reopened since runs a new program, and
-    StopAgent stopped its own. A resumed agent keeps its row ended until its first hook, so a process
-    recorded after the end, or a launch that holds the session's lock, is a new program; the launch's
-    own prepare step has dealt with the old one. A row that another session took over since keeps running
-    under the new session, so only the old session's own process is stopped. When the new session started in a
-    terminal of its own, the launcher's terminal of the agent can only hold the old session and is asked to stop;
-    after a launch it holds the new one and is left alone."""
+    """Stops the program of an agent that another ended, after the commit, so no hook waits on a process. An
+    agent that ended itself stops by itself, a row reopened since runs a new program, and StopAgent stopped
+    its own. A resumed agent keeps its row ended until its first hook, so a process recorded after the end,
+    or a launch that holds the session's lock, is a new program; the launch's own prepare step has dealt
+    with the old one. A row that another session took over since keeps running under the new session, so
+    only the old session's own process is stopped. When the new session started in a terminal of its own,
+    the launcher's terminal of the agent can only hold the old session and is asked to stop; after a launch
+    it holds the new one and is left alone."""
 
     name = "agents.ended-agent-program"
     run_order = PROGRAM_STOP_RUN_ORDER
@@ -36,7 +37,7 @@ class EndedAgentProgramListener(CommitListener[AgentEnded]):
             return
         with self.sessions.lock(event.row.session) as available:
             if available:
-                self.stop_program(event.row, [later for later in self.log.row_events(AGENTS_TABLE, event.row.id) if later.id > logged.id])
+                self.stop_program(event.row, self.log.row_events_past(RowHistory(AGENTS_TABLE, event.row.id), logged.id))
 
     @staticmethod
     def needs_stop(agent: Agent, logged: LoggedEvent) -> bool:

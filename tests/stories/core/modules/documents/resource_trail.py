@@ -1,4 +1,5 @@
 import pytest
+from engine.database.row_history import RowHistory
 from unittest.mock import patch
 from engine.event.event_log import EventLog
 from engine.query.query import Query
@@ -72,7 +73,7 @@ def test_new_link_events_run_once_and_duplicates_run_none(scenario):
     scenario.requested_command("transcription link 1 task 1")
     edge = next(row for row in scenario.links("transcription:1") if row["target_model"] == "task" and row["target_id"] == 1)
     scenario.requested_command("transcription link 1 task 1")
-    events = scenario.story.container.get(EventLog).row_events("links", edge["id"])
+    events = scenario.story.container.get(EventLog).newest_row_events(RowHistory("links", edge["id"]))
     feature(len([event for event in events if event.is_creation]) == 1, "duplicate link emitted another creation event")
 
 

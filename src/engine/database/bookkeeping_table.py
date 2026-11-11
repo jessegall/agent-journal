@@ -2,6 +2,7 @@ import sqlite3
 from collections.abc import Callable, Sequence
 from typing import TypeVar
 
+from engine.database.row_history import RowHistory
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.errors.missing_rows_error import MissingRowsError
@@ -34,8 +35,15 @@ class BookkeepingTable:
         rows = self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE name = ? ORDER BY id DESC LIMIT 1", [event]))
         return rows[0] if rows else None
 
-    def row_rows(self, row_table: str, row_id: int) -> list[sqlite3.Row]:
-        return self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE row_table = ? AND row_id = ? ORDER BY id", (row_table, row_id)))
+    def newest_row_rows(self, history: RowHistory) -> list[sqlite3.Row]:
+        name_filter = f" AND name IN ({', '.join('?' for _ in history.names)})" if history.names else ""
+        rows = self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE row_table = ? AND row_id = ?{name_filter} ORDER BY id DESC LIMIT ?",
+                                            (history.row_table, history.row_id, *history.names, history.limit)))
+        return rows[::-1]
+
+    def row_rows_past(self, history: RowHistory, event_id: int) -> list[sqlite3.Row]:
+        return self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE row_table = ? AND row_id = ? AND id > ? ORDER BY id LIMIT ?",
+                                            (history.row_table, history.row_id, event_id, history.limit)))
 
     def latest_row(self, row_table: str, row_id: int, names: Sequence[str]) -> sqlite3.Row | None:
         marks = ", ".join("?" for _ in names)

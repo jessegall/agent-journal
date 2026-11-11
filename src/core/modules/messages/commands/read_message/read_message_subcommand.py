@@ -39,4 +39,4 @@ class ReadMessageSubcommand(Subcommand[ReadMessage, Message]):
             output.write("\n".join(text.lines()), text.json())
 
     def was_deleted(self, message_id: int) -> bool:
-        return any(event.event == MESSAGE_DELETED for event in self.events.row_events(MESSAGES_TABLE, message_id))
+        return self.events.latest_row(MESSAGES_TABLE, message_id, [MESSAGE_DELETED]) is not None
