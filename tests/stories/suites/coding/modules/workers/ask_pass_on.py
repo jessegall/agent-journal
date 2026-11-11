@@ -8,6 +8,9 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.ask_ledger import QUESTION, SECOND_QUESTION, ask, end_unanswered_visit, questions, waits_of
 from tests.stories.suites.coding.modules.workers.merger_cases import case  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with
+from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting
+from suites.coding.support.shipped_profiles import HELPER_PROFILES
+from pathlib import Path
 
 MERGER_QUESTION_LINE = 'merger tell "The worker cannot build" --tried "I read its facts" --option "answer the worker" --option "release the worker" --recommend "answer the worker"'
 FORWARD_MINUTES = "journal.suites.coding.workers.ask-pass-on-minutes"
@@ -98,3 +101,56 @@ def test_the_forward_time_cannot_be_set_below_the_answer_time(case):
     expect_refused_with(case.story, f"setting set {ANSWER_MINUTES} 45 --project", "after 30 minutes", "before the 45 minutes", actor=case.story.agent)
     case.story.expect_success(f"setting set {FORWARD_MINUTES} 60 --project", actor=case.story.agent)
     case.story.expect_success(f"setting set {ANSWER_MINUTES} 45 --project", actor=case.story.agent)
+
+
+VISITS_LIMIT = "journal.suites.coding.workers.ask-visits-limit"
+GROUP_LIMIT = "journal.suites.coding.workers.most-merger-messages-per-group"
+MERGER_ON = "journal.suites.coding.workers.merger-on"
+WORKERS_SKILLS = Path("src/suites/coding/modules/workers/skills")
+
+
+def test_a_worker_cannot_answer_or_pass_on_a_question_itself(case):
+    ask(case)
+    line = questions(case.story)[0]
+    expect_refused_with(case.story, f'merger answer {line.id} "I answer myself"', "only the merger runs this", actor=case.worker)
+    expect_refused_with(case.story, f"{MERGER_QUESTION_LINE} --worker {agent_number(case.story, case.worker.id)}", "only the merger runs this", actor=case.worker)
+    case.story.expect_rows(questions(case.story)[0].outcome is None, detail="the question is still open")
+
+
+def test_the_main_agent_hears_nothing_of_an_ask_the_merger_answered_and_the_task_log_has_the_whole_ask(case):
+    ask(case)
+    line = questions(case.story)[0]
+    case.story.expect_success(f'merger answer {line.id} "Use the compiler in tools/bin"', actor=case.merger)
+    lines = case.main_lines()
+    case.story.expect_rows(QUESTION not in lines, "Use the compiler" not in lines, f"merger-line:{line.id}" not in lines, detail=lines)
+    case.story.expect_text("task-log list --task 1", "asked the merger about tool", "ended as answered: Use the compiler in tools/bin", actor=case.story.agent)
+
+
+def test_a_person_changes_each_number_of_the_questions_on_the_workers_screen_and_the_next_ask_follows_it(case):
+    apply_work_setting(case.story, ANSWER_MINUTES, 20)
+    apply_work_setting(case.story, FORWARD_MINUTES, 50)
+    apply_work_setting(case.story, VISITS_LIMIT, 1)
+    apply_work_setting(case.story, GROUP_LIMIT, 1)
+    ask(case)
+    line = questions(case.story)[0]
+    case.story.expect_rows(line.due_at.value - line.created_at.value == timedelta(minutes=20), line.forward_at.value - line.created_at.value == timedelta(minutes=50), detail=str(line))
+    end_unanswered_visit(case)
+    case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, detail="one reading is the limit now")
+    ask(case, SECOND_QUESTION, AskTopic.TESTS)
+    case.story.expect_rows(questions(case.story)[1].outcome is AskOutcome.FORWARDED, detail="the second ask of the group is past the limit of one")
+
+
+def test_with_the_merger_off_the_numbers_of_the_questions_are_not_on_the_workers_screen(case):
+    case.story.expect_text(SHOWN_SETTINGS, ANSWER_MINUTES, FORWARD_MINUTES, VISITS_LIMIT, GROUP_LIMIT, actor=case.story.user)
+    apply_work_setting(case.story, MERGER_ON, "off")
+    case.story.expect_absent(SHOWN_SETTINGS, ANSWER_MINUTES, actor=case.story.user)
+    case.story.expect_absent(SHOWN_SETTINGS, GROUP_LIMIT, actor=case.story.user)
+
+
+def test_the_merger_profile_and_the_two_skills_name_the_commands_of_a_question():
+    merger = next(profile for profile in HELPER_PROFILES if profile.name == "journal-merger")
+    case_book = (WORKERS_SKILLS / "journal-merger" / "SKILL.md").read_text()
+    worker_skill = (WORKERS_SKILLS / "journal-workers" / "SKILL.md").read_text()
+    assert "journal merger answer" in merger.body and "journal merger tell" in merger.body
+    assert "journal merger answer <line>" in case_book and "journal merger tell" in case_book
+    assert "After you ask, the merger or the journal" in worker_skill
