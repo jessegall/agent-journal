@@ -5,6 +5,7 @@ from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from engine.caller.caller import Caller
 from engine.query.conditions.among import Among
+from core.modules.assignments.queries.conditions.assignee_among import AssigneeAmong
 from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries
 from engine.subcommand.output import Output
@@ -72,7 +73,7 @@ class UsageAgentSubcommand(ReadSubcommand[AgentInspection]):
         return self.processes.agent(agent_id).matching(Among("state", tuple(FAILED_RUN_TEXTS))).matching(Greater("ended_at", ""))
 
     def recent_moves(self, agent_id: int) -> tuple[AgentMove, ...]:
-        finished_tasks = self.queries.query(Task).filter(delegated_to=agent_id, state=TaskState.COMPLETED).matching(Greater("closed_at", "")).descending("closed_at").limited(LATEST_MOVE_COUNT)
+        finished_tasks = self.queries.query(Task).filter(state=TaskState.COMPLETED).matching(AssigneeAmong(Task, tuple([agent_id]))).matching(Greater("closed_at", "")).descending("closed_at").limited(LATEST_MOVE_COUNT)
         runs = self.failed_run_query(agent_id).descending("ended_at").limited(LATEST_MOVE_COUNT)
         moves = (*(self.finished_task_move(task, task.closed_at) for task in finished_tasks if task.closed_at is not None),
                  *(self.failed_run_move(run, run.ended_at) for run in runs if run.ended_at is not None))

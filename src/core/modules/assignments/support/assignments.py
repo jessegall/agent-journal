@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import replace
 
 from engine.command.context import Context
@@ -6,6 +7,7 @@ from engine.enums.actor_type import ActorType
 from engine.model.assignable import Assignable
 from engine.model.children import Children
 from engine.model.model import Model
+from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.actors.models.actor_record import ActorRecord
@@ -46,6 +48,12 @@ class Assignments:
 
     def actors(self, row: Model) -> tuple[int, ...]:
         return tuple(assignment.actor_id for assignment in self.assignments(row))
+
+    def actors_of_rows(self, model: type[Model], row_ids: Sequence[int]) -> dict[int, tuple[int, ...]]:
+        actor_ids: dict[int, tuple[int, ...]] = {row_id: () for row_id in row_ids}
+        for assignment in self.queries.query(Assignment).filter(subject_model=model.model_name).matching(Among("subject_id", list(row_ids))).oldest().all_rows():
+            actor_ids[assignment.subject_id] = (*actor_ids[assignment.subject_id], assignment.actor_id)
+        return actor_ids
 
     def actor(self, row: Assignable) -> int | None:
         if row.takes_actors is not ActorCount.SINGLE:

@@ -7,6 +7,7 @@ from engine.driver.nudger import Nudger
 from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
+from core.modules.assignments.support.assignments import Assignments
 from engine.repository.repository import Repository
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -26,8 +27,8 @@ KEPT_WAITS_REASON = "The open waits are read once and kept on the server, so a l
 class TaskWaits:
     """Ends a blocked task's waits, and opens the task when the last of them has ended."""
 
-    def __init__(self, queries: Queries, repository: Repository, nudger: Nudger, kept: KeptRows) -> None:
-        self.queries, self.repository, self.nudger = queries, repository, nudger
+    def __init__(self, queries: Queries, repository: Repository, nudger: Nudger, kept: KeptRows, assignments: Assignments) -> None:
+        self.queries, self.repository, self.nudger, self.assignments = queries, repository, nudger, assignments
         self.kept = kept
 
     def resolved(self, waits: Sequence[TaskWait], context: Context) -> None:
@@ -44,9 +45,10 @@ class TaskWaits:
         return all(wait.target.startswith(TASK_TARGET_PREFIX) for wait in self.pending_task(task_id))
 
     def notify_agents(self, tasks: Sequence[Task], context: Context) -> None:
+        actor_ids = self.assignments.actors_of_rows(Task, [task.id for task in tasks])
         for agent in MainAgentFinder.rows(self.queries):
             for task in tasks:
-                if task.delegated_to in (None, agent.id):
+                if not actor_ids[task.id] or agent.id in actor_ids[task.id]:
                     self.nudger.send(agent.id, TASK_REOPENED, WAIT_ENDED_SOURCE, context, task=task.id)
 
     def open_waits(self, task_id: int):
