@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.cadence_probe import (cadence_lines, cadence_tick, cut_to, damaged_record, elsewhere_run, folder_made_a_file,
-                                                                       kept_lines, printed, record_text, removed_output, ring, tick_cost, ticks, told)
+                                                                       kept_lines, printed, record_text, removed_output, ring, tick_cost, ticks)
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 
@@ -47,8 +47,8 @@ def test_a_restart_of_the_server_and_a_clock_moving_back_are_not_read_as_pauses(
     restarted = len(ring(story, process))
     story.advance(timedelta(seconds=-60))
     ticks(story, 60, process, every=10)
-    lines = cadence_lines(told(story, MAIN))
-    story.expect_rows(restarted == 3, lines == [], detail="\n".join(lines))
+    story.expect_text(f"process card {process.id} --json", '"state": "background"', actor=story.agent)
+    story.expect_rows(restarted == 3, cadence_lines([kept_lines(story)]) == [], detail=kept_lines(story))
 
 
 def test_a_run_whose_session_ended_has_no_line_written(new_story):
@@ -79,7 +79,7 @@ def test_fifty_runs_at_once_are_judged_in_one_tick_within_its_limits(new_story):
     statements, seconds = tick_cost(story)
     story.expect_rows(all(len(ring(story, process)) == 1 for process in processes), statements < MOST_STATEMENTS, seconds < MOST_SECONDS,
                       detail=f"{statements} statements in {seconds:.2f} seconds")
-    story.expect_text(f"process show {processes[-1].id}", "state: background", actor=story.agent)
+    story.expect_text(f"output show {processes[-1].id}", f"process_id: {processes[-1].id}", actor=story.agent)
 
 
 def test_two_environments_judge_their_runs_by_their_own_thresholds(new_story):

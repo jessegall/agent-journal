@@ -70,3 +70,4 @@ def test_the_case_of_a_run_has_its_cadence_and_a_prompt_is_interactive_only_once
                       silent_case.cadence_state == "no output", talking_case.cadence_state == "streaming",
                       printing.output is not None and printing.output.ends_on_prompt, printing.cadence_state == "streaming", printing.unreadable_reason is None,
                       waiting.cadence_state == "stopped writing", waiting.unreadable_reason == "interactive", detail=f"{silent_case!r} {talking_case!r} {printing!r} {waiting!r}")
+    story.expect_text(f"output read {asking.id} --tail 1", "Proceed (y/n)?", actor=story.agent)

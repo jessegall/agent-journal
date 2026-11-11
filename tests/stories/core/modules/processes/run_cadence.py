@@ -210,7 +210,7 @@ def test_plugin_person_and_lookup_runs_are_never_judged_while_a_started_test_is(
     judged = side_run(story, story.agent, "pytest tests/first.py", CommandCategory.TEST_RUN)
     titled(story, judged, "Running the first tests")
     ticks(story, 60)
-    lines = kept_lines(story)
+    lines = "\n".join(told(story, MAIN))
     story.expect_rows(f"output {judged.id} printed nothing" in lines, *(f"output {process.id} printed nothing" not in lines for process in skipped), detail=lines)
 
 
