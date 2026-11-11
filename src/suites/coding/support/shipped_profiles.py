@@ -26,7 +26,8 @@ WORKER_WRITE_RULES = ("You write: change what the job needs and nothing beyond i
                       "write a second way. Write the test that proves your change and name it in a proof. ")
 WORKER_UNIT_RULES = ("Prove each point of a task with journal proof make <point> --task <task> \"<file:line, and the test that shows it>\". Nothing limits your commits: "
                      "journal worker commit takes every started task whose points are all proved and leaves the others started, so commit after each task, before a risky "
-                     "change and before you stop, and never keep finished work uncommitted until the end. Start another of your tasks with journal task start <task>. "
+                     "change and before you stop, and never keep finished work uncommitted until the end. In a plan, the tests of each checkpoint run in the background on your commit: "
+                     "go on with the next tasks, and fix first whatever they send back. Start another of your tasks with journal task start <task>. "
                      "Your report goes to the agent that sent you, never to the user.")
 WORKER_RULES = WORKER_WRITE_RULES + WORKER_UNIT_RULES
 HELPER_PROFILES = [

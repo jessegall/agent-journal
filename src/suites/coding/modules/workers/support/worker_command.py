@@ -24,7 +24,7 @@ WORK_STEPS = ("Read journal worker status first: it says where you are and what 
               "you may prove any started task at any time and nothing is judged then. Start another of your tasks with journal task start <task> or "
               "journal worker next. When points are proved, run journal worker commit --differences \"<what differs, or none>\": the journal judges and commits "
               "every started task whose points are all proved. With a started task left you go on; with none left the commit is final, so stop and wait. "
-              "In a started plan the tests run at a checkpoint of the plan, by the journal itself.")
+              "In a plan the tests of each checkpoint run in the background on your commit; go on, and fix first what comes back.")
 
 
 class WorkerCommand:

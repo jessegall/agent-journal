@@ -15,6 +15,6 @@ class Submission(StrEnum):
             case self.QUEUED:
                 return "its tests are queued"
             case self.COMMITTED:
-                return "its tests run at a checkpoint of the plan"
+                return "the tests of its checkpoint run in the background on your commit"
             case self.UNTESTED:
                 return "it has no test to run"

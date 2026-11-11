@@ -34,7 +34,7 @@ stays kept on the same agent number and session until retired.
   Completed, started and already assigned tasks are left alone.
 - Any blocked task can go to a worker, alone, in a phase or in a whole plan: it stays assigned while it waits, and the
   worker takes it when it opens, sent to it at once when the worker is idle. A new worker given only blocked tasks is made and not started; it starts by itself when one of them opens.
-- A started plan runs its tests at its checkpoints, by the journal itself, and you hear nothing until then. A proof with no test in a
+- A plan runs the tests of each checkpoint in the background on the worker's commit, by the journal itself, and you hear nothing of it. A proof with no test in a
   started plan needs no check from you; you can still read it and send it back. A worker out of test runs asks with `journal worker ask --about tests`. After you ask, the merger or the journal
   settles it and you are woken: you are told by when an answer is due, you may stop meanwhile, and a question nobody
   answers in time goes to the main agent by itself. `journal worker status` shows your open question.
@@ -179,8 +179,8 @@ An open question lets you stop; the answer wakes you. Going on with other work e
   work waits for its tests and its merge, so stop and wait. Once it is merged the journal starts you on the
   next of your tasks, in a new worktree.
 - The tests of a commit: outside a plan the journal queues the tests of your proofs on that commit and returns any
-  failure. In a started plan they run at a checkpoint of the plan, by the journal itself, and a failure comes back to
-  the worker whose task it is. You may go on working meanwhile: your later edits do not change the result.
+  failure. In a plan the tests of each checkpoint run in the background on your commit, by the journal itself,
+  and a failure comes back to you first: fix it before you go on. You may go on working meanwhile: your later edits do not change the result.
 - When a test fails, its task is yours again and its proof is short: fix it, show the proof again with
   `journal proof make` and commit again. Only what failed runs again.
 - Run a test yourself only if you really need it. Each worker has three test commands between two commits by default,
