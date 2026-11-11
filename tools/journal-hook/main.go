@@ -66,8 +66,9 @@ func main() {
 	}
 	requestTiming.Stamp("go_stdin")
 	prepared, skip, err := preparedHook(program, root, body, context)
-	if err != nil && mustBeChecked(context.Role, context.Programs.Programs[program].Events[hookName(body)]) {
-		os.Exit(Answered(os.Stdout, os.Stderr, context.Programs.Programs[program], hookName(body), "pre_tool_use", checkRequired, nil, root, LimitFor("pre_tool_use"), prepared.Foreign...))
+	if err != nil && mustBeChecked(context.Role) {
+		event := context.Programs.Programs[program].Events[hookName(body)]
+		os.Exit(Answered(os.Stdout, os.Stderr, context.Programs.Programs[program], hookName(body), event, checkRequired, nil, root, LimitFor(event), prepared.Foreign...))
 	}
 	if skip || err != nil {
 		os.Exit(foreignAnswered(os.Stdout, os.Stderr, context.Programs.Programs[program], hookName(body), prepared.Foreign))
@@ -98,7 +99,7 @@ func main() {
 		if code, handled := answerWithoutServer(os.Stdout, os.Stderr, prepared.Event, prepared.Foreign); handled {
 			os.Exit(code)
 		}
-		if status != restartTimedOut && mustBeChecked(context.Role, prepared.Event) {
+		if status != restartTimedOut && mustBeChecked(context.Role) {
 			status = checkRequired
 		}
 	}

@@ -330,12 +330,11 @@ func TestAWorkersOrHelpersToolTheJournalDoesNotAnswerIsNotNotedAsBypassed(t *tes
 	}
 }
 
-func TestOnlyAMainAgentsToolGoesOnWithoutTheJournal(t *testing.T) {
-	cases := map[[2]string]bool{{"worker", "pre_tool_use"}: true, {"helper", "pre_tool_use"}: true, {"reviewer", "pre_tool_use"}: true,
-		{"main", "pre_tool_use"}: false, {"", "pre_tool_use"}: false, {"worker", "post_tool_use"}: false, {"helper", "prompt"}: false}
-	for setting, wanted := range cases {
-		if mustBeChecked(setting[0], setting[1]) != wanted {
-			t.Errorf("%v must be checked: %v", setting, !wanted)
+func TestOnlyAMainAgentsHookGoesOnWithoutTheJournal(t *testing.T) {
+	cases := map[string]bool{"worker": true, "helper": true, "reviewer": true, "main": false, "": false}
+	for role, wanted := range cases {
+		if mustBeChecked(role) != wanted {
+			t.Errorf("a hook of role %q must be checked: %v", role, !wanted)
 		}
 	}
 }

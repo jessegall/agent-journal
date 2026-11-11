@@ -193,10 +193,10 @@ func restartTimedOutReply(event string) Reply {
 	return Reply{Lines: []string{fmt.Sprintf(check, "this went through unchecked")}}
 }
 
-// uncheckedRefusal is the refusal of a worker's or helper's tool the journal did not answer for. It tells the agent to try
+// uncheckedRefusal is the refusal of a worker's or helper's hook the journal did not answer for. It tells the agent to try
 // once more and what to do then, so a journal that stays away never leaves it retrying in silence.
 func uncheckedRefusal(limit time.Duration) string {
-	return fmt.Sprintf("[journal] The journal did not answer within %d seconds, so this tool did not run: a worker or helper runs no tool the journal did not check. Run it once more. If that is refused as well, stop and write in your report that the journal does not answer.", int(limit.Seconds()))
+	return fmt.Sprintf("[journal] The journal did not answer within %d seconds, so this is held: a worker or helper goes on with nothing the journal did not check. Try once more. If that is held as well, stop and write in your report that the journal does not answer.", int(limit.Seconds()))
 }
 
 // missedLine is the line given to an agent whose hook went around the journal.

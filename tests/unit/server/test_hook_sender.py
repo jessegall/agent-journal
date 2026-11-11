@@ -13,15 +13,15 @@ def test_raw_and_prepared_hooks_have_the_same_queue_owner_and_requirements(role)
     assert prepared.owner == raw.owner == "session-42"
     assert prepared.priority == raw.priority
     assert prepared.limit_seconds == raw.limit_seconds
-    assert prepared.needs_check == raw.needs_check == HookEvent.requires_check(HookEventName.PRE_TOOL_USE, role)
+    assert prepared.needs_check == raw.needs_check == HookEvent.requires_check(role)
     assert prepared.priority is (QueuePriority.AGENT_HOOK if role in ("worker", "helper") else QueuePriority.MAIN_AGENT_HOOK)
     assert prepared.limit_seconds == (45 if role in ("worker", "helper") else 3.5)
 
 
 @pytest.mark.parametrize("event,raw_name", [(HookEventName.STOP, "Stop"), (HookEventName.POST_TOOL_USE, "PostToolUse")])
-def test_only_a_workers_pre_tool_hook_requires_a_check(event, raw_name):
+def test_every_hook_of_a_worker_requires_a_check(event, raw_name):
     prepared = HookSender.parsed({"role": "worker", "session": "s-1", "event": event})
     raw = HookSender.parsed({"role": "worker", "session_id": "s-1", "hook_event_name": raw_name})
-    assert not prepared.needs_check
-    assert not raw.needs_check
+    assert prepared.needs_check
+    assert raw.needs_check
     assert prepared.is_stop == raw.is_stop == (event is HookEventName.STOP)

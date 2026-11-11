@@ -36,7 +36,7 @@ from server.request.server_context import ServerContext
 
 LEAST_BUSY_SECONDS = 0.1
 REQUEST_LOG_BUSY_SECONDS = 0.0
-UNCHECKED_TOOL = "the journal could not check this tool, so it did not run: {reason}. Run it once more. If that is refused as well, stop and write in your report that the journal does not answer."
+UNCHECKED_TOOL = "the journal could not check this, so it is held: {reason}. A worker or helper goes on with nothing the journal did not check. Try once more. If that is held as well, stop and write in your report that the journal does not answer."
 
 
 class HookEndpoint:
