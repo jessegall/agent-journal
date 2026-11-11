@@ -106,7 +106,7 @@ class AdvisedWorker:
         return tuple(self.story.container.get(Queries).query(Message).filter(session_agent_id=self.merger.id, target_agent_id=self.worker.id).oldest().all_rows())
 
     def question_lines(self) -> tuple[MergerLine, ...]:
-        rows = self.story.container.get(Queries).query(MergerLine).oldest().all_rows()
+        rows = self.story.story_rows(MergerLine)
         return tuple(row for row in rows if row.topic is not None)
 
     def delivered(self) -> None:

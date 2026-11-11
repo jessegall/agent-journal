@@ -19,7 +19,7 @@ def test_command_output_goes_to_the_agent_that_fired_it_once(new_story, tmp_path
     story.expect_success(f'''trigger make cart "Mind the cart" --extra-actions '[{{"type":"run","target":"pwd","folder":"{tmp_path}","notify_agent":true}}]' ''', actor=story.agent)
     story.hook("s-1", HookSamples.prompt("Fix the cart"))
     story.run_listeners()
-    process = next(story.container.get(Queries).query(Process).all_rows())
+    process = story.story_rows(Process)[0]
     expect_row(process, folder=str(tmp_path))
     expect_row(process, session_agent_id=story.agent.id)
     end_run(story, process, "chosen folder output\ncommand warning\n", exit_code=3)
@@ -35,7 +35,7 @@ def test_output_stays_out_of_the_agent_when_the_switch_is_off(new_story):
     story.expect_success('''trigger make cart "Mind the cart" --extra-actions '[{"type":"run","target":"pwd"}]' ''', actor=story.agent)
     story.hook("s-1", HookSamples.prompt("Fix the cart"))
     story.run_listeners()
-    process = next(story.container.get(Queries).query(Process).all_rows())
+    process = story.story_rows(Process)[0]
     end_run(story, process, "private command output\n")
     story.run_listeners()
     story.expect_absent_hook_line("s-1", HookSamples.prompt("Continue"), "private command output")

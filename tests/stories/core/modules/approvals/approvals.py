@@ -80,7 +80,7 @@ def test_an_agent_can_never_decide_a_docked_request(pending_setting, decision):
 def test_repeating_the_same_block_keeps_one_request(pending_setting):
     story, request = pending_setting
     story.expect_refusal(CHANGE_SETTING, "A person was asked in the dock", actor=story.agent)
-    rows = tuple(story.container.get(Queries).query(ApprovalRequest).all_rows())
+    rows = tuple(story.story_rows(ApprovalRequest))
     story.expect_rows(len(rows) == 1, rows[0].id == request.id)
 
 

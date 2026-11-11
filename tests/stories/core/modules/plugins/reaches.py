@@ -2,7 +2,6 @@ import json
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.plugins.models.plugin_delivery import PluginDelivery
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from tests.stories.core.support.scanned_edits import scanned_edit
@@ -26,7 +25,7 @@ def worker_story(new_story, reaches: dict[str, list[str]]):
 
 
 def deliveries(story) -> int:
-    return story.container.get(Queries).query(PluginDelivery).count()
+    return len(story.story_rows(PluginDelivery))
 
 
 def test_a_plugin_whose_files_changed_gets_no_file_edit(new_story):

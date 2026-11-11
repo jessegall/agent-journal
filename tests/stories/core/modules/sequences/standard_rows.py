@@ -3,7 +3,6 @@ from engine.testing.stories.story_fixture import StoryFixture
 from dataclasses import replace
 
 from engine.database.database import Database
-from engine.query.queries import Queries
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.commands.save_standard_sequences.standard_sequences import STANDARD_SEQUENCES
 from core.modules.templates.models.template import Template
@@ -22,11 +21,11 @@ def started(story):
 
 
 def titles(story, model):
-    return {row.title for row in story.container.get(Queries).query(model).all_rows()}
+    return {row.title for row in story.story_rows(model)}
 
 
 def plan_building(story):
-    return next(row for row in story.container.get(Queries).query(Sequence).all_rows() if row.title == PLAN_BUILDING)
+    return next(row for row in story.story_rows(Sequence) if row.title == PLAN_BUILDING)
 
 
 def test_a_fresh_journal_lists_what_comes_with_it_after_a_start(new_story):

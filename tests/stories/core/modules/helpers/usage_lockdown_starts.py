@@ -1,5 +1,4 @@
 from tests.stories.core.support.agent_labels import agent_number
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
@@ -64,6 +63,6 @@ def test_a_send_to_an_ended_kept_helper_is_refused_with_the_reason_and_the_same_
 def test_a_program_a_person_starts_by_hand_is_stopped_at_its_session_start_and_no_agent_is_made(new_story):
     story = lockdown_story(new_story)
     report(story, 55)
-    count = story.container.get(Queries).query(Agent).count()
+    count = len(story.story_rows(Agent))
     reply = story.hook("s-by-hand", HookSamples.session_start())
-    story.expect_rows(reply.halt.startswith(STOP_LINE), story.container.get(Queries).query(Agent).count() == count)
+    story.expect_rows(reply.halt.startswith(STOP_LINE), len(story.story_rows(Agent)) == count)

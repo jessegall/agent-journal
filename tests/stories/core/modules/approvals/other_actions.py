@@ -60,7 +60,7 @@ def template_viewer(pending_template):
 def test_a_template_becomes_a_person_request_only_after_acceptance(pending_template, template_viewer, decision):
     story, request = pending_template
     template_viewer.value("messages.chat", ["approval", decision, str(request.id)])
-    messages = tuple(story.container.get(Queries).query(Message).all_rows())
+    messages = tuple(story.story_rows(Message))
     if decision == "refuse":
         story.expect_rows(not messages)
         return

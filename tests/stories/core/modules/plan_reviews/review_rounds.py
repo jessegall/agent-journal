@@ -53,7 +53,7 @@ def request_critique(server, cookie) -> None:
 def file_report(server, title: str) -> int:
     server.story.expect_success(REPORT.format(title=title), actor=server.story.agent)
     server.story.run_listeners()
-    return max(report.id for report in server.story.container.get(Queries).query(Report).all_rows())
+    return max(report.id for report in server.story.story_rows(Report))
 
 
 class TwoFinishedRounds(StoryFixture):
@@ -83,7 +83,7 @@ def two_rounds(new_story):
 
 def test_two_critiques_each_ended_by_a_report_show_as_two_rounds_with_their_reports(two_rounds):
     listed = read_rounds(two_rounds, two_rounds.expect_viewer_login(two_rounds.viewer_key("Ada")))
-    reports = [report.id for report in two_rounds.story.container.get(Queries).query(Report).oldest().all_rows() if report.title.endswith("critique")]
+    reports = [report.id for report in two_rounds.story.story_rows(Report) if report.title.endswith("critique")]
     two_rounds.story.expect_rows([round_row["number"] for round_row in listed] == [1, 2],
                                  [[report["id"] for report in round_row["reports"]] for round_row in listed] == [[reports[0]], [reports[1]]],
                                  all(round_row["started_at"] and round_row["ended_at"] for round_row in listed))

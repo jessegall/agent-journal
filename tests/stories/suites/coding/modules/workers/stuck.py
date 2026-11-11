@@ -259,6 +259,6 @@ def test_a_stuck_worker_reaches_the_merger_and_not_the_main_agent(new_story, mon
     with running_launcher(story):
         story.expect_success('wait stuck "the build tool is missing"', actor=worker)
         story.run_listeners()
-    rows = story.container.get(Queries).query(MergerLine).all_rows()
+    rows = story.story_rows(MergerLine)
     story.expect_rows(any(f"worker:{agent_number(story, worker.id)} is stuck on task:1" in row.text for row in rows), detail=str(rows))
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "is stuck")

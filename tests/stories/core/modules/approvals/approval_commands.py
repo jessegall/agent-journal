@@ -34,7 +34,7 @@ def resume_approval(new_story):
 
 
 def approvals(story) -> list[ApprovalRequest]:
-    return list(story.container.get(Queries).query(ApprovalRequest).all_rows())
+    return list(story.story_rows(ApprovalRequest))
 
 
 def test_an_approval_stores_the_command_its_accept_runs_and_none_of_the_agents_flags(resume_approval):

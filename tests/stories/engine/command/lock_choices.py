@@ -60,6 +60,6 @@ def test_a_locked_command_rolls_back_its_own_writes_also_inside_an_unlocked_one(
 
     monkeypatch.setattr(Repository, "save", second_pin_fail)
     story.expect_refusal(f"lock-sample {line} --environment main", "the second pin cannot be written", actor=story.user)
-    story.expect_rows([pin.title for pin in story.container.get(Queries).query(Pin).oldest().all_rows()] == remaining)
+    story.expect_rows([pin.title for pin in story.story_rows(Pin)] == remaining)
     story.expect_rows(story.container.get(Database).nested == [])
     story.expect_rows(not story.container.get(Database).has_transaction)

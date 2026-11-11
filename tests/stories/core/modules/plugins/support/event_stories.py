@@ -14,7 +14,6 @@ from engine.enums.actor_type import ActorType
 from engine.event.event_log import EventLog
 from engine.event.logged_event import LoggedEvent
 from engine.database.reported_findings import ReportedFindings
-from engine.query.queries import Queries
 from core.modules.pins.models.pin import Pin
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_delivery import PluginDelivery
@@ -110,19 +109,19 @@ def plugin_data(story: Story, name: str, plugin: str = "events") -> Path:
 
 
 def tasks_titled(story: Story, title: str) -> list[Task]:
-    return [task for task in story.container.get(Queries).query(Task).all_rows() if task.title == title]
+    return [task for task in story.story_rows(Task) if task.title == title]
 
 
 def pins_titled(story: Story, title: str) -> list[Pin]:
-    return [pin for pin in story.container.get(Queries).query(Pin).all_rows() if pin.title == title]
+    return [pin for pin in story.story_rows(Pin) if pin.title == title]
 
 
 def plugin_row(story: Story, name: str = "events") -> Plugin:
-    return next(plugin for plugin in story.container.get(Queries).query(Plugin).all_rows() if plugin.name == name)
+    return next(plugin for plugin in story.story_rows(Plugin) if plugin.name == name)
 
 
 def deliveries(story: Story) -> list[PluginDelivery]:
-    return list(story.container.get(Queries).query(PluginDelivery).all_rows())
+    return list(story.story_rows(PluginDelivery))
 
 
 def logged_events(story: Story, name: str) -> list[LoggedEvent]:

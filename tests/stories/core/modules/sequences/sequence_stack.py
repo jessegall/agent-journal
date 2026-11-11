@@ -3,7 +3,6 @@ import shlex
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.sequences.models.sequence_run import SequenceRun
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import UserJoined
@@ -23,7 +22,7 @@ class ReleaseAndCleanup(StoryFixture):
 
 
 def open_runs(story) -> list[int]:
-    return [run.sequence_id for run in story.container.get(Queries).query(SequenceRun).all_rows() if run.ended_at is None]
+    return [run.sequence_id for run in story.story_rows(SequenceRun) if run.ended_at is None]
 
 
 class ReleaseCleanup(StoryFixture):

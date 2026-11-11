@@ -4,7 +4,6 @@ import pytest
 
 from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
-from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE
 from core.modules.drivers.models.context_compaction import ContextCompaction
@@ -19,7 +18,7 @@ STATUS_FILE_DELAY = timedelta(seconds=30)
 
 
 def compactions(story) -> list[ContextCompaction]:
-    return list(story.container.get(Queries).query(ContextCompaction).all_rows())
+    return list(story.story_rows(ContextCompaction))
 
 
 def test_a_compaction_asked_at_a_stop_is_one_row_from_its_request_to_the_first_size_read_after_it_and_nothing_is_typed_again(new_story):

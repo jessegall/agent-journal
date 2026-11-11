@@ -3,7 +3,6 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
-from engine.query.queries import Queries
 from core.modules.sequences.models.sequence_run import SequenceRun
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
@@ -266,7 +265,7 @@ def test_making_a_plan_ready_ends_its_sequence_and_the_run_on_another_plan_stays
     story.run_listeners()
     story.expect_success("plan ready 1", actor=story.agent)
     story.run_listeners()
-    open_runs = [run.session_agent_id for run in story.container.get(Queries).query(SequenceRun).all_rows() if run.ended_at is None]
+    open_runs = [run.session_agent_id for run in story.story_rows(SequenceRun) if run.ended_at is None]
     expect_value(open_runs, [worker.id])
 
 

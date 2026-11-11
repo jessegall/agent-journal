@@ -17,8 +17,8 @@ CRITIQUE = 'template send 1 --on=plan:1 --set=agents="2 agents" --set=size="a no
 
 
 def expect_empty_messages(story):
-    story.expect_rows(story.container.get(Queries).query(Message).count() == 0,
-                      story.container.get(Queries).query(Link).count() == 0)
+    story.expect_rows(len(story.story_rows(Message)) == 0,
+                      len(story.story_rows(Link)) == 0)
 
 
 def test_a_person_sends_the_same_critique_request_as_the_button(new_story):

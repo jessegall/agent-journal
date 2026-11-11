@@ -4,7 +4,6 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.server.support.server_client import server_story
@@ -94,7 +93,7 @@ def test_214_a_merger_defers_the_stories_of_a_later_task_the_own_test_of_a_check
     story.expect_text("task-log list --task 3", OWN_TEST, SHORTER_TEST, WHY, actor=story.agent)
     expect_returned(case.worker, 3)
     story.expect_rows((deferral["phase_id"], deferral["due_phase_id"], deferral["paths"], deferral["closed_at"]) == (1, 2, LATER_STORIES, None),
-                      any("wait for the checkpoint of phase 2" in message.text for message in story.container.get(Queries).query(Message).all_rows()),
+                      any("wait for the checkpoint of phase 2" in message.text for message in story.story_rows(Message)),
                       len(case.worker.main_agent_lines()) == main_agent_line_count, detail=f"{deferral} | {case.worker.worker_lines()}")
 
 

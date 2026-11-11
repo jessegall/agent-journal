@@ -235,7 +235,7 @@ def test_missing_proofs_are_refused_before_creating_a_background_process(worker_
     story, _, worker, launches = worker_command
     story.expect_success('task edit 1 --brief "- Add the total\n- Round to cents"', actor=story.agent)
     story.expect_refusal('worker commit --differences none', "point 2 has no proof", actor=worker)
-    story.expect_rows(launches == [], story.container.get(Queries).query(WorkerOperation).count() == 0)
+    story.expect_rows(launches == [], len(story.story_rows(WorkerOperation)) == 0)
 
 
 def test_a_worker_can_stop_after_hand_in_and_resumes_when_the_command_ends(worker_command):

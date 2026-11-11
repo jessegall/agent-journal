@@ -1,7 +1,6 @@
 from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, OpenTaskOrchestrator
@@ -27,10 +26,10 @@ def test_a_dispatch_cuts_the_worktree_from_the_environments_branch_while_the_che
 def test_a_dispatch_in_an_environment_that_names_no_branch_is_refused_and_makes_nothing(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story, branch="")
-    actors = tuple(story.container.get(Queries).query(ActorRecord).all_rows())
+    actors = tuple(story.story_rows(ActorRecord))
     story.expect_refusal(DISPATCH, "environment main has no branch: journal environment edit main --branch <branch>", actor=story.agent)
     expect_clean_environment(story, repository)
-    story.expect_rows(tuple(story.container.get(Queries).query(ActorRecord).all_rows()) == actors)
+    story.expect_rows(tuple(story.story_rows(ActorRecord)) == actors)
 
 
 def test_a_dispatch_from_a_branch_that_does_not_exist_is_refused_and_makes_nothing(new_story):
@@ -44,13 +43,13 @@ def test_a_worker_that_dispatches_a_worker_is_refused_and_makes_nothing(new_stor
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = Actor(story.new_row_id(f"{WORKER_START} --parent {story.agent.id}"), ActorType.AGENT)
-    actors = tuple(story.container.get(Queries).query(ActorRecord).all_rows())
+    actors = tuple(story.story_rows(ActorRecord))
     story.expect_refusal(DISPATCH, "a worker dispatches no workers", actor=worker)
     story.expect_success("worker-worktree list", "nothing found")
     story.expect_success(f"agent list --parent {worker.id}", "nothing found")
     story.expect_success(lines.TASK_DETAILS, "state: open")
     repository.expect_no_worktree()
-    story.expect_rows(tuple(story.container.get(Queries).query(ActorRecord).all_rows()) == actors)
+    story.expect_rows(tuple(story.story_rows(ActorRecord)) == actors)
 
 
 def test_a_dispatch_of_a_task_that_is_not_open_is_refused_and_makes_nothing(new_story):

@@ -19,7 +19,7 @@ def pending_requests(new_story):
     story = new_story(fixture=UserBuilder)
     for number in range(12):
         story.new_row_id(f'rule make "Check shop {number}"', actor=story.agent)
-    requests = tuple(story.container.get(Queries).query(ApprovalRequest).oldest().all_rows())
+    requests = tuple(story.story_rows(ApprovalRequest))
     story.expect_rows(len(requests) == 12)
     return story
 
@@ -56,7 +56,7 @@ def test_a_task_wait_does_not_create_a_person_approval(new_story):
     story = new_story(fixture=StartedTaskBuilder)
     task = story.new_row_id('task make "Check the shop" --environment main', actor=story.agent)
     story.expect_success(f'task block {task} --until-user --reason "Ask the main agent to review the shop"', actor=story.agent)
-    story.expect_rows(not tuple(story.container.get(Queries).query(ApprovalRequest).all_rows()))
+    story.expect_rows(not tuple(story.story_rows(ApprovalRequest)))
 
 
 def test_many_docked_approvals_use_one_read_through_the_viewer_route(pending_requests, pending_viewer, monkeypatch):

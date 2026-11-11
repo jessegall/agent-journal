@@ -327,7 +327,7 @@ def test_every_third_failed_hand_in_in_a_row_puts_a_line_before_the_merger(new_s
 
 
 def review_lines(story) -> list[str]:
-    return [line.text for line in story.container.get(Queries).query(MergerLine).all_rows() if "in a row" in line.text]
+    return [line.text for line in story.story_rows(MergerLine) if "in a row" in line.text]
 
 
 def test_a_worker_waiting_for_tests_or_merge_is_not_reported_as_stopped(new_story, monkeypatch):

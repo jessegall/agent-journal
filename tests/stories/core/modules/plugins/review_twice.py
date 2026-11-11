@@ -62,7 +62,7 @@ def test_s83_a_refusal_after_a_command_orphans_a_process_leaves_it_running(refus
 def test_s84_a_key_after_a_command_that_runs_once_runs_no_guard_script_and_the_skip_is_noted(new_story):
     story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "see.sh"}, modules=[NOTES, REFUSING])
     story.container.get(Bus).run(SlotsCreateNote("A note"), story.agent)
-    story.expect_rows(not script_calls(story, "see.sh"), "were skipped" in story.system_log_text(), story.container.get(Queries).query(EventNote).count() == 1)
+    story.expect_rows(not script_calls(story, "see.sh"), "were skipped" in story.system_log_text(), len(story.story_rows(EventNote)) == 1)
 
 
 def test_s85_a_file_edit_in_the_main_checkout_gives_its_status_and_whether_base_holds_it(new_story):

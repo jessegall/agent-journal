@@ -122,7 +122,7 @@ def test_a_task_blocked_for_a_reason_goes_to_a_busy_worker_and_waits_for_its_tur
     story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task}", actor=story.agent)
     story.expect_success(f"task unblock {task}", actor=story.agent)
     story.expect_rows(story.row(Task, task).delegated_to == worker.id, story.row(Task, task).holder_id is None,
-                      story.container.get(Queries).query(WorkerOperation).count() == 0)
+                      len(story.story_rows(WorkerOperation)) == 0)
 
 
 def test_a_new_worker_on_blocked_tasks_alone_is_made_and_not_started(idle_plan):

@@ -1,4 +1,3 @@
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -7,7 +6,7 @@ SAVE_MERGER = 'profile save journal-merger --description "Merges workers" --prog
 
 
 def cards(story) -> list[ApprovalRequest]:
-    return list(story.container.get(Queries).query(ApprovalRequest).all_rows())
+    return list(story.story_rows(ApprovalRequest))
 
 
 def test_an_agent_that_asks_a_person_without_a_reason_is_refused_and_no_card_is_made(new_story):

@@ -2,7 +2,6 @@ from datetime import timedelta
 
 import pytest
 
-from engine.query.queries import Queries
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
@@ -22,7 +21,7 @@ def worker_lines(story) -> str:
 
 
 def merger_line_texts(story) -> list[str]:
-    return [line.text for line in story.container.get(Queries).query(MergerLine).all_rows()]
+    return [line.text for line in story.story_rows(MergerLine)]
 
 
 def refusal_text(story, line: str) -> str:

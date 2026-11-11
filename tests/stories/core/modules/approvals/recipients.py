@@ -62,4 +62,4 @@ def test_main_answers_the_helper_without_a_person_or_a_protected_action(helper_r
     story.expect_success(line, actor=story.agent)
     saved = story.container.get(Queries).query(ApprovalRequest).find(approval.id)
     story.expect_rows(saved.state is ApprovalState.CLOSED, saved.review_answer == "Use the existing paired phone",
-                      saved.responder_id == story.agent.id, not tuple(story.container.get(Queries).query(PhoneCode).all_rows()))
+                      saved.responder_id == story.agent.id, not tuple(story.story_rows(PhoneCode)))

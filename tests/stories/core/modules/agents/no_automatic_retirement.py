@@ -2,7 +2,6 @@ import pytest
 
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
-from engine.query.queries import Queries
 from tests.stories.core.modules.helpers.cold_sessions import with_job
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.modules.helpers.lifetime_reviewers import refusal_text
@@ -20,7 +19,7 @@ def cooling(new_story):
 
 
 def agents(story) -> list[Agent]:
-    return list(story.container.get(Queries).query(Agent).all_rows())
+    return list(story.story_rows(Agent))
 
 
 def test_a_cold_replacement_a_refusal_at_the_kept_limit_and_a_profile_moved_to_another_program_retire_no_agent(cooling, monkeypatch):

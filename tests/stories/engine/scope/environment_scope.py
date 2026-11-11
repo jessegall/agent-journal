@@ -1,4 +1,3 @@
-from engine.query.queries import Queries
 from core.modules.memories.models.memory import Memory
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.memories.support.memory_owners import MAIN_FACT, MAIN_MEMORY, MainAndWorkerMemories
@@ -45,10 +44,10 @@ def test_a_person_s_read_of_an_unknown_environment_is_refused(new_story):
 
 def test_a_job_outside_any_request_reads_every_environment(new_story):
     story = new_story(fixture=TwoEnvironments)
-    story.expect_rows(story.container.get(Queries).query(Memory).count() == 3)
+    story.expect_rows(len(story.story_rows(Memory)) == 3)
 
 
 def test_the_scope_of_a_request_ends_with_it(new_story):
     story = new_story(fixture=TwoEnvironments)
     story.run("memory list --environment staging", actor=story.user)
-    story.expect_rows(story.container.get(Queries).query(Memory).count() == 3)
+    story.expect_rows(len(story.story_rows(Memory)) == 3)

@@ -4,7 +4,6 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.database.database import Database
 from engine.enums.model_tier import ModelTier
-from engine.query.queries import Queries
 from engine.registry.registry import Registry
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
@@ -38,7 +37,7 @@ def bundled_story(new_story):
 
 
 def sequence_id(story, title):
-    return next(row.id for row in story.container.get(Queries).query(Sequence).all_rows() if row.title == title)
+    return next(row.id for row in story.story_rows(Sequence) if row.title == title)
 
 
 def profile(story, name):
@@ -56,7 +55,7 @@ def test_a_read_only_helper_can_follow_the_functional_design_sequence_to_its_end
     for _ in range(4):
         bundled_story.expect_success("sequence follow", actor=bundled_story.helper)
         bundled_story.expect_success("sequence next", actor=bundled_story.helper)
-    runs = tuple(bundled_story.container.get(Queries).query(SequenceRun).all_rows())
+    runs = tuple(bundled_story.story_rows(SequenceRun))
     bundled_story.expect_rows(not [run for run in runs if run.session_agent_id == bundled_story.helper.id and run.ended_at is None], detail=str(runs))
 
 

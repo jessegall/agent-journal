@@ -213,7 +213,7 @@ def test_the_event_of_a_row_holds_the_environment_of_the_row_when_a_job_writes_i
 
 def test_a_job_outside_any_request_reads_every_environment(new_story):
     story = new_story(fixture=TwoWorkingEnvironments)
-    titles = {task.title for task in story.container.get(Queries).query(Task).all_rows()}
+    titles = {task.title for task in story.story_rows(Task)}
     story.expect_rows(MAIN_TITLE in titles, STAGING_TITLE in titles)
 
 

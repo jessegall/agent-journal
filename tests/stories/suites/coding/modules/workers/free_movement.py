@@ -1,7 +1,6 @@
 import pytest
 
 from engine.database.database import READ_LIMIT_ROWS, Database
-from engine.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH
@@ -128,7 +127,7 @@ def test_the_status_of_a_worker_reads_a_checkpoint_phase_of_many_tasks_without_l
     database.read_limit_rows, database.collected_large_reads = READ_LIMIT_ROWS, None
     started = story.run("task start 2", actor=worker.worker)
     status = story.run("worker status", actor=worker.worker)
-    faults = [row.message for row in story.container.get(Queries).query(JournalException).all_rows()]
+    faults = [row.message for row in story.story_rows(JournalException)]
     story.expect_rows(started.code == 0, status.code == 0, "Tasks you may start" in status.output_text, later_task not in startable_ids(worker), faults == [],
                       detail=f"{started.output_text} | {status.output_text} | {faults}")
 

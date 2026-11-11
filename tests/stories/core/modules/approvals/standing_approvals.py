@@ -23,11 +23,11 @@ def save_preset(name: str) -> str:
 
 
 def requests(story: Story) -> list[ApprovalRequest]:
-    return list(story.container.get(Queries).query(ApprovalRequest).all_rows())
+    return list(story.story_rows(ApprovalRequest))
 
 
 def standing_yeses(story: Story) -> list[StandingApproval]:
-    return list(story.container.get(Queries).query(StandingApproval).all_rows())
+    return list(story.story_rows(StandingApproval))
 
 
 def permanent_acceptance(story: Story, request: ApprovalRequest, scope: str) -> None:

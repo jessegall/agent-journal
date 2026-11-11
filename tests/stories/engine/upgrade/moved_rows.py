@@ -1,6 +1,5 @@
 from engine.enums.agent_role import AgentRole
 from engine.enums.access import Access
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story
 from tests.stories.support.story_checks import expect_value_with
@@ -31,13 +30,13 @@ def expect_count_events_minimum(events, text, expected) -> None:
 
 def test_a_version_4_subagent_arrives_as_an_ended_read_only_helper(new_story):
     story = upgraded_story(new_story)
-    helper = next(row for row in story.container.get(Queries).query(Agent).all_rows() if row.session == "s-gone:sub-1")
+    helper = next(row for row in story.story_rows(Agent) if row.session == "s-gone:sub-1")
     story.expect_rows(helper.role == AgentRole.HELPER, helper.access == Access.READ, helper.ended_at is not None)
 
 
 
 def test_at_most_one_main_agent_of_each_environment_stays_open_so_continue_resumes_it(new_story):
     story = upgraded_story(new_story)
-    main_agents = [row for row in story.container.get(Queries).query(Agent).all_rows() if row.role == AgentRole.MAIN and row.ended_at is None]
+    main_agents = [row for row in story.story_rows(Agent) if row.role == AgentRole.MAIN and row.ended_at is None]
     environments = [row.environment_id for row in main_agents]
     story.expect_rows(len(environments) == len(set(environments)))

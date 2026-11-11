@@ -2,7 +2,6 @@ import os
 
 from engine.enums.command_category import CommandCategory
 from engine.log.exception_sink import CLOCK_TICK_SOURCE
-from engine.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
 from engine.module.performance_tools import PerformanceTools
 from engine.time.timing import Timing
@@ -22,7 +21,7 @@ def developer_story(new_story):
 
 def warning_count(story):
     story.run_listeners()
-    rows = story.container.get(Queries).query(JournalException).all_rows()
+    rows = story.story_rows(JournalException)
     return len([row for row in rows if row.source == CLOCK_TICK_SOURCE and "points" in row.message])
 
 

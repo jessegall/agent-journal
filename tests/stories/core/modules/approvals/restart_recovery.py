@@ -108,7 +108,7 @@ def test_accepting_a_request_left_running_by_a_restart_runs_it_without_the_runni
 
 def test_a_covered_request_cut_off_by_a_restart_is_accepted_again_with_no_card(new_story):
     story = new_story(NOTES, fixture=CoveredRequestRestarted)
-    covered = list(story.container.get(Queries).query(ApprovalRequest).all_rows())[-1]
+    covered = list(story.story_rows(ApprovalRequest))[-1]
     expect_value((story.row(ApprovalRequest, covered.id).state, docked_requests(story)), (ApprovalState.RUNNING, []))
     expect_value(story.container.get(Bus).run(RecoverApprovals(), Actor.core()), 1)
     story.run_listeners()

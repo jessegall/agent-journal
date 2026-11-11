@@ -156,11 +156,11 @@ def test_a_failed_card_save_keeps_the_card_and_every_unread_file(new_story, monk
 def test_an_empty_card_list_saves_no_plugin_output(new_story):
     story = installed_story(new_story)
     queued_card(story, "empty.json", {"cards": []})
-    prior_count = story.container.get(Queries).query(PluginOutput).count()
+    prior_count = len(story.story_rows(PluginOutput))
 
     PluginCardReading()(story.container)
 
-    story.expect_rows(story.container.get(Queries).query(PluginOutput).count() == prior_count)
+    story.expect_rows(len(story.story_rows(PluginOutput)) == prior_count)
 
 
 def test_a_hook_can_read_while_the_card_tick_takes_a_file_from_its_listing(new_story, monkeypatch):

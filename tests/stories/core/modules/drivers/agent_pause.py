@@ -144,7 +144,7 @@ def test_the_pause_ends_with_the_agent(paused_task_holder):
 
 def test_a_worker_pauses_on_its_own_and_not_with_the_agent_that_sent_it(new_story):
     story = paused_story(new_story, BuilderHelper)
-    worker = next(agent for agent in story.container.get(Queries).query(Agent).all_rows() if agent.parent_id == story.agent.id)
+    worker = next(agent for agent in story.story_rows(Agent) if agent.parent_id == story.agent.id)
     story.container.get(Database).connection.execute("UPDATE agents SET role = 'worker' WHERE id = ?", [worker.id])
     overlay = PausedOverlay(story.container.get(AgentRows))
     story.expect_rows(overlay.open_rows(worker.id) == [])

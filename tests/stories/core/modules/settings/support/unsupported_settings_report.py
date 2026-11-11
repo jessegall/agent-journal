@@ -1,6 +1,5 @@
 import json
 
-from engine.query.queries import Queries
 from core.modules.settings.models.setting import Setting
 from engine.testing.stories.story import Story
 from tests.stories.fixtures.unsupported_settings import UNSUPPORTED_SETTINGS
@@ -20,7 +19,7 @@ EXPLANATION_TERMS = {
 
 
 def expect_unsupported_settings_report(story: Story) -> None:
-    stored_keys = {row.key for row in story.container.get(Queries).query(Setting).all_rows()}
+    stored_keys = {row.key for row in story.story_rows(Setting)}
     for key, value in UNSUPPORTED_SETTINGS:
         line = next((line for line in story.upgrade_text.splitlines() if f"the key {key} (value {json.dumps(value)})" in line), "")
         assert line and "dropped" in line, (key, line)

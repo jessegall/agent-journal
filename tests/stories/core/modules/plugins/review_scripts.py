@@ -9,7 +9,6 @@ from engine.cli.caller_stream import CallerStream
 from engine.command.bus import Bus
 from engine.container.journal_container import synced_container
 from engine.enums.event_form import EventForm
-from engine.query.queries import Queries
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
@@ -32,7 +31,7 @@ RECOVERING = 'if [ ! -e "$JOURNAL_PLUGIN_DATA/recovered" ]; then exit 3; fi'
 def test_s73_a_write_from_a_server_round_runs_no_script_and_notes_the_skip(new_story):
     story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "refuse.sh", "listen": "pin.sh"}, modules=[NOTES])
     synced_container(story.home).get(Bus).run(ManyNotes(1), story.user)
-    story.expect_rows(not script_calls(story, "refuse.sh"), not script_calls(story, "pin.sh"), "were skipped" in story.system_log_text(), story.container.get(Queries).query(EventNote).count() == 1)
+    story.expect_rows(not script_calls(story, "refuse.sh"), not script_calls(story, "pin.sh"), "were skipped" in story.system_log_text(), len(story.story_rows(EventNote)) == 1)
 
 
 def test_s75_a_caller_waiting_on_a_guard_script_is_told_at_once(new_story):

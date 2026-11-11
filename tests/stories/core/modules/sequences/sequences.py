@@ -210,7 +210,7 @@ def second_agent_story(new_story, role: str, session: str, *triggers: dict):
 
 
 def expect_exclusive_run(story, agent_id: int) -> None:
-    runs = list(story.container.get(Queries).query(SequenceRun).all_rows())
+    runs = list(story.story_rows(SequenceRun))
     assert [run.session_agent_id for run in runs] == [agent_id], runs
 
 

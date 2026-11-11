@@ -20,7 +20,7 @@ def ended(new_story):
 
 
 def approval_requests(story) -> list[ApprovalRequest]:
-    return list(story.container.get(Queries).query(ApprovalRequest).all_rows())
+    return list(story.story_rows(ApprovalRequest))
 
 
 def helper_rows(story) -> list[Agent]:

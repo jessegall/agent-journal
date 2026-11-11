@@ -29,7 +29,6 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
 from tests.stories.server.support.story_line_route import StoryLineRoute
 from engine.testing.expectations.line_outcome import LineOutcome
-from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.models.agent_skill import AgentSkill
 from engine.module.code_fingerprint import CodeFingerprint
@@ -334,7 +333,7 @@ def expect_timing_lines(home: JournalHome, lines: list[tuple[str, list[str]]]) -
 def without_start_skills(story: Story) -> None:
     story.run("setting make journal.core.skills.session-start '[]'")
     story.run_listeners()
-    for row in tuple(story.container.get(Queries).query(AgentSkill).all_rows()):
+    for row in tuple(story.story_rows(AgentSkill)):
         story.expect_success(f"agent-skill delete {row.id}")
 
 

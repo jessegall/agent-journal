@@ -1,4 +1,3 @@
-from engine.query.queries import Queries
 from core.modules.templates.models.template import Template
 from engine.testing.expectations.expect_row import expect_row
 from server.work.booting_work import BootingWork
@@ -12,7 +11,7 @@ def test_the_thirteen_standard_templates_are_registered_by_their_modules(new_sto
     story = new_story(fixture=UserJoined)
     BootingWork().run(story.container)
     story.run_listeners()
-    rows = tuple(story.container.get(Queries).query(Template).all_rows())
+    rows = tuple(story.story_rows(Template))
     story.expect_rows(len(rows) == 13, {row.title for row in rows} == set(EXPECTED_MODULES))
     story.expect_text("template list", *EXPECTED_MODULES, actor=story.user)
     for row in rows:
@@ -23,10 +22,10 @@ def test_the_thirteen_standard_templates_are_registered_by_their_modules(new_sto
 
 def test_upgrading_standard_templates_keeps_the_rows_and_fills_the_module(new_story):
     story = new_story(fixture=LegacyTemplates)
-    old_ids = {row.title: row.id for row in story.container.get(Queries).query(Template).all_rows()}
+    old_ids = {row.title: row.id for row in story.story_rows(Template)}
     BootingWork().run(story.container)
     story.run_listeners()
-    rows = tuple(story.container.get(Queries).query(Template).all_rows())
+    rows = tuple(story.story_rows(Template))
     story.expect_rows({row.title: row.id for row in rows if row.title in old_ids} == old_ids, len(rows) == 13)
     for row in rows:
         expect_row(row, module=EXPECTED_MODULES[row.title])

@@ -15,7 +15,7 @@ PLUGIN_REFUSAL_SAMPLE = HookSamples.shell("touch protected", ShellPart("touch", 
 
 
 def expect_plugin_upgrade(story: Story, enabled: bool) -> None:
-    plugin = next(story.container.get(Queries).query(Plugin).all_rows())
+    plugin = story.story_rows(Plugin)[0]
     assert plugin.release == f"v{INSTALLED_VERSION}", plugin
     assert plugin.enabled is enabled, plugin
     settings = {row.key: json.loads(row.value) for row in story.container.get(Queries).query(PluginSetting).filter(plugin_id=plugin.id).all_rows()}

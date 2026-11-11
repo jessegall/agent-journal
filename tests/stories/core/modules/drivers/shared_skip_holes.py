@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-from engine.query.queries import Queries
 from core.modules.drivers.models.refusal_skip import RefusalSkip
 from tests.stories.core.modules.drivers.support.confirmed_skips import TRIED
 from tests.stories.core.support.fixtures import MessageAnswered
@@ -14,7 +13,7 @@ def reply(text: str) -> str:
 
 
 def kept_skips(story) -> int:
-    return story.container.get(Queries).query(RefusalSkip).count()
+    return len(story.story_rows(RefusalSkip))
 
 
 def skipped(story) -> None:

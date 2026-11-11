@@ -1,7 +1,6 @@
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.file.file_access import FileAccess
-from engine.query.queries import Queries
 from core.modules.drivers.commands.support.rule_history_writer import RuleHistoryWriter
 from core.modules.drivers.models.enums.rule_due_outcome import RuleDueOutcome
 from core.modules.drivers.models.rule_history import RuleHistory
@@ -23,6 +22,6 @@ def test_a_hook_whose_rule_history_row_was_changed_by_another_writer_records_its
 
     monkeypatch.setattr(RuleHistoryWriter, "record", record_second_writer)
     story.hook("s-1", HookSamples.prompt("go on"))
-    row = next(row for row in story.container.get(Queries).query(RuleHistory).all_rows() if row.rule == RULE)
+    row = next(row for row in story.story_rows(RuleHistory) if row.rule == RULE)
     log = story.home.system_log
     story.expect_rows(row.last_due_outcome is not RuleDueOutcome.SILENCED, not log.exists() or "StaleRowError" not in FileAccess.shared().read(log), detail=str(row))

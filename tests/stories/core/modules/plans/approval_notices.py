@@ -22,7 +22,7 @@ def test_the_main_agent_is_told_to_read_the_approval_message(new_story):
     story = new_story(fixture=ReadyApprovalPlan)
     story.advance(timedelta(seconds=1))
     story.expect_success('plan approve 1 --message "Skip phase 3 for now" --environment main', actor=story.user)
-    message = next(story.container.get(Queries).query(Message).all_rows())
+    message = story.story_rows(Message)[0]
     story.expect_rows(PlanApproval.message_id(story.row(Plan, 1)) == message.id)
     reply = story.hook("s-1", VIEW_LINE)
     expect_reply_allowed(reply)
@@ -37,7 +37,7 @@ def test_an_approval_without_a_message_keeps_the_plain_notice(new_story):
     reply = story.hook("s-1", VIEW_LINE)
     expect_reply_allowed(reply)
     story.expect_rows(PLAN_APPROVED.nudge(plan=1).text in reply.lines,
-                      story.container.get(Queries).query(Message).count() == 0)
+                      len(story.story_rows(Message)) == 0)
 
 
 def docked_types(story) -> list[str]:
@@ -47,7 +47,7 @@ def docked_types(story) -> list[str]:
 def test_a_plan_a_helper_marks_ready_shows_one_plan_card_and_no_approval(new_story):
     story = new_story(fixture=ReadyApprovalPlan)
     story.run_listeners()
-    story.expect_rows(docked_types(story) == ["plans.waiting"], story.container.get(Queries).query(ApprovalRequest).count() == 0, detail=str(docked_types(story)))
+    story.expect_rows(docked_types(story) == ["plans.waiting"], len(story.story_rows(ApprovalRequest)) == 0, detail=str(docked_types(story)))
 
 
 def test_the_main_agent_is_told_the_ready_plan_waits_for_a_person(new_story):
@@ -65,4 +65,4 @@ def test_a_person_approves_a_ready_plan_from_its_card_and_the_card_leaves(new_st
     story.run_listeners()
     story.expect_success("plan approve 1 --environment main", "state: approved", actor=story.user)
     story.run_listeners()
-    story.expect_rows(docked_types(story) == [], story.container.get(Queries).query(ApprovalRequest).count() == 0, detail=str(docked_types(story)))
+    story.expect_rows(docked_types(story) == [], len(story.story_rows(ApprovalRequest)) == 0, detail=str(docked_types(story)))

@@ -23,7 +23,7 @@ MARKS = "chat-mark list --environment 1"
 
 
 def merger_texts(story) -> list[str]:
-    return [line.text for line in story.container.get(Queries).query(MergerLine).oldest().all_rows()]
+    return [line.text for line in story.story_rows(MergerLine)]
 
 
 def background_run(story) -> Process:
@@ -45,7 +45,7 @@ def test_a_stopped_worker_shows_a_card_and_is_restarted_with_one_line_to_the_mer
     story.expect_success(MERGER_ON, actor=story.user)
     ended(story)
     story.run_listeners()
-    merger_lines = tuple(story.container.get(Queries).query(MergerLine).oldest().all_rows())
+    merger_lines = tuple(story.story_rows(MergerLine))
     lines = main_agent_lines(story)
     story.expect_rows("tasks left" in story.run(MARKS).output_text, len(merger_lines) == restart_line_count, lines.count(f"{worker_label(story)} ended with") == main_agent_line_count,
                       f"{worker_label(story)} stopped with" not in lines, all(line.environment_id == 1 for line in merger_lines), detail=f"{merger_texts(story)} | {lines}")

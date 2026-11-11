@@ -1,4 +1,3 @@
-from engine.query.queries import Queries
 from engine.testing.expectations.line_outcome import LineOutcome
 from suites.coding.modules.workers.models.proof import Proof
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, StoryWorker, approve_plan, dispatched_story_worker, file_proof_line, planned_story, unplanned_group_worker, unplanned_worker
@@ -38,4 +37,4 @@ def prove_task(worker: StoryWorker, task_id: int, point: int, test_line: str = "
 
 
 def proofs(worker: StoryWorker) -> tuple[Proof, ...]:
-    return tuple(worker.story.container.get(Queries).query(Proof).oldest().all_rows())
+    return tuple(worker.story.story_rows(Proof))

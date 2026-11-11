@@ -3,7 +3,6 @@ import pytest
 from datetime import timedelta
 
 from engine.enums.command_category import CommandCategory
-from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
@@ -19,7 +18,7 @@ def run_story(new_story, sample):
     story.expect_success("task test 1", actor=story.agent)
     story.advance(timedelta(seconds=1))
     story.hook("s-1", sample)
-    return story, next(story.container.get(Queries).query(Process).newest().all_rows())
+    return story, story.story_rows(Process)[-1]
 
 
 def test_a_full_run_that_passes_closes_the_tasks_in_testing_and_names_them_when_it_starts(full_suite_process):
@@ -32,7 +31,7 @@ def test_a_full_run_that_passes_closes_the_tasks_in_testing_and_names_them_when_
 def test_a_task_that_went_to_testing_after_the_run_started_stays(new_story):
     story = install_runner(new_story(fixture=StartedTaskBuilder))
     story.hook("s-1", SUITE_SAMPLE)
-    process = next(story.container.get(Queries).query(Process).newest().all_rows())
+    process = story.story_rows(Process)[-1]
     story.advance(timedelta(seconds=1))
     story.expect_success("task test 1", actor=story.agent)
     end_run(story, process, "ok\n")

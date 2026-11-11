@@ -1,4 +1,3 @@
-from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.models.message import Message
 from engine.testing.examples.hook_samples import HookSamples
@@ -10,7 +9,7 @@ def test_a_persons_answer_saves_no_message_and_shows_one_answered_mark_with_the_
     story = new_story(fixture=PersonQuestion)
     story.expect_success("question answer 1 --answer sqlite", actor=story.user)
     story.run_listeners()
-    story.expect_rows(story.container.get(Queries).query(Message).count() == 0)
+    story.expect_rows(len(story.story_rows(Message)) == 0)
     story.expect_text("chat-mark show 2", "type: questions.answer", "variant: user", "text: Question 1 answered: sqlite")
     expect_mark_count(story, 2)
 
@@ -29,5 +28,5 @@ def test_a_stopped_agent_is_woken_by_a_persons_answer(new_story):
     story.tick("s-1")
     story.expect_success("question answer 1 --answer sqlite", actor=story.user)
     story.tick("s-1")
-    lines = [line for line in story.container.get(Queries).query(AgentLine).all_rows() if "question:1 is answered" in line.text]
+    lines = [line for line in story.story_rows(AgentLine) if "question:1 is answered" in line.text]
     story.expect_rows(len(lines) == 1, lines[0].wakes_agent, detail=str(lines))

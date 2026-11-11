@@ -128,9 +128,9 @@ def test_s44_a_plugin_asks_for_a_missing_skill_once_and_then_sends_neither_line_
     calls = script_calls(story, "judge.sh")
     story.expect_rows(len(calls) == 2)
     story.expect_rows("sample-rules" not in calls[0]["skills"], "sample-rules" in calls[1]["skills"])
-    first_lines = {row.id for row in story.container.get(Queries).query(AgentLine).all_rows()}
+    first_lines = {row.id for row in story.story_rows(AgentLine)}
     story.hook("s-1", LISTING_SAMPLE)
-    last_lines = {row.id for row in story.container.get(Queries).query(AgentLine).all_rows()}
+    last_lines = {row.id for row in story.story_rows(AgentLine)}
     expect_value(last_lines, first_lines)
     story.expect_rows(rules_state(story) == AgentSkillState.LOADED)
 

@@ -36,8 +36,8 @@ def test_getting_an_item_makes_one_document_and_one_copy_that_follows_it(new_sto
     story = connected(new_story, server, tokens.editor)
     story.expect_success(f"library get doc {item_id}", f"library doc {item_id}, version 1 is now doc 1", actor=story.agent)
     copy, doc = item_copy(story, item_id), story.row(Doc, 1)
-    story.expect_rows(doc.title == "Quartz got", doc.abstract == "About Quartz got", doc.body == "Read it first.", len(list(story.container.get(Queries).query(Doc).all_rows())) == 1)
-    story.expect_rows(copy.row_id == 1, copy.base_version == 1, copy.state is CopyState.SYNCED, len(list(story.container.get(Queries).query(LibraryCopy).all_rows())) == 1)
+    story.expect_rows(doc.title == "Quartz got", doc.abstract == "About Quartz got", doc.body == "Read it first.", len(list(story.story_rows(Doc))) == 1)
+    story.expect_rows(copy.row_id == 1, copy.base_version == 1, copy.state is CopyState.SYNCED, len(list(story.story_rows(LibraryCopy))) == 1)
     story.expect_text("doc revision 1 1", "Read it first.", actor=story.user)
 
 
@@ -46,14 +46,14 @@ def test_getting_an_item_again_is_refused_and_names_the_row_that_follows_it(new_
     story = connected(new_story, server, tokens.editor)
     copy = made_copy(story, server, tokens.admin, "Onyx fetched twice")
     story.expect_refusal(f"library get doc {copy.item_id}", f"library doc {copy.item_id} is already doc {copy.row_id} on this journal", actor=story.user)
-    story.expect_rows(len(list(story.container.get(Queries).query(Doc).all_rows())) == 1)
+    story.expect_rows(len(list(story.story_rows(Doc))) == 1)
 
 
 def test_a_kind_this_journal_lacks_is_refused_in_plain_words_and_nothing_is_made(new_story, shared_server):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
     story.expect_refusal("library get memo 1", "this journal shares no memo with the library", actor=story.user)
-    story.expect_rows(len(list(story.container.get(Queries).query(LibraryCopy).all_rows())) == 0)
+    story.expect_rows(len(list(story.story_rows(LibraryCopy))) == 0)
 
 
 def test_an_item_removed_from_the_library_is_not_got(new_story, shared_server):
@@ -62,7 +62,7 @@ def test_an_item_removed_from_the_library_is_not_got(new_story, shared_server):
     server.send(tokens.admin, "DELETE", f"/items/doc/{item_id}")
     story = connected(new_story, server, tokens.editor)
     story.expect_refusal(f"library get doc {item_id}", f"library doc {item_id} is removed from the library", actor=story.user)
-    story.expect_rows(len(list(story.container.get(Queries).query(Doc).all_rows())) == 0)
+    story.expect_rows(len(list(story.story_rows(Doc))) == 0)
 
 
 def test_an_item_that_warns_is_got_only_when_it_was_read_first(new_story, shared_server):
@@ -70,7 +70,7 @@ def test_an_item_that_warns_is_got_only_when_it_was_read_first(new_story, shared
     code, item = server.send(tokens.admin, "POST", "/items/check", {"fields": {"title": "Granite check", "command": "echo hello", "brief": "Says hello", "interval_minutes": 5}})
     story = connected(new_story, server, tokens.editor)
     story.expect_refusal(f"library get check {item['id']}", "this check runs on your computer: echo hello", actor=story.user)
-    story.expect_rows(code == 201, len(list(story.container.get(Queries).query(Check).all_rows())) == 0)
+    story.expect_rows(code == 201, len(list(story.story_rows(Check))) == 0)
     story.expect_text(f"library get check {item['id']} --read", f"library check {item['id']}, version 1 is now check 1", actor=story.user)
     story.expect_rows(story.row(Check, 1).command == "echo hello", story.row(Check, 1).stopped)
 
@@ -259,7 +259,7 @@ def test_a_copy_that_cannot_be_written_leaves_no_row_the_save_made(new_story, sh
     with pytest.raises(FailingCopyWrite):
         story.container.get(Bus).run(SaveLibraryCopy("doc", item.item_id, item.version, ArrivingDoc()), story.user)
     monkeypatch.undo()
-    story.expect_rows(len(list(story.container.get(Queries).query(Doc).all_rows())) == 0, len(list(story.container.get(Queries).query(LibraryCopy).all_rows())) == 0)
+    story.expect_rows(len(list(story.story_rows(Doc))) == 0, len(list(story.story_rows(LibraryCopy))) == 0)
 
 
 def test_a_merge_whose_new_base_cannot_be_written_leaves_the_row_unchanged(new_story, shared_server, monkeypatch):

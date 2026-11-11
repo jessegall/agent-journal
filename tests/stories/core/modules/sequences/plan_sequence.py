@@ -2,7 +2,6 @@ from engine.testing.stories.story_fixture import StoryFixture
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.sequences.models.sequence_run import SequenceRun
 from server.work.booting_work import BootingWork
 from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text
@@ -26,7 +25,7 @@ def read_worker(story) -> Actor:
 
 
 def run_agent_ids(story) -> list[int]:
-    return [run.session_agent_id for run in story.container.get(Queries).query(SequenceRun).all_rows()]
+    return [run.session_agent_id for run in story.story_rows(SequenceRun)]
 
 
 def test_the_main_agent_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_a_mark(new_story):
@@ -58,7 +57,7 @@ def test_a_helper_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_no_
 
 
 def expect_open_run_agents(story, expected) -> None:
-    actual = [run.session_agent_id for run in story.container.get(Queries).query(SequenceRun).all_rows() if run.ended_at is None]
+    actual = [run.session_agent_id for run in story.story_rows(SequenceRun) if run.ended_at is None]
     assert actual == expected, actual
 
 

@@ -1,6 +1,5 @@
 import pytest
 
-from engine.query.queries import Queries
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from tests.stories.core.support.agent_labels import agent_number
@@ -12,7 +11,7 @@ HELP_REQUEST_LINE = 'wait stuck "the build tool is missing"'
 
 
 def merger_lines(story) -> tuple[MergerLine, ...]:
-    return tuple(story.container.get(Queries).query(MergerLine).oldest().all_rows())
+    return tuple(story.story_rows(MergerLine))
 
 
 def stop_as_resumed(story) -> None:

@@ -1,7 +1,6 @@
 import pytest
 
 from engine.database.database import Database
-from engine.query.queries import Queries
 from core.modules.accounts.models.person_login import PersonLogin
 from core.modules.accounts.models.person_session import PersonSession
 from core.modules.accounts.models.login_attempt import LoginAttempt
@@ -33,7 +32,7 @@ def test_a_new_journal_has_every_accounts_table_with_every_column(new_story, tab
 @pytest.mark.parametrize("model", [PersonLogin, PersonSession, LoginAttempt, PersonFactor, RecoveryCode, AuditEntry, SetupCode])
 def test_every_accounts_model_reads_its_own_table(new_story, model):
     story = new_story(fixture=UserJoined)
-    expect_value(tuple(story.container.get(Queries).query(model).all_rows()), ())
+    expect_value(tuple(story.story_rows(model)), ())
 
 
 def test_an_agent_has_no_command_for_the_accounts_rows(new_story):

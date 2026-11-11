@@ -1,7 +1,6 @@
 from tests.stories.core.support.agent_labels import agent_number
 from engine.database.database import READ_LIMIT_ROWS, Database
 from core.modules.chat.models.journal_exception import JournalException
-from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.available_work import AvailableWork
@@ -109,6 +108,6 @@ def test_a_stop_of_a_main_agent_with_more_unfinished_tasks_than_one_read_may_loa
         story.run(f"task assign {task} --to {agent_number(story, story.agent.id)}", actor=story.agent)
     story.container.get(Database).read_limit_rows = READ_LIMIT_ROWS
     reply = story.hook("s-1", HookSamples.stop())
-    faults = [row.message for row in story.container.get(Queries).query(JournalException).all_rows()]
+    faults = [row.message for row in story.story_rows(JournalException)]
     story.expect_rows(bool(reply.refusal), faults == [], detail=f"{reply.refusal} | {faults}")
 

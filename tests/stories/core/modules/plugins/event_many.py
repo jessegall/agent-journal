@@ -1,6 +1,5 @@
 from tests.stories.core.support.agent_labels import agent_number
 from engine.command.bus import Bus
-from engine.query.queries import Queries
 from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATED, NOTES, EventNote, ManyNotes
 from tests.stories.core.modules.plugins.support.event_stories import (
     NOTES_PIN_TITLE, REFUSAL, SECOND_JOB, server_commands, SECOND_JOB_TITLE, TASK_CREATED, EventWorkerStarted, answer_with_commands, deliveries, event_page, event_plugin_story, install_event_plugin, pins_titled,
@@ -19,7 +18,7 @@ def test_s33_a_command_on_thirty_rows_stops_asking_after_twenty_rounds_and_still
     story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "see.sh"}, modules=[NOTES])
     story.expect_success(f"setting set journal.core.processes.run-batch-size {NOTE_COUNT * 2} --environment main", actor=story.user)
     story.container.get(Bus).run(ManyNotes(NOTE_COUNT), story.user)
-    notes = list(story.container.get(Queries).query(EventNote).all_rows())
+    notes = list(story.story_rows(EventNote))
     story.expect_rows(len(notes) == NOTE_COUNT, len(script_calls(story, "see.sh")) == ROUND_LIMIT, "were skipped" in story.system_log_text())
 
 

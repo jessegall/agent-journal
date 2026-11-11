@@ -34,7 +34,7 @@ READ_OF_A_FILE = HookSamples.tool_use("Read", ToolType.READ, ["cart.py"], None)
 
 
 def questions(story) -> tuple[MergerLine, ...]:
-    return tuple(line for line in story.container.get(Queries).query(MergerLine).oldest().all_rows() if line.worker_id is not None)
+    return tuple(line for line in story.story_rows(MergerLine) if line.worker_id is not None)
 
 
 def waits_of(story, worker: Actor) -> tuple[Wait, ...]:
@@ -203,7 +203,7 @@ def test_a_person_retiring_a_worker_with_tasks_left_leaves_the_merger_one_line_a
     story.expect_success(f"agent end {case.worker.id}", actor=case.worker)
     story.expect_success(f'agent retire {agent_number(story, case.worker.id)} --reason "no longer needed"', actor=story.user)
     story.run_listeners()
-    lines = [line.text for line in story.container.get(Queries).query(MergerLine).oldest().all_rows() if "ended with" in line.text]
+    lines = [line.text for line in story.story_rows(MergerLine) if "ended with" in line.text]
     story.expect_rows(len(lines) == 1, all(f"task:{number}" in lines[0] for number in range(1, 6)), questions(story)[0].outcome is AskOutcome.MOOT,
                       "ended with" not in case.main_lines(), detail=f"{lines} | {case.main_lines()}")
 

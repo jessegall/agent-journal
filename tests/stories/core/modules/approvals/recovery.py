@@ -30,7 +30,7 @@ def test_a_second_decision_cannot_run_the_action_again(phone_request, phone_view
     story, request = phone_request
     phone_viewer.value("messages.chat", ["approval", "accept", str(request.id)])
     phone_viewer.refusal("messages.chat", ["approval", "accept", str(request.id)], "begin")
-    story.expect_rows(len(tuple(story.container.get(Queries).query(PhoneCode).all_rows())) == 1)
+    story.expect_rows(len(tuple(story.story_rows(PhoneCode))) == 1)
 
 
 def test_a_missing_open_card_is_restored_after_a_registry_refresh(phone_request, phone_viewer):

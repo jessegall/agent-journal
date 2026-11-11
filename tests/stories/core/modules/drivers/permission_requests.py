@@ -1,7 +1,6 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.tool_type import ToolType
-from engine.query.queries import Queries
 from core.modules.drivers.models.enums.permission_state import PermissionState
 from core.modules.drivers.models.permission_request import PermissionRequest
 from engine.testing.examples.hook_samples import HookSamples
@@ -16,7 +15,7 @@ def design_edit(path: str = DESIGN):
 
 
 def requests(story) -> list[PermissionRequest]:
-    return list(story.container.get(Queries).query(PermissionRequest).all_rows())
+    return list(story.story_rows(PermissionRequest))
 
 
 def helper_story(new_story):

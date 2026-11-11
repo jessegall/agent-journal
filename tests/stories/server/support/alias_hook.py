@@ -2,7 +2,6 @@ import json
 import shlex
 import subprocess
 
-from engine.query.queries import Queries
 from engine.enums.command_category import CommandCategory
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
@@ -45,7 +44,7 @@ class AliasHook:
         assert answer.get("permissionDecision") == "allow", answer
         rewritten = answer["updatedInput"]["command"]
         assert shlex.split(rewritten)[-1] == expanded, rewritten
-        process = next(row for row in self.server.story.container.get(Queries).query(Process).all_rows() if row.line == expanded)
+        process = next(row for row in self.server.story.story_rows(Process) if row.line == expanded)
         assert process.line == expanded, process
         return rewritten
 
@@ -56,13 +55,13 @@ class AliasHook:
     def expect_options(self, line: str, expanded: str, reader_id: int) -> None:
         rewritten = self.expect_expanded(line, expanded)
         assert "--background" in shlex.split(rewritten), rewritten
-        process = next(self.server.story.container.get(Queries).query(Process).all_rows())
+        process = self.server.story.story_rows(Process)[0]
         assert process.category is CommandCategory.CHECK, process
         self.server.story.expect_text("output show 1", f"reader_id: {reader_id}")
 
     def expect_visible_test_run(self, line: str, expanded: str) -> None:
         self.expect_expanded(line, expanded)
-        part = next(self.server.story.container.get(Queries).query(ProcessPart).all_rows())
+        part = self.server.story.story_rows(ProcessPart)[0]
         assert part.category is CommandCategory.TEST_RUN and part.is_visible, part
 
     def expect_execution(self, line: str, expanded: str, output: str) -> None:

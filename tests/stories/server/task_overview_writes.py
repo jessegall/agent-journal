@@ -1,7 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event, Lock
 
-from engine.query.queries import Queries
 from core.modules.documents.support.work_context_reader import WorkContextReader
 from core.modules.tasks.models.task_read import TaskRead
 from engine.testing.examples.hook_samples import HookSamples
@@ -51,5 +50,5 @@ def test_six_worker_overviews_leave_hook_and_viewer_writes_free(new_story, monke
                 release.set()
             answers = [future.result() for future in futures]
         story.expect_rows(all(answer.exit_code == 0 for answer in answers), detail=str(answers))
-        rows = tuple(story.container.get(Queries).query(TaskRead).all_rows())
+        rows = tuple(story.story_rows(TaskRead))
         story.expect_rows(len(rows) == WORKERS_COUNT)

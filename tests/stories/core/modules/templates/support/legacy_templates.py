@@ -1,7 +1,6 @@
 import shlex
 
 from engine.actor.actor import Actor
-from engine.query.queries import Queries
 from core.modules.templates.models.template import Template
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import UserJoined
@@ -23,5 +22,5 @@ class LegacyTemplates(StoryFixture):
             story.run(f"template make {shlex.quote(title)} --brief 'old version'", actor=Actor.core())
 
     def expect(self, story):
-        rows = tuple(story.container.get(Queries).query(Template).all_rows())
+        rows = tuple(story.story_rows(Template))
         story.expect_rows(len(rows) == 12, all(row.module == "" for row in rows))

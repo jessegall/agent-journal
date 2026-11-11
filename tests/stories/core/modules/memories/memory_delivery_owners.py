@@ -27,7 +27,7 @@ def test_an_edited_memory_is_not_kept_for_another_agent_to_edit(new_story, owner
 
 def test_a_job_with_no_scope_reads_the_memories_of_every_agent(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
-    story.expect_rows(story.container.get(Queries).query(Memory).count() == 2)
+    story.expect_rows(len(story.story_rows(Memory)) == 2)
 
 
 def test_a_scope_shows_only_its_agent_s_rows_and_ends_with_its_block(new_story):

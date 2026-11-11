@@ -3,7 +3,6 @@ import subprocess
 
 import pytest
 
-from engine.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.processes.support.runner_binary import RunnerBinary
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker
@@ -50,5 +49,5 @@ def test_a_worker_cannot_grant_itself_or_another_worker(spent):
 
 def test_a_grant_shows_as_a_mark_for_the_worker(granted):
     granted.story.run_listeners()
-    marks = [mark.text for mark in granted.story.container.get(Queries).query(ChatMark).all_rows()]
+    marks = [mark.text for mark in granted.story.story_rows(ChatMark)]
     expect_value_with(" ".join(marks), "may run pytest")

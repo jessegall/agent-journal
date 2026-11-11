@@ -53,7 +53,7 @@ def test_getting_a_check_shows_its_command_first_and_needs_a_person_to_read_it(n
     item_id = library_check(server, tokens.admin, **check_fields("Needs reading", "echo careful"))
     story = connected(new_story, server, tokens.editor)
     story.expect_refusal(f"library get check {item_id}", "this check runs on your computer: echo careful", actor=story.user)
-    story.expect_rows(story.container.get(Queries).query(Check).count() == 0)
+    story.expect_rows(len(story.story_rows(Check)) == 0)
 
 
 def test_a_check_arrives_stopped_and_never_runs_until_a_person_starts_it(new_story, shared_server):

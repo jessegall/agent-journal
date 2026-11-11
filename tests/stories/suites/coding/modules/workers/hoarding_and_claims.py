@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-from engine.query.queries import Queries
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.failed_tests import TWO_POINT_BRIEF, expect_proof_states, expect_task_states
@@ -60,7 +59,7 @@ def test_69_a_worker_that_started_five_tasks_and_did_none_is_named_with_its_task
     worker.program_ended()
     story.advance(IDLE_WAIT)
     story.tick(MAIN_SESSION)
-    stopped_lines = [line.text for line in story.container.get(Queries).query(MergerLine).all_rows() if "has stopped" in line.text]
+    stopped_lines = [line.text for line in story.story_rows(MergerLine) if "has stopped" in line.text]
     released = story.run(f'worker release {agent_number(story, worker.worker.id)} "it did none of its tasks"', actor=story.user)
     story.expect_rows(len(stopped_lines) == 1, released.code == 0, detail=f"{stopped_lines} | {released.output_text}")
     story.expect_rows(all(f"task:{task_id}" in stopped_lines[0] for task_id in HOARDED_TASK_IDS), detail=stopped_lines[0])

@@ -9,7 +9,6 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.enums.tool_type import ToolType
-from engine.query.queries import Queries
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.expectations.line_outcome import LineOutcome
@@ -55,7 +54,7 @@ class AskingWorker:
         return outcome
 
     def merger_lines(self) -> tuple[MergerLine, ...]:
-        rows = self.story.container.get(Queries).query(MergerLine).oldest().all_rows()
+        rows = self.story.story_rows(MergerLine)
         return tuple(row for row in rows if row.topic is not None)
 
     def facts(self) -> dict[str, object]:

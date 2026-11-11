@@ -7,7 +7,6 @@ import sys
 
 from engine.caller.caller import Caller
 from engine.cli.console import Console
-from engine.query.queries import Queries
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.models.plugin_output import PluginOutput
 from core.modules.processes.models.process import Process
@@ -66,9 +65,9 @@ def worker_with_tools(new_story):
 def test_s58_the_output_of_plugin_run_has_a_number(new_story):
     story = worker_with_tools(new_story)
     recording_runner_at(story.home)
-    existing_process_ids = {process.id for process in story.container.get(Queries).query(Process).all_rows()}
+    existing_process_ids = {process.id for process in story.story_rows(Process)}
     outcome = story.run(f"plugin run --agent {story.worker.id} -- sh ./tools/journal-run", actor=story.user)
-    new_process_ids = [process.id for process in story.container.get(Queries).query(Process).all_rows() if process.id not in existing_process_ids]
+    new_process_ids = [process.id for process in story.story_rows(Process) if process.id not in existing_process_ids]
     story.expect_rows(outcome.code == 0, len(new_process_ids) == 1)
     story.expect_rows(str(new_process_ids[0]) in outcome.output_text)
 
@@ -117,7 +116,7 @@ def tried_story(new_story, script: str):
     story.run_listeners()
     story.calls_before = len(script_calls(story, "try.sh", "tidy-worktrees"))
     story.refusals_before = len(story.refusals())
-    story.outputs_before = len(list(story.container.get(Queries).query(PluginOutput).all_rows()))
+    story.outputs_before = len(list(story.story_rows(PluginOutput)))
     story.faults_before = plugin_row(story, "tidy-worktrees").fault_count
     return story
 
@@ -127,7 +126,7 @@ def test_s61_trying_a_script_prints_the_line_and_the_answer_and_leaves_nothing(n
     story.expect_text(f"plugin try tidy-worktrees {TRY_KEY} --agent {story.worker.id}", TRY_KEY, "the worktree is tidy", actor=story.user)
     story.expect_rows(len(script_calls(story, "try.sh", "tidy-worktrees")) == story.calls_before + 1)
     story.run_listeners()
-    story.expect_rows(len(list(story.container.get(Queries).query(PluginOutput).all_rows())) == story.outputs_before, len(story.refusals()) == story.refusals_before)
+    story.expect_rows(len(list(story.story_rows(PluginOutput))) == story.outputs_before, len(story.refusals()) == story.refusals_before)
     story.expect_no_text("chat-mark list --environment 1", "Tidy", actor=story.user)
 
 

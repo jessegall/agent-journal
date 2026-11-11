@@ -6,7 +6,6 @@ import pytest
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
-from engine.query.queries import Queries
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.drivers.commands.record_bypass_line.record_bypass_line import RecordBypassLine
 from suites.coding.modules.workers.commands.open_worker_worktree.open_worker_worktree import OpenWorkerWorktree
@@ -26,7 +25,7 @@ def failed_step(*details: object, **options: object) -> None:
 
 
 def open_worktrees(story) -> list[Worktree]:
-    return list(story.container.get(Queries).query(Worktree).all_rows())
+    return list(story.story_rows(Worktree))
 
 
 @pytest.fixture

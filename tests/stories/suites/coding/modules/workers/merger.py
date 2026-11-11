@@ -452,7 +452,7 @@ def test_a_planner_helper_ending_starts_no_merger(new_story):
     story.run_listeners()
     MergerRetry()(story.container)
     story.run_listeners()
-    story.expect_rows(merger_agent(story) is None, story.container.get(Queries).query(MergerLine).count() == 0)
+    story.expect_rows(merger_agent(story) is None, len(story.story_rows(MergerLine)) == 0)
 
 
 def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_after_the_wait(new_story, monkeypatch):

@@ -1,7 +1,6 @@
 from core.modules.agents.models.agent import Agent
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from tests.stories.core.modules.helpers.lifetime_reviewers import START_REVIEW, launches, review_job, reviewers
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
@@ -27,6 +26,6 @@ def test_a_merger_start_on_another_program_reviews_and_a_worker_merge_retire_no_
         story.expect_success(f"agent end {reviewers(story)[0].id}", actor=story.user)
         story.run_listeners()
         launches(story, review_job(story, reviewers(story)[0], plan))
-    agents = list(story.container.get(Queries).query(Agent).all_rows())
+    agents = list(story.story_rows(Agent))
     story.expect_rows(len(reviewers(story)) == 1, all(agent.retired_at is None for agent in agents), detail=str([(agent.number, agent.profile, agent.retired_at) for agent in agents]))
     story.expect_absent("agent list --environment main --json", '"retired_at": "', actor=story.user)

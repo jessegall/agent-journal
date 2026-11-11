@@ -1,6 +1,5 @@
 import pytest
 
-from engine.query.queries import Queries
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.models.merger_line import MergerLine
@@ -104,7 +103,7 @@ def test_183_a_failure_that_names_no_task_goes_to_the_task_completed_last_and_th
     print_output(worker, BUILD_TEST, "FAILED tests/receipts.py::test_print - assert 3 == 4\n")
     with running_launcher(story):
         end_run(worker, BUILD_TEST)
-        merger_lines = " | ".join(line.text for line in story.container.get(Queries).query(MergerLine).oldest().all_rows())
+        merger_lines = " | ".join(line.text for line in story.story_rows(MergerLine))
         main_agent_lines = " | ".join(worker.main_agent_lines())
     expect_returned(worker, 3)
     story.expect_rows("task:3" in merger_lines, "names no task" in merger_lines, "tests failed" not in main_agent_lines, "task:3" not in main_agent_lines, detail=f"{merger_lines} || {main_agent_lines}")

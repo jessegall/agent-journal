@@ -20,14 +20,14 @@ from tests.stories.core.modules.approvals.support.legacy_setting_requests import
 def test_a_ready_plan_is_docked_as_its_own_card_and_asks_no_approval_of_its_own(new_story):
     story = new_story(fixture=ReadyApprovalPlan)
     cards = story.container.get(DockItemQuery).type_items(PlanDockType.WAITING.value).row_items(Plan.model_name, 1).filter(state=DockItemState.DOCKED).all_rows()
-    story.expect_rows(len(tuple(cards)) == 1, story.container.get(Queries).query(ApprovalRequest).count() == 0)
+    story.expect_rows(len(tuple(cards)) == 1, len(story.story_rows(ApprovalRequest)) == 0)
 
 
 def test_a_person_approves_the_ready_plan_on_its_card_and_a_registry_change_asks_nothing_more(new_story):
     story = new_story(fixture=ReadyApprovalPlan)
     story.expect_sync_success(UPGRADE)
     story.run_listeners()
-    story.expect_rows(story.container.get(Queries).query(ApprovalRequest).count() == 0)
+    story.expect_rows(len(story.story_rows(ApprovalRequest)) == 0)
     story.expect_success("plan approve 1 --environment main", "state: approved", actor=story.user)
     story.expect_rows(story.container.get(Queries).query(Plan).find(1).state is PlanState.APPROVED)
 

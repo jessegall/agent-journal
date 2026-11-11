@@ -41,7 +41,7 @@ def with_reported_usage(story: Story) -> Story:
 
 
 def hook_call_count(story: Story) -> int:
-    return story.container.get(Queries).query(HookCall).count()
+    return len(story.story_rows(HookCall))
 
 
 def test_a_main_agents_next_tool_is_stopped_in_the_same_hook_once_the_limit_is_reached_and_no_rule_is_asked(new_story):

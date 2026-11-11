@@ -2,7 +2,6 @@ import json
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.documents.models.report import Report
 from tests.stories.core.modules.plan_reviews.review_rounds import CRITIQUE_COMMAND, REPORT, CritiquePlanReady, start_helper
 from tests.stories.server.support.server_client import server_story
@@ -21,7 +20,7 @@ def test_the_tip_of_a_plan_under_review_says_who_still_reads_and_who_reported_wi
     first, second = start_helper(story, "Give plan 1 a thorough review"), start_helper(story, "Read plan:1 for risks")
     story.expect_rows(tip_lines(story)[0] == "2 reviewers: 0 reported, 2 still reading")
     story.expect_success(REPORT.format(title="First critique"), actor=Actor(first.id, ActorType.AGENT))
-    report = max(row.id for row in story.container.get(Queries).query(Report).all_rows())
+    report = max(row.id for row in story.story_rows(Report))
     lines = tip_lines(story)
     name = first.given_name or first.profile or first.role
     alternate = second.given_name or second.profile or second.role
