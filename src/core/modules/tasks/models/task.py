@@ -1,12 +1,14 @@
 from dataclasses import dataclass, replace
 from engine.actor.actor import Actor
+from engine.enums.actor_count import ActorCount
 from engine.enums.actor_type import ActorType
+from engine.model.assignable import Assignable
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.model.state_holder import StateHolder
 from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
-from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.enums.task_state import HELD_STATES, UNFINISHED_STATES, TaskState
 from core.modules.tasks.models.support.task_priority import NORMAL_PRIORITY, TaskPriority
 from core.modules.tasks.models.support.task_complexity import TaskComplexity
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -17,14 +19,16 @@ def check_title(cli_name: str, title: str) -> None:
     if not 1 <= len(title) <= TASK_TITLE_LIMIT_CHARACTERS:
         raise Refusal(f"a {cli_name}'s title is 1 to {TASK_TITLE_LIMIT_CHARACTERS} characters, not {len(title)}", "say it shorter, and put the rest in --brief")
 @dataclass(frozen=True, kw_only=True)
-class Task(EnvironmentScoped, Model, StateHolder):
-    """One unit of work; its state moves only as TaskLifecycle allows."""
+class Task(EnvironmentScoped, Model, StateHolder, Assignable):
+    """One unit of work; its state moves only as TaskLifecycle allows. One actor holds its assignment, and the
+    assignment of a plan or a phase passes over a task that is finished or that another actor works on."""
 
     model_name = "task"
     cli_name = "task"
     search_fields = ["title", "brief", "outcome"]
     lifecycle = TaskLifecycle
     added_state_moves = tuple([TaskLifecycle.cancel])
+    takes_actors = ActorCount.SINGLE
 
     environment_id: int = 0
     holder_id: int | None = None
@@ -44,6 +48,11 @@ class Task(EnvironmentScoped, Model, StateHolder):
 
     def __post_init__(self) -> None:
         check_title(self.cli_name, self.title)
+
+    def cascade_skips(self, actor_id: int) -> bool:
+        if self.state not in UNFINISHED_STATES:
+            return True
+        return self.state in HELD_STATES and self.holder_id not in (None, actor_id)
 
     def start(self, timestamp: Timestamp, actor: Actor) -> "Task":
         delegate_id = actor.id if self.delegated_to is None and actor.type is ActorType.AGENT else self.delegated_to

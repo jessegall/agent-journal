@@ -14,3 +14,4 @@ class TaskState(StrEnum):
 
 UNFINISHED_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED, TaskState.TESTING)
 UNSTARTED_STATES = (TaskState.OPEN, TaskState.BLOCKED)
+HELD_STATES = (TaskState.STARTED, TaskState.TESTING)
