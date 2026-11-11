@@ -25,4 +25,6 @@ def events_named(story: Story, name: str) -> list[dict]:
 
 
 def assigned(story: Story, row: str, actor_id: int, flags: str = "") -> str:
-    return story.expect_success(f"assign {row} --to {actor_id} {flags} --environment main".replace("  ", " "), actor=story.user).output_text
+    outcome = story.run(f"assign {row} --to {actor_id} {flags} --environment main".replace("  ", " "), actor=story.user)
+    story.expect_rows(outcome.code == 0, detail=outcome.output_text)
+    return outcome.output_text

@@ -28,7 +28,7 @@ def test_assigning_a_yard_assigns_its_bays_and_parcels_in_one_command_and_prints
 def test_cascaded_rows_carry_their_source_and_hand_given_rows_do_not(yard):
     assigned(yard, "bay 1", chain_worker(yard, 2).id)
     bay_assignment = assignment_of(yard, "bay", 1)
-    shown = yard.expect_success(f"assignment show {assignment_of(yard, 'parcel', 1)['id']}", actor=yard.user).output_text
+    shown = yard.run(f"assignment show {assignment_of(yard, 'parcel', 1)['id']}", actor=yard.user).output_text
     yard.expect_rows(bay_assignment["source_id"] is None, f"source_id: {bay_assignment['id']}" in shown, detail=shown)
 
 
