@@ -5,7 +5,8 @@ from core.modules.plans.support.plan_checkpoints import PlanCheckpoints
 from core.modules.plans.support.task_plans import TaskPlans
 from suites.coding.modules.workers.models.worktree import Worktree
 
-WAIT_TEXT = "committed: the merger merges; tests run at the checkpoint of phase {phase}"
+TESTS_TEXT = "tests run at the checkpoint of phase {phase}"
+WAIT_TEXT = "committed: the merger merges; " + TESTS_TEXT
 OPEN_TASKS_TEXT = ", when tasks {tasks} are in"
 MERGED_TEXT = "merged into {branch}"
 CHECKPOINT_MERGED_TEXT = "merged; its tests run at the checkpoint of phase {phase}"
@@ -30,6 +31,12 @@ class CheckpointWaitText:
         open_ids = [str(task_id) for task_id in windows.unfinished_ids(checkpoint) if task_id not in testing_ids]
         tail = OPEN_TASKS_TEXT.format(tasks=", ".join(open_ids)) if open_ids else ""
         return WAIT_TEXT.format(phase=checkpoint.id) + tail
+
+    def tests_text(self, task_id: int) -> str | None:
+        phase = self.plans.find_phase(task_id)
+        if phase is None:
+            return None
+        return TESTS_TEXT.format(phase=self.checkpoints.windows(phase.plan_id).window_checkpoint(phase.id).id)
 
     def merged_reasons(self, worktree: Worktree, task_ids: Sequence[int]) -> dict[int, str]:
         self.plans.prepare(task_ids)

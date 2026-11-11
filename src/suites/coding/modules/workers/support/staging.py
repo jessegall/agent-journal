@@ -37,6 +37,10 @@ class Staging:
     def unproved(self) -> tuple[Task, ...]:
         return tuple(entry.task for entry in self.entries if not entry.is_ready() and not entry.has_shown())
 
+    @property
+    def open_tasks(self) -> tuple[Task, ...]:
+        return tuple(entry.task for entry in self.entries if not entry.is_ready())
+
     def refused_short(self) -> tuple[Proof, ...]:
         refused = tuple(proof for entry in self.entries if entry.is_refused_short() for proof in entry.short())
         if refused or self.ready:
@@ -44,7 +48,7 @@ class Staging:
         return tuple(proof for entry in self.entries for proof in entry.short())
 
     def is_final(self) -> bool:
-        return all(entry.is_ready() for entry in self.entries)
+        return not self.open_tasks
 
     def missing_text(self) -> str:
         return "; ".join(entry.text() for entry in self.incomplete)

@@ -79,14 +79,6 @@ def test_25_one_commit_in_git_carries_both_tasks_in_its_subject_and_the_worker_i
     two_proved.repository.expect_commit(two_proved.repository.worker_branch(two_proved.worker.id), "tasks 1, 2: Fix the cart", f"Journal: worker worker-{two_proved.worker.id}")
 
 
-def test_27_a_started_task_with_no_proof_is_named_as_no_part_of_the_commit_and_stays_started(three_started):
-    prove_task(three_started, 1, 1, TEST_LINE)
-    outcome = three_started.story.run(COMMIT, actor=three_started.worker)
-    expect_task_states(three_started, "started", 2, 3)
-    three_started.story.expect_rows(outcome.code == 0, "task 2 is not part of this commit: it has no proof" in outcome.output_text, "task 3 is not part of this commit: it has no proof" in outcome.output_text,
-                                    detail=outcome.output_text)
-
-
 def test_28_a_commit_is_refused_with_every_missing_point_of_every_task_that_has_a_proof_and_commits_nothing(three_started):
     base_commit = three_started.repository.tip(three_started.repository.worker_branch(three_started.worker.id))
     for task_id, point in ((1, 1), (2, 1), (2, 3), (3, 1)):

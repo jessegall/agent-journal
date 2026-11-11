@@ -45,6 +45,7 @@ class CommitWorkerWorkSubcommand(Subcommand[Command[object], CommitOutcome]):
         if not isinstance(value, CommitOutcome):
             return
         output.line(value.text(self.git.short_tip(value.worktree)))
+        output.line(value.next_step_text)
         for note in value.notes:
             output.line(note)
         if value.submission is Submission.COMMITTED:

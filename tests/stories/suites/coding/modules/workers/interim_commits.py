@@ -10,10 +10,11 @@ from tests.stories.suites.coding.modules.workers.support.held_tasks import holdi
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
 
 THREE_TASKS = 3
-CHECKPOINT_WORDS = "tests run at the checkpoint of phase 1"
+CHECKPOINT_WORDS = "tests run at the checkpoint of phase 2"
+LEFT_OUT_WORDS = "task 3 is not part of this commit: it has no proof"
 INTERIM_WORDS = "Interim: go on with task 3"
 FINAL_WORDS = "Final: your work is handed in, stop and wait"
-MERGED_REASON = "merged; its tests run at the checkpoint of phase 1"
+MERGED_REASON = "merged; its tests run at the checkpoint of phase 2"
 
 
 def prove_first_two(worker: StoryWorker) -> StoryWorker:
@@ -71,7 +72,8 @@ def test_39_a_commit_of_two_of_three_tasks_in_a_started_plan_names_the_checkpoin
     outcome = worker.story.run(COMMIT, actor=worker.worker)
     worker.story.run_listeners()
     worker.story.expect_text("proof list", "committed", actor=worker.story.agent)
-    worker.story.expect_rows(outcome.code == 0, "go on with task 3" in outcome.output_text, CHECKPOINT_WORDS in outcome.output_text, worktree(worker)["state"] == "cut", worker.started == [],
+    worker.story.expect_rows(outcome.code == 0, "go on with task 3" in outcome.output_text, CHECKPOINT_WORDS in outcome.output_text, LEFT_OUT_WORDS in outcome.output_text,
+                             worktree(worker)["state"] == "cut", worker.started == [],
                              detail=outcome.output_text)
 
 
@@ -98,14 +100,13 @@ def test_41_the_tasks_of_an_interim_commit_in_a_started_plan_are_completed_at_th
     interim_in_plan.story.expect_rows(interim_in_plan.started == [], detail=f"started: {interim_in_plan.started}")
 
 
-def test_42_43_a_commit_of_the_last_started_task_outside_a_plan_delivers_the_worktree_and_the_end_of_its_tests_wakes_the_worker(interim):
+def test_42_43_a_commit_of_the_last_started_task_outside_a_plan_delivers_the_worktree_and_the_main_agent_hears_when_its_tests_passed(interim):
     prove_task(interim, 3, 1, TEST_LINE)
     interim.story.expect_success(COMMIT, actor=interim.worker)
     interim.story.run_listeners()
-    line_count = len(interim.worker_lines())
     status = interim.status_line()
     interim.end_all_tests()
-    interim.story.expect_rows(worktree(interim)["state"] == "delivered", "stop" in status, len(interim.worker_lines()) > line_count, detail=f"{status} | {interim.worker_lines()}")
+    interim.story.expect_rows(worktree(interim)["state"] == "delivered", "stop" in status, any("all pass" in line for line in interim.main_agent_lines()), detail=f"{status} | {interim.main_agent_lines()}")
 
 
 def test_42_43_a_commit_of_the_last_started_task_in_a_started_plan_makes_the_worktree_ready_to_merge_and_the_worker_waits_for_the_merge(interim_in_plan):

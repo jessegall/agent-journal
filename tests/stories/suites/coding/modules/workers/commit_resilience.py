@@ -89,6 +89,7 @@ def test_64_a_commit_whose_program_stopped_after_the_git_commit_is_taken_again_w
     monkeypatch.setattr(CommitWorkerWorkHandler, "handle", stopped_at_the_first)
     with pytest.raises(StoppedDelivery):
         story.run(COMMIT, actor=worker.worker)
+    story.expect_text("proof list", "shown", actor=story.agent)
     stopped_tip = branch_tip(worker)
     story.expect_success(COMMIT, actor=worker.worker)
     expect_task_states(worker, "testing", 1, 2)
