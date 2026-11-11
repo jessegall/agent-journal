@@ -6,7 +6,7 @@ import json
 
 from engine.actor.actor import Actor
 from engine.command.context import Context
-from engine.database.database import Database
+from engine.database.database import READ_LIMIT_ROWS, Database
 from engine.repository.repository import Repository
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.commands.read_message.read_message import ReadMessage
@@ -49,6 +49,19 @@ def test_a_row_the_journal_sent_a_worker_is_tagged_journal_and_one_the_main_agen
     deliver_line(story, worker, 1, "your tests failed: two")
     deliver_line(story, worker, story.agent.id, "Fix the footer too")
     story.expect_text(f"agent transcript {agent_number(story, worker)}", "1  journal  user  your tests failed: two", "2  main agent  user  Fix the footer too")
+
+
+def test_the_transcript_of_a_worker_with_more_lines_than_one_read_may_load_still_names_who_sent_a_row(new_story, tmp_path, monkeypatch):
+    read_transcript(tmp_path, monkeypatch, "s-2", row("user", "Fix the footer too"))
+    story = new_story(fixture=TranscriptWorker)
+    worker = story.helper.id
+    for number in range(READ_LIMIT_ROWS):
+        deliver_line(story, worker, 1, f"your tests failed: {number}")
+    deliver_line(story, worker, story.agent.id, "Fix the footer too")
+    database = story.container.get(Database)
+    database.read_limit_rows, database.collected_large_reads = READ_LIMIT_ROWS, None
+    story.expect_text(f"agent transcript {agent_number(story, worker)}", "1  main agent  user  Fix the footer too")
+    story.expect_rows(not database.collected_large_reads, detail=str(database.collected_large_reads))
 
 
 def test_a_row_of_a_worker_that_no_line_matches_is_tagged_journal_and_never_user(new_story, tmp_path, monkeypatch):
