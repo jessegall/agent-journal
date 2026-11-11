@@ -24,9 +24,9 @@ from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
-from core.modules.processes.support.ended_output_text import EndedOutputText
+from core.modules.processes.support.reading.reading_notices import ReadingNotices
+from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.support.process_nudges import OUTPUT_ENDED
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from engine.testing.expectations.expect_reply import expect_reply_line
@@ -86,8 +86,8 @@ def test_a_worker_run_with_a_poor_reader_or_none_gets_only_the_ended_line(new_st
         story.container.get(OutputFolder).write_output(process.id, 1, "compile\n" * 10)
         bus.run(EndProcessPart(process.id, 1, 0), worker, environment_id=1)
         ended = bus.run(EndProcess(process.id, 0, 5000, 10), worker, environment_id=1)
-        nudges = story.container.get(EndedOutputText).nudges(tuple([ended]))
-        story.expect_rows(len(nudges) == 1, nudges[0] == OUTPUT_ENDED.nudge(output=ended.id, result="finished"))
+        output = story.container.get(OutputQuery).process_output(ended.id)
+        story.expect_rows(story.container.get(ReadingNotices).nudges(ended, output, story.container.get(RunVisibility).parts(ended.id)) == ())
     story.hook("s-8", HookSamples.stop())
     blocks = story.container.get(Queries).query(AgentBlock).filter(session_agent_id=worker.id, closed_at=None).all_rows()
     story.expect_rows(not tuple(blocks))
