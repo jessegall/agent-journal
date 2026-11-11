@@ -50,6 +50,16 @@ def test_a_search_that_names_a_command_is_read_by_no_reader():
     assert ReaderSelection.choose([reader(1, commands="*vitest*")], [part("grep -n vitest notes", CommandCategory.SEARCH)]) is None
 
 
+@pytest.mark.parametrize("category", [CommandCategory.EDIT, CommandCategory.SEARCH, CommandCategory.READ, CommandCategory.JOURNAL])
+def test_an_edit_a_search_a_read_and_a_journal_command_are_read_by_no_reader(category):
+    assert not category.has_reader
+    assert ReaderSelection.choose([reader(1, commands="*")], [part("sed -i s/a/b/ notes", category)]) is None
+
+
+def test_a_test_run_a_build_and_a_check_have_a_reader():
+    assert all(category.has_reader for category in (CommandCategory.TEST_RUN, CommandCategory.BUILD, CommandCategory.CHECK))
+
+
 def test_a_chain_is_read_by_the_reader_of_its_test_run_whatever_stands_before_it():
     parts = [part("grep -n word notes", CommandCategory.SEARCH), part("pytest -q -n 4", CommandCategory.TEST_RUN, 2)]
     part_reader = ReaderSelection.choose([reader(1, commands="grep*"), reader(2)], parts)

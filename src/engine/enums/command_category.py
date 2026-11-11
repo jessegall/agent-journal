@@ -31,6 +31,10 @@ class CommandCategory(StrEnum):
         return self.reads_files or self is CommandCategory.JOURNAL
 
     @property
+    def has_reader(self) -> bool:
+        return not self.is_short
+
+    @property
     def is_short(self) -> bool:
         return self.accesses_files or self is CommandCategory.JOURNAL
 

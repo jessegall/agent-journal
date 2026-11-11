@@ -1,4 +1,5 @@
 from dataclasses import replace
+from core.modules.processes.models.output import Output
 from core.modules.processes.models.reader import Reader
 from engine.query.queries import Queries
 import stat
@@ -219,3 +220,15 @@ def test_a_test_run_uses_its_own_count_or_a_background_listing(new_story, output
     story.expect_text(f"output show {process.id}", f"test_count: {count}", f"progress: {progress}", actor=story.agent)
     if status > 0:
         story.expect_text(f"process show {process.id}", "state: running", actor=story.agent)
+
+
+@pytest.mark.parametrize("category", [CommandCategory.EDIT, CommandCategory.SEARCH, CommandCategory.READ])
+def test_a_line_classed_as_an_edit_a_search_or_a_read_gets_no_reader_though_a_reader_names_its_command(new_story, category):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.expect_success(READER, actor=story.agent)
+    process = start_process(story, "make notes", category=category)
+    output = story.container.get(Queries).query(Output).filter(process_id=process.id).first()
+    story.expect_rows(output is not None and output.reader_id is None, detail=str(output))
+    checked = start_process(story, "make test", category=CommandCategory.CHECK)
+    read_output = story.container.get(Queries).query(Output).filter(process_id=checked.id).first()
+    story.expect_rows(read_output is not None and read_output.reader_id is not None, detail="a check with the same command is still read")
