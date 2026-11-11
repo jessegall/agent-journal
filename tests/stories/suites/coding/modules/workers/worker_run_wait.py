@@ -7,13 +7,12 @@ from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.runner_binary import RunnerBinary
-from core.modules.processes.support.runner_line import QUEUE_WAIT_VARIABLE, COUNTED_QUEUE_VARIABLE
+from core.modules.processes.support.runner_line import QUEUE_WAIT_VARIABLE
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_WAIT
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
-from tests.stories.core.support.coding_fixtures import BuilderHelper, OpenTaskOrchestrator
-from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.support.phase_steps import dispatched_story_worker
 from tests.stories.server.support.server_client import server_story
@@ -36,8 +35,7 @@ PIPED_TEST = HookSamples.shell("journal worker test python tests/cart.py && tail
 
 @pytest.fixture
 def worker(new_story, monkeypatch):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    UserJoined().steps(story)
+    story = new_story(fixture=OrchestratorWithPerson)
     repository_environment(story)
     return dispatched_story_worker(story, DISPATCH, monkeypatch)
 

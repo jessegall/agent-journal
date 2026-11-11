@@ -7,8 +7,7 @@ from pathlib import Path
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.support.story_checks import expect_value
@@ -21,8 +20,7 @@ def set_commands(story, commands: list[str]) -> None:
 
 
 def merge_story(new_story, commands: list[str]):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    UserJoined().steps(story)
+    story = new_story(fixture=OrchestratorWithPerson)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)

@@ -11,18 +11,15 @@ from engine.actor.actor import Actor
 from engine.enums.command_category import CommandCategory
 from engine.driver.hook_reply import HookReply
 from engine.enums.tool_type import ToolType
-from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
-from core.modules.processes.models.process import Process
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.expectations.line_outcome import LineOutcome
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, OrchestratorWithPerson
 from tests.stories.core.support.plan_steps import ready_plan
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, dispatched_worker, repository_environment, repository_folder, story_repository, worker_session
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, dispatched_worker, repository_environment, story_repository, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
 
@@ -37,8 +34,7 @@ TEST_ALIAS = "cart-test"
 def planned_story(new_story, approve: bool = True, build_test: str = ""):
     """Plan 1 with phase Build holding the open tasks 1 (Fix the cart), 2 and 3, and phase Ship holding task 4.
     With a test of its own, phase Build is a checkpoint: only a checkpoint phase has one."""
-    story = new_story(fixture=OpenTaskOrchestrator)
-    UserJoined().steps(story)
+    story = new_story(fixture=OrchestratorWithPerson)
     repository_environment(story)
     story.run('plan make "Rebuild the cart" --environment main')
     test_flag = f' --checkpoint --test "{build_test}"' if build_test else ""

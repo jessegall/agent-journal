@@ -72,16 +72,24 @@ class SecondTaskWaiting(StoryFixture):
         story.expect_text("task-dependency list --task 1", "2")
 
 
+def person_joined(story: Story) -> None:
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+
+
+def expect_person(story: Story) -> None:
+    story.expect_success(f"actor show {story.user.id}", "type: user", "name: Ada")
+
+
 class UserJoined(StoryFixture):
     """A person, Ada, beside the agent: story.user."""
 
     parent = AgentStarted
 
     def steps(self, story: Story) -> None:
-        story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+        person_joined(story)
 
     def expect(self, story: Story) -> None:
-        story.expect_success(f"actor show {story.user.id}", "type: user", "name: Ada")
+        expect_person(story)
 
 
 class PhasesPlan(StoryFixture):

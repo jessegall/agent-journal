@@ -7,7 +7,7 @@ from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.fixtures import MainEnvironment
+from tests.stories.core.support.fixtures import MainEnvironment, expect_person, person_joined
 
 
 class CodingEnvironment(StoryFixture):
@@ -58,6 +58,18 @@ class OpenTaskOrchestrator(StoryFixture):
 
     def expect(self, story: Story) -> None:
         story.expect_text("setting show journal.suites.coding.auto-mode --environment main", "value: False")
+
+class OrchestratorWithPerson(StoryFixture):
+    """The orchestrator with task 1 open, and a person, Ada, beside it: story.user."""
+
+    parent = OpenTaskOrchestrator
+
+    def steps(self, story: Story) -> None:
+        person_joined(story)
+
+    def expect(self, story: Story) -> None:
+        expect_person(story)
+
 
 
 class BuilderHelper(HelperExpectation, StoryFixture):
@@ -128,3 +140,27 @@ class ReadTaskBuilder(StoryFixture):
 
     def expect(self, story) -> None:
         story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
+
+
+class StartedBuilderWithPerson(StoryFixture):
+    """The builder with task 1 started, and a person, Ada, beside it: story.user."""
+
+    parent = StartedTaskBuilder
+
+    def steps(self, story: Story) -> None:
+        person_joined(story)
+
+    def expect(self, story: Story) -> None:
+        expect_person(story)
+
+
+class OpenBuilderWithPerson(StoryFixture):
+    """The builder with task 1 open, and a person, Ada, beside it: story.user."""
+
+    parent = OpenTaskBuilder
+
+    def steps(self, story: Story) -> None:
+        person_joined(story)
+
+    def expect(self, story: Story) -> None:
+        expect_person(story)

@@ -4,8 +4,7 @@ import subprocess
 import pytest
 
 from core.modules.processes.support.runner_binary import RunnerBinary
-from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.support.phase_steps import dispatched_story_worker
 DISPATCH = "worker dispatch --model sonnet 1 --test-command python=pytest"
@@ -15,8 +14,7 @@ REFUSED_LINE = "is not granted"
 
 @pytest.fixture
 def worker(new_story, monkeypatch):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    UserJoined().steps(story)
+    story = new_story(fixture=OrchestratorWithPerson)
     repository_environment(story)
     monkeypatch.setattr(RunnerBinary, "is_installed", lambda _runner: True)
     monkeypatch.setattr(subprocess, "Popen", lambda command, **options: None)
