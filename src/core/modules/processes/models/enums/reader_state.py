@@ -11,3 +11,7 @@ class ReaderState(StrEnum):
     DRAFTABLE = "draftable"
     MISSING = "missing"
     UNREADABLE = "unreadable"
+
+    @property
+    def lacks_a_reader(self) -> bool:
+        return self in (ReaderState.POOR, ReaderState.MISSING, ReaderState.DRAFTABLE)

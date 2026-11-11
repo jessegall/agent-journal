@@ -5,6 +5,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
+from core.modules.processes.support.silent_start_runs import SilentStartRuns
 from core.modules.processes.support.reading.reading_decision import ReadingDecision
 
 
@@ -20,5 +21,5 @@ class ReadingDecisions:
         values = {"state": decision.state, "action": decision.action, "level": decision.level, "reason": decision.reason, "decided_at": context.timestamp}
         if stored is not None:
             return self.repository.update(stored, context, **values)
-        return self.repository.save(ReadingDecisionRow(process_id=process.id, part_position=part.position, command_key=part.command or part.text,
+        return self.repository.save(ReadingDecisionRow(process_id=process.id, part_position=part.position, command_key=SilentStartRuns.name(part.text, part.program, part.category),
                                                        moment=moment, **values), context)
