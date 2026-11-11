@@ -25,6 +25,7 @@ class PlanCard(EnvironmentScoped, ViewModel):
     completed_count: int
     testing_count: int
     current_phase: int
+    complexity: float | None = None
     changed_at: str
     agents: str
     working: str

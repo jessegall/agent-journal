@@ -46,7 +46,7 @@ def test_a_persons_template_stays_visible_in_every_suite(installed_review):
 
 
 def test_a_suite_that_requires_coding_gets_the_coding_modules_templates(installed_review):
-    installed_review.expect_sync_success(f"{EXTENDED_SUITES}:AuditModule")
+    installed_review.expect_sync_success(f"{EXTENDED_SUITES}:AuditSuiteOfAuditModule")
     installed_review.expect_success("suite choose audit --environment elsewhere", actor=installed_review.user)
     installed_review.expect_text("template list --environment elsewhere", "Security review")
     installed_review.expect_text("window search templates.templates Security --environment elsewhere", "Security review")

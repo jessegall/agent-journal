@@ -19,3 +19,4 @@ class PlanInspectionJsonRecord(TypedDict):
     agents: object
     phases: object
     checkpoint_lines: object
+    complexity: object

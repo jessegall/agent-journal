@@ -13,7 +13,7 @@ from tests.stories.core.support.fixtures import UserJoined
 
 @pytest.fixture
 def installed_review(new_story, tmp_path):
-    story = new_story(f"{PATH}:SuiteModule", fixture=UserJoined)
+    story = new_story(f"{PATH}:SuiteModuleJoining", f"{PATH}:AcmeSuiteOfSuiteModule", fixture=UserJoined)
     source = Path(__file__).parent / "acme_review"
     folder = tmp_path / f"acme_review_{uuid4().hex}"
     shutil.copytree(source, folder)

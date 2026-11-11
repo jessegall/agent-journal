@@ -36,7 +36,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.event.created import Created
 
-SAMPLES = "tests.stories.engine.driver.support.samples:SampleSuiteOfSamplesModule", "tests.stories.engine.driver.support.samples:ControlSuiteOfSamplesModule"
+SAMPLES = "tests.stories.engine.driver.support.samples:SamplesModule"
 LEAD = "samples.lead"
 
 
