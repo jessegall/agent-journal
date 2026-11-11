@@ -45,7 +45,7 @@ class WorkerTaskCommit:
         base_commit = self.git.tip(worktree.folder, worktree.base_branch)
         conflicts = self.git.rebased_commit(worktree, CommitSubject(tuple([task])).text(), f"Journal: worker worker-{worktree.session_agent_id}")
         if conflicts:
-            raise Refusal(f"your work clashes with {worktree.base_branch} in {', '.join(conflicts)}", AskTopic.CONFLICT.hint("settle the conflict markers in those files, then hand in again"))
+            raise Refusal(f"your work clashes with {worktree.base_branch} in {', '.join(conflicts)}", AskTopic.CONFLICT.hint("settle the conflict markers in those files, then commit again"))
         current = worktree.moved(WorktreeLifecycle.advance, base_commit=base_commit)
         changes = self.git.comparison(current)
         if is_none_answer(differences):

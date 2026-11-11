@@ -16,6 +16,9 @@ class MissingPoints:
     def unproved(cls, task: Task, proved_points: Collection[int]) -> "MissingPoints":
         return cls(task, tuple(point for point in range(1, brief_point_count(task.brief) + 1) if point not in proved_points))
 
+    def proof_line(self) -> str:
+        return f'journal proof make {self.points[0]} --task {self.task.id} "<file:line, and the test that shows it>"'
+
     def text(self) -> str:
         if len(self.points) == 1:
             return f"task {self.task.id}: point {self.points[0]} has no proof"

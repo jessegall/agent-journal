@@ -1,3 +1,5 @@
+from collections.abc import Iterator
+
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.proof import Proof
@@ -26,8 +28,8 @@ class WorktreeProofs:
         self.worktree_ids.append(worktree_id)
         return self
 
-    def all_rows(self) -> tuple[Proof, ...]:
-        return self.rows
+    def all_rows(self) -> Iterator[Proof]:
+        return iter(self.rows)
 
 
 class StartedTasks:
@@ -46,9 +48,10 @@ def test_a_task_with_a_shown_proof_of_every_point_is_ready_and_the_commit_is_fin
     assert staging.is_final()
 
 
-def test_a_checked_proof_proves_its_point_beside_a_shown_one_and_a_short_proof_proves_none():
+def test_a_checked_or_short_proof_proves_its_point_beside_a_shown_one_and_a_queued_proof_proves_none():
     assert Staging.grouped(tuple([CART]), (proof(CART, 1, ProofState.CHECKED), proof(CART, 2))).ready == tuple([CART])
-    assert Staging.grouped(tuple([CART]), (proof(CART, 1, ProofState.SHORT), proof(CART, 2))).incomplete == tuple([MissingPoints(CART, tuple([1]))])
+    assert Staging.grouped(tuple([CART]), (proof(CART, 1, ProofState.SHORT), proof(CART, 2))).ready == tuple([CART])
+    assert Staging.grouped(tuple([CART]), (proof(CART, 1, ProofState.QUEUED), proof(CART, 2))).incomplete == tuple([MissingPoints(CART, tuple([1]))])
 
 
 def test_a_task_with_a_shown_proof_that_misses_points_is_incomplete_and_its_text_lists_every_missing_point():
@@ -58,10 +61,14 @@ def test_a_task_with_a_shown_proof_that_misses_points_is_incomplete_and_its_text
     assert not staging.is_final()
 
 
-def test_a_started_task_with_no_shown_proof_is_unproved_and_the_commit_is_not_final():
-    staging = Staging.grouped((CART, TOTALS), (proof(CART, 1), proof(CART, 2), proof(TOTALS, 1, ProofState.CHECKED)))
+def test_a_started_task_that_misses_points_and_has_no_shown_proof_is_unproved_and_the_commit_is_not_final():
+    staging = Staging.grouped((CART, TOTALS), (proof(CART, 1), proof(CART, 2), proof(TOTALS, 1, ProofState.QUEUED)))
     assert staging == Staging(tuple([CART]), (), tuple([TOTALS]))
     assert not staging.is_final()
+
+
+def test_a_task_whose_every_point_has_a_checked_proof_is_ready_with_no_shown_proof():
+    assert Staging.grouped(tuple([TOTALS]), tuple([proof(TOTALS, 1, ProofState.CHECKED)])) == Staging(tuple([TOTALS]), (), ())
 
 
 def test_the_staging_of_a_worktree_reads_the_started_tasks_of_its_worker_and_the_proofs_of_the_worktree():

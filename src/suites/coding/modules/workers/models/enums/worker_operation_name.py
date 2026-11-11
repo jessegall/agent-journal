@@ -23,12 +23,13 @@ WORKER_OPERATION_DELIVERED = NudgeDeclaration("workers.operation_delivered", Nud
 class WorkerOperationName(StrEnum):
     NEXT = "next"
     DELIVER = "deliver"
+    COMMIT = "commit"
     JOB = "send"
     MERGE = "merge"
 
     @property
     def is_handoff(self) -> bool:
-        return self in (self.NEXT, self.DELIVER)
+        return self in (self.NEXT, self.DELIVER, self.COMMIT)
 
     def finished_nudge(self, worker_number: int, process_id: int) -> Nudge:
         match self:
@@ -36,5 +37,5 @@ class WorkerOperationName(StrEnum):
                 return WORKER_OPERATION_MERGED.nudge(worker=worker_number, output=process_id)
             case self.JOB:
                 return WORKER_OPERATION_JOB.nudge(worker=worker_number, output=process_id)
-            case self.NEXT | self.DELIVER:
+            case self.NEXT | self.DELIVER | self.COMMIT:
                 return WORKER_OPERATION_DELIVERED.nudge(worker=worker_number, output=process_id)

@@ -126,7 +126,7 @@ def test_worker_commands_return_before_slow_git_and_notify_once(worker_git_comma
     completed_commands = []
 
     def checked_result(bus, value, command):
-        if type(command).__name__ in ("StartNextWorkerTask", "DeliverTask", "SendWorker", "MergeWorker"):
+        if type(command).__name__ in ("StartNextWorkerTask", "CommitWorkerWork", "SendWorker", "MergeWorker"):
             story.expect_rows(bus.database.has_transaction == command.lock,
                               detail=f"{command.label()} must own its transaction setting")
             completed_commands.append(command)

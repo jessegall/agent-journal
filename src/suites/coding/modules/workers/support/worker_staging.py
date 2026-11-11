@@ -11,4 +11,4 @@ class WorkerStaging:
         self.proofs, self.tasks = proofs, tasks
 
     def read(self, worktree: Worktree) -> Staging:
-        return Staging.grouped(self.tasks.started_tasks(worktree.session_agent_id), self.proofs.worktree_proofs(worktree.id).all_rows())
+        return Staging.grouped(self.tasks.started_tasks(worktree.session_agent_id), tuple(self.proofs.worktree_proofs(worktree.id).all_rows()))

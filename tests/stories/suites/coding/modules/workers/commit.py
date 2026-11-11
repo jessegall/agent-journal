@@ -5,7 +5,7 @@ from suites.coding.models.enums.ask_topic import AskTopic
 from tests.stories.core.modules.plugins.worker_steps import step_plugin_story
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.hand_in_rebase import MAIN_TAX, WORKER_TAX, expect_tip, moved_base_worker
+from tests.stories.suites.coding.modules.workers.hand_in_rebase import MAIN_TAX, MERGED_TAX, WORKER_TAX, expect_tip, moved_base_worker
 from tests.stories.suites.coding.modules.workers.refused_steps import REASON
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT, COMMIT_COMMAND
@@ -121,6 +121,7 @@ def test_31_a_change_in_a_protected_folder_refuses_the_commit(working):
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(FIRST_PROOF, actor=worker)
     expect_refused_with(story, COMMIT, "cart.py is protected", "undo the change in that folder", AskTopic.TOOL.question_line(), actor=worker)
+    story.expect_text("proof show 1", "state: shown", actor=story.agent)
 
 
 @pytest.mark.real_git
@@ -137,6 +138,8 @@ def test_33_a_clash_with_the_base_branch_stops_the_commit_names_the_files_and_ke
     repository.committed("tax.py", MAIN_TAX, "Another tax")
     expect_refused_with(story, COMMIT, f"your work clashes with {ENVIRONMENT_BRANCH} in tax.py", "settle the conflict markers in those files, then commit again", actor=worker)
     story.expect_text("proof show 1", "state: shown", actor=story.agent)
+    repository.changed(worker.id, "tax.py", MERGED_TAX)
+    story.expect_success(COMMIT, actor=worker)
 
 
 def test_34_a_commit_of_a_worktree_with_no_change_is_refused_and_the_hint_names_the_differences(working):
@@ -144,6 +147,7 @@ def test_34_a_commit_of_a_worktree_with_no_change_is_refused_and_the_hint_names_
     base_commit = repository.tip(ENVIRONMENT_BRANCH)
     story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
     expect_refused_with(story, COMMIT, "your worktree has no change", "--differences", actor=worker)
+    story.expect_success(f'{COMMIT_COMMAND} --wait --differences "already built: cart.py"', actor=worker)
     repository.expect_branch_tip(repository.worker_branch(worker.id), base_commit)
 
 
@@ -151,3 +155,4 @@ def test_35_a_commit_with_no_proof_at_all_is_refused_as_nothing_staged(working):
     story, repository, worker = working
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     expect_refused_with(story, COMMIT, "nothing is staged", "journal proof make", actor=worker)
+    story.expect_text("worker status", "journal proof make", actor=worker)

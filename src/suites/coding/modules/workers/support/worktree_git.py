@@ -37,7 +37,8 @@ HASHED_BUILT_FILE = re.compile(r"(.+)-[\w-]{8}\.[^.]+")
 NAME_SEPARATOR = "\0"
 COMMIT_SEPARATOR = "\x1e"
 COMMIT_FORMAT = "--format=%h%x00%B%x1e"
-SHORT_COMMIT_FLAG = "--abbrev=10"
+SHORT_ID_CHARACTERS = 10
+SHORT_COMMIT_FLAG = f"--abbrev={SHORT_ID_CHARACTERS}"
 # With -M -z a rename is three fields: status, old name, new name.
 RENAME_STATUS = "R"
 DIFF_STATUSES = {"A": FileStatus.ADDED, "D": FileStatus.DELETED}
@@ -85,6 +86,9 @@ class WorktreeGit:
         if branch is None:
             return WorktreeStart(worktree.base_branch, self.tip(folder, worktree.base_branch))
         return WorktreeStart(branch, self.merge_base(folder, worktree.base_branch, branch))
+
+    def short_tip(self, worktree: Worktree) -> str:
+        return self.tip(worktree.folder, worktree.branch)[:SHORT_ID_CHARACTERS]
 
     def earlier_branch(self, folder: str, worktree: Worktree, task_ids: Sequence[int]) -> str | None:
         pattern = f"{PurePosixPath(worktree.branch).parent}/*"

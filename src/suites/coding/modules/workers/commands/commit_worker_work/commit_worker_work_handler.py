@@ -10,7 +10,9 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
-from suites.coding.modules.workers.commands.deliver_task.deliver_task import DeliverTask
+from suites.coding.modules.workers.commands.commit_worker_work.commit_worker_work import CommitWorkerWork
+from suites.coding.modules.workers.support.commit_outcome import CommitOutcome
+from suites.coding.modules.workers.support.worker_staging import WorkerStaging
 from suites.coding.modules.workers.support.delivery_differences import DeliveryDifferences
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test_handler import RecordWorkerTestHandler
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
@@ -27,47 +29,55 @@ from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 
 
-class DeliverTaskHandler(Handler[DeliverTask, Task]):
-    """Hands in all a worker's tasks together, which a queued task refuses: commits its worktree, moves every
-    task it holds started to testing, delivers the worktree and queues the tests of its proofs. On a phase
-    of a started plan it queues the whole phase, and with nothing to run it finishes at once. The worker is
-    given the next free task it may take, which it starts when this work is done."""
+PROOF_HINT = 'journal proof make <point> --task <task> "<file:line, and the test>"'
 
-    command = DeliverTask
+
+class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
+    """Commits all a worker's tasks together, which a queued task refuses: commits its worktree, moves every
+    task it holds started to testing, delivers the worktree and submits its proofs: outside a started plan
+    their tests are queued, and with nothing to run it finishes at once; in a started plan they wait for the
+    checkpoint. The worker is given the next free task it may take, which it starts when this work is done."""
+
+    command = CommitWorkerWork
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: DeliveryDifferences, next_task: WorkerNextTask, free_task: WorkerFreeTask, guidance: WorkerGuidance) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: DeliveryDifferences, next_task: WorkerNextTask, free_task: WorkerFreeTask, guidance: WorkerGuidance, staging: WorkerStaging) -> None:
+        self.staging = staging
         self.next_task, self.free_task, self.guidance = next_task, free_task, guidance
         self.rows, self.worktrees, self.proof_queue, self.repository, self.task_commit, self.tasks = rows, worktrees, proof_queue, repository, task_commit, tasks
         self.queries, self.phases, self.results, self.differences = queries, phases, results, differences
 
-    def check_rows(self, command: DeliverTask, actor: Actor) -> None:
+    def check_rows(self, command: CommitWorkerWork, actor: Actor) -> None:
         worktree = self.worktrees.worker_worktree(actor.id)
         if worktree is None or worktree.state is not WorktreeState.CUT or self.guidance.point(actor.id).step is WorkerStep.BLOCKED:
             raise Refusal(self.guidance.line(actor.id))
         following = self.next_task.following(actor.id)
         if following is not None:
             raise Refusal(f"task {following.id} is still in your queue, and all your tasks are handed in together", AskTopic.GENERAL.hint("journal worker next"))
-        current = self.rows.required(Task, worktree.task_id)
-        if current.state is TaskState.STARTED:
-            self.task_commit.check_proofs(worktree, current)
+        if self.rows.required(Task, worktree.task_id).state is not TaskState.STARTED:
+            return
+        staging = self.staging.read(worktree)
+        if staging.incomplete:
+            raise Refusal(staging.missing_text(), AskTopic.GENERAL.hint(staging.incomplete[0].proof_line()))
+        if not staging.ready:
+            raise Refusal("nothing is staged", AskTopic.GENERAL.hint(PROOF_HINT))
 
-    def prepare(self, command: DeliverTask, actor: Actor) -> None:
+    def prepare(self, command: CommitWorkerWork, actor: Actor) -> None:
         self.check_rows(command, actor)
         worktree = self.worktrees.required_worker_worktree(actor.id)
         self.task_commit.commit(worktree, self.rows.required(Task, worktree.task_id), actor, command.differences)
 
-    def handle(self, command: DeliverTask, context: Context) -> Task:
+    def handle(self, command: CommitWorkerWork, context: Context) -> CommitOutcome:
         committed = self.worktrees.required_worker_worktree(context.actor.id)
         self.differences.record(committed.task_id, command.differences, context)
         self.free_task.give_next(context.actor.id, context)
-        for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):
+        started_tasks = tuple(self.tasks.holder(context.actor.id).started().all_rows())
+        for started in started_tasks:
             self.repository.save_change(started, started.moved(TaskLifecycle.test), context)
         task = self.rows.required(Task, committed.task_id)
         delivered = self.repository.save_change(committed, committed.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, logs_read_at=None, logs_output_id=None, tests_passed_at=None, returned_at=None,
                                                                              merge_ready_at=self.proof_queue.merge_ready_time(task, context)), context)
-        group = self.phases.group(delivered, task)
-        submission = self.proof_queue.submit(delivered, task, group, context)
+        submission = self.proof_queue.submit(delivered, task, self.phases.group(delivered, task), context)
         if submission is Submission.UNTESTED:
             self.results.finish(delivered, context)
-        return self.rows.required(Task, committed.task_id)
+        return CommitOutcome(started_tasks if started_tasks else tuple([task]), delivered, submission)

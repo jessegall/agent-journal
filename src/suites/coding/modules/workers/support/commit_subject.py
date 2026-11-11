@@ -19,7 +19,10 @@ class CommitSubject:
 
     tasks: tuple[Task, ...]
 
-    def text(self) -> str:
+    def label(self) -> str:
         ids = ", ".join(str(task.id) for task in self.tasks)
         word = "task" if len(self.tasks) == 1 else "tasks"
-        return f"{word} {ids}: {self.tasks[0].title}"
+        return f"{word} {ids}"
+
+    def text(self) -> str:
+        return f"{self.label()}: {self.tasks[0].title}"

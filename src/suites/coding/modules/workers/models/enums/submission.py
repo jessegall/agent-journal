@@ -8,3 +8,13 @@ class Submission(StrEnum):
     QUEUED = "queued"
     COMMITTED = "committed"
     UNTESTED = "untested"
+
+    @property
+    def answer_text(self) -> str:
+        match self:
+            case self.QUEUED:
+                return "its tests are queued"
+            case self.COMMITTED:
+                return "its tests run at a checkpoint of the plan"
+            case self.UNTESTED:
+                return "it has no test to run"
