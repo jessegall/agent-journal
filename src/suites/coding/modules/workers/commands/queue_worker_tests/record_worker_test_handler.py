@@ -7,7 +7,6 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from engine.driver.nudger import Nudger
-from suites.coding.modules.workers.support.work_units import WorkUnits
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -46,8 +45,8 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, repository: Repository, main_agent_line: MergerInbox, nudger: Nudger, rows: EventRows, plans: TaskPlans, failures: WorkerTestFailures, settings: SettingValues,
-                 guidance: WorkerGuidance, numbers: RowNumbers, checkpoint_results: CheckpointResults, units: WorkUnits, proofs: ProofQuery) -> None:
-        self.units, self.proofs = units, proofs
+                 guidance: WorkerGuidance, numbers: RowNumbers, checkpoint_results: CheckpointResults, proofs: ProofQuery) -> None:
+        self.proofs = proofs
         self.numbers, self.checkpoint_results, self.guidance = numbers, checkpoint_results, guidance
         self.failures, self.settings = failures, settings
         self.queries, self.repository, self.main_agent_line, self.nudger = queries, repository, main_agent_line, nudger
@@ -81,11 +80,10 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         pending = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).all_rows()
         if any(row.state in (AffectedTestState.QUEUED, AffectedTestState.PICKING, AffectedTestState.TESTING) for row in pending):
             return []
-        in_unit = self.units.unit(worktree.session_agent_id).has_several_tasks
-        completed = [] if in_unit else self.complete_tested(tasks, proofs, context)
+        completed = self.complete_tested(tasks, proofs, context)
         waiting = [row for row in proofs if row.state is ProofState.SHOWN and tasks[row.task_id].state is TaskState.TESTING]
         if current.state is WorktreeState.CUT:
-            if (completed or in_unit) and not failed:
+            if completed and not failed:
                 self.nudger.send(current.session_agent_id, WORKER_COMMIT_PASSED, LINE_SOURCE, context, line=self.guidance.line(current.session_agent_id))
             return waiting
         if not waiting:
