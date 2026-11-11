@@ -84,16 +84,17 @@ def test_a_worker_whose_tests_are_running_is_not_restarted_while_it_holds_a_star
 
 def test_a_worker_that_ended_while_its_hand_in_runs_leaves_no_stopped_line(handoff_worker):
     worker = handoff_worker
-    worker.story.expect_text(f"worker status {agent_number(worker.story, worker.worker.id)}", "Current phase: phase 1 (Build)", actor=worker.story.agent)
+    worker.story.expect_text(f"worker status {agent_number(worker.story, worker.worker.id)}", "Point: group-end", actor=worker.story.agent)
     worker.story.tick(MAIN_SESSION)
     worker.story.expect_rows(not any("stopped with" in line or "ended with" in line for line in worker.main_agent_lines()), detail=str(worker.main_agent_lines()))
 
 
-def test_after_its_limit_a_worker_that_ended_names_its_tasks_those_in_testing_included(program_ended):
+def test_after_its_limit_a_worker_that_ended_names_its_tasks_left_and_the_committed_one_that_is_not_merged(program_ended):
     set_resume_limit(program_ended.story.container, 0)
     program_ended.story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=program_ended.story.user)
     program_ended.story.tick(MAIN_SESSION)
-    program_ended.story.expect_text(f"agent-line list --agent {program_ended.story.agent.id}", f"worker:{agent_number(program_ended.story, program_ended.worker.id)} ended with task:1, task:2, task:3 left")
+    number = agent_number(program_ended.story, program_ended.worker.id)
+    program_ended.story.expect_text(f"agent-line list --agent {program_ended.story.agent.id}", f"worker:{number} ended with task:2, task:3 left", f"the code of task:1 of worker:{number} is committed and is not merged")
 
 
 @pytest.mark.parametrize("fixture, reason", [("advanced_worker", "the plan changed"), ("phase_delivered", "the tests take too long")], ids=["in the middle of a phase", "after the hand-in"])

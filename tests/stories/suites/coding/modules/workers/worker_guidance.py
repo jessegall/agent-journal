@@ -130,15 +130,6 @@ def test_the_last_proven_task_of_a_phase_with_the_next_phase_queued_hands_in_wit
     expect_step(plan_last_task, "group-end", "journal worker next")
 
 
-def test_a_batch_has_the_same_points_as_a_phase(batch_worker):
-    expect_step(batch_worker, "build")
-    batch_worker.prove()
-    expect_step(batch_worker, "task-proven", "journal worker next")
-    batch_worker.story.run("worker next --wait --differences none", actor=batch_worker.worker)
-    batch_worker.prove()
-    expect_step(batch_worker, "group-end", "journal worker deliver")
-
-
 def test_a_task_outside_any_group_hands_in_with_next_while_more_are_queued(new_story, monkeypatch):
     worker = unplanned_worker(new_story, monkeypatch)
     worker.prove(TEST_LINE)
@@ -150,14 +141,14 @@ def test_the_run_allowance_follows_its_setting(phase_worker):
     phase_worker.story.expect_text("worker status", "Own test runs left: 5", actor=phase_worker.worker)
 
 
-def test_a_worker_outside_a_group_has_no_limit_on_its_own_runs(new_story, monkeypatch):
+def test_a_worker_of_a_task_in_no_plan_has_the_same_count_of_its_own_runs(new_story, monkeypatch):
     worker = unplanned_worker(new_story, monkeypatch)
-    worker.story.expect_text("worker status", "Own test runs left: no limit", actor=worker.worker)
+    worker.story.expect_text("worker status", "Own test runs left: 3", actor=worker.worker)
 
 
 def test_the_json_status_holds_the_point_and_the_counts(phase_worker):
     status = phase_worker.status_json()
-    phase_worker.story.expect_rows(status["step"] == "build", status["open_task_count"] == 3, status["test_runs_available"] == 3, status["group"] == "phase:1", status["guidance"] == phase_worker.status_line())
+    phase_worker.story.expect_rows(status["step"] == "build", status["open_task_count"] == 1, status["test_runs_available"] == 3, status["group"] is None, status["guidance"] == phase_worker.status_line())
 
 
 def test_the_main_agent_reads_the_same_line_as_the_worker(phase_worker):

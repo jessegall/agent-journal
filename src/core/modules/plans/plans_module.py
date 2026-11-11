@@ -26,6 +26,7 @@ from core.modules.plans.step_conditions.plan_has_phases import PlanHasPhases
 from core.modules.plans.step_conditions.plan_phases_have_tasks import PlanPhasesHaveTasks
 from core.modules.plans.step_conditions.plan_tasks_ordered import PlanTasksOrdered
 from core.modules.plans.guards.phase_position_guard import PhasePositionGuard
+from core.modules.plans.guards.phase_test_guard import PhaseTestGuard
 from core.modules.plans.guards.plan_close_guard import PlanCloseGuard
 from core.modules.plans.listeners.cancel_open_plan_tasks_listener import CancelOpenPlanTasksListener
 from core.modules.plans.listeners.phase_renumbering_listener import PhaseRenumberingListener
@@ -134,7 +135,7 @@ class PlansModule(Module):
     subcommands = [CheckPlanSubcommand, WaitPlanSubcommand, AssignPlanSubcommand, ChoosePlanFocusSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand]
     views = [PlanTask, PlanProgress, PlanCard, PlanOutlineTask, PlanEventRow]
-    guards = [CheckpointRunGuard, PhasePositionGuard, PlanCloseGuard, OneTaskPhaseGuard, UnorderedTasksGuard]
+    guards = [CheckpointRunGuard, PhasePositionGuard, PhaseTestGuard, PlanCloseGuard, OneTaskPhaseGuard, UnorderedTasksGuard]
     step_conditions = [PlanBriefSet, PlanHasPhases, PlanPhasesHaveTasks, PlanTasksOrdered]
     listeners = [CheckpointReachListener, StartedPlanCheckpointsListener, CheckpointPassListener, PlanWaitListener, TaskPlanRowsListener, ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
                  FinishedPlanListener, PassedPlanListener, CheckpointRunListener, FinishedPlanLineListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener, ReadyPlanSyncListener]

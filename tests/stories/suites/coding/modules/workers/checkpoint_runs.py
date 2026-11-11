@@ -3,6 +3,8 @@ from pathlib import Path
 
 import pytest
 
+from engine.database.database import Database
+from engine.database.statement import Statement
 from core.modules.processes.models.enums.process_state import ProcessState
 from suites.coding.modules.workers.listeners.worker_test_listener import WorkerTestListener
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
@@ -15,7 +17,6 @@ REACHES = "checkpoint-reach list --json --oldest --environment main"
 PASSES = "checkpoint-pass list --json --oldest --environment main"
 BUILD_TEST = "python tests/build.py"
 SHIP_TEST = "python tests/ship.py"
-CHECKPOINT_FLAG = " --checkpoint"
 PICKER = "python3 pick.py"
 CART_COMMAND = "pytest tests/cart.py"
 TOTALS_COMMAND = "pytest tests/totals.py"
@@ -64,7 +65,7 @@ def merge(worker: StoryWorker) -> None:
 def checkpoint_worker(new_story, monkeypatch, *test_lines: str) -> StoryWorker:
     """A worker of a started plan whose phase Build is a checkpoint with a test of its own; it committed tasks
     1, 2 and 3 of that phase with the given test lines."""
-    worker = dispatched_story_worker(planned_story(new_story, build_test=BUILD_TEST, build_flags=CHECKPOINT_FLAG), PHASE_DISPATCH, monkeypatch)
+    worker = dispatched_story_worker(planned_story(new_story, build_test=BUILD_TEST), PHASE_DISPATCH, monkeypatch)
     commit_tasks(worker, *test_lines)
     return worker
 
@@ -86,8 +87,11 @@ def running_checkpoint(committed_window) -> StoryWorker:
 @pytest.fixture
 def ended_plan(new_story, monkeypatch) -> StoryWorker:
     """A started plan with no flagged checkpoint whose four tasks are committed with a test each and merged:
-    the end of the plan is reached. Phase Build has a test of its own, the last phase Ship has none."""
-    worker = dispatched_story_worker(planned_story(new_story, build_test=BUILD_TEST), PLAN_DISPATCH, monkeypatch)
+    the end of the plan is reached. Phase Build holds a test command an older journal stored on it, the last
+    phase Ship has none."""
+    story = planned_story(new_story)
+    story.container.get(Database).update(Statement("UPDATE phases SET test_command = ? WHERE id = 1", [BUILD_TEST]))
+    worker = dispatched_story_worker(story, PLAN_DISPATCH, monkeypatch)
     commit_tasks(worker, TEST_LINE, SECOND_TEST_LINE, TEST_LINE, SECOND_TEST_LINE)
     merge(worker)
     return worker
@@ -173,7 +177,7 @@ def test_184_a_task_added_to_the_window_while_its_run_goes_is_not_in_that_run(ru
 
 def test_189_the_run_of_a_second_checkpoint_waits_for_the_run_of_the_first_to_end(running_checkpoint):
     worker, story = running_checkpoint, running_checkpoint.story
-    story.expect_success(f'phase edit 2 --test-command "{SHIP_TEST}"', actor=story.user)
+    story.expect_success(f'phase edit 2 --checkpoint --test-command "{SHIP_TEST}"', actor=story.user)
     story.run("task start 4", actor=story.agent)
     story.expect_success('task close 4 --outcome "nothing to release"', actor=story.agent)
     story.run_listeners()

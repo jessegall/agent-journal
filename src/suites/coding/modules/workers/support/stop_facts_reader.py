@@ -34,7 +34,7 @@ class StopFactsReader:
         return StopFacts(is_busy=is_busy, is_person_stop=self.stop.is_final(worker, actor_id), has_launch_failed=self.launches.has_failed(worker),
                          is_delegated=any(task.delegated_to == worker.id for task in tasks), is_resume_limit_reached=resume_count >= self.settings.number(WORKER_RESUME_LIMIT),
                          has_requested_help=worker_round.is_asking, is_program_ready=self.resume.program_state(worker).is_ready, task_names=self.unfinished.names(tasks),
-                         is_main_agent_informed=self.is_main_agent_informed(worker, progress), committed_names=self.unfinished.names(self.unfinished.committed(tasks)))
+                         is_main_agent_informed=self.is_main_agent_informed(worker, progress), committed_names=self.unfinished.names(self.unfinished.committed(worker.id)))
 
     def is_main_agent_informed(self, worker: Agent, progress: Minimum) -> bool:
         lines = self.queries.query(AgentLine).filter(source=ENDED_WORKER_SOURCE).matching(progress).all_rows()

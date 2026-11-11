@@ -1,9 +1,8 @@
 from dataclasses import replace
 
-from engine.setting.setting_values import SettingValues
-from suites.coding.modules.workers.models.worker_test_run import WorkerTestRun
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.worker_groups import WorkerGroups
 from suites.coding.modules.workers.commands.record_worker_test_run.record_worker_test_run import RecordWorkerTestRun
-from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 
 from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
@@ -12,8 +11,6 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.part import Part
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.shell_line import ShellLine
-from engine.query.queries import Queries
-from suites.coding.modules.workers.support.worker_test_group import WorkerTestGroup
 from core.modules.processes.support.background_commands import BackgroundCommands
 from core.modules.processes.support.reader_demands import ASKING_FLAGS
 from suites.coding.modules.workers.support.worker_nudges import PHASE_TEST_REFUSED, PHASE_TEST_RUN_ALLOWED
@@ -23,17 +20,18 @@ from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class PhaseTestRule(DriverRule):
-    """Allows counted tests within a phase and refuses them after the allowance is spent."""
+    """Allows the test runs a worker starts itself between two commits, counted, and refuses them after the
+    allowance is spent. After its last commit the worker waits for the merge and its runs are not counted."""
 
     name = "workers.phase-tests"
     priority = -2
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [CodingHelperRole.WORKER]
-    single_action_refusal = "Allows counted tests within a phase and handles requests after the allowance is spent"
+    single_action_refusal = "Allows counted test runs between two commits and handles requests after the allowance is spent"
 
-    def __init__(self, phases: WorkerPhases, commands: BackgroundCommands, queries: Queries, settings: SettingValues) -> None:
-        self.phases, self.commands, self.queries, self.settings = phases, commands, queries, settings
+    def __init__(self, phases: WorkerPhases, commands: BackgroundCommands, worktrees: WorktreeQuery, groups: WorkerGroups) -> None:
+        self.phases, self.commands, self.worktrees, self.groups = phases, commands, worktrees, groups
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
@@ -42,21 +40,20 @@ class PhaseTestRule(DriverRule):
         test_part_count = sum(self.is_test_part(part, tool.shell) for part in tool.shell.parts)
         if not test_part_count:
             return RuleAnswer.allowed()
-        group = self.phases.waiting_group(hook.agent_id)
-        if group is None or self.phases.has_delivered(hook.agent_id):
+        worktree = self.worktrees.worker_worktree(hook.agent_id)
+        if worktree is None or self.phases.has_delivered(hook.agent_id):
             return RuleAnswer.allowed()
-        used = self.queries.query(WorkerTestRun).filter(worker_id=hook.agent_id, group_key=group.key).count()
-        remaining = self.settings.number(WORKER_PHASE_TEST_RUNS) - used
-        return self.line_answer([self.part_answer(hook.agent_id, group, remaining - position) for position in range(test_part_count)])
+        remaining = self.groups.test_runs_available(worktree)
+        return self.line_answer([self.part_answer(hook.agent_id, self.groups.run_window_key(worktree), remaining - position) for position in range(test_part_count)])
 
     def is_test_part(self, part: Part, shell: ShellLine) -> bool:
         return (WorkerTestNames.is_worker_test(part) or self.commands.part_command(part, shell).category is CommandCategory.TEST_RUN) and not ASKING_FLAGS.intersection(part.arguments)
 
     @staticmethod
-    def part_answer(worker_id: int, group: WorkerTestGroup, remaining: int) -> RuleAnswer:
+    def part_answer(worker_id: int, window_key: str, remaining: int) -> RuleAnswer:
         if remaining <= 0:
             return RuleAnswer.refused(PHASE_TEST_REFUSED.nudge())
-        return RuleAnswer.with_nudges(PHASE_TEST_RUN_ALLOWED.nudge(remaining=remaining - 1)).running_unrefused(RecordWorkerTestRun(worker_id, group.key))
+        return RuleAnswer.with_nudges(PHASE_TEST_RUN_ALLOWED.nudge(remaining=remaining - 1)).running_unrefused(RecordWorkerTestRun(worker_id, window_key))
 
     @staticmethod
     def line_answer(answers: list[RuleAnswer]) -> RuleAnswer:

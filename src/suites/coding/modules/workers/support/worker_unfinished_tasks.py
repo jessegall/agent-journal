@@ -1,7 +1,6 @@
 from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
@@ -29,8 +28,8 @@ class WorkerUnfinishedTasks:
         advanced = self.phases.advanced(worker_round.worker_id) if worker_round.started else ()
         return (*advanced, *worker_round.started, *self.tasks.queued_tasks(worker_round.worker_id))
 
-    def committed(self, tasks: tuple[Task, ...]) -> tuple[Task, ...]:
-        return tuple(task for task in tasks if task.state is TaskState.TESTING and self.phases.plans.is_started_plan(task.id))
+    def committed(self, worker_id: int) -> tuple[Task, ...]:
+        return self.phases.committed(worker_id)
 
     def last_progress_text(self, worker_id: int) -> str:
         tasks = self.tasks.filter(delegated_to=worker_id).all_rows()

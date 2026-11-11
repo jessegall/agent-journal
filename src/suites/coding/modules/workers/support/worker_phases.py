@@ -2,7 +2,6 @@ from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among
 from engine.setting.setting_values import SettingValues
-from suites.coding.modules.workers.support.worker_settings import PHASE_TESTS_ENABLED, TEST_BATCH_SIZE
 from suites.coding.modules.workers.support.worker_test_group import WorkerTestGroup
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.phase import Phase
@@ -16,16 +15,19 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 WAITING_TASK_STATES = (TaskState.STARTED, TaskState.TESTING)
+PHASE_TESTS_RUN = False
+BATCH_SIZE = 1
 
 
 class WorkerPhases:
-    """Groups a worker's pending tests by phase or by the configured number of tasks."""
+    """Grouped a worker's pending tests by phase or by a number of tasks. Tests run at checkpoints now, so no
+    phase has a test at its end and no batch is made: nothing is grouped."""
 
     def __init__(self, queries: Queries, plans: TaskPlans, worktrees: WorktreeQuery, proofs: ProofQuery, settings: SettingValues, kept: KeptRows) -> None:
         self.queries, self.plans, self.worktrees, self.proofs, self.settings, self.kept = queries, plans, worktrees, proofs, settings, kept
 
     def phase(self, task: Task) -> Phase | None:
-        if not self.settings.flag(PHASE_TESTS_ENABLED):
+        if not PHASE_TESTS_RUN:
             return None
         phase = self.plans.find_phase(task.id)
         if phase is None or self.queries.query(Plan).find(phase.plan_id).state is not PlanState.STARTED:
@@ -43,7 +45,7 @@ class WorkerPhases:
                 phase = self.plans.find_phase(task.id)
                 return None if phase is None else WorkerTestGroup(phase, ())
             return None
-        if self.settings.number(TEST_BATCH_SIZE) <= 1:
+        if BATCH_SIZE <= 1:
             return None
         tasks = self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", WAITING_TASK_STATES)).oldest().all_rows()
         return WorkerTestGroup(None, tuple(tasks))
@@ -51,7 +53,7 @@ class WorkerPhases:
     def continues_group(self, group: WorkerTestGroup, following: Task) -> bool:
         if group.phase is not None:
             return self.phase(following) == group.phase
-        return len(group.tasks) < self.settings.number(TEST_BATCH_SIZE) and self.plans.find(following.id) is None
+        return len(group.tasks) < BATCH_SIZE and self.plans.find(following.id) is None
 
     def continues_with(self, worktree: Worktree, following: Task | None) -> bool:
         group = self.group(worktree, self.queries.query(Task).find(worktree.task_id))
@@ -61,7 +63,7 @@ class WorkerPhases:
         plan = self.plans.find(task.id)
         if plan is not None:
             return self.is_phase_grouped(plan)
-        return self.settings.number(TEST_BATCH_SIZE) > 1
+        return BATCH_SIZE > 1
 
     def test_label(self, task: Task) -> str:
         phase = self.phase(task)
@@ -70,7 +72,7 @@ class WorkerPhases:
         return "batch" if self.is_grouped(task) else f"task {task.id}"
 
     def is_phase_grouped(self, plan: Plan) -> bool:
-        return plan.state is PlanState.STARTED and self.settings.flag(PHASE_TESTS_ENABLED)
+        return plan.state is PlanState.STARTED and PHASE_TESTS_RUN
 
     def has_open_failure(self, worktree: Worktree) -> bool:
         if self.proofs.has_short_proof(worktree.id):
@@ -87,6 +89,12 @@ class WorkerPhases:
                                            name=f"workers.testing_tasks:{worker_id}")
         self.plans.prepare([task.id for task in testing])
         return tuple(task for task in testing if self.is_grouped(task))
+
+    def committed(self, worker_id: int) -> tuple[Task, ...]:
+        testing = self.kept.scoped_current(lambda: tuple(self.queries.query(Task).filter(delegated_to=worker_id, state=TaskState.TESTING).oldest().all_rows()),
+                                           name=f"workers.testing_tasks:{worker_id}")
+        self.plans.prepare([task.id for task in testing])
+        return tuple(task for task in testing if self.plans.is_started_plan(task.id))
 
     def has_phase_wait(self, worker_id: int) -> bool:
         return self.waiting_group(worker_id) is not None

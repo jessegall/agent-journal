@@ -36,9 +36,9 @@ def test_a_phase_changes_place_only_by_a_move(new_story):
     story.expect_success('phase edit 1 --title "Value objects"', "title: Value objects", "position: 1")
 
 
-def test_a_phase_can_name_its_own_test(new_story):
+def test_a_checkpoint_phase_can_name_its_own_test(new_story):
     story = plan_with_three_phases(new_story)
-    story.expect_success('phase make --plan 1 "Commands" --test "python tests/commands.py"', "test_command: python tests/commands.py")
+    story.expect_success('phase make --plan 1 "Commands" --checkpoint --test "python tests/commands.py"', "test_command: python tests/commands.py")
 
 
 def test_a_phase_names_no_test_unless_it_is_told_one(new_story):
@@ -46,9 +46,9 @@ def test_a_phase_names_no_test_unless_it_is_told_one(new_story):
     story.expect_rows(json.loads(story.run("phase show 1 --json").output_text)["test_command"] == "")
 
 
-def test_a_phase_edit_changes_the_test_and_phase_show_reads_it(new_story):
+def test_a_phase_edit_makes_a_phase_a_checkpoint_with_its_test_and_phase_show_reads_it(new_story):
     story = plan_with_three_phases(new_story)
-    story.expect_success('phase edit 1 --test-command "pytest tests/values.py"', "test_command: pytest tests/values.py")
+    story.expect_success('phase edit 1 --checkpoint --test-command "pytest tests/values.py"', "test_command: pytest tests/values.py")
     story.expect_success("phase show 1", "test_command: pytest tests/values.py")
 
 

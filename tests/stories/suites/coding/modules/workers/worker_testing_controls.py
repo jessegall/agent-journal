@@ -1,3 +1,4 @@
+from tests.stories.server.support.server_client import server_story
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 import json
@@ -25,36 +26,16 @@ from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker as plan_worker, unplanned_worker as solo_worker
-from tests.stories.suites.coding.modules.workers.test_batches import BATCH, PHASE, configure
 from tests.stories.suites.coding.modules.workers.test_queue import affected_test_story, ended, queued_story
 from tests.stories.core.support.agent_labels import agent_label
-def test_s32_the_phase_setting_off_tests_each_plan_task_whatever_the_outside_batch_size(new_story, monkeypatch):
-    worker = plan_worker(new_story, monkeypatch, build_test="pytest tests/phase.py")
-    configure(worker, PHASE, "off")
-    configure(worker, BATCH, "4")
-    for _ in range(4):
-        expect_reply_allowed(worker.run_test())
-    worker.edit_prove(TEST_LINE)
-    worker.story.expect_text("worker next --wait --differences none", "tests of task 1", actor=worker.worker)
-    worker.story.expect_rows(len(worker.started) == 1, worker.current_task() == 1)
-
-
-def test_s33_a_batch_outside_a_plan_runs_its_proofs_together_when_its_size_is_reached(new_story, monkeypatch):
-    worker = solo_worker(new_story, monkeypatch)
-    UserJoined().steps(worker.story)
-    configure(worker, BATCH, "2")
-    worker.prove_advance(TEST_LINE)
-    worker.story.expect_rows(worker.current_task() == 2, len(worker.started) == 0)
-    worker.prove(TEST_LINE)
-    worker.story.expect_text("worker deliver --wait --differences none", "tests of batch", actor=worker.worker)
-    worker.end_all_tests()
-    worker.story.expect_rows(len(worker.started) == 2)
-    worker.story.expect_text("task show 1", "state: completed", actor=worker.story.agent)
-    worker.story.expect_text("task show 2", "state: completed", actor=worker.story.agent)
-
-
 RUNS = "journal.suites.coding.workers.worker-phase-test-runs"
 COMMAND_TYPES = "journal.suites.coding.worker-command-types"
+
+
+def configure(worker, key, value):
+    with server_story(worker.story) as server:
+        cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+        return server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", key, value, "--environment", "main"]})
 
 
 def test_s34_a_zero_allowance_sends_the_first_grouped_test_command_to_the_main_agent_for_approval(new_story, monkeypatch):

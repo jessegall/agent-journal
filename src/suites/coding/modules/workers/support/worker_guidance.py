@@ -30,7 +30,7 @@ class WorkerGuidance:
 
     def task_line(self, task: Task) -> str:
         if task.delegated_to is None:
-            raise Refusal(f"task {task.id} is delegated to no worker", "journal task show <n> reads who holds it")
+            raise Refusal(f"task {task.id} is delegated to no worker", "journal task show <n> shows which agent has it")
         return self.line(task.delegated_to)
 
     def point(self, worker_id: int) -> WorkerPoint:
@@ -43,7 +43,7 @@ class WorkerGuidance:
             return WorkerPoint(worker_round, step, step_line(step, self.no_work_facts(worker_round)), None, len(worker_round.started), None)
         group = worker_round.group
         open_task_count = self.groups.open_task_count(group, worker_round.started, worker_round.ready)
-        runs = self.groups.test_runs_available(worktree, group) if self.names.rows(worktree.session_agent_id) else 0
+        runs = self.groups.test_runs_available(worktree) if self.names.rows(worktree.session_agent_id) else 0
         return WorkerPoint(worker_round, step, step_line(step, self.facts(worker_round, worktree, open_task_count, runs)), self.groups.group_key(group), open_task_count, runs)
 
     def question_line(self, worker_round: WorkerRound) -> str:

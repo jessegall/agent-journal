@@ -9,13 +9,11 @@ from engine.setting.setting_values import SettingValues
 from engine.time.timestamp import Timestamp
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_test_group import WorkerTestGroup
-from core.modules.plans.models.phase import Phase
 from core.modules.plans.support.task_plans import TaskPlans
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.enums.submission import Submission
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
-from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.worker_nudges import PROOF_WAITS
@@ -24,16 +22,16 @@ from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 import shlex
 
+UNTESTED_STATES = (ProofState.SHOWN, ProofState.COMMITTED)
 PROOF_WAITS_SOURCE = "workers.proof-waits"
-PHASE_TEST_POINT = 0
 PENDING_AFFECTED_STATES = (AffectedTestState.QUEUED, AffectedTestState.PICKING, AffectedTestState.TESTING)
 
 
 class WorkerProofQueue:
     """Queues the test of every proof of a worktree that has not passed, says how many it queued, and tells the
-    main agent of the proofs with no test, which wait for its check. At the end of a phase those proofs are
-    checked instead, and the phase's own test is added as a proof. In a started plan nothing is queued: the
-    proofs are committed and their tests wait for a checkpoint of the plan."""
+    main agent of the proofs with no test, which wait for its check. In a started plan nothing is queued: the
+    proofs are committed and their tests wait for a checkpoint of the plan. A proof committed in a plan that
+    is started no more, as when the plan is blocked, is queued with the others at the next hand-in."""
 
     def __init__(self, proofs: ProofQuery, repository: Repository, main_agent_line: MergerInbox, settings: SettingValues, git: WorktreeGit, queries: Queries, numbers: RowNumbers, plans: TaskPlans) -> None:
         self.numbers, self.plans = numbers, plans
@@ -77,7 +75,7 @@ class WorkerProofQueue:
                 continue
             if proof.state is ProofState.SHORT:
                 proof = self.repository.save_change(proof, proof.revise(context.timestamp, context.actor, proof.text), context)
-            if proof.state is ProofState.SHOWN:
+            if proof.state in UNTESTED_STATES:
                 self.repository.save_change(proof, proof.moved(ProofLifecycle.queue), context)
                 queued_count += 1
         return queued_count
@@ -95,20 +93,7 @@ class WorkerProofQueue:
     def queue_group(self, worktree: Worktree, task: Task, group: WorkerTestGroup, context: Context) -> int:
         for proof in tuple(self.proofs.untested_proofs(worktree.id).all_rows()):
             self.repository.save_change(proof, proof.moved(ProofLifecycle.check), context)
-        if group.phase is not None:
-            self.queue_phase_test(worktree, task, group.phase, context)
         return self.queue_proofs(worktree, context) + self.queue_selected(worktree, context)
-
-    def queue_phase_test(self, worktree: Worktree, task: Task, phase: Phase, context: Context) -> None:
-        if not phase.test_command:
-            return
-        proof = self.proofs.worktree_proofs(worktree.id).filter(point=PHASE_TEST_POINT, task_id=task.id).first()
-        if proof is not None:
-            if proof.state is ProofState.SHORT and proof.test_command != phase.test_command:
-                self.repository.save_change(proof, proof.revise(context.timestamp, context.actor, proof.text, phase.test_command), context)
-            return
-        self.repository.save(Proof(task_id=task.id, worktree_id=worktree.id, creator_id=worktree.session_agent_id, point=PHASE_TEST_POINT,
-                                   text=f"the test phase {phase.title} names", test_command=phase.test_command), context)
 
     def queue_selected(self, worktree: Worktree, context: Context) -> int:
         picker = self.settings.text(AFFECTED_TESTS_COMMAND).strip()

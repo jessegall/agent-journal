@@ -62,12 +62,6 @@ def test_a_group_of_three_tasks_with_a_failure_and_a_free_run(group_worker):
     expect_value(any("ended with tasks left" in line for line in group_worker.worker_lines()), False)
 
 
-def test_a_hand_in_inside_a_group_is_not_judged(judged_first_hand_in):
-    worker, outcome = judged_first_hand_in
-    expect_value(outcome.code, 0)
-    expect_value(judged_file(worker.story).exists(), False)
-
-
 def test_the_end_of_the_group_judges_all_its_tasks_together(judged_last_of_group):
     outcome = judged_last_of_group
     expect_value(outcome.code != 0 and "[plugin judge] own.py has a sin" in outcome.output_text, True)

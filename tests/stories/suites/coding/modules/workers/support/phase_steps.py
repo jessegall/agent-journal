@@ -31,14 +31,15 @@ SECOND_TEST_LINE = "pytest tests/totals.py"
 TEST_ALIAS = "cart-test"
 
 
-def planned_story(new_story, approve: bool = True, build_test: str = "", build_flags: str = ""):
-    """Plan 1 with phase Build holding the open tasks 1 (Fix the cart), 2 and 3, and phase Ship holding task 4."""
+def planned_story(new_story, approve: bool = True, build_test: str = ""):
+    """Plan 1 with phase Build holding the open tasks 1 (Fix the cart), 2 and 3, and phase Ship holding task 4.
+    With a test of its own, phase Build is a checkpoint: only a checkpoint phase has one."""
     story = new_story(fixture=OpenTaskOrchestrator)
     UserJoined().steps(story)
     repository_environment(story)
     story.run('plan make "Rebuild the cart" --environment main')
-    test_flag = f' --test "{build_test}"' if build_test else ""
-    story.expect_success(f'phase make --plan 1 "Build"{test_flag}{build_flags}')
+    test_flag = f' --checkpoint --test "{build_test}"' if build_test else ""
+    story.expect_success(f'phase make --plan 1 "Build"{test_flag}')
     story.run('phase make --plan 1 "Ship"')
     story.run("phase place 1 --phase 1")
     for title, phase in (("Tax", 1), ("Totals", 1), ("Release", 2)):

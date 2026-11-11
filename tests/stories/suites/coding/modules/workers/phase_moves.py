@@ -1,14 +1,11 @@
 import pytest
-from unittest.mock import patch
 
 from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_refusal
 from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.listeners.worker_test_listener import WorkerTestListener
-from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from core.modules.plans.support.task_plans import TaskPlans
-from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_folder, story_repository
@@ -85,15 +82,6 @@ def displayed_task_states(worker) -> dict[int, str]:
     return {task["id"]: task["state"] for phase in outline["phases"] for task in phase["tasks"]}
 
 
-def test_a_workers_phase_is_found_with_one_membership_lookup(planned_worker):
-    story = planned_worker.story
-    plans = story.container.get(TaskPlans)
-    task = story.row(Task, planned_worker.current_task())
-    with patch.object(plans, "find_phase", wraps=plans.find_phase) as find_phase:
-        phase = story.container.get(WorkerPhases).phase(task)
-    story.expect_rows(phase is not None, phase.id == 1, find_phase.call_count == 1)
-
-
 def test_a_worker_status_reuses_its_phase_worktree_and_waiting_test_reads(planned_worker):
     story = planned_worker.story
     worktrees = story.container.get(WorktreeQuery)
@@ -157,10 +145,6 @@ def test_a_task_of_a_plan_and_then_a_task_outside_it_each_follow_their_own_flow(
     plan_task_first.end_all_tests()
     plan_task_first.story.expect_rows(plan_task_first.current_task() == 5)
     expect_reply_allowed(plan_task_first.run_test())
-
-
-def test_a_proof_with_no_test_on_a_phase_does_not_refuse_the_main_agents_stop(advanced_without_test):
-    advanced_without_test.story.expect_hook_allowed(MAIN_SESSION, HookSamples.stop())
 
 
 def test_a_person_sees_the_tasks_of_a_phase_as_completed_once_its_tests_have_passed(last_task):

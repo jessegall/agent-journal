@@ -10,6 +10,7 @@ from core.modules.tasks.models.enums.task_state import TaskState
 FINISHED_STATES = (TaskState.COMPLETED, TaskState.CANCELLED)
 STATUS_LINE = "checkpoint of phase {phase}: {status}"
 GATE_LINE = "phase {phase} waits for the tests of phase {checkpoint}"
+UNRUN_TEST_LINE = "test of phase {phase} not run: this phase is not a checkpoint"
 
 
 @dataclass(frozen=True)
@@ -67,6 +68,7 @@ class CheckpointWindows:
             return ()
         checkpoints = self.checkpoint_phases()
         lines = [STATUS_LINE.format(phase=phase.id, status=self.status(phase, newest.get(phase.id), phase.id in passed_phase_ids)) for phase in checkpoints]
+        lines.extend(UNRUN_TEST_LINE.format(phase=phase.id) for phase in self.phases if phase.test_command and phase not in checkpoints)
         gate = next((phase for phase in checkpoints if phase.checkpoint and phase.id not in passed_phase_ids and self.window(phase)), None)
         if gate is None:
             return tuple(lines)
