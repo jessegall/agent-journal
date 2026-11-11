@@ -15,6 +15,7 @@ from engine.cli.row_numbers import RowNumbers
 from engine.command.bus import Bus
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from suites.coding.modules.workers.commands.commit_worker_work.commit_worker_work import CommitWorkerWork
+from suites.coding.modules.workers.commands.start_worker_runs.start_worker_runs import StartWorkerRuns
 from suites.coding.modules.workers.support.checkpoint_wait_text import CheckpointWaitText
 from suites.coding.modules.workers.support.commit_outcome import CommitOutcome
 from suites.coding.modules.workers.support.commit_subject import CommitSubject
@@ -40,6 +41,7 @@ INTERIM_TEXT = "Interim: go on with {tasks}"
 BACKGROUND_TESTS_TEXT = "tests run in the background"
 FINAL_TEXT = "Final: your work is handed in, stop and wait"
 FINAL_MERGE_TEXT = "Final: your work is handed in, stop and wait for the merge"
+WORKER_RUN_TEXT = "The tests of checkpoint phase {phase} now run on this commit in the background."
 PROOF_HINT = 'journal proof make <point> --task <task> "<file:line, and the test>"'
 
 
@@ -111,7 +113,9 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         submission = self.proof_queue.submit_ready(worktree, tasks, context)
         if submission is Submission.UNTESTED:
             self.results.finish(worktree, context)
-        return CommitOutcome(tasks, worktree, submission, self.next_step_text(tasks, open_tasks, submission), staging.notes())
+        reaches = self.bus.dispatch(StartWorkerRuns(worktree.id, worktree.commit_short_id), context) if submission is Submission.COMMITTED else ()
+        run_notes = tuple(WORKER_RUN_TEXT.format(phase=reach.phase_id) for reach in reaches)
+        return CommitOutcome(tasks, worktree, submission, self.next_step_text(tasks, open_tasks, submission), (*staging.notes(), *run_notes))
 
     def moved_worktree(self, worktree: Worktree, open_tasks: tuple[Task, ...], tasks: tuple[Task, ...], context: Context) -> Worktree:
         if not open_tasks:
