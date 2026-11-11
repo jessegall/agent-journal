@@ -41,7 +41,8 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
         lines = tuple(self.queries.query(MergerLine).matching(IsNull("read_at")).matching(IsNull("outcome")).oldest().all_rows())
         nudges = [Nudge(line.fallback_source, NudgeType.NOTICE, line.text) if line.nudge_json is None else NudgeDeclaration.restore(line.nudge_json) for line in lines]
         messages = "\n".join(f"line: {nudge.text}" for nudge in Nudge.collapsed(nudges))
-        worktree = next((row for row in self.worktrees.open_worktrees() if row.is_merge_ready), None)
+        waiting_ids = self.merge_ask.waiting_worktree_ids()
+        worktree = next((row for row in self.worktrees.open_worktrees() if row.is_merge_ready or row.id in waiting_ids), None)
         if worktree is None:
             self.record_lines(lines, messages, command, visit, context)
             return messages or NO_WORKER_WAITING

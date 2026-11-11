@@ -6,7 +6,9 @@ from suites.coding.modules.workers.support.merge_ask_outcome import MergeAskOutc
 
 @dataclass(frozen=True)
 class AskMerge(Command[MergeAskOutcome]):
-    """A worker asks for the merge of its committed unit, with a note of what the merge holds."""
+    """A worker asks for the merge of its committed unit, whole or up to one task or commit, with a note of what
+    the merge holds."""
 
     worker_id: int
     note: str
+    up_to: str = ""

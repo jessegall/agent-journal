@@ -20,6 +20,9 @@ class MergeAskSection:
     def __init__(self, queries: Queries, runs: WorktreeRuns, git: WorktreeGit, environments: EnvironmentRows) -> None:
         self.queries, self.runs, self.git, self.environments = queries, runs, git, environments
 
+    def waiting_worktree_ids(self) -> frozenset[int]:
+        return frozenset(row.worktree_id for row in self.queries.query(MergeAsk).filter(state=MergeAskState.WAITING).all_rows())
+
     def text(self, worktree: Worktree) -> str:
         merge_ask = self.queries.query(MergeAsk).filter(worktree_id=worktree.id, state=MergeAskState.WAITING).first()
         if merge_ask is None:

@@ -30,3 +30,7 @@ def test_no_worker_text_names_journal_worker_deliver():
 
 def test_no_worker_text_says_the_commit_with_none_left_is_final():
     assert not any("is final" in worker_text for worker_text in (WORKER_RULES, WORKER_COMMANDS, WORK_STEPS))
+
+
+def test_the_worker_texts_name_up_to():
+    assert all("--up-to <task>" in worker_text for worker_text in (WORKER_UNIT_RULES, WORKER_COMMANDS))

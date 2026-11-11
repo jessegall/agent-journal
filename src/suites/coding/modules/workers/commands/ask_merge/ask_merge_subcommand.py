@@ -12,8 +12,8 @@ from suites.coding.modules.workers.support.merge_ask_outcome import MergeAskOutc
 
 
 class AskMergeSubcommand(Subcommand[AskMerge, MergeAskOutcome]):
-    """`journal worker ask-merge "<what the merge holds>"`: the worker asks for the merge of its committed
-    unit."""
+    """`journal worker ask-merge "<what the merge holds>" [--up-to <task or commit>]`: the worker asks for the merge
+    of its committed unit, or of the part up to one task or commit."""
 
     cli_name = "worker"
     name = "ask-merge"
@@ -24,11 +24,12 @@ class AskMergeSubcommand(Subcommand[AskMerge, MergeAskOutcome]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("note", help="what the merge holds, what you changed from the briefs and what you could not check")
+        parser.add_argument("--up-to", default="", help="a committed task or commit: ask for the merge of your work up to it and go on")
 
     def command(self, arguments: Namespace, caller: Caller) -> AskMerge:
         if not self.queries.query(Agent).filter(id=caller.actor.id, role=CodingHelperRole.WORKER).exists():
             raise Refusal("journal worker ask-merge is for workers", "journal worker merge merges a worker's work")
-        return AskMerge(caller.actor.id, arguments.note)
+        return AskMerge(caller.actor.id, arguments.note, arguments.up_to)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, MergeAskOutcome):

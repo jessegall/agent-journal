@@ -7,7 +7,9 @@ from core.modules.plans.models.enums.checkpoint_state import CheckpointState
 from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_reach import WorktreeReach
+from suites.coding.modules.workers.support.merge_ask_part import MergeAskPart
 from suites.coding.modules.workers.support.merge_ask_scope import MergeAskScope
+from suites.coding.modules.workers.support.worker_merge_range import WorkerMergeRange
 from suites.coding.modules.workers.support.work_unit import WorkUnit
 
 WORKTREE = Worktree(id=5, session_agent_id=1, task_id=7, creator_id=1, folder="/w", branch="worker", base_branch="version-5", commit_count=2, commit_short_id="c0ffee1")
@@ -83,8 +85,22 @@ class SampleQueries:
         return SampleQuery(self.waiting)
 
 
+class SampleRange(WorkerMergeRange):
+    def __init__(self):
+        self.commits = {7: "a1", 8: "b2"}
+
+    def task_commit(self, worktree, task_id):
+        return self.commits.get(task_id)
+
+    def is_on_branch(self, worktree, commit):
+        return commit in self.commits.values()
+
+    def tasks_up_to(self, worktree, commit):
+        return [SampleTask(task_id) for task_id, task_commit in self.commits.items() if task_id <= {"a1": 7, "b2": 8}.get(commit, 8)]
+
+
 def scope(unit=LIST_UNIT, worktree=WORKTREE, started=(), blocking=None, conflict=None, waiting=None) -> MergeAskScope:
-    return MergeAskScope(SampleUnits(unit), SampleWorktrees(worktree), SampleTasks(*started), SampleRuns(blocking), SampleSteps(conflict), SampleQueries(waiting))
+    return MergeAskScope(SampleUnits(unit), SampleWorktrees(worktree), SampleTasks(*started), SampleRuns(blocking), SampleSteps(conflict), SampleQueries(waiting), SampleRange())
 
 
 def run(state: CheckpointState) -> tuple[WorktreeReach, CheckpointReach]:
@@ -92,9 +108,9 @@ def run(state: CheckpointState) -> tuple[WorktreeReach, CheckpointReach]:
     return WorktreeReach(creator_id=1, reach_id=4, worktree_id=5, phase_id=3, commit_id="9b1e0d2"), reach
 
 
-def refusal_of(checked_scope: MergeAskScope, note: str = "the cart") -> str:
+def refusal_of(checked_scope: MergeAskScope, note: str = "the cart", up_to: str = "") -> str:
     with pytest.raises(Refusal) as refused:
-        checked_scope.checked(1, note)
+        checked_scope.checked(1, note, up_to)
     return str(refused.value)
 
 
@@ -131,8 +147,25 @@ def test_an_empty_note_is_refused():
 
 
 def test_a_whole_ask_is_accepted_after_phase_1_of_9():
-    assert scope().checked(1, "phase 1 of 9 is done") == (WORKTREE, LIST_UNIT)
+    assert scope().checked(1, "phase 1 of 9 is done") == MergeAskPart(WORKTREE, LIST_UNIT, "c0ffee1", (7, 8), True)
 
 
 def test_any_note_length_is_accepted():
-    assert scope().checked(1, "x" * 5000)[1] == LIST_UNIT
+    assert scope().checked(1, "x" * 5000).unit == LIST_UNIT
+
+
+def test_an_ask_up_to_a_task_carries_every_earlier_commit():
+    part = scope(started=(SampleTask(9),)).checked(1, "the first part", "7")
+    assert (part.commit_id, part.task_ids, part.is_whole) == ("a1", (7,), False)
+
+
+def test_an_ask_up_to_an_uncommitted_task_is_refused():
+    assert "task 9 is not committed in your worktree" in refusal_of(scope(), up_to="9")
+
+
+def test_an_ask_up_to_a_commit_off_the_branch_is_refused():
+    assert "commit ffff123 is not on your branch" in refusal_of(scope(), up_to="ffff123")
+
+
+def test_an_ask_over_a_part_whose_run_is_open_is_refused():
+    assert "run on your commit" in refusal_of(scope(blocking=run(CheckpointState.RUNNING)), up_to="7")

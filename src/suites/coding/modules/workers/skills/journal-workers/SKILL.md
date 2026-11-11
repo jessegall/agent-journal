@@ -178,7 +178,8 @@ An open question lets you stop; the answer wakes you. Going on with other work e
   leaves the others started; commit after each task, before a risky change and before you stop. A task sent to you alone
   asks for its merge by its last commit: then stop and wait. A unit of several tasks (a plan, a phase, tasks sent
   together) is merged when you ask: `journal worker ask-merge "<what the merge holds>"`, by default once, when all of it
-  is committed and its tests passed. The ask is refused while a task is started, while tests of that work run or
+  is committed and its tests passed. Ask earlier with `--up-to <task>` only when a finished, tested part is needed by
+  someone now or your work has run so long that a late clash would be large; it carries every earlier commit. The ask is refused while a task is started, while tests of that work run or
   failed, or while a clash waits. The note is your report. Once it is merged the journal starts you on your next
   unit, in a new worktree.
 - The tests of a commit: outside a plan the journal queues the tests of your proofs on that commit and returns any
