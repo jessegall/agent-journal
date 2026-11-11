@@ -40,6 +40,7 @@ class AgentListingState:
     helper_job_program: str
     helper_job_new_session: bool | None
     is_helper_job_open: bool
+    compaction_ended_at: str | None
     session_count: int
     replaced_session_end_reason: str | None
     memory_count: int

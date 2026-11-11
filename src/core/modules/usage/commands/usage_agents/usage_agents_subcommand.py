@@ -1,3 +1,4 @@
+from core.modules.drivers.support.current_context_window import CurrentContextWindow
 from engine.cli.agent_number import AgentNumber
 from core.modules.agents.support.agent_rows import RUNNING_AGENTS_REASON
 from core.modules.settings.bindings.support.context_share import ContextShare
@@ -96,7 +97,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
                           tuple(json.loads(card.tasks)), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
                           card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), card.helper_job_title, titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.usage_limit_ends_at.text if card.usage_limit_ends_at is not None else None,
-                          helper_job_program=card.helper_job_program, occupant_launch=self.occupant_launch(card), is_helper_job_open=card.is_helper_job_open)
+                          helper_job_program=card.helper_job_program, occupant_launch=self.occupant_launch(card), is_helper_job_open=card.is_helper_job_open, is_context_unknown=self.is_context_unknown(card))
 
     @staticmethod
     def occupant_launch(card: AgentCard) -> str:
@@ -111,7 +112,12 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
             return description[:100]
         return next((line.strip()[:100] for line in card.helper_job_brief.splitlines() if line.strip()), "")
 
+    def is_context_unknown(self, card: AgentCard) -> bool:
+        return not CurrentContextWindow.is_read_after(card.compaction_ended_at, self.providers.provider(card.program).context_window(self.home, card.session))
+
     def context_percent(self, card: AgentCard, status: SessionStatus) -> int | None:
+        if self.is_context_unknown(card):
+            return None
         if not status.is_reported:
             return self.share.percent(card.program, card.session)
         return None if status.context_percent is None else self.share.reading(ContextWindow(status.context_percent, status.context_tokens)).percent

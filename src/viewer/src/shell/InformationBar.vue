@@ -73,6 +73,9 @@ const cost = computed(() => (status.value?.cost_dollars ? `$${status.value.cost_
                     <Icon name="gauge" :size="12" /> <span class="gauge"><span :style="{width: `${context}%`}" /></span> {{ context }}%
                 </button>
             </template>
+            <template v-else-if="status?.context_unknown">
+                <span class="fact" data-fact="context-unknown" title="The context was compacted or cleared and its new size is not reported yet"><Icon name="gauge" :size="12" /> Context: unknown</span>
+            </template>
             <template v-if="model">
                 <button type="button" class="fact" :disabled="card" data-fact="model" :title="`${model}: change the model`" @click="offers('model') ? openMenu($event, 'model') : null"><Icon name="model" :size="12" /> {{ model }}</button>
             </template>

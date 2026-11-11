@@ -21,9 +21,15 @@ class CurrentContextWindow:
         window = self.providers.provider(agent.program).context_window(self.home, agent.session)
         return window if self.is_current(agent, window) else UNKNOWN_WINDOW
 
+    def is_unknown(self, agent: Agent) -> bool:
+        return not self.is_current(agent, self.providers.provider(agent.program).context_window(self.home, agent.session))
+
+    @classmethod
+    def is_current(cls, agent: Agent, window: ContextWindow) -> bool:
+        return cls.is_read_after(agent.metadata.module_part(DRIVERS_MODULE).get(COMPACTION_ENDED_AT), window)
+
     @staticmethod
-    def is_current(agent: Agent, window: ContextWindow) -> bool:
-        ended_text = agent.metadata.module_part(DRIVERS_MODULE).get(COMPACTION_ENDED_AT)
-        if not isinstance(ended_text, str):
+    def is_read_after(compaction_end: object, window: ContextWindow) -> bool:
+        if not isinstance(compaction_end, str):
             return True
-        return window.read_at is not None and Timestamp.parsed(ended_text).elapsed_seconds(window.read_at) > 0
+        return window.read_at is not None and Timestamp.parsed(compaction_end).elapsed_seconds(window.read_at) > 0

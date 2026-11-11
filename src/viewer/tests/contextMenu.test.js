@@ -73,3 +73,13 @@ test("the agent inspector's rows name who asked for the newest compaction, its s
     expect(rows[1][1]).toBe("The journal, at the context size");
     expect(contextChangeRows(null)).toEqual([]);
 });
+
+test("an agent whose context was compacted and has no new size yet shows its context as unknown", async () => {
+    const usage = {agents: [{id: 7, model: "sonnet", context_percent: null, context_unknown: true}], windows: []};
+    const element = document.createElement("div");
+    document.body.append(element);
+    createApp({render: () => h(InformationBar, {agent: {id: 7, ended_at: null, program: "claude", session: "s"}, usage, controlGroups: GROUPS})}).mount(element);
+    await settle();
+    expect(element.querySelector('[data-fact="context-unknown"]').textContent).toContain("Context: unknown");
+    expect(element.querySelector('[data-fact="context"]')).toBeNull();
+});
