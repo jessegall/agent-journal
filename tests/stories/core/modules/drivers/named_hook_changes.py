@@ -11,6 +11,7 @@ def test_a_compaction_logged_under_the_old_name_is_handled_once_after_the_rename
     story = new_story(fixture=BuilderStarted)
     memory = story.new_row_id('memory make "The cart total is in cents" --environment main', actor=story.agent)
     story.hook("s-1", COMPACTION)
+    story.hook("s-1", HookSamples.session_start().with_raw({"source": "compact"}))
     database = story.container.get(Database)
     database.update(Statement("UPDATE events SET name = 'hook_call.create' WHERE name = 'hook_call.compact'"))
     HookChangeNamesMigration().run(database)
