@@ -38,7 +38,7 @@ class MergerRetry:
             with container.get(Scopes).row_scope(worktree):
                 self.retry(container, worktree)
         self.return_unhandled_lines(container)
-        unread = container.get(Queries).query(MergerLine).matching(IsNull("read_at")).matching(IsNull("read_output_id")).oldest().all_rows()
+        unread = container.get(Queries).query(MergerLine).matching(IsNull("read_at")).matching(IsNull("read_output_id")).matching(IsNull("outcome")).oldest().all_rows()
         for line in dict((row.environment_id, row) for row in reversed(tuple(unread))).values():
             with container.get(Scopes).row_scope(line):
                 self.retry_line(container, line)

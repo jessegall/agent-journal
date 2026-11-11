@@ -6,6 +6,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
 from suites.coding.modules.workers.commands.ask_main_agent.ask_main_agent import AskMainAgent
 from suites.coding.modules.workers.commands.send_merger_report.send_merger_report import SendMergerReport
+from suites.coding.modules.workers.support.main_agent_question import MainAgentQuestion
 from suites.coding.modules.workers.support.worker_ask_facts_query import WorkerAskFactsQuery
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.merger_visits import MergerVisits
@@ -23,9 +24,8 @@ class AskMainAgentHandler(Handler[AskMainAgent, None]):
     def handle(self, command: AskMainAgent, context: Context) -> None:
         require_merger(self.agents, context)
         self.visits.close_newest(context)
-        options = " ".join(f"{number}) {option}" for number, option in enumerate(command.options, start=1))
-        parts = [f"What: {command.problem}", f"Tried: {command.tried}", f"Options: {options}", f"Recommendation: {command.recommendation}"]
-        self.bus.dispatch(SendMergerReport("\n".join([*parts, *self.worker_lines(command.worker_id)])), context)
+        question = MainAgentQuestion(command.problem, command.tried, command.options, command.recommendation, tuple(self.worker_lines(command.worker_id)))
+        self.bus.dispatch(SendMergerReport(question.text()), context)
 
     def worker_lines(self, worker_id: int | None) -> list[str]:
         if worker_id is None:
