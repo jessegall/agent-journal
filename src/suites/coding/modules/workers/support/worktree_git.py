@@ -468,7 +468,10 @@ class WorktreeGit:
             self.checked(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
 
     def task_commits(self, worktree: Worktree, task_id: int) -> tuple[TaskBranchCommit, ...]:
-        return tuple(commit for commit in self.branch_commits(worktree.folder, f"{worktree.base_commit}..HEAD") if commit.has_task_subject([task_id]))
+        return tuple(commit for commit in self.worktree_commits(worktree) if commit.has_task_subject([task_id]))
+
+    def worktree_commits(self, worktree: Worktree) -> tuple[TaskBranchCommit, ...]:
+        return self.branch_commits(worktree.folder, f"{worktree.base_commit}..HEAD")
 
     def branch_commits(self, folder: str, revisions: str) -> tuple[TaskBranchCommit, ...]:
         log = self.git(folder, GIT_LIMIT_SECONDS, "log", "--no-merges", SHORT_COMMIT_FLAG, COMMIT_FORMAT, revisions)

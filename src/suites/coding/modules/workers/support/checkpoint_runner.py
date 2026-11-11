@@ -30,7 +30,7 @@ FOLDER_NAME = "plan-{plan}"
 
 class CheckpointRunner(CheckpointRuns):
     """Starts the tests of a reached checkpoint in the background runner proof tests use, on a checkout of the
-    head of the environment's branch that moves nobody's checkout: each committed proof of the window by its
+    head of the environment's branch that moves nobody's checkout, made whenever a proof or a test is to run: each committed proof of the window by its
     own command, the checkpoint's own test, with the test paths a merger deferred left out or added, and the
     selected run over the files the window changed. An early
     run starts only the committed proofs. A reach whose tests were started is not started again. The own
@@ -53,6 +53,8 @@ class CheckpointRunner(CheckpointRuns):
             return
         committed = tuple(self.proofs.committed_proofs(reach.tasks()).oldest().all_rows())
         test_count = 0 if reach.is_early else self.start_tests(reach, context)
+        if committed and not test_count:
+            self.git.base_checkout(self.environments.find(reach.environment_id), FOLDER_NAME.format(plan=reach.plan_id))
         for proof in committed:
             self.repository.save_change(proof, proof.moved(ProofLifecycle.queue), context)
         if not committed and not test_count:

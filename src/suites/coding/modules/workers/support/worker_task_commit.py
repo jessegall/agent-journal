@@ -51,10 +51,11 @@ class WorkerTaskCommit:
     def check_built(self, worktree: Worktree, tasks: tuple[Task, ...], changes: WorktreeChanges) -> None:
         if not changes.files:
             raise Refusal("your worktree has no change", AskTopic.BUILT.hint(UNCHANGED_TASK_HINT))
+        branch_commits = self.git.worktree_commits(worktree)
         for task in tasks:
             if task.state is not TaskState.STARTED:
                 continue
-            commits = self.git.task_commits(worktree, task.id)
+            commits = tuple(commit for commit in branch_commits if commit.has_task_subject([task.id]))
             if not any(commit.worker_id == worktree.session_agent_id for commit in commits):
                 raise Refusal(f"task {task.id} changed no file, so it is not built", AskTopic.BUILT.hint(self.no_change_hint(commits)))
 

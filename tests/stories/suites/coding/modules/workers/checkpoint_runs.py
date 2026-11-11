@@ -125,9 +125,12 @@ def test_174_the_run_runs_the_test_of_the_checkpoint_phase_once(running_checkpoi
     running_checkpoint.story.expect_rows(lines.count(BUILD_TEST) == 1, detail=str(lines))
 
 
-def test_174_the_end_of_a_plan_with_no_flagged_phase_runs_the_test_of_its_last_phase_and_of_no_other(ended_plan):
+@pytest.mark.real_git
+def test_174_the_end_of_a_plan_with_no_flagged_phase_runs_the_test_of_its_last_phase_and_of_no_other_in_a_checkout_that_exists(ended_plan):
     lines = run_lines(ended_plan)
     ended_plan.story.expect_rows(len(lines) == 4, BUILD_TEST not in lines, detail=str(lines))
+    folders = {process.folder for process in ended_plan.started_processes()}
+    ended_plan.story.expect_rows(len(folders) == 1, all(Path(folder, ".git").exists() for folder in folders), detail=str(folders))
 
 
 def test_176_a_proof_with_no_test_is_not_run_and_the_main_agent_has_its_one_line(running_checkpoint):
