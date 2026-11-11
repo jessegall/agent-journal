@@ -34,7 +34,8 @@ def test_reading_a_message_marks_it_read_once(new_story):
 def test_an_environments_chat_is_listed_in_the_order_written(new_story):
     story = new_story(fixture=UnansweredMessage)
     story.run('message reply 1 "On it" --environment main', actor=story.agent)
-    story.expect_success("message list --environment 1 --oldest", "1  user  Fix the cart first  2026-10-31T09:00:00.000000+00:00  []  {}  []  []", f"2  {story.agent.id}  1  agent  On it  []  {{}}  []  []")
+    story.expect_rows([message.id for message in story.story_rows(Message)] == [1, 2])
+    story.expect_success("message list --environment 1", "1  user  Fix the cart first  2026-10-31T09:00:00.000000+00:00  []  {}  []  []", f"2  {story.agent.id}  1  agent  On it  []  {{}}  []  []")
 
 
 def test_a_message_has_no_make_and_needs_an_environment(new_story):

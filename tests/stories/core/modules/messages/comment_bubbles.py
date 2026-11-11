@@ -15,4 +15,4 @@ def test_a_plan_comment_a_document_comment_and_a_critique_request_are_in_the_cha
     story.expect_success('doc comment 1 "Use cents everywhere" --environment main', actor=story.user)
     story.expect_success(PLAN_CRITIQUE, actor=story.user)
     story.expect_rows([row for row, _ in chat_rows(story)] == ["plan:1", "doc:1", "plan:1"])
-    story.expect_text("message list --environment 1 --oldest", "Split phase one", "Use cents everywhere", "Please have 2 agents give plan 1 a normal read")
+    story.expect_text("message list --environment 1", "Split phase one", "Use cents everywhere", "Please have 2 agents give plan 1 a normal read")

@@ -18,8 +18,8 @@ def test_asking_for_a_reader_opens_one_request_and_posts_one_chat_message_from_t
     process = started_run(story, "make build")
     story.expect_success(f"output ask-reader {process.id} --environment main", f"reader request 1 is open for make build", actor=story.user)
     queries = story.container.get(Queries)
-    messages = list(queries.query(Message).all_rows())
-    story.expect_rows(len(list(queries.query(ReaderRequest).all_rows())) == 1, len(messages) == 1, messages[0].creator_id == story.user.id, f"Output {process.id}" in messages[0].text, detail=str(messages))
+    messages = list(story.story_rows(Message))
+    story.expect_rows(len(story.story_rows(ReaderRequest)) == 1, len(messages) == 1, messages[0].creator_id == story.user.id, f"Output {process.id}" in messages[0].text, detail=str(messages))
 
 
 def test_the_card_of_a_run_that_was_asked_about_says_so_so_the_button_goes(new_story):
