@@ -6,7 +6,7 @@ from core.modules.processes.support.process_nudges import SILENT_RUN_INTERVAL
 
 NOTICES_FILE = "notices"
 MOST_NOTICES = 3
-REPEAT_SECONDS = SILENT_RUN_INTERVAL.seconds
+REPEAT_SECONDS = SILENT_RUN_INTERVAL.count
 TOTAL_LINE = re.compile(r"^total (\d+)$")
 KIND_LINE = re.compile(r"^([a-z-]+) (\d+) (\d+(?:\.\d+)?)$")
 
