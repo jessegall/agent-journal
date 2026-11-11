@@ -1,6 +1,6 @@
 import { computed as y, openBlock as a, createElementBlock as n, unref as i, normalizeClass as c, createElementVNode as o, toDisplayString as r, createTextVNode as h, Fragment as d, renderList as l } from "vue";
 import { peekRef as f, wordLabel as _ } from "@journal/window-kit";
-import { _ as k } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+import { _ as k } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const p = ["data-memory"], g = { class: "memory-text" }, x = { class: "memory-meta" }, v = { "data-memory-state": "" }, b = {
   class: "memory-weight",
   "data-memory-weight": ""
@@ -34,7 +34,7 @@ const p = ["data-memory"], g = { class: "memory-text" }, x = { class: "memory-me
       ])
     ], 10, p));
   }
-}, I = /* @__PURE__ */ k(R, [["__scopeId", "data-v-5f94a4c5"]]);
+}, I = /* @__PURE__ */ k(R, [["__scopeId", "data-v-865a5df0"]]);
 export {
   I as M
 };
