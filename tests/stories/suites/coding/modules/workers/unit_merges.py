@@ -118,3 +118,14 @@ def test_a_send_onto_a_waiting_ask_sends_the_ask_back(new_story, monkeypatch):
     task_id = worker.story.new_row_id('task make "Receipts" --brief "Print them" --environment main', actor=worker.story.agent)
     worker.story.run(f"worker send {agent_number(worker.story, worker.worker.id)} --task {task_id}", actor=worker.story.agent)
     worker.story.expect_text(MERGE_ASK, "state: returned", actor=worker.story.agent)
+
+
+def test_a_part_asked_before_a_rebase_is_merged_by_its_tasks(new_story, monkeypatch):
+    worker = unplanned_group_worker(new_story, monkeypatch)
+    commit_each(worker, (1,))
+    worker.end_all_tests()
+    worker.story.expect_success('worker ask-merge "the first task" --up-to 1', actor=worker.worker)
+    worker.repository.committed("readme.md", "moved\n", "The branch moves")
+    commit_each(worker, (2,))
+    merge_ask = worker.story.run(MERGE_ASK, actor=worker.story.agent).output_text
+    worker.story.expect_rows("task_ids: 1" in merge_ask, "is_whole: false" in merge_ask.lower(), detail=merge_ask)
