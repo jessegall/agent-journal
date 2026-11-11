@@ -102,3 +102,12 @@ def test_74_after_the_merge_the_worker_gets_its_next_unit_on_a_new_worktree(new_
     worker.story.run(f"worker send {number} --task {task_id}", actor=worker.story.agent)
     merge(worker)
     worker.story.expect_rows(worker.status_json()["worktree"]["task_id"] == task_id, detail=worker.status())
+
+
+def test_an_ask_is_heard_by_the_main_agent_with_the_merger_off(new_story, monkeypatch):
+    worker = unplanned_group_worker(new_story, monkeypatch)
+    worker.story.run("setting set journal.suites.coding.workers.merger-on false --project", actor=worker.story.user)
+    commit_each(worker, (1, 2, 3))
+    worker.end_all_tests()
+    worker.story.expect_success(ASK_MERGE, actor=worker.worker)
+    worker.story.expect_rows(any("merge-ask 1" in line for line in worker.main_agent_lines()), detail=str(worker.main_agent_lines()))
