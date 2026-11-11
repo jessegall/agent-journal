@@ -15,7 +15,10 @@ from suites.coding.modules.workers.support.worker_questions import CLOCK_FORMAT
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.merger_cases import MergerCase, case  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
-from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with
+from tests.stories.suites.coding.modules.workers.merger import merger_agent
+from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start, running_launcher
+from suites.coding.modules.workers.ticks.ask_watch import AskWatch
+from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from tests.stories.suites.coding.modules.workers.worker_ask import asking, asking_with_merger_running, merger_disabled_worker  # noqa: F401
 
 QUESTION = "The sandbox has no compiler"
@@ -197,3 +200,22 @@ def test_a_reading_of_the_merger_that_closes_at_the_limit_forwards_the_ask_witho
     end_unanswered_visit(case)
     end_unanswered_visit(case)
     case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, detail=str(questions(case.story)[0]))
+
+
+def test_an_ask_made_with_the_merger_off_starts_no_merger_when_the_merger_is_switched_on_later(merger_disabled_worker, monkeypatch):
+    merger_can_start(monkeypatch)
+    story = merger_disabled_worker.story
+    merger_disabled_worker.post_question()
+    story.expect_success("setting set journal.suites.coding.workers.merger-on true --project", actor=story.user)
+    with running_launcher(story):
+        MergerRetry()(story.container)
+        AskWatch()(story.container)
+        story.run_listeners()
+        story.expect_rows(questions(story)[0].outcome is AskOutcome.FORWARDED, merger_agent(story) is None, detail="a question the main agent already has wakes no merger")
+
+
+def test_two_asks_made_close_together_are_read_in_one_visit_of_one_merger(case):
+    ask(case)
+    ask(case, SECOND_QUESTION, AskTopic.TESTS)
+    case.story.expect_text("merger next", QUESTION, SECOND_QUESTION, actor=case.merger)
+    case.story.expect_rows([line.visit_count for line in questions(case.story)] == [1, 1], len({line.visit_id for line in questions(case.story)}) == 1, detail=str(questions(case.story)))
