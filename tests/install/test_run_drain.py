@@ -8,6 +8,7 @@ from engine.journal.journal_home import JournalHome
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from install.update.run_drain import RunDrain
 from engine.serving.server_files import ServerFiles
+from engine.time.polled_wait import PolledWait
 
 
 def active_run(home: Path, name: str, pid: int) -> Path:
@@ -23,8 +24,8 @@ def test_a_change_waits_for_a_going_run_and_makes_new_runs_wait_on_the_lock(tmp_
     drain = RunDrain(JournalHome(tmp_path), limit_seconds=10, poll_seconds=0.01)
     waiter = threading.Thread(target=drain.wait)
     waiter.start()
-    time.sleep(0.1)
-    assert waiter.is_alive() and (tmp_path / "run-lock").exists()
+    assert PolledWait(5, 0.01).until((tmp_path / "run-lock").exists)
+    assert waiter.is_alive()
     (run / "end").write_text("0")
     waiter.join(timeout=5)
     assert not waiter.is_alive()
@@ -61,8 +62,8 @@ def test_the_run_queue_is_held_while_a_change_waits_for_a_going_run_and_free_aft
     run = active_run(tmp_path, "7", os.getpid())
     waiter = threading.Thread(target=RunDrain(home, limit_seconds=10, poll_seconds=0.01).wait)
     waiter.start()
-    time.sleep(0.1)
-    assert RunQueueHalt(home).halt_type == "update" and RunQueueHalt(home).running_run_ids() == tuple([7])
+    assert PolledWait(5, 0.01).until(lambda: RunQueueHalt(home).halt_type == "update")
+    assert RunQueueHalt(home).running_run_ids() == tuple([7])
     (run / "end").write_text("0")
     waiter.join(timeout=5)
     ServerFiles(home).clear_run_lock()

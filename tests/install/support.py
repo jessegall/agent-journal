@@ -6,10 +6,10 @@ import socket
 import sqlite3
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
+from engine.time.polled_wait import PolledWait
 
 INSTALL = Path(__file__).resolve().parents[2] / "install.sh"
 TIMEOUT_SECONDS = 120
@@ -99,21 +99,18 @@ class ServerScratch:
             connection.close()
 
     def wait_healthy(self, limit_seconds: float = 30) -> None:
-        deadline = time.monotonic() + limit_seconds
-        while not self.healthy():
-            assert time.monotonic() < deadline, "the server did not answer"
-            time.sleep(0.1)
+        assert PolledWait(limit_seconds, 0.1).until(self.healthy), "the server did not answer"
 
     def stop_with(self, client: Path, limit_seconds: float = 60) -> None:
         """Stops the server a client started with the client's own stop, again while the server says it is still
         finishing its requests, until it lets the lock go."""
-        deadline = time.monotonic() + limit_seconds
-        while True:
-            stopped = subprocess.run([str(client), "server", "stop"], env=self.environment(), capture_output=True, text=True, timeout=TIMEOUT_SECONDS)
-            if stopped.returncode == 0 or time.monotonic() >= deadline:
-                assert stopped.returncode == 0, (stopped.stdout, stopped.stderr)
-                return
-            time.sleep(1)
+        answers: list[subprocess.CompletedProcess[str]] = []
+
+        def stopped() -> bool:
+            answers.append(subprocess.run([str(client), "server", "stop"], env=self.environment(), capture_output=True, text=True, timeout=TIMEOUT_SECONDS))
+            return answers[-1].returncode == 0
+
+        assert PolledWait(limit_seconds, 1).until(stopped), (answers[-1].stdout, answers[-1].stderr)
 
     def lock_free(self) -> bool:
         with (self.home.folder / "server.lock").open("a") as lock_file:
@@ -141,9 +138,7 @@ class ServerScratch:
             process.kill()
             process.wait(timeout=10)
         pid = self.server_pid()
-        deadline = time.monotonic() + SERVER_EXIT_SECONDS
-        while pid is not None and self.is_running(pid) and time.monotonic() < deadline:
-            time.sleep(0.05)
+        PolledWait(SERVER_EXIT_SECONDS, 0.05).until(lambda: pid is None or not self.is_running(pid))
         self.left_running = pid if pid is not None and self.is_running(pid) else None
         if self.left_running is not None:
             os.kill(self.left_running, signal.SIGKILL)
