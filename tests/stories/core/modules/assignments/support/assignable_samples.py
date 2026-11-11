@@ -38,6 +38,17 @@ class Pallet(Model, Assignable):
 
 
 @dataclass(frozen=True, kw_only=True)
+class Drum(Model, Assignable):
+    """A second sample row that one actor holds at a time."""
+
+    model_name = "drum"
+    cli_name = "drum"
+    takes_actors = ActorCount.SINGLE
+
+    title: str
+
+
+@dataclass(frozen=True, kw_only=True)
 class Shelf(Model):
     """A sample row that cannot be assigned."""
 
@@ -49,16 +60,16 @@ class Shelf(Model):
 
 class DepotTables(Migration):
     number = 1
-    statements = tuple(f"CREATE TABLE {table} ({COLUMNS}) STRICT" for table in ("crates", "pallets", "shelfs"))
+    statements = tuple(f"CREATE TABLE {table} ({COLUMNS}) STRICT" for table in ("crates", "pallets", "drums", "shelfs"))
 
 
 class DepotModule(Module):
-    """A sample module with a model one actor holds, a model several hold and a model nobody can be given."""
+    """A sample module with two models one actor holds, a model several hold and a model nobody can be given."""
 
     name = "acme.depot"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.assignments"]
-    models = [ModelDeclaration(Crate), ModelDeclaration(Pallet), ModelDeclaration(Shelf)]
+    models = [ModelDeclaration(Crate), ModelDeclaration(Pallet), ModelDeclaration(Drum), ModelDeclaration(Shelf)]
     migrations = [DepotTables]
 
 
