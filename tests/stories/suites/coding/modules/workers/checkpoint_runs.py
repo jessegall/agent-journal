@@ -96,7 +96,8 @@ def ended_plan(new_story, monkeypatch) -> StoryWorker:
 @pytest.mark.real_git
 def test_172_the_journal_starts_the_run_itself_on_the_head_of_the_base_branch_and_moves_no_checkout(running_checkpoint):
     worker, repository = running_checkpoint, running_checkpoint.repository
-    folders = {process.folder for process in worker.started_processes()}
+    listed = worker.story.run("process list --json --limit 10", actor=worker.story.agent).output_text
+    folders = {row["folder"] for row in json.loads(listed)["rows"] if row["id"] in worker.started}
     commits = {repository.git("rev-parse", "HEAD", folder=Path(folder)).stdout.strip() for folder in folders}
     repository.expect_head(ENVIRONMENT_BRANCH)
     worker.story.expect_rows(len(folders) == 1, str(repository.folder) not in folders, commits == {repository.tip(ENVIRONMENT_BRANCH)},
@@ -118,15 +119,6 @@ def test_174_the_run_runs_the_test_of_the_checkpoint_phase_once(running_checkpoi
 def test_174_the_end_of_a_plan_with_no_flagged_phase_runs_the_test_of_its_last_phase_and_of_no_other(ended_plan):
     lines = run_lines(ended_plan)
     ended_plan.story.expect_rows(len(lines) == 4, BUILD_TEST not in lines, detail=str(lines))
-
-
-def test_175_the_run_makes_the_selected_run_over_the_files_changed_in_the_window(committed_window):
-    story = committed_window.story
-    story.expect_success(f'setting set journal.suites.coding.workers.affected-tests-command "{PICKER}" --environment main')
-    story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 run_tests.py" --environment main')
-    merge(committed_window)
-    picks = [line for line in run_lines(committed_window) if line.startswith(PICKER)]
-    story.expect_rows(len(picks) == 1, "cart.py" in "".join(picks), detail=str(run_lines(committed_window)))
 
 
 def test_176_a_proof_with_no_test_is_not_run_and_the_main_agent_has_its_one_line(running_checkpoint):

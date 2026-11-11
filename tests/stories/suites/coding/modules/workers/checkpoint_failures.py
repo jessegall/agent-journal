@@ -5,15 +5,17 @@ from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import BUILD_TEST, CART_COMMAND, OUTLINE, PASSES, PICKER, REACHES, TOTALS_COMMAND, WAITING_PHASE_WORDS, merge, proofs_by_task, rows, run_lines
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import committed_window, running_checkpoint  # noqa: F401
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
-from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, StoryWorker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, TEST_LINE, StoryWorker, dispatched_story_worker, file_proof_line, planned_story
 
 SELECTED_TEST = "python3 run_tests.py"
+FIXED_CART = "TOTAL = 2\n"
 FIRST_RUN_SIZE = 3
 
 
@@ -57,8 +59,9 @@ def fixed_cart_proof(failed_cart_proof) -> StoryWorker:
     """The worker proved the point of the returned task 1 again and committed it, and that work is merged: the
     checkpoint of phase 1 is reached a second time and its second run goes."""
     worker = failed_cart_proof
-    worker.edit_prove(TEST_LINE)
-    worker.story.run(COMMIT, actor=worker.worker)
+    worker.repository.changed(worker.worker.id, "cart.py", FIXED_CART)
+    worker.story.expect_success(f'proof make 1 --task 1 "cart.py:1, the fixed cart total" --test "{file_proof_line(TEST_LINE)}"', actor=worker.worker)
+    worker.story.expect_success(COMMIT, actor=worker.worker)
     worker.story.run_listeners()
     merge(worker)
     return worker
@@ -78,8 +81,10 @@ def test_180_a_worker_with_two_failed_proof_tests_gets_both_tasks_and_one_line_w
     worker = running_checkpoint
     end_run(worker, CART_COMMAND, TOTALS_COMMAND)
     lines = failure_lines(worker)
-    expect_returned(worker, 1, 3)
-    worker.story.expect_rows(len(lines) == 1, str(output_id(worker, CART_COMMAND)) in lines[0], str(output_id(worker, TOTALS_COMMAND)) in lines[0], detail=str(worker.worker_lines()))
+    expect_returned(worker, 1)
+    worker.story.expect_text("task show 3", "state: open", f"delegated_to: {worker.worker.id}", actor=worker.story.agent)
+    worker.story.expect_text(f"agent-line list --agent {worker.worker.id}", f"output {output_id(worker, CART_COMMAND)}, {output_id(worker, TOTALS_COMMAND)}")
+    worker.story.expect_rows(len(lines) == 1, detail=str(worker.worker_lines()))
 
 
 def test_181_the_run_after_a_fix_runs_the_failed_proof_and_the_own_test_and_no_proof_that_passed(fixed_cart_proof):
@@ -111,16 +116,29 @@ def test_183_a_failure_that_names_no_task_goes_to_the_task_completed_last_and_th
     story.expect_rows("task:3" in merger_lines, "names no task" in merger_lines, "tests failed" not in main_agent_lines, "task:3" not in main_agent_lines, detail=f"{merger_lines} || {main_agent_lines}")
 
 
-def test_183_a_failed_selected_run_fails_the_checkpoint_and_goes_to_a_task(committed_window):
+def test_175_183_the_run_makes_the_selected_run_over_the_files_the_window_changed_and_its_failure_goes_to_a_task(committed_window):
     worker, story = committed_window, committed_window.story
     story.expect_success(f'setting set journal.suites.coding.workers.affected-tests-command "{PICKER}" --environment main')
     story.expect_success(f'setting set journal.suites.coding.workers.project-test-command "{SELECTED_TEST}" --environment main')
     merge(worker)
-    print_output(worker, next(line for line in run_lines(worker) if line.startswith(PICKER)), "tests/receipts.py\n")
+    picks = [line for line in run_lines(worker) if line.startswith(PICKER)]
+    story.expect_rows(len(picks) == 1, "cart.py" in "".join(picks), detail=str(run_lines(worker)))
+    print_output(worker, picks[0], "tests/receipts.py\n")
     end_run(worker, f"{SELECTED_TEST} tests/receipts.py")
     reach = rows(worker, REACHES)[0]
     expect_returned(worker, 3)
     story.expect_rows(reach["state"] == "failed", reach["failed_task_ids"] == "3", detail=f"{reach} | {run_lines(worker)}")
+
+
+def test_187_a_failed_test_of_a_run_the_main_agent_started_early_returns_the_task_in_testing_to_its_worker(new_story, monkeypatch):
+    worker = dispatched_story_worker(planned_story(new_story), PHASE_DISPATCH, monkeypatch)
+    worker.prove_advance(TEST_LINE)
+    StalledWorkerTestRuns()(worker.story.container)
+    worker.story.expect_success("plan check 1", actor=worker.story.agent)
+    worker.story.run_listeners()
+    end_run(worker, CART_COMMAND)
+    expect_returned(worker, 1)
+    worker.story.expect_rows(proofs_by_task(worker)[1]["state"] == "short", len(failure_lines(worker)) == 1, detail=str(worker.worker_lines()))
 
 
 def test_192_a_fix_for_a_failed_checkpoint_ends_in_a_pass_that_opens_the_later_phases(fixed_cart_proof):
@@ -137,7 +155,7 @@ def test_195_a_task_returned_after_its_merge_gets_a_new_worktree_cut_from_the_he
     merged_worktree = worktrees.worker_worktrees(worker.worker.id)[-1]
     end_run(worker, CART_COMMAND)
     returned_worktree = worktrees.worker_worktrees(worker.worker.id)[-1]
-    story.expect_rows(returned_worktree.id != merged_worktree.id, returned_worktree.task_id == 1, returned_worktree.branch != merged_worktree.branch,
+    story.expect_rows(returned_worktree.id != merged_worktree.id, returned_worktree.task_id == 1, returned_worktree.branch != merged_worktree.branch, returned_worktree.state == "cut",
                       returned_worktree.base_commit == worker.repository.tip(ENVIRONMENT_BRANCH), detail=f"{merged_worktree} | {returned_worktree}")
     worker.edit_prove(TEST_LINE)
     states = {task_id: proof["state"] for task_id, proof in proofs_by_task(worker).items()}

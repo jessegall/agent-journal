@@ -11,19 +11,20 @@ from core.modules.plans.models.lifecycles.checkpoint_lifecycle import Checkpoint
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_checkpoints import PlanCheckpoints
 from core.modules.plans.support.task_plans import TaskPlans
-from suites.coding.modules.workers.models.affected_test import AffectedTestState
 from suites.coding.modules.workers.models.checkpoint_test import RUNNING_STATES, CheckpointTest
 from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES, ProofState
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
+from suites.coding.modules.workers.support.checkpoint_failures import CheckpointFailures
 
 
 class CheckpointResults:
     """Ends the run of a reached checkpoint once none of its tests waits or runs: the proofs of its window,
     the checkpoint's own test and the selected run. When every one passed, the reach is passed, which opens
-    the phases after it; otherwise it is failed with the tasks whose proof is short. A run with no test
+    the phases after it; otherwise it is failed with the tasks its failures belong to. A run with no test
     passes at once. A result that comes in for a cancelled plan ends no run."""
 
-    def __init__(self, proofs: ProofQuery, queries: Queries, repository: Repository, bus: Bus, checkpoints: PlanCheckpoints, plans: TaskPlans, rows: EventRows) -> None:
+    def __init__(self, proofs: ProofQuery, queries: Queries, repository: Repository, bus: Bus, checkpoints: PlanCheckpoints, plans: TaskPlans, rows: EventRows, failures: CheckpointFailures) -> None:
+        self.failures = failures
         self.proofs, self.queries, self.repository, self.bus = proofs, queries, repository, bus
         self.checkpoints, self.plans, self.rows = checkpoints, plans, rows
 
@@ -41,8 +42,8 @@ class CheckpointResults:
         proofs, tests = self.proofs.task_proofs(reach.tasks()), self.tests(reach)
         if any(proof.state in TEST_WAITING_STATES for proof in proofs) or any(test.state in RUNNING_STATES for test in tests):
             return
-        failed_task_ids = sorted({proof.task_id for proof in proofs if proof.state is ProofState.SHORT})
-        if failed_task_ids or any(test.state is AffectedTestState.FAILED for test in tests):
+        failed_task_ids = self.failures.read(reach, proofs, tests).task_ids
+        if failed_task_ids:
             self.bus.dispatch(FailCheckpoint(reach.id, failed_task_ids=",".join(str(task_id) for task_id in failed_task_ids)), context)
             return
         self.repository.save_change(reach, reach.moved(CheckpointLifecycle.passed), context)

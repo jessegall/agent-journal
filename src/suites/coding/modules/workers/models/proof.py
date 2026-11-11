@@ -26,5 +26,9 @@ class Proof(Model):
     test_command: str = ""
     process_id: int | None = None
 
+    def returned(self, worktree_id: int) -> "Proof":
+        move = ProofLifecycle.return_short if self.state is ProofState.SHORT else ProofLifecycle.return_checked
+        return self.moved(move, worktree_id=worktree_id)
+
     def revise(self, timestamp: Timestamp, actor: Actor, text: str, test_command: str = "") -> "Proof":
         return self.moved(ProofLifecycle.revise, text=text, shortfall="", test_command=test_command or self.test_command, process_id=None)
