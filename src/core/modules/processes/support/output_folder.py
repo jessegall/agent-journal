@@ -114,6 +114,13 @@ class OutputFolder:
         path = self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"
         return path.stat().st_size if path.exists() else 0
 
+    def part_head(self, process_id: int, position: int, size: int) -> bytes:
+        path = self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"
+        if not path.exists():
+            return b""
+        with path.open("rb") as handle:
+            return handle.read(size)
+
     def run_silent_seconds(self, process_id: int, timestamp: Timestamp) -> int:
         return int(timestamp.value.timestamp() - max(path.stat().st_mtime for path in self.output_paths(process_id) if path.exists()))
 

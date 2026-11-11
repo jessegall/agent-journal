@@ -17,6 +17,8 @@ from core.modules.processes.support.run_title import RunTitle
 from core.modules.processes.support.reader_requests import ReaderRequests
 from core.modules.processes.support.run_slots import RunSlots
 from core.modules.processes.support.part_visibility import PartVisibility
+from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.support.reading.shadow_decisions import ShadowDecisions
 
 
 class StartProcessHandler(Handler[StartProcess, Process]):
@@ -27,8 +29,9 @@ class StartProcessHandler(Handler[StartProcess, Process]):
     command = StartProcess
     runs_once = True
 
-    def __init__(self, repository: Repository, folder: OutputFolder, readers: ReaderRows, requests: ReaderRequests, slots: RunSlots, visibility: PartVisibility, rows: EventRows) -> None:
+    def __init__(self, repository: Repository, folder: OutputFolder, readers: ReaderRows, requests: ReaderRequests, slots: RunSlots, visibility: PartVisibility, rows: EventRows, shadow: ShadowDecisions) -> None:
         self.repository, self.folder, self.readers = repository, folder, readers
+        self.shadow = shadow
         self.requests = requests
         self.slots = slots
         self.visibility = visibility
@@ -61,6 +64,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
             part_reader = ReaderSelection.choose(readers, [part for part in parts if part.reader_request_id is None], layers)
             self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=part_reader.reader.id if part_reader else None,
                                         reader_position=part_reader.part.position if part_reader else 0, title=RunTitle.title(part_reader.reader, part_reader.part.text) if part_reader else ""), context)
+        self.shadow.store(process, parts, ReadingMoment.START, context)
         self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
         self.slots.remember(process)
         self.slots.grant(context)

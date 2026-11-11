@@ -217,6 +217,7 @@ usePoll(load, isRunning, () =>
               data-output-terminal
               @scroll="pages.loadEarlier($event.target)"
               >{{ lines.length ? lines.join("\n") : "No output yet" }}</pre>
+            <p v-if="run?.reading_text" class="output-dock-reading" data-output-reading>{{ run.reading_text }}</p>
             <template v-if="!lines.length && canAskForReader"
               ><button type="button" class="output-dock-reader" data-output-reader-ask @click="askForReader">
                 Ask the agent to draw a reader

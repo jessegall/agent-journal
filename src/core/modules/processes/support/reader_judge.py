@@ -89,6 +89,10 @@ class ReaderJudge:
         return exit_code == 2 and bool(REJECTED_COMMAND_PATTERN.search(text))
 
     @staticmethod
+    def is_crashed_start(category: CommandCategory, text: str) -> bool:
+        return category in CRASHING_CATEGORIES and bool(CRASHED_START_PATTERN.search(text))
+
+    @staticmethod
     def fields_missing(reader: Reader, category: CommandCategory) -> tuple[str, ...]:
         wanted = [("--title", bool(reader.title)), ("--lines or --script", bool(reader.lines_pattern or reader.script)),
                   ("--summary", bool(reader.summary_pattern))]
@@ -119,7 +123,7 @@ class ReaderJudge:
             return ()
         if category is CommandCategory.CHECK and count == 0 and CHECK_ABSENCE_PATTERN.fullmatch(text.strip()):
             return ()
-        if category in CRASHING_CATEGORIES and count == 0 and CRASHED_START_PATTERN.search(text):
+        if count == 0 and self.is_crashed_start(category, text):
             return ()
         total = len(text.splitlines())
         summary = self.run.summary(reader, text)

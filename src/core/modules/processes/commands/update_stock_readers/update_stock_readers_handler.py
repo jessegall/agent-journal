@@ -1,5 +1,4 @@
 from collections.abc import Callable
-from dataclasses import replace
 
 from engine.actor.actor import CORE_ACTOR_ID
 from engine.command.context import Context
@@ -7,10 +6,9 @@ from engine.command.handler import Handler
 from engine.database.kept_rows import KeptRows
 from engine.repository.repository import Repository
 from core.modules.processes.commands.update_stock_readers.update_stock_readers import UpdateStockReaders
-from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_query import ReaderQuery
-from core.modules.processes.support.stock_reader import STOCK_READERS, StockReader
+from core.modules.processes.support.stock_reader import STOCK_READERS
 from core.modules.processes.support.stock_reader_rows import StockReaderRows
 from core.modules.processes.support.reading.stock_reader_edits import StockReaderEdits
 
@@ -27,7 +25,7 @@ class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
             reader = rows.readers.get(stock.name)
             if reader is not None and (reader.creator_id != CORE_ACTOR_ID or reader.id in rows.edited_ids):
                 continue
-            updated = self.reader(stock, reader)
+            updated = stock.applied(reader)
             if updated != reader:
                 saved = self.repository.save_change(reader, updated, context)
                 self.kept.update("readers", self.with_saved(saved), name="processes.stock_readers")
@@ -42,12 +40,3 @@ class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
     def loaded_rows(self) -> StockReaderRows:
         readers = {reader.name: reader for reader in self.readers.all_rows()}
         return StockReaderRows(readers, self.edits.edited_ids(readers.values()))
-
-    @staticmethod
-    def reader(stock: StockReader, reader: Reader | None = None) -> Reader:
-        if reader is None:
-            reader = Reader(creator_id=CORE_ACTOR_ID, name=stock.name, type=ReaderType.PATTERN, commands=stock.commands)
-        return replace(reader, type=ReaderType.PATTERN, commands=stock.commands, lines_pattern=stock.lines, script="",
-                       progress_pattern=stock.progress, finished_pattern=stock.finished, failed_pattern=stock.failed,
-                       summary_pattern=stock.summary, topic_pattern="", title=stock.title, subject="", step_pattern=stock.step,
-                       count_pattern=stock.count, count_command=stock.count_command)

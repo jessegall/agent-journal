@@ -17,3 +17,4 @@ class ProcessCardJsonRecord(TypedDict):
     agent_id: object
     reads_progress: object
     reader_requested: object
+    reading_text: object

@@ -1,23 +1,11 @@
 from engine.enums.command_category import CommandCategory
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, install_runner, start_process
+from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, worker_run
-from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.core.modules.processes.support.reading_scenarios import TwoToxReaders, main_test_run_without_reader, rejected_worker_command, tox_run, worker_test_run_without_reader
 
-TOX_OUTPUT = "FAILED one\nerror two\n"
 PYTEST_SAMPLE = "================ test session starts ================\ncollected 2 items\n\ntests/cart.py .. [100%]\n\n================ 2 passed in 0.04s ================\n"
-REJECTED_OUTPUT = "Usage: journal sins [OPTIONS]\nUnknown option --tail\n"
-
-
-class TwoToxReaders(StoryFixture):
-    """Two readers of the agent read the same tox command, the second made after the first."""
-
-    parent = BuilderStarted
-
-    def steps(self, story: Story) -> None:
-        story.run('reader add first --commands "tox*" --lines "FAILED"', actor=story.agent)
-        story.run('reader add second --commands "tox*" --lines "error"', actor=story.agent)
 
 
 class ProjectPytestReader(StoryFixture):
@@ -35,7 +23,7 @@ class ProjectPytestReader(StoryFixture):
 
 def test_of_two_readers_of_one_command_the_newest_reads_the_output(new_story):
     story = new_story(fixture=TwoToxReaders)
-    process = ended_run(story, "tox -e py", TOX_OUTPUT)
+    process = tox_run(story)
     story.expect_text(f"output read {process.id} --summary", "error two", actor=story.agent)
     story.expect_no_text(f"output read {process.id} --summary", "FAILED one", actor=story.agent)
 
@@ -43,14 +31,14 @@ def test_of_two_readers_of_one_command_the_newest_reads_the_output(new_story):
 def test_the_default_reader_of_a_command_reads_the_output_before_a_newer_one(new_story):
     story = new_story(fixture=TwoToxReaders)
     story.run("reader default first", actor=story.agent)
-    process = ended_run(story, "tox -e py", TOX_OUTPUT)
+    process = tox_run(story)
     story.expect_text(f"output read {process.id} --summary", "FAILED one", actor=story.agent)
     story.expect_no_text(f"output read {process.id} --summary", "error two", actor=story.agent)
 
 
 def test_a_worker_test_with_no_reader_is_asked_for_a_reader_that_counts_its_tests(new_story):
     story = new_story(fixture=ForcedReaders)
-    worker_run(story, "custom-build run", CommandCategory.TEST_RUN)
+    worker_test_run_without_reader(story)
     story.expect_text("reader-request show 1", "reason: no reader counts the tests of custom-build run", actor=story.agent)
 
 
@@ -64,14 +52,13 @@ def test_a_worker_test_whose_reader_counts_its_tests_but_has_no_summary_is_asked
 
 def test_a_main_agents_own_test_run_with_no_reader_opens_no_reader_request(new_story):
     story = new_story(fixture=ForcedReaders)
-    start_process(story, "custom-build run", category=CommandCategory.TEST_RUN)
+    main_test_run_without_reader(story)
     story.expect_success("reader-request list", "nothing found", actor=story.agent)
 
 
 def test_a_worker_command_rejected_before_it_ran_ends_its_request_with_that_reason(new_story):
     story = new_story(fixture=ForcedReaders)
-    process = worker_run(story, "journal sins --tail", CommandCategory.TEST_RUN)
-    end_run(story, process, REJECTED_OUTPUT, exit_code=2)
+    rejected_worker_command(story)
     story.expect_text("reader-request show 1 --json", '"skip_reason": "command rejected before it ran"', '"completed_at": "', actor=story.agent)
 
 
