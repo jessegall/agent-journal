@@ -8,8 +8,8 @@ from core.modules.drivers.rules.allowed_command_types_rule import AllowedCommand
 from core.modules.drivers.rules.allowed_tools_rule import AllowedToolsRule
 from core.modules.drivers.rules.denied_programs_rule import DeniedProgramsRule
 from core.modules.drivers.rules.journal_commands_rule import JournalCommandsRule
-from core.modules.drivers.rules.no_full_test_run_rule import NoFullTestRunRule
-from core.modules.drivers.rules.no_git_rule import NoGitRule
+from suites.coding.rules.no_full_test_run_rule import NoFullTestRunRule
+from suites.coding.rules.no_git_rule import NoGitRule
 from core.modules.drivers.rules.no_shell_rule import NoShellRule
 from core.modules.drivers.rules.read_write_rule import ReadWriteRule
 from core.modules.drivers.rules.readonly_rule import ReadonlyRule
