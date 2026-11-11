@@ -31,7 +31,9 @@ class Assignments:
     one, a child that inherited from the row's last assignment follows to the new one, and a child given by
     hand or inherited from another row is left as it is unless the command overrides it. Unassigning a row
     also removes the assignments inherited from it, each before the one it names, and leaves those given by
-    hand. A row can give up a hand-given assignment and inherit its parent's instead. Every assignment is saved and deleted through the repository, so each is an event."""
+    hand. A row can give up a hand-given assignment and inherit its parent's instead. A child made or
+    linked after its parent was assigned inherits the parent's assignment when it has none, and a child whose
+    link to a parent is removed loses the assignment it inherited from that parent. Every assignment is saved and deleted through the repository, so each is an event."""
 
     def __init__(self, queries: Queries, repository: Repository, rows: AssignableRows) -> None:
         self.queries, self.repository, self.rows = queries, repository, rows
@@ -111,6 +113,19 @@ class Assignments:
         for inherited in self.queries.query(Assignment).filter(source_id=assignment.id).all_rows():
             self.remove(inherited, context)
         self.repository.delete_stored(assignment, context)
+
+    def follow_parent(self, child: Assignable, context: Context) -> None:
+        if self.assignments(child):
+            return
+        source = next((assignment for parent in self.rows.parents(child) for assignment in self.assignments(parent)), None)
+        if source is not None and not child.cascade_skips(source.actor_id):
+            self.child_cascade(child, source, None, CascadeWalk(context, override=False), Cascade())
+
+    def leave_parent(self, parent: Assignable, child: Assignable, context: Context) -> None:
+        source_ids = {assignment.id for assignment in self.assignments(parent)}
+        for assignment in self.assignments(child):
+            if assignment.source_id in source_ids:
+                self.remove(assignment, context)
 
     def inherit(self, row: Assignable, context: Context) -> Cascade:
         source = next((assignment for parent in self.rows.parents(row) for assignment in self.assignments(parent)), None)
