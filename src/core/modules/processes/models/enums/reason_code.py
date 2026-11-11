@@ -22,4 +22,5 @@ class ReasonCode(StrEnum):
     READ_COMMAND = "read command"
     PLUGIN_RUN = "plugin run"
     SHORT_RUN = "short run"
+    UNREADABLE = "unreadable"
     NONE = "none"

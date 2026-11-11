@@ -35,6 +35,7 @@ class ReadingCase:
     reader_layer: ReaderLayer | None
     reader_judgement: ReaderJudgement | None
     reader_is_default: bool
+    draft_fits: bool
     output: OutputFacts | None
     runs_without_change: int
     request_is_waiting: bool

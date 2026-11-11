@@ -48,7 +48,7 @@ class ReadingFacts:
                            has_asking_flag=ReaderDemands.asks_about_itself(command), output_hidden=part.piped, is_saved_command=bool(part.saved_command),
                            is_plugin_run=bool(process.plugin), moment=moment, age_seconds=self.age_seconds(process), run_state=process.state,
                            exit_code=part.exit_code, reader_layer=self.layer(reader), reader_judgement=self.judgement(process, part, reader),
-                           reader_is_default=reader is not None and reader.is_default, output=self.output(process, part, moment),
+                           reader_is_default=reader is not None and reader.is_default, draft_fits=False, output=self.output(process, part, moment),
                            runs_without_change=self.counter.runs_without_change(command_key),
                            request_is_waiting=self.request_is_waiting(process, command), was_skipped=self.resets.skipped_since(command_key, process.creation_timestamp()),
                            has_unreadable_mark=self.resets.has_mark(command_key), role_must_have_reader=agent.role in policy.reader_request_roles,
