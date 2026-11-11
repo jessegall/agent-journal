@@ -22,6 +22,9 @@ DEFAULT_WORKER_COUNT = 2
 SILENT_AGENT_MINUTES = f"{MODULE_KEY}.silent-agent-minutes"
 IDLE_WORKER_MINUTES = f"{MODULE_KEY}.idle-worker-minutes"
 IDLE_WORKER_REPEAT_MINUTES = f"{MODULE_KEY}.idle-worker-repeat-minutes"
+QUESTION_ANSWER_MINUTES = f"{MODULE_KEY}.ask-answer-minutes"
+QUESTION_FORWARD_MINUTES = f"{MODULE_KEY}.ask-pass-on-minutes"
+QUESTION_VISITS_LIMIT = f"{MODULE_KEY}.ask-visits-limit"
 INACTIVE_HELPER_MINUTES = f"{MODULE_KEY}.quiet-helper-minutes"
 INACTIVE_HELPER_GRACE_MINUTES = f"{MODULE_KEY}.quiet-helper-grace-minutes"
 WORKER_BATCH_SIZE = f"{MODULE_KEY}.worker-batch-size"
@@ -47,6 +50,9 @@ WORKER_SANDBOX = f"{MODULE_KEY}.worker-sandbox"
 PROTECTED_FOLDERS = f"{MODULE_KEY}.protected-folders"
 WORKER_SETTING_VALUES = [
     SettingValue("idle-worker-minutes", "Worker idle warning", "Minutes without activity before a worker with work left is reported.", SettingType.NUMBER, default=15, person_set=True, required_settings=[MERGER_ENABLED]),
+    SettingValue("ask-answer-minutes", "Answer time for a worker's question", "Minutes the merger has to answer a worker's question before it is woken for it again.", SettingType.NUMBER, default=10, person_set=True, required_settings=[MERGER_ENABLED]),
+    SettingValue("ask-pass-on-minutes", "Time before a question goes to the main agent", "Minutes after which a worker's question that nobody answered goes to the main agent.", SettingType.NUMBER, default=30, person_set=True, required_settings=[MERGER_ENABLED]),
+    SettingValue("ask-visits-limit", "Merger readings of a question", "How many times the merger reads a worker's question without answering before it goes to the main agent.", SettingType.NUMBER, default=2, person_set=True, required_settings=[MERGER_ENABLED]),
     SettingValue("idle-worker-repeat-minutes", "Worker idle warning repeat", "Minutes between warnings about a worker with work left.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("test-at-phase-end", "Test at phase end", "Test plan tasks together at the end of each phase. Off tests each task when handed in.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("test-batch-size", "Tasks per test batch", "Tasks outside a plan to finish before testing together. The last task also ends a batch.", SettingType.NUMBER, default=1, person_set=True),
@@ -90,6 +96,9 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         WORKER_IDLE_HOURS: NumberRule(0, integer=False, exclusive=True),
                         IDLE_WORKER_MINUTES: NumberRule(1),
                         IDLE_WORKER_REPEAT_MINUTES: NumberRule(1),
+                        QUESTION_ANSWER_MINUTES: NumberRule(1),
+                        QUESTION_FORWARD_MINUTES: NumberRule(1),
+                        QUESTION_VISITS_LIMIT: NumberRule(1),
                         INACTIVE_HELPER_GRACE_MINUTES: NumberRule(1),
                         INACTIVE_HELPER_MINUTES: NumberRule(1),
                         TEST_BATCH_SIZE: NumberRule(1),

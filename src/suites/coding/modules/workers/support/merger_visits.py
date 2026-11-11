@@ -9,7 +9,8 @@ from suites.coding.modules.workers.models.merger_visit import MergerVisit
 
 
 class MergerVisits:
-    """Closes the merger's readings; the lines of a reading it did nothing about come back once."""
+    """Closes the merger's readings; the lines of a reading it did nothing about come back once, and a worker's
+    question comes back after every reading until it has an outcome."""
 
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository
@@ -21,8 +22,9 @@ class MergerVisits:
 
     def return_unhandled_lines(self, context: Context) -> None:
         for visit in self.queries.query(MergerVisit).matching(IsNull("closed_at")).all_rows():
-            for line in self.queries.query(MergerLine).filter(visit_id=visit.id).matching(IsNull("returned_at")).all_rows():
-                self.repository.save_change(line, replace(line, read_at=None, read_output_id=None, returned_at=context.timestamp), context)
+            for line in self.queries.query(MergerLine).filter(visit_id=visit.id).all_rows():
+                if line.returned_at is None or line.is_open_question():
+                    self.repository.save_change(line, replace(line, read_at=None, read_output_id=None, returned_at=context.timestamp), context)
             self.close(visit, context)
 
     def close(self, visit: MergerVisit, context: Context) -> None:

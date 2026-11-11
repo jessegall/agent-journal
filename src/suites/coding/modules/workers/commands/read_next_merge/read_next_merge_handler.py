@@ -37,7 +37,7 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
     def handle(self, command: ReadNextMerge, context: Context) -> str:
         require_merger(self.agents, context)
         visit = self.repository.save(MergerVisit(), context)
-        lines = tuple(self.queries.query(MergerLine).matching(IsNull("read_at")).oldest().all_rows())
+        lines = tuple(self.queries.query(MergerLine).matching(IsNull("read_at")).matching(IsNull("outcome")).oldest().all_rows())
         nudges = [Nudge(line.fallback_source, NudgeType.NOTICE, line.text) if line.nudge_json is None else NudgeDeclaration.restore(line.nudge_json) for line in lines]
         messages = "\n".join(f"line: {nudge.text}" for nudge in Nudge.collapsed(nudges))
         worktree = next((row for row in self.worktrees.open_worktrees() if self.waits(row)), None)
@@ -57,7 +57,7 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
         output_id = self.log_read.pending_output(text, command.process_id, command.json_output, context)
         read_at = context.timestamp if output_id is None else None
         for line in lines:
-            self.repository.save_change(line, replace(line, read_at=read_at, read_output_id=output_id, visit_id=visit.id), context)
+            self.repository.save_change(line, replace(line, read_at=read_at, read_output_id=output_id, visit_id=visit.id, reads=line.reads + 1), context)
         return output_id
 
     @staticmethod
