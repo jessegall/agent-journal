@@ -1,3 +1,4 @@
+from core.modules.assignments.support.assignments import Assignments
 from dataclasses import replace
 
 from engine.command.context import Context
@@ -34,7 +35,8 @@ class KeptWorkerTasks:
 
     def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, nudger: Nudger,
                  environments: EnvironmentRows, sources: WorkSources, copies: WorkerTaskCopies,
-                 proof_queue: WorkerProofQueue, scopes: Scopes, kept: KeptRows, dependency_waits: DependencyWaits, assignments: WorkerAssignments, reservations: MainReservedTasks) -> None:
+                 proof_queue: WorkerProofQueue, scopes: Scopes, kept: KeptRows, dependency_waits: DependencyWaits, assignments: WorkerAssignments, reservations: MainReservedTasks, task_assignments: Assignments) -> None:
+        self.task_assignments = task_assignments
         self.queries, self.repository, self.worktrees, self.git, self.nudger = queries, repository, worktrees, git, nudger
         self.environments, self.sources, self.copies, self.proof_queue = environments, sources, copies, proof_queue
         self.scopes = scopes
@@ -93,10 +95,10 @@ class KeptWorkerTasks:
         return self.nudger.send_text(worker.id, f"{waiting} are yours once they open", WAITING_TASKS_SOURCE, context)
 
     def delegate(self, worker: Agent, tasks: list[Task], context: Context) -> None:
-        changed = [task for task in tasks if task.delegated_to != worker.id]
-        for task in tasks:
-            if task.delegated_to != worker.id:
-                self.repository.update(task, context, delegated_to=worker.id)
+        actor_ids = self.task_assignments.row_actor_ids(Task, [task.id for task in tasks])
+        changed = [task for task in tasks if actor_ids[task.id] != tuple([worker.id])]
+        for task in changed:
+            self.repository.update(task, context, delegated_to=worker.id)
         self.dependency_waits.update_tasks([task.id for task in tasks], context)
         if changed:
             self.assignments.record(worker.id, changed, context)

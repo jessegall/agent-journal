@@ -12,7 +12,7 @@ def task(task_id, priority=NORMAL):
 
 
 def assigner(selected_task=None, open_task=None, focused=None, planned=None, reserved=()):
-    tasks = SimpleNamespace(next_open=lambda excluded_id, exclusion: open_task, ready_delegated=lambda agent_id: reserved)
+    tasks = SimpleNamespace(next_open=lambda excluded_id, exclusion: open_task, assigned_ready=lambda agent_id: reserved)
     plan_tasks = SimpleNamespace(plan_exclusion=lambda: None)
     queries = SimpleNamespace(query=lambda model: SimpleNamespace(find=lambda agent_id: SimpleNamespace(id=agent_id)))
     plan_order = SimpleNamespace(first_started_plan_task=lambda tasks: tasks[0] if tasks else None)

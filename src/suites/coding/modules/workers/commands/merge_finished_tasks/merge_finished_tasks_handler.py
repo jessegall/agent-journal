@@ -1,3 +1,4 @@
+from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.query.queries import Queries
@@ -71,7 +72,7 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
 
     def finished_tasks(self, worktree: Worktree, commit: str) -> list[Task]:
         commits = self.git.branch_commits(worktree.folder, f"{worktree.base_commit}..{commit}")
-        assigned = self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).all_rows()
+        assigned = tuple(self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).oldest().all_rows(TASK_PAGE_ROWS))
         tasks = [task for task in assigned if any(row.has_task_subject([task.id]) for row in commits)]
         unfinished = [str(task.id) for task in tasks if task.state not in COMMITTED_TASK_STATES]
         if unfinished or not tasks:

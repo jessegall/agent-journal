@@ -61,13 +61,6 @@ class TaskQuery(Query[Task]):
     def free(self) -> Self:
         return self.open_tasks().matching(Unassigned(Task))
 
-    # The two names below are removed in phase 7 of plan 1104, with their callers.
-    def queued_tasks(self, agent_id: int) -> tuple[Task, ...]:
-        return self.assigned(agent_id)
-
-    def ready_delegated(self, agent_id: int) -> tuple[Task, ...]:
-        return self.assigned_ready(agent_id)
-
     def remember(self, task: Task) -> None:
         self.replace_cached(task, tuple([task]))
 
@@ -118,11 +111,11 @@ class TaskQuery(Query[Task]):
     def tagged(self, word: str) -> Self:
         return self.matching(TaskTagMatch(word))
 
-    def delegation_candidates(self, excluded_agent_ids: Sequence[int]) -> Self:
-        active_task_ids = Select("tasks").matching(AssigneeMatch(Task, Select("agents").matching(IsNull("ended_at")).column("id"))).column("id")
-        excluded_task_ids = Select("tasks").matching(AssigneeAmong(Task, tuple(excluded_agent_ids))).column("id")
-        return (self.open_tasks().matching(SubqueryMatch("id", active_task_ids, negated=True)).matching(SubqueryMatch("id", excluded_task_ids, negated=True))
-                .matching(self.unapproved_plan_exclusion()))
+    def delegation_candidates(self) -> Self:
+        return self.free().matching(self.unapproved_plan_exclusion())
+
+    def has_assigned_work(self, actor_id: int) -> bool:
+        return self.assignee_tasks(actor_id).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).exists()
 
     def unapproved_plan_exclusion(self) -> Condition:
         unapproved_plans = Select("plans").matching(Among("state", FOLLOWED_PLAN_STATES, negated=True)).column("id")

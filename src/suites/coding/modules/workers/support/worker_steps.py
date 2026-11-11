@@ -28,7 +28,7 @@ class WorkerSteps:
     def round(self, worker_id: int) -> WorkerRound:
         worktree = self.worktrees.worker_worktree(worker_id)
         started = tuple(self.tasks.started_tasks(worker_id))
-        ready = tuple(self.tasks.ready_delegated(worker_id))
+        ready = tuple(self.tasks.assigned_ready(worker_id))
         conflict = None if worktree is None else self.conflict_line(worktree)
         staging = None if worktree is None else self.staging.read(worktree)
         return WorkerRound(worker_id, worktree, started, ready, self.next_task.first_ready(worker_id, ready, started), self.stop.has_open_help_request(worker_id), conflict, staging)

@@ -54,8 +54,16 @@ class Assignments:
         return tuple(assignment.actor_id for assignment in self.assignments(row))
 
     def row_actor_ids(self, model: type[Model], row_ids: Sequence[int]) -> dict[int, tuple[int, ...]]:
+        if not row_ids:
+            return {}
+        marks = ", ".join("?" for _ in row_ids)
+        return self.kept.read("assignments", lambda: self.loaded_actor_ids(model, tuple(row_ids)), f"subject_model = ? AND subject_id IN ({marks})",
+                              [model.model_name, *row_ids], name="assignments.row_actor_ids")
+
+    def loaded_actor_ids(self, model: type[Model], row_ids: tuple[int, ...]) -> dict[int, tuple[int, ...]]:
         actor_ids: dict[int, tuple[int, ...]] = {row_id: () for row_id in row_ids}
-        for assignment in self.queries.query(Assignment).filter(subject_model=model.model_name).matching(Among("subject_id", list(row_ids))).oldest().all_rows():
+        assigned = self.queries.query(Assignment).filter(subject_model=model.model_name).matching(Among("subject_id", list(row_ids)))
+        for assignment in assigned.oldest().all_rows(ASSIGNMENT_PAGE_ROWS):
             actor_ids[assignment.subject_id] = (*actor_ids[assignment.subject_id], assignment.actor_id)
         return actor_ids
 
