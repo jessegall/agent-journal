@@ -115,11 +115,11 @@ class WorkerResume:
         environment = self.queries.query(Environment).find(worktree.environment_id)
         self.instruction_files.refresh(worktree)
         with self.scopes.row_scope(worker):
-            compaction_line = self.compaction.line(worker)
-        if compaction_line is not None and not self.cold.is_silent(worker):
-            answer = self.launcher.hand(worker, environment, self.worker_command.compacting(worker, worktree, environment, compaction_line))
+            compaction_start = self.compaction.start_record(worker)
+        if compaction_start is not None and not self.cold.is_silent(worker):
+            answer = self.launcher.hand(worker, environment, self.worker_command.compacting(worker, worktree, environment, compaction_start.line))
             if answer is LaunchAnswer.STARTED:
-                self.compaction.started(worker.id)
+                self.bus.run(compaction_start, actor, environment_id=environment.id)
             return answer
         current = self.cold.replaced_silent(worker)
         command = self.worker_command.resumed(current, worktree, environment, job.text) if self.conversations.exists(current) else self.worker_command.restarted(current, worktree, environment, self.queries.query(Task).find(worktree.task_id), job.text)

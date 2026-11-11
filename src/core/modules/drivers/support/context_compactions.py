@@ -101,3 +101,19 @@ class ContextCompactions:
             return None
         reduced = limit_tokens is None or tokens < limit_tokens
         return self.repository.save(replace(newest, state=CompactionState.MEASURED if reduced else CompactionState.UNREDUCED, tokens_after=tokens), context)
+
+    def program_compaction(self, agent_id: int) -> ContextCompaction | None:
+        newest = self.newest(agent_id)
+        return newest if newest is not None and newest.reason is CompactionReason.HEADLESS_PROGRAM else None
+
+    def record_program_start(self, agent_id: int, request_tokens: int, line: str, context: Context) -> ContextCompaction:
+        self.abandon_open(agent_id, context)
+        return self.repository.save(ContextCompaction(session_agent_id=agent_id, change=ContextChange.COMPACT, reason=CompactionReason.HEADLESS_PROGRAM, state=CompactionState.STARTED,
+                                                      line=line, request_tokens=request_tokens, started_at=context.timestamp), context)
+
+    def record_program_end(self, agent_id: int, context: Context) -> None:
+        compaction = self.program_compaction(agent_id)
+        if compaction is None or compaction.woken_at is not None:
+            return
+        ended = replace(compaction, state=CompactionState.ENDED, ended_at=context.timestamp) if compaction.state.is_open else compaction
+        self.repository.save(replace(ended, woken_at=context.timestamp), context)

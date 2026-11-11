@@ -1,3 +1,4 @@
+from core.modules.drivers.commands.end_program_compaction.end_program_compaction import EndProgramCompaction
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.event.logged_event import LoggedEvent
@@ -18,5 +19,7 @@ class CompactedWorkerListener(CommitListener[AgentEnded]):
         self.worker_resume, self.compaction = resume, compaction
 
     def handle(self, event: AgentEnded, logged: LoggedEvent) -> None:
-        if self.compaction.finished(event.row.id):
-            self.worker_resume.resume(event.row, Actor(logged.actor_id, ActorType.AGENT))
+        if not self.compaction.is_running(event.row.id):
+            return
+        self.worker_resume.bus.run(EndProgramCompaction(event.row.id), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)
+        self.worker_resume.resume(event.row, Actor(logged.actor_id, ActorType.AGENT))
