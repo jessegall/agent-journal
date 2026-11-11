@@ -21,7 +21,7 @@ SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES)
 ROOT = Path(__file__).resolve().parents[6]
 PROFILE_COMMANDS = {
     "journal-worker": tuple(["journal task --help"]),
-    "journal-merger": ("journal merger next", "journal merger merge", "journal merger findings"),
+    "journal-merger": ("journal merger next", "journal merger merge", "journal merger findings", "journal proof list --task", "journal proof show", "journal proof check", "journal proof short", "journal worker logs"),
     "journal-planner": ("journal plan make", "journal phase make", "journal task make", "journal doc make"),
     "journal-researcher": ("journal search find", "journal doc make", "journal report make"),
     "journal-debugger": ("journal search find", "journal task show", "journal output read"),
