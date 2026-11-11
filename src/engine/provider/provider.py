@@ -19,6 +19,8 @@ from engine.enums.hook_trust import HookTrust
 from engine.provider.launch import Launch
 from engine.provider.launch_command import LaunchCommand
 from engine.provider.program_folders import ProgramFolders
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.program_settings import ProgramSettings
 from engine.enums.model_tier import ModelTier
 from engine.provider.peer_note import PeerNote
 from engine.provider.program_model import ProgramModel
@@ -219,3 +221,6 @@ class Provider(ABC):
     @classmethod
     def hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]:
         return {}
+
+    def journal_settings(self, home: JournalHome, runner: str, managed: Sequence[ManagedHook], folders: Sequence[Path]) -> ProgramSettings:
+        raise NotImplementedError

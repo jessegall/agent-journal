@@ -136,3 +136,23 @@ def test_replacing_a_journal_entry_keeps_native_entries_in_its_mixed_block(tmp_p
     ProgramHooks("sample", path, ["BeforeTool"], 90).write("journal-hook", tmp_path)
     assert ProgramHooks.read(path)["hooks"]["BeforeTool"][0] == {**block, "hooks": [command, prompt]}
     assert ProgramHooks.read(path)["permissions"] == {"allow": []}
+
+
+def test_journal_blocks_give_one_block_per_event_naming_the_root(tmp_path):
+    blocks = ProgramHooks("sample", tmp_path / "hooks.json", ["Start", "End"], 90, {"customField": True}).journal_blocks("journal-hook", Path("/p"))
+    entry = {"type": "command", "command": 'journal-hook sample "/p"', "timeout": 90, "customField": True}
+    assert blocks == {"Start": [{"matcher": "", "hooks": [entry]}], "End": [{"matcher": "", "hooks": [entry]}]}
+    assert not (tmp_path / "hooks.json").exists()
+
+
+def test_journal_blocks_lengthen_the_timeout_for_a_managed_hook(tmp_path):
+    hooks = ProgramHooks("claude", tmp_path / "settings.json", ["PreToolUse", "Stop"], 90)
+    managed = [ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "slow", "timeout": 60}, "settings.json", False)]
+    blocks = hooks.journal_blocks("journal-hook", Path("/p"), managed)
+    assert blocks["PreToolUse"][0]["hooks"][0]["timeout"] == hooks.entry_timeout("PreToolUse", managed) == 150
+    assert blocks["Stop"][0]["hooks"][0]["timeout"] == 90
+
+
+def test_journal_names_the_given_path(tmp_path):
+    hooks = ProgramHooks.journal(SampleProgram, tmp_path / "programs" / "sample" / "hooks.json")
+    assert (hooks.path, list(hooks.events), hooks.provider) == (tmp_path / "programs" / "sample" / "hooks.json", ["Start", "BeforeTool", "End"], SampleProgram)

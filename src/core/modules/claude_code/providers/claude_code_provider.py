@@ -23,6 +23,9 @@ from engine.provider.launch_command import LaunchCommand
 from engine.enums.model_tier import ModelTier
 from engine.provider.transcript_author import AGENT_AUTHOR, TRANSCRIPT_AUTHORS, USER_AUTHOR, TranscriptAuthor
 from engine.provider.program_hooks import ProgramHooks
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.program_settings import ProgramSettings, SettingsFile
+from engine.json.json_settings import JsonSettings
 from engine.provider.program_folders import ProgramFolders
 from engine.provider.program_model import ProgramModel
 from engine.provider.control_choice import ControlChoice
@@ -54,12 +57,15 @@ MODEL_CHOICES = (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("f
 FALLBACK_EFFORT = "high"
 EFFORT_CHOICES = (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhigh", "Extra high"), ("max", "Maximum"))
 
+CARRIED_SETTINGS = ("env", "apiKeyHelper")
+BYPASS_PERMISSIONS = {"defaultMode": "bypassPermissions"}
+
 COMPACT_LINE = "/compact Focus on continuing the work at once: what you were doing last, what comes next, and the facts those depend on. Keep every instruction, request, direction and correction the user gave you. Leave out the rest of the earlier history and old messages: the journal gives back recent messages, tasks, memories and rules."
 
 class ClaudeCodeProvider(Provider):
-    """Anthropic's Claude Code: hooks in .claude/settings.local.json, sessions under its config folder's
-    projects, a session id the journal chooses, and a state file that records the folders it trusts; a main
-    session starts with the MCP servers' keys in its environment."""
+    """Anthropic's Claude Code: hooks in the journal's own settings file, passed with --settings, sessions under
+    its config folder's projects, a session id the journal chooses, and a state file that records the folders it
+    trusts; a main session starts with the MCP servers' keys in its environment."""
 
     name = "claude"
     title = "Claude Code"
@@ -216,6 +222,25 @@ class ClaudeCodeProvider(Provider):
 
     def user_hook_files(self) -> tuple[Path, ...]:
         return tuple([self.folders.folder(CONFIG_VARIABLE, ".claude") / "settings.json"])
+
+    def journal_settings(self, home: JournalHome, runner: str, managed: Sequence[ManagedHook], folders: Sequence[Path]) -> ProgramSettings:
+        path = home.program_settings_file(self.name)
+        root = home.project_folder
+        settings = {**self.carried_settings(), "permissions": BYPASS_PERMISSIONS, **self.hook_settings(runner, root),
+                    "hooks": ProgramHooks.journal(type(self), path).journal_blocks(runner, root, managed)}
+        return ProgramSettings(self.name, tuple([SettingsFile(path, json.dumps(settings, indent=2, sort_keys=True) + "\n")]),
+                               person_files=self.user_hook_files())
+
+    def carried_settings(self) -> dict[str, object]:
+        person_settings = self.person_settings(self.user_hook_files()[0])
+        return {key: person_settings[key] for key in CARRIED_SETTINGS if key in person_settings}
+
+    @staticmethod
+    def person_settings(path: Path) -> dict[str, object]:
+        try:
+            return JsonSettings.read(path)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return {}
 
     def hook_trust(self, project: Path) -> HookTrust:
         return HookTrust.READY if ProgramHooks.hooks(type(self), project).is_complete() else HookTrust.UNWRITTEN

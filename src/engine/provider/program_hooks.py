@@ -33,15 +33,22 @@ class ProgramHooks:
 
     @classmethod
     def hooks(cls, provider: type[Provider], folder: Path) -> "ProgramHooks":
-        return cls(provider.name, folder / provider.hook_file.path, list(provider.hook_events), HOOK_TIMEOUT_SECONDS, provider.hook_file.entry_values, provider,
+        return cls.journal(provider, folder / provider.hook_file.path)
+
+    @classmethod
+    def journal(cls, provider: type[Provider], path: Path) -> "ProgramHooks":
+        return cls(provider.name, path, list(provider.hook_events), HOOK_TIMEOUT_SECONDS, provider.hook_file.entry_values, provider,
                    event_fields=provider.hook_file.event_values)
+
+    def journal_blocks(self, runner: str, root: Path, managed: Sequence[ManagedHook] = ()) -> dict[str, list[object]]:
+        return {event: [{"matcher": "", "hooks": [{"type": "command", "command": f'{runner} {self.program} "{root}"', "timeout": self.entry_timeout(event, managed),
+                                                   **self.entry_fields, **self.event_fields.get(event, {})}]}] for event in self.events}
 
     def write(self, runner: str, root: Path, managed: Sequence[ManagedHook] = ()) -> None:
         settings = self.settings()
         hooks = self.partitioned(settings.get("hooks")).native
-        for event in self.events:
-            hooks.setdefault(event, []).append({"matcher": "", "hooks": [{"type": "command", "command": f'{runner} {self.program} "{root}"', "timeout": self.entry_timeout(event, managed),
-                                                                     **self.entry_fields, **self.event_fields.get(event, {})}]})
+        for event, blocks in self.journal_blocks(runner, root, managed).items():
+            hooks.setdefault(event, []).extend(blocks)
         provider_settings: Mapping[str, object] = self.provider.hook_settings(runner, root) if self.provider else {}
         self.store(self.path, {**settings, **provider_settings, "hooks": {event: blocks for event, blocks in hooks.items() if blocks}})
         if self.provider is not None:
