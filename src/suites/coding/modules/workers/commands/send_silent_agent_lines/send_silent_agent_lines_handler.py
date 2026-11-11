@@ -34,6 +34,8 @@ from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 RECOVERY_ATTEMPTS = 3
 CHECKED_AGENTS_REASON = "One activity row for each running agent and each worker that is not retired, which the agent limits bound."
+from suites.coding.modules.workers.models.merger_line import MergerLine
+from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 
 
 class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
@@ -46,8 +48,8 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, home: JournalHome, queries: Queries, settings: SettingValues,
-                 work: MainAgentWork, nudger: Nudger, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces, task_query: TaskQuery, agent_rows: AgentRows) -> None:
-        self.task_query, self.agent_rows = task_query, agent_rows
+                 work: MainAgentWork, nudger: Nudger, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces, task_query: TaskQuery, agent_rows: AgentRows, inbox: MergerInbox) -> None:
+        self.task_query, self.agent_rows, self.inbox = task_query, agent_rows, inbox
         self.home, self.queries, self.settings = home, queries, settings
         self.work, self.nudger, self.bus, self.stop, self.main_line, self.places = work, nudger, bus, stop, main_line, places
 
@@ -94,7 +96,6 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         workers = {row.session_agent_id for row in worktrees if row.state is WorktreeState.CUT}
         stalled = {row.session_agent_id for row in worktrees if row.state is WorktreeState.DELIVERED and row.tests_passed_at is None and row.returned_at is None}
         waiting_jobs = {row.session_agent_id for row in self.queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("source", RESUMING_SOURCES)).all_rows()}
-        notices = tuple(self.queries.query(AgentLine).filter(source=IDLE_WORKER.key).oldest().all_rows())
         grace = self.settings.minutes(IDLE_WORKER_MINUTES).count
         repeat = self.settings.minutes(IDLE_WORKER_REPEAT_MINUTES).count
         for worker in agents:
@@ -109,10 +110,12 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
             if activity_at.elapsed_seconds(context.timestamp) < grace:
                 continue
             line = IDLE_WORKER.nudge(worker=worker.number)
-            previous = [row for row in notices if row.text == line.text and row.creation_timestamp() >= activity_at]
-            if previous and previous[-1].creation_timestamp().elapsed_seconds(context.timestamp) < repeat:
+            source_key = f"idle:{worker.id}"
+            earlier = self.queries.query(MergerLine).filter(worker_id=worker.id, source_key=source_key).newest().first()
+            if earlier is not None and earlier.is_repeated_within(activity_at, context.timestamp, repeat):
                 continue
-            self.main_line.send(line.text, IDLE_WORKER.key, context)
+            with self.bus.scopes.row_scope(worker):
+                self.inbox.deliver(MergerLine(text=line.text, fallback_source=IDLE_WORKER.key, nudge_json=line.stored.json, worker_id=worker.id, source_key=source_key), context)
 
     def checked_agents(self) -> tuple[Agent, ...]:
         checked = {agent.id: agent for agent in (*self.agent_rows.running(), *self.places.kept_workers())}

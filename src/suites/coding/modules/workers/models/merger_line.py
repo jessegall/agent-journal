@@ -38,5 +38,10 @@ class MergerLine(EnvironmentScoped, Model):
     visit_count: int = 0
     source_key: str | None = None
 
+    def is_repeated_within(self, activity_at: Timestamp, timestamp: Timestamp, repeat_seconds: float) -> bool:
+        if self.creation_timestamp() < activity_at:
+            return False
+        return self.is_open_question() or self.creation_timestamp().elapsed_seconds(timestamp) < repeat_seconds
+
     def is_open_question(self) -> bool:
         return self.worker_id is not None and self.outcome is None
