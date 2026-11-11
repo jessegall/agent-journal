@@ -4,7 +4,7 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 
 ACTOR_ID = 7
-ANOTHER_ACTOR_ID = 8
+SECOND_ACTOR_ID = 8
 
 
 def task(state: TaskState, holder_id: int | None = None) -> Task:
@@ -20,7 +20,7 @@ def test_a_closed_task_is_skipped_by_a_cascade():
 
 
 def test_a_started_task_held_by_another_actor_is_skipped():
-    assert task(TaskState.STARTED, ANOTHER_ACTOR_ID).cascade_skips(ACTOR_ID) and task(TaskState.TESTING, ANOTHER_ACTOR_ID).cascade_skips(ACTOR_ID)
+    assert task(TaskState.STARTED, SECOND_ACTOR_ID).cascade_skips(ACTOR_ID) and task(TaskState.TESTING, SECOND_ACTOR_ID).cascade_skips(ACTOR_ID)
 
 
 def test_a_started_task_held_by_the_actor_is_not_skipped():

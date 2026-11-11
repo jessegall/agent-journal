@@ -8,7 +8,7 @@ from engine.model.model import Model
 from engine.model.state_holder import StateHolder
 from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
-from core.modules.tasks.models.enums.task_state import HELD_STATES, UNFINISHED_STATES, TaskState
+from core.modules.tasks.models.enums.task_state import WORKING_STATES, UNFINISHED_STATES, TaskState
 from core.modules.tasks.models.support.task_priority import NORMAL_PRIORITY, TaskPriority
 from core.modules.tasks.models.support.task_complexity import TaskComplexity
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -52,7 +52,7 @@ class Task(EnvironmentScoped, Model, StateHolder, Assignable):
     def cascade_skips(self, actor_id: int) -> bool:
         if self.state not in UNFINISHED_STATES:
             return True
-        return self.state in HELD_STATES and self.holder_id not in (None, actor_id)
+        return self.state in WORKING_STATES and self.holder_id not in (None, actor_id)
 
     def start(self, timestamp: Timestamp, actor: Actor) -> "Task":
         delegate_id = actor.id if self.delegated_to is None and actor.type is ActorType.AGENT else self.delegated_to
