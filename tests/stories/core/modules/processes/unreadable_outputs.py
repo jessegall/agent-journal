@@ -21,6 +21,7 @@ def test_an_agent_marks_a_command_unreadable_only_with_a_reason_of_three_words_a
 
 def test_two_runs_that_redraw_one_line_mark_their_command_once_and_two_readable_runs_lift_the_mark(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
+    story.expect_success("unreadable-mark list", "nothing found", actor=story.agent)
     first = ended_after_a_while(story, moved_run(story, "make spin", CommandCategory.BUILD), SPINNER)
     second = ended_after_a_while(story, moved_run(story, "make spin", CommandCategory.BUILD), SPINNER)
     marked = heard(story)
