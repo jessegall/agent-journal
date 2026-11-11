@@ -5,6 +5,7 @@ import {h} from "vue";
 import {context, mounted, page, settleTransition as settle} from "./support/codingWindowContext.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
+import InformationBar from "../src/shell/InformationBar.vue";
 
 vi.stubGlobal("matchMedia", () => ({matches: true}));
 
@@ -62,21 +63,38 @@ test("the opened agent card shows the plan allowance its facts carry in the info
     expect(element.querySelector("[data-information-bar] [data-fact='usage']").textContent).toContain("30%");
 });
 
-test("the opened agent card names its role and number once and the program, model and effort once, among its lasting facts", async () => {
+test("the opened agent card names its role and number once, and its program, model and effort once, in its bar", async () => {
     const row = {...AGENTS[2], number: 770, program_model: "opus", session_count: 2, memory_count: 3, created_at: "2026-11-01T10:00:00Z"};
     const facts = {id: row.id, tasks: [], model: "opus", effort: "high", last_activity: "2026-11-11T10:00:00Z", context_percent: 15, cost_dollars: 1.5};
     const element = await mounted({render: () => h(AgentCard, {row, facts, open: true})}, {...context({}), tabs: TABS});
     expect(element.querySelector("[data-agent-title]").textContent).toBe("Worker 770");
     expect(element.querySelector("[data-agent-identity]")).toBeNull();
-    const live = element.querySelector("[data-information-bar]");
-    expect(live.querySelector("[data-fact='context']")).not.toBeNull();
-    expect(live.querySelector("[data-fact='cost']")).not.toBeNull();
-    ["agent", "model", "effort"].forEach((fact) => expect(live.querySelector(`[data-fact='${fact}']`)).toBeNull());
-    expect(live.querySelector("[data-agent-run-time]").textContent).toContain("Run time:");
-    expect(live.querySelector("[data-agent-last-heard]").textContent).toContain("Seen:");
-    expect(element.querySelector("[data-agent-driver-name]").textContent).toBe("Claude, opus, high");
+    const bar = element.querySelector("[data-information-bar]");
+    expect(bar.querySelector("[data-fact='agent']")).not.toBeNull();
+    expect(bar.querySelector("[data-fact='model']").textContent).toContain("opus");
+    expect(bar.querySelector("[data-fact='effort']").textContent).toContain("high");
+    expect(bar.querySelector("[data-fact='context']")).not.toBeNull();
+    expect(bar.querySelector("[data-fact='cost']")).not.toBeNull();
+    expect(bar.querySelector("[data-agent-run-time]").textContent).toContain("Run time:");
+    expect(bar.querySelector("[data-agent-last-heard]").textContent).toContain("Seen:");
+    expect(element.querySelector("[data-agent-driver-name]")).toBeNull();
     expect(element.querySelector("[data-agent-memory-count]")).toBeNull();
     expect(element.textContent.match(/opus/g)).toHaveLength(1);
+});
+
+test("a worker's and a helper's card draws the same bar as the home window draws for its agent, each fact once", async () => {
+    const windows = [{title: "5 hours", used_percent: 30, reset_epoch_seconds: 1793545200}];
+    const factsOf = (element) => [...element.querySelectorAll("[data-information-bar] [data-fact]")].map((fact) => fact.dataset.fact);
+    for (const role of ["worker", "helper"]) {
+        const row = {...AGENTS[2], role, number: 770, program_model: "opus"};
+        const facts = {id: row.id, tasks: [], model: "opus", effort: "high", context_percent: 15, cost_dollars: 1.5, windows};
+        const card = await mounted({render: () => h(AgentCard, {row, facts, open: true})}, {...context({}), tabs: TABS});
+        const bar = await mounted({render: () => h(InformationBar, {agent: row, card: true, usage: {agents: [facts], windows}})}, context({}));
+        expect(factsOf(card)).toEqual(factsOf(bar));
+        expect(factsOf(card)).toEqual(["agent", "usage", "context", "model", "effort", "cost"]);
+        expect(card.querySelector("[data-information-bar]").textContent.match(/opus/g)).toHaveLength(1);
+        document.body.innerHTML = "";
+    }
 });
 
 test("a retired agent card has no live bar", async () => {

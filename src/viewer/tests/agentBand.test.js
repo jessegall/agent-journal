@@ -16,7 +16,7 @@ test("an opened helper has its own information band and stop button", async () =
     expect(band.textContent).toContain("high");
     expect(band.textContent).toContain("$5.94");
     expect(band.textContent).toContain("worker-6");
-    expect(band.querySelector("[data-helper-stop]")).not.toBeNull();
+    expect(element.querySelector("[data-agent-head-actions] [data-helper-stop]")).not.toBeNull();
     expect(band.querySelector('[data-fact="jobs"]')).toBeNull();
 });
 
@@ -28,7 +28,7 @@ test("an opened worker shows its branch without a helper stop button", async () 
     const band = element.querySelector("[data-information-bar]");
     expect(band.textContent).toContain("worker-7");
     expect(band.textContent).toContain("40%");
-    expect(band.querySelector("[data-helper-stop]")).toBeNull();
+    expect(element.querySelector("[data-helper-stop]")).toBeNull();
 });
 
 test.each([

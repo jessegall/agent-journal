@@ -130,7 +130,7 @@ test("closed cards use the shared agent facts read for their identity", async ()
 
 test("worker identity stays the same when opened", async () => {
     const row = {id: 4, number: 4, session: "s-worker", program: "codex", program_model: "gpt-6.1-sol", role: "worker", ended_at: null, created_at: new Date(Date.now() - 6 * 60000).toISOString(), process_started_at: new Date(Date.now() - 60000).toISOString()};
-    const facts = {model: "gpt-6.1-sol", effort: "high", given_name: "Mary Shelley", last_activity: "2026-11-01T10:00:00Z", job_enabled: true, task_title: "Window converter", tasks: [{id: 1, title: "Window converter", state: "started"}]};
+    const facts = {id: row.id, model: "gpt-6.1-sol", effort: "high", given_name: "Mary Shelley", last_activity: "2026-11-01T10:00:00Z", job_enabled: true, task_title: "Window converter", tasks: [{id: 1, title: "Window converter", state: "started"}]};
     const element = await mounted({render: () => h(AgentCard, {row, facts})}, context({}));
     const card = element.querySelector("[data-agent-open]");
     const identity = card.querySelector("[data-agent-identity]");
@@ -150,7 +150,11 @@ test("worker identity stays the same when opened", async () => {
     expect(dispatched.textContent).toBe("6m ago");
     expect(dispatched.querySelector("[data-icon]")).toBeNull();
     expect(dispatched.querySelector("time").dateTime).toBe(row.created_at);
-    expect(opened.querySelector("[data-agent-driver-name]").textContent).toBe("Codex, gpt-6.1-sol, high");
+    const bar = opened.querySelector("[data-information-bar]");
+    expect(bar.querySelector("[data-fact='agent']").textContent).toMatch(/codex/i);
+    expect(bar.querySelector("[data-fact='model']").textContent).toContain("gpt-6.1-sol");
+    expect(bar.querySelector("[data-fact='effort']").textContent).toContain("high");
+    expect(opened.querySelector("[data-agent-driver-name]")).toBeNull();
 });
 
 test("reports tab lists messages in order and offers their message links", async () => {
