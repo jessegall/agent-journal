@@ -1,8 +1,11 @@
+import shutil
+import time
 from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.enums.actor_type import ActorType
+from engine.database.database import Database
 from engine.enums.command_category import CommandCategory
 from engine.module.module_finder import ModuleFinder
 from engine.testing.examples.hook_samples import HookSamples
@@ -63,12 +66,12 @@ def waiting_run(story: Story, agent: Agent, line: str) -> Process:
     return story.container.get(Bus).run(StartProcess.single_part(agent.id, line, "/work/main", CommandCategory.TEST_RUN, 30), Actor(agent.id, ActorType.AGENT), environment_id=1)
 
 
-def started_by(story: Story, actor: Actor, command: StartProcess) -> Process:
+def started_by(story: Story, actor: Actor, command: StartProcess, environment_id: int = 1) -> Process:
     """A run started, its first part begun and moved to the background, all by the given actor."""
     bus = story.container.get(Bus)
-    process = bus.run(command, actor, environment_id=1)
-    bus.run(StartProcessPart(process.id, 1), actor, environment_id=1)
-    bus.run(MoveProcess(process.id), actor, environment_id=1)
+    process = bus.run(command, actor, environment_id=environment_id)
+    bus.run(StartProcessPart(process.id, 1), actor, environment_id=environment_id)
+    bus.run(MoveProcess(process.id), actor, environment_id=environment_id)
     return process
 
 
@@ -84,9 +87,53 @@ def side_run(story: Story, actor: Actor, line: str, category: CommandCategory, p
     return started_by(story, actor, StartProcess.single_part(story.agent.id, line, "/work/main", category, 30, plugin=plugin))
 
 
-def kept_lines(story: Story) -> str:
-    """Every line the journal has for the main agent, said or waiting, as JSON."""
-    return story.run(f"agent-line list --agent {story.agent.id} --json", actor=story.agent).output_text
+def kept_lines(story: Story, agent_id: int = 0, actor: Actor | None = None) -> str:
+    """Every line the journal has for an agent, the main one unless named, said or waiting, as JSON."""
+    return story.run(f"agent-line list --agent {agent_id or story.agent.id} --json", actor=actor or story.agent).output_text
+
+
+def elsewhere_run(story: Story, actor: Actor) -> Process:
+    """A silent build of the agent of the second environment, started and moved to the background there."""
+    return started_by(story, actor, StartProcess.single_part(actor.id, "make there", "/work/elsewhere", CommandCategory.BUILD, 30), environment_id=2)
+
+
+def removed_output(story: Story, process: Process) -> None:
+    (story.home.folder / "processes" / str(process.id) / "1.out").unlink()
+
+
+def damaged_record(story: Story, process: Process) -> None:
+    story.container.get(OutputFolder).write(process.id, CADENCE_FILE, "ten looked x")
+
+
+def record_text(story: Story, process: Process) -> str:
+    return story.container.get(OutputFolder).text(process.id, CADENCE_FILE)
+
+
+def cut_to(story: Story, process: Process, kept: str, dropped: int) -> None:
+    """The runner cuts the output to its limit: it keeps the given text and adds the dropped bytes to the cut count."""
+    folder = story.container.get(OutputFolder)
+    folder.write(process.id, "1.cut-bytes", str(folder.cut_bytes(process.id, 1) + dropped))
+    folder.write_output(process.id, 1, kept)
+
+
+def folder_made_a_file(story: Story, process: Process) -> None:
+    """The run's folder is replaced by a plain file, so nothing in it can be read or written."""
+    path = story.home.folder / "processes" / str(process.id)
+    shutil.rmtree(path)
+    path.write_text("not a folder")
+
+
+def tick_cost(story: Story) -> tuple[int, float]:
+    """The statements one cadence tick sends to the database and the seconds it takes."""
+    connection = story.container.get(Database).connection
+    statements: list[str] = []
+    connection.set_trace_callback(statements.append)
+    began = time.perf_counter()
+    try:
+        cadence_tick(story)
+    finally:
+        connection.set_trace_callback(None)
+    return len(statements), time.perf_counter() - began
 
 
 def worker_agent(story: Story) -> Agent:

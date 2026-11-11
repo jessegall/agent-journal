@@ -33,11 +33,17 @@ def test_an_unchanged_size_adds_no_time(tmp_path):
     assert log.record(4, 10, 110.0) == (100.0,)
 
 
-def test_a_long_break_in_the_watching_clears_the_times(tmp_path):
+def test_a_long_break_in_the_watching_clears_the_times_and_keeps_when_the_watching_resumed(tmp_path):
     log, _ = cadence_log(tmp_path)
     log.record(4, 10, 100.0)
     log.record(4, 20, 110.0)
-    assert log.record(4, 30, 200.0) == (200.0,)
+    assert (log.resumed(4), log.record(4, 30, 200.0), log.resumed(4)) == (0.0, (200.0,), 200.0)
+
+
+def test_the_first_look_is_no_break(tmp_path):
+    log, _ = cadence_log(tmp_path)
+    log.record(4, 10, 5000.0)
+    assert (log.growths(4), log.resumed(4)) == ((5000.0,), 0.0)
 
 
 def test_a_smaller_size_is_a_growth_too(tmp_path):
