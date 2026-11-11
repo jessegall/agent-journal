@@ -91,7 +91,7 @@ WORKER_SETTING_VALUES = [
     SettingValue("quiet-helper-minutes", "Quiet helper minutes", "Minutes between the reminders to the main agent, until the helper is stopped or back at work.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("library-links", "Library links", "Folders each worker's worktree links from the main checkout.", SettingType.LIST, default=()),
     SettingValue("library-copies", "Library copies", "Folders each worker's worktree gets a copy of.", SettingType.LIST, default=()),
-    SettingValue("preset-test-commands", "Preset test commands", "Test commands each dispatched worker gets, as name=command; a name here replaces the command found for it in the project's manifests.",
+    SettingValue("preset-test-commands", "Preset test commands", "Test commands each worker gets, as name=command; a name replaces the one found in the project's manifests.",
                  SettingType.LIST, default=(), person_set=True),
     SettingValue(WORKTREE_COMMANDS_NAME, "Worktree commands", "Commands run in each new worker worktree before the worker starts.",
                  SettingType.LIST, default=()),

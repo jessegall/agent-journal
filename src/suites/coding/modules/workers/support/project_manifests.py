@@ -35,12 +35,6 @@ class ProjectManifests:
             manifests.append(ProjectManifest(str(PurePosixPath(place) / file_name) if place != ROOT else file_name, language, entry))
         return tuple(manifests)
 
-    def test_commands(self, folder: Path) -> tuple[WorkerTestCommandEntry, ...]:
-        return tuple(manifest.test_command for manifest in self.found(folder) if manifest.test_command is not None)
-
-    def languages(self, folder: Path) -> tuple[str, ...]:
-        return tuple(dict.fromkeys(manifest.language for manifest in self.found(folder)))
-
     @staticmethod
     def manifest_folders(folder: Path) -> list[tuple[str, list[str]]]:
         found: list[tuple[str, list[str]]] = []

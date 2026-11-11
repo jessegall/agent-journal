@@ -1,8 +1,9 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 
 from engine.errors.refusal import Refusal
 from engine.setting.setting_values import SettingValues
+from suites.coding.modules.workers.support.project_manifest import ProjectManifest
 from suites.coding.modules.workers.support.project_manifests import ProjectManifests
 from suites.coding.modules.workers.support.worker_test_command_entry import WorkerTestCommandEntry
 from suites.coding.modules.workers.support.worker_settings import PRESET_TEST_COMMANDS
@@ -16,7 +17,10 @@ class WorkerTestPresets:
         self.manifests, self.settings = manifests, settings
 
     def presets(self, folder: str) -> tuple[WorkerTestCommandEntry, ...]:
-        entries = {entry.name: entry for entry in self.manifests.test_commands(Path(folder))}
+        return self.presets_of(self.manifests.found(Path(folder)))
+
+    def presets_of(self, manifests: Sequence[ProjectManifest]) -> tuple[WorkerTestCommandEntry, ...]:
+        entries = {manifest.test_command.name: manifest.test_command for manifest in manifests if manifest.test_command is not None}
         for value in self.settings.texts(PRESET_TEST_COMMANDS):
             try:
                 entry = WorkerTestCommandEntry.parsed_value(value)
