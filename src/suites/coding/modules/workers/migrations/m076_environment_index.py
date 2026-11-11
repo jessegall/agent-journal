@@ -2,7 +2,8 @@ from engine.database.migration import Migration
 
 
 class WorkerRowsEnvironmentIndexMigration(Migration):
-    """Indexes worker task sources, worker assignments and merger advices by environment, so the list of one environment reads no other row."""
+    """Indexes worker task sources, worker assignments and merger advices by environment, so the list of one
+    environment reads no other row."""
 
     number = 76
     statements = [

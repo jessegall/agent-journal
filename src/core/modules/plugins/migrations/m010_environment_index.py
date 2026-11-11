@@ -2,7 +2,8 @@ from engine.database.migration import Migration
 
 
 class PluginRowsEnvironmentIndexMigration(Migration):
-    """Indexes plugin deliveries, settings and outputs by environment, so the list of one environment reads no other row."""
+    """Indexes plugin deliveries, settings and outputs by environment, so the list of one environment reads
+    no other row."""
 
     number = 10
     statements = [
