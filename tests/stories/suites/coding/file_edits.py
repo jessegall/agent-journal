@@ -1,5 +1,6 @@
 import json
 
+from engine.file.file_access import FileAccess
 from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from engine.testing.examples.hook_samples import HookSamples
@@ -109,3 +110,13 @@ def test_a_request_that_prunes_more_than_ten_file_edits_reads_the_links_once_for
     story.expect_rows(len(reads) <= 2, all(count == 1 for count in reads.values()), detail=str(reads))
     story.expect_refusal("file-edit show 12", "no")
     story.expect_text("file-edit show 14", "path: src/part14.py")
+
+
+def test_an_edit_in_a_repository_inside_a_project_that_is_no_repository_shows_in_the_feed_from_the_project_folder(new_story):
+    story = new_story(fixture=BuilderStarted)
+    node = story.home.project_folder / "tako" / "src" / "Tako" / "Node.cs"
+    FileAccess.shared().write(node, "class Node { int Id; }\n")
+    scanned_edit(story, "s-1", "tako/src/Tako/Node.cs", 1, 1, folder=story.home.project_folder)
+    rows = json.loads(story.run(f"file-edit list --agent {story.agent.id} --json", actor=story.agent).output_text)["rows"]
+    story.expect_rows(len(rows) == 1, rows[0]["path"] == "tako/src/Tako/Node.cs", rows[0]["added"] == 1, rows[0]["removed"] == 1, rows[0]["edit_type"] == "edit", detail=str(rows))
+    story.expect_text("file-edit file 1", "class Node { int Id; }", actor=story.agent)

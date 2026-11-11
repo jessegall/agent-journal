@@ -1,5 +1,7 @@
-// Package filescan finds the files that changed in a checkout since the last scan, from a fingerprint of each file, so
+// Package filescan finds the files that changed in a project since the last scan, from a fingerprint of each file, so
 // a change any shell command makes counts as a file edit. It runs detached after a shell line, so nothing waits for it.
+// It depends on git in no way: the text before a change is the text it kept, and git only fills in the text of a file
+// the scan never saw, asked of the repository that holds that file.
 package filescan
 
 import (
@@ -37,6 +39,10 @@ const (
 	reportFile       = "report.json"
 	againFile        = "again"
 	textFolder       = "text"
+	textsKeptFile    = "texts-kept"
+	ignoreFile       = ".gitignore"
+	worktreesFolder  = "worktrees"
+	rootFolder       = "."
 )
 
 // skippedFolders hold what no agent writes by hand, in any project.
@@ -55,7 +61,7 @@ type Change struct {
 	Rows []event.DiffRow `json:"rows"`
 }
 
-// Report is what a scan hands the server: the checkout it read and each changed file, its path from that checkout.
+// Report is what a scan hands the server: the folder it read and each changed file, its path from that folder.
 type Report struct {
 	Folder  string   `json:"folder"`
 	Changes []Change `json:"changes"`
@@ -66,28 +72,39 @@ func ReportPath(state string) string {
 	return filepath.Join(state, reportFile)
 }
 
-// RepositoryRoot is the nearest folder at or above this one that holds .git, a file in a worktree.
-func RepositoryRoot(folder string) (string, bool) {
-	for {
-		if _, err := os.Stat(filepath.Join(folder, ".git")); err == nil {
-			return folder, true
+// ScanRoot is the folder a scan reads for the journal at home: the worktree a worker works in, which lies two folders
+// below the journal's worktrees folder, else the project folder that holds the journal. It does not move with the
+// working folder, so an edit in any repository the project holds is read from the same root.
+func ScanRoot(home, folder string) string {
+	worktrees := filepath.Join(home, worktreesFolder)
+	if relative, err := filepath.Rel(resolvedFolder(worktrees), resolvedFolder(folder)); err == nil {
+		parts := strings.Split(filepath.ToSlash(relative), "/")
+		if len(parts) >= 2 && parts[0] != ".." && parts[0] != rootFolder {
+			return filepath.Join(worktrees, parts[0], parts[1])
 		}
-		parent := filepath.Dir(folder)
-		if parent == folder {
-			return "", false
-		}
-		folder = parent
 	}
+	return filepath.Dir(home)
 }
 
-// StateFolder is where the journal at home keeps what it knows of the checkout at root.
+func resolvedFolder(folder string) string {
+	absolute, err := filepath.Abs(folder)
+	if err != nil {
+		return folder
+	}
+	if resolved, err := filepath.EvalSymlinks(absolute); err == nil {
+		return resolved
+	}
+	return absolute
+}
+
+// StateFolder is where the journal at home keeps what it knows of the folder at root.
 func StateFolder(home, root string) string {
 	sum := sha256.Sum256([]byte(root))
 	return filepath.Join(home, "runtime", "file-scan", hex.EncodeToString(sum[:8]))
 }
 
-// Acquire takes the scan of a checkout, or leaves word for the scan that runs to go round again; a lock left by a
-// scan that died passes after its time limit.
+// Acquire takes the scan of a root, or leaves word for the scan that runs to go round again; a lock left by a scan that
+// died passes after its time limit.
 func Acquire(state string) bool {
 	if err := os.MkdirAll(state, 0o700); err != nil {
 		return false
@@ -119,9 +136,11 @@ func fingerprintOf(facts fs.FileInfo) Fingerprint {
 	return Fingerprint{Size: facts.Size(), ModifiedNs: facts.ModTime().UnixNano()}
 }
 
-// Scan compares the checkout at root with its last scan and returns each file that changed. The first scan of a
-// checkout only sets what later scans compare with.
-func Scan(root, state string) ([]Change, error) {
+// Scan compares the project at root with its last scan and returns each file that changed. The first scan of a root has
+// no last scan: it counts each file modified at or after since as changed by the line or tool that started it, and
+// takes every other file as it is. Once per root it keeps the text of every file, so a later edit of any file counts
+// against the text it had.
+func Scan(root, state string, since time.Time) ([]Change, error) {
 	if err := os.MkdirAll(filepath.Join(state, textFolder), 0o700); err != nil {
 		return nil, err
 	}
@@ -130,25 +149,73 @@ func Scan(root, state string) ([]Change, error) {
 	if err != nil {
 		return nil, err
 	}
+	if !hasScan {
+		previous = unchangedSince(current, since)
+	}
 	if err := writeFingerprints(state, current); err != nil {
 		return nil, err
 	}
-	if !hasScan {
-		return nil, nil
-	}
 	paths := differing(previous, current)
+	if !textsKept(state) {
+		keepUnchangedTexts(root, state, current, paths)
+	}
 	if len(paths) > ChangedFilesMost {
+		for _, path := range paths {
+			keepText(state, path, readText(root, path))
+		}
 		return nil, nil
 	}
 	changes := []Change{}
 	for _, path := range paths {
-		_, existed := previous[path]
+		_, seen := previous[path]
 		_, exists := current[path]
-		if change, changed := fileChange(root, state, path, existed, exists); changed {
+		var original *string
+		if seen || !hasScan {
+			original = oldText(root, state, path)
+		}
+		if change, changed := fileChange(root, state, path, original, seen || original != nil, exists); changed {
 			changes = append(changes, change)
 		}
 	}
 	return changes, nil
+}
+
+// unchangedSince is the fingerprint of each file last modified before since: what a first scan takes as it was. With no
+// moment named every file is taken as it was.
+func unchangedSince(current map[string]Fingerprint, since time.Time) map[string]Fingerprint {
+	if since.IsZero() {
+		return current
+	}
+	unchanged := map[string]Fingerprint{}
+	for path, fingerprint := range current {
+		if fingerprint.ModifiedNs < since.UnixNano() {
+			unchanged[path] = fingerprint
+		}
+	}
+	return unchanged
+}
+
+func textsKept(state string) bool {
+	_, err := os.Stat(filepath.Join(state, textsKeptFile))
+	return err == nil
+}
+
+// keepUnchangedTexts keeps the text of each file this scan found unchanged, once per root, so no later edit lacks the
+// text before it; a changed file keeps its text when its change is read.
+func keepUnchangedTexts(root, state string, current map[string]Fingerprint, changed []string) {
+	changedPaths := map[string]bool{}
+	for _, path := range changed {
+		changedPaths[path] = true
+	}
+	for path := range current {
+		if changedPaths[path] {
+			continue
+		}
+		if text := readText(root, path); text != nil {
+			keepText(state, path, text)
+		}
+	}
+	_ = os.WriteFile(filepath.Join(state, textsKeptFile), nil, 0o600)
 }
 
 func differing(previous, current map[string]Fingerprint) []string {
@@ -167,11 +234,7 @@ func differing(previous, current map[string]Fingerprint) []string {
 	return paths
 }
 
-func fileChange(root, state, path string, existed, exists bool) (Change, bool) {
-	var original *string
-	if existed {
-		original = oldText(root, state, path)
-	}
+func fileChange(root, state, path string, original *string, existed, exists bool) (Change, bool) {
 	changed := ""
 	if exists {
 		text := readText(root, path)
@@ -191,15 +254,17 @@ func fileChange(root, state, path string, existed, exists bool) (Change, bool) {
 	return Change{Diff: *diff, Rows: edits.ChangedRows(original, changed)}, true
 }
 
-// oldText is the text this journal last saw of a file, or what the last commit holds of a file it has not seen change.
+// oldText is the text this journal last saw of a file, else what the last commit of the repository that holds the file
+// has of it, asked from the file's own folder; with no such repository or commit there is none.
 func oldText(root, state, path string) *string {
 	if text, err := os.ReadFile(textPath(state, path)); err == nil {
 		content := string(text)
 		return &content
 	}
+	absolutePath := filepath.Join(root, path)
 	limited, cancel := context.WithTimeout(context.Background(), gitTimeLimit)
 	defer cancel()
-	command := exec.CommandContext(limited, "git", "-C", root, "show", "HEAD:"+filepath.ToSlash(path))
+	command := exec.CommandContext(limited, "git", "-C", filepath.Dir(absolutePath), "show", "HEAD:./"+filepath.Base(absolutePath))
 	output, err := command.Output()
 	if err != nil {
 		return nil
@@ -213,7 +278,7 @@ func textPath(state, path string) string {
 	return filepath.Join(state, textFolder, hex.EncodeToString(sum[:16]))
 }
 
-// keepText keeps the text a file has now for its next comparison; a file gone keeps none.
+// keepText keeps the text a file has now for its next comparison; a file gone, too large or binary keeps none.
 func keepText(state, path string, text *string) {
 	if text == nil {
 		_ = os.Remove(textPath(state, path))
@@ -236,9 +301,11 @@ func readText(root, path string) *string {
 	return &text
 }
 
-// fingerprints walks the checkout and fingerprints each file no rule leaves out.
+// fingerprints walks the project and fingerprints each file no rule leaves out: the skipped folders, and the ignore
+// file of each folder for what lies below it, so an inner repository's own rules hold for its files.
 func fingerprints(root string) (map[string]Fingerprint, error) {
-	ignored := readIgnored(root)
+	rules := ignoreRules{}
+	rules.read(root, rootFolder)
 	prints := map[string]Fingerprint{}
 	err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, walkError error) error {
 		if walkError != nil {
@@ -255,12 +322,13 @@ func fingerprints(root string) (map[string]Fingerprint, error) {
 			return err
 		}
 		if entry.IsDir() {
-			if skippedFolders[entry.Name()] || ignored.matches(relative, entry.Name()) {
+			if skippedFolders[entry.Name()] || rules.matches(relative, entry.Name()) {
 				return filepath.SkipDir
 			}
+			rules.read(root, relative)
 			return nil
 		}
-		if !entry.Type().IsRegular() || ignored.matches(relative, entry.Name()) {
+		if !entry.Type().IsRegular() || rules.matches(relative, entry.Name()) {
 			return nil
 		}
 		facts, err := entry.Info()
@@ -300,19 +368,44 @@ func writeFingerprints(state string, prints map[string]Fingerprint) error {
 	return os.Rename(temporary, filepath.Join(state, fingerprintsFile))
 }
 
-// ignoredPatterns are the simple patterns of the project's top .gitignore: a name, a *.ext or a path from the root.
+// ignoreRules are the patterns of each folder's ignore file, by the folder's path from the root.
+type ignoreRules map[string]ignoredPatterns
+
+// read takes the ignore file of one folder, when it has one.
+func (rules ignoreRules) read(root, folder string) {
+	content, err := os.ReadFile(filepath.Join(root, folder, ignoreFile))
+	if err != nil {
+		return
+	}
+	rules[folder] = parsedPatterns(string(content))
+}
+
+// matches says whether the ignore file of any folder above a path leaves it out, each pattern read from its own folder.
+func (rules ignoreRules) matches(relative, name string) bool {
+	folder := filepath.Dir(relative)
+	for {
+		if patterns, found := rules[folder]; found {
+			below, err := filepath.Rel(folder, relative)
+			if err == nil && patterns.matches(below, name) {
+				return true
+			}
+		}
+		if folder == rootFolder {
+			return false
+		}
+		folder = filepath.Dir(folder)
+	}
+}
+
+// ignoredPatterns are the simple patterns of one ignore file: a name, a *.ext or a path from its folder.
 type ignoredPatterns struct {
 	names []string
 	paths []string
 }
 
-func readIgnored(root string) ignoredPatterns {
-	content, err := os.ReadFile(filepath.Join(root, ".gitignore"))
-	if err != nil {
-		return ignoredPatterns{}
-	}
+func parsedPatterns(content string) ignoredPatterns {
 	patterns := ignoredPatterns{}
-	for _, line := range strings.Split(string(content), "\n") {
+	for _, line := range strings.Split(content, "\n") {
 		pattern := strings.TrimSuffix(strings.TrimSpace(line), "/")
 		if pattern == "" || strings.HasPrefix(pattern, "#") || strings.HasPrefix(pattern, "!") {
 			continue

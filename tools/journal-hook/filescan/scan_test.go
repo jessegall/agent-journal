@@ -49,7 +49,7 @@ func sequence() int {
 
 func scanned(t *testing.T, root, state string) []Change {
 	t.Helper()
-	changes, err := Scan(root, state)
+	changes, err := Scan(root, state, time.Time{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,13 +168,168 @@ func TestOnlyOneScanRunsAndALineThatEndsMeanwhileAsksForAnother(t *testing.T) {
 	}
 }
 
-func TestTheRootIsFoundFromAFolderBelowIt(t *testing.T) {
-	root, _ := checkout(t)
-	folder := filepath.Join(root, "src", "cart")
-	if err := os.MkdirAll(folder, 0o700); err != nil {
+// hourAgo is a moment well before any scan of a test, for a file that was there before the line that is scanned.
+var hourAgo = time.Now().Add(-time.Hour)
+
+func writeOldFile(t *testing.T, root, path, text string) {
+	t.Helper()
+	writeFile(t, root, path, text)
+	if err := os.Chtimes(filepath.Join(root, path), hourAgo, hourAgo); err != nil {
 		t.Fatal(err)
 	}
-	if repository, inRepository := RepositoryRoot(folder); !inRepository || repository != root {
-		t.Fatalf("got %s, want %s", repository, root)
+}
+
+func runGit(t *testing.T, folder string, arguments ...string) {
+	t.Helper()
+	if output, err := exec.Command("git", append([]string{"-C", folder}, arguments...)...).CombinedOutput(); err != nil {
+		t.Skipf("git is not at hand: %s", output)
 	}
+}
+
+func committedRepository(t *testing.T, folder string) {
+	t.Helper()
+	runGit(t, folder, "init", "-q")
+	runGit(t, folder, "add", ".")
+	runGit(t, folder, "-c", "user.name=a", "-c", "user.email=a@b", "commit", "-qm", "first")
+}
+
+// outerProject is a project folder that is no repository and holds a journal, a loose file and two inner repositories,
+// tako and site, each with a committed file; it returns the journal's folder.
+func outerProject(t *testing.T) (project, home string) {
+	t.Helper()
+	project = t.TempDir()
+	home = filepath.Join(project, ".journal")
+	writeOldFile(t, project, ".journal/journal.db", "rows\n")
+	writeOldFile(t, project, "notes.md", "one\ntwo\n")
+	writeOldFile(t, project, "tako/src/Tako/Node.cs", "class Node {}\n")
+	writeOldFile(t, project, "site/index.html", "<p>old</p>\n")
+	committedRepository(t, filepath.Join(project, "tako"))
+	committedRepository(t, filepath.Join(project, "site"))
+	return project, home
+}
+
+func editedOuterProject(t *testing.T, project string) {
+	t.Helper()
+	writeFile(t, project, "tako/src/Tako/Node.cs", "class Node { int Id; }\n")
+	writeFile(t, project, "site/index.html", "<p>new</p>\n<p>more</p>\n")
+	writeFile(t, project, "notes.md", "one\n")
+}
+
+func expectCounts(t *testing.T, changes []Change, want map[string][3]int) {
+	t.Helper()
+	got := map[string][3]int{}
+	for _, change := range changes {
+		existed := 0
+		if change.Diff.Existed {
+			existed = 1
+		}
+		got[change.Diff.Path] = [3]int{change.Diff.LinesAdded, change.Diff.LinesRemoved, existed}
+	}
+	if fmt.Sprint(got) != fmt.Sprint(want) {
+		t.Fatalf("want path: [added removed existed] %v, got %v", want, got)
+	}
+}
+
+// outerEdits are the true counts of editedOuterProject, each file having been there before.
+var outerEdits = map[string][3]int{"tako/src/Tako/Node.cs": {1, 1, 1}, "site/index.html": {2, 1, 1}, "notes.md": {0, 1, 1}}
+
+func TestTheScanRootIsTheProjectFolderFromAnyFolderOfTheProject(t *testing.T) {
+	project, home := outerProject(t)
+	for _, folder := range []string{project, filepath.Join(project, "tako"), filepath.Join(project, "tako", "src", "Tako"), filepath.Join(project, "site"), t.TempDir()} {
+		if root := ScanRoot(home, folder); root != project {
+			t.Fatalf("from %s the root is %s, want %s", folder, root, project)
+		}
+	}
+}
+
+func TestTheScanRootOfAWorkerIsItsWorktree(t *testing.T) {
+	project, home := outerProject(t)
+	worktree := filepath.Join(home, "worktrees", "development", "worker-1")
+	if err := os.MkdirAll(filepath.Join(worktree, "src"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	for _, folder := range []string{worktree, filepath.Join(worktree, "src")} {
+		if root := ScanRoot(home, folder); root != worktree {
+			t.Fatalf("from %s the root is %s, want %s", folder, root, worktree)
+		}
+	}
+	if root := ScanRoot(home, filepath.Join(home, "worktrees")); root != project {
+		t.Fatalf("the worktrees folder itself is no worktree: %s", root)
+	}
+}
+
+func TestAnOuterFolderWithTwoRepositoriesCountsEveryEditFromTheOuterFolder(t *testing.T) {
+	project, home := outerProject(t)
+	root := ScanRoot(home, project)
+	state := StateFolder(home, root)
+	if changes := scanned(t, root, state); len(changes) != 0 {
+		t.Fatalf("the first scan with no moment named takes the project as it is: %v", changes)
+	}
+	editedOuterProject(t, project)
+	expectCounts(t, scanned(t, root, state), outerEdits)
+}
+
+func TestAnEditFromInsideAnInnerRepositoryCountsTheSameAsFromTheOuterFolder(t *testing.T) {
+	project, home := outerProject(t)
+	root := ScanRoot(home, filepath.Join(project, "tako", "src"))
+	if root != project || StateFolder(home, root) != StateFolder(home, ScanRoot(home, project)) {
+		t.Fatalf("one root and one state for the whole project, got %s", root)
+	}
+	state := StateFolder(home, root)
+	scanned(t, root, state)
+	editedOuterProject(t, project)
+	expectCounts(t, scanned(t, root, state), outerEdits)
+}
+
+func TestAProjectWithNoRepositoryCountsAnEditAgainstTheTextKeptAtTheFirstScan(t *testing.T) {
+	root, state := t.TempDir(), t.TempDir()
+	writeOldFile(t, root, "notes.md", "one\ntwo\n")
+	writeOldFile(t, root, "plan/steps.md", "a\nb\nc\n")
+	scanned(t, root, state)
+	writeFile(t, root, "plan/steps.md", "a\nB\nc\n")
+	expectCounts(t, scanned(t, root, state), map[string][3]int{"plan/steps.md": {1, 1, 1}})
+	writeFile(t, root, "plan/fresh.md", "x\ny\n")
+	expectCounts(t, scanned(t, root, state), map[string][3]int{"plan/fresh.md": {2, 0, 0}})
+}
+
+func TestTheFirstScanOfAProjectKeepsTheEditThatStartedIt(t *testing.T) {
+	project, home := outerProject(t)
+	root := ScanRoot(home, project)
+	since := time.Now()
+	writeFile(t, project, "tako/src/Tako/Node.cs", "class Node { int Id; }\n")
+	writeFile(t, project, "site/new.html", "<p>a</p>\n")
+	expectCounts(t, mustScan(t, root, StateFolder(home, root), since), map[string][3]int{"tako/src/Tako/Node.cs": {1, 1, 1}, "site/new.html": {1, 0, 0}})
+	writeFile(t, project, "notes.md", "one\ntwo\nthree\n")
+	expectCounts(t, mustScan(t, root, StateFolder(home, root), since), map[string][3]int{"notes.md": {1, 0, 1}})
+}
+
+func mustScan(t *testing.T, root, state string, since time.Time) []Change {
+	t.Helper()
+	changes, err := Scan(root, state, since)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return changes
+}
+
+func TestAnInnerRepositorysIgnoreFileHoldsForItsOwnFilesOnly(t *testing.T) {
+	project, home := outerProject(t)
+	writeOldFile(t, project, "tako/.gitignore", "bin\n/build\n*.log\n")
+	root := ScanRoot(home, project)
+	state := StateFolder(home, root)
+	scanned(t, root, state)
+	for _, path := range []string{"tako/bin/Tako.dll.txt", "tako/build/out.txt", "tako/src/run.log", "site/bin/page.txt", "site/build/out.txt", "site/run.log"} {
+		writeFile(t, project, path, "a\n")
+	}
+	expectCounts(t, scanned(t, root, state), map[string][3]int{"site/bin/page.txt": {1, 0, 0}, "site/build/out.txt": {1, 0, 0}, "site/run.log": {1, 0, 0}})
+}
+
+func TestAFileOfALineThatChangedManyFilesCountsItsNextEditAgainstItsNewText(t *testing.T) {
+	root, state := checkout(t)
+	for number := 0; number <= ChangedFilesMost; number++ {
+		writeFile(t, root, fmt.Sprintf("file%d.py", number), "A = 1\n")
+	}
+	scanned(t, root, state)
+	writeFile(t, root, "file0.py", "A = 1\nB = 2\n")
+	expectOne(t, scanned(t, root, state), "file0.py", 1, 0, true)
 }
