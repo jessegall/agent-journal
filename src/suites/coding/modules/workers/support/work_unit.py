@@ -50,3 +50,11 @@ class WorkUnit:
             return ""
         *first_ids, last_id = (str(task_id) for task_id in self.task_ids)
         return f"Your unit is tasks {', '.join(first_ids)} and {last_id}, sent to you together. Work all of them before you report."
+
+    @property
+    def card_name(self) -> str:
+        if self.plan is not None:
+            return f"Plan {self.plan.id} · {self.plan.title}"
+        if self.phase is not None:
+            return f"Plan {self.phase.plan_id}, phase {self.phase.position} · {self.phase.title}"
+        return f"{len(self.task_ids)} tasks sent together" if self.has_several_tasks else ""
