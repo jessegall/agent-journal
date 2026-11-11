@@ -17,11 +17,13 @@ from suites.coding.modules.workers.models.worktree_reach import WorktreeReach
 from suites.coding.modules.workers.support.merge_ready_lines import MergeReadyLines
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worktree_runs import WorktreeRuns
+from suites.coding.modules.workers.commands.wake_waiting_worker.wake_waiting_worker import WakeWaitingWorker
 
 
 class WorkerRunEndListener(CommitListener[Moved[CheckpointReach]]):
     """When a worker run ends, the worker's newest commit gets the runs that waited for it, and a delivered
-    worktree whose runs all passed goes to the merger."""
+    worktree whose runs all passed goes to the merger. A worker that waits with its whole unit committed is woken
+    by a pass with its next step; a worker still at work hears nothing."""
 
     name = "workers.worker-run-end"
     moves = [CheckpointLifecycle.passed, CheckpointLifecycle.failed]
@@ -39,5 +41,7 @@ class WorkerRunEndListener(CommitListener[Moved[CheckpointReach]]):
         if worktree.state is WorktreeState.MERGED:
             return
         self.bus.run(StartWorkerRuns(worktree.id, worktree.commit_short_id), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)
+        if event.row.state is CheckpointState.PASSED:
+            self.bus.run(WakeWaitingWorker(worktree.session_agent_id, event.row.phase_id, link.commit_id), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)
         if event.row.state is CheckpointState.PASSED and worktree.is_merge_ready and self.settings.flag(MERGER_ENABLED) and not self.runs.holds_merge(worktree.id):
             self.bus.run(StartMerger(self.lines.nudge(worktree), worktree.merge_ready_at), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)

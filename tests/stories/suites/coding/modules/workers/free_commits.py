@@ -102,3 +102,19 @@ def test_27_a_plan_of_three_phases_is_merged_once(new_story, monkeypatch):
     number = agent_number(worker.story, worker.worker.id)
     merged_lines = [line for line in worker.main_agent_lines() if f"worker {number} merged" in line]
     worker.story.expect_rows(len(merged_lines) == 1, detail=str(worker.main_agent_lines()))
+
+
+def test_a_worker_waiting_with_its_unit_committed_is_woken_by_the_pass(new_story, monkeypatch):
+    worker = unplanned_group_worker(new_story, monkeypatch)
+    commit_each(worker, (1, 2, 3))
+    worker.end_all_tests()
+    lines = " | ".join(worker.worker_lines())
+    worker.story.expect_rows("passed on your commit" in lines or "Point: merge_due" in worker.status(), detail=lines)
+
+
+def test_a_stop_of_a_worker_whose_unit_is_committed_is_no_report(new_story, monkeypatch):
+    worker = unplanned_group_worker(new_story, monkeypatch)
+    commit_each(worker, (1, 2, 3))
+    before = worker.main_agent_lines()
+    worker.stop()
+    worker.story.expect_rows(worker.main_agent_lines() == before, detail=str(worker.main_agent_lines()))
