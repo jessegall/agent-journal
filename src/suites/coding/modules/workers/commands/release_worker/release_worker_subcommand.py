@@ -21,12 +21,13 @@ class ReleaseWorkerSubcommand(Subcommand[ReleaseWorker, ReleaseOutcome]):
         parser.add_argument("worker_id", type=AgentNumber)
         parser.add_argument("reason", nargs="?", default="")
         parser.add_argument("--reason", dest="reason_flag", default="", help="the reason, written as a flag so a button can fill it")
+        parser.add_argument("--abandon", default="", help="why the worker's committed and unmerged work may be left behind")
 
     def command(self, arguments: Namespace, caller: Caller) -> ReleaseWorker:
         reason = arguments.reason or arguments.reason_flag
         if not reason:
             raise Refusal("a release needs a reason", "say why with the reason or --reason")
-        return ReleaseWorker(arguments.worker_id, reason)
+        return ReleaseWorker(arguments.worker_id, arguments.abandon or reason, bool(arguments.abandon))
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, ReleaseOutcome):
