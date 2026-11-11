@@ -11,7 +11,8 @@ from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class AskMergerSubcommand(Subcommand[AskMerger, str]):
-    """`journal worker ask "<what>" --about <topic>`: a worker asks the merger and hears what to do meanwhile."""
+    """`journal worker ask "<what>" --about <topic> [--task <task>]`: a worker asks the merger and hears what to
+    do meanwhile."""
 
     cli_name = "worker"
     name = "ask"
@@ -22,6 +23,7 @@ class AskMergerSubcommand(Subcommand[AskMerger, str]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("text")
         parser.add_argument("--about", default=AskTopic.GENERAL.value)
+        parser.add_argument("--task", type=int, help="the started task the ask is about; without it, the task you work on")
 
     def command(self, arguments: Namespace, caller: Caller) -> AskMerger:
         if not self.queries.query(Agent).filter(id=caller.actor.id, role=CodingHelperRole.WORKER).exists():
@@ -30,4 +32,4 @@ class AskMergerSubcommand(Subcommand[AskMerger, str]):
             raise Refusal(f"{arguments.about} is not a topic", f"name one of: {', '.join(AskTopic)}")
         if not arguments.text.strip():
             raise Refusal("the ask has no words", "say what you need")
-        return AskMerger(caller.actor.id, AskTopic(arguments.about), arguments.text)
+        return AskMerger(caller.actor.id, AskTopic(arguments.about), arguments.text, arguments.task)

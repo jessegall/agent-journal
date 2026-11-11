@@ -55,4 +55,4 @@ class AskMainAgentHandler(Handler[AskMainAgent, None]):
         point = self.guidance.point(worker_id)
         if point.round.has_no_work():
             return []
-        return [self.facts_query.read(point).text()]
+        return [self.facts_query.read(point, self.guidance.current_task(point.round)).text()]

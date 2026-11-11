@@ -1,3 +1,4 @@
+from core.modules.tasks.models.task import Task
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -43,10 +44,20 @@ class AskMergerHandler(Handler[AskMerger, str]):
         point = self.guidance.point(command.worker_id)
         if point.round.has_no_work():
             raise Refusal("you hold no task to ask about", "journal worker status shows your work")
+        task = self.subject_task(command, point)
         focus = f"{command.topic}: {command.text}"
         if not self.is_open(command.worker_id, focus):
-            self.send(command, point, focus, context)
+            self.send(command, point, task, focus, context)
         return f"{self.due_line(command.worker_id)}{command.topic.waiting_work()}. {self.guidance.question_line(point.round)}"
+
+    def subject_task(self, command: AskMerger, point: WorkerPoint) -> Task:
+        if command.task_id is None:
+            return self.guidance.current_task(point.round)
+        for started in point.round.started:
+            if started.id == command.task_id:
+                return started
+        started_ids = ", ".join(str(started.id) for started in sorted(point.round.started, key=lambda started: started.id))
+        raise Refusal(f"you hold {'task' if len(point.round.started) == 1 else 'tasks'} {started_ids}", 'journal worker ask "<what>" --task <one of them>')
 
     def due_line(self, worker_id: int) -> str:
         lines = [line for line in self.questions.worker_lines(worker_id) if line.due_at is not None]
@@ -57,10 +68,10 @@ class AskMergerHandler(Handler[AskMerger, str]):
     def is_open(self, worker_id: int, focus: str) -> bool:
         return self.queries.query(Wait).filter(session_agent_id=worker_id, state=WaitState.OPEN, type=WaitType.ANSWER, focus=focus).exists()
 
-    def send(self, command: AskMerger, point: WorkerPoint, focus: str, context: Context) -> None:
+    def send(self, command: AskMerger, point: WorkerPoint, task: Task, focus: str, context: Context) -> None:
         group = point.counted_group_key()
         exceeds_limit = self.queries.query(MergerLine).filter(worker_id=command.worker_id, group_key=group).matching(HasValue("topic")).count() >= self.settings.number(MERGER_GROUP_MESSAGE_LIMIT)
-        facts = self.facts_query.read(point)
+        facts = self.facts_query.read(point, task)
         self.bus.dispatch(MakeTaskLog(facts.task, f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} asked the merger about {command.topic}: {command.text}"), context)
         text = f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} asks about {command.topic} on task {facts.task}: {command.text}\n{facts.text()}"
         wait = self.bus.dispatch(OpenWait(WaitType.ANSWER, focus), context)

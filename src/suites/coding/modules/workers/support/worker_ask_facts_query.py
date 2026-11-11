@@ -25,9 +25,8 @@ class WorkerAskFactsQuery:
     def __init__(self, guidance: WorkerGuidance, processes: ProcessQuery, queries: Queries, git: WorktreeGit, plans: TaskPlans) -> None:
         self.guidance, self.processes, self.queries, self.git, self.plans = guidance, processes, queries, git, plans
 
-    def read(self, point: WorkerPoint) -> WorkerAskFacts:
+    def read(self, point: WorkerPoint, task: Task) -> WorkerAskFacts:
         worker_round = point.round
-        task = self.guidance.current_task(worker_round)
         outputs = tuple(f"output {process.id}, {process.state}: {process.line}" for process in self.processes.agent(worker_round.worker_id).newest().limited(OUTPUT_COUNT))
         worktree = worker_round.worktree
         if worktree is None:
