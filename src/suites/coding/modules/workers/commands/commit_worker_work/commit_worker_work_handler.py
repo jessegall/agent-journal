@@ -74,13 +74,13 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         staging = point.round.required_staging()
         if not staging.entries:
             return staging
-        if staging.incomplete:
-            raise Refusal(staging.missing_text(), AskTopic.GENERAL.hint(staging.incomplete[0].proof_line()))
         for proof in staging.refused_short()[:1]:
             raise Refusal(f"proof {proof.id} is short: fix it and hand it in again", AskTopic.GENERAL.hint(f"journal proof make {proof.point} --task {proof.task_id} \"<file:line, and the test that shows it>\""))
-        if not staging.ready:
-            raise Refusal("nothing is staged", AskTopic.GENERAL.hint(PROOF_HINT))
-        return staging
+        if staging.ready:
+            return staging
+        if staging.incomplete:
+            raise Refusal(staging.missing_text(), AskTopic.GENERAL.hint(staging.incomplete[0].proof_line()))
+        raise Refusal("nothing is staged", AskTopic.GENERAL.hint(PROOF_HINT))
 
     def prepare(self, command: CommitWorkerWork, actor: Actor) -> None:
         staging = self.checked_staging(actor)

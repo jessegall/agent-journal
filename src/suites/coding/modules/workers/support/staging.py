@@ -7,6 +7,7 @@ from suites.coding.modules.workers.support.missing_points import MissingPoints
 from suites.coding.modules.workers.support.task_proofs import TaskProofs
 
 UNPROVED_TEXT = "task {task} is not part of this commit: it has no proof"
+STAYS_STARTED_TEXT = "task {task} stays started: {points}"
 CANCELLED_TEXT = "task {task} is cancelled and left out"
 
 
@@ -64,4 +65,5 @@ class Staging:
         return "; ".join(entry.text() for entry in self.incomplete)
 
     def notes(self) -> tuple[str, ...]:
-        return (*(UNPROVED_TEXT.format(task=task.id) for task in self.unproved), *(CANCELLED_TEXT.format(task=task.id) for task in self.cancelled))
+        return (*(UNPROVED_TEXT.format(task=task.id) for task in self.unproved), *(CANCELLED_TEXT.format(task=task.id) for task in self.cancelled),
+                *(STAYS_STARTED_TEXT.format(task=entry.task.id, points=entry.points_text()) for entry in self.incomplete))
