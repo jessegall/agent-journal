@@ -7,12 +7,15 @@ from core.modules.drivers.models.enums.compaction_state import CompactionState
 from core.modules.drivers.models.enums.context_change import ContextChange
 
 RETRY_SECONDS = 180
+PERCENT_FULL = 100
 
 
 @dataclass(frozen=True, kw_only=True)
 class ContextCompaction(Model):
     """One compaction or clear of one agent's context, from the line that asked for it to the first context
-    size read after it ended. The line is the text typed into the agent's terminal."""
+    size read after it ended. The line is the text typed into the agent's terminal. A compaction that left the
+    context at the limit or over it did not help, so the next one is due only once the context has grown by a
+    share of the limit; until the size after it is read, no next one is due."""
 
     model_name = "context_compaction"
     cli_name = "context-compaction"
@@ -32,6 +35,13 @@ class ContextCompaction(Model):
         if self.state is CompactionState.STARTED:
             return True
         return self.state is CompactionState.REQUESTED and self.creation_timestamp().elapsed_seconds(timestamp) < RETRY_SECONDS
+
+    def due_tokens(self, limit_tokens: int, growth_percent: int) -> int | None:
+        if self.state is CompactionState.ENDED:
+            return None
+        if self.tokens_after is None or self.tokens_after < limit_tokens:
+            return limit_tokens
+        return self.tokens_after + limit_tokens * growth_percent // PERCENT_FULL
 
     def refusal_text(self) -> str:
         return f"a {self.change.value} is {self.state.value} since {self.creation_timestamp().value.strftime('%H:%M')}"

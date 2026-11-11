@@ -12,8 +12,8 @@ from core.modules.drivers.models.enums.context_change import ContextChange
 
 
 class ContextCompactions:
-    """The compactions and clears of agents' contexts, one row each. It is the one place that records a request,
-    and it refuses a second one while the first is open: started, or requested less than the retry time ago. A
+    """The compactions and clears of agents' contexts, one row each. It is the one place that says whether a
+    context size makes a new compaction due and the one place that records a request, and it refuses a second one while the first is open: started, or requested less than the retry time ago. A
     request whose line never started by then is given up, and the next request takes its place. The hooks move
     the newest row as the program starts and ends the compaction; a compaction the journal did not ask for
     gets its row at its first hook, and a row still open when the program's session ends or starts anew is
@@ -32,6 +32,11 @@ class ContextCompactions:
     def blocks_request(self, agent_id: int, timestamp: Timestamp) -> bool:
         newest = self.newest(agent_id)
         return newest is not None and newest.blocks_request_at(timestamp)
+
+    def is_due(self, agent_id: int, tokens: int, limit_tokens: int, growth_percent: int) -> bool:
+        newest = self.newest(agent_id)
+        due_tokens = newest.due_tokens(limit_tokens, growth_percent) if newest is not None else limit_tokens
+        return due_tokens is not None and tokens >= due_tokens
 
     def request(self, agent_id: int, change: ContextChange, reason: CompactionReason, request_tokens: int | None, line: str, context: Context) -> ContextCompaction:
         newest = self.newest(agent_id)

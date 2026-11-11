@@ -24,6 +24,7 @@ COLD_SESSION_CONTEXT_PERCENT = f"{MODULE_KEY}.cold-session-context-percent"
 CONTEXT_LIMIT_FINISH_TASK = f"{MODULE_KEY}.context-limit-finish-task"
 CONTEXT_LIMIT_HARD_TOKENS = f"{MODULE_KEY}.context-limit-hard-tokens"
 CONTEXT_LIMIT_ACTION = f"{MODULE_KEY}.context-limit-action"
+CONTEXT_LIMIT_GROWTH_PERCENT = f"{MODULE_KEY}.context-limit-growth-percent"
 CONTEXT_ACTIONS = ("compact", "clear")
 HELPER_SETTING_VALUES = [SettingValue("unstarted-helper-seconds", "Seconds before a helper counts as failed", "Seconds after a helper starts with no sign of its program before its launch counts as failed.", SettingType.NUMBER, default=60),
                    SettingValue("agent-use-days", "Days of agent use counted", "Days of jobs counted when suggesting which kept agent to retire.", SettingType.NUMBER, default=14),
@@ -42,6 +43,7 @@ HELPER_SETTING_VALUES = [SettingValue("unstarted-helper-seconds", "Seconds befor
                    SettingValue("context-limit-tokens", "Compact at this context size", "An agent with this many tokens in its context is compacted between turns.", SettingType.NUMBER, default=400000, person_set=True, required_settings=tuple([CONTEXT_LIMIT_ENABLED])),
                    SettingValue("context-limit-finish-task", "Let it finish its task first", "An agent past the limit first finishes the task in hand, and is compacted when it ends.", SettingType.FLAG, default=True, person_set=True, required_settings=tuple([CONTEXT_LIMIT_ENABLED])),
                    SettingValue("context-limit-hard-tokens", "Compact anyway at this context size", "Past this many tokens an agent is compacted even with a task in hand.", SettingType.NUMBER, default=600000, person_set=True, required_settings=tuple([CONTEXT_LIMIT_ENABLED])),
+                   SettingValue("context-limit-growth-percent", "Growth before compacting again", "After a compaction that left the context at the limit or over it, the context must grow by this percent of the limit before it is compacted again.", SettingType.NUMBER, default=10, person_set=True, required_settings=tuple([CONTEXT_LIMIT_ENABLED])),
                    SettingValue("context-limit-action", "At the context size", "Compact the context, or clear it and let the journal give back the open tasks and memories.", SettingType.CHOICE, default=CONTEXT_ACTIONS[0], choices=CONTEXT_ACTIONS, person_set=True),
                    SettingValue("accept-every-approval", "Accept every approval", "Every approval an agent asks for is accepted at once, as you. The chat still shows each one.", SettingType.FLAG, default=False, person_set=True),
                    SettingValue("skips-need-approval", "Main agent approves skips", "A skip of a refusal by a helper passes only once its main agent approves it.", SettingType.FLAG, default=True, person_set=True),
@@ -49,6 +51,7 @@ HELPER_SETTING_VALUES = [SettingValue("unstarted-helper-seconds", "Seconds befor
 HELPER_SETTING_RULES = {COLD_SESSION_MINUTES: NumberRule(0),
                         CONTEXT_LIMIT_TOKENS: NumberRule(0),
                         CONTEXT_LIMIT_HARD_TOKENS: NumberRule(0),
+                        CONTEXT_LIMIT_GROWTH_PERCENT: NumberRule(0),
                         COLD_SESSION_CONTEXT_PERCENT: NumberRule(0),
                         HELPER_RUN_LIMIT: NumberRule(0),
                         HELPER_KEPT_LIMIT: NumberRule(0),
