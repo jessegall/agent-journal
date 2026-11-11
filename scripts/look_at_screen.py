@@ -32,6 +32,7 @@ def arguments() -> argparse.Namespace:
     parser.add_argument("--window", default="agents.agents", help="the window to open and take the picture of")
     parser.add_argument("--setup", action="append", default=[], help="a journal line run in the story journal before the picture; repeatable")
     parser.add_argument("--fixture", default=DEFAULT_FIXTURE, help="module:Class of the story fixture the journal starts from")
+    parser.add_argument("--click", default="", help="a CSS selector clicked before the picture, such as a card that opens an agent")
     parser.add_argument("--wait-for", default="", help="a CSS selector that must show before the picture")
     parser.add_argument("--output", default=str(CHECKOUT / ".journal" / "screens" / "screen.png"), help="where the picture is saved")
     return parser.parse_args()
@@ -44,7 +45,7 @@ def fixture_class(name: str) -> type:
 
 def take_picture(address: str, options: argparse.Namespace, output: Path) -> None:
     environment = {**os.environ, "CHROMIUM_PATH": os.environ.get("CHROMIUM_PATH", DEFAULT_CHROME)}
-    finished = subprocess.run(["node", LOOK_SCRIPT, address, options.window, str(output), options.wait_for],
+    finished = subprocess.run(["node", LOOK_SCRIPT, address, options.window, str(output), options.wait_for, options.click],
                               cwd=VIEWER_FOLDER, capture_output=True, text=True, timeout=SCREENSHOT_SECONDS, env=environment)
     if finished.returncode != 0:
         sys.exit(f"the browser failed:\n{finished.stdout}{finished.stderr}")

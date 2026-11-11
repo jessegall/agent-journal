@@ -82,7 +82,7 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
                 <template v-if="facts?.sandbox_off"><span class="agent-sandbox-off" data-agent-sandbox-off>sandbox off</span></template>
             </span>
         </template>
-        <template v-if="open && !retired"><InformationBar class="agent-live" :agent-programs="context.props.programs.rows.value" :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: facts?.windows ?? []}" card live>
+        <template v-if="open && !retired"><InformationBar class="agent-live" :agent-programs="context.props.programs.rows.value" :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: facts?.windows ?? []}" card>
             <template v-if="facts?.sandbox_off"><span class="agent-sandbox-off" data-agent-sandbox-off>sandbox off</span></template>
             <span class="agent-live-fact" data-agent-motion data-agent-run-time title="How long this session has run">Run time: {{ runTime }}</span>
             <template v-if="facts?.last_activity"><span class="agent-live-fact" data-agent-last-heard>Seen: <TimeAgo :at="facts.last_activity" /></span></template>

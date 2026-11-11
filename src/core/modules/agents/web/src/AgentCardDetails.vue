@@ -35,7 +35,6 @@ watch(() => props.open, (open) => { if (open) tab.value = firstTab(); });
 const components = Object.fromEntries(context.tabs.filter((tab) => tab.component).map((tab) => [tab.key, defineAsyncComponent(() => loadWindowComponent(tab.component))]));
 const instructionOpen = ref(false);
 const {data: tool} = context.props.tool;
-const programTitle = computed(() => context.props.programs.rows.value.find((program) => program.name === props.row.program)?.title ?? "");
 const runningCommand = computed(() => tool.value?.tool ?? "");
 const noCommandNote = computed(() => tool.value?.note ?? "");
 const showsCommand = computed(() => props.row.role !== "main" && (!props.row.ended_at || props.stoppedWithWork || props.waitReason));
@@ -52,7 +51,7 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
 
 <template>
     <div class="agent-more" data-agent-more @click.stop>
-        <AgentLastingFacts :row="row" :program-title="programTitle" :effort="facts?.effort || ''" />
+        <AgentLastingFacts :row="row" />
         <template v-if="row.retirement_reason"><p class="agent-summary" data-agent-retirement-reason>Retirement reason: {{ row.retirement_reason }}</p></template>
         <template v-if="row.resume_reason"><p class="agent-summary" data-agent-resume-reason>{{ row.resume_reason }}</p></template>
                 <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>

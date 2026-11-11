@@ -8,16 +8,12 @@ const END_REASONS = {
     driver_changed: "its driver was changed", each_launch: "each job starts a new one", launch_rotation: "its program was changed for the job",
     conversation_missing: "its conversation was gone", never_started: "it never started", unknown: "the reason is not known",
 };
-const props = defineProps({row: {type: Object, required: true}, programTitle: {type: String, default: ""}, effort: {type: String, default: ""}});
-const programName = computed(() => props.programTitle || (props.row.program ? props.row.program.slice(0, 1).toUpperCase() + props.row.program.slice(1) : ""));
-// the one place a card names the program, the model and the effort of its agent
-const driver = computed(() => [programName.value, props.row.program_model, props.effort].filter(Boolean).join(", "));
+const props = defineProps({row: {type: Object, required: true}});
 const endReason = computed(() => (props.row.replaced_session_end_reason ? END_REASONS[props.row.replaced_session_end_reason] || props.row.replaced_session_end_reason.replaceAll("_", " ") : ""));
 </script>
 
 <template>
     <dl class="lasting-facts" data-agent-lasting-facts>
-        <template v-if="driver"><div><dt>Driver</dt><dd data-agent-driver-name>{{ driver }}</dd></div></template>
         <template v-if="row.created_at"><div><dt>Started</dt><dd data-agent-first-dispatched><TimeAgo :at="row.created_at" /></dd></div></template>
         <div><dt>Sessions</dt><dd data-agent-session-count>{{ row.session_count ?? 0 }}</dd></div>
         <template v-if="endReason"><div><dt>Last session ended</dt><dd data-agent-session-end-reason>{{ endReason }}</dd></div></template>
