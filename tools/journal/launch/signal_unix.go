@@ -14,3 +14,9 @@ func signalGroup(pid int, forced bool) {
 		_ = syscall.Kill(pid, signal)
 	}
 }
+
+// processRuns is whether a process of that number still runs.
+func processRuns(pid int) bool {
+	err := syscall.Kill(pid, 0)
+	return err == nil || err == syscall.EPERM
+}

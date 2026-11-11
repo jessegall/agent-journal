@@ -73,10 +73,15 @@ func previousAnswer(request WorkerRequest, paths []string) string {
 	return ""
 }
 
-// HasPrograms keeps an old service alive until all the terminals it routes to have finished.
+// HasPrograms keeps a service alive while it has a terminal of its own, and while a launch before it has one that
+// only this service routes to. Once a newer launch took this one's routes it reaches those older launches itself, so
+// this service stays only for its own terminals: an old service with none exits and services do not pile up.
 func (listener *Listener) HasPrograms() bool {
 	if listener.inputs.HasPrograms() {
 		return true
+	}
+	if listener.routesGiven.Load() {
+		return false
 	}
 	for _, path := range listener.previous {
 		if answer, err := socketAnswer(path, WorkerRequest{AnyProgram: true, LocalOnly: true}); err == nil && answer != "" {

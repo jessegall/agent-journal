@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -169,7 +170,10 @@ func Listen(path string, starter Starter, inputs *TerminalInputs) (io.Closer, er
 
 // ListenVersioned replaces the public listener while older launches retain their terminals.
 func ListenVersioned(path string, starter Starter, inputs *TerminalInputs, version string) (*Listener, error) {
-	previous := setAsidePrevious(path)
+	previous, err := setAsidePrevious(path)
+	if err != nil {
+		return nil, err
+	}
 	listener, err := net.Listen("unix", path)
 	if err != nil {
 		restoreFirst(previous, path)
@@ -183,6 +187,8 @@ func ListenVersioned(path string, starter Starter, inputs *TerminalInputs, versi
 		restoreFirst(previous, path)
 		return nil, err
 	}
+	writeOwner(path)
+	routesGiven := &atomic.Bool{}
 	answers := &sync.WaitGroup{}
 	answers.Add(1)
 	go func() {
@@ -195,21 +201,23 @@ func ListenVersioned(path string, starter Starter, inputs *TerminalInputs, versi
 			answers.Add(1)
 			go func() {
 				defer answers.Done()
-				answered(connection, starter, inputs, previous, version)
+				answered(connection, starter, inputs, previous, version, routesGiven)
 			}()
 		}
 	}()
-	return &Listener{listener: listener, path: path, previous: previous, bound: bound, answers: answers, inputs: inputs}, nil
+	return &Listener{listener: listener, path: path, previous: previous, bound: bound, answers: answers, inputs: inputs, routesGiven: routesGiven}, nil
 }
 
-// Listener keeps the public socket and every older terminal owner's socket.
+// Listener keeps the public socket and every older terminal owner's socket. routesGiven is set once a newer launch
+// asked for this one's routes: from then on the newer launch reaches the older ones itself.
 type Listener struct {
-	listener net.Listener
-	path     string
-	previous []string
-	bound    os.FileInfo
-	answers  *sync.WaitGroup
-	inputs   *TerminalInputs
+	listener    net.Listener
+	path        string
+	previous    []string
+	bound       os.FileInfo
+	answers     *sync.WaitGroup
+	inputs      *TerminalInputs
+	routesGiven *atomic.Bool
 }
 
 // Close frees the name when it is still this launch's, gives it back to the launch before it, and waits for the answers
@@ -218,6 +226,7 @@ func (socket *Listener) Close() error {
 	err := socket.listener.Close()
 	if current, statErr := os.Stat(socket.path); statErr == nil && os.SameFile(current, socket.bound) {
 		_ = os.Remove(socket.path)
+		removeOwner(socket.path)
 		restoreFirst(socket.previous, socket.path)
 	}
 	socket.awaitAnswers()
@@ -236,11 +245,17 @@ func (socket *Listener) awaitAnswers() {
 	}
 }
 
-func setAsidePrevious(path string) []string {
+// setAsidePrevious moves the socket of the launch that answers there to a name of its own and gives the routes to it
+// and to the launches before it. A socket nobody answers on is removed, unless the launcher that serves it still runs:
+// that one is slow, not gone, and its socket is left alone.
+func setAsidePrevious(path string) ([]string, error) {
 	connection, err := net.DialTimeout("unix", path, socketDialLimit)
 	if err != nil {
+		if _, statErr := os.Lstat(path); statErr == nil && ownerRuns(path) {
+			return nil, ErrLauncherRuns
+		}
 		_ = os.Remove(path)
-		return nil
+		return nil, nil
 	}
 	_ = connection.Close()
 	older, _ := socketAnswer(path, WorkerRequest{Routes: true})
@@ -248,15 +263,15 @@ func setAsidePrevious(path string) []string {
 	_ = json.Unmarshal([]byte(older), &routes)
 	file, err := os.CreateTemp(filepath.Dir(path), "l-")
 	if err != nil {
-		return nil
+		return nil, nil
 	}
 	previous := file.Name()
 	_ = file.Close()
 	_ = os.Remove(previous)
 	if os.Rename(path, previous) != nil {
-		return nil
+		return nil, nil
 	}
-	return append([]string{previous}, routes...)
+	return append([]string{previous}, routes...), nil
 }
 
 func restorePrevious(previous, path string) bool {
@@ -290,7 +305,7 @@ func forwarded(connection net.Conn, request WorkerRequest, previous []string) {
 	}
 }
 
-func answered(connection net.Conn, starter Starter, inputs *TerminalInputs, previous []string, version string) {
+func answered(connection net.Conn, starter Starter, inputs *TerminalInputs, previous []string, version string, routesGiven *atomic.Bool) {
 	defer connection.Close()
 	var request WorkerRequest
 	if err := json.NewDecoder(connection).Decode(&request); err != nil {
@@ -302,6 +317,7 @@ func answered(connection net.Conn, starter Starter, inputs *TerminalInputs, prev
 	}
 	if request.Routes {
 		_ = json.NewEncoder(connection).Encode(previous)
+		routesGiven.Store(true)
 		return
 	}
 	if request.Silent {

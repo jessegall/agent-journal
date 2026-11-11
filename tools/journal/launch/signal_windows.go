@@ -8,3 +8,8 @@ func signalGroup(pid int, forced bool) {
 		_ = process.Kill()
 	}
 }
+
+// processRuns is never true on Windows, where no launcher serves a socket.
+func processRuns(pid int) bool {
+	return false
+}
