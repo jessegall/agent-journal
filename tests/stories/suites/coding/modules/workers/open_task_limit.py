@@ -51,7 +51,7 @@ def test_14_a_sixth_task_is_refused_at_the_limit_and_nothing_changes(five_tasks)
 
 def test_15_a_person_lowers_the_limit_the_next_start_is_refused_at_it_and_a_limit_below_one_is_refused(three_tasks):
     story = three_tasks.story
-    story.expect_text("work-settings show --json --environment main", "Tasks a worker holds at once", actor=story.user)
+    story.expect_text("work-settings show --json --environment main", "Tasks a worker may hold started at once", "Tasks handed to a worker at once", actor=story.user)
     story.expect_text(f"setting show {LIMIT_SETTING} --environment main", "value: 5", actor=story.user)
     story.expect_success(f"setting set {LIMIT_SETTING} 3 --environment main", actor=story.user)
     refused = story.run("task start 5", actor=three_tasks.worker)

@@ -5,7 +5,6 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.staging import Staging
-from suites.coding.modules.workers.support.worker_test_group import WorkerTestGroup
 
 
 @dataclass(frozen=True)
@@ -19,7 +18,6 @@ class WorkerRound:
     following: Task | None
     is_asking: bool
     conflict: AgentLine | None
-    group: WorkerTestGroup | None
     staging: Staging | None
 
     def required_worktree(self) -> Worktree:

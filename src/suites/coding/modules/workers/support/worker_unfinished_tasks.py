@@ -1,23 +1,26 @@
+from core.modules.tasks.models.enums.task_state import TaskState
 from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
-from suites.coding.modules.workers.support.worker_phases import WorkerPhases
+from core.modules.plans.support.task_plans import TaskPlans
+from engine.database.kept_rows import KeptRows
+from engine.query.queries import Queries
 from suites.coding.modules.workers.support.worker_round import WorkerRound
 from suites.coding.modules.workers.support.worker_steps import WorkerSteps
 
 
 class WorkerUnfinishedTasks:
     """The tasks a worker still has to do when it stops: none when it holds no task it can go on with, or when
-    its tests are waiting, since those hand it its next task. While it holds a started task, the tasks it
-    moved on from inside a phase count too, since they wait for the end of that phase. A worker has made
+    its tests are waiting. Its committed tasks are those in testing in a started plan, which wait for a
+    checkpoint. A worker has made
     progress when a task of it started or closed, or when it last used a tool, so only a worker that does
     nothing runs out of restarts."""
 
-    def __init__(self, tasks: TaskQuery, processes: ProcessQuery, phases: WorkerPhases, hook_calls: HookCallQuery, steps: WorkerSteps) -> None:
+    def __init__(self, tasks: TaskQuery, processes: ProcessQuery, plans: TaskPlans, hook_calls: HookCallQuery, steps: WorkerSteps, queries: Queries, kept: KeptRows) -> None:
         self.hook_calls, self.steps = hook_calls, steps
-        self.tasks, self.processes, self.phases = tasks, processes, phases
+        self.tasks, self.processes, self.plans, self.queries, self.kept = tasks, processes, plans, queries, kept
 
     def rows(self, worker_id: int) -> tuple[Task, ...]:
         return self.round_rows(self.steps.round(worker_id))
@@ -25,11 +28,13 @@ class WorkerUnfinishedTasks:
     def round_rows(self, worker_round: WorkerRound) -> tuple[Task, ...]:
         if self.steps.is_delivered(worker_round) or (not worker_round.started and worker_round.following is None):
             return ()
-        advanced = self.phases.advanced(worker_round.worker_id) if worker_round.started else ()
-        return (*advanced, *worker_round.started, *self.tasks.queued_tasks(worker_round.worker_id))
+        return (*worker_round.started, *self.tasks.queued_tasks(worker_round.worker_id))
 
     def committed(self, worker_id: int) -> tuple[Task, ...]:
-        return self.phases.committed(worker_id)
+        testing = self.kept.scoped_current(lambda: tuple(self.queries.query(Task).filter(delegated_to=worker_id, state=TaskState.TESTING).oldest().all_rows()),
+                                           name=f"workers.testing_tasks:{worker_id}")
+        self.plans.prepare([task.id for task in testing])
+        return tuple(task for task in testing if self.plans.is_started_plan(task.id))
 
     def last_progress_text(self, worker_id: int) -> str:
         tasks = self.tasks.filter(delegated_to=worker_id).all_rows()

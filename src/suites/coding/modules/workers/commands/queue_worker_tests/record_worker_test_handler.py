@@ -7,7 +7,6 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from engine.driver.nudger import Nudger
-from core.modules.plans.models.phase import Phase
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
@@ -24,8 +23,8 @@ from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOUR
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worker_test_failures import WorkerTestFailures
 from engine.setting.setting_values import SettingValues
-from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK, WORKER_COMMIT_PASSED, WORKER_PHASE_TESTS_FAILED, WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
-from suites.coding.modules.workers.support.worker_phases import WorkerPhases
+from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK, WORKER_COMMIT_PASSED, WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
+from core.modules.plans.support.task_plans import TaskPlans
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 
@@ -44,18 +43,18 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     command = RecordWorkerTest
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MergerInbox, nudger: Nudger, rows: EventRows, phases: WorkerPhases, failures: WorkerTestFailures, settings: SettingValues,
+    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MergerInbox, nudger: Nudger, rows: EventRows, plans: TaskPlans, failures: WorkerTestFailures, settings: SettingValues,
                  guidance: WorkerGuidance, numbers: RowNumbers, checkpoint_results: CheckpointResults) -> None:
         self.numbers, self.checkpoint_results, self.guidance = numbers, checkpoint_results, guidance
         self.failures, self.settings = failures, settings
         self.queries, self.repository, self.main_agent_line, self.nudger = queries, repository, main_agent_line, nudger
-        self.rows, self.phases = rows, phases
+        self.rows, self.plans = rows, plans
 
     def handle(self, command: RecordWorkerTest, context: Context) -> None:
         proof = self.rows.required(Proof, command.proof_id)
         self.repository.save_change(proof, proof.moved(ProofLifecycle.check) if command.passed else proof.moved(ProofLifecycle.short, shortfall=command.output_note), context)
         worktree = self.rows.required(Worktree, proof.worktree_id)
-        if worktree.merged_at is not None or self.phases.plans.is_started_plan(proof.task_id):
+        if worktree.merged_at is not None or self.plans.is_started_plan(proof.task_id):
             self.checkpoint_results.record(proof.task_id, context)
             return
         self.finish(worktree, context)
@@ -96,7 +95,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         self.main_agent_line.send_nudge(WORKER_TESTS_PASSED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), LINE_SOURCE, context)
 
     def complete_tested(self, tasks: dict[int, Task], proofs: tuple[Proof, ...], context: Context) -> list[Task]:
-        self.phases.plans.prepare(sorted(tasks))
+        self.plans.prepare(sorted(tasks))
         completed = [task for task in tasks.values() if self.has_passed(task, [row for row in proofs if row.task_id == task.id])]
         for task in completed:
             reason = TESTS_PASSED_REASON if any(row.test_command for row in proofs if row.task_id == task.id) else PROOFS_CHECKED_REASON
@@ -104,7 +103,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         return completed
 
     def has_passed(self, task: Task, proofs: list[Proof]) -> bool:
-        if self.phases.plans.is_started_plan(task.id):
+        if self.plans.is_started_plan(task.id):
             return False
         return task.state is TaskState.TESTING and all(row.state is ProofState.CHECKED for row in proofs)
 
@@ -120,12 +119,5 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         current = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context) if worktree.state is WorktreeState.DELIVERED else worktree
         if current.task_id != task_ids[0]:
             current = self.repository.save_change(current, current.moved(WorktreeLifecycle.advance, task_id=task_ids[0]), context)
-        phase = self.phases.phase(self.rows.required(Task, task_ids[0]))
-        if phase is None:
-            self.nudger.send(current.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=outputs, line=self.guidance.line(current.session_agent_id))
-            return current
-        self.send_phase_failures(current, phase, outputs, context)
+        self.nudger.send(current.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=outputs, line=self.guidance.line(current.session_agent_id))
         return current
-
-    def send_phase_failures(self, worktree: Worktree, phase: Phase, outputs: str, context: Context) -> None:
-        self.nudger.send(worktree.session_agent_id, WORKER_PHASE_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, phase=phase.id, outputs=outputs, line=self.guidance.line(worktree.session_agent_id))

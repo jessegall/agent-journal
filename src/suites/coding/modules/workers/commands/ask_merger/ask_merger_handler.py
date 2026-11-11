@@ -69,7 +69,7 @@ class AskMergerHandler(Handler[AskMerger, str]):
         return self.queries.query(Wait).filter(session_agent_id=worker_id, state=WaitState.OPEN, type=WaitType.ANSWER, focus=focus).exists()
 
     def send(self, command: AskMerger, point: WorkerPoint, task: Task, focus: str, context: Context) -> None:
-        group = point.counted_group_key()
+        group = point.counted_window_key()
         exceeds_limit = self.queries.query(MergerLine).filter(worker_id=command.worker_id, group_key=group).matching(HasValue("topic")).count() >= self.settings.number(MERGER_GROUP_MESSAGE_LIMIT)
         facts = self.facts_query.read(point, task)
         self.bus.dispatch(MakeTaskLog(facts.task, f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} asked the merger about {command.topic}: {command.text}"), context)

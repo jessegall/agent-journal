@@ -6,8 +6,6 @@ class WorkerStep(StrEnum):
 
     BUILD = "build"
     COMMIT = "commit"
-    TASK_PROVEN = "task-proven"
-    GROUP_END = "group-end"
     WAIT = "wait"
     FIX = "fix"
     CONFLICT = "conflict"

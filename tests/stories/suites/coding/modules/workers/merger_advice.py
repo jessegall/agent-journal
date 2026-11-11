@@ -32,8 +32,9 @@ ADVICES = (
     "Stop and wait for the base branch to settle",
 )
 MERGER_ROLE_REFUSAL = "only the merger runs this"
-MERGER_MESSAGE_LIMIT_LINE = "5 of 5 used in this group"
-QUESTION_LIMIT_LINE = "5 of 5 asks used in this group"
+MERGER_MESSAGE_LIMIT_LINE = "5 of 5 used since the worker's last commit"
+MAIN_AGENT_HAS_IT = "the main agent has your question now"
+MERGER_HAS_IT = "the merger has your question"
 VISIT_LIMIT_LINE = "already advised"
 UNCHANGED_POINT_LINE = "has not changed"
 IDLE_WORKER_LINE = "has no open work"
@@ -155,7 +156,7 @@ def advised_and_delivered(advising):
 @pytest.fixture
 def twice_advised_and_delivered(advised_and_delivered):
     advised_and_delivered.visit()
-    advised_and_delivered.advised(ADVICES[1], 2)
+    advised_and_delivered.advised(ADVICES[1], 1)
     return advised_and_delivered
 
 
@@ -176,14 +177,6 @@ def merged_after_five_asks(five_questions):
     five_questions.delivered()
     five_questions.merged()
     return five_questions
-
-
-@pytest.fixture
-def planned_with_three_asks(planned):
-    worker, advised = planned
-    for number in range(1, 4):
-        advised.post_questions(number)
-    return worker, advised
 
 
 def test_advise_still_reaches_the_worker_as_a_message_from_the_merger(advising):
@@ -224,7 +217,7 @@ def test_the_same_step_on_the_next_task_is_a_new_point(planned):
     outcome = worker.prove_commit()
     expect_value(outcome.code, 0)
     advised.visit()
-    advised.advised(ADVICES[1], 2)
+    advised.advised(ADVICES[1], 1)
     advised.story.expect_rows([row.task_id for row in advised.merger_message_rows()] == [1, 2], [row.step for row in advised.merger_message_rows()] == ["build", "build"], detail=str(advised.merger_message_rows()))
 
 
@@ -247,18 +240,20 @@ def test_a_merged_worker_cannot_be_advised_until_it_has_new_work(merged_worker):
     expect_refused_with(merged_worker.story, f'merger advise {agent_number(merged_worker.story, merged_worker.worker.id)} "{ADVICES[0]}"', IDLE_WORKER_LINE, actor=merged_worker.merger)
 
 
-def test_the_count_resets_when_the_group_is_merged(twice_advised_and_delivered):
+def test_the_count_starts_anew_at_the_commit_of_the_worker_and_for_its_work_after_the_merge(twice_advised_and_delivered):
     twice_advised_and_delivered.merged()
     twice_advised_and_delivered.given_new_work()
     twice_advised_and_delivered.visit()
     twice_advised_and_delivered.advised(ADVICES[2], 1)
 
 
-def test_a_failed_merge_does_not_reset_the_count(advised_and_delivered):
-    advised_and_delivered.case.repository.uncommitted("cart.py", "TOTAL = 5\n")
-    expect_refused_with(advised_and_delivered.story, f"worker merge --wait {agent_number(advised_and_delivered.story, advised_and_delivered.worker.id)}", "uncommitted changes to cart.py", actor=advised_and_delivered.story.agent)
-    advised_and_delivered.visit()
-    advised_and_delivered.advised(ADVICES[1], 2)
+def test_a_failed_merge_does_not_reset_the_count(twice_advised_and_delivered):
+    advised = twice_advised_and_delivered
+    advised.case.repository.uncommitted("cart.py", "TOTAL = 5\n")
+    expect_refused_with(advised.story, f"worker merge --wait {agent_number(advised.story, advised.worker.id)}", "uncommitted changes to cart.py", actor=advised.story.agent)
+    advised.post_questions(2)
+    advised.visit()
+    advised.advised(ADVICES[2], 2)
 
 
 def test_the_journal_own_lines_do_not_count(advising):
@@ -283,47 +278,31 @@ def test_a_worker_message_to_the_merger_is_not_refused(advising):
     advising.story.expect_success(f'message send "Rebased on the branch" --to agent:{agent_number(advising.story, advising.merger.id)}', actor=advising.worker)
 
 
-def test_the_sixth_ask_in_a_group_is_refused_and_the_first_of_the_next_group_goes_through(planned_with_three_asks):
-    _, advised = planned_with_three_asks
-    advised.post_questions(4)
-    advised.post_questions(5)
-    expect_refused_with(advised.story, 'worker ask "Question 6"', QUESTION_LIMIT_LINE, "wait for the merge", actor=advised.worker)
-    advised.story.expect_rows(len(advised.question_lines()) == 5, detail=str(advised.question_lines()))
-    advised.story.expect_success("phase place 1 --phase 2", actor=advised.story.agent)
-    advised.post_questions(7)
-    advised.story.expect_rows(len(advised.question_lines()) == 6, detail=str(advised.question_lines()))
-
-
 def test_the_asks_count_starts_again_after_the_merge(merged_after_five_asks):
     merged_after_five_asks.given_new_work()
     merged_after_five_asks.post_questions(6)
     merged_after_five_asks.story.expect_rows(len(merged_after_five_asks.question_lines()) == 6, detail=str(merged_after_five_asks.question_lines()))
 
 
-def test_a_refused_ask_writes_no_line_and_opens_no_wait(five_questions):
-    expect_refused_with(five_questions.story, 'worker ask "Question 6"', QUESTION_LIMIT_LINE, actor=five_questions.worker)
-    five_questions.story.expect_no_text("task-log list --task 1", "Question 6")
-    five_questions.story.expect_no_text(f"wait list --agent {five_questions.worker.id}", "Question 6")
-
-
-def test_the_ask_limit_holds_with_the_merger_off(merger_disabled_plan):
-    expect_refused_with(merger_disabled_plan.story, 'worker ask "Question 6"', QUESTION_LIMIT_LINE, actor=merger_disabled_plan.worker)
-
-
-def test_a_worker_that_answers_to_a_group_of_tasks_counts_asks_for_the_group_not_per_task(planned_with_three_asks):
-    worker, advised = planned_with_three_asks
-    advised.worked_on()
-    worker.story.run("task start 2", actor=worker.worker)
-    outcome = worker.prove_commit()
-    expect_value(outcome.code, 0)
-    advised.post_questions(4)
-    advised.post_questions(5)
-    expect_refused_with(advised.story, 'worker ask "Question 6"', QUESTION_LIMIT_LINE, actor=advised.worker)
-
-
 def test_the_merger_profile_and_skill_name_advise_and_its_limits():
     profile = next(row.body for row in HELPER_PROFILES if row.name == "journal-merger")
     skill = (Path(workers_package.__file__).parent / "skills" / "journal-merger" / "SKILL.md").read_text()
     for text in (profile, skill):
-        expect_value(ADVISE_COMMAND in text and "five per group" in text and "one per visit" in text and "the point changed" in text, True)
+        expect_value(ADVISE_COMMAND in text and "five between two commits of the worker" in text and "one per visit" in text and "the point changed" in text, True)
         expect_value_without(text, "journal message send")
+
+
+def test_a_sixth_ask_between_two_commits_goes_to_the_main_agent_and_the_first_after_the_next_commit_to_the_merger(planned):
+    worker, advised = planned
+    advised.with_five_asks()
+    sixth = advised.ask(6)
+    worker.story.run("task start 2", actor=worker.worker)
+    committed = worker.prove_commit()
+    seventh = advised.ask(7)
+    advised.story.expect_rows(sixth.code == 0, MAIN_AGENT_HAS_IT in sixth.output_text, committed.code == 0, seventh.code == 0, MERGER_HAS_IT in seventh.output_text,
+                              detail=f"{sixth.output_text} | {committed.output_text} | {seventh.output_text}")
+
+
+def test_a_sixth_ask_with_the_merger_off_reaches_the_main_agent(merger_disabled_plan):
+    sixth = merger_disabled_plan.ask(6)
+    merger_disabled_plan.story.expect_rows(sixth.code == 0, MAIN_AGENT_HAS_IT in sixth.output_text, detail=sixth.output_text)

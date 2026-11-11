@@ -89,7 +89,7 @@ def test_a_worker_of_a_task_in_no_plan_has_the_same_count_of_its_own_runs(new_st
 
 def test_the_json_status_holds_the_point_and_the_counts(phase_worker):
     status = phase_worker.status_json()
-    phase_worker.story.expect_rows(status["step"] == "build", status["open_task_count"] == 1, status["test_runs_available"] == 3, status["group"] is None, status["guidance"] == phase_worker.status_line())
+    phase_worker.story.expect_rows(status["step"] == "build", status["open_task_count"] == 1, status["test_runs_available"] == 3, status["commit_window"] == "commit:1:1:0", status["guidance"] == phase_worker.status_line())
 
 
 def test_the_main_agent_reads_the_same_line_as_the_worker(phase_worker):

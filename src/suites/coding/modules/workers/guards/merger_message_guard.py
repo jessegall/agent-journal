@@ -23,7 +23,7 @@ class MergerMessageGuard(Guard[Created[Message]]):
         if receiver_id is None or context.actor.type is not ActorType.AGENT or self.is_counted(context):
             return
         if self.agents.find(context.actor.id).profile == MERGER_PROFILE and self.agents.find(receiver_id).role == CodingHelperRole.WORKER:
-            raise Refusal("you talk to a worker only through advise", 'journal merger advise <worker> "<text>" (five per group)')
+            raise Refusal("you talk to a worker only through advise", 'journal merger advise <worker> "<text>" (five between two commits of the worker)')
 
     @staticmethod
     def is_counted(context: Context) -> bool:

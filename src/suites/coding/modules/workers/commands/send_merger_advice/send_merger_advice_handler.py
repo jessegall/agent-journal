@@ -21,7 +21,8 @@ from engine.cli.row_numbers import RowNumbers
 
 
 class SendMergerAdviceHandler(Handler[SendMergerAdvice, str]):
-    """Gives a worker the merger's advice: five per group, one per visit, and only when the worker moved."""
+    """Gives a worker the merger's advice: five between two commits of the worker, one per visit, and only
+    when the worker moved."""
 
     command = SendMergerAdvice
     disabled_scopes = [ActorScope]
@@ -37,21 +38,21 @@ class SendMergerAdviceHandler(Handler[SendMergerAdvice, str]):
         if point.round.worktree is None:
             raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers).text} has no open work", "advise a worker that is at work")
         task_id = self.guidance.current_task(point.round).id
-        group_rows = tuple(self.queries.query(MergerAdvice).filter(worker_id=command.worker_id, group_key=point.counted_group_key()).oldest().all_rows())
+        group_rows = tuple(self.queries.query(MergerAdvice).filter(worker_id=command.worker_id, group_key=point.counted_window_key()).oldest().all_rows())
         visit = self.queries.query(MergerVisit).newest().first()
         visit_id = None if visit is None else visit.id
         limit = self.settings.number(MERGER_GROUP_MESSAGE_LIMIT)
         self.check_limit(group_rows, limit)
         self.check_visit(command.worker_id, visit_id)
         self.check_point(group_rows, point, task_id)
-        self.repository.save(MergerAdvice(worker_id=command.worker_id, group_key=point.counted_group_key(), step=point.step, task_id=task_id, visit_id=visit_id, text=command.text), context)
+        self.repository.save(MergerAdvice(worker_id=command.worker_id, group_key=point.counted_window_key(), step=point.step, task_id=task_id, visit_id=visit_id, text=command.text), context)
         self.bus.dispatch(SendAgentMessage(command.worker_id, command.text, is_counted=True), context)
-        return f"advice {len(group_rows) + 1} of {limit} in this group sent to {AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text}"
+        return f"advice {len(group_rows) + 1} of {limit} since the worker's last commit sent to {AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text}"
 
     @staticmethod
     def check_limit(group_rows: tuple[MergerAdvice, ...], limit: int) -> None:
         if len(group_rows) >= limit:
-            raise Refusal(f"{limit} of {limit} used in this group", 'wait for the merge, or journal merger tell "<what>" --tried ... --option ... --option ... --recommend ...')
+            raise Refusal(f"{limit} of {limit} used since the worker's last commit", 'wait for its next commit, or journal merger tell "<what>" --tried ... --option ... --option ... --recommend ...')
 
     def check_visit(self, worker_id: int, visit_id: int | None) -> None:
         last = self.queries.query(MergerAdvice).filter(worker_id=worker_id).newest().first()

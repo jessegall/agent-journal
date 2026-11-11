@@ -21,11 +21,9 @@ class WorkerStepText:
 STEP_TEXTS = {
     WorkerStep.BUILD: WorkerStepText("Task {task} is not finished{missing}.", "prove each point of its brief with journal proof make, then {deliver}", "{open_tasks} open in this group, own test runs available: {runs}"),
     WorkerStep.COMMIT: WorkerStepText("{proven} proven.", "{commit}", "{commit_tests}"),
-    WorkerStep.TASK_PROVEN: WorkerStepText("Every point of task {task} is proven and the group goes on.", "{deliver}", "your next task starts at once"),
-    WorkerStep.GROUP_END: WorkerStepText("Every point of task {task} is proven and it ends its group.", "{deliver}", "the journal judges the group and queues its tests on the commit handed in"),
     WorkerStep.WAIT: WorkerStepText("{waiting}", "stop", "you are woken when its tests end or it is merged"),
     WorkerStep.FIX: WorkerStepText("The tests of {label} failed.", "fix the failing tests and hand in again, running tests freely until then", "the next hand-in reruns only what failed"),
-    WorkerStep.CONFLICT: WorkerStepText("{label} clashed with its base branch in {files}.", "settle the conflict markers in those files, then journal worker deliver", f"the journal merges it again. {AskTopic.CONFLICT.question_line()}"),
+    WorkerStep.CONFLICT: WorkerStepText("{label} clashed with its base branch in {files}.", "settle the conflict markers in those files, then journal worker commit", f"the journal merges it again. {AskTopic.CONFLICT.question_line()}"),
     WorkerStep.BLOCKED: WorkerStepText("task {task} is blocked.", "stop", "you are woken when it opens, or when you are given another task"),
     WorkerStep.QUESTION: WorkerStepText("Your question is open.", "do the work named in the answer, or stop", "you are woken when the answer comes"),
 }

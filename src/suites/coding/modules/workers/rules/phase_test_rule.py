@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worker_groups import WorkerGroups
+from suites.coding.modules.workers.support.commit_window import CommitWindow
 from suites.coding.modules.workers.commands.record_worker_test_run.record_worker_test_run import RecordWorkerTestRun
 
 from engine.driver.agent_hook import AgentHook
@@ -14,7 +14,9 @@ from engine.driver.shell_line import ShellLine
 from core.modules.processes.support.background_commands import BackgroundCommands
 from core.modules.processes.support.reader_demands import ASKING_FLAGS
 from suites.coding.modules.workers.support.worker_nudges import PHASE_TEST_REFUSED, PHASE_TEST_RUN_ALLOWED
-from suites.coding.modules.workers.support.worker_phases import WorkerPhases
+from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.task import Task
+from engine.query.queries import Queries
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
@@ -30,8 +32,8 @@ class PhaseTestRule(DriverRule):
     roles = [CodingHelperRole.WORKER]
     single_action_refusal = "Allows counted test runs between two commits and handles requests after the allowance is spent"
 
-    def __init__(self, phases: WorkerPhases, commands: BackgroundCommands, worktrees: WorktreeQuery, groups: WorkerGroups) -> None:
-        self.phases, self.commands, self.worktrees, self.groups = phases, commands, worktrees, groups
+    def __init__(self, queries: Queries, commands: BackgroundCommands, worktrees: WorktreeQuery, window: CommitWindow) -> None:
+        self.queries, self.commands, self.worktrees, self.window = queries, commands, worktrees, window
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
@@ -41,10 +43,10 @@ class PhaseTestRule(DriverRule):
         if not test_part_count:
             return RuleAnswer.allowed()
         worktree = self.worktrees.worker_worktree(hook.agent_id)
-        if worktree is None or self.phases.has_delivered(hook.agent_id):
+        if worktree is None or self.queries.query(Task).find(worktree.task_id).state is TaskState.TESTING:
             return RuleAnswer.allowed()
-        remaining = self.groups.test_runs_available(worktree)
-        return self.line_answer([self.part_answer(hook.agent_id, self.groups.run_window_key(worktree), remaining - position) for position in range(test_part_count)])
+        remaining = self.window.test_runs_available(worktree)
+        return self.line_answer([self.part_answer(hook.agent_id, self.window.key(worktree), remaining - position) for position in range(test_part_count)])
 
     def is_test_part(self, part: Part, shell: ShellLine) -> bool:
         return (WorkerTestNames.is_worker_test(part) or self.commands.part_command(part, shell).category is CommandCategory.TEST_RUN) and not ASKING_FLAGS.intersection(part.arguments)

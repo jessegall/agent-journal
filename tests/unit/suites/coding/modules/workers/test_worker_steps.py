@@ -20,11 +20,6 @@ def test_every_step_gives_what_now_then(step):
     assert line.split("Then:")[1].strip()
 
 
-def test_group_end_names_the_hand_in_command_of_its_facts():
-    assert "journal worker commit" in step_line(WorkerStep.GROUP_END, FACTS.changed_deliver_command("journal worker commit"))
-    assert "journal worker next" in step_line(WorkerStep.GROUP_END, FACTS)
-
-
 def test_clash_names_its_files():
     assert "cart.py" in step_line(WorkerStep.CONFLICT, FACTS)
 
@@ -40,4 +35,4 @@ def test_no_step_says_say_you_are_stuck(step):
 
 
 def test_step_values_are_stable():
-    assert [step.value for step in WorkerStep] == ["build", "commit", "task-proven", "group-end", "wait", "fix", "conflict", "question", "blocked"]
+    assert [step.value for step in WorkerStep] == ["build", "commit", "wait", "fix", "conflict", "question", "blocked"]

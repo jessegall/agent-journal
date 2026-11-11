@@ -3,8 +3,8 @@ from engine.errors.refusal import Refusal
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.enums.worker_step import WorkerStep
-from suites.coding.modules.workers.support.worker_groups import WorkerGroups
-from suites.coding.modules.workers.support.worker_phases import WorkerPhases
+from suites.coding.modules.workers.support.commit_window import CommitWindow
+from core.modules.plans.support.task_plans import TaskPlans
 from suites.coding.modules.workers.support.worker_point import WorkerPoint
 from suites.coding.modules.workers.support.worker_round import WorkerRound
 from suites.coding.modules.workers.support.checkpoint_wait_text import CheckpointWaitText
@@ -14,7 +14,7 @@ from suites.coding.modules.workers.support.worker_steps import WorkerSteps
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 
 NEXT_COMMAND = 'journal worker next --differences "<what differs, or none>"'
-DELIVER_COMMAND = 'journal worker deliver --differences "<what differs, or none>"'
+DELIVER_COMMAND = 'journal worker commit --differences "<what differs, or none>"'
 WORK_LABEL = "your work"
 CONFLICT_FILES_FIELD = "lines"
 
@@ -22,8 +22,8 @@ CONFLICT_FILES_FIELD = "lines"
 class WorkerGuidance:
     """What a worker should do now: the one source of every line that tells it."""
 
-    def __init__(self, steps: WorkerSteps, groups: WorkerGroups, phases: WorkerPhases, queries: Queries, names: WorkerTestNames, checkpoint_wait: CheckpointWaitText) -> None:
-        self.steps, self.groups, self.phases, self.queries, self.names, self.checkpoint_wait = steps, groups, phases, queries, names, checkpoint_wait
+    def __init__(self, steps: WorkerSteps, window: CommitWindow, plans: TaskPlans, queries: Queries, names: WorkerTestNames, checkpoint_wait: CheckpointWaitText) -> None:
+        self.steps, self.window, self.plans, self.queries, self.names, self.checkpoint_wait = steps, window, plans, queries, names, checkpoint_wait
 
     def line(self, worker_id: int) -> str:
         return self.point(worker_id).line
@@ -41,10 +41,9 @@ class WorkerGuidance:
         worktree = worker_round.worktree
         if worktree is None:
             return WorkerPoint(worker_round, step, step_line(step, self.no_work_facts(worker_round)), None, len(worker_round.started), None)
-        group = worker_round.group
-        open_task_count = self.groups.open_task_count(group, worker_round.started, worker_round.ready)
-        runs = self.groups.test_runs_available(worktree) if self.names.rows(worktree.session_agent_id) else 0
-        return WorkerPoint(worker_round, step, step_line(step, self.facts(worker_round, worktree, open_task_count, runs)), self.groups.group_key(group), open_task_count, runs)
+        open_task_count = len(worker_round.started)
+        runs = self.window.test_runs_available(worktree) if self.names.rows(worktree.session_agent_id) else 0
+        return WorkerPoint(worker_round, step, step_line(step, self.facts(worker_round, worktree, open_task_count, runs)), self.window.key(worktree), open_task_count, runs)
 
     def question_line(self, worker_round: WorkerRound) -> str:
         return step_line(WorkerStep.QUESTION, self.no_work_facts(worker_round))
@@ -57,9 +56,9 @@ class WorkerGuidance:
         staging = worker_round.required_staging()
         worktree_task = self.queries.query(Task).find(worktree.task_id)
         files = "" if worker_round.conflict is None else str(dict(worker_round.conflict.nudge.fields)[CONFLICT_FILES_FIELD])
-        return WorkerStepFacts(task_id=task.id, open_task_count=open_task_count, test_runs_available=runs, label=self.phases.test_label(worktree_task), deliver_command=DELIVER_COMMAND if worker_round.following is None else NEXT_COMMAND, conflict_files=files, tests_waiting=self.steps.proofs.tests_waiting(worktree.id),
+        return WorkerStepFacts(task_id=task.id, open_task_count=open_task_count, test_runs_available=runs, label=f"task {worktree_task.id}", deliver_command=DELIVER_COMMAND if worker_round.following is None else NEXT_COMMAND, conflict_files=files, tests_waiting=self.steps.proofs.tests_waiting(worktree.id),
                                checkpoint_wait=self.checkpoint_wait.text(worktree), ready_task_ids=tuple(ready.id for ready in staging.ready), open_task_ids=tuple(opened.id for opened in staging.open_tasks),
-                               missing=staging.missing_points(task.id), is_planned=self.phases.plans.is_started_plan(task.id))
+                               missing=staging.missing_points(task.id), is_planned=self.plans.is_started_plan(task.id))
 
     def current_task(self, worker_round: WorkerRound) -> Task:
         if worker_round.started:

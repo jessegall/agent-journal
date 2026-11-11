@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.tasks.models.task import Task
@@ -11,7 +12,6 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 from suites.coding.modules.workers.support.worker_nudges import WORKER_MERGE_CONFLICT
-from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_round import WorkerRound
 from suites.coding.modules.workers.support.worker_staging import WorkerStaging
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
@@ -20,9 +20,9 @@ from suites.coding.modules.workers.support.worker_stop import WorkerStop
 class WorkerSteps:
     """Which fixed point of its round a worker is at, read from the rows the journal keeps."""
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, phases: WorkerPhases, next_task: WorkerNextTask, stop: WorkerStop, queries: Queries, staging: WorkerStaging) -> None:
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, next_task: WorkerNextTask, stop: WorkerStop, queries: Queries, staging: WorkerStaging) -> None:
         self.staging = staging
-        self.tasks, self.worktrees, self.proofs, self.phases = tasks, worktrees, proofs, phases
+        self.tasks, self.worktrees, self.proofs = tasks, worktrees, proofs
         self.next_task, self.stop, self.queries = next_task, stop, queries
 
     def round(self, worker_id: int) -> WorkerRound:
@@ -30,9 +30,8 @@ class WorkerSteps:
         started = tuple(self.tasks.started_tasks(worker_id))
         ready = tuple(self.tasks.ready_delegated(worker_id))
         conflict = None if worktree is None else self.conflict_line(worktree)
-        group = None if worktree is None else self.phases.group(worktree, self.queries.query(Task).find(worktree.task_id))
         staging = None if worktree is None else self.staging.read(worktree)
-        return WorkerRound(worker_id, worktree, started, ready, self.next_task.first_ready(worker_id, ready, started), self.stop.has_open_help_request(worker_id), conflict, group, staging)
+        return WorkerRound(worker_id, worktree, started, ready, self.next_task.first_ready(worker_id, ready, started), self.stop.has_open_help_request(worker_id), conflict, staging)
 
     def current_step(self, worker_id: int) -> WorkerStep:
         return self.step(self.round(worker_id))
@@ -49,7 +48,7 @@ class WorkerSteps:
             return WorkerStep.BLOCKED
         if self.is_delivered(worker_round):
             return WorkerStep.WAIT
-        if self.phases.has_open_failure(worktree):
+        if self.has_open_failure(worktree):
             return WorkerStep.FIX
         return self.working_step(worker_round)
 
@@ -57,6 +56,12 @@ class WorkerSteps:
     def working_step(worker_round: WorkerRound) -> WorkerStep:
         staging = worker_round.staging
         return WorkerStep.COMMIT if staging is not None and staging.ready else WorkerStep.BUILD
+
+    def has_open_failure(self, worktree: Worktree) -> bool:
+        if self.proofs.has_short_proof(worktree.id):
+            return True
+        first_answer = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).newest().first()
+        return first_answer is not None and first_answer.state is AffectedTestState.FAILED
 
     def is_blocked(self, worker_round: WorkerRound, worktree: Worktree) -> bool:
         if worktree.state is not WorktreeState.CUT or worker_round.started or worker_round.following is not None or self.proofs.tests_waiting(worktree.id):

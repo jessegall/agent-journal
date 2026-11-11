@@ -10,7 +10,6 @@ from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
-from suites.coding.modules.workers.support.brief_points import brief_point_count
 from suites.coding.modules.workers.support.commit_subject import CommitSubject
 from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
 from suites.coding.modules.workers.support.delivery_differences import is_none_answer
@@ -30,12 +29,6 @@ class WorkerTaskCommit:
     def __init__(self, proofs: ProofQuery, git: WorktreeGit, queries: Queries, bus: Bus, protected: ProtectedFolders) -> None:
         self.proofs, self.git, self.queries, self.bus = proofs, git, queries, bus
         self.protected = protected
-
-    def check_proofs(self, worktree: Worktree, task: Task) -> None:
-        proved = {proof.point for proof in self.proofs.worktree_rows(worktree.id) if proof.task_id == task.id}
-        unproved = [str(point) for point in range(1, brief_point_count(task.brief) + 1) if point not in proved]
-        if unproved:
-            raise Refusal(f"point {', '.join(unproved)} has no proof", AskTopic.GENERAL.hint(f"journal proof make {unproved[0]} --task {task.id} \"<file:line, and the test that shows it>\""))
 
     def commit(self, worktree: Worktree, tasks: tuple[Task, ...], actor: Actor, differences: str) -> None:
         for path in self.git.uncommitted_files(worktree.folder):

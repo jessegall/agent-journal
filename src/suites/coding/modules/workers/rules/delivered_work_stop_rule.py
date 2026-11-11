@@ -8,14 +8,12 @@ from engine.driver.hook_history import HookHistory
 from engine.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
-from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from engine.enums.agent_role import AgentRole
 
 
 class DeliveredWorkStopRule(DriverRule):
     """A main agent that stops while a worker's delivered work waits for its checks is refused once per
-    delivery, and always while a proof with no test waits, since nothing else ever moves it. A worker still
-    working through a phase has nothing waiting: the end of the phase checks those proofs."""
+    delivery, and always while a proof with no test waits, since nothing else ever moves it."""
 
     name = "workers.delivered-work-at-stop"
     hook = HookEventName.STOP
@@ -23,14 +21,12 @@ class DeliveredWorkStopRule(DriverRule):
     roles = [AgentRole.MAIN]
     single_action_refusal = "A stop while a worker's delivered work waits for its checks is refused once per delivery"
 
-    def __init__(self, delivered: WorkerWorktrees, proofs: ProofQuery, history: HookHistory, phases: WorkerPhases, numbers: RowNumbers) -> None:
+    def __init__(self, delivered: WorkerWorktrees, proofs: ProofQuery, history: HookHistory, numbers: RowNumbers) -> None:
         self.numbers = numbers
-        self.delivered, self.proofs, self.hook_history, self.phases = delivered, proofs, history, phases
+        self.delivered, self.proofs, self.hook_history = delivered, proofs, history
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         for worktree in self.delivered.main_worktrees():
-            if self.phases.has_group_flow(worktree):
-                continue
             untested = [proof.id for proof in self.proofs.delivered_proofs(worktree.id).filter(test_command="").oldest().all_rows()]
             if untested:
                 return RuleAnswer.refused(PROOF_CHECK.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), task=worktree.task_id, proofs=', '.join(map(str, untested))))

@@ -5,7 +5,7 @@ from engine.command.command import Command
 
 @dataclass(frozen=True)
 class SendMergerAdvice(Command[str]):
-    """The merger advises a worker, within what it may still say to that worker in this group."""
+    """The merger advises a worker, within what it may still say to that worker between two of its commits."""
 
     worker_id: int
     text: str

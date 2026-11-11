@@ -19,9 +19,8 @@ from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
-from suites.coding.modules.workers.support.worker_status import WorkerStatus, WorkerStatusPhase
+from suites.coding.modules.workers.support.worker_status import WorkerStatus
 from suites.coding.modules.workers.support.kept_worker_status import KeptWorkerStatus
 from suites.coding.modules.workers.support.worker_status_page_json import WorkerStatusPageJson
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
@@ -35,13 +34,13 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
     cli_name = "worker"
     name = "status"
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, unread_skills: UnreadSkills, files: SkillFiles, phases: WorkerPhases, resume: WorkerResume, guidance: WorkerGuidance, numbers: RowNumbers, questions: WorkerQuestions, tasks: TaskQuery, open_tasks: WorkerOpenTasks) -> None:
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, unread_skills: UnreadSkills, files: SkillFiles, resume: WorkerResume, guidance: WorkerGuidance, numbers: RowNumbers, questions: WorkerQuestions, tasks: TaskQuery, open_tasks: WorkerOpenTasks) -> None:
         self.tasks, self.open_tasks = tasks, open_tasks
         self.questions = questions
         self.numbers = numbers
         self.guidance = guidance
         self.queries, self.worktrees, self.proofs = queries, worktrees, proofs
-        self.unread_skills, self.files, self.phases, self.resume = unread_skills, files, phases, resume
+        self.unread_skills, self.files, self.resume = unread_skills, files, resume
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("worker_id", type=AgentNumber, nargs="?")
@@ -64,11 +63,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
         current_task = self.queries.query(Task).find(worktree.task_id)
         point = self.guidance.point(worker_id)
         waiting_tasks = tuple(self.queries.query(Task).filter(delegated_to=worker_id, state=TaskState.TESTING).oldest().all_rows())
-        return WorkerStatus(worker_id, worker.number, worktree, current_task, self.tasks.started_tasks(worker_id), point.round.required_staging(), waiting_tasks, self.open_tasks.startable(point.round), tests, assignments, skills, self.task_phase(current_task, worker_id), worker.program, self.resume.program_state(worker) if worker.ended_at is not None else None, point, worker.paused_at is not None, self.questions.status_lines(worker_id), worker.standing)
-
-    def task_phase(self, task: Task, worker_id: int) -> WorkerStatusPhase | None:
-        phase = self.phases.phase(task)
-        return None if phase is None else WorkerStatusPhase(phase, len(self.phases.advanced(worker_id)))
+        return WorkerStatus(worker_id, worker.number, worktree, current_task, self.tasks.started_tasks(worker_id), point.round.required_staging(), waiting_tasks, self.open_tasks.startable(point.round), tests, assignments, skills, worker.program, self.resume.program_state(worker) if worker.ended_at is not None else None, point, worker.paused_at is not None, self.questions.status_lines(worker_id), worker.standing)
 
     def kept_status(self, worker_id: int) -> KeptWorkerStatus | Refusal:
         if self.worktrees.newest_worktree(worker_id) is None:
@@ -85,10 +80,9 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
         if not isinstance(value, WorkerStatus):
             super().write_output(value, output)
             return
-        phase_lines = () if value.phase is None else (f"Current phase: phase {value.phase.phase.id} ({value.phase.phase.title})", f"Tasks waiting for its end: {value.phase.tasks_waiting}")
         pause_lines = [f"Paused: it takes no job until journal agent resume {value.worker_number}"] if value.is_paused else []
-        lines = [value.point.line, *value.question_lines, f"Point: {value.point.step}", f"Tasks left in the group: {value.point.open_task_count}", f"Own test runs left: {value.runs_text}", f"Worker: {value.worker_number}", f"Worktree: {value.worktree.folder} on branch {value.worktree.branch}, cut from {value.worktree.base_branch}", *pause_lines, f"Current task: {value.current_task.id} ({value.current_task.state}) {value.current_task.title}",
-                 f"Tasks started: {len(value.started_tasks)}", *(f"  task {task.id}: {task.title}" for task in value.started_tasks), *value.group_lines(), *phase_lines,
+        lines = [value.point.line, *value.question_lines, f"Point: {value.point.step}", f"Own test runs left: {value.runs_text}", f"Worker: {value.worker_number}", f"Worktree: {value.worktree.folder} on branch {value.worktree.branch}, cut from {value.worktree.base_branch}", *pause_lines, f"Current task: {value.current_task.id} ({value.current_task.state}) {value.current_task.title}",
+                 f"Tasks started: {len(value.started_tasks)}", *(f"  task {task.id}: {task.title}" for task in value.started_tasks), *value.group_lines(),
                  f"Tests waiting: {value.tests.total}", *(f"  proof {proof.id} ({proof.state}): {proof.test_command}" for proof in value.tests.rows),
                  f"Assignments remaining: {value.assignments.total}", *(f"  task {task.id} ({task.state}): {task.title}" for task in value.assignments.rows),
                  f"Skills to load: {len(value.skills)}", *(f"  {skill}" for skill in value.skills)]
@@ -99,11 +93,10 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
                 lines.append(f"Wait, or journal worker release {value.worker_number}")
         if not value.tests.is_last or not value.assignments.is_last:
             lines.append(f"--page {value.assignments.number + 1} for the next page")
-        data: dict[str, object] = {"step": value.point.step, "guidance": value.point.line, "group": value.point.group, "open_task_count": value.point.open_task_count, "test_runs_available": value.point.test_runs_available, "worker_id": value.worker_id, "worktree": {"folder": value.worktree.folder, "branch": value.worktree.branch, "base_branch": value.worktree.base_branch}, "current_task": output.values(value.current_task), "started_tasks": [output.values(task) for task in value.started_tasks], "held": [output.values(task) for task in value.staging.open_tasks],
+        data: dict[str, object] = {"step": value.point.step, "guidance": value.point.line, "commit_window": value.point.window_key, "open_task_count": value.point.open_task_count, "test_runs_available": value.point.test_runs_available, "worker_id": value.worker_id, "worktree": {"folder": value.worktree.folder, "branch": value.worktree.branch, "base_branch": value.worktree.base_branch}, "current_task": output.values(value.current_task), "started_tasks": [output.values(task) for task in value.started_tasks], "held": [output.values(task) for task in value.staging.open_tasks],
                                    "staged": [output.values(task) for task in value.staging.ready], "waiting": [output.values(task) for task in value.waiting_tasks],
                                    "startable": [output.values(task) for task in value.startable_tasks], "blocked": [output.values(task) for task in value.blocked_tasks],
                                    "tests": self.page_json(value.tests, output), "assignments": self.page_json(value.assignments, output),
-                                   "phase": value.phase.listed() if value.phase is not None else None,
                                    "program": value.program, "program_state": value.program_state.listed() if value.program_state is not None else None, "paused": value.is_paused, "questions": list(value.question_lines), "standing": value.standing.value}
         output.write("\n".join(lines), data)
 

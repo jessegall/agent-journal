@@ -1,3 +1,4 @@
+from engine.database.kept_rows import KeptRows
 from dataclasses import replace
 from datetime import timedelta
 
@@ -34,14 +35,15 @@ class WorkerQuestions:
     worker is gone, sends the worker the outcome as a message of the journal, which wakes it. A forwarded
     question keeps the wait open, since the main agent still answers it."""
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, numbers: RowNumbers) -> None:
-        self.queries, self.repository, self.bus, self.settings, self.numbers = queries, repository, bus, settings, numbers
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, numbers: RowNumbers, kept: KeptRows) -> None:
+        self.queries, self.repository, self.bus, self.settings, self.numbers, self.kept = queries, repository, bus, settings, numbers, kept
 
     def open_lines(self) -> tuple[MergerLine, ...]:
         return tuple(self.queries.query(MergerLine).matching(HasValue("worker_id")).matching(IsNull("outcome")).oldest().all_rows())
 
     def worker_lines(self, worker_id: int) -> tuple[MergerLine, ...]:
-        return tuple(self.queries.query(MergerLine).filter(worker_id=worker_id).matching(IsNull("outcome")).oldest().all_rows())
+        return self.kept.read("merger_lines", lambda: tuple(self.queries.query(MergerLine).filter(worker_id=worker_id).matching(IsNull("outcome")).oldest().all_rows()),
+                              "worker_id = ? AND outcome IS NULL", [worker_id], name="workers.open_worker_lines")
 
     def task_lines(self, task_id: int) -> tuple[MergerLine, ...]:
         return tuple(self.queries.query(MergerLine).filter(task_id=task_id).matching(HasValue("worker_id")).matching(IsNull("outcome")).oldest().all_rows())
