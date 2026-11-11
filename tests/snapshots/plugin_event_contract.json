@@ -1097,6 +1097,48 @@
       "value"
     ]
   },
+  "core.assignments.assignment.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "actor_id",
+      "creator_id",
+      "subject_id",
+      "subject_model",
+      "via_id"
+    ]
+  },
+  "core.assignments.assignment.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "actor_id",
+      "creator_id",
+      "subject_id",
+      "subject_model",
+      "via_id"
+    ]
+  },
+  "core.assignments.assignment.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "actor_id",
+      "creator_id",
+      "subject_id",
+      "subject_model",
+      "via_id"
+    ]
+  },
   "core.chat.chat_mark.created": {
     "forms": [
       "commit",

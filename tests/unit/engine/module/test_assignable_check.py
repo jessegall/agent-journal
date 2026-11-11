@@ -12,7 +12,7 @@ from engine.module.module import Module
 class Parcel(Model, Assignable):
     model_name = "parcel"
     cli_name = "parcel"
-    takes_actors = ActorCount.ONE
+    takes_actors = ActorCount.SINGLE
 
 
 class Crate(Model, Assignable):

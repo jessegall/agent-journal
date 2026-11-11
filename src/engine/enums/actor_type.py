@@ -10,5 +10,5 @@ class ActorType(StrEnum):
     CORE = "core"
 
     @property
-    def can_take_work(self) -> bool:
+    def can_receive_work(self) -> bool:
         return self in (ActorType.USER, ActorType.AGENT)
