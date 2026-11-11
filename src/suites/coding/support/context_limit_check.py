@@ -9,10 +9,11 @@ from core.modules.tasks.queries.task_query import TaskQuery
 
 class ContextLimitCheck:
     """Says how many tokens an agent's context holds once the context limit is on and that size makes a
-    compaction due, on a reading written after its newest compaction, and whether the agent's next stop compacts
-    it: it does unless it holds a task to finish first and is under the second limit. Whether a size is due is
-    asked of the compactions, never compared here. An agent asked to compact is not asked a second time for
-    three minutes, whichever rule asks: the typed line can wait in the program until the agent pauses."""
+    compaction due, on a reading written after its newest compaction, and whether the agent's next stop
+    compacts it: it does unless it holds a task to finish first and is under the second limit. Whether a
+    size is due is asked of the compactions, never compared here. An agent asked to compact is not asked a
+    second time for three minutes, whichever rule asks: the typed line can wait in the program until the
+    agent pauses."""
 
     def __init__(self, settings: SettingValues, agents: AgentRows, current_window: CurrentContextWindow, tasks: TaskQuery, compactions: ContextCompactions) -> None:
         self.settings, self.agents, self.current_window, self.tasks = settings, agents, current_window, tasks
@@ -27,7 +28,7 @@ class ContextLimitCheck:
         tokens = self.current_window.window(self.agents.find(agent_id)).total_input_tokens
         if tokens is None:
             return None
-        return tokens if self.compactions.is_due(agent_id, tokens, self.settings.number(CONTEXT_LIMIT_TOKENS), self.settings.number(CONTEXT_LIMIT_GROWTH_PERCENT)) else None
+        return tokens if self.compactions.requires_compaction(agent_id, tokens, self.settings.number(CONTEXT_LIMIT_TOKENS), self.settings.number(CONTEXT_LIMIT_GROWTH_PERCENT)) else None
 
     def action(self) -> str:
         return self.settings.text(CONTEXT_LIMIT_ACTION)
