@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 import pytest
 
 from engine.actor.actor import Actor
@@ -15,7 +13,6 @@ from tests.stories.core.support.agent_labels import agent_number
 
 PROGRAM_RUNS = b"running\n"
 ENDED = "ended_at: 20"
-CORRECTION = "was ended while its program runs: its row is open again"
 
 
 @pytest.fixture
@@ -42,15 +39,6 @@ def test_543_the_row_of_an_agent_whose_program_runs_is_not_ended_by_its_report_o
     story.expect_rows(ENDED not in shown(story), detail=f"the launcher still holds the program, and the row says: {shown(story)}")
     story.expect_success(f"agent exited {story.helper.id} 0", actor=story.user)
     story.expect_rows(ENDED in shown(story), detail=shown(story))
-
-
-def test_545_a_row_ended_while_its_program_runs_is_opened_again_within_one_tick_and_the_correction_is_recorded(running_helper):
-    story = running_helper
-    story.expect_success(f"agent end {story.helper.id}", actor=Actor.core())
-    story.advance(timedelta(minutes=1))
-    story.tick(story.row(Agent, story.agent.id).session)
-    story.run_listeners()
-    story.expect_rows(ENDED not in shown(story), CORRECTION in story.system_log_text(), detail=f"{shown(story)} | {story.system_log_text()[-400:]}")
 
 
 def test_544_the_exit_of_its_program_ends_an_agents_row_once_and_its_open_job_ends_with_a_report(running_helper):

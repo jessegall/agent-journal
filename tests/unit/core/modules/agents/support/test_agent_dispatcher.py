@@ -85,7 +85,7 @@ class FakeAgentQuery:
 class Parts:
     """A dispatcher over a launcher socket in a folder of its own, with what it ran and what it logged."""
 
-    def __init__(self, recently_ended: tuple[Agent, ...] = (), open_agents: tuple[Agent, ...] = (), end_reason: str = "") -> None:
+    def __init__(self, recently_ended: tuple[Agent, ...] = (), open_agents: tuple[Agent, ...] = (), end_reason: str = "", final: bool = False) -> None:
         self.folder = Path(tempfile.mkdtemp())
         self.bus, self.repository, self.log_lines = RecordingBus(), RecordingRepository(), list[str]()
         self.session_reasons = list[StopReason]()
@@ -98,7 +98,7 @@ class Parts:
             launcher, program, link, providers, self.repository, POLICY, SimpleNamespace(running=lambda: open_agents),
             SimpleNamespace(current=lambda agent_id: SimpleNamespace(end_reason=end_reason), ended=lambda agent_id, reason, context: self.session_reasons.append(reason)), SimpleNamespace(find=lambda environment_id: SimpleNamespace(id=1, name="main")),
             SimpleNamespace(query=lambda model: FakeAgentQuery(recently_ended)), SimpleNamespace(timestamp=lambda: NOW),
-            SimpleNamespace(write=lambda level, text: self.log_lines.append(text)), DispatchPolicy(AgentLaunchGuard(), AgentStops()))
+            SimpleNamespace(write=lambda level, text: self.log_lines.append(text)), DispatchPolicy(AgentLaunchGuard(), SimpleNamespace(is_final=lambda agent: final, takes_messages=lambda agent: True)))
 
     def launcher(self, *answers: bytes) -> FakeLauncher:
         return FakeLauncher.listening(self.folder / "launcher", request_count=len(answers), answers=answers)
@@ -170,6 +170,13 @@ def test_reconcile_opens_a_row_that_ended_while_its_program_runs_and_records_it(
     parts.dispatcher.reconcile(CONTEXT)
     assert [(row.id, row.ended_at) for row in parts.repository.saved_rows] == [(41, None)]
     assert parts.log_lines == [f"helper 2 {OPENED_ROW_TEXT}"]
+
+
+def test_reconcile_leaves_ended_a_row_the_policy_calls_gone_for_good_though_its_program_runs():
+    parts = Parts(recently_ended=tuple([ENDED_HELPER]), final=True)
+    parts.launcher(RUNNING)
+    parts.dispatcher.reconcile(CONTEXT)
+    assert (parts.repository.saved_rows, parts.log_lines) == ([], [])
 
 
 def test_reconcile_ends_an_open_row_whose_started_program_is_gone_and_leaves_one_never_started():

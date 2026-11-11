@@ -120,9 +120,16 @@ class AgentDispatcher:
     def has_open_process(self, agent: Agent) -> bool:
         return agent.ended_at is None and agent.pid is not None and LeftoverProcess.runs_program(agent.pid, self.providers.executable(agent.program))
 
-    def wrongly_ended_agents(self) -> tuple[Agent, ...]:
+    def checked_environment_ids(self) -> tuple[int, ...]:
+        agents = (*self.recently_ended_agents(), *(agent for agent in self.agents.running() if agent.is_launched_helper))
+        return tuple(sorted({agent.environment_id for agent in agents}))
+
+    def recently_ended_agents(self) -> tuple[Agent, ...]:
         earliest = Timestamp(self.clock.timestamp().value - timedelta(seconds=RECENT_END_SECONDS))
-        ended = self.queries.query(Agent).matching(Minimum("ended_at", earliest.text)).matching(IsNull("retired_at")).all_rows()
+        return tuple(self.queries.query(Agent).matching(Minimum("ended_at", earliest.text)).matching(IsNull("retired_at")).all_rows())
+
+    def wrongly_ended_agents(self) -> tuple[Agent, ...]:
+        ended = (agent for agent in self.recently_ended_agents() if not self.dispatch_policy.is_final(agent))
         return tuple(agent for agent in ended if self.transport.has_program(agent.terminal_id))
 
     def wrongly_open_agents(self) -> tuple[Agent, ...]:
