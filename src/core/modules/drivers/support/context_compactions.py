@@ -1,9 +1,11 @@
+from collections.abc import Sequence
 from dataclasses import replace
 
 from engine.command.context import Context
 from engine.database.kept_rows import KeptRows
 from engine.errors.existing_row_refusal import ExistingRowRefusal
 from engine.errors.refusal import Refusal
+from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.time.timestamp import Timestamp
@@ -11,6 +13,8 @@ from core.modules.drivers.models.context_compaction import ContextCompaction
 from core.modules.drivers.models.enums.compaction_reason import CompactionReason
 from core.modules.drivers.models.enums.compaction_state import CompactionState
 from core.modules.drivers.models.enums.context_change import ContextChange
+
+NEWEST_ROWS_READ = 50
 
 
 class ContextCompactions:
@@ -117,3 +121,10 @@ class ContextCompactions:
             return
         ended = replace(compaction, state=CompactionState.ENDED, ended_at=context.timestamp) if compaction.state.is_open else compaction
         self.repository.save(replace(ended, woken_at=context.timestamp), context)
+
+    def newest_rows(self, agent_ids: Sequence[int]) -> dict[int, ContextCompaction]:
+        rows = self.queries.query(ContextCompaction).matching(Among("session_agent_id", tuple(agent_ids))).descending("id").limited(NEWEST_ROWS_READ)
+        newest: dict[int, ContextCompaction] = {}
+        for row in rows:
+            newest.setdefault(row.session_agent_id, row)
+        return newest

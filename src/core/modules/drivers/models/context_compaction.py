@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from engine.model.model import Model
@@ -56,3 +57,7 @@ class ContextCompaction(Model):
 
     def refusal_text(self) -> str:
         return f"a {self.change.value} is {self.state.value} since {self.creation_timestamp().value.strftime('%H:%M')}"
+
+    def json(self) -> Mapping[str, object]:
+        return {"change": self.change.value, "reason": self.reason.value, "state": self.state.value, "requested_at": self.creation_timestamp().text, "is_open": self.state.is_open,
+                "request_tokens": self.request_tokens, "tokens_after": self.tokens_after}

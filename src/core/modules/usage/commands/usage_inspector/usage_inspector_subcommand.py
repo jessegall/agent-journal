@@ -1,3 +1,4 @@
+from core.modules.drivers.support.context_compactions import ContextCompactions
 from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 from dataclasses import asdict
@@ -26,7 +27,8 @@ class UsageInspectorSubcommand(ReadSubcommand[AgentInspectorAnswer]):
     name = "inspector"
     environment_refusal = "the agent is shown for one environment"
 
-    def __init__(self, queries: Queries, inspection: UsageAgentSubcommand, facts: UsageAgentsSubcommand, tool: UsageToolSubcommand, programs: AgentProgramsSubcommand, points: AgentBriefPoints) -> None:
+    def __init__(self, queries: Queries, inspection: UsageAgentSubcommand, facts: UsageAgentsSubcommand, tool: UsageToolSubcommand, programs: AgentProgramsSubcommand, points: AgentBriefPoints, compactions: ContextCompactions) -> None:
+        self.compactions = compactions
         self.queries, self.inspection, self.facts, self.tool, self.programs, self.points = queries, inspection, facts, tool, programs, points
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -39,10 +41,10 @@ class UsageInspectorSubcommand(ReadSubcommand[AgentInspectorAnswer]):
                                     ToolFacts() if agent.ended_at else self.tool.read(Namespace(agent=agent.id), caller),
                                     self.queries.query(Agent).filter(parent_id=agent.id).count(),
                                     self.queries.query(AgentSkill).filter(session_agent_id=agent.id, state=AgentSkillState.LOADED).count(),
-                                    self.points.brief_points(agent.id), self.programs.read(Namespace(), caller))
+                                    self.points.brief_points(agent.id), self.programs.read(Namespace(), caller), self.compactions.newest(agent.id))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentInspectorAnswer):
             output.write(f"{AgentLabel.from_agent(value.agent).text}, {value.helpers} helpers, {value.skills} skills loaded", {
                 "agent": {**output.values(value.agent), **output.properties(value.agent)}, "facts": value.facts.json() if value.facts else None, "inspection": value.inspection.json(),
-                "tool": asdict(value.tool), "helpers": value.helpers, "skills": value.skills, "points": list(value.points), "programs": value.programs.json()["rows"]})
+                "compaction": value.compaction.json() if value.compaction is not None else None, "tool": asdict(value.tool), "helpers": value.helpers, "skills": value.skills, "points": list(value.points), "programs": value.programs.json()["rows"]})

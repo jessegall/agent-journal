@@ -1,3 +1,4 @@
+import {contextChangeRows} from "../../domain/compaction.js";
 import {dated, elapsed, perHour} from "../../format/time.js";
 
 const MAIN_TITLE = "Main agent";
@@ -43,11 +44,12 @@ export function finishedWords(facts) {
 }
 
 // every field of the agent with a plain label; the raw fields stay behind the Details fold
-export function detailRows(row, inspection) {
+export function detailRows(row, inspection, contextChange = null) {
     const rows = [["Number", String(row.number)], ["Session", row.session, "code"], ["Program", row.program], ["Type", row.role]];
     if (row.parent_id) rows.push(["Parent agent", `Agent ${row.parent_id}`]);
     rows.push(["Started by", inspection.started_by], ["Started", dated(row.created_at)]);
     if (row.ended_at) rows.push(["Ended", dated(row.ended_at)]);
     if (row.pid) rows.push(["Process", `pid ${row.pid}`]);
+    rows.push(...contextChangeRows(contextChange));
     return rows;
 }

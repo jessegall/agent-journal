@@ -20,6 +20,7 @@ const now = useNow();
 const row = ref(null);
 const facts = ref(null);
 const inspection = ref(null);
+const contextChange = ref(null);
 const tool = ref({});
 const counts = ref({helpers: 0, skills: 0});
 const loads = ref(0);
@@ -39,6 +40,7 @@ async function load() {
     row.value = answer.value.agent;
     facts.value = answer.value.facts;
     inspection.value = answer.value.inspection;
+    contextChange.value = answer.value.compaction ?? null;
     tool.value = answer.value.tool;
     counts.value = {helpers: answer.value.helpers, skills: answer.value.skills};
     points.value = answer.value.points;
@@ -65,7 +67,7 @@ onMounted(load);
                 <AgentNow :inspection="inspection" :tool="tool" :nothing="nothing" />
                 <AgentBrief :label="row.access === 'read-only' ? 'Instruction' : 'Brief'" :text="facts?.instruction ?? ''" :points="points" />
                 <AgentRecent :moves="inspection.recent" />
-                <AgentFolds :id="id" :read="read" :counts="counts" :loads="loads" :details="detailRows(row, inspection)" />
+                <AgentFolds :id="id" :read="read" :counts="counts" :loads="loads" :details="detailRows(row, inspection, contextChange)" />
                 <template v-if="row.ended_at"><p class="ended" data-agent-ended>Ended {{ ago(row.ended_at, now) }}. It takes no more actions.</p></template>
             </template>
             <template v-else><Skeleton /></template>

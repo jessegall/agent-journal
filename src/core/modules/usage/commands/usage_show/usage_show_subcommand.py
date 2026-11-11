@@ -1,3 +1,4 @@
+from core.modules.drivers.support.context_compactions import ContextCompactions
 from core.modules.agents.support.agent_rows import RUNNING_AGENTS_REASON
 from core.modules.settings.bindings.support.context_share import ContextShare
 from collections.abc import Sequence
@@ -38,8 +39,8 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
     name = "show"
     environment_refusal = "usage is shown for one environment"
 
-    def __init__(self, queries: Queries, agents: AgentQuery, files: StatusFiles, activity: AgentActivity, share: ContextShare, lockdown: ProgramLockdown) -> None:
-        self.lockdown = lockdown
+    def __init__(self, queries: Queries, agents: AgentQuery, files: StatusFiles, activity: AgentActivity, share: ContextShare, lockdown: ProgramLockdown, context_compactions: ContextCompactions) -> None:
+        self.lockdown, self.context_compactions = lockdown, context_compactions
         self.activity, self.share = activity, share
         self.queries, self.agents, self.files = queries, agents, files
 
@@ -67,11 +68,12 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
         if not isinstance(value, EnvironmentUsage):
             return
         compactions = self.last_compactions([agent for agent, _ in value.agents])
+        context_changes = self.context_compactions.newest_rows([agent.id for agent, _ in value.agents])
         pending = value.pending_work
         lines = [self.agent_line(agent, status) for agent, status in value.agents]
         lines.append(f"plan: {'; '.join(window.line for window in value.windows)}" if value.windows else "plan: no limits reported yet")
         lines.append(f"cost of the open sessions: ${value.cost_dollars:.2f}")
-        output.write("\n".join(lines), {"agents": [{**output.values(agent), "work_status": pending.get(agent.id), "last_compacted_at": compactions[agent.id].started_at if agent.id in compactions else None, "last_compaction": compactions[agent.id].json() if agent.id in compactions else None, "model": status.model, "effort": status.effort, "context_percent": status.context_percent, "context_tokens": status.context_tokens, "context_limit_tokens": status.context_limit_tokens, "context_window_tokens": status.context_window_tokens,
+        output.write("\n".join(lines), {"agents": [{**output.values(agent), "work_status": pending.get(agent.id), "last_compacted_at": compactions[agent.id].started_at if agent.id in compactions else None, "last_compaction": compactions[agent.id].json() if agent.id in compactions else None, "context_change": context_changes[agent.id].json() if agent.id in context_changes else None, "model": status.model, "effort": status.effort, "context_percent": status.context_percent, "context_tokens": status.context_tokens, "context_limit_tokens": status.context_limit_tokens, "context_window_tokens": status.context_window_tokens,
                                                     "cost_dollars": status.cost_dollars} for agent, status in value.agents],
                                         "windows": [output.values(window) for window in value.windows], "cost_dollars": value.cost_dollars,
                                         "lockdowns": self.lockdowns([agent for agent, _ in value.agents])})

@@ -1,3 +1,4 @@
+import {contextChangeRows} from "../src/domain/compaction.js";
 import {createApp, h} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import InformationBar from "../src/shell/InformationBar.vue";
@@ -57,4 +58,18 @@ test("the context menu says none yet for a session never compacted", async () =>
 test("a compaction shows the time alone, whatever percents it has", () => {
     expect(compactionLine({started_at: AT, start_percent: 92, end_percent: null})).toBe(`Last compacted ${EXACT}`);
     expect(compactionLine({started_at: AT, start_percent: null, end_percent: null})).toBe(`Last compacted ${EXACT}`);
+});
+
+test("while a compaction is asked and not ended the context menu says so with its time and offers no second one", async () => {
+    const page = await menu(null, {context_change: {change: "compact", is_open: true, requested_at: AT, state: "requested", reason: "person"}});
+    expect(page.querySelector("[data-context-menu-open-change]").textContent).toContain("Compaction asked at");
+    expect(page.querySelector('[data-agent-choice="compact"]')).toBeNull();
+});
+
+test("the agent inspector's rows name who asked for the newest compaction, its state and the sizes around it", () => {
+    const rows = contextChangeRows({change: "compact", is_open: false, requested_at: AT, state: "unreduced", reason: "stop_limit", request_tokens: 410000, tokens_after: 405000});
+    expect(rows.map((row) => row[0])).toEqual(["Last context change", "Asked by", "Asked", "Size at the request", "Size after"]);
+    expect(rows[0][1]).toBe("Compaction: Done, context not smaller");
+    expect(rows[1][1]).toBe("The journal, at the context size");
+    expect(contextChangeRows(null)).toEqual([]);
 });

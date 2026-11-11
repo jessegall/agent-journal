@@ -8,7 +8,7 @@ import MenuItem from "../kit/MenuItem.vue";
 import MenuLabel from "../kit/MenuLabel.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import {useAgentControls} from "../composables/agentControls.js";
-import {compactionLine} from "../domain/compaction.js";
+import {compactionLine, openContextChangeLine} from "../domain/compaction.js";
 
 // the one line under the agent bar: who the agent is, its state, the plan's allowance used, how full its context is, its model and cost, its scheduled jobs, and last how fit and how loaded it is; a window has no place here, only what opens a dropdown
 const props = defineProps({
@@ -54,6 +54,7 @@ const LOW_FITNESS = 75;
 const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
 const status = computed(() => props.usage.agents?.find((row) => row.id === props.agent?.id) ?? null);
 const context = computed(() => (status.value?.context_percent == null ? null : Math.round(status.value.context_percent)));
+const openChange = computed(() => openContextChangeLine(status.value?.context_change ?? null));
 const tokensWord = (tokens) => `${Math.round(tokens / 1000)}k`;
 // the tokens the agent's context holds out of its maximum, as the usage read gives them: the limit while one caps it, otherwise the model's window
 const capped = computed(() => Boolean(status.value?.context_limit_tokens));
@@ -138,8 +139,13 @@ const cost = computed(() => (status.value?.cost_dollars ? `$${status.value.cost_
                             <p class="context-cap" data-context-menu-cap>{{ tokensLine }} <template v-if="capped"><DashboardBadge text="Capped" tone="warn" /></template></p>
                         </template>
                     </template>
-                    <template v-for="choice in group.choices" :key="choice.value">
-                        <MenuItem :data-agent-choice="choice.value" @click="controls.choose(group.key, choice), closeMenu()">{{ choice.label }}</MenuItem>
+                    <template v-if="opened === 'context' && openChange">
+                        <p class="context-compaction" data-context-menu-open-change>{{ openChange }}</p>
+                    </template>
+                    <template v-else>
+                        <template v-for="choice in group.choices" :key="choice.value">
+                            <MenuItem :data-agent-choice="choice.value" @click="controls.choose(group.key, choice), closeMenu()">{{ choice.label }}</MenuItem>
+                        </template>
                     </template>
                 </template>
             </MenuPanel>
