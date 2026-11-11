@@ -29,3 +29,7 @@ def test_a_window_with_an_open_task_gives_none():
 
 def test_a_window_with_nothing_committed_gives_none():
     assert WorkerRunWindows.window(windows(TaskState.COMPLETED), CHECKPOINT, frozenset({11})) is None
+
+
+def test_a_window_of_two_workers_gets_a_branch_run():
+    assert WorkerRunWindows.window(windows(TaskState.TESTING, TaskState.TESTING, TaskState.TESTING), CHECKPOINT, frozenset({11, 12})) is None
