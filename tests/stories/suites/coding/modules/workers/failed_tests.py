@@ -64,10 +64,11 @@ def two_committed(new_story, monkeypatch) -> StoryWorker:
     return commit(worker)
 
 
-def test_46_a_failed_test_of_an_interim_commit_makes_its_proof_short_returns_its_task_and_names_the_output(interim_tested):
-    interim_tested.end_test(interim_tested.started[0], 1)
+def test_46_a_failed_test_of_an_interim_commit_makes_its_proof_short_returns_its_task_alone_and_names_the_output(interim_tested):
+    interim_tested.end_tests(1, 0, 0)
     expect_proof_states(interim_tested, "short", 1)
-    expect_task_states(interim_tested, "started", 1)
+    expect_task_states(interim_tested, "started", 1, 3)
+    expect_task_states(interim_tested, "completed", 2)
     interim_tested.story.expect_rows(any(f"your tests failed, output {interim_tested.started[0]}" in line for line in interim_tested.worker_lines()), detail=str(interim_tested.worker_lines()))
 
 

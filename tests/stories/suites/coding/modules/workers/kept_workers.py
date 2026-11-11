@@ -117,7 +117,7 @@ def test_a_task_sent_to_a_delivered_worker_waits_and_the_delivery_stays_mergeabl
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
     story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task_id}", actor=story.agent)
     story.expect_text(f"task show {task_id}", "state: open", f"delegated_to: {worker.id}", actor=story.agent)
-    story.expect_text("task show 1", "state: testing", actor=story.agent)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
     story.expect_text("worker-worktree list", "delivered", actor=story.agent)
     story.expect_text("proof list --task 1", "cart.py:1", actor=story.agent)
 

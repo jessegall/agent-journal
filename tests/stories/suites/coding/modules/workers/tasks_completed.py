@@ -114,4 +114,4 @@ def test_59_the_main_agent_gets_one_line_for_the_proofs_that_wait_for_its_check_
     for proof_id in (2, 3):
         three_started.story.expect_success(f"proof check {proof_id}", actor=three_started.story.agent)
     passed_lines = [line for line in three_started.main_agent_lines() if "all pass" in line]
-    three_started.story.expect_rows(len(waiting_lines) == 1, "proofs 2, 3" in waiting_lines[0], len(passed_lines) == 1, detail=str(three_started.main_agent_lines()))
+    three_started.story.expect_rows(len(waiting_lines) == 1, "proofs 2 3" in waiting_lines[0], len(passed_lines) == 1, detail=str(three_started.main_agent_lines()))

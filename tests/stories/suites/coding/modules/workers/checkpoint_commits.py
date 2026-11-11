@@ -61,6 +61,7 @@ def merged_worker(committed_worker) -> StoryWorker:
 
 def test_158_a_commit_in_a_started_plan_says_committed_names_the_checkpoint_of_its_tests_and_starts_no_test(group_worker):
     outcome = group_worker.story.run(COMMIT, actor=group_worker.worker)
+    group_worker.story.expect_text("worker status", CHECKPOINT_WORDS, actor=group_worker.worker)
     group_worker.story.expect_rows(outcome.code == 0, COMMITTED in outcome.output_text, CHECKPOINT_WORDS in outcome.output_text, group_worker.started == [],
                                    detail=f"{outcome.output_text} started: {group_worker.started}")
 

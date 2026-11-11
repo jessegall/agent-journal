@@ -60,7 +60,7 @@ class UnmergedWorkerRule(DriverRule):
                 action = f"journal proof check {', '.join(str(proof.id) for proof in proofs)}"
             key = f"{WORKER_UNMERGED.key}.{worktree.session_agent_id}"
             declaration = WORKER_UNMERGED_DUE if self.delivered_reminder_count(hook.agent_id, key) >= BLOCKING_REMINDER_COUNT - 1 else WORKER_UNMERGED
-            nudges.append(replace(declaration.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), tasks=self.task_names(worktree.session_agent_id), action=action), key=key))
+            nudges.append(replace(declaration.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), tasks=self.task_names(worktree), action=action), key=key))
         commands = {self.merge_command(worktree) for worktree in delivered}
         prefix = f"{REQUIRED_COMMAND_REFUSAL.key}:journal worker merge "
         blocks = self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id).matching(IsNull("closed_at")).full_table(OPEN_BLOCKS_REASON).all_rows()
@@ -78,5 +78,7 @@ class UnmergedWorkerRule(DriverRule):
         record = self.records.newest_row(agent_id, key)
         return record.delivery_count if record is not None else 0
 
-    def task_names(self, worker_id: int) -> str:
-        return ", ".join(f"task:{task.id}" for task in self.tasks.filter(delegated_to=worker_id).unclosed().oldest().all_rows())
+    def task_names(self, worktree: Worktree) -> str:
+        proved_ids = {proof.task_id for proof in self.proofs.worktree_proofs(worktree.id).all_rows()}
+        unclosed_ids = {task.id for task in self.tasks.filter(delegated_to=worktree.session_agent_id).unclosed().all_rows()}
+        return ", ".join(f"task:{task_id}" for task_id in sorted(proved_ids | unclosed_ids))

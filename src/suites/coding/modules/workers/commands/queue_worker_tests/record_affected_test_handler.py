@@ -5,34 +5,28 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.enums.command_category import CommandCategory
+from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from engine.driver.nudger import Nudger
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.tasks.models.enums.task_state import TaskState
-from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
-from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.commands.queue_worker_tests.record_affected_test import RecordAffectedTest
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test_handler import RecordWorkerTestHandler
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
-from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
-from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
+from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_FAILED
-from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 
 
 class RecordAffectedTestHandler(Handler[RecordAffectedTest, None]):
-    """Records picker and selected test results and resumes the worker queue."""
+    """Records picker and selected test results and resumes the worker queue. A failed run sends every task
+    of the worktree that is in testing back to its worker, with the output."""
 
     command = RecordAffectedTest
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, output: OutputFolder, results: RecordWorkerTestHandler, nudger: Nudger, phases: WorkerPhases, guidance: WorkerGuidance) -> None:
-        self.guidance = guidance
-        self.queries, self.repository, self.bus, self.output, self.results, self.nudger, self.phases = queries, repository, bus, output, results, nudger, phases
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, output: OutputFolder, results: RecordWorkerTestHandler) -> None:
+        self.queries, self.repository, self.bus, self.output, self.results = queries, repository, bus, output, results
 
     def handle(self, command: RecordAffectedTest, context: Context) -> None:
         first_answer = self.queries.query(AffectedTest).find(command.test_id)
@@ -53,13 +47,6 @@ class RecordAffectedTestHandler(Handler[RecordAffectedTest, None]):
 
     def fail(self, first_answer: AffectedTest, worktree: Worktree, process_id: int, context: Context) -> None:
         self.repository.save_change(first_answer, first_answer.changed(state=AffectedTestState.FAILED), context)
-        task = self.queries.query(Task).find(first_answer.task_id)
-        if task.state is TaskState.TESTING:
-            self.repository.save_change(task, task.moved(TaskLifecycle.retest), context)
-        if worktree.state is WorktreeState.DELIVERED:
-            self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)
-        phase = self.phases.phase(task)
-        if phase is None:
-            self.nudger.send(worktree.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=str(process_id), line=self.guidance.line(worktree.session_agent_id))
-            return
-        self.results.send_phase_failures(worktree, phase, str(process_id), context)
+        tested_ids = {proof.task_id for proof in self.queries.query(Proof).filter(worktree_id=worktree.id).all_rows()}
+        testing = self.queries.query(Task).matching(Among("id", sorted(tested_ids | {first_answer.task_id}))).filter(state=TaskState.TESTING).ordered("id").all_rows()
+        self.results.reopen_tasks(worktree, [task.id for task in testing] or [first_answer.task_id], str(process_id), context)

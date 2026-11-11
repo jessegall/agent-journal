@@ -16,7 +16,7 @@ def test_merge_waits_for_the_main_agent_to_read_the_workers_logs(new_story):
     story.expect_success("proof check 1", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", f"journal worker logs {agent_number(story, worker.id)}", actor=story.agent)
-    story.expect_success(f"worker logs {agent_number(story, worker.id)}", "task 1: Fix the cart", "outcome: ", "1 notes: Changed the cart", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", "task 1: Fix the cart", "outcome: its proofs are checked", "1 notes: Changed the cart", actor=story.agent)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
 
 

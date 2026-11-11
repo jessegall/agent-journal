@@ -16,7 +16,7 @@ def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
-    story.expect_success('task close 1 --outcome "tests passed"', actor=story.agent)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
     story.expect_text(command.format(worker=agent_number(story, worker.id)), notice, actor=story.agent)

@@ -21,6 +21,10 @@ from engine.cli.row_numbers import RowNumbers
 TASK_NUMBER_MOST_DIGITS = 6
 
 
+# A task whose work is committed and not merged is in testing, or completed by its checked proofs.
+COMMITTED_TASK_STATES = (TaskState.TESTING, TaskState.COMPLETED)
+
+
 class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
     """Merges a worker's finished tasks up to one task or commit into the environment's branch and closes them,
     while the worker goes on in its worktree. Its next rebase drops the commits the branch now holds."""
@@ -51,7 +55,8 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
         self.git.merge_revision(environment.folder, commit, f"tasks {numbers}, from {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text}")
         reasons = self.wait_text.merged_reasons(worktree, [task.id for task in tasks])
         for task in tasks:
-            self.repository.save_change(task, task.close(context.timestamp, context.actor, reasons[task.id]), context)
+            if task.state is TaskState.TESTING:
+                self.repository.save_change(task, task.close(context.timestamp, context.actor, reasons[task.id]), context)
         return MergeOutcome(worktree, ())
 
     def target_commit(self, worktree: Worktree, target: str) -> str:
@@ -68,7 +73,7 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
         commits = self.git.branch_commits(worktree.folder, f"{worktree.base_commit}..{commit}")
         assigned = self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).all_rows()
         tasks = [task for task in assigned if any(row.has_task_subject([task.id]) for row in commits)]
-        unfinished = [str(task.id) for task in tasks if task.state is not TaskState.TESTING]
+        unfinished = [str(task.id) for task in tasks if task.state not in COMMITTED_TASK_STATES]
         if unfinished or not tasks:
             raise Refusal(f"task {', '.join(unfinished) or commit} is not handed in", "take in only work the worker has handed in")
         return tasks

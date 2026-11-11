@@ -90,7 +90,7 @@ def test_a_merge_while_the_checkout_is_on_another_branch_moves_nothing_reminds_e
     worker = checked_worker(story, repository)
     base_tip = repository.tip(ENVIRONMENT_BRANCH)
     story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "the checkout of environment main is on main, not on version-5; the merge waits until it is back", actor=story.agent)
-    story.expect_success(lines.TASK_DETAILS, "state: testing")
+    story.expect_success(lines.TASK_DETAILS, "state: completed")
     story.expect_success("worker-worktree show 1", "state: delivered")
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
     reminder = f"the merge of worker {agent_number(story, worker.id)} waits for the checkout of environment main to return to version-5"

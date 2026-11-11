@@ -90,13 +90,17 @@ def test_41_the_tests_of_an_interim_commit_pass_and_complete_its_tasks_while_the
     for task_id in (1, 2):
         interim.story.expect_text(f"task show {task_id}", "state: completed", "its tests passed", actor=interim.story.agent)
     interim.story.expect_text("task show 3", "state: started", actor=interim.story.agent)
+    interim.story.expect_text("worker status", "Task 3 is not finished", actor=interim.worker)
 
 
-def test_41_the_tasks_of_an_interim_commit_in_a_started_plan_are_completed_at_their_merge(interim_in_plan):
+def test_41_the_tasks_of_an_interim_commit_in_a_started_plan_stay_in_testing_until_the_merge_after_the_final_commit_completes_them(interim_in_plan):
+    interim_in_plan.story.expect_text("proof list", "committed", actor=interim_in_plan.story.agent)
+    interim_in_plan.story.expect_text("task show 1", "state: testing", actor=interim_in_plan.story.agent)
+    prove_task(interim_in_plan, 3, 1, TEST_LINE)
+    interim_in_plan.story.expect_success(COMMIT, actor=interim_in_plan.worker)
     merge(interim_in_plan)
-    for task_id in (1, 2):
+    for task_id in (1, 2, 3):
         interim_in_plan.story.expect_text(f"task show {task_id}", "state: completed", MERGED_REASON, actor=interim_in_plan.story.agent)
-    interim_in_plan.story.expect_text("task show 3", "state: started", actor=interim_in_plan.story.agent)
     interim_in_plan.story.expect_rows(interim_in_plan.started == [], detail=f"started: {interim_in_plan.started}")
 
 
