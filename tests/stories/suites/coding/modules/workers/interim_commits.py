@@ -1,0 +1,131 @@
+import json
+from pathlib import Path
+
+import pytest
+
+from engine.testing.examples.hook_samples import HookSamples
+from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
+from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task, unplanned_holding_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
+
+THREE_TASKS = 3
+CHECKPOINT_WORDS = "tests run at the checkpoint of phase 1"
+INTERIM_WORDS = "Interim: go on with task 3"
+FINAL_WORDS = "Final: your work is handed in, stop and wait"
+MERGED_REASON = "merged; its tests run at the checkpoint of phase 1"
+
+
+def prove_first_two(worker: StoryWorker) -> StoryWorker:
+    prove_task(worker, 1, 1, TEST_LINE)
+    prove_task(worker, 2, 1, SECOND_TEST_LINE)
+    return worker
+
+
+def interim_commit(worker: StoryWorker) -> StoryWorker:
+    worker.story.run(COMMIT, actor=worker.worker)
+    worker.story.run_listeners()
+    return worker
+
+
+def worktree(worker: StoryWorker) -> dict[str, object]:
+    rows = json.loads(worker.story.run("worker-worktree list --json", actor=worker.story.agent).output_text)["rows"]
+    return next(row for row in rows if row["session_agent_id"] == worker.worker.id)
+
+
+@pytest.fixture
+def two_of_three_proved(new_story, monkeypatch) -> StoryWorker:
+    """A worker that holds tasks 1, 2 and 3 started, in no plan, and proved tasks 1 and 2 with a test each."""
+    return prove_first_two(unplanned_holding_worker(new_story, monkeypatch, THREE_TASKS))
+
+
+@pytest.fixture
+def two_of_three_proved_in_plan(new_story, monkeypatch) -> StoryWorker:
+    """A worker of phase Build of a started plan that holds tasks 1, 2 and 3 started and proved tasks 1 and 2
+    with a test each."""
+    return prove_first_two(holding_worker(new_story, monkeypatch, THREE_TASKS))
+
+
+@pytest.fixture
+def interim(two_of_three_proved) -> StoryWorker:
+    """Outside a plan, tasks 1 and 2 are committed and their tests run; task 3 is started and has no proof."""
+    return interim_commit(two_of_three_proved)
+
+
+@pytest.fixture
+def interim_in_plan(two_of_three_proved_in_plan) -> StoryWorker:
+    """In a started plan, tasks 1 and 2 are committed; task 3 is started and has no proof."""
+    return interim_commit(two_of_three_proved_in_plan)
+
+
+def test_39_a_commit_of_two_of_three_tasks_outside_a_plan_tests_them_and_leaves_the_worktree_cut(two_of_three_proved):
+    outcome = two_of_three_proved.story.run(COMMIT, actor=two_of_three_proved.worker)
+    two_of_three_proved.story.run_listeners()
+    two_of_three_proved.story.expect_text("task show 3", "state: started", actor=two_of_three_proved.story.agent)
+    two_of_three_proved.story.expect_rows(outcome.code == 0, "go on with task 3" in outcome.output_text, worktree(two_of_three_proved)["state"] == "cut", len(two_of_three_proved.started) == 2,
+                                          detail=outcome.output_text)
+
+
+def test_39_a_commit_of_two_of_three_tasks_in_a_started_plan_names_the_checkpoint_and_starts_no_test(two_of_three_proved_in_plan):
+    worker = two_of_three_proved_in_plan
+    outcome = worker.story.run(COMMIT, actor=worker.worker)
+    worker.story.run_listeners()
+    worker.story.expect_text("proof list", "committed", actor=worker.story.agent)
+    worker.story.expect_rows(outcome.code == 0, "go on with task 3" in outcome.output_text, CHECKPOINT_WORDS in outcome.output_text, worktree(worker)["state"] == "cut", worker.started == [],
+                             detail=outcome.output_text)
+
+
+@pytest.mark.real_git
+def test_40_a_file_changed_after_the_commit_is_not_in_the_checkout_the_tests_run_on(interim):
+    interim.repository.changed(interim.worker.id, "task_3.txt", "point 1\n")
+    folders = [Path(process.folder) for process in interim.started_processes()]
+    interim.story.expect_rows(len(folders) == 2, all((folder / "task_1.txt").is_file() for folder in folders), not any((folder / "task_3.txt").exists() for folder in folders), detail=str(folders))
+
+
+def test_41_the_tests_of_an_interim_commit_pass_and_complete_its_tasks_while_the_third_stays_started(interim):
+    interim.end_test(interim.started[1])
+    interim.end_test(interim.started[0])
+    for task_id in (1, 2):
+        interim.story.expect_text(f"task show {task_id}", "state: completed", "its tests passed", actor=interim.story.agent)
+    interim.story.expect_text("task show 3", "state: started", actor=interim.story.agent)
+
+
+def test_41_the_tasks_of_an_interim_commit_in_a_started_plan_are_completed_at_their_merge(interim_in_plan):
+    merge(interim_in_plan)
+    for task_id in (1, 2):
+        interim_in_plan.story.expect_text(f"task show {task_id}", "state: completed", MERGED_REASON, actor=interim_in_plan.story.agent)
+    interim_in_plan.story.expect_text("task show 3", "state: started", actor=interim_in_plan.story.agent)
+    interim_in_plan.story.expect_rows(interim_in_plan.started == [], detail=f"started: {interim_in_plan.started}")
+
+
+def test_42_43_a_commit_of_the_last_started_task_outside_a_plan_delivers_the_worktree_and_the_end_of_its_tests_wakes_the_worker(interim):
+    prove_task(interim, 3, 1, TEST_LINE)
+    interim.story.expect_success(COMMIT, actor=interim.worker)
+    interim.story.run_listeners()
+    line_count = len(interim.worker_lines())
+    status = interim.status_line()
+    interim.end_all_tests()
+    interim.story.expect_rows(worktree(interim)["state"] == "delivered", "stop" in status, len(interim.worker_lines()) > line_count, detail=f"{status} | {interim.worker_lines()}")
+
+
+def test_42_43_a_commit_of_the_last_started_task_in_a_started_plan_makes_the_worktree_ready_to_merge_and_the_worker_waits_for_the_merge(interim_in_plan):
+    prove_task(interim_in_plan, 3, 1, TEST_LINE)
+    interim_in_plan.story.expect_success(COMMIT, actor=interim_in_plan.worker)
+    interim_in_plan.story.run_listeners()
+    row, status = worktree(interim_in_plan), interim_in_plan.status_line()
+    interim_in_plan.story.expect_rows(row["state"] == "delivered", row["merge_ready_at"] is not None, "merge" in status, interim_in_plan.started == [], detail=f"{row} | {status}")
+
+
+def test_44_the_answer_of_a_commit_names_it_interim_or_final_and_says_what_to_do(two_of_three_proved):
+    worker = two_of_three_proved
+    first = worker.story.run(COMMIT, actor=worker.worker)
+    prove_task(worker, 3, 1)
+    last = worker.story.run(COMMIT, actor=worker.worker)
+    worker.story.expect_rows(f"{INTERIM_WORDS}; tests run in the background" in first.output_text, FINAL_WORDS in last.output_text, detail=f"{first.output_text} | {last.output_text}")
+
+
+def test_45_a_worker_with_a_started_task_that_has_no_proof_may_not_stop_and_one_whose_last_commit_is_tested_may(interim):
+    interim.story.expect_hook_refusal(interim.session, HookSamples.stop(), "Task 3 is not finished")
+    prove_task(interim, 3, 1, TEST_LINE)
+    interim.story.expect_success(COMMIT, actor=interim.worker)
+    interim.story.expect_hook_allowed(interim.session, HookSamples.stop())

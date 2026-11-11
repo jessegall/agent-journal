@@ -1,11 +1,12 @@
 from engine.query.queries import Queries
 from engine.testing.expectations.line_outcome import LineOutcome
 from suites.coding.modules.workers.models.proof import Proof
-from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, StoryWorker, approve_plan, dispatched_story_worker, file_proof_line, planned_story, unplanned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, StoryWorker, approve_plan, dispatched_story_worker, file_proof_line, planned_story, unplanned_group_worker, unplanned_worker
 
 # The tasks of phase Build in the order a worker starts them: task 4 is the one task of phase Ship.
 BUILD_TASK_IDS = (1, 2, 3, 5, 6, 7)
 PLANNED_BUILD_TASK_COUNT = 3
+UNPLANNED_PAIR = 2
 
 
 def holding_worker(new_story, monkeypatch, count: int, build_task_count: int = PLANNED_BUILD_TASK_COUNT) -> StoryWorker:
@@ -21,10 +22,11 @@ def holding_worker(new_story, monkeypatch, count: int, build_task_count: int = P
     return worker
 
 
-def unplanned_holding_worker(new_story, monkeypatch) -> StoryWorker:
-    """A worker that holds tasks 1 and 2 started, neither of them in a plan."""
-    worker = unplanned_worker(new_story, monkeypatch)
-    worker.story.run("task start 2", actor=worker.worker)
+def unplanned_holding_worker(new_story, monkeypatch, count: int = UNPLANNED_PAIR) -> StoryWorker:
+    """A worker that holds two or three tasks started, none of them in a plan and none waiting behind them."""
+    worker = unplanned_worker(new_story, monkeypatch) if count == UNPLANNED_PAIR else unplanned_group_worker(new_story, monkeypatch)
+    for task_id in range(2, count + 1):
+        worker.story.run(f"task start {task_id}", actor=worker.worker)
     return worker
 
 
