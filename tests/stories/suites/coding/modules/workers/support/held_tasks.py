@@ -9,10 +9,10 @@ PLANNED_BUILD_TASK_COUNT = 3
 UNPLANNED_PAIR = 2
 
 
-def holding_worker(new_story, monkeypatch, count: int, build_task_count: int = PLANNED_BUILD_TASK_COUNT) -> StoryWorker:
+def holding_worker(new_story, monkeypatch, count: int, build_task_count: int = PLANNED_BUILD_TASK_COUNT, build_test: str = "") -> StoryWorker:
     """A worker sent to phase Build of plan 1, which holds tasks 1, 2 and 3 and, when more are asked for, tasks
     5, 6 and 7: task 1 is started for it and it started the next tasks itself, up to the count."""
-    story = planned_story(new_story, approve=False)
+    story = planned_story(new_story, approve=False, build_test=build_test)
     for task_id in BUILD_TASK_IDS[PLANNED_BUILD_TASK_COUNT:build_task_count]:
         story.run(f'task make "Build part {task_id}" --phase 1 --environment main')
     approve_plan(story)
