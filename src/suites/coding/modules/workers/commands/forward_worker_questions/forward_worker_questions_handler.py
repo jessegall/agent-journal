@@ -15,12 +15,14 @@ from suites.coding.modules.workers.support.worker_questions import WorkerQuestio
 OPTIONS = ("answer the worker", "change the plan", "release the worker")
 RECOMMENDATION = "read the worker's facts first"
 FORWARDED_TEXT = "the main agent has it now and answers you"
+GONE_WORKER_REASON = "the worker has no worktree any more"
 
 
 class ForwardWorkerQuestionsHandler(Handler[ForwardWorkerQuestions, None]):
     """Writes the open questions of one worker to the main agent as one message and records each as forwarded.
     While the main agent already has a question of the worker, the questions are only recorded: the main agent
-    gets one message for one stuck worker. The message says the journal wrote it, and the worker's words are in
+    gets one message for one stuck worker. The questions of a worker that has no worktree any more are closed
+    as moot and reach nobody. The message says the journal wrote it, and the worker's words are in
     it as quoted lines, never as lines of the journal."""
 
     command = ForwardWorkerQuestions
@@ -32,6 +34,9 @@ class ForwardWorkerQuestionsHandler(Handler[ForwardWorkerQuestions, None]):
     def handle(self, command: ForwardWorkerQuestions, context: Context) -> None:
         lines = self.questions.worker_lines(command.worker_id)
         if not lines:
+            return
+        if self.escalations.worktrees.worker_worktree(command.worker_id) is None:
+            self.questions.close_worker_lines(command.worker_id, GONE_WORKER_REASON, context)
             return
         if not self.escalations.is_open(command.worker_id):
             self.bus.dispatch(SendMergerReport(self.question(command.worker_id, lines).text()), context)

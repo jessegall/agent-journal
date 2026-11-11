@@ -2,6 +2,8 @@ from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.query.queries import Queries
 from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
@@ -232,3 +234,14 @@ def test_a_person_retiring_a_worker_with_tasks_left_leaves_the_merger_one_line_a
     lines = [line.text for line in story.container.get(Queries).query(MergerLine).oldest().all_rows() if "was retired" in line.text]
     story.expect_rows(len(lines) == 1, all(f"task:{number}" in lines[0] for number in range(1, 6)), questions(story)[0].outcome is AskOutcome.MOOT,
                       "was retired" not in case.main_lines(), detail=f"{lines} | {case.main_lines()}")
+
+
+def test_an_overdue_ask_of_a_worker_whose_worktree_is_gone_closes_as_moot_and_wakes_nobody(case):
+    ask(case)
+    case.story.container.get(Database).update(Statement("UPDATE worker_worktrees SET removed_at = created_at, version = version + 1 WHERE session_agent_id = ?", [case.worker.id]))
+    case.story.advance(timedelta(minutes=11))
+    merger_lines = case.story.run(f"agent-line list --agent {case.merger.id}").output_text
+    AskWatch()(case.story.container)
+    case.story.run_listeners()
+    case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.MOOT, QUESTION not in case.main_lines(),
+                           case.story.run(f"agent-line list --agent {case.merger.id}").output_text == merger_lines, detail=str(questions(case.story)[0]))
