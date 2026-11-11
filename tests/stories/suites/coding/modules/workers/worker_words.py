@@ -7,7 +7,10 @@ from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.models.enums.worker_step import WorkerStep
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_step_text import STEP_TEXTS
-from suites.coding.support.shipped_profiles import HELPER_PROFILES
+from core.modules.sequences.commands.save_standard_sequences.standard_sequences import PLAN_BUILDING
+from suites.coding.modules.workers.support.worker_settings import WORKER_SETTING_VALUES
+from suites.coding.support.profile_commands import WORKER_COMMANDS as PROFILE_WORKER_COMMANDS
+from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_RULES
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, worker_session
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, unplanned_worker
 from tests.stories.suites.coding.modules.workers.worker_profiles import dispatched_brief
@@ -65,3 +68,18 @@ def test_204_the_old_name_worker_deliver_answers_with_the_command_that_took_its_
     worker = unplanned_worker(new_story, monkeypatch)
     refused = worker.story.run("worker deliver --wait --differences none", actor=worker.worker)
     worker.story.expect_rows(refused.code != 0, "journal worker deliver is gone: use journal worker commit" in refused.output_text, detail=refused.output_text)
+
+
+def test_207_no_setting_of_the_workers_says_batch_and_the_two_task_counts_say_what_they_count(new_story):
+    titles = {setting.key: setting.title for setting in WORKER_SETTING_VALUES}
+    worded = " ".join(f"{setting.title} {setting.description}" for setting in WORKER_SETTING_VALUES).lower()
+    assert "batch" not in worded
+    assert (titles["most-open-tasks"], titles["worker-batch-size"]) == ("Tasks a worker may hold started at once", "Tasks handed to a worker at once")
+
+
+def test_209_the_profile_of_a_worker_says_proof_start_and_commit_and_the_planner_is_told_that_tests_run_at_a_checkpoint(new_story):
+    profile_words = f"{PROFILE_WORKER_COMMANDS} {WORKER_RULES}"
+    checkpoint_step = next(step for step in PLAN_BUILDING.steps if "--checkpoint" in step)
+    assert all(command in profile_words for command in WORKER_COMMANDS), profile_words
+    assert not [word for word in ("journal worker deliver", "end of its phase", "hand all in") if word in profile_words]
+    assert "tests run" in checkpoint_step, checkpoint_step
