@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(core|suites)/"
+            },
+            {
+                "textMatches": "journal worker deliver|deliver again"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)commands/commit_worker_work/deliver_worker_work_subcommand\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "delivery-command-in-a-text",
+        "description": "A text tells an agent to deliver, a command and a step that are gone, so the agent runs what no longer exists.",
+        "rule": "Say commit, and ask for the merge with journal worker ask-merge, in the words of the worker's profile.",
+        "skill": "plain-code-words"
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "agent_id"
+            },
+            {
+                "of": "receiver",
+                "textMatches": "^PlanAssignee$"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/plans/"
+            },
+            {
+                "fileMatches": "(^|/)src/suites/coding/modules/workers/support/work_units\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "worker-plan-read-outside-work-units",
+        "description": "Workers code reads the agent of a plan itself, so the unit of a worker is worked out in more than one place.",
+        "rule": "Ask WorkUnits.unit(worker_id) for the plan a worker works.",
+        "skill": "workers-architecture"
+    }
+}

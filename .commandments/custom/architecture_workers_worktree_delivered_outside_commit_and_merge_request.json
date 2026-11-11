@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "moved"
+            },
+            {
+                "argument": {
+                    "at": 0,
+                    "textMatches": "WorktreeLifecycle\\.deliver$"
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)commands/commit_worker_work/commit_worker_work_handler\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)commands/ask_merge/ask_merge_handler\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "worktree-delivered-outside-commit-and-merge-request",
+        "description": "A worktree is moved to delivered outside the commit of a unit of one and the worker's ask, so work reaches the merger that nobody asked to merge.",
+        "rule": "Deliver a worktree only in CommitWorkerWorkHandler for a unit of one and in AskMergeHandler for an ask.",
+        "skill": "workers-architecture"
+    }
+}

@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "MergeAsk"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/suites/coding/modules/workers/support/merge_ask_scope\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/suites/coding/modules/workers/commands/ask_merge/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "merge-request-row-built-outside-its-scope",
+        "description": "An ask for a merge is built outside the command that checks it, so an ask can skip the refusals of MergeAskScope.",
+        "rule": "Build a MergeAsk only in AskMergeHandler, after MergeAskScope.checked.",
+        "skill": "workers-architecture"
+    }
+}
