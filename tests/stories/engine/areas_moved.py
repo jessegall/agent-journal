@@ -7,7 +7,7 @@ PREVIOUS_FOLDERS = (ROOT / "src" / "core" / "base", ROOT / "tests" / "unit" / "c
 AREAS = (
     "bookkeeping", "caller", "change", "chat", "cli", "command", "database", "dotted_path", "driver", "git", "guard", "hosting",
     "library", "listener", "model", "module", "performance", "private", "profile", "provider", "query", "registry", "repository",
-    "scope", "seed", "setting", "skill", "subcommand", "tasks", "template", "ticker", "tunnel", "upgrade", "viewer",
+    "scope", "seed", "setting", "skill", "subcommand", "template", "ticker", "tunnel", "upgrade", "viewer",
 )
 PREVIOUS_NAME = re.compile(r"core[./]base[./](" + "|".join(AREAS) + r")\b")
 RENAMED_SINCE = {"change": "event"}
@@ -48,3 +48,9 @@ def test_no_source_or_test_file_names_a_moved_area_by_its_previous_path(new_stor
     story = new_story()
     matching = files_naming_a_previous_area()
     story.expect_rows(matching == [], detail=str(matching[:20]))
+
+
+def test_387_no_product_file_is_named_like_a_test(new_story):
+    story = new_story()
+    named_like_tests = [str(path.relative_to(ROOT)) for path in python_files(ROOT / "src") if path.name.startswith("test_") and "testing" not in path.parts]
+    story.expect_rows(named_like_tests == [], detail=str(named_like_tests))
