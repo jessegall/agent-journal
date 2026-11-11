@@ -40,15 +40,19 @@ class TaskQuery(Query[Task]):
         return self.kept.read(self.table.name, lambda: self.newest_current(self.holder(agent_id).started().all_rows()),
                               "holder_id = ? AND state = ?", [agent_id, TaskState.STARTED], name="tasks.current_tasks")
 
+    @staticmethod
+    def assignee(actor_id: int) -> AssigneeAmong:
+        return AssigneeAmong(Task, tuple([actor_id]))
+
     def assigned(self, actor_id: int) -> tuple[Task, ...]:
-        assignee = AssigneeAmong(Task, (actor_id,)).statement()
-        return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(AssigneeAmong(Task, (actor_id,))).oldest().all_rows()),
+        assignee = self.assignee(actor_id).statement()
+        return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(self.assignee(actor_id)).oldest().all_rows()),
                               f"state = ? AND {assignee.sql}", [TaskState.OPEN, *assignee.parameters], name="tasks.queued_tasks")
 
     def assigned_ready(self, actor_id: int) -> tuple[Task, ...]:
-        assignee, no_dependency = AssigneeAmong(Task, (actor_id,)).statement(), self.no_open_dependency().statement()
-        return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(AssigneeAmong(Task, (actor_id,))).matching(self.no_open_dependency()).all_rows()),
-                              f"state = ? AND {assignee.sql} AND {no_dependency.sql}", [TaskState.OPEN, *assignee.parameters, *no_dependency.parameters], name="tasks.next_delegated")
+        assignee, dependency_free = self.assignee(actor_id).statement(), self.no_open_dependency().statement()
+        return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(self.assignee(actor_id)).matching(self.no_open_dependency()).all_rows()),
+                              f"state = ? AND {assignee.sql} AND {dependency_free.sql}", [TaskState.OPEN, *assignee.parameters, *dependency_free.parameters], name="tasks.next_delegated")
 
     def free(self) -> Self:
         return self.open_tasks().matching(Unassigned(Task))
