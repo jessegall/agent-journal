@@ -3,6 +3,7 @@ from suites.coding.modules.workers.support.worker_routes import WorkerRoutes
 from datetime import timedelta
 
 from engine.actor.actor import Actor
+from engine.provider.launch_command import LaunchCommand
 from engine.enums.actor_type import ActorType
 from engine.driver.block_until import BlockUntil
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
@@ -26,14 +27,14 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.support.test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from core.modules.agents.models.enums.launch_answer import LaunchAnswer
+from core.modules.agents.commands.start_agent_program.start_agent_program import StartAgentProgram
+from core.modules.agents.models.enums.dispatch import Dispatch
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES, UNFINISHED_TASKS_SOURCE
 from suites.coding.modules.workers.support.worker_started_work import WorkerStartedWork
 from suites.coding.modules.workers.support.worker_places import JOB_DELIVERY_SECONDS, WorkerPlaces
 from core.modules.agents.support.agent_conversations import AgentConversations
-from core.modules.agents.support.agent_launcher import AgentLauncher
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.modules.helpers.support.cold_sessions import ColdSessions
 from core.modules.helpers.support.program_state import ProgramState
@@ -48,14 +49,15 @@ from suites.coding.modules.workers.support.worker_instruction_files import Worke
 
 
 class WorkerResume:
-    """Resumes ended workers on waiting jobs and retries a job that did not start; a worker that holds started work
-    with no job waiting is given the line that tells it to go on."""
+    """Resumes ended workers on waiting jobs and retries a job that did not start; a worker that holds
+    started work with no job waiting is given the line that tells it to go on. A program starts through the
+    dispatcher's start command."""
 
-    def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement,
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement,
                  places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows, admission: AgentAdmission, started_work: WorkerStartedWork, cold: ColdSessions, instruction_files: WorkerInstructionFiles, compaction: WorkerCompaction, conversations: AgentConversations, lockdown: ProgramLockdown) -> None:
         self.lockdown = lockdown
         self.admission, self.started_work, self.instruction_files = admission, started_work, instruction_files
-        self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
+        self.queries, self.worktrees, self.worker_command, self.bus, self.clock = queries, worktrees, worker_command, bus, clock
         self.cold, self.conversations = cold, conversations
         self.compaction = compaction
         self.requirement, self.places, self.program = requirement, places, program
@@ -76,22 +78,22 @@ class WorkerResume:
 
     def replace_running_program(self, worker: Agent, actor: Actor) -> None:
         ended_at = worker.ended_at
-        if ended_at is None or self.resume(worker, actor) is not LaunchAnswer.RUNNING:
+        if ended_at is None or self.resume(worker, actor) is not Dispatch.RUNNING:
             return
         self.program.stop(worker)
-        if self.resume(worker, actor) is LaunchAnswer.RUNNING:
+        if self.resume(worker, actor) is Dispatch.RUNNING:
             self.reports.report(worker, self.running_program_reason(worker), ended_at)
 
     @staticmethod
     def running_program_reason(worker: Agent) -> str:
         return f"the launcher still holds its program, process {worker.pid}" if worker.pid is not None else "the launcher still holds its program"
 
-    def resume(self, worker: Agent, actor: Actor) -> LaunchAnswer:
+    def resume(self, worker: Agent, actor: Actor) -> Dispatch:
         if worker.ended_at is None or worker.paused_at is not None:
-            return LaunchAnswer.SKIPPED
+            return Dispatch.REFUSED
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is None or self.is_job_delivering(worker, worker.ended_at):
-            return LaunchAnswer.SKIPPED
+            return Dispatch.REFUSED
         lines = tuple(self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.WAITING).oldest().all_rows())
         job = next((line for line in sorted(lines, key=lambda line: line.source != WORKER_TEST_LIMIT_SOURCE)
                     if line.source in RESUMING_SOURCES and line.source != UNFINISHED_TASKS_SOURCE), None)
@@ -100,7 +102,7 @@ class WorkerResume:
         if abandoned_tasks:
             job = self.started_work.job(worker, abandoned_tasks)
         if job is None:
-            return LaunchAnswer.SKIPPED
+            return Dispatch.REFUSED
         return self.launch_job(worker, worktree, job, actor)
 
     def restart(self, worker: Agent, job: AgentLine, actor: Actor) -> None:
@@ -110,22 +112,26 @@ class WorkerResume:
             return
         self.launch_job(worker, worktree, job, actor)
 
-    def launch_job(self, worker: Agent, worktree: Worktree, job: AgentLine, actor: Actor) -> LaunchAnswer:
+    def started(self, worker: Agent, command: LaunchCommand) -> Dispatch:
+        start = StartAgentProgram(worker.id, tuple(command.arguments), str(command.folder), dict(command.variables))
+        return self.bus.run(start, Actor.core(), environment_id=worker.environment_id)
+
+    def launch_job(self, worker: Agent, worktree: Worktree, job: AgentLine, actor: Actor) -> Dispatch:
         if not self.may_resume(worker) or not self.places.can_resume(worker):
-            return LaunchAnswer.SKIPPED
+            return Dispatch.REFUSED
         environment = self.queries.query(Environment).find(worktree.environment_id)
         self.instruction_files.refresh(worktree)
         with self.scopes.row_scope(worker):
             compaction_start = self.compaction.start_record(worker)
         if compaction_start is not None and not self.cold.is_silent(worker):
-            answer = self.launcher.hand(worker, environment, self.worker_command.compacting(worker, worktree, environment, compaction_start.line))
-            if answer is LaunchAnswer.STARTED:
+            answer = self.started(worker, self.worker_command.compacting(worker, worktree, environment, compaction_start.line))
+            if answer is Dispatch.STARTED:
                 self.bus.run(compaction_start, actor, environment_id=environment.id)
             return answer
         current = self.cold.replaced_silent(worker)
         command = self.worker_command.resumed(current, worktree, environment, job.text) if self.conversations.exists(current) else self.worker_command.restarted(current, worktree, environment, self.queries.query(Task).find(worktree.task_id), job.text)
-        answer = self.launcher.hand(current, environment, command)
-        if answer is not LaunchAnswer.STARTED:
+        answer = self.started(current, command)
+        if answer is not Dispatch.STARTED:
             return answer
         stopped_at = worker.ended_at if worker.ended_at is not None else worker.creation_timestamp()
         self.bus.run(ReportWorkerProgramRecovery(worker.id, stopped_at), Actor.core(), environment_id=worktree.environment_id)

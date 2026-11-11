@@ -20,8 +20,8 @@ class WorkerLaunch:
         self.handed: list[SimpleNamespace] = []
         stored_rows = SimpleNamespace(find=lambda row_id: SimpleNamespace(id=row_id, folder="/work/project"))
         self.resume = WorkerResume(
-            launcher=SimpleNamespace(hand=self.hand), queries=SimpleNamespace(query=lambda model: stored_rows), worktrees=SimpleNamespace(), worker_command=SimpleNamespace(restarted=self.restarted),
-            bus=SimpleNamespace(), clock=SimpleNamespace(), requirement=SimpleNamespace(), places=SimpleNamespace(can_resume=lambda worker: True), program=SimpleNamespace(),
+            queries=SimpleNamespace(query=lambda model: stored_rows), worktrees=SimpleNamespace(), worker_command=SimpleNamespace(restarted=self.restarted),
+            bus=SimpleNamespace(run=self.run), clock=SimpleNamespace(), requirement=SimpleNamespace(), places=SimpleNamespace(can_resume=lambda worker: True), program=SimpleNamespace(),
             states=SimpleNamespace(outage_state=lambda program: SimpleNamespace(is_ready=program_ready)), shares=SimpleNamespace(is_configured=False), environments=SimpleNamespace(),
             scopes=SimpleNamespace(row_scope=lambda row: nullcontext()), reports=SimpleNamespace(), routes=SimpleNamespace(listed=lambda: []), rows=SimpleNamespace(),
             admission=SimpleNamespace(resume_reasons=lambda role, profile: [], model_reasons=lambda role, profile, program, model: []), started_work=SimpleNamespace(),
@@ -33,9 +33,9 @@ class WorkerLaunch:
         return REPLACED_WORKER
 
     def restarted(self, worker, worktree, environment, task, job_text) -> SimpleNamespace:
-        return SimpleNamespace(session=worker.session, folder=worktree.folder, branch=worktree.branch, job_text=job_text)
+        return SimpleNamespace(arguments=(worker.session, worktree.branch, job_text), folder=worktree.folder, variables={})
 
-    def hand(self, worker, environment, command) -> str:
+    def run(self, command, actor, environment_id=None) -> str:
         self.handed.append(command)
         return LAUNCHER_ANSWER
 
@@ -47,16 +47,16 @@ class WorkerLaunch:
 def test_a_new_session_of_a_cold_worker_is_launched_in_the_folder_and_branch_of_its_open_worktree():
     launch = WorkerLaunch()
     assert launch.answer_name() == LAUNCHER_ANSWER
-    assert [(command.session, command.folder, command.branch, command.job_text) for command in launch.handed] == [("s-8", WORKTREE.folder, WORKTREE.branch, JOB.text)]
+    assert [(start.agent_id, start.arguments, start.folder) for start in launch.handed] == [(7, ("s-8", WORKTREE.branch, JOB.text), WORKTREE.folder)]
 
 
 def test_a_worker_of_a_program_at_its_usage_limit_is_not_launched_and_keeps_its_session():
     launch = WorkerLaunch(locked_down=True)
-    assert launch.answer_name() == "skipped"
+    assert launch.answer_name() == "refused"
     assert (launch.replaced, launch.handed) == ([], [])
 
 
 def test_a_worker_whose_program_is_out_is_not_launched_and_keeps_its_session():
     launch = WorkerLaunch(program_ready=False)
-    assert launch.answer_name() == "skipped"
+    assert launch.answer_name() == "refused"
     assert (launch.replaced, launch.handed) == ([], [])
