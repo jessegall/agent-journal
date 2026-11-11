@@ -48,7 +48,7 @@ class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
             query = query.matching(Less("id", arguments.before_id))
         if arguments.ids is not None:
             query = query.matching(Among("id", arguments.ids))
-        return ViewRowPage(tuple(islice(query.newest().all_rows(READ_PAGE_ROWS), arguments.limit)))
+        return ViewRowPage(tuple(islice(query.newest().all_rows(min(arguments.limit, READ_PAGE_ROWS)), arguments.limit)))
 
     def filtered(self, query: Query[ViewModel], arguments: Namespace) -> Query[ViewModel]:
         return query
