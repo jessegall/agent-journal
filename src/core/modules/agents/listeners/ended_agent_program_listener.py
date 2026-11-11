@@ -5,11 +5,13 @@ from engine.listener.commit_listener import CommitListener
 from engine.listener.commit_listener_runner import PROGRAM_STOP_RUN_ORDER
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
+from core.modules.agents.commands.stop_agent_program.stop_agent_program import StopAgentProgram
 from core.modules.agents.events.agent_ended import AgentEnded
 from core.modules.agents.models.agent import AGENTS_TABLE, PID_FIELD, Agent
 
 SESSION_FIELD = "session"
 PROGRAM_FIELD = "program"
+STOP_COMMANDS = (StopAgent.label(), StopAgentProgram.label())
 from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from core.modules.agents.support.agent_program import AgentProgram
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
@@ -17,13 +19,13 @@ from core.modules.agents.commands.start_agent.start_agent import StartAgent
 
 class EndedAgentProgramListener(CommitListener[AgentEnded]):
     """Stops the program of an agent that another ended, after the commit, so no hook waits on a process. An
-    agent that ended itself stops by itself, a row reopened since runs a new program, and StopAgent stopped
-    its own. A resumed agent keeps its row ended until its first hook, so a process recorded after the end,
-    or a launch that holds the session's lock, is a new program; the launch's own prepare step has dealt
-    with the old one. A row that another session took over since keeps running under the new session, so
-    only the old session's own process is stopped. When the new session started in a terminal of its own,
-    the launcher's terminal of the agent can only hold the old session and is asked to stop; after a launch
-    it holds the new one and is left alone."""
+    agent that ended itself stops by itself, a row reopened since runs a new program, and StopAgent and
+    StopAgentProgram stopped the program themselves. A resumed agent keeps its row ended until its first
+    hook, so a process recorded after the end, or a launch that has the session's lock, is a new program;
+    the launch's own prepare step has dealt with the old one. A row that another session took over since
+    keeps running under the new session, so only the old session's own process is stopped. When the new
+    session started in a terminal of its own, the launcher's terminal of the agent can only run the old
+    session and is asked to stop; after a launch it runs the new one and is left alone."""
 
     name = "agents.ended-agent-program"
     run_order = PROGRAM_STOP_RUN_ORDER
@@ -41,7 +43,7 @@ class EndedAgentProgramListener(CommitListener[AgentEnded]):
 
     @staticmethod
     def needs_stop(agent: Agent, logged: LoggedEvent) -> bool:
-        return logged.actor_id != agent.id and logged.command != StopAgent.label()
+        return logged.actor_id != agent.id and logged.command not in STOP_COMMANDS
 
     def stop_program(self, agent: Agent, later_events: list[LoggedEvent]) -> None:
         new_session = next((later for later in later_events if SESSION_FIELD in later.data), None)
