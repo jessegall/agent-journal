@@ -46,9 +46,13 @@ def planned_story(new_story, approve: bool = True, build_test: str = ""):
         task_id = story.new_row_id(f'task make "{title}" --environment main')
         story.run(f"phase place {task_id} --phase {phase}")
     if approve:
-        ready_plan(story, actor=story.user)
-        story.run("plan approve 1 --environment main", actor=story.user)
+        approve_plan(story)
     return story
+
+
+def approve_plan(story: Story) -> None:
+    ready_plan(story, actor=story.user)
+    story.run("plan approve 1 --environment main", actor=story.user)
 
 
 def file_line(line: str) -> str:

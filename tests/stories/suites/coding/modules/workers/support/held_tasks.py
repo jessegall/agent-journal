@@ -1,14 +1,22 @@
 from engine.query.queries import Queries
 from engine.testing.expectations.line_outcome import LineOutcome
 from suites.coding.modules.workers.models.proof import Proof
-from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, StoryWorker, file_proof_line, start_planned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, StoryWorker, approve_plan, dispatched_story_worker, file_proof_line, planned_story
+
+# The tasks of phase Build in the order a worker starts them: task 4 is the one task of phase Ship.
+BUILD_TASK_IDS = (1, 2, 3, 5, 6, 7)
+PLANNED_BUILD_TASK_COUNT = 3
 
 
-def holding_worker(new_story, monkeypatch, count: int) -> StoryWorker:
-    """A worker sent to phase Build of plan 1, which holds tasks 1, 2 and 3: task 1 is started for it and it
-    started the next tasks itself, up to the count."""
-    worker = start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
-    for task_id in range(2, count + 1):
+def holding_worker(new_story, monkeypatch, count: int, build_task_count: int = PLANNED_BUILD_TASK_COUNT) -> StoryWorker:
+    """A worker sent to phase Build of plan 1, which holds tasks 1, 2 and 3 and, when more are asked for, tasks
+    5, 6 and 7: task 1 is started for it and it started the next tasks itself, up to the count."""
+    story = planned_story(new_story, approve=False)
+    for task_id in BUILD_TASK_IDS[PLANNED_BUILD_TASK_COUNT:build_task_count]:
+        story.run(f'task make "Build part {task_id}" --phase 1 --environment main')
+    approve_plan(story)
+    worker = dispatched_story_worker(story, PHASE_DISPATCH, monkeypatch)
+    for task_id in BUILD_TASK_IDS[1:count]:
         worker.story.run(f"task start {task_id}", actor=worker.worker)
     return worker
 
