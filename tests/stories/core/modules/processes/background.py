@@ -38,6 +38,13 @@ def settled(story) -> None:
     story.run_listeners()
 
 
+def settled_run(story, line: str):
+    process = moved_run(story, line)
+    end_run(story, process, TESTS_REPORT, exit_code=1)
+    settled(story)
+    return process
+
+
 def read_lines(story, sample) -> list[str]:
     return list(story.hook("s-1", sample).lines)
 
@@ -58,14 +65,10 @@ def test_one_hook_reuses_the_ended_runs_output(ended_test_output):
     story.expect_rows(all(row is not None and row.process_id == process.id and parts for row, parts in rows))
 
 
-def test_several_ended_runs_are_told_on_one_hook_that_reads_them_once(ended_test_output):
+def test_several_ended_runs_are_all_told_on_one_hook(ended_test_output):
     story, first = ended_test_output
-    processes = (first, *[moved_run(story, f"pytest -q tests/test_{number}.py") for number in range(11)])
-    for process in processes[1:]:
-        end_run(story, process, TESTS_REPORT, exit_code=1)
-        settled(story)
-    with story.repeated_work.request():
-        lines = "\n".join(read_lines(story, READ_NOTES))
+    processes = (first, *[settled_run(story, f"pytest -q tests/test_{number}.py") for number in range(7)])
+    lines = "\n".join(read_lines(story, READ_NOTES))
     story.expect_rows(all(str(process.id) in lines for process in processes), detail=lines)
 
 

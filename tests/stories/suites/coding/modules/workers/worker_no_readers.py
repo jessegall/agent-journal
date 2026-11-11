@@ -2,13 +2,12 @@ from datetime import timedelta
 
 import pytest
 
-from engine.enums.agent_role import AgentRole
 from engine.enums.command_category import CommandCategory
 from engine.enums.tool_type import ToolType
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
-from core.modules.processes.rules.reader_hint_rule import ReaderHintRule
+from core.modules.processes.rules.read_advice_rule import ReadAdviceRule
 from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
@@ -143,5 +142,5 @@ def test_a_long_worker_run_asks_for_no_title_and_holds_nothing(readers_disabled)
     expect_unblocked(readers_disabled)
 
 
-def test_only_the_main_agent_hears_the_shorter_read_of_a_reader():
-    expect_value(ReaderHintRule.roles, [AgentRole.MAIN])
+def test_every_role_hears_the_shorter_read_of_a_reader():
+    expect_value(ReadAdviceRule.roles, [])
