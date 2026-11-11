@@ -13,4 +13,4 @@ class AssignRow(Command[Cascade]):
     actor_id: int | None = None
     cascade: bool = True
     override: bool = False
-    from_parent: bool = False
+    inherits: bool = False

@@ -20,7 +20,7 @@ class AssignRowHandler(Handler[AssignRow, Cascade]):
     def handle(self, command: AssignRow, context: Context) -> Cascade:
         self.agents.require_main(context.actor, "assign a row")
         row = self.rows.find(command.subject_model, command.subject_id)
-        if command.from_parent == (command.actor_id is not None):
+        if command.inherits == (command.actor_id is not None):
             raise AssigneeChoiceRefusal()
         if command.actor_id is None:
             return self.assignments.inherit(row, context)

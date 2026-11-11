@@ -21,12 +21,12 @@ class AssignableRows:
         return {cli_name: model for cli_name, model in models.items() if issubclass(model, Assignable)}
 
     def parents(self, row: Assignable) -> tuple[Assignable, ...]:
-        found: list[Assignable] = []
+        parent_rows: list[Assignable] = []
         for model in self.assignable_models().values():
             for children in model.assigns:
                 if children.model is type(row):
-                    found.extend(self.queries.query(model).find_many(self.parent_ids(row, children)))
-        return tuple(found)
+                    parent_rows.extend(self.queries.query(model).find_many(self.parent_ids(row, children)))
+        return tuple(parent_rows)
 
     def parent_ids(self, row: Assignable, children: Children) -> list[int]:
         if children.link_model is None or children.link_column is None:
