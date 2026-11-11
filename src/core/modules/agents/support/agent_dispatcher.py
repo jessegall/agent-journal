@@ -103,7 +103,7 @@ class AgentDispatcher:
         if self.transport.has_program(agent.terminal_id):
             self.record(agent, LAUNCHER_PROGRAM_TEXT)
             return agent
-        return self.end_row(self.record_launch(agent, ProgramProcess(None, None), context), context)
+        return self.end_row(self.repository.update(agent, context, pid=None, process_started_at=None), context)
 
     def end_row(self, agent: Agent, context: Context) -> Agent:
         return self.repository.save_change(agent, agent.ended(context.timestamp, self.policy.agent_policy()), context)
@@ -113,10 +113,6 @@ class AgentDispatcher:
 
     def record_process(self, agent: Agent, process: ProgramProcess, context: Context) -> Agent:
         return self.repository.save(replace(agent, ended_at=None, pid=process.pid, process_started_at=process.started_at), context)
-
-    def record_launch(self, agent: Agent, process: ProgramProcess, context: Context) -> Agent:
-        return self.repository.update(agent, context, pid=process.pid, ended_at=None, process_started_at=process.started_at, launched_at=context.timestamp,
-                                      launch_failed_at=None)
 
     def has_program(self, agent: Agent) -> bool:
         return self.transport.has_program(agent.terminal_id) or self.has_open_process(agent)

@@ -181,13 +181,11 @@ def test_reconcile_ends_an_open_row_whose_started_program_is_gone_and_leaves_one
     assert f"helper 2 {ENDED_ROW_TEXT}" in parts.log_lines
 
 
-def test_the_dispatcher_writes_the_opening_of_a_row_the_process_of_a_session_and_the_record_of_a_launch():
+def test_the_dispatcher_writes_the_opening_of_a_row_and_the_process_of_a_session():
     parts, process = Parts(), ProgramProcess(701, NOW)
     parts.dispatcher.open_row(replace(ENDED_HELPER, pid=650), CONTEXT)
     parts.dispatcher.record_process(ENDED_HELPER, process, CONTEXT)
-    parts.dispatcher.record_launch(replace(ENDED_HELPER, launch_failed_at=NOW), process, CONTEXT)
     assert [(row.ended_at, row.pid, row.process_started_at) for row in parts.repository.saved_rows] == [(None, 650, None), (None, 701, NOW)]
-    assert parts.repository.updates == [{"pid": 701, "ended_at": None, "process_started_at": NOW, "launched_at": NOW, "launch_failed_at": None}]
 
 
 def test_an_agent_whose_recorded_process_is_gone_ends_unless_the_launcher_has_its_program():
@@ -196,5 +194,5 @@ def test_an_agent_whose_recorded_process_is_gone_ends_unless_the_launcher_has_it
     launched.launcher(RUNNING)
     gone.dispatcher.end_lost_process(replace(HELPER, pid=700), CONTEXT)
     launched.dispatcher.end_lost_process(replace(HELPER, pid=700), CONTEXT)
-    assert (gone.repository.ended_ids, gone.repository.updates[0]["pid"]) == ([41], None)
+    assert (gone.repository.ended_ids, gone.repository.updates) == ([41], [{"pid": None, "process_started_at": None}])
     assert (launched.repository.ended_ids, launched.repository.updates) == ([], [])
