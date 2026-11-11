@@ -23,8 +23,10 @@ WORK_STEPS = ("Read journal worker status first: it says where you are and what 
               "journal proof make <point> --task <task> \"<file:line, and the test>\", naming the tests that cover your changes in its --test command; "
               "you may prove any started task at any time and nothing is judged then. Start another of your tasks with journal task start <task> or "
               "journal worker next. When points are proved, run journal worker commit --differences \"<what differs, or none>\": the journal judges and commits "
-              "every started task whose points are all proved. With a started task left you go on; with none left the commit is final, so stop and wait. "
-              "In a plan the tests of each checkpoint run in the background on your commit; go on, and fix first what comes back.")
+              "every started task whose points are all proved. A commit is never a merge: commit as often as you like. A task sent to you alone asks for "
+              "its merge by its last commit. A unit of more tasks is one piece of work: work all of it, then ask for its merge with journal worker ask-merge "
+              "\"<what the merge holds>\". In a plan the tests of each checkpoint run in the background on your commit; go on, and fix first what comes back. "
+              "Do not report back until the unit is merged or you are stuck.")
 
 
 class WorkerCommand:
