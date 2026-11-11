@@ -5,8 +5,10 @@ from engine.cli.move_subcommand import MoveSubcommand
 from engine.subcommand.subcommand import Subcommand, is_subcommand_class
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.command.command import Command
+from engine.command.move_command import MoveCommand
 from engine.container.container import Container
 from engine.model.model import Model
+from engine.registry.model_entry import ModelEntry
 from engine.registry.registry import Registry
 from engine.cli.errors.usage_error import UsageError
 
@@ -34,13 +36,22 @@ class SubcommandLookup:
         entry = self.registry.models.get(cli_name)
         if entry is None or name in entry.excluded_subcommands:
             raise self.no_subcommand(cli_name, name)
-        model = entry.model.loaded()
-        if not issubclass(model, Model):
-            raise UsageError(f"{entry.model.text} is no model")
-        built = self.built(model, entry.commands, name)
+        built = self.built(self.model(entry), entry.commands, name)
         if built is None:
             raise self.no_subcommand(cli_name, name)
         return built
+
+    def move_command(self, cli_name: str, move_name: str) -> type[MoveCommand[Model]]:
+        entry = self.registry.models[cli_name]
+        moves = self.defaults.moves(self.model(entry), entry.commands)
+        return next(move.command_class for move in moves if move.command_class.move.name == move_name)
+
+    @staticmethod
+    def model(entry: ModelEntry) -> type[Model]:
+        model = entry.model.loaded()
+        if not issubclass(model, Model):
+            raise UsageError(f"{entry.model.text} is no model")
+        return model
 
     def no_subcommand(self, cli_name: str, name: str) -> UsageError:
         names = self.names(cli_name)
