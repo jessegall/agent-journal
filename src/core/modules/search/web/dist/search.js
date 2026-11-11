@@ -1,7 +1,7 @@
-if (!document.getElementById("window-styles-74c6ea99636a")) { const style = document.createElement("style"); style.id = "window-styles-74c6ea99636a"; style.textContent = ".search-mark[data-v-1c0a0a5e]{display:flex;flex-direction:column;gap:1px;min-width:260px;max-width:520px;margin:2px 0 2px 12px}.search-child[data-v-1c0a0a5e]{display:flex;gap:10px;align-items:baseline;padding:4px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:12px;text-align:left;cursor:pointer}.search-child[data-v-1c0a0a5e]:hover:not(:disabled){background:var(--hover);color:var(--text)}.search-child[data-v-1c0a0a5e]:disabled{cursor:default}.search-child-name[data-v-1c0a0a5e]{flex:none;min-width:64px;color:var(--text-3)}.search-child-excerpt[data-v-1c0a0a5e]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.search-more[data-v-1c0a0a5e]{align-items:center;color:var(--text-3)}.search-none[data-v-1c0a0a5e]{margin:0;padding:4px 8px;color:var(--text-3);font-size:12px}.search[data-v-60c30d5f]{display:flex;flex-direction:column;gap:14px}.search-chips[data-v-60c30d5f]{display:flex;flex-wrap:wrap;gap:6px}.search-chip[data-v-60c30d5f]{padding:2px 10px;border:0;border-radius:10px;background:var(--raised);color:var(--text-2);font-size:12px;cursor:pointer}.search-chip.on[data-v-60c30d5f]{background:var(--accent);color:#fff}.search-hits[data-v-60c30d5f]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.search-hit[data-v-60c30d5f]{display:flex;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:7px;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}.search-hit[data-v-60c30d5f]:hover{background:var(--hover)}.search-dialog-text[data-v-60c30d5f]{margin:0;white-space:pre-wrap}.search-hit-name[data-v-60c30d5f]{flex:none;width:110px;color:var(--text-3)}.search-hit-excerpt[data-v-60c30d5f]{flex:1;min-width:0}.search-note[data-v-60c30d5f]{margin:0;color:var(--text-3)}\n"; document.head.appendChild(style); }
-import { ref as i, computed as b, openBlock as l, createElementBlock as n, createVNode as g, unref as _, withKeys as B, withModifiers as N, withCtx as f, createTextVNode as W, Fragment as k, renderList as x, normalizeClass as K, toDisplayString as o, createCommentVNode as w, createBlock as $, createElementVNode as h } from "vue";
+if (!document.getElementById("window-styles-550881cb26d4")) { const style = document.createElement("style"); style.id = "window-styles-550881cb26d4"; style.textContent = ".search-mark[data-v-7bd5473b]{display:flex;flex-direction:column;gap:1px;min-width:260px;max-width:520px;margin:2px 0 2px 12px}.search-child[data-v-7bd5473b]{display:flex;gap:10px;align-items:baseline;padding:4px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:12px;text-align:left;cursor:pointer}.search-child[data-v-7bd5473b]:hover:not(:disabled){background:var(--hover);color:var(--text)}.search-child[data-v-7bd5473b]:disabled{cursor:default}.search-child-name[data-v-7bd5473b]{flex:none;min-width:64px;color:var(--text-3)}.search-child-excerpt[data-v-7bd5473b]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.search-more[data-v-7bd5473b]{align-items:center;color:var(--text-3)}.search-none[data-v-7bd5473b]{margin:0;padding:4px 8px;color:var(--text-3);font-size:12px}.search[data-v-4619ea3b]{display:flex;flex-direction:column;gap:14px}.search-chips[data-v-4619ea3b]{display:flex;flex-wrap:wrap;gap:6px}.search-chip[data-v-4619ea3b]{padding:2px 10px;border:0;border-radius:10px;background:var(--raised);color:var(--text-2);font-size:12px;cursor:pointer}.search-chip.on[data-v-4619ea3b]{background:var(--accent);color:#fff}.search-hits[data-v-4619ea3b]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.search-hit[data-v-4619ea3b]{display:flex;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:7px;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}.search-hit[data-v-4619ea3b]:hover{background:var(--hover)}.search-dialog-text[data-v-4619ea3b]{margin:0;white-space:pre-wrap}.search-hit-name[data-v-4619ea3b]{flex:none;width:110px;color:var(--text-3)}.search-hit-excerpt[data-v-4619ea3b]{flex:1;min-width:0}.search-note[data-v-4619ea3b]{margin:0;color:var(--text-3)}\n"; document.head.appendChild(style); }
+import { ref as i, computed as V, openBlock as l, createElementBlock as n, createVNode as g, unref as _, withKeys as B, withModifiers as N, withCtx as f, createTextVNode as W, Fragment as k, renderList as x, normalizeClass as K, toDisplayString as o, createCommentVNode as w, createBlock as $, createElementVNode as h } from "vue";
 import { useWindow as j, SearchBar as z, Btn as D, Skeleton as E, Dialog as F, tableOfWord as H, peekRef as I } from "@journal/window-kit";
-import { _ as L } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+import { _ as L } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const M = { class: "search" }, O = {
   key: 0,
   class: "search-chips"
@@ -23,7 +23,7 @@ const M = { class: "search" }, O = {
 }, X = { class: "search-dialog-text" }, Y = {
   __name: "SearchWindow",
   setup(Z) {
-    const d = j(), r = i(""), u = i(/* @__PURE__ */ new Set()), a = i(null), v = i(""), m = i(!1), c = i(null), y = b(() => {
+    const d = j(), r = i(""), u = i(/* @__PURE__ */ new Set()), a = i(null), v = i(""), m = i(!1), c = i(null), y = V(() => {
       var s;
       return [.../* @__PURE__ */ new Set([...(((s = a.value) == null ? void 0 : s.hits) || []).map((e) => e.cli_name), ...u.value])].sort();
     });
@@ -69,7 +69,7 @@ const M = { class: "search" }, O = {
           type: "button",
           class: K(["search-chip", { on: u.value.has(t) }]),
           "data-model": t,
-          onClick: (V) => C(t)
+          onClick: (b) => C(t)
         }, o(t), 11, R))), 128))
       ])) : w("", !0),
       m.value ? (l(), $(_(E), {
@@ -84,7 +84,7 @@ const M = { class: "search" }, O = {
               type: "button",
               class: "search-hit",
               "data-hit": "",
-              onClick: (V) => S(t)
+              onClick: (b) => S(t)
             }, [
               h("span", G, o(t.cli_name) + " " + o(t.id), 1),
               h("span", J, o(t.excerpt), 1)
@@ -108,7 +108,7 @@ const M = { class: "search" }, O = {
       }, 8, ["title"])) : w("", !0)
     ]));
   }
-}, ae = /* @__PURE__ */ L(Y, [["__scopeId", "data-v-60c30d5f"]]);
+}, ae = /* @__PURE__ */ L(Y, [["__scopeId", "data-v-4619ea3b"]]);
 export {
   ae as default
 };

@@ -1,8 +1,8 @@
-if (!document.getElementById("window-styles-f8d5173e0a21")) { const style = document.createElement("style"); style.id = "window-styles-f8d5173e0a21"; style.textContent = ".releases[data-v-f0f2befe]{position:relative;min-height:100px}.failure[data-v-f0f2befe]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-f0f2befe]{margin-bottom:8px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.arrived[data-v-f0f2befe]{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}.note[data-v-f0f2befe]{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:13px}.standing[data-v-f0f2befe],.release[data-v-f0f2befe]{display:flex;align-items:baseline;gap:10px;font-size:13px}.line[data-v-f0f2befe],.title[data-v-f0f2befe]{flex:1}.heading[data-v-f0f2befe]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.detail[data-v-f0f2befe]{color:var(--text-3);font-size:12px}button[data-v-f0f2befe]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
-import { computed as _, ref as v, watch as I, openBlock as i, createBlock as R, unref as o, withCtx as f, createElementBlock as r, createCommentVNode as p, createElementVNode as l, createVNode as w, createTextVNode as N, toDisplayString as u, Fragment as P, renderList as V } from "vue";
+if (!document.getElementById("window-styles-ef7ef1d49d07")) { const style = document.createElement("style"); style.id = "window-styles-ef7ef1d49d07"; style.textContent = ".releases[data-v-b46da630]{position:relative;min-height:100px}.failure[data-v-b46da630]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-b46da630]{margin-bottom:8px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.arrived[data-v-b46da630]{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}.note[data-v-b46da630]{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:13px}.standing[data-v-b46da630],.release[data-v-b46da630]{display:flex;align-items:baseline;gap:10px;font-size:13px}.line[data-v-b46da630],.title[data-v-b46da630]{flex:1}.heading[data-v-b46da630]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.detail[data-v-b46da630]{color:var(--text-3);font-size:12px}button[data-v-b46da630]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+import { computed as _, ref as v, watch as I, openBlock as i, createBlock as R, unref as o, withCtx as h, createElementBlock as r, createCommentVNode as p, createElementVNode as l, createVNode as w, createTextVNode as N, toDisplayString as u, Fragment as P, renderList as V } from "vue";
 import { useWindow as W, WindowRoom as E, Btn as D, RowList as $, TextDisplay as j } from "@journal/window-kit";
-const q = (h, a) => {
-  const d = h.__vccOpts || h;
+const q = (f, a) => {
+  const d = f.__vccOpts || f;
   for (const [c, n] of a)
     d[c] = n;
   return d;
@@ -25,7 +25,7 @@ const q = (h, a) => {
   "data-update-notes-failure": ""
 }, Y = { class: "release" }, Z = { class: "title" }, ee = { class: "detail" }, te = {
   __name: "UpdatesPanel",
-  setup(h) {
+  setup(f) {
     const a = W(), d = a.props.releases, { failure: c } = a.props.standing, n = _(() => c.value ? null : a.props.standing.data.value), g = v(!1), k = v(""), b = v(!1), L = _(() => {
       var e, s, t;
       return b.value && ((e = n.value) == null ? void 0 : e.is_current) && ((t = (s = n.value) == null ? void 0 : s.installation) == null ? void 0 : t.step) === "finished";
@@ -50,7 +50,7 @@ const q = (h, a) => {
     }
     const F = () => globalThis.location.reload();
     return (e, s) => (i(), R(o(E), null, {
-      default: f(() => [
+      default: h(() => [
         g.value ? (i(), r("div", O, "Updating the journal. This takes a short while.")) : p("", !0),
         L.value ? (i(), r("div", z, [
           s[2] || (s[2] = l("span", { class: "line" }, "The update is installed. Reload the page to see it.", -1)),
@@ -60,7 +60,7 @@ const q = (h, a) => {
             "data-update-reload": "",
             onClick: F
           }, {
-            default: f(() => [...s[1] || (s[1] = [
+            default: h(() => [...s[1] || (s[1] = [
               N("Reload", -1)
             ])]),
             _: 1
@@ -80,7 +80,7 @@ const q = (h, a) => {
             "data-update-install": "",
             onClick: C
           }, {
-            default: f(() => {
+            default: h(() => {
               var t;
               return [
                 N(u(((t = n.value.installation) == null ? void 0 : t.step) === "failed" ? "Retry update" : n.value.tag ? `Update to ${n.value.tag}` : "Update to the latest"), 1)
@@ -103,7 +103,7 @@ const q = (h, a) => {
             empty: "No installation history yet",
             hint: "Installed releases appear here with their installation dates."
           }, {
-            default: f(({ row: t }) => [
+            default: h(({ row: t }) => [
               l("div", {
                 class: "release",
                 "data-row": t.id
@@ -140,7 +140,7 @@ const q = (h, a) => {
       _: 1
     }));
   }
-}, le = /* @__PURE__ */ q(te, [["__scopeId", "data-v-f0f2befe"]]);
+}, le = /* @__PURE__ */ q(te, [["__scopeId", "data-v-b46da630"]]);
 export {
   le as default
 };
