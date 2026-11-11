@@ -24,11 +24,11 @@ from suites.coding.modules.workers.support.worker_settings import QUESTION_ANSWE
 CLOCK_FORMAT = "%H:%M"
 
 
-class AskLedger:
-    """The questions workers asked the merger and how each ended. A question is a merger line with a worker; it is
-    open until it gets one outcome, and this is the one place that gives it. Closing a question ends the wait the
-    worker opened for it, writes a line in the log of its task and, unless the worker is gone, sends the worker
-    the outcome as a message, which wakes it."""
+class WorkerQuestions:
+    """The questions workers asked the merger and how each ended. A question is a merger line with a
+    worker; it is open until it gets one outcome, and this is the one place that gives it. Closing a
+    question ends the wait the worker opened for it, writes a line in the log of its task and, unless the
+    worker is gone, sends the worker the outcome as a message, which wakes it."""
 
     def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, numbers: RowNumbers) -> None:
         self.queries, self.repository, self.bus, self.settings, self.numbers = queries, repository, bus, settings, numbers

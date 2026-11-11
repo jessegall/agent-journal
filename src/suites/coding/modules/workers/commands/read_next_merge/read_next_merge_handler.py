@@ -57,7 +57,7 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
         output_id = self.log_read.pending_output(text, command.process_id, command.json_output, context)
         read_at = context.timestamp if output_id is None else None
         for line in lines:
-            self.repository.save_change(line, replace(line, read_at=read_at, read_output_id=output_id, visit_id=visit.id, reads=line.reads + 1), context)
+            self.repository.save_change(line, replace(line, read_at=read_at, read_output_id=output_id, visit_id=visit.id, visit_count=line.visit_count + 1), context)
         return output_id
 
     @staticmethod

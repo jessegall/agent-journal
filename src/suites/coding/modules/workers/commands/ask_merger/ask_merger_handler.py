@@ -12,7 +12,7 @@ from core.modules.waits.models.enums.wait_type import WaitType
 from core.modules.waits.models.wait import Wait
 from suites.coding.modules.workers.commands.ask_merger.ask_merger import AskMerger
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from suites.coding.modules.workers.support.ask_ledger import CLOCK_FORMAT, AskLedger
+from suites.coding.modules.workers.support.worker_questions import CLOCK_FORMAT, WorkerQuestions
 from suites.coding.modules.workers.support.group_message_limit import GROUP_MESSAGE_LIMIT_COUNT
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_ask_facts_query import WorkerAskFactsQuery
@@ -31,8 +31,8 @@ class AskMergerHandler(Handler[AskMerger, str]):
     command = AskMerger
     disabled_scopes = [ActorScope]
 
-    def __init__(self, guidance: WorkerGuidance, facts_query: WorkerAskFactsQuery, inbox: MergerInbox, queries: Queries, bus: Bus, numbers: RowNumbers, ledger: AskLedger) -> None:
-        self.numbers, self.ledger = numbers, ledger
+    def __init__(self, guidance: WorkerGuidance, facts_query: WorkerAskFactsQuery, inbox: MergerInbox, queries: Queries, bus: Bus, numbers: RowNumbers, questions: WorkerQuestions) -> None:
+        self.numbers, self.questions = numbers, questions
         self.guidance, self.facts_query, self.inbox, self.queries, self.bus = guidance, facts_query, inbox, queries, bus
 
     def handle(self, command: AskMerger, context: Context) -> str:
@@ -45,7 +45,7 @@ class AskMergerHandler(Handler[AskMerger, str]):
         return f"{self.due_line(command.worker_id)}{command.topic.waiting_work()}. {self.guidance.question_line(point.round)}"
 
     def due_line(self, worker_id: int) -> str:
-        lines = [line for line in self.ledger.worker_lines(worker_id) if line.due_at is not None]
+        lines = [line for line in self.questions.worker_lines(worker_id) if line.due_at is not None]
         if not lines:
             return ""
         return f"the merger has your question; an answer is due by {lines[-1].due_at.value.strftime(CLOCK_FORMAT)}, after that the main agent gets it. "
@@ -62,4 +62,4 @@ class AskMergerHandler(Handler[AskMerger, str]):
         text = f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} asks about {command.topic} on task {facts.task}: {command.text}\n{facts.text()}"
         wait = self.bus.dispatch(OpenWait(WaitType.ANSWER, focus), context)
         line = MergerLine(text=text, fallback_source=QUESTION_SOURCE, topic=command.topic, facts_json=facts.json_text(), worker_id=command.worker_id, group_key=group)
-        self.inbox.deliver(self.ledger.timed(line, wait.id, facts.task, context.timestamp), context)
+        self.inbox.deliver(self.questions.timed(line, wait.id, facts.task, context.timestamp), context)

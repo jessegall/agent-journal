@@ -8,6 +8,8 @@ from engine.time.timestamp import Timestamp
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 
+RELEASED_STATES = (WorktreeState.REMOVED, WorktreeState.ABANDONED)
+
 
 @dataclass(frozen=True, kw_only=True)
 class Worktree(Removable, EnvironmentScoped, Model):
@@ -54,6 +56,9 @@ class Worktree(Removable, EnvironmentScoped, Model):
     def change_libraries(self, dropped_at: Timestamp | None) -> "Worktree":
         move = WorktreeLifecycle.change_delivered_libraries if self.state is WorktreeState.DELIVERED else WorktreeLifecycle.change_cut_libraries
         return self.moved(move, libraries_dropped_at=dropped_at)
+
+    def is_released_since(self, earlier: "Worktree") -> bool:
+        return self.state in RELEASED_STATES and earlier.state is not self.state
 
     def merge(self, timestamp: Timestamp, actor: Actor) -> "Worktree":
         return self.moved(WorktreeLifecycle.merge, merged_at=timestamp)

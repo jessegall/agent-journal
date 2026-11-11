@@ -35,7 +35,7 @@ class MergerLine(EnvironmentScoped, Model):
     closed_at: Timestamp | None = None
     due_at: Timestamp | None = None
     forward_at: Timestamp | None = None
-    reads: int = 0
+    visit_count: int = 0
     source_key: str | None = None
 
     def is_open_question(self) -> bool:

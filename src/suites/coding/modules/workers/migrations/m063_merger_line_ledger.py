@@ -23,7 +23,7 @@ class MergerLineLedgerMigration(Migration):
         "ALTER TABLE merger_lines ADD COLUMN closed_at TEXT",
         "ALTER TABLE merger_lines ADD COLUMN due_at TEXT",
         "ALTER TABLE merger_lines ADD COLUMN forward_at TEXT",
-        "ALTER TABLE merger_lines ADD COLUMN reads INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE merger_lines ADD COLUMN visit_count INTEGER NOT NULL DEFAULT 0",
         "ALTER TABLE merger_lines ADD COLUMN source_key TEXT",
         "UPDATE merger_lines SET task_id = json_extract(facts_json, '$.task') WHERE worker_id IS NOT NULL AND facts_json IS NOT NULL",
         "UPDATE merger_lines SET wait_id = (" + QUESTION_WAIT_SQL + "),"
