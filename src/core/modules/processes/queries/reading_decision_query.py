@@ -1,12 +1,20 @@
+from collections.abc import Sequence
 from typing import Self
 
 from engine.database.database import Database
 from engine.model.tables import Tables
+from engine.query.conditions.among import Among
 from engine.query.conditions.greater import Greater
+from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.query import Query
+from engine.query.select import Select
 from engine.time.timestamp import Timestamp
+from core.modules.processes.models.enums.reader_state import ReaderState
 from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
+
+
+LACKING_STATES = (ReaderState.MISSING, ReaderState.POOR)
 
 
 class ReadingDecisionQuery(Query[ReadingDecisionRow]):
@@ -29,3 +37,10 @@ class ReadingDecisionQuery(Query[ReadingDecisionRow]):
 
     def since(self, timestamp: Timestamp) -> Self:
         return self.matching(Greater("decided_at", timestamp.text))
+
+    def lacking_a_reader_at_end(self) -> Self:
+        return self.filter(moment=ReadingMoment.END).matching(Among("state", LACKING_STATES))
+
+    def of_runs_outside(self, agent_ids: Sequence[int]) -> Self:
+        runs = Select("processes").matching(Among("session_agent_id", agent_ids, negated=True)).column("id")
+        return self.matching(SubqueryMatch("process_id", runs))
