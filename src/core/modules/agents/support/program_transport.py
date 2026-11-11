@@ -3,8 +3,13 @@ from collections.abc import Mapping
 
 class ProgramTransport:
     """The way the dispatcher reaches whatever runs the programs of agents: it sends a start, stops a program,
-    asks how long a program has typed nothing and whether a program of an agent runs. The one transport today
-    is the launcher of this machine; a launcher on another machine is another class."""
+    asks how long a program has typed nothing, whether a program of an agent runs and whether it answers at
+    all. The one transport today is the launcher of this machine; a launcher on another machine is another
+    class."""
+
+    @property
+    def is_running(self) -> bool:
+        raise NotImplementedError
 
     def start(self, request: Mapping[str, object]) -> bytes | None:
         raise NotImplementedError

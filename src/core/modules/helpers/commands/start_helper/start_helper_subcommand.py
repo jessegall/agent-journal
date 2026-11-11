@@ -6,7 +6,7 @@ from engine.caller.caller import Caller
 from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from core.modules.helpers.support.helper_started import HelperStarted
-from core.modules.agents.support.launcher_link import LauncherLink
+from core.modules.agents.support.agent_standing import AgentStanding
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 
 
@@ -17,8 +17,8 @@ class StartHelperSubcommand(Subcommand[StartHelper, HelperStarted]):
     name = "start"
     outward = True
 
-    def __init__(self, launcher: LauncherLink) -> None:
-        self.launcher = launcher
+    def __init__(self, standings: AgentStanding) -> None:
+        self.standings = standings
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("profile")
@@ -36,6 +36,6 @@ class StartHelperSubcommand(Subcommand[StartHelper, HelperStarted]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, HelperStarted):
-            line = "its report wakes you, so you may stop" if self.launcher.is_running else "keep working and read journal overview: its report arrives at your next hook"
+            line = "its report wakes you, so you may stop" if self.standings.is_launcher_running else "keep working and read journal overview: its report arrives at your next hook"
             note = f", on {value.agent.program}: {value.note}" if value.note else ""
             output.write(f"started agent:{value.agent.number}{note}: {line}", {"id": value.agent.id, "program": value.agent.program, "note": value.note})

@@ -30,3 +30,10 @@ each piece keeps to its place.
 - **`launcher-stop-outside-agent-program`** - code asks `LauncherLink` to stop a program. End the agent's row instead:
   `EndedAgentProgramListener` stops the program through `AgentProgram` when another ended it, and an agent that ended
   itself gets no stop.
+- **`launcher-reached-outside-the-dispatcher`** - a file outside `src/core/modules/agents/support/` imports
+  `LauncherLink`, `LauncherService` or `AgentProgram`, or a command that records a launch, a launch failure or a
+  program exit. Ask `AgentDispatcher` to start, stop or end an agent, and `AgentStanding` whether its program or a
+  launcher runs. The rule names the files it still allows; that list only shrinks.
+- **`agent-row-ended-outside-the-dispatcher`** - code outside `AgentDispatcher` writes the `ended_at` or `pid` of an
+  agent's row. Use `end_row`, `end_session`, `open_row`, `record_process` or `move_program` of the dispatcher, so
+  the row and the program are changed in one place.

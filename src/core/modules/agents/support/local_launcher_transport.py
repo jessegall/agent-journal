@@ -10,6 +10,10 @@ class LocalLauncherTransport(ProgramTransport):
     def __init__(self, link: LauncherLink) -> None:
         self.link = link
 
+    @property
+    def is_running(self) -> bool:
+        return self.link.is_running
+
     def start(self, request: Mapping[str, object]) -> bytes | None:
         return self.link.request_launcher(request, ANSWER_BYTES)
 

@@ -12,6 +12,7 @@ ALLOWED_CLASS_FILES = {
     "AgentLauncher": "src/core/modules/agents/support/agent_launcher.py",
     "TerminalTyping": "src/core/modules/agents/support/terminal_typing.py",
     "LauncherLink": "src/core/modules/agents/support/launcher_link.py",
+    "LocalLauncherTransport": "src/core/modules/agents/support/local_launcher_transport.py",
     "LaunchAgentHandler": "src/core/modules/agents/commands/launch_agent/launch_agent_handler.py",
 }
 SAMPLE = '''class LauncherLink:

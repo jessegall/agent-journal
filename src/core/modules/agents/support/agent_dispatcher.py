@@ -1,7 +1,9 @@
 from dataclasses import replace
 from datetime import timedelta
 
+from engine.actor.actor import Actor
 from engine.command.context import Context
+from engine.enums.actor_type import ActorType
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
 from engine.process.leftover_process import LeftoverProcess
@@ -107,6 +109,11 @@ class AgentDispatcher:
 
     def end_row(self, agent: Agent, context: Context) -> Agent:
         return self.repository.save_change(agent, agent.ended(context.timestamp, self.policy.agent_policy()), context)
+
+    def move_program(self, launch: Agent, resumed: Agent, context: Context) -> Agent:
+        self.end_row(launch, replace(context, actor=Actor(launch.id, ActorType.AGENT)))
+        return self.repository.update(resumed, context, ended_at=None, pid=launch.pid, process_started_at=launch.process_started_at,
+                                      launch_agent_id=launch.id, launch_name=launch.original_launch_name)
 
     def open_row(self, agent: Agent, context: Context) -> Agent:
         return self.repository.save(replace(agent, ended_at=None), context)
