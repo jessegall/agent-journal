@@ -100,8 +100,6 @@ CONTROLS = [
     Control("C29", [positive_integer("workers", workers.INACTIVE_HELPER_GRACE_MINUTES, 15)]),
     Control("C30", [positive_integer("workers", workers.INACTIVE_HELPER_MINUTES, 5)]),
     Control("C31", [SettingPart("helpers", helpers.PROGRAM_WINDOW_PERCENT, 95, (-1, 101, 95.5, "95"))]),
-    Control("C32", [flag("workers", workers.PHASE_TESTS_ENABLED, True)]),
-    Control("C33", [positive_integer("workers", workers.TEST_BATCH_SIZE, 1)]),
     Control("C34", [nonnegative_integer("workers", workers.WORKER_PHASE_TEST_RUNS, 3)]),
     Control("C35", [nonnegative_integer("workers", workers.WORKER_TEST_LIMIT, 25)]),
     Control("C36", [SettingPart("coding", coding.COMMAND_TYPES, DEFAULT_COMMAND_TYPES, (["deploy"], ["read", "read"], ["read", " "], "read"))]),

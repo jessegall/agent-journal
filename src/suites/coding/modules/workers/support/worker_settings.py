@@ -32,8 +32,6 @@ INACTIVE_HELPER_MINUTES = f"{MODULE_KEY}.quiet-helper-minutes"
 INACTIVE_HELPER_GRACE_MINUTES = f"{MODULE_KEY}.quiet-helper-grace-minutes"
 WORKER_BATCH_SIZE = f"{MODULE_KEY}.worker-batch-size"
 WORKER_IDLE_HOURS = f"{MODULE_KEY}.worker-idle-hours"
-PHASE_TESTS_ENABLED = f"{MODULE_KEY}.test-at-phase-end"
-TEST_BATCH_SIZE = f"{MODULE_KEY}.test-batch-size"
 WORKER_PHASE_TEST_RUNS = f"{MODULE_KEY}.worker-phase-test-runs"
 WORKER_RUN_WAIT = f"{MODULE_KEY}.worker-run-wait-seconds"
 MOST_RUN_WAIT_SECONDS = 100
@@ -60,9 +58,7 @@ WORKER_SETTING_VALUES = [
     SettingValue("silent-recovery-attempts", "Wake-up lines for a silent agent", "How many wake-up lines a silent agent gets before it is reported as not answering.", SettingType.NUMBER, default=3, person_set=True),
     SettingValue("worker-resume-limit", "Go-on lines for a stopped worker", "How often a stopped worker with tasks left is told to go on, with no task moved, before it is reported.", SettingType.NUMBER, default=3, person_set=True),
     SettingValue("idle-worker-repeat-minutes", "Worker idle warning repeat", "Minutes between warnings about a worker with work left.", SettingType.NUMBER, default=5, person_set=True),
-    SettingValue("test-at-phase-end", "Test at phase end", "Test plan tasks together at the end of each phase. Off tests each task when handed in.", SettingType.FLAG, default=True, person_set=True),
-    SettingValue("test-batch-size", "Tasks per test batch", "Tasks outside a plan to finish before testing together. The last task also ends a batch.", SettingType.NUMBER, default=1, person_set=True),
-    SettingValue("worker-phase-test-runs", "Test commands per phase or batch", "Test commands a worker may run in each phase or batch before asking the main agent.", SettingType.NUMBER, default=3, person_set=True),
+    SettingValue("worker-phase-test-runs", "A worker's test runs between two commits", "Test commands a worker may run itself between two commits before it asks the main agent.", SettingType.NUMBER, default=3, person_set=True),
     SettingValue("silent-agent-minutes", "Silent agent minutes", "Minutes without tool use or a running command before an agent with unfinished work is resumed.", SettingType.NUMBER, default=3, person_set=True),
     SettingValue("affected-tests-command", "Affected tests command", "Find tests for changed files, one argument per line. Set the project test command too.", SettingType.TEXT, default="", person_set=True),
     SettingValue("project-test-command", "Project test command", "Run selected test arguments. Set the affected tests command too.", SettingType.TEXT, default="", person_set=True),
@@ -110,7 +106,6 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         WORKER_RESUME_LIMIT: NumberRule(0),
                         INACTIVE_HELPER_GRACE_MINUTES: NumberRule(1),
                         INACTIVE_HELPER_MINUTES: NumberRule(1),
-                        TEST_BATCH_SIZE: NumberRule(1),
                         WORKER_PHASE_TEST_RUNS: NumberRule(0),
                         WORKER_TEST_LIMIT: NumberRule(0),
                         WORKER_RUN_WAIT: NumberRule(0, maximum=MOST_RUN_WAIT_SECONDS),

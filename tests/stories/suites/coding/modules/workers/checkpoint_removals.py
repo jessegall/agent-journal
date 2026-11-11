@@ -17,7 +17,7 @@ from tests.stories.suites.coding.modules.workers.support.work_setting_stories im
 PHASE_END_SETTING = "journal.suites.coding.workers.test-at-phase-end"
 BATCH_SETTING = "journal.suites.coding.workers.test-batch-size"
 RUNS_SETTING = "journal.suites.coding.workers.worker-phase-test-runs"
-RUNS_TITLE = "Test runs a worker may start between two commits"
+RUNS_TITLE = "A worker's test runs between two commits"
 REMAINING_NUMBERS = (RUNS_SETTING, "journal.suites.coding.workers.worker-run-most-tests", "journal.suites.coding.workers.own-test-failures-to-flag",
                      "journal.suites.coding.workers.hand-in-failures-to-flag")
 PHASE_TEST_POINT = 0
@@ -80,7 +80,7 @@ def test_206_the_runs_a_worker_may_start_itself_are_counted_between_two_commits(
     expect_reply_refusal(worker.run_test(), "No test runs left")
     worker.prove_advance(TEST_LINE)
     expect_reply_allowed(worker.run_test())
-    worker.story.expect_text(SHOWN_SETTINGS, RUNS_TITLE, actor=worker.story.user)
+    worker.story.expect_text("work-settings show --json --environment main", RUNS_TITLE, actor=worker.story.user)
 
 
 def test_213_a_proof_test_that_runs_when_the_rule_changes_ends_as_it_was_and_the_next_commit_starts_none(new_story, monkeypatch):

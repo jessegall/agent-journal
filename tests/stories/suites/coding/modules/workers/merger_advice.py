@@ -226,14 +226,6 @@ def test_the_same_step_on_the_next_task_is_a_new_point(planned):
     advised.story.expect_rows([row.task_id for row in advised.merger_message_rows()] == [1, 2], [row.step for row in advised.merger_message_rows()] == ["build", "build"], detail=str(advised.merger_message_rows()))
 
 
-def test_the_first_advice_of_a_new_group_is_counted_from_one_at_an_unchanged_point(planned):
-    _, advised = planned
-    advised.advised(ADVICES[0], 1)
-    advised.story.expect_success("phase place 1 --phase 2", actor=advised.story.agent)
-    advised.visit()
-    advised.advised(ADVICES[1], 1)
-
-
 def test_each_worker_has_its_own_count_and_its_own_advice_in_a_visit(advising):
     advising.story.new_row_id('task make "Add the shipping line" --environment main')
     second = AdvisedWorker(MergerCase(advising.story, advising.case.repository, dispatched_worker(advising.story, SECOND_DISPATCH), advising.merger))

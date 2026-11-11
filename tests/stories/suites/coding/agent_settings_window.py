@@ -89,7 +89,7 @@ def test_s44_the_window_applies_a_preset_in_one_step_and_reads_the_workflow_back
         expect_value((after["workflow"], after["controls"][AUTO_MODE]), ("orchestrator", False))
 
 
-TEST_BATCH = "journal.suites.coding.workers.test-batch-size"
+OWN_RUNS = "journal.suites.coding.workers.worker-phase-test-runs"
 FAILURES = "journal.suites.coding.workers.own-test-failures-to-flag"
 RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
 
@@ -100,13 +100,13 @@ def field_values(settings: dict, group: str) -> dict:
 
 def test_s24_tests_tab_fields_are_read_and_applied_together(new_story):
     story = new_story(fixture=MainControlsActors)
-    story.expect_text(f"setting show {TEST_BATCH} --environment main", "value:", actor=story.user)
+    story.expect_text(f"setting show {OWN_RUNS} --environment main", "value:", actor=story.user)
     with person_viewer(story) as viewer:
         settings = active_work_row(viewer)
         expect_value(len(field_values(settings, "tests")) > 0, True)
-        viewer.server.viewer_line_value(viewer.cookie, {"window": WINDOW, "environment": "main", "line": ["work-settings", "apply", "--revision", settings["revision"], f"{TEST_BATCH}=4", f"{FAILURES}=7"]})
+        viewer.server.viewer_line_value(viewer.cookie, {"window": WINDOW, "environment": "main", "line": ["work-settings", "apply", "--revision", settings["revision"], f"{OWN_RUNS}=4", f"{FAILURES}=7"]})
         after = field_values(active_work_row(viewer), "tests")
-        expect_value((after[TEST_BATCH], after[FAILURES]), (4, 7))
+        expect_value((after[OWN_RUNS], after[FAILURES]), (4, 7))
 
 
 def test_the_context_limit_is_in_the_advanced_tab_and_the_modal_is_no_page(viewer_person):

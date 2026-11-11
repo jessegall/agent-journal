@@ -15,7 +15,7 @@ from tests.stories.suites.coding.modules.workers.support.program_split import di
 from tests.stories.support.story_checks import expect_absent_value, expect_value
 
 NEW_KEYS = ["continue-while-delegatable", "designer-enabled", "main-agent-may-merge", "resume-silent-agents", "workers-start-read-only-helpers", "agent-options"]
-REMOVED_CONTROLS = ["C04", "C08", "C15", "C19"]
+REMOVED_CONTROLS = ["C04", "C08", "C15", "C19", "C32", "C33"]
 REMOVED_KEYS = {"main-builds-tasks", "work-preference", "provider-choice", "fallback"}
 
 
@@ -23,9 +23,9 @@ def tree_rows(story) -> dict[str, dict]:
     return {row["key"]: row for row in json.loads(story.run("setting tree --json --environment main", actor=story.user).output_text)["rows"]}
 
 
-def test_s01_s43_defaults_cover_39_controls_and_leave_out_the_removed_ones():
+def test_s01_s43_defaults_cover_37_controls_and_leave_out_the_removed_ones():
     numbers = [control.number for control in CONTROLS]
-    expect_value((len(numbers), len(set(numbers)), set(numbers) & set(REMOVED_CONTROLS)), (39, 39, set()))
+    expect_value((len(numbers), len(set(numbers)), set(numbers) & set(REMOVED_CONTROLS)), (37, 37, set()))
 
 
 def test_s01_s43_defaults_have_one_declared_owner_and_are_person_only():
@@ -88,9 +88,9 @@ def test_s45_defaults_cannot_be_set_by_an_agent(new_story):
             story.expect_refusal(f"setting set {key} {shlex.quote(saved_text(value))} {scope} --reason 'a story asks'", "A person was asked", actor=story.agent)
 
 
-def test_s01_s52_fixture_matrix_names_78_control_cases_8_regressions_and_the_transitions():
+def test_s01_s52_fixture_matrix_names_74_control_cases_8_regressions_and_the_transitions():
     cases = matrix_cases()
-    expect_value((len(cases), len(set(cases)), sum(case.startswith("C") for case in cases)), (104, 104, 78))
+    expect_value((len(cases), len(set(cases)), sum(case.startswith("C") for case in cases)), (100, 100, 74))
 
 
 def test_s45_fixture_actors_are_distinct_agents_that_are_all_refused_a_person_only_setting(new_story):

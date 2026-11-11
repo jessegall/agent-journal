@@ -172,9 +172,6 @@ An open question lets you stop; the answer wakes you. Going on with other work e
   right; the journal commits and puts all its proofs' tests on the run queue at once, on the commit you handed in. Go on working in your worktree meanwhile: your later edits do not change the result, and a failure or your next task comes back to you.
 - `journal worker deliver` hands in all your tasks together, refused while one is queued. The journal then runs your
   tests, all on the run queue at once; those that fail come back to you to fix and deliver again.
-- `test-at-phase-end` (on by default) tests a started plan's tasks together at the end of each phase. Off tests
-  each task at its own hand-in. Outside a plan, `test-batch-size` sets how many tasks to finish before testing;
-  its default is 1. A larger batch ends at that count or the worker's last task.
 - Inside a phase or batch, leave tests to the hand-in unless you really need a run yourself:
   - Inside a phase or batch `journal worker next` commits your task and gives you the next one at once. A proof may have no test.
   - The journal runs your proofs' tests when you hand in and returns any failures. Run a test yourself only if you

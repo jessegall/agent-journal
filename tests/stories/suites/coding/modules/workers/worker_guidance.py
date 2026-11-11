@@ -9,7 +9,6 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, PLAN_DISPATCH, SECOND_TEST_LINE, TEST_LINE, start_planned_worker, unplanned_worker
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 
-BATCH_SETTING = "setting set journal.suites.coding.workers.test-batch-size 2 --environment main"
 RUNS_SETTING = "setting set journal.suites.coding.workers.worker-phase-test-runs 5 --environment main"
 
 
@@ -105,13 +104,6 @@ def fixed_group(failed_group):
     failed_group.prove(TEST_LINE)
     failed_group.story.run("worker deliver --wait --differences none", actor=failed_group.worker)
     return failed_group
-
-
-@pytest.fixture
-def batch_worker(new_story, monkeypatch):
-    worker = unplanned_worker(new_story, monkeypatch)
-    worker.story.expect_success(BATCH_SETTING, actor=worker.story.user)
-    return worker
 
 
 @pytest.fixture

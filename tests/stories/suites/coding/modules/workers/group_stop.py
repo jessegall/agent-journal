@@ -12,7 +12,6 @@ from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfi
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 
-BATCH_SETTING = "setting set journal.suites.coding.workers.test-batch-size 2 --environment main"
 MERGER_OFF = "setting set journal.suites.coding.workers.merger-on false --project"
 
 
@@ -73,9 +72,8 @@ def failed_group(new_story, monkeypatch):
     return worker
 
 
-def test_a_batch_handed_in_stops_quietly(new_story, monkeypatch):
+def test_a_worker_whose_two_tasks_are_handed_in_stops_quietly(new_story, monkeypatch):
     worker = unplanned_worker(new_story, monkeypatch)
-    worker.story.expect_success(BATCH_SETTING, actor=worker.story.user)
     worker.prove_advance(TEST_LINE)
     worker.prove(SECOND_TEST_LINE)
     worker.story.run("worker deliver --wait --differences none", actor=worker.worker)
