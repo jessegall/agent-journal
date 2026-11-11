@@ -57,6 +57,8 @@ from engine.testing.examples.hook_sample import HookSample
 from engine.testing.examples.hook_samples import SAMPLE_FIRING, HookSamples
 from engine.testing.fakes.manual_clock import ManualClock
 from engine.testing.stories.story_journal import StoryJournal
+from engine.database.seed_tables import ID_COLUMN
+from engine.query.conditions.minimum import Minimum
 from engine.testing.seeds.seed import Seed
 from engine.testing.seeds.seeder import Seeder
 from engine.testing.stories.story_path import StoryPath
@@ -73,10 +75,11 @@ TOUCHED_LINE = re.compile(r"^(?:created|updated): (.+)$", re.MULTILINE)
 
 
 class Story:
-    """One story on a journal of its template that rolls back at its end, the public entry a plugin's
-    stories use: it loads the modules named, runs command lines as text through the same console, container
-    and registry as a real run, moves its clock by hand, reads rows and refusals, and checks what came back.
-    It fills a table with many made-up rows of a seed in one line. It knows no model of the core."""
+    """One story on a journal of its template that rolls back at its end, the public entry a plugin's stories
+    use: it loads the modules named, runs command lines as text through the same console, container and
+    registry as a real run, moves its clock by hand, reads rows and refusals, and checks what came back. It
+    fills a table with many made-up rows of a seed in one line, and reads the rows a story made itself,
+    which are numbered one and up, apart from the seeded rows below them. It knows no model of the core."""
 
     def __init__(self, home: JournalHome, container: Container, clock: ManualClock, process_table: "FixedProcessTable", state: StoryState) -> None:
         self.home, self.container, self.clock, self.process_table = home, container, clock, process_table
@@ -126,6 +129,9 @@ class Story:
         seeder = Seeder(self.container.get(Database), self.clock.timestamp().text, self.caller_environment_id(None))
         with seeder.filling():
             return seeder.seed(seed(), count, **fixed)
+
+    def story_rows(self, model: type[M], **values: object) -> tuple[M, ...]:
+        return tuple(self.container.get(Queries).query(model).filter(**values).matching(Minimum(ID_COLUMN, 1)).oldest().all_rows())
 
     def use_fixture_environment(self, name: str | None) -> None:
         self.fixture_environment, self.fixture_environment_id = name, None

@@ -31,7 +31,7 @@ class StartedHelper(StoryFixture):
 
 
 def helper_agent(story):
-    return next(story.container.get(Queries).query(Agent).filter(role="helper").all_rows())
+    return story.story_rows(Agent, role="helper")[0]
 
 
 def resumable_session(story, helper, monkeypatch) -> None:

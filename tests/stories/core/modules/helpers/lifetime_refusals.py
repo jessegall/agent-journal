@@ -3,7 +3,6 @@ import pytest
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.actor.actor import Actor
-from engine.query.queries import Queries
 from core.modules.profiles.support.profile_files import ProfileFiles
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.agents.agent_kind_controls import ALLOWED_MODELS, set_options
@@ -75,7 +74,7 @@ def test_a_start_of_the_profile_is_refused_with_the_send_line_of_the_idle_agent_
     story.expect_refusal(TILL_START, f'helper {number} is idle: journal helper send {number} "<job>"', actor=story.agent)
     story.expect_success(f'{TILL_START} --fresh "A second view"', actor=story.agent)
     launcher.drain_requests()
-    helpers = list(story.container.get(Queries).query(Agent).filter(role="helper").all_rows())
+    helpers = list(story.story_rows(Agent, role="helper"))
     story.expect_rows(len(helpers) == 2, detail=str(helpers))
 
 

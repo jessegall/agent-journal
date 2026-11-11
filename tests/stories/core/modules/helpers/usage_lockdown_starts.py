@@ -22,7 +22,7 @@ class LimitedEndedHelper(StoryFixture):
 
 
 def helper_count(story) -> int:
-    return story.container.get(Queries).query(Agent).filter(role="helper").count()
+    return len(story.story_rows(Agent, role="helper"))
 
 
 def test_a_helper_start_is_refused_with_the_reason_with_no_program_and_with_claude_named_and_no_agent_is_made(new_story):

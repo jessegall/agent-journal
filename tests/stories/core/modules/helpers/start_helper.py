@@ -47,7 +47,7 @@ def fake_launcher(story, requests=1):
 
 
 def helpers(story):
-    return list(story.container.get(Queries).query(Agent).filter(role="helper").all_rows())
+    return list(story.story_rows(Agent, role="helper"))
 
 
 def started(story, line=START, actor=None):
