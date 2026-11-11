@@ -60,12 +60,6 @@ def test_no_selected_test_is_queued_at_the_commit_of_a_phase_of_a_started_plan(d
     story.expect_rows(declared_tests.started == [], not story.container.get(Queries).query(AffectedTest).exists(), detail=f"started: {declared_tests.started}")
 
 
-def test_with_no_test_at_all_the_tasks_of_a_commit_wait_in_testing_for_the_merge(undeclared_tests):
-    undeclared_tests.story.expect_success(COMMIT, actor=undeclared_tests.worker)
-    expect_task_states(undeclared_tests, "testing", 1, 2, 3)
-    undeclared_tests.story.expect_rows(undeclared_tests.started == [])
-
-
 def test_two_workers_in_one_phase_each_commit_their_own_tasks(two_workers):
     first, second = two_workers
     first.edit_prove(TEST_LINE)

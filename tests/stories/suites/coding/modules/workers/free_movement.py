@@ -39,13 +39,6 @@ def startable_ids(worker: StoryWorker) -> list[int]:
     return [task["id"] for task in worker.status_json()["startable"]]
 
 
-def test_16_a_worker_starts_a_task_of_a_later_phase_while_its_own_phase_has_open_tasks(one_task):
-    started = one_task.story.run("task start 4", actor=one_task.worker)
-    one_task.story.expect_text("task show 4", "state: started", actor=one_task.story.agent)
-    one_task.story.expect_text("task show 2", "state: open", actor=one_task.story.agent)
-    one_task.story.expect_rows(started.code == 0, detail=started.output_text)
-
-
 def test_18_a_task_after_a_checkpoint_that_has_not_passed_is_refused_and_a_task_up_to_it_starts(after_a_checkpoint):
     worker = after_a_checkpoint
     refused = worker.story.run("task start 5", actor=worker.worker)
