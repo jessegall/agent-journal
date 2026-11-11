@@ -33,8 +33,7 @@ class HelperResume:
             return Dispatch.REFUSED
         current = self.cold.replaced(helper, self.profiles.effective(helper.profile).occupant.continuation)
         command = self.commands.resumed(current, job) if self.conversations.exists(current) else self.restarted(current, job)
-        start = StartAgentProgram(current.id, tuple(command.arguments), str(command.folder), dict(command.variables))
-        dispatch = self.bus.run(start, Actor.core(), environment_id=helper.environment_id)
+        dispatch = self.bus.run(StartAgentProgram.launching(current.id, command), Actor.core(), environment_id=helper.environment_id)
         if dispatch is Dispatch.FAILED:
             self.end_open_job(current)
         return dispatch

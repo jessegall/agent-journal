@@ -37,5 +37,4 @@ class HelperProgramListener(CommitListener[Created[HelperJob]]):
         except Exception:
             self.bus.run(RecordAgentLaunchFailure(helper.id), Actor.core(), environment_id=helper.environment_id)
             raise
-        start = StartAgentProgram(helper.id, tuple(command.arguments), str(command.folder), dict(command.variables))
-        self.bus.run(start, Actor.core(), environment_id=helper.environment_id)
+        self.bus.run(StartAgentProgram.launching(helper.id, command), Actor.core(), environment_id=helper.environment_id)

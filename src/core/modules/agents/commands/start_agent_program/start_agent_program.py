@@ -2,6 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
 from engine.command.command import Command
+from engine.provider.launch_command import LaunchCommand
 from core.modules.agents.models.enums.dispatch import Dispatch
 
 
@@ -17,3 +18,7 @@ class StartAgentProgram(Command[Dispatch]):
     arguments: Sequence[str]
     folder: str
     variables: Mapping[str, str] = field(default_factory=dict)
+
+    @classmethod
+    def launching(cls, agent_id: int, launch: LaunchCommand) -> "StartAgentProgram":
+        return cls(agent_id, tuple(launch.arguments), str(launch.folder), dict(launch.variables))

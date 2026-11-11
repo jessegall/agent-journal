@@ -113,8 +113,7 @@ class WorkerResume:
         self.launch_job(worker, worktree, job, actor)
 
     def started(self, worker: Agent, command: LaunchCommand) -> Dispatch:
-        start = StartAgentProgram(worker.id, tuple(command.arguments), str(command.folder), dict(command.variables))
-        return self.bus.run(start, Actor.core(), environment_id=worker.environment_id)
+        return self.bus.run(StartAgentProgram.launching(worker.id, command), Actor.core(), environment_id=worker.environment_id)
 
     def launch_job(self, worker: Agent, worktree: Worktree, job: AgentLine, actor: Actor) -> Dispatch:
         if not self.may_resume(worker) or not self.places.can_resume(worker):
