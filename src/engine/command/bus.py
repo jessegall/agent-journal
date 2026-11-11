@@ -13,7 +13,7 @@ from engine.time.deadline import Deadline
 from engine.text.explanation import Explanation
 from engine.registry.registry import Registry
 from engine.scope.scopes import Scopes
-from engine.time.timing import Timing
+from engine.performance.timing import Timing
 from engine.command.errors.missing_handler_error import MissingHandlerError
 from engine.command.errors.transaction_error import TransactionError
 from engine.command.errors.explanation_rollback_error import ExplanationRollbackError

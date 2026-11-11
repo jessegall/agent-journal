@@ -1,7 +1,8 @@
 from collections.abc import Sequence
 
 from engine.database.kept_rows import KeptRows
-from engine.plan.plan_authors import PlanAuthors, PlanEdit
+from engine.plan.plan_authors import PlanAuthors
+from engine.plan.plan_edit import PlanEdit
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.plans.models.phase import Phase

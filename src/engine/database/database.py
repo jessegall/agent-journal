@@ -82,8 +82,7 @@ class Database:
             raise
 
     @contextmanager
-    def snapshot(self):
-        """Reads inside it see the database as it was at the first mark taken, so that mark matches the rows read."""
+    def consistent_read(self):
         if self.has_transaction:
             yield
             return

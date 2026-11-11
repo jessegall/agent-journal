@@ -13,9 +13,9 @@ M = TypeVar("M", bound=Model | ViewModel)
 
 
 class EventRows:
-    """Shares repository rows between listeners and checks external changes in batches; a view has no version to
-    check, so its rows are read again in each new generation. A rollback drops every row cached before it, since a
-    write after it can reuse the version of a row the rollback undid."""
+    """Shares repository rows between listeners and checks external changes in batches; a view has no version
+    to check, so its rows are read again in each new generation. A rollback drops every row cached before it,
+    since a write after it can reuse the version of a row the rollback undid."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -35,7 +35,7 @@ class EventRows:
             raise MissingRowsError(model.cli_name, [row_id])
         return row
 
-    def required_by_id(self, model: type[M], row_ids: Sequence[int]) -> dict[int, M]:
+    def required_index(self, model: type[M], row_ids: Sequence[int]) -> dict[int, M]:
         self.prepare(model, row_ids)
         name = self.cache_name(model)
         rows = {row_id: self.known[(model, row_id)][name].row for row_id in dict.fromkeys(row_ids)}

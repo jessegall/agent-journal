@@ -4,7 +4,7 @@ from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.database.actor_table import ActorTable
 from engine.errors.refusal import Refusal
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_revision import SettingRevision

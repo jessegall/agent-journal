@@ -8,7 +8,7 @@ from core.modules.agents.commands.retire_agent.retire_agent_handler import Retir
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 
 ENDED_AT = datetime(2026, 11, 1, 9, 0, tzinfo=timezone.utc)
 RETIRED_AT = datetime(2026, 11, 2, 9, 0, tzinfo=timezone.utc)

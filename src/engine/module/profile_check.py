@@ -15,7 +15,7 @@ class ProfileCheck:
     def problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
         types = {declaration.key: declaration for module in modules for declaration in suites.helper_types(module)}
         claimed: dict[str, str] = {}
-        problems = [f"{suite.name}: register profiles on the module, not the suite" for module in modules for suite in suites.shipped_suites(module)
+        problems = [f"{suite.name}: register profiles on the module, not the suite" for module in modules for suite in suites.module_suites(module)
                     if hasattr(suite, "profiles") or hasattr(suite, "profile_types")]
         for module in modules:
             for profile in module.profiles:

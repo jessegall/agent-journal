@@ -5,7 +5,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rules import DriverRules
 from engine.driver.hook_event import HookEvent
 from engine.driver.rule_answers import RuleAnswers
-from engine.time.timing import Timing
+from engine.performance.timing import Timing
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.nudge_log import NudgeLog
 from core.modules.drivers.support.suite_choice import SuiteChoice

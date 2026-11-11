@@ -22,7 +22,7 @@ from engine.row.metadata import Metadata
 from engine.provider.providers import Providers
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from engine.time.timing import Timing
+from engine.performance.timing import Timing
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import DeliverAgentLine
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall

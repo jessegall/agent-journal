@@ -1,6 +1,6 @@
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.secrets.models.secret import Secret
 from core.modules.secrets.support.output_mask import OutputMask
 from engine.private.private_folder import PrivateFolder

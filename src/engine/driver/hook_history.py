@@ -18,9 +18,9 @@ class HookHistory:
     def last_answer(self, rule_name: str, hook: AgentHook) -> Timestamp | None:
         return self.answer_time(RuleHistoryKey(hook.agent_id, rule_name, hook.layer_ref))
 
-    def has_answered_since(self, rule_name: str, hook: AgentHook, since: Timestamp) -> bool:
+    def has_answer_after(self, rule_name: str, hook: AgentHook, start_at: Timestamp) -> bool:
         answered_at = self.last_answer(rule_name, hook)
-        return answered_at is not None and answered_at >= since
+        return answered_at is not None and answered_at >= start_at
 
     def has_recent_answer(self, rule_name: str, hook: AgentHook, span: Seconds) -> bool:
         answered_at = self.last_answer(rule_name, hook)

@@ -15,7 +15,8 @@ from engine.driver.run_owners import RunOwners
 from engine.registry.registry import Registry
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
-from engine.plan.plan_authors import PLAN_AUTHOR_LINES, PlanAuthors, PlanEdit
+from engine.plan.plan_authors import PLAN_AUTHOR_LINES, PlanAuthors
+from engine.plan.plan_edit import PlanEdit
 from core.modules.drivers.commands.use_permission.use_permission import UsePermission
 from core.modules.drivers.models.enums.permission_state import PermissionState
 from core.modules.drivers.models.permission_request import PermissionRequest

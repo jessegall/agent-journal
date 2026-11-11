@@ -7,7 +7,7 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.command.request_user_approval import RequestUserApproval
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from engine.guard.guard import Guard
 from engine.query.conditions.greater import Greater
 from engine.query.conditions.has_value import HasValue

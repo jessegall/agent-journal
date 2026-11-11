@@ -9,8 +9,8 @@ from http.server import BaseHTTPRequestHandler
 from engine.caller.errors.caller_request_error import CallerRequestError
 from engine.cli.console import ERROR_CODE
 from engine.enums.log_level import LogLevel
-from engine.time.timing import TIMING_HEADER, Timing
-from engine.time.timing_log import TimingLog
+from engine.performance.timing import TIMING_HEADER, Timing
+from engine.performance.timing_log import TimingLog
 from engine.caller.caller_request import CallerRequest
 from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_mapping

@@ -27,7 +27,7 @@ class DockItemLeaveListener(CommitListener[Touched[Model]]):
         actor = self.actors.actor(MODULE_NAME)
         model_name = logged.event.split(".")[0]
         items = self.items.matching(model_name.replace("_", "-"), logged.row_id)
-        docks = self.rows.required_by_id(Dock, [item.dock_id for item in items])
+        docks = self.rows.required_index(Dock, [item.dock_id for item in items])
         for item in items:
             leaves_at = self.leave_time.departure(item, logged.timestamp)
             if leaves_at is not None:

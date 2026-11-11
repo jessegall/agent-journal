@@ -35,7 +35,7 @@ class AwaitedTaskListener(SaveListener[Moved[Task]]):
         if holder_id is None:
             return
         self.assignments.keep_rows(Task, waiting_ids)
-        waiting_tasks = self.rows.required_by_id(Task, waiting_ids).values()
+        waiting_tasks = self.rows.required_index(Task, waiting_ids).values()
         waiting_actors = {actor for actor in (self.assignments.actor(task) for task in waiting_tasks) if actor is not None and actor != holder_id}
         for waiting_id in sorted(waiting_actors):
             self.nudger.send(holder_id, WORKER_TASK_AWAITED, AWAITED_SOURCE, context, worker=self.numbers.number(AGENT_MODEL_NAME, waiting_id), task=event.row.id)

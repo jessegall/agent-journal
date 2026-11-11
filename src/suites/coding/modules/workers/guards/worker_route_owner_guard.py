@@ -1,4 +1,4 @@
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from engine.enums.actor_type import ActorType
 from engine.event.deleted import Deleted
 from engine.event.updated import Updated

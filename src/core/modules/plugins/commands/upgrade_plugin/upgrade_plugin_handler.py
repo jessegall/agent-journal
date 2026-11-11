@@ -4,7 +4,7 @@ from pathlib import Path
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.file.file_access import FileAccess

@@ -19,7 +19,7 @@ from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
 from engine.registry.registry import Registry
 from engine.registry.errors.stale_registry_error import StaleRegistryError
-from engine.time.timing import Timing
+from engine.performance.timing import Timing
 from engine.module.performance_tools import PerformanceTools
 from engine.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.hook_request_log import HookRequestLog

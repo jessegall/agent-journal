@@ -1,7 +1,7 @@
 import json
 
 from engine.journal.journal_home import JournalHome
-from engine.time.timing_log import TimingLog
+from engine.performance.timing_log import TimingLog
 
 FIELDS: dict[str, object] = {"route": "/cli", "line": "task start", "status": 200, "exit_code": 0, "code_version": "a41c9e0f12ab",
                              "timing": "go_start=1;go_sent=2"}

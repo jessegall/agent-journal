@@ -74,7 +74,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         proofs = self.proofs.worktree_rows(worktree.id)
         if any(row.state in TEST_WAITING_STATES for row in proofs):
             return []
-        tasks = self.rows.required_by_id(Task, sorted({row.task_id for row in proofs}))
+        tasks = self.rows.required_index(Task, sorted({row.task_id for row in proofs}))
         failed = [row for row in proofs if row.state is ProofState.SHORT and tasks[row.task_id].state is TaskState.TESTING]
         current = self.reopen_work(worktree, failed, context) if failed else worktree
         pending = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).all_rows()
@@ -115,7 +115,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         return self.reopen_tasks(worktree, sorted({row.task_id for row in failed}), ", ".join(str(row.process_id) for row in failed), context)
 
     def reopen_tasks(self, worktree: Worktree, task_ids: list[int], outputs: str, context: Context) -> Worktree:
-        for task in self.rows.required_by_id(Task, task_ids).values():
+        for task in self.rows.required_index(Task, task_ids).values():
             if task.state is TaskState.TESTING:
                 self.repository.save_change(task, task.moved(TaskLifecycle.retest), context)
         current = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context) if worktree.state is WorktreeState.DELIVERED else worktree

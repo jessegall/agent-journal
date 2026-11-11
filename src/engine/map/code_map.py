@@ -104,9 +104,9 @@ class CodeMap:
         return " ".join(described[-1].split())
 
     def needed_modules(self, classes: list[ast.ClassDef]) -> str:
-        needed = self.class_values(classes).get("dependencies")
-        names = [element.value for element in needed.elts if isinstance(element, ast.Constant)] if isinstance(needed, ast.List) else []
-        return f" Needs: {', '.join(str(name) for name in names)}." if names else ""
+        dependency_list = self.class_values(classes).get("dependencies")
+        dependencies = [element.value for element in dependency_list.elts if isinstance(element, ast.Constant)] if isinstance(dependency_list, ast.List) else []
+        return f" Needs: {', '.join(str(dependency) for dependency in dependencies)}." if dependencies else ""
 
     def folder_names(self, folder: Path) -> list[str]:
         if not folder.is_dir():

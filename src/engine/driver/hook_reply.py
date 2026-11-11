@@ -8,8 +8,8 @@ from engine.driver.hook_call_like import HookCallLike
 @dataclass(frozen=True)
 class HookReply:
     """What the journal answers a hook: its refusal, if any, the lines the agent reads, the new input a rule
-    gave the tool, the hook call row and a line for the terminal. A halt is the one line of a program stopped at a usage
-    limit: it stops the program and nothing else of the reply is given."""
+    gave the tool, the hook call row and a line for the terminal. A halt is the one line of a program stopped
+    at a usage limit: it stops the program and nothing else of the reply is given."""
 
     refusal: str = ""
     lines: Sequence[str] = ()

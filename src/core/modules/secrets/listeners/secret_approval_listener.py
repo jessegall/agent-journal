@@ -7,7 +7,7 @@ from engine.listener.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
 from engine.scope.actor_scope import ActorScope
 from engine.scope.environment_scope import EnvironmentScope
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.secrets.models.secret import Secret
 
 

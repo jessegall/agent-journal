@@ -15,7 +15,7 @@ from engine.model.tables import Tables
 from engine.module.errors.module_error import ModuleError
 from engine.module.module_removal import ModuleRemoval
 from engine.errors.refusal import Refusal
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from engine.subcommand.output import Output
 
 MODULE_REMOVAL_ARGUMENTS = ["module", "remove"]

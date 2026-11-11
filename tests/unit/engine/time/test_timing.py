@@ -12,7 +12,7 @@ from engine.command.handlers.make_handler import MakeHandler
 from engine.command.make_command import MakeCommand
 from engine.journal.journal_home import JournalHome
 from engine.registry.registry import Registry
-from engine.time.timing import Timing
+from engine.performance.timing import Timing
 from tests.unit.engine.command.test_bus import handlers
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.unit.engine.module.test_module_sync import ITEMS

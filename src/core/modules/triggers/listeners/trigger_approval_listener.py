@@ -9,7 +9,7 @@ from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from engine.scope.environment_scope import EnvironmentScope
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.models.agent import Agent
 from core.modules.triggers.models.trigger import Trigger
 

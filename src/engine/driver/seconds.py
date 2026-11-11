@@ -25,7 +25,7 @@ class Seconds(Span):
     def has_elapsed(self, start: Timestamp, timestamp: Timestamp) -> bool:
         return start.elapsed_seconds(timestamp) >= self.count
 
-    def before(self, timestamp: Timestamp) -> Timestamp:
+    def subtracted_from(self, timestamp: Timestamp) -> Timestamp:
         return Timestamp(timestamp.value - timedelta(seconds=self.count))
 
     def has_passed(self, reads: SpanQueries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:

@@ -9,7 +9,7 @@ from pathlib import Path
 
 from engine.driver.hook_event import HOOK_EVENT_VERSION
 from core.modules.drivers.bindings.agent_hook_route import AgentHookRoute
-from engine.time.timing import TIMING_HEADER
+from engine.performance.timing import TIMING_HEADER
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import LeadStarted

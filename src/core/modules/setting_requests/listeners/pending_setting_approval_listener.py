@@ -7,7 +7,7 @@ from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from engine.scope.environment_scope import EnvironmentScope
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question
 from core.modules.setting_requests.commands.request_setting.request_setting_handler import APPROVE_OPTION, REFUSE_OPTION

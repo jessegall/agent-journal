@@ -6,7 +6,7 @@ from engine.command.handler import Handler
 from engine.container.container import Container
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from engine.registry.registry import Registry
 from engine.repository.repository import Repository
 from core.modules.agents.commands.retire_agent.retire_agent import RetireAgent

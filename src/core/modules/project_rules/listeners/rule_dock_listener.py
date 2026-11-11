@@ -3,7 +3,7 @@ from engine.event.registry_synced import RegistrySynced
 from engine.command.bus import Bus
 from engine.command.request_user_approval import RequestUserApproval
 from engine.command.close_user_approval import CloseUserApproval
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from engine.listener.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries

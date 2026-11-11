@@ -26,7 +26,7 @@ from engine.check.periodic_checks import PeriodicChecks
 from engine.performance.performance_state import PerformanceState
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
-from engine.time.timing_log import TimingLog
+from engine.performance.timing_log import TimingLog
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
 from engine.database.reported_findings import ReportedFindings

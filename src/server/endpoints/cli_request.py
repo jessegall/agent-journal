@@ -1,6 +1,6 @@
 from engine.caller.caller_request import CallerRequest
 from engine.time.deadline import Deadline
-from engine.time.timing import Timing
+from engine.performance.timing import Timing
 from engine.types.type_guards import is_mapping, is_text_list
 from dataclasses import dataclass, field
 from server.errors.cli_request_error import CliRequestError

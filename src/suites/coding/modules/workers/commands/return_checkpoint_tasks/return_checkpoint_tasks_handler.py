@@ -55,7 +55,7 @@ class ReturnCheckpointTasksHandler(Handler[ReturnCheckpointTasks, tuple[Returned
         if link is not None:
             self.return_worker_run(self.rows.required(Worktree, link.worktree_id), failed, proofs, context)
             return ()
-        tasks = self.rows.required_by_id(Task, failed.task_ids)
+        tasks = self.rows.required_index(Task, failed.task_ids)
         worker_tasks = defaultdict[int, list[int]](list)
         self.return_unmerged([proof for proof in proofs if proof.state is ProofState.SHORT], context)
         for task in tasks.values():

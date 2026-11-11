@@ -1,5 +1,6 @@
 from engine.database.database import Database
-from engine.plan.plan_authors import PlanAuthors, PlanEdit
+from engine.plan.plan_authors import PlanAuthors
+from engine.plan.plan_edit import PlanEdit
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 
 

@@ -43,8 +43,8 @@ class HelperTypeCheck:
                 problems.append(f"{declaration.key}: default profile {profile.name} has type {profile.agent_type}, not {declaration.key}")
         names = frozenset(book.entries)
         uses = [(driver.name, driver.role) for module in modules for driver in module.drivers]
-        uses.extend((suite.name, role) for module in modules for suite in suites.shipped_suites(module) for role in suite.defaults)
-        uses.extend((suite.name, role) for module in modules for suite in suites.shipped_suites(module)
+        uses.extend((suite.name, role) for module in modules for suite in suites.module_suites(module) for role in suite.defaults)
+        uses.extend((suite.name, role) for module in modules for suite in suites.module_suites(module)
                     for field in fields(suite.agent_policy) if field.name.endswith("_roles")
                     for role in getattr(suite.agent_policy, field.name))
         uses.extend((rule.name, role) for rule in rules for role in rule.roles)
