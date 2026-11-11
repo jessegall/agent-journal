@@ -6,13 +6,17 @@ import pytest
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from tests.stories.core.support.agent_labels import agent_number
+from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE
+from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, start_planned_worker, unplanned_worker
 
 COMMITTED = "committed"
 CHECKPOINT_WORDS = "tests run at the checkpoint of phase 2, when tasks 4 are in"
 MERGE_WAIT_WORDS = "committed: the merger merges; tests run at the checkpoint"
 MERGED_REASON = "merged; its tests run at the checkpoint of phase 2"
+CHECK_UNTESTED_PROOF = "proof check 2"
 UPGRADE_COMMAND = "suites.coding.modules.workers.commands.commit_shown_proofs.commit_shown_proofs"
 
 
@@ -22,6 +26,8 @@ def proof_states(worker: StoryWorker) -> dict[int, str]:
 
 
 def merge(worker: StoryWorker):
+    worker.repository.checkout(ENVIRONMENT_BRANCH)
+    worker.story.run(f"worker logs {agent_number(worker.story, worker.worker.id)}", actor=worker.story.agent)
     return worker.story.run(f"worker merge --wait {agent_number(worker.story, worker.worker.id)}", actor=worker.story.agent)
 
 
@@ -50,6 +56,7 @@ def committed_worker(group_worker) -> StoryWorker:
 
 @pytest.fixture
 def merged_worker(committed_worker) -> StoryWorker:
+    committed_worker.story.run(CHECK_UNTESTED_PROOF, actor=committed_worker.story.agent)
     merge(committed_worker)
     committed_worker.story.run_listeners()
     return committed_worker
@@ -84,15 +91,30 @@ def test_159_163_a_final_commit_makes_the_worktree_ready_to_merge_and_the_status
     committed_worker.story.expect_rows(row.get("merge_ready_at") is not None, MERGE_WAIT_WORDS in status, CHECKPOINT_WORDS in status, detail=f"{row} | {status}")
 
 
-def test_164_the_merge_takes_a_worktree_of_committed_proofs_in_a_started_plan_and_refuses_one_with_a_short_proof(committed_worker):
+def test_163_a_final_commit_in_a_started_plan_with_the_merger_on_says_the_committed_work_can_be_merged(group_worker):
+    story = group_worker.story
+    story.expect_success(MERGER_ON, actor=story.user)
+    story.run(COMMIT, actor=group_worker.worker)
+    story.run_listeners()
+    lines = " | ".join(group_worker.main_agent_lines())
+    story.expect_rows("the work of worker:2 is committed and can be merged" in lines, "all pass" not in lines, detail=lines)
+
+
+def test_164_the_merge_takes_a_worktree_of_committed_proofs_in_a_started_plan_and_refuses_one_with_an_unchecked_proof_of_no_test(committed_worker):
+    story = committed_worker.story
+    refused = merge(committed_worker)
+    story.expect_rows(refused.code != 0, "point 1 is not committed or checked" in refused.output_text, detail=refused.output_text)
+    story.run(CHECK_UNTESTED_PROOF, actor=story.agent)
+    merged = merge(committed_worker)
+    story.expect_rows(merged.code == 0, proof_states(committed_worker)[3] == COMMITTED, detail=merged.output_text)
+    committed_worker.repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
+
+
+def test_164_the_merge_refuses_a_worktree_of_a_started_plan_with_a_short_proof(committed_worker):
     story = committed_worker.story
     story.run('proof short 1 "the point is not shown"', actor=story.agent)
     refused = merge(committed_worker)
-    story.expect_rows(refused.code != 0, "proof" in refused.output_text, detail=refused.output_text)
-    committed_worker.edit_prove(TEST_LINE)
-    story.run(COMMIT, actor=committed_worker.worker)
-    merged = merge(committed_worker)
-    story.expect_rows(merged.code == 0, proof_states(committed_worker)[3] == COMMITTED, detail=merged.output_text)
+    story.expect_rows(refused.code != 0, proof_states(committed_worker)[1] == "short", detail=refused.output_text)
 
 
 def test_165_a_merged_task_of_a_started_plan_is_completed_with_its_proofs_still_committed(merged_worker):
@@ -100,6 +122,16 @@ def test_165_a_merged_task_of_a_started_plan_is_completed_with_its_proofs_still_
     for task_id in (1, 2, 3):
         story.expect_text(f"task show {task_id}", "state: completed", MERGED_REASON, actor=story.agent)
     story.expect_rows(proof_states(merged_worker)[1] == COMMITTED, detail=str(proof_states(merged_worker)))
+
+
+def test_165_a_task_that_waits_on_a_committed_task_can_start_once_that_task_is_merged(committed_worker):
+    story = committed_worker.story
+    story.run("task depend 4 --on 1", actor=story.agent)
+    waiting = story.run("task start 4", actor=story.agent)
+    story.run(CHECK_UNTESTED_PROOF, actor=story.agent)
+    merge(committed_worker)
+    started = story.run("task start 4", actor=story.agent)
+    story.expect_rows(waiting.code != 0, started.code == 0, detail=f"{waiting.output_text} | {started.output_text}")
 
 
 def test_166_a_task_in_no_plan_is_not_merged_before_its_tests_passed(new_story, monkeypatch):
@@ -118,7 +150,7 @@ def test_203_the_upgrade_commits_the_shown_proofs_of_a_task_in_testing_in_a_star
     worker.story.expect_rows(proof_states(worker)[1] == COMMITTED, worker.started == [], detail=str(proof_states(worker)))
 
 
-def test_239_a_worker_that_stops_with_committed_tasks_that_are_not_merged_has_them_named(committed_worker):
-    committed_worker.story.run(f"agent end {committed_worker.worker.id}", actor=committed_worker.worker)
-    lines = " | ".join(committed_worker.main_agent_lines())
-    committed_worker.story.expect_rows("task:1" in lines, "is not merged" in lines, detail=lines)
+def test_239_a_worker_that_stops_with_committed_tasks_that_are_not_merged_has_them_named(group_worker):
+    group_worker.story.run(f"agent end {group_worker.worker.id}", actor=group_worker.worker)
+    lines = " | ".join(group_worker.main_agent_lines())
+    group_worker.story.expect_rows("the code of task:1, task:2 of worker:2 is committed and is not merged" in lines, detail=lines)

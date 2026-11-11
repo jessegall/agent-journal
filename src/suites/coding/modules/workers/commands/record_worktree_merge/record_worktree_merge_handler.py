@@ -12,6 +12,7 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.record_worktree_merge.record_worktree_merge import RecordWorktreeMerge
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.support.checkpoint_wait_text import CheckpointWaitText
 from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_MERGE_CONFLICT
@@ -21,13 +22,14 @@ from suites.coding.modules.workers.support.worker_task_advance import WorkerTask
 
 class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
     """Closes the worker's delivered tasks once git has merged its worktree, or restarts its task with the files
-    that clashed."""
+    that clashed. A task of a started plan is closed with the checkpoint its tests run at."""
 
     command = RecordWorktreeMerge
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, rows: EventRows, repository: Repository, nudger: Nudger, advance: WorkerTaskAdvance, guidance: WorkerGuidance) -> None:
+    def __init__(self, queries: Queries, rows: EventRows, repository: Repository, nudger: Nudger, advance: WorkerTaskAdvance, guidance: WorkerGuidance, wait_text: CheckpointWaitText) -> None:
+        self.wait_text = wait_text
         self.queries, self.rows, self.repository, self.nudger, self.advance, self.guidance = queries, rows, repository, nudger, advance, guidance
 
     def handle(self, command: RecordWorktreeMerge, context: Context) -> MergeOutcome:
@@ -36,8 +38,9 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
         if command.conflicts:
             return MergeOutcome(self.returned(worktree, task, command.conflicts, context), command.conflicts)
         delivered_tasks = self.delivered_tasks(worktree, task)
+        reasons = self.wait_text.merged_reasons(worktree, [delivered.id for delivered in delivered_tasks])
         for delivered in delivered_tasks:
-            self.repository.save_change(delivered, delivered.close(context.timestamp, context.actor, f"merged into {worktree.base_branch}"), context)
+            self.repository.save_change(delivered, delivered.close(context.timestamp, context.actor, reasons[delivered.id]), context)
         merged = replace(worktree.merge(context.timestamp, context.actor), commit_before_merge=command.commit_before_merge, commit_after_merge=command.commit_after_merge,
                          merged_task_ids=",".join(str(delivered.id) for delivered in delivered_tasks))
         return MergeOutcome(self.repository.save_change(worktree, merged, context), ())

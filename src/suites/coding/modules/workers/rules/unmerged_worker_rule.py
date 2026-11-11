@@ -70,9 +70,9 @@ class UnmergedWorkerRule(DriverRule):
     def is_with_merger(self, worktree: Worktree, hook: AgentHook) -> bool:
         if not self.settings.flag(MERGER_ENABLED) or worktree.returned_at is not None:
             return False
-        if worktree.tests_passed_at is None:
+        if worktree.merge_ready_at is None:
             return True
-        return not Interval(self.settings.minutes(MERGER_WAIT_MINUTES)).has_passed(self.spans, hook.agent_id, worktree.tests_passed_at, hook.timestamp)
+        return not Interval(self.settings.minutes(MERGER_WAIT_MINUTES)).has_passed(self.spans, hook.agent_id, worktree.merge_ready_at, hook.timestamp)
 
     def delivered_reminder_count(self, agent_id: int, key: str) -> int:
         record = self.records.newest_row(agent_id, key)

@@ -5,7 +5,7 @@ import pytest
 
 from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
-from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, PHASE_DISPATCH, PLAN_DISPATCH, TEST_LINE, start_planned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, PHASE_DISPATCH, PLAN_DISPATCH, TEST_LINE, start_planned_worker, unplanned_group_worker
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 
 MAIN_SESSION = "s-1"
@@ -56,7 +56,7 @@ def phase_delivered(new_story, monkeypatch):
 
 @pytest.fixture
 def ended_during_tests(new_story, monkeypatch):
-    worker = start_planned_worker(new_story, monkeypatch)
+    worker = unplanned_group_worker(new_story, monkeypatch)
     worker.prove_advance(TEST_LINE)
     worker.prove_advance()
     worker.prove_advance(SECOND_TEST_LINE)
@@ -74,6 +74,7 @@ def test_a_worker_waiting_on_the_tests_of_its_hand_in_is_not_told_to_go_on(ended
 
 def test_a_worker_whose_tests_are_running_is_not_restarted_while_it_holds_a_started_task(ended_during_tests):
     worker = ended_during_tests
+    worker.story.run('task make "Receipts" --brief "The receipts"', actor=worker.story.agent)
     worker.story.expect_success("task start 4", actor=worker.worker)
     worker.story.expect_text(f"worker status {agent_number(worker.story, worker.worker.id)}", "Point: wait", actor=worker.story.agent)
     worker.story.tick(MAIN_SESSION)

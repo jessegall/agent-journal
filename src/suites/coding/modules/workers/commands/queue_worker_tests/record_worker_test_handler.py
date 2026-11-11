@@ -78,7 +78,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
                 proof_ids = ', '.join(str(row.id) for row in waiting if row.task_id == task_id)
                 self.main_agent_line.send_nudge(PROOF_CHECK.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), task=task_id, proofs=proof_ids), LINE_SOURCE, context)
             return
-        self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.mark_tests_passed, tests_passed_at=context.timestamp), context)
+        self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.mark_tests_passed, tests_passed_at=context.timestamp, merge_ready_at=context.timestamp), context)
         if self.settings.flag(MERGER_ENABLED):
             return
         self.main_agent_line.send_nudge(WORKER_TESTS_PASSED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), LINE_SOURCE, context)

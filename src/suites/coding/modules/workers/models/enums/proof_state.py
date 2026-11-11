@@ -13,4 +13,6 @@ class ProofState(StrEnum):
     SHORT = "short"
 
 
+MERGEABLE_STATES = tuple([ProofState.CHECKED])
+COMMITTED_WORK_MERGEABLE_STATES = (ProofState.COMMITTED, ProofState.CHECKED)
 TEST_WAITING_STATES = (ProofState.QUEUED, ProofState.RUNNING)

@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from engine.actor.actor import Actor
@@ -45,13 +44,6 @@ def single_phase_tests(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
     worker.story.expect_success("setting set journal.suites.coding.workers.merger-on off --environment main", actor=worker.story.user)
     return last_phase_task(worker, TEST_LINE, SECOND_TEST_LINE)
-
-
-@pytest.fixture
-def delivered_phase(single_phase_tests):
-    single_phase_tests.story.run("worker deliver --wait --differences none", actor=single_phase_tests.worker)
-    single_phase_tests.end_all_tests()
-    return single_phase_tests
 
 
 @pytest.fixture
@@ -107,12 +99,6 @@ def test_with_no_test_at_all_the_tasks_wait_in_testing_for_the_merge_and_the_nex
     expect_task_states(undeclared_tests, "testing", 1, 2, 3)
     undeclared_tests.story.expect_rows(undeclared_tests.started == [])
     undeclared_tests.story.expect_rows(undeclared_tests.current_task() == 4)
-
-
-def test_a_delivered_phase_of_a_started_plan_runs_no_test_and_tells_the_main_agent_of_no_passed_tests(delivered_phase):
-    lines = delivered_phase.main_agent_lines()
-    delivered_phase.story.expect_rows(delivered_phase.started == [], not any("all pass" in line for line in lines), detail=str(lines))
-    delivered_phase.story.expect_success(f"worker logs {agent_number(delivered_phase.story, delivered_phase.worker.id)}", actor=delivered_phase.story.agent)
 
 
 def test_two_workers_in_one_phase_each_reach_its_end_at_their_own_last_task(two_workers):

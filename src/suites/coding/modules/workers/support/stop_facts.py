@@ -8,7 +8,8 @@ class StopFacts:
     """What is known about a worker at the end of a turn with tasks left, and the one reading that follows:
     a person's stop first, then work that still goes, a failed launch, a stop nobody resumes, the resume
     limit, and a resume with the program ready or still starting. At the resume limit the main agent gets
-    one line; a later stop with no task moved since is a repeat that sends none."""
+    one line; a later stop with no task moved since is a repeat that sends none. A second line names
+    the tasks of a started plan whose work is committed, since their code is not merged."""
 
     is_busy: bool
     is_person_stop: bool
@@ -19,6 +20,7 @@ class StopFacts:
     is_program_ready: bool
     task_names: str
     is_main_agent_informed: bool = False
+    committed_names: str = ""
 
     def reading(self) -> StopReading:
         if self.is_person_stop:

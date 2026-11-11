@@ -30,8 +30,13 @@ class TaskPlans:
         return None if place is None else self.rows.required(Phase, place.phase_id)
 
     def prepare(self, task_ids: Sequence[int]) -> None:
-        places = {place.task_id: place for place in self.queries.query(PhaseTask).matching(Among("task_id", task_ids)).all_rows()}
-        for task_id in dict.fromkeys(task_ids):
+        distinct_ids = list(dict.fromkeys(task_ids))
+        if not distinct_ids:
+            return
+        rows = self.kept.read("phase_tasks", lambda: tuple(self.queries.query(PhaseTask).matching(Among("task_id", distinct_ids)).all_rows()),
+                              f"task_id IN ({', '.join('?' for _ in distinct_ids)})", distinct_ids, name="plans.task_phases")
+        places = {place.task_id: place for place in rows}
+        for task_id in distinct_ids:
             self.kept.read("phase_tasks", lambda task_id=task_id: places.get(task_id),
                            "task_id = ?", [task_id], name="plans.task_phase")
         phases = self.rows.required_by_id(Phase, [place.phase_id for place in places.values()])

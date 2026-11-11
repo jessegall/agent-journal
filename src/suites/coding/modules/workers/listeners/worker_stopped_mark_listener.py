@@ -26,7 +26,8 @@ class WorkerStoppedMarkListener(WorkerStopMarkListener[AgentEnded]):
         worker = event.row
         if worker.role != CodingHelperRole.WORKER:
             return
-        facts = self.stop_facts.read(worker, logged.actor_id)
+        worker_round = self.unfinished.steps.round(worker.id)
+        facts = self.stop_facts.read(worker, worker_round, logged.actor_id)
         if facts is not None and facts.reading().shows_card:
-            tasks = self.unfinished.rows(worker.id)
+            tasks = self.unfinished.round_rows(worker_round)
             self.show_stop(logged, worker, WorkerMarkVariant.ENDED_EARLY, f"stopped with {len(tasks)} tasks left", tasks)

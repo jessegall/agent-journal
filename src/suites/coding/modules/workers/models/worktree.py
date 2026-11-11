@@ -67,5 +67,9 @@ class Worktree(Removable, EnvironmentScoped, Model):
     def remove(self, timestamp: Timestamp, actor: Actor) -> "Worktree":
         return self.moved(WorktreeLifecycle.remove, removed_at=timestamp)
 
+    @property
+    def is_merge_ready(self) -> bool:
+        return self.state is WorktreeState.DELIVERED and self.merge_ready_at is not None and self.returned_at is None
+
     def has_cut_task(self, task_id: int) -> bool:
         return self.task_id == task_id and self.state is WorktreeState.CUT

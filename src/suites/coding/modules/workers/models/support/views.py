@@ -6,7 +6,7 @@ SELECT worktree.session_agent_id AS agent_id, worktree.environment_id,
            WHEN EXISTS (SELECT 1 FROM proofs JOIN processes ON processes.id = proofs.process_id
                         WHERE proofs.worktree_id = worktree.id AND proofs.state = 'running' AND processes.queued_at IS NULL) THEN 'tests running'
            WHEN EXISTS (SELECT 1 FROM proofs WHERE proofs.worktree_id = worktree.id AND proofs.state IN ('queued', 'running')) THEN 'tests queued'
-           WHEN worktree.tests_passed_at IS NULL THEN 'judging'
+           WHEN worktree.merge_ready_at IS NULL THEN 'judging'
            ELSE 'waiting for the merge'
        END AS status
 FROM worker_worktrees AS worktree

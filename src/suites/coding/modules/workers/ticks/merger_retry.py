@@ -1,5 +1,3 @@
-from engine.cli.agent_number import AGENT_MODEL_NAME
-from engine.cli.row_numbers import RowNumbers
 from engine.actor.actor import Actor
 from engine.container.container import Container
 from engine.driver.program_lockdown import ProgramLockdown
@@ -13,7 +11,6 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from engine.setting.setting_values import SettingValues
-from suites.coding.modules.workers.commands.read_next_merge.read_next_merge_handler import ReadNextMergeHandler
 from suites.coding.modules.workers.commands.return_unhandled_merger_lines.return_unhandled_merger_lines import ReturnUnhandledMergerLines
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -21,7 +18,7 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.models.merger_visit import MergerVisit
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE, MERGER_PROFILE
-from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
+from suites.coding.modules.workers.support.merge_ready_lines import MergeReadyLines
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
@@ -32,9 +29,9 @@ class MergerRetry:
 
     def __call__(self, container: Container) -> None:
         worktrees = container.get(WorktreeQuery).all_worktrees()
-        environments = tuple(dict.fromkeys(row.environment_id for row in worktrees if ReadNextMergeHandler.waits(row)))
+        environments = tuple(dict.fromkeys(row.environment_id for row in worktrees if row.is_merge_ready))
         for environment_id in environments:
-            worktree = next(row for row in worktrees if row.environment_id == environment_id and ReadNextMergeHandler.waits(row))
+            worktree = next(row for row in worktrees if row.environment_id == environment_id and row.is_merge_ready)
             with container.get(Scopes).row_scope(worktree):
                 self.retry(container, worktree)
         self.return_unhandled_lines(container)
@@ -81,5 +78,5 @@ class MergerRetry:
             return
         if git.uncommitted_overlap(environment.folder, worktree):
             return
-        line = WORKER_TESTS_PASSED.nudge(worker=container.get(RowNumbers).number(AGENT_MODEL_NAME, worktree.session_agent_id)).text
-        container.get(Bus).run(StartMerger(line, worktree.tests_passed_at), Actor.core(), environment_id=worktree.environment_id)
+        line = container.get(MergeReadyLines).nudge(worktree).text
+        container.get(Bus).run(StartMerger(line, worktree.merge_ready_at), Actor.core(), environment_id=worktree.environment_id)

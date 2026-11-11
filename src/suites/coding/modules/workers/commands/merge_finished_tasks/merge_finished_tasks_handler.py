@@ -8,10 +8,10 @@ from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.merge_finished_tasks.merge_finished_tasks import MergeFinishedTasks
-from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.checkpoint_wait_text import CheckpointWaitText
 from suites.coding.modules.workers.support.merge_checks import MergeChecks
 from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -29,8 +29,8 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, checks: MergeChecks, environments: EnvironmentRows, queries: Queries, proofs: ProofQuery, repository: Repository, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, checks: MergeChecks, environments: EnvironmentRows, queries: Queries, proofs: ProofQuery, repository: Repository, numbers: RowNumbers, wait_text: CheckpointWaitText) -> None:
+        self.numbers, self.wait_text = numbers, wait_text
         self.worktrees, self.git, self.checks, self.environments = worktrees, git, checks, environments
         self.queries, self.proofs, self.repository = queries, proofs, repository
 
@@ -49,8 +49,9 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
                           f"{AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text} changes them too: commit or stash them, then merge again")
         numbers = ", ".join(str(task.id) for task in tasks)
         self.git.merge_revision(environment.folder, commit, f"tasks {numbers}, from {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text}")
+        reasons = self.wait_text.merged_reasons(worktree, [task.id for task in tasks])
         for task in tasks:
-            self.repository.save_change(task, task.close(context.timestamp, context.actor, f"merged into {worktree.base_branch}"), context)
+            self.repository.save_change(task, task.close(context.timestamp, context.actor, reasons[task.id]), context)
         return MergeOutcome(worktree, ())
 
     def target_commit(self, worktree: Worktree, target: str) -> str:
@@ -74,6 +75,4 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
 
     def check_proofs(self, worktree: Worktree, tasks: list[Task]) -> None:
         numbers = {task.id for task in tasks}
-        unchecked = [str(proof.point) for proof in self.proofs.worktree_proofs(worktree.id).all_rows() if proof.task_id in numbers and proof.state is not ProofState.CHECKED]
-        if unchecked:
-            raise Refusal(f"point {', '.join(unchecked)} is not checked", "journal proof check <proof> or journal proof short <proof> --shortfall \"<what is missing>\"")
+        self.checks.check_states(worktree, [proof for proof in self.proofs.worktree_proofs(worktree.id).all_rows() if proof.task_id in numbers])

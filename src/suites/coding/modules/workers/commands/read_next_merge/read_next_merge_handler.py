@@ -10,11 +10,9 @@ from engine.repository.repository import Repository
 from core.modules.agents.support.agent_rows import AgentRows
 from engine.query.conditions.is_null import IsNull
 from core.modules.tasks.models.task import Task
-from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.models.merger_visit import MergerVisit
 from suites.coding.modules.workers.models.proof import Proof
-from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merger_nudges import NO_WORKER_WAITING
 from suites.coding.modules.workers.support.worker_log_lines import WorkerLogLines
@@ -40,7 +38,7 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
         lines = tuple(self.queries.query(MergerLine).matching(IsNull("read_at")).matching(IsNull("outcome")).oldest().all_rows())
         nudges = [Nudge(line.fallback_source, NudgeType.NOTICE, line.text) if line.nudge_json is None else NudgeDeclaration.restore(line.nudge_json) for line in lines]
         messages = "\n".join(f"line: {nudge.text}" for nudge in Nudge.collapsed(nudges))
-        worktree = next((row for row in self.worktrees.open_worktrees() if self.waits(row)), None)
+        worktree = next((row for row in self.worktrees.open_worktrees() if row.is_merge_ready), None)
         if worktree is None:
             self.record_lines(lines, messages, command, visit, context)
             return messages or NO_WORKER_WAITING
@@ -59,10 +57,6 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
         for line in lines:
             self.repository.save_change(line, replace(line, read_at=read_at, read_output_id=output_id, visit_id=visit.id, visit_count=line.visit_count + 1), context)
         return output_id
-
-    @staticmethod
-    def waits(worktree: Worktree) -> bool:
-        return worktree.state is WorktreeState.DELIVERED and worktree.tests_passed_at is not None and worktree.returned_at is None
 
     @staticmethod
     def task_section(task: Task, summary: str, proofs: list[Proof]) -> str:

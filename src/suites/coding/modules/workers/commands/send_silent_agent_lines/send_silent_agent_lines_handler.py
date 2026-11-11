@@ -28,7 +28,6 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.support.worker_nudges import IDLE_WORKER, SILENT_AGENT_CONTINUE, SILENT_WORKER_CONTINUE
 from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES, IDLE_WORKER_MINUTES, IDLE_WORKER_REPEAT_MINUTES, RESUME_SILENT_AGENTS, SILENT_RECOVERY_ATTEMPTS
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
-from engine.enums.agent_role import AgentRole
 from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
@@ -74,9 +73,9 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         attempt_limit = self.settings.number(SILENT_RECOVERY_ATTEMPTS)
         resumes = self.settings.flag(RESUME_SILENT_AGENTS)
         for agent in agents:
-            if not resumes and agent.role != AgentRole.MAIN:
+            if not resumes and not agent.is_main:
                 continue
-            has_work = agent.id in working or (agent.role == AgentRole.MAIN and tasks_remain and self.is_automatic(agent))
+            has_work = agent.id in working or (agent.is_main and tasks_remain and self.is_automatic(agent))
             activity = activities[agent.id]
             if not has_work or agent.id in excluded or agent.paused_at is not None or not activity.is_inactive(context.timestamp, span.count):
                 continue
@@ -96,7 +95,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     def report_idle_workers(self, context: Context, agents: tuple[Agent, ...], activities: dict[int, AgentActivity], working: set[int],
                             worktrees: tuple[Worktree, ...], excluded: set[int]) -> None:
         workers = {row.session_agent_id for row in worktrees if row.state is WorktreeState.CUT}
-        stalled = {row.session_agent_id for row in worktrees if row.state is WorktreeState.DELIVERED and row.tests_passed_at is None and row.returned_at is None}
+        stalled = {row.session_agent_id for row in worktrees if row.state is WorktreeState.DELIVERED and row.merge_ready_at is None and row.returned_at is None}
         waiting_jobs = {row.session_agent_id for row in self.queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("source", RESUMING_SOURCES)).all_rows()}
         idle_lines = {line.source_key: line for line in self.queries.query(MergerLine).matching(Prefix("source_key", "idle:")).oldest().all_rows()}
         grace = self.settings.minutes(IDLE_WORKER_MINUTES).count

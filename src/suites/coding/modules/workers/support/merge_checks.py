@@ -3,7 +3,11 @@ from suites.coding.modules.workers.support.worker_review import WorkerReview
 from engine.database.kept_rows import KeptRows
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from engine.errors.refusal import Refusal
-from suites.coding.modules.workers.models.enums.proof_state import ProofState
+from collections.abc import Iterable
+
+from core.modules.plans.support.task_plans import TaskPlans
+from suites.coding.modules.workers.models.enums.proof_state import COMMITTED_WORK_MERGEABLE_STATES, MERGEABLE_STATES
+from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
@@ -12,10 +16,12 @@ from engine.cli.row_numbers import RowNumbers
 
 
 class MergeChecks:
-    """The row checks a merge passes before git runs: every proof checked, and the base branch unchanged."""
+    """The row checks a merge passes before git runs: every proof checked, and the base branch unchanged. In a
+    started plan a committed proof passes too, since its test runs at a checkpoint of the plan, and the
+    selected tests are not asked for: they run at the checkpoint as well."""
 
-    def __init__(self, queries: Queries, proofs: ProofQuery, kept: KeptRows, environments: EnvironmentRows, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, queries: Queries, proofs: ProofQuery, kept: KeptRows, environments: EnvironmentRows, numbers: RowNumbers, plans: TaskPlans) -> None:
+        self.numbers, self.plans = numbers, plans
         self.queries, self.proofs, self.kept, self.environments = queries, proofs, kept, environments
 
     def check_important_lines(self, worktree: Worktree, review: WorkerReview, answer: str) -> None:
@@ -28,14 +34,22 @@ class MergeChecks:
             raise Refusal(f"the logs of {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text} have not been read", f"journal worker logs {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers).number}")
 
     def check_proofs(self, worktree: Worktree) -> None:
+        if not self.plans.is_started_plan(worktree.task_id):
+            self.check_selected_tests(worktree)
+        self.check_states(worktree, self.kept.read("proofs", lambda: tuple(self.proofs.worktree_proofs(worktree.id).oldest().all_rows()),
+                                                   "worktree_id = ?", [worktree.id], name="workers.merge_proofs"))
+
+    def check_states(self, worktree: Worktree, proofs: Iterable[Proof]) -> None:
+        mergeable = COMMITTED_WORK_MERGEABLE_STATES if self.plans.is_started_plan(worktree.task_id) else MERGEABLE_STATES
+        refused = [str(proof.point) for proof in proofs if proof.state not in mergeable]
+        if refused:
+            raise Refusal(f"point {', '.join(refused)} is not {' or '.join(mergeable)}", "journal proof check <proof> or journal proof short <proof> --shortfall \"<what is missing>\"")
+
+    def check_selected_tests(self, worktree: Worktree) -> None:
         first_answer = self.kept.read("affected_tests", lambda: self.queries.query(AffectedTest).filter(worktree_id=worktree.id).newest().first(),
                                   "worktree_id = ?", [worktree.id], name="workers.merge_selected")
         if first_answer is not None and first_answer.state not in (AffectedTestState.PASSED, AffectedTestState.CANCELLED):
             raise Refusal("selected tests have not passed", "wait for the selected tests to finish")
-        unchecked = [str(proof.point) for proof in self.kept.read("proofs", lambda: tuple(self.proofs.worktree_proofs(worktree.id).oldest().all_rows()),
-                     "worktree_id = ?", [worktree.id], name="workers.merge_proofs") if proof.state is not ProofState.CHECKED]
-        if unchecked:
-            raise Refusal(f"point {', '.join(unchecked)} is not checked", "journal proof check <proof> or journal proof short <proof> --shortfall \"<what is missing>\"")
 
     def check_base_branch(self, worktree: Worktree) -> None:
         environment = self.environments.find(worktree.environment_id)
