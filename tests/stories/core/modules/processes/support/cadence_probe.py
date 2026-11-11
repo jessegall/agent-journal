@@ -13,6 +13,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
+from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.cadence.cadence_log import CADENCE_FILE, TICK_SECONDS, CadenceLog
 from core.modules.processes.queries.process_query import ProcessQuery
@@ -41,25 +42,51 @@ def cadence_tick(story: Story) -> None:
     handlers[0].handler(story.container)
 
 
-def ticks(story: Story, process: Process, seconds: int, every: int = 0, text: str = ".") -> None:
+def ticks(story: Story, seconds: int, *processes: Process, every: int = 0, text: str = ".") -> None:
     """Moves the clock ten seconds at a time for the given seconds and runs the cadence watch after each step; with
-    every, the run prints the text at each multiple of every seconds."""
+    every, the given runs print the text at each multiple of every seconds."""
     folder = story.container.get(OutputFolder)
     for elapsed in range(TICK_SECONDS, seconds + 1, TICK_SECONDS):
         story.advance(TICK)
-        if every and elapsed % every == 0:
+        for process in processes if every and elapsed % every == 0 else ():
             folder.write_output(process.id, 1, folder.output(process.id, 1) + text)
         cadence_tick(story)
 
 
 def agent_run(story: Story, agent: Agent, line: str, category: CommandCategory) -> Process:
     """A run of another agent than the main one, started and moved to the background by that agent."""
-    actor = Actor(agent.id, ActorType.AGENT)
+    return started_by(story, Actor(agent.id, ActorType.AGENT), StartProcess.single_part(agent.id, line, "/work/main", category, 30))
+
+
+def waiting_run(story: Story, agent: Agent, line: str) -> Process:
+    """A test run of the given agent that only asks for a spot, so it waits in the queue while the spots are taken."""
+    return story.container.get(Bus).run(StartProcess.single_part(agent.id, line, "/work/main", CommandCategory.TEST_RUN, 30), Actor(agent.id, ActorType.AGENT), environment_id=1)
+
+
+def started_by(story: Story, actor: Actor, command: StartProcess) -> Process:
+    """A run started, its first part begun and moved to the background, all by the given actor."""
     bus = story.container.get(Bus)
-    process = bus.run(StartProcess.single_part(agent.id, line, "/work/main", category, 30), actor, environment_id=1)
+    process = bus.run(command, actor, environment_id=1)
     bus.run(StartProcessPart(process.id, 1), actor, environment_id=1)
     bus.run(MoveProcess(process.id), actor, environment_id=1)
     return process
+
+
+def owned_run(story: Story, owner: Agent, line: str) -> Process:
+    """A build on the main agent's session that another agent owns."""
+    command = StartProcess(story.agent.id, None, line, "/work/main", "zsh", CommandCategory.BUILD, 30, (PartSpec(line, line.split()[0], False, CommandCategory.BUILD),),
+                           owner_agent_id=owner.id)
+    return started_by(story, story.agent, command)
+
+
+def side_run(story: Story, actor: Actor, line: str, category: CommandCategory, plugin: str = "") -> Process:
+    """A run on the main agent's session, started by the given actor, of a plugin when one is named."""
+    return started_by(story, actor, StartProcess.single_part(story.agent.id, line, "/work/main", category, 30, plugin=plugin))
+
+
+def kept_lines(story: Story) -> str:
+    """Every line the journal has for the main agent, said or waiting, as JSON."""
+    return story.run(f"agent-line list --agent {story.agent.id} --json", actor=story.agent).output_text
 
 
 def worker_agent(story: Story) -> Agent:
