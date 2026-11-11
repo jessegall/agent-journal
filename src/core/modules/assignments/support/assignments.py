@@ -1,10 +1,13 @@
 from engine.command.context import Context
 from engine.enums.actor_count import ActorCount
+from engine.enums.actor_type import ActorType
 from engine.model.assignable import Assignable
 from engine.model.model import Model
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.actors.models.actor_record import ActorRecord
+from core.modules.agents.models.agent import Agent
+from core.modules.assignments.errors.ended_agent_refusal import EndedAgentRefusal
 from core.modules.assignments.errors.actor_type_refusal import ActorTypeRefusal
 from core.modules.assignments.errors.repeated_assignment_refusal import RepeatedAssignmentRefusal
 from core.modules.assignments.errors.several_actors_error import SeveralActorsError
@@ -14,7 +17,7 @@ from core.modules.assignments.models.assignment import Assignment
 
 class Assignments:
     """Gives rows of assignable models to actors and reads who holds a row. It is the one place that writes the
-    assignments table. Only a person or an agent can be given a row. A row of a model that one actor holds
+    assignments table. Only a person or an agent that has not ended can be given a row. A row of a model that one actor holds
     passes from its holder to the next in one change; a row of a model that several actors hold gains a
     holder. Every assignment is saved and deleted through the repository, so each is an event."""
 
@@ -54,3 +57,6 @@ class Assignments:
             raise UnknownActorRefusal(actor_id)
         if not actor.type.can_receive_work:
             raise ActorTypeRefusal(actor_id, actor.type)
+        agent = self.queries.query(Agent).filter(id=actor_id).first() if actor.type is ActorType.AGENT else None
+        if agent is not None and agent.ended_at is not None:
+            raise EndedAgentRefusal(agent.number)
