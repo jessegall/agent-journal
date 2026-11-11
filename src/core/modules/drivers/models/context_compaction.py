@@ -43,7 +43,7 @@ class ContextCompaction(Model):
             return None
         if self.tokens_after is None or self.tokens_after < limit_tokens:
             return limit_tokens
-        return self.tokens_after + limit_tokens * growth_percent // PERCENT_FULL
+        return self.tokens_after + max(limit_tokens * growth_percent // PERCENT_FULL, 1)
 
     def refusal_text(self) -> str:
         return f"a {self.change.value} is {self.state.value} since {self.creation_timestamp().value.strftime('%H:%M')}"

@@ -83,7 +83,8 @@ class ContextCompactions:
         if unfinished is not None:
             self.repository.save(replace(unfinished, state=CompactionState.ABANDONED), context)
 
-    def record_tokens_after(self, agent_id: int, tokens: int, context: Context) -> None:
+    def record_tokens_after(self, agent_id: int, tokens: int, limit_tokens: int | None, context: Context) -> None:
         newest = self.newest(agent_id)
         if newest is not None and newest.state is CompactionState.ENDED:
-            self.repository.save(replace(newest, state=CompactionState.MEASURED, tokens_after=tokens), context)
+            reduced = limit_tokens is None or tokens < limit_tokens
+            self.repository.save(replace(newest, state=CompactionState.MEASURED if reduced else CompactionState.UNREDUCED, tokens_after=tokens), context)
