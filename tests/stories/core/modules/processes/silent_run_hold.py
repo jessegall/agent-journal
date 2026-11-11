@@ -24,6 +24,8 @@ HANG_SECONDS = 300
 TASK_LIST = HookSamples.shell("journal task list", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"]))
 READ_OUTPUT = HookSamples.shell("journal output read 1 --tail 5", ShellPart("journal", CommandCategory.JOURNAL, ["output", "read", "1", "--tail", "5"]))
 EDIT = HookSamples.edit("src/shop.py")
+SKIP_HOLD = HookSamples.shell("journal refusal skip processes.silent-run-hold --reason 'it writes to a file'",
+                              ShellPart("journal", CommandCategory.JOURNAL, ["refusal", "skip", "processes.silent-run-hold", "--reason", "it writes to a file"]))
 STOP_OUTPUT = HookSamples.shell("journal output stop 1", ShellPart("journal", CommandCategory.JOURNAL, ["output", "stop", "1"]))
 HELD = "output 1 printed nothing for 301 seconds"
 
@@ -58,10 +60,20 @@ def test_the_hold_says_the_processor_time_is_rising_when_it_moved_since_the_run_
     story.expect_hook_refusal("s-1", EDIT, "processor time rising")
 
 
-def test_a_held_agent_still_runs_journal_commands(new_story):
+def test_a_held_agent_still_runs_journal_commands_and_the_skip_line_the_hold_names(new_story):
     story = silent_story(new_story)
     story.expect_hook_allowed("s-1", TASK_LIST)
+    story.expect_hook_allowed("s-1", SKIP_HOLD)
     story.expect_hook_refusal("s-1", EDIT, HELD)
+
+
+def test_a_run_read_before_it_went_silent_is_read_again_once_it_is_held(new_story):
+    story = new_story(fixture=ActiveBuild)
+    story.expect_success("output read 1 --tail 5", actor=story.agent)
+    story.advance(timedelta(seconds=HANG_SECONDS + 1))
+    story.expect_hook_refusal("s-1", EDIT, HELD)
+    story.expect_success("output read 1 --tail 5", actor=story.agent)
+    story.expect_hook_allowed("s-1", EDIT)
 
 
 def test_reading_the_output_lets_the_next_tool_use_through_and_starts_the_silent_time_anew(new_story):

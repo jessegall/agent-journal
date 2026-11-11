@@ -9,6 +9,7 @@ from core.modules.drivers.support.context_resets import ContextResets
 from core.modules.processes.commands.read_output.read_output import ReadOutput
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.cadence.run_silences import LOOKED_MARK
+from core.modules.processes.support.held_runs import HeldRuns
 from core.modules.processes.support.output_folder import OutputFolder
 
 POLL_ADVICE = {
@@ -22,16 +23,17 @@ class RepeatReads:
     last compaction is still in its context, so a repeat costs a turn for nothing. The record of a read is a
     mark in the run's folder; --again reads it anyway. A run still going is read once by an agent: every
     later read of it by that agent is refused, in any form and whatever it did between, until the run ends,
-    since the journal tells the agent when it ends."""
+    since the journal tells the agent when it ends, or until the run is held for printing nothing, which asks
+    for a read."""
 
-    def __init__(self, queries: Queries, folder: OutputFolder, resets: ContextResets) -> None:
-        self.queries, self.folder, self.resets = queries, folder, resets
+    def __init__(self, queries: Queries, folder: OutputFolder, resets: ContextResets, held_runs: HeldRuns) -> None:
+        self.queries, self.folder, self.resets, self.held_runs = queries, folder, resets, held_runs
 
     def check(self, command: ReadOutput, context: Context) -> None:
         if context.actor.type is not ActorType.AGENT:
             return
         if not self.has_ended(command.process_id):
-            if self.folder.read_mark(command.process_id, self.running_mark(context.actor)):
+            if self.folder.read_mark(command.process_id, self.running_mark(context.actor)) and not self.is_held(command.process_id, context):
                 role = self.queries.query(Agent).find(context.actor.id).role
                 raise Refusal(f"output {command.process_id} is still running and you read it already: stop polling it", POLL_ADVICE[role].format(process=command.process_id))
             return
@@ -48,6 +50,10 @@ class RepeatReads:
         else:
             self.folder.write_read_mark(command.process_id, self.running_mark(actor), read_at)
             self.folder.write_read_mark(command.process_id, LOOKED_MARK, read_at)
+
+    def is_held(self, process_id: int, context: Context) -> bool:
+        held_run = self.held_runs.found(context.actor.id, context.timestamp)
+        return held_run is not None and held_run.process.id == process_id
 
     @staticmethod
     def running_mark(actor: Actor) -> str:
