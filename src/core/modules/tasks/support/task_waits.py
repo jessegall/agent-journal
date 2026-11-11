@@ -45,7 +45,7 @@ class TaskWaits:
         return all(wait.target.startswith(TASK_TARGET_PREFIX) for wait in self.pending_task(task_id))
 
     def notify_agents(self, tasks: Sequence[Task], context: Context) -> None:
-        actor_ids = self.assignments.actors_of_rows(Task, [task.id for task in tasks])
+        actor_ids = self.assignments.row_actor_ids(Task, [task.id for task in tasks])
         for agent in MainAgentFinder.rows(self.queries):
             for task in tasks:
                 if not actor_ids[task.id] or agent.id in actor_ids[task.id]:

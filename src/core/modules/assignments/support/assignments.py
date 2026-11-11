@@ -49,7 +49,7 @@ class Assignments:
     def actors(self, row: Model) -> tuple[int, ...]:
         return tuple(assignment.actor_id for assignment in self.assignments(row))
 
-    def actors_of_rows(self, model: type[Model], row_ids: Sequence[int]) -> dict[int, tuple[int, ...]]:
+    def row_actor_ids(self, model: type[Model], row_ids: Sequence[int]) -> dict[int, tuple[int, ...]]:
         actor_ids: dict[int, tuple[int, ...]] = {row_id: () for row_id in row_ids}
         for assignment in self.queries.query(Assignment).filter(subject_model=model.model_name).matching(Among("subject_id", list(row_ids))).oldest().all_rows():
             actor_ids[assignment.subject_id] = (*actor_ids[assignment.subject_id], assignment.actor_id)

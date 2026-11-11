@@ -1,8 +1,8 @@
 from engine.module.driver_entries import DRIVERS_MODULE
 from core.modules.drivers.support.current_context_window import COMPACTION_ENDED_AT
-from core.modules.assignments.models.support.views import assigned_actor_sql
+from core.modules.assignments.models.support.views import ASSIGNED_ACTOR_SQL
 
-TASK_ACTOR_SQL = assigned_actor_sql("task", "tasks.id")
+TASK_ACTOR_SQL = ASSIGNED_ACTOR_SQL.format(model="task", row_id="tasks.id")
 
 AGENT_CARDS_SELECT = (
     "SELECT agents.id, agents.number, agents.environment_id, agents.session, agents.role, agents.access, agents.program, agents.program_model, agents.profile, agents.given_name, agents.paused_at, agents.usage_limit_ends_at, agents.ended_at, agents.retired_at, agents.retirement_reason,"
