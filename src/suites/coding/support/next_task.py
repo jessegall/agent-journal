@@ -40,12 +40,12 @@ class NextTask:
         return most_urgent if most_urgent is not None and most_urgent.priority >= URGENT_PRIORITY else None
 
     def reserved(self, agent_id: int, excluded_id: int | None = None) -> Task | None:
-        return self.plan_order.first_started_plan_task(tuple(task for task in self.tasks.ready_delegated(agent_id) if task.id != excluded_id))
+        return self.plan_order.first_started_plan_task(tuple(task for task in self.tasks.assigned_ready(agent_id) if task.id != excluded_id))
 
     def following(self, agent_id: int, excluded_id: int | None = None) -> Task | None:
-        told_task = self.choices.find(agent_id, excluded_id)
-        if told_task is not None:
-            return told_task
+        choice = self.choices.find(agent_id, excluded_id)
+        if choice is not None:
+            return choice
         open_task = self.tasks.next_open(excluded_id, self.plan_tasks.plan_exclusion())
         if open_task is not None and open_task.priority >= URGENT_PRIORITY:
             return open_task

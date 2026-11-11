@@ -1,3 +1,4 @@
+from core.modules.assignments.support.assignments import Assignments
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_label import AgentLabel
 from core.modules.tasks.models.enums.task_state import TaskState
@@ -13,8 +14,8 @@ class WorkerTaskAccess:
     """Says whether a worker has a task started, and refuses work on a task it has not: another agent has it
     started, it is another worker's, it is blocked, or it is not started."""
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, assignments: Assignments) -> None:
+        self.queries, self.assignments = queries, assignments
 
     @staticmethod
     def is_holder(task: Task, worker_id: int) -> bool:
@@ -24,7 +25,7 @@ class WorkerTaskAccess:
         if task.state is TaskState.STARTED and task.holder_id not in (None, worker_id):
             holder = AgentLabel.from_agent(self.queries.query(Agent).find(task.holder_id))
             return Refusal(f"task {task.id} is held by {holder.text}", AskTopic.GENERAL.hint(WORKER_TASKS_HINT))
-        if worker_id not in (task.delegated_to, task.holder_id):
+        if worker_id not in (self.assignments.actor(task), task.holder_id):
             return Refusal(f"task {task.id} is not yours", AskTopic.GENERAL.hint(WORKER_TASKS_HINT))
         if task.state is TaskState.BLOCKED:
             return Refusal(f"task {task.id} is blocked: {task.reason}", AskTopic.GENERAL.hint(WORKER_TASKS_HINT))

@@ -49,7 +49,7 @@ class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
             self.show(logged, WorkerMarkType.WORKER, WorkerMarkVariant.PASS, f"The merger left {name} to the main agent", None, AGENTS_TABLE, agent.id, detail=reason)
             return
         task = self.event_rows.required(Task, worktree.task_id)
-        queued = self.tasks.queued_tasks(agent.id)
+        queued = self.tasks.assigned(agent.id)
         variant, move = MOVE_TEXTS[event.required_move.name]
         name = agent.given_name or f"Worker {agent.id}"
         choice_reason = f"; {worktree.route_reason}" if worktree.route_reason else ""

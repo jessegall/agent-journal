@@ -29,7 +29,7 @@ class WorkerUnfinishedTasks:
     def round_rows(self, worker_round: WorkerRound) -> tuple[Task, ...]:
         if self.steps.is_delivered(worker_round) or (not worker_round.started and worker_round.following is None):
             return ()
-        return (*worker_round.started, *self.tasks.queued_tasks(worker_round.worker_id))
+        return (*worker_round.started, *self.tasks.assigned(worker_round.worker_id))
 
     def committed(self, worker_id: int) -> tuple[Task, ...]:
         testing = self.kept.scoped_current(lambda: tuple(self.tasks.assignee_tasks(worker_id).filter(state=TaskState.TESTING).oldest().all_rows(TASK_PAGE_ROWS)),

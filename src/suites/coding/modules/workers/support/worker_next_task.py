@@ -19,7 +19,7 @@ class WorkerNextTask:
         self.tasks, self.plan_order, self.choices, self.focused, self.queries, self.open_tasks = tasks, plan_order, choices, focused, queries, open_tasks
 
     def following(self, worker_id: int) -> Task | None:
-        return self.first_ready(worker_id, tuple(self.tasks.ready_delegated(worker_id)), tuple(self.tasks.started_tasks(worker_id)))
+        return self.first_ready(worker_id, tuple(self.tasks.assigned_ready(worker_id)), tuple(self.tasks.started_tasks(worker_id)))
 
     def first_ready(self, worker_id: int, ready: tuple[Task, ...], started: tuple[Task, ...]) -> Task | None:
         startable = self.open_tasks.startable_tasks(ready, len(started))

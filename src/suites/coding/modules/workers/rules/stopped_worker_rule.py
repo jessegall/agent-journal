@@ -6,13 +6,8 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.nudge import Nudge
 from engine.driver.rule_answer import RuleAnswer
-from engine.query.conditions.among import Among
-from engine.query.conditions.has_value import HasValue
-from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.modules.tasks.models.enums.task_state import TaskState
-from core.modules.tasks.models.task import Task
 from engine.setting.setting_values import SettingValues
 from engine.driver.nudge_declaration import NudgeDeclaration
 from suites.coding.modules.workers.support.worker_handoff import WorkerHandoff
@@ -22,7 +17,6 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_WAIT_MI
 from suites.coding.modules.workers.support.worker_started_work import WorkerStartedWork
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class StoppedWorkerRule(DriverRule):
@@ -42,14 +36,8 @@ class StoppedWorkerRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         wait_seconds = self.settings.minutes(MERGER_WAIT_MINUTES).count
-        due = [worker for worker in self.stopped_with_tasks() if worker.ended_at is not None and worker.ended_at.elapsed_seconds(hook.timestamp) >= wait_seconds]
+        due = [worker for worker in self.started_work.stopped_with_tasks() if worker.ended_at is not None and worker.ended_at.elapsed_seconds(hook.timestamp) >= wait_seconds]
         return RuleAnswer.with_nudges(*[nudge for nudge in map(self.nudge, due) if nudge is not None])
-
-    def stopped_with_tasks(self) -> list[Agent]:
-        tasks = self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).matching(HasValue("delegated_to")).all_rows()
-        assigned = {task.delegated_to for task in tasks}
-        stopped = self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(HasValue("ended_at")).matching(IsNull("retired_at")).matching(IsNull("paused_at")).all_rows()
-        return [worker for worker in stopped if worker.id in assigned]
 
     def nudge(self, worker: Agent) -> Nudge | None:
         worker_round = self.unfinished.steps.round(worker.id)

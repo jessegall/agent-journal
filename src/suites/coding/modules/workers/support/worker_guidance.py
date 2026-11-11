@@ -1,3 +1,4 @@
+from core.modules.assignments.support.assignments import Assignments
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.tasks.models.task import Task
@@ -20,16 +21,18 @@ CONFLICT_FILES_FIELD = "lines"
 class WorkerGuidance:
     """What a worker should do now: the one source of every line that tells it."""
 
-    def __init__(self, steps: WorkerSteps, window: CommitWindow, plans: TaskPlans, queries: Queries, names: WorkerTestNames, checkpoint_wait: CheckpointWaitText) -> None:
+    def __init__(self, steps: WorkerSteps, window: CommitWindow, plans: TaskPlans, queries: Queries, names: WorkerTestNames, checkpoint_wait: CheckpointWaitText, assignments: Assignments) -> None:
+        self.assignments = assignments
         self.steps, self.window, self.plans, self.queries, self.names, self.checkpoint_wait = steps, window, plans, queries, names, checkpoint_wait
 
     def line(self, worker_id: int) -> str:
         return self.point(worker_id).line
 
     def task_line(self, task: Task) -> str:
-        if task.delegated_to is None:
+        worker_id = self.assignments.actor(task)
+        if worker_id is None:
             raise Refusal(f"task {task.id} is delegated to no worker", "journal task show <n> shows which agent has it")
-        return self.line(task.delegated_to)
+        return self.line(worker_id)
 
     def point(self, worker_id: int) -> WorkerPoint:
         return self.round_point(self.steps.round(worker_id))

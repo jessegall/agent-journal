@@ -1,3 +1,5 @@
+from core.modules.assignments.queries.conditions.assignee_among import AssigneeAmong
+from core.modules.assignments.support.assignments import Assignments
 from collections import defaultdict
 from collections.abc import Sequence
 
@@ -20,20 +22,21 @@ from suites.coding.modules.workers.models.proof import Proof
 
 class MainAgentWork:
     """The work an agent has not finished, read one way by the main agent's stop rule and by the lines that wake
-    silent agents: the open and started tasks it holds or that were delegated to it, read a page at a time,
+    silent agents: the open and started tasks it holds or is assigned, read a page at a time,
     and whether it waits on something of its own: a run, a wait, a proof's test, a review or a reader request."""
 
-    def __init__(self, queries: Queries, processes: ProcessQuery) -> None:
-        self.queries, self.processes = queries, processes
+    def __init__(self, queries: Queries, processes: ProcessQuery, assignments: Assignments) -> None:
+        self.queries, self.processes, self.assignments = queries, processes, assignments
 
     def unfinished_tasks(self, agent_ids: Sequence[int]) -> dict[int, tuple[int, ...]]:
         tasks = self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).ordered("id")
-        rows = (*tasks.matching(Among("holder_id", agent_ids)).all_rows(TASK_PAGE_ROWS), *tasks.matching(Among("delegated_to", agent_ids)).all_rows(TASK_PAGE_ROWS))
         task_ids: dict[int, set[int]] = defaultdict(set)
-        for task in rows:
-            for agent_id in (task.holder_id, task.delegated_to):
-                if agent_id is not None and agent_id in agent_ids:
-                    task_ids[agent_id].add(task.id)
+        for task in tasks.matching(Among("holder_id", agent_ids)).all_rows(TASK_PAGE_ROWS):
+            task_ids[task.holder_id].add(task.id)
+        assigned_ids = [task.id for task in tasks.matching(AssigneeAmong(Task, tuple(agent_ids))).all_rows(TASK_PAGE_ROWS)]
+        for task_id, actor_ids in self.assignments.row_actor_ids(Task, assigned_ids).items():
+            for agent_id in set(actor_ids).intersection(agent_ids):
+                task_ids[agent_id].add(task_id)
         return {agent_id: tuple(sorted(ids)) for agent_id, ids in task_ids.items()}
 
     def waiting_agents(self, agent_ids: Sequence[int], timestamp: Timestamp) -> set[int]:
