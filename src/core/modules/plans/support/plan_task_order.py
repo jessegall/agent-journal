@@ -9,6 +9,7 @@ from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS
 
 
 WORKING_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED)
@@ -61,8 +62,9 @@ class PlanTaskOrder:
         return self.kept.owner_read("tasks", lambda: self.loaded_plan_rows(task_ids), condition.sql, condition.parameters, name=f"plans.plan_rows:{task_ids}")
 
     def loaded_plan_rows(self, task_ids: tuple[int, ...]) -> tuple[PlanTask, ...]:
-        plan_ids = tuple(sorted({row.plan_id for row in self.queries.query(PlanTask).matching(Among("task_id", task_ids)).all_rows()}))
-        return tuple(self.queries.query(PlanTask).matching(Among("plan_id", plan_ids)).all_rows()) if plan_ids else ()
+        places = self.queries.query(PlanTask).matching(Among("task_id", task_ids)).ordered("task_id").all_rows(TASK_PAGE_ROWS)
+        plan_ids = tuple(sorted({row.plan_id for row in places}))
+        return tuple(self.queries.query(PlanTask).matching(Among("plan_id", plan_ids)).ordered("plan_id", "task_id").all_rows(TASK_PAGE_ROWS)) if plan_ids else ()
 
     @staticmethod
     def order(task: Task, positions: dict[int, PlanTask]) -> tuple[int, int, int, int]:

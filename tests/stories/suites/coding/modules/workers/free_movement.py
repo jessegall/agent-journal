@@ -1,5 +1,8 @@
 import pytest
 
+from engine.database.database import READ_LIMIT_ROWS, Database
+from engine.query.queries import Queries
+from core.modules.chat.models.journal_exception import JournalException
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH
 from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, proofs, prove_task, unplanned_holding_worker
@@ -121,6 +124,11 @@ def test_the_status_of_a_worker_reads_a_checkpoint_phase_of_many_tasks_without_l
     later_task = story.new_row_id('task make "Clean up" --phase 3 --environment main')
     approve_plan(story)
     worker = dispatched_story_worker(story, PHASE_DISPATCH, monkeypatch)
+    database = story.container.get(Database)
+    database.read_limit_rows, database.collected_large_reads = READ_LIMIT_ROWS, None
+    started = story.run("task start 2", actor=worker.worker)
     status = story.run("worker status", actor=worker.worker)
-    story.expect_rows(status.code == 0, "Tasks you may start" in status.output_text, later_task not in startable_ids(worker), detail=status.output_text)
+    faults = [row.message for row in story.container.get(Queries).query(JournalException).all_rows()]
+    story.expect_rows(started.code == 0, status.code == 0, "Tasks you may start" in status.output_text, later_task not in startable_ids(worker), faults == [],
+                      detail=f"{started.output_text} | {status.output_text} | {faults}")
 
