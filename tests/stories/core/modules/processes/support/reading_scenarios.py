@@ -7,6 +7,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
+from tests.stories.core.modules.processes.support.cadence_probe import told
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, moved_run, start_process
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -16,6 +17,9 @@ REJECTED_OUTPUT = "Usage: journal sins [OPTIONS]\nUnknown option --tail\n"
 BUILD_OUTPUT = "compiling\ncompiling\ndone\n"
 LONG_OUTPUT_LINES = 150
 LONG_RUN = timedelta(seconds=20)
+FAILING_TESTS = "collected 3 items\n\ntests/test_cart.py .F. [100%]\n\nFAILED tests/test_cart.py::test_total - assert 1 == 2\n=========== 1 failed, 2 passed in 0.4s ===========\n"
+CRASHED_START = "Traceback (most recent call last):\nModuleNotFoundError: No module named 'cart'\n"
+STEPS = "".join(f"step {number}\n" for number in range(1, 11))
 
 
 class TwoToxReaders(StoryFixture):
@@ -64,3 +68,22 @@ def end_decision(story: Story, process: Process) -> tuple[str, str, int]:
     row = story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, moment=ReadingMoment.END).first()
     assert row is not None, f"no end decision was kept for output {process.id}"
     return row.state.value, row.action.value, int(row.level)
+
+
+def end_reason(story: Story, process: Process) -> str:
+    """The reason the engine kept at the end of a run's first part."""
+    story.run_listeners()
+    row = story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, moment=ReadingMoment.END).first()
+    assert row is not None, f"no end decision was kept for output {process.id}"
+    return row.reason.value
+
+
+def end_positions(story: Story, process: Process) -> list[int]:
+    """The part of each end decision kept for a run, one entry per decision."""
+    story.run_listeners()
+    return sorted(row.part_position for row in story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, moment=ReadingMoment.END).all_rows())
+
+
+def heard(story: Story, session: str = "s-1") -> str:
+    """The lines an agent hears on its next two hooks, as a hook gives only a few lines at a time."""
+    return "\n".join([*told(story, session), *told(story, session)])

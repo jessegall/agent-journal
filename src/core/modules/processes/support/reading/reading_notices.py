@@ -6,13 +6,16 @@ from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.enums.actor_type import ActorType
 from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.models.enums.process_state import ProcessState
+from core.modules.processes.models.enums.reader_action import ReaderAction
+from core.modules.processes.models.enums.reason_code import ReasonCode
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_query import ReaderQuery
-from core.modules.processes.support.process_nudges import (READER_DRAFT, READER_MISSED, READER_PROGRESS_MISSING, READER_SUMMARY_MISSING, READER_WIDTH,
+from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
+from core.modules.processes.support.process_nudges import (DRAFT_READY, READER_DRAFT, READER_FAILED, READER_MISSED, READER_PROGRESS_MISSING, READER_SUMMARY_MISSING, READER_WIDTH,
                                                           SILENT_SAVED_FAILURE)
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_writers import ReaderWriters
@@ -33,8 +36,8 @@ class ReadingNotices:
     saved command that failed silently, a reader to draft, and what the reader of the run missed. Only an agent that
     may write readers is told how to read better."""
 
-    def __init__(self, readers: ReaderQuery, judge: ReaderJudge, writers: ReaderWriters, rows: EventRows) -> None:
-        self.readers, self.judge, self.writers, self.rows = readers, judge, writers, rows
+    def __init__(self, readers: ReaderQuery, judge: ReaderJudge, writers: ReaderWriters, rows: EventRows, decisions: ReadingDecisionQuery) -> None:
+        self.readers, self.judge, self.writers, self.rows, self.decisions = readers, judge, writers, rows, decisions
 
     def nudges(self, process: Process, output: Output | None, parts: tuple[ProcessPart, ...]) -> tuple[Nudge, ...]:
         if process.moved_at is None:
@@ -42,7 +45,7 @@ class ReadingNotices:
         failures = self.silent_failure_nudges(process, output, parts)
         if not self.writers.allows(Actor(process.session_agent_id, ActorType.AGENT)) or RunVisibility.select_visible_part(process, parts) is None:
             return failures
-        return (*failures, *self.draft_nudges(output, parts), *self.reader_nudges(process, output, parts))
+        return (*failures, *self.draft_nudges(process, output, parts), *self.reader_nudges(process, output, parts))
 
     @staticmethod
     def silent_failure_nudges(process: Process, output: Output | None, parts: tuple[ProcessPart, ...]) -> tuple[Nudge, ...]:
@@ -51,17 +54,25 @@ class ReadingNotices:
         saved = next((part.saved_command for part in parts if part.saved_command), "")
         return tuple([SILENT_SAVED_FAILURE.nudge(name=saved)]) if saved else ()
 
-    def draft_nudges(self, output: Output | None, parts: tuple[ProcessPart, ...]) -> tuple[Nudge, ...]:
-        program = next((part.program for part in parts if part.category.has_result_output), None)
-        if output is None or output.reader_id is not None or not output.line_count or program is None or program in SHELL_TERMS:
+    def draft_nudges(self, process: Process, output: Output | None, parts: tuple[ProcessPart, ...]) -> tuple[Nudge, ...]:
+        read = next((part for part in parts if part.category.has_result_output), None)
+        if output is None or output.reader_id is not None or not output.line_count or read is None or not read.program or read.program in SHELL_TERMS:
             return ()
-        name = PurePath(program).name
-        return () if self.readers.with_name(name).exists() else tuple([READER_DRAFT.nudge(name=name)])
+        name = PurePath(read.program).name
+        if self.readers.with_name(name).exists():
+            return ()
+        decision = self.decisions.end_for_part(process.id, read.position)
+        if decision is not None and decision.action is ReaderAction.DRAFT_READY:
+            return tuple([DRAFT_READY.nudge(name=name, output=process.id)])
+        return tuple([READER_DRAFT.nudge(name=name)])
 
     def reader_nudges(self, process: Process, output: Output | None, process_parts: tuple[ProcessPart, ...]) -> tuple[Nudge, ...]:
         if output is None or output.reader_id is None or not output.line_count:
             return ()
         reader = self.rows.required(Reader, output.reader_id)
+        decision = self.decisions.end_for_part(process.id, output.reader_position or 1)
+        if decision is not None and decision.reason is ReasonCode.READER_FAILED:
+            return tuple([READER_FAILED.nudge(reader=reader.name, output=process.id)])
         if reader.type is not ReaderType.PATTERN:
             return ()
         parts = [part for part in process_parts if not output.reader_position or part.position == output.reader_position]

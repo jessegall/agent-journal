@@ -35,6 +35,7 @@ class ReadingCase:
     reader_layer: ReaderLayer | None
     reader_judgement: ReaderJudgement | None
     reader_is_default: bool
+    reader_failed: bool
     draft_fits: bool
     output: OutputFacts | None
     runs_without_change: int
@@ -49,7 +50,12 @@ class ReadingCase:
     @property
     def is_not_needed(self) -> bool:
         return (not self.category.has_reader or self.has_asking_flag or self.is_plugin_run or self.was_rejected
-                or self.is_short_success)
+                or self.is_short_success or self.is_no_sample)
+
+    @property
+    def is_no_sample(self) -> bool:
+        """A run killed part way, or one that failed as it started, shows nothing a reader should read."""
+        return self.output is not None and (self.output.was_cut_short or (self.output.start_crashed and self.exit_code not in (None, 0)))
 
     @property
     def was_rejected(self) -> bool:
