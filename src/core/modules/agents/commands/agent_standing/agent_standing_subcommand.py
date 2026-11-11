@@ -4,8 +4,7 @@ from engine.caller.caller import Caller
 from engine.cli.agent_number import AgentNumber
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
-from core.modules.agents.support.agent_dispatcher import AgentDispatcher
-from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.agents.support.agent_standing import AgentStanding
 from core.modules.agents.support.standing import Standing
 
 
@@ -16,14 +15,14 @@ class AgentStandingSubcommand(ReadSubcommand[Standing]):
     cli_name = "agent"
     name = "standing"
 
-    def __init__(self, dispatcher: AgentDispatcher, agents: AgentRows) -> None:
-        self.dispatcher, self.agents = dispatcher, agents
+    def __init__(self, standings: AgentStanding) -> None:
+        self.standings = standings
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_id", type=AgentNumber)
 
     def read(self, arguments: Namespace, caller: Caller) -> Standing:
-        return self.dispatcher.standing(self.agents.find(arguments.agent_id))
+        return self.standings.standing(arguments.agent_id)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Standing):

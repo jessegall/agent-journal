@@ -60,6 +60,7 @@ class AgentDispatcher:
         if self.has_program(agent):
             return Stopped.PROGRAM_RUNNING
         if agent.ended_at is None:
+            self.sessions.ended(agent.id, reason, context)
             self.end_row(agent, context)
             self.record(agent, reason.value)
         return Stopped.PROGRAM_ENDED

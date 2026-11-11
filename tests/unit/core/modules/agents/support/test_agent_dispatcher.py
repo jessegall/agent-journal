@@ -83,6 +83,7 @@ class Parts:
     def __init__(self, recently_ended: tuple[Agent, ...] = (), open_agents: tuple[Agent, ...] = (), end_reason: str = "") -> None:
         self.folder = Path(tempfile.mkdtemp())
         self.bus, self.repository, self.log_lines = RecordingBus(), RecordingRepository(), list[str]()
+        self.session_reasons = list[StopReason]()
         home = SimpleNamespace(socket=lambda name: self.folder / name)
         link = LocalLauncherTransport(LauncherLink(home, SimpleNamespace(start=lambda: False)))
         launcher = AgentLauncher(link, self.bus, AgentLaunchGuard(), SimpleNamespace(lockdown=lambda program: SimpleNamespace(is_active=False)))
@@ -90,7 +91,7 @@ class Parts:
         program = AgentProgram(providers, link, SimpleNamespace(rows=lambda: []), Clock())
         self.dispatcher = AgentDispatcher(
             launcher, program, link, providers, self.repository, POLICY, SimpleNamespace(running=lambda: open_agents),
-            SimpleNamespace(current=lambda agent_id: SimpleNamespace(end_reason=end_reason)), SimpleNamespace(find=lambda environment_id: SimpleNamespace(id=1, name="main")),
+            SimpleNamespace(current=lambda agent_id: SimpleNamespace(end_reason=end_reason), ended=lambda agent_id, reason, context: self.session_reasons.append(reason)), SimpleNamespace(find=lambda environment_id: SimpleNamespace(id=1, name="main")),
             SimpleNamespace(query=lambda model: FakeAgentQuery(recently_ended)), SimpleNamespace(timestamp=lambda: NOW),
             SimpleNamespace(write=lambda level, text: self.log_lines.append(text)), DispatchPolicy(AgentLaunchGuard(), AgentStops()))
 
@@ -133,6 +134,7 @@ def test_a_stop_ends_the_row_only_once_the_launcher_has_no_program_of_the_agent(
     assert gone.dispatcher.stop(HELPER, StopReason.PERSON, CONTEXT) is Stopped.PROGRAM_ENDED
     assert running.dispatcher.stop(HELPER, StopReason.PERSON, CONTEXT) is Stopped.PROGRAM_RUNNING
     assert (gone.repository.ended_ids, running.repository.ended_ids) == ([41], [])
+    assert (gone.session_reasons, running.session_reasons) == ([StopReason.PERSON], [])
 
 
 def test_the_exit_of_the_current_process_ends_the_row_and_the_exit_of_an_earlier_process_changes_nothing():
