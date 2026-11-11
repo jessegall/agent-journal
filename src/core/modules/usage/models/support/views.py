@@ -32,6 +32,7 @@ AGENT_CARDS_SELECT = (
     " (SELECT agent_sessions.end_reason FROM agent_sessions WHERE agent_sessions.session_agent_id = agents.id AND agent_sessions.session != agents.session"
     " ORDER BY agent_sessions.id DESC LIMIT 1) AS replaced_session_end_reason,"
     " (SELECT count(*) FROM memories WHERE memories.environment_id = agents.environment_id AND memories.agent_id = agents.id AND memories.state = 'active' AND memories.weight > 0) AS memory_count,"
+    " (SELECT count(*) FROM messages WHERE messages.session_agent_id = agents.id AND messages.type = 'agent' AND messages.is_chat_visible = 0) AS report_count,"
     " (SELECT actors.name FROM actors WHERE actors.id = agents.retiring_actor_id) AS retiring_actor_name,"
     " coalesce((SELECT messages.text FROM messages WHERE messages.session_agent_id = agents.id AND messages.creator_id = agents.id"
     " AND messages.type = 'agent' AND messages.is_chat_visible = 0 ORDER BY messages.id DESC LIMIT 1),"

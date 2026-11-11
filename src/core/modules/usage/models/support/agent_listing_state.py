@@ -44,6 +44,7 @@ class AgentListingState:
     session_count: int
     replaced_session_end_reason: str | None
     memory_count: int
+    report_count: int
     retiring_actor_name: str | None
     job_returned: str
     parent_id: int | None
