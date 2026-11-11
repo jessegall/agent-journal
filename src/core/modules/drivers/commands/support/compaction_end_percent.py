@@ -5,7 +5,10 @@ from engine.row.metadata import Metadata
 from engine.module.driver_entries import DRIVERS_MODULE
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
+from core.modules.drivers.models.enums.compaction_notice_type import CompactionNoticeType
 from core.modules.drivers.models.enums.compaction_reason import CompactionReason
+from core.modules.drivers.models.enums.compaction_state import CompactionState
+from core.modules.drivers.support.compaction_notices import CompactionNotices
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.compaction_limit import CompactionLimit
 from core.modules.drivers.support.context_compactions import ContextCompactions
@@ -22,7 +25,8 @@ class CompactionEndPercent:
     the compaction until it is settled, so every other hook reads no hook call for this, and the time its
     newest compaction ended, which CurrentContextWindow compares a reading with."""
 
-    def __init__(self, hook_calls: HookCallQuery, share: ContextShare, repository: Repository, compactions: ContextCompactions, current_window: CurrentContextWindow, limit: CompactionLimit) -> None:
+    def __init__(self, hook_calls: HookCallQuery, share: ContextShare, repository: Repository, compactions: ContextCompactions, current_window: CurrentContextWindow, limit: CompactionLimit, notices: CompactionNotices) -> None:
+        self.notices = notices
         self.hook_calls, self.share, self.repository, self.compactions, self.current_window, self.limit = hook_calls, share, repository, compactions, current_window, limit
 
     def finish_compaction(self, event: HookEvent, agent: Agent, context: Context) -> None:
@@ -39,7 +43,9 @@ class CompactionEndPercent:
             return
         tokens = self.current_window.window(agent).total_input_tokens
         if tokens is not None:
-            self.compactions.record_tokens_after(agent.id, tokens, self.limit.tokens(), context)
+            measured = self.compactions.record_tokens_after(agent.id, tokens, self.limit.tokens(), context)
+            if measured is not None and measured.state is CompactionState.UNREDUCED:
+                self.notices.report(measured, agent, CompactionNoticeType.UNREDUCED, context)
         start = self.hook_calls.latest_turn_call(agent.id)
         if start is None or not start.is_compaction_start:
             self.mark(agent, False, context)

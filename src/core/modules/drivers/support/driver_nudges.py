@@ -35,6 +35,7 @@ REQUIRED_COMMAND_TOOL_USES = 5
 REQUIRED_COMMAND_SPAN = ToolUseSpan(REQUIRED_COMMAND_TOOL_USES)
 REQUIRED_COMMAND_COUNTDOWN = CountDown("drivers.required_command_countdown", "{subject}", REQUIRED_COMMAND_SPAN)
 REQUIRED_COMMAND_REFUSAL = NudgeDeclaration("drivers.required_command_refusal", NudgeType.REFUSAL, '{subject} is due: do it, or skip block {block} with a reason')
+COMPACTION_NOTICE = NudgeDeclaration("drivers.compaction_notice", NudgeType.STEERING, "context-compaction:{compaction} of agent:{agent}: {notice}", turn_limited=False, wakes_agent=True)
 JOURNAL_STARTED = NudgeDeclaration("drivers.journal_started", NudgeType.STEERING, "the journal started: go on with your work", turn_limited=False, wakes_agent=True)
 AGENT_NOTICE = NudgeDeclaration("drivers.agent_notice", NudgeType.STEERING, "{text}", turn_limited=False, path_fields=("text",), full_text=True)
 FILE_LOADED = NudgeDeclaration("drivers.file-in-context", NudgeType.NOTICE, "{path} is still in your context and has not changed since it was read: use what you have", path_fields=tuple(["path"]))

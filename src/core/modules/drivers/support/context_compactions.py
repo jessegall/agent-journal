@@ -45,11 +45,13 @@ class ContextCompactions:
 
     def request(self, agent_id: int, change: ContextChange, reason: CompactionReason, request_tokens: int | None, line: str, context: Context) -> ContextCompaction:
         newest = self.newest(agent_id)
-        if newest is not None and newest.blocks_request_at(context.timestamp):
+        is_person = reason is CompactionReason.PERSON
+        if newest is not None and (newest.blocks_person_request_at(context.timestamp) if is_person else newest.blocks_request_at(context.timestamp)):
             raise Refusal(newest.refusal_text(), "wait for it to end before asking again")
+        is_retry = newest is not None and newest.state is CompactionState.REQUESTED and not is_person
         self.abandon_open(agent_id, context)
         try:
-            return self.repository.save(ContextCompaction(session_agent_id=agent_id, change=change, reason=reason, line=line, request_tokens=request_tokens), context)
+            return self.repository.save(ContextCompaction(session_agent_id=agent_id, change=change, reason=reason, line=line, request_tokens=request_tokens, is_retry=is_retry), context)
         except ExistingRowRefusal as error:
             raise Refusal(self.open_compaction(agent_id).refusal_text(), "wait for it to end before asking again") from error
 
@@ -81,10 +83,21 @@ class ContextCompactions:
     def abandon_open(self, agent_id: int, context: Context) -> None:
         unfinished = self.open_compaction(agent_id)
         if unfinished is not None:
-            self.repository.save(replace(unfinished, state=CompactionState.ABANDONED), context)
+            self.abandon(unfinished, context)
 
-    def record_tokens_after(self, agent_id: int, tokens: int, limit_tokens: int | None, context: Context) -> None:
+    def abandon(self, compaction: ContextCompaction, context: Context) -> ContextCompaction:
+        return self.repository.save(replace(compaction, state=CompactionState.ABANDONED), context)
+
+    def fail(self, compaction: ContextCompaction, failure: str, context: Context) -> ContextCompaction:
+        return self.repository.save(replace(compaction, state=CompactionState.FAILED, failure=failure), context)
+
+    def fail_request(self, agent_id: int, failure: str, context: Context) -> ContextCompaction | None:
+        requested = self.open_compaction(agent_id)
+        return self.fail(requested, failure, context) if requested is not None and requested.state is CompactionState.REQUESTED else None
+
+    def record_tokens_after(self, agent_id: int, tokens: int, limit_tokens: int | None, context: Context) -> ContextCompaction | None:
         newest = self.newest(agent_id)
-        if newest is not None and newest.state is CompactionState.ENDED:
-            reduced = limit_tokens is None or tokens < limit_tokens
-            self.repository.save(replace(newest, state=CompactionState.MEASURED if reduced else CompactionState.UNREDUCED, tokens_after=tokens), context)
+        if newest is None or newest.state is not CompactionState.ENDED:
+            return None
+        reduced = limit_tokens is None or tokens < limit_tokens
+        return self.repository.save(replace(newest, state=CompactionState.MEASURED if reduced else CompactionState.UNREDUCED, tokens_after=tokens), context)

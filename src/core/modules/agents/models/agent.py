@@ -59,6 +59,10 @@ class Agent(EnvironmentScoped, Model):
     halted_at: Timestamp | None = None
 
     @property
+    def accepts_typed_lines(self) -> bool:
+        return self.paused_at is None and self.ended_at is None and self.retired_at is None
+
+    @property
     def is_main(self) -> bool:
         return self.role == MAIN_ROLE
 

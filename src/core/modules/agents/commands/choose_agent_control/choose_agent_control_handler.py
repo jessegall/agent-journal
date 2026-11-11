@@ -13,7 +13,8 @@ from core.modules.agents.support.context_change_requests import CONTEXT_CONTROL_
 class ChooseAgentControlHandler(Handler[ChooseAgentControl, Agent]):
     """Finds the line of a choice its program offers and types it into the agent's terminal; a choice it does
     not offer is refused. A choice that compacts or clears the context is recorded first, which refuses it while
-    a compaction of that agent is open."""
+    a compaction of that agent is open; when its line cannot be typed, that is recorded as its failure and the
+    request is kept, so it is not tried again at every stop."""
 
     command = ChooseAgentControl
     runs_once = True
@@ -28,7 +29,12 @@ class ChooseAgentControlHandler(Handler[ChooseAgentControl, Agent]):
             raise Refusal(f"{command.key} {command.value} is not a choice the agent bar offers", f"journal agent controls {agent.number} lists them")
         if agent.ended_at is not None:
             raise Refusal(f"{AgentLabel.from_agent(agent).text} has ended")
-        if command.key == CONTEXT_CONTROL_KEY:
-            self.context_changes.record(agent, command.value, command.reason, choices[0].line, context)
-        self.typing.type_line(agent, choices[0].line)
+        if command.key != CONTEXT_CONTROL_KEY:
+            self.typing.type_line(agent, choices[0].line)
+            return agent
+        self.context_changes.record(agent, command.value, command.reason, choices[0].line, context)
+        try:
+            self.typing.type_line(agent, choices[0].line)
+        except Refusal as refusal:
+            self.context_changes.record_failure(agent, refusal.reason, context)
         return agent
