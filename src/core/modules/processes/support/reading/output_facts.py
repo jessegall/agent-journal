@@ -59,10 +59,16 @@ class OutputFacts:
 
     @staticmethod
     def measured_reason(output: "OutputFacts | None", cadence_state: CadenceState) -> UnreadableReason | None:
-        """Why no reader can read an output, from its measures and how the run prints: a prompt counts only once
-        the run stopped growing on it."""
-        if output is None:
-            return None
-        if output.unreadable_reason is not None:
-            return output.unreadable_reason
+        """Why no reader can read the output of a running run, from its measures and how it prints: a prompt counts
+        only once the run stopped growing on it."""
+        if output is None or output.unreadable_reason is not None:
+            return None if output is None else output.unreadable_reason
         return UnreadableReason.INTERACTIVE if output.ends_on_prompt and cadence_state.has_no_growth else None
+
+    @staticmethod
+    def reason_at_end(output: "OutputFacts | None") -> UnreadableReason | None:
+        """Why no reader can read the output of an ended run, from its measures: a run that ended on a prompt
+        waited at it."""
+        if output is None or output.unreadable_reason is not None:
+            return None if output is None else output.unreadable_reason
+        return UnreadableReason.INTERACTIVE if output.ends_on_prompt else None

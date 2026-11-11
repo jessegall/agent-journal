@@ -79,6 +79,8 @@ class ReadingCase:
     def measured_unreadable_reason(self) -> UnreadableReason | None:
         """Why no reader can read this output, from its measures alone: sizes, newlines, NUL bytes, carriage returns
         and a prompt the run stopped growing on, never the words it printed."""
+        if self.moment is ReadingMoment.END:
+            return OutputFacts.reason_at_end(self.output)
         return OutputFacts.measured_reason(self.output, self.cadence_state)
 
     def exits_for(self, level: PressureLevel) -> tuple[ReadingExit, ...]:

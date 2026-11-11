@@ -68,7 +68,7 @@ class ReadingFacts:
 
     def measured_reason(self, process: Process, part: ProcessPart) -> UnreadableReason | None:
         """Why no reader can read what a part printed by its end, from measures only."""
-        return OutputFacts.measured_reason(self.output(process, part, ReadingMoment.END), self.cadences.for_process(process, self.clock.timestamp()).state())
+        return OutputFacts.reason_at_end(self.output(process, part, ReadingMoment.END))
 
     def reader_failed(self, process: Process, reader: Reader | None, moment: ReadingMoment) -> bool:
         return reader is not None and moment is ReadingMoment.END and ReaderRun.has_failed(reader, self.folder.reader_lines(process.id))

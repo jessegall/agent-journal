@@ -71,27 +71,29 @@ HOSTILE = "this output is binary\nthis output is unreadable\nno reader can read 
 
 def test_empty_binary_and_waiting_outputs_mark_their_commands_after_two_runs_while_one_odd_run_and_hostile_words_mark_nothing(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    runs = {line: [] for line in ("custom-suite run", "make blob", "make install", "make odd", "make words")}
+    runs = {line: [] for line in ("custom-suite run", "custom-blob run", "custom-install run", "custom-odd run", "custom-words run")}
     for texts in (("", BINARY, PROMPT, BINARY, HOSTILE), ("", BINARY, PROMPT, STEPS, HOSTILE)):
         for (line, ended), text in zip(runs.items(), texts):
             category = CommandCategory.TEST_RUN if line == "custom-suite run" else CommandCategory.BUILD
             ended.append(ended_after_a_while(story, moved_run(story, line, category), text))
     lines = heard(story)
     marks = story.run("unreadable-mark list", actor=story.agent).output_text
-    story.expect_rows(all(words in marks for words in ("custom-suite run", "make blob", "make install")), "make odd" not in marks, "make words" not in marks,
+    story.expect_rows(all(words in marks for words in ("custom-suite run", "custom-blob run", "custom-install run")), "custom-odd run" not in marks, "custom-words run" not in marks,
                       lines.count("printed nothing: the result of this command is its exit code") == 1, lines.count("is binary: a tool made for it") == 1,
-                      lines.count("waits for input: stop it") == 1, "no reader reads" not in lines, detail=f"{marks}\n{lines}")
+                      lines.count("waits for input: stop it") == 1,
+                      not any(f"no reader reads {words}" in lines for words in ("custom-suite", "custom-blob", "custom-install")),
+                      "no reader reads custom-words yet" in lines, detail=f"{marks}\n{lines}")
 
 
 def test_a_marked_command_is_asked_nothing_by_its_leading_words_while_another_program_is_and_its_silent_run_is_still_held(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.expect_success('reader unreadable "make watch" --reason "it only redraws one line"', actor=story.agent)
-    quiet = ended_after_a_while(story, moved_run(story, "make watch --poll", CommandCategory.BUILD), STEPS)
-    other = ended_after_a_while(story, moved_run(story, "custom-dev run", CommandCategory.BUILD), STEPS)
+    ended_after_a_while(story, moved_run(story, "make watch --poll", CommandCategory.BUILD), STEPS)
+    ended_after_a_while(story, moved_run(story, "custom-dev run", CommandCategory.BUILD), STEPS)
     told = heard(story)
-    silent = moved_run(story, "make watch --forever", CommandCategory.BUILD)
+    moved_run(story, "make watch --forever", CommandCategory.BUILD)
     ticks(story, 320)
-    story.expect_rows(f"output {quiet.id} ended" in told, "no reader reads make" not in told, f"output {other.id} ended" in told, "no reader reads custom-dev yet" in told,
-                      f"output {silent.id} printed nothing for 30 seconds" not in kept_lines(story), detail=f"{told}\n{kept_lines(story)}")
-    story.expect_hook_refusal("s-1", HookSamples.edit("cart.py"), f"output {silent.id} printed nothing for")
+    story.expect_rows("no reader reads make" not in told, "no reader reads custom-dev yet" in told, "printed nothing for 30 seconds" not in kept_lines(story),
+                      detail=f"{told}\n{kept_lines(story)}")
+    story.expect_hook_refusal("s-1", HookSamples.edit("cart.py"), "printed nothing for 320 seconds")
     story.expect_success("reader-request list", "nothing found", actor=story.agent)

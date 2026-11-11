@@ -1,0 +1,38 @@
+from collections.abc import Sequence
+from dataclasses import dataclass
+
+from core.modules.processes.models.enums.reading_exit import ReadingExit
+
+
+@dataclass(frozen=True)
+class ExitText:
+    """How an exit is said to an agent: the sentence and the command that takes it, when one does."""
+
+    sentence: str
+    command: str = ""
+
+
+EXIT_TEXTS: dict[ReadingExit, ExitText] = {
+    ReadingExit.COMPLY: ExitText("add or fix the reader", "journal reader add {name}"),
+    ReadingExit.SKIP_WITH_REASON: ExitText("skip this one start and say why", "journal refusal skip processes.reading --reason '<why>'"),
+    ReadingExit.DECLARE_UNREADABLE: ExitText("mark the command unreadable", 'journal reader unreadable "{name}" --reason "<why>"'),
+    ReadingExit.READ_OUTPUT: ExitText("read the output", "journal output read {output}"),
+    ReadingExit.STOP_RUN: ExitText("stop the run", "journal output stop {output}"),
+    ReadingExit.CLASSIFY: ExitText("say what type the command is", 'journal command-type make "{name}" "<type>"'),
+    ReadingExit.EXPIRES: ExitText("wait until the block expires"),
+    ReadingExit.PERSON_RELEASES: ExitText("a person releases it"),
+    ReadingExit.MAIN_AGENT_HELPS: ExitText("ask the main agent for help"),
+}
+
+
+class ExitTexts:
+    """The one table of how each exit from what the engine asks is said, so every refusal about reading states
+    all of its exits in the same words."""
+
+    @staticmethod
+    def listed(exits: Sequence[ReadingExit], name: str, output: int) -> str:
+        return "; ".join(ExitTexts.said(EXIT_TEXTS[way], name, output) for way in exits)
+
+    @staticmethod
+    def said(text: ExitText, name: str, output: int) -> str:
+        return f"{text.sentence}: {text.command.format(name=name, output=output)}" if text.command else text.sentence
