@@ -8,7 +8,7 @@ from core.modules.messages.models.message import Message
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.checkpoint_failures import end_run, expect_returned, print_output
-from tests.stories.suites.coding.modules.workers.checkpoint_runs import CART_COMMAND, PASSES, REACHES, commit_tasks, merge, rows, run_lines
+from tests.stories.suites.coding.modules.workers.checkpoint_runs import branch_runs_only, CART_COMMAND, PASSES, REACHES, commit_tasks, merge, rows, run_lines
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.merger_cases import running_merger
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
@@ -48,6 +48,7 @@ def failed_checkpoint(new_story, monkeypatch, output: str, *failing_lines: str) 
     """Phase Build is a checkpoint whose own test also names stories written ahead for task 4 of phase Ship.
     Its three tasks are merged and its run has ended with the given tests failed; the merger runs."""
     merger_can_start(monkeypatch)
+    branch_runs_only(monkeypatch)
     worker = dispatched_story_worker(planned_story(new_story, build_test=OWN_TEST), PHASE_DISPATCH, monkeypatch)
     worker.story.expect_success(MERGER_ON, actor=worker.story.user)
     commit_tasks(worker, TEST_LINE, "", SECOND_TEST_LINE)
