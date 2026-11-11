@@ -11,7 +11,7 @@ stays kept on the same agent number and session until retired.
 ## As the one who sends
 
 - Read each task to delegate with `journal task info <n>`, not its whole brief: open the brief only when the title and facts are not enough.
-  Choose the model from its complexity: 1 to 3 on the general tier, 4 and 5 on the strongest. A worker writes code, so it never runs on the fast tier.
+  Every worker start names its model, or uses a profile that names one, and chooses the least expensive model that reliably fits the work (the journal's law L1); inheriting your own model is not a choice. A worker writes code, so it never runs on the fast tier.
 - Choose the profile from what the job is, before the model. A job that only reads goes to a read-only helper, never a worker:
   research and checks to `journal-researcher`, a review to `journal-code-reviewer`, tracing a fault to `journal-debugger`, a
   design to `journal-planner`. A job that writes goes to a worker: `journal-medior` for a change the brief states,
