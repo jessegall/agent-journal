@@ -52,8 +52,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     name = "agents"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice, types: HelperTypeBook, share: ContextShare, spend: AgentSpend) -> None:
-        self.share, self.spend = share, spend
+    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice, types: HelperTypeBook, share: ContextShare, spend: AgentSpend, current_window: CurrentContextWindow) -> None:
+        self.share, self.spend, self.current_window = share, spend, current_window
         self.activity, self.sandbox, self.types = activity, sandbox, types
         self.queries, self.files, self.providers, self.home, self.suites, self.profiles = queries, files, providers, home, suites, profiles
         self.settings, self.clock = settings, clock
@@ -113,7 +113,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         return next((line.strip()[:100] for line in card.helper_job_brief.splitlines() if line.strip()), "")
 
     def is_context_unknown(self, card: AgentCard) -> bool:
-        return not CurrentContextWindow.is_read_after(card.compaction_ended_at, self.providers.provider(card.program).context_window(self.home, card.session))
+        return self.current_window.is_session_unknown(card.program, card.session, card.compaction_ended_at)
 
     def context_percent(self, card: AgentCard, status: SessionStatus) -> int | None:
         if self.is_context_unknown(card):

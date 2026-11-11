@@ -22,7 +22,10 @@ class CurrentContextWindow:
         return window if self.is_current(agent, window) else UNKNOWN_WINDOW
 
     def is_unknown(self, agent: Agent) -> bool:
-        return not self.is_current(agent, self.providers.provider(agent.program).context_window(self.home, agent.session))
+        return self.is_session_unknown(agent.program, agent.session, agent.metadata.module_part(DRIVERS_MODULE).get(COMPACTION_ENDED_AT))
+
+    def is_session_unknown(self, program: str, session: str, compaction_end: object) -> bool:
+        return not self.is_read_after(compaction_end, self.providers.provider(program).context_window(self.home, session))
 
     @classmethod
     def is_current(cls, agent: Agent, window: ContextWindow) -> bool:
