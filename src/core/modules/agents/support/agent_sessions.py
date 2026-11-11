@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 
 from engine.command.context import Context
 from engine.database.kept_rows import KeptRows
@@ -79,14 +78,6 @@ class AgentSessions:
     def newest_sessions(self, session_agent_id: int, limit: int) -> list[AgentSession]:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             return list(self.queries.query(AgentSession).filter(session_agent_id=session_agent_id).descending("id").page(1, limit).rows)
-
-    def agent_histories(self, session_agent_ids: Sequence[int]) -> dict[int, list[AgentSession]]:
-        with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            rows = self.queries.query(AgentSession).matching(Among("session_agent_id", tuple(session_agent_ids))).descending("id").all_rows()
-        sessions: dict[int, list[AgentSession]] = {agent_id: [] for agent_id in session_agent_ids}
-        for row in rows:
-            sessions[row.session_agent_id].append(row)
-        return sessions
 
     def main_sessions(self, program: str) -> tuple[str, ...]:
         main_ids = MainAgentFinder.newest_ids(self.queries, NEWEST_ROWS)

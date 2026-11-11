@@ -7,6 +7,7 @@ from core.modules.skills.support.skill_catalogue import SkillCatalogue
 
 
 DUE_SKILLS_REASON = "the skills due for one agent are at most the skills of the project, kept until one changes"
+AGENT_SKILLS_REASON = "one agent has at most one row for each skill of the project"
 
 class UnreadSkills:
     """The skills an agent must still read, oldest first, leaving out any the catalogue no longer holds and any its
@@ -25,5 +26,5 @@ class UnreadSkills:
 
     def unread(self, agent_id: int) -> list[str]:
         current = {skill.folder: skill.digest for skill in self.catalogue.skills()}
-        rows = self.queries.query(AgentSkill).filter(session_agent_id=agent_id).oldest().all_rows()
+        rows = self.queries.query(AgentSkill).filter(session_agent_id=agent_id).oldest().full_table(AGENT_SKILLS_REASON).all_rows()
         return [row.skill for row in rows if row.skill in current and (row.state is AgentSkillState.DUE or row.digest != current[row.skill])]
