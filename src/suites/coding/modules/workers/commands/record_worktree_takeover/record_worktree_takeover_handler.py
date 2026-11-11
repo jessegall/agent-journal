@@ -29,7 +29,8 @@ class RecordWorktreeTakeoverHandler(Handler[RecordWorktreeTakeover, Worktree]):
         taken = self.repository.save_change(worktree, worktree.taken_over(command.worker_id), context)
         self.assignments.unassign_rows(held, context)
         for task in held:
-            self.repository.update(task, context, delegated_to=command.worker_id)
+            holder_id = command.worker_id if task.holder_id == worktree.session_agent_id else task.holder_id
+            self.repository.update(task, context, delegated_to=command.worker_id, holder_id=holder_id)
         if plan is not None:
             self.bus.run_with_context(AssignPlan(plan.id, command.worker_id), context)
         return taken

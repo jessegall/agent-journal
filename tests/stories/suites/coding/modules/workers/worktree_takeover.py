@@ -17,11 +17,13 @@ def open_worktree_owner(worker: StoryWorker) -> int:
 def test_a_new_worker_takes_over_the_open_worktree_the_tasks_and_the_plan_of_a_stopped_worker(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch)
     commit_each(worker, (1,))
+    worker.story.run("task start 2", actor=worker.worker)
     worker.story.expect_success(f"agent end {worker.worker.id}", actor=worker.worker)
     worker.story.expect_success(TAKE_OVER.format(number=agent_number(worker.story, worker.worker.id)), actor=worker.story.agent)
     new_id = open_worktree_owner(worker)
     worker.story.expect_rows(new_id != worker.worker.id, detail=str(new_id))
     worker.story.expect_text("task info 2", f"assigned to: agent {new_id}", actor=worker.story.agent)
+    worker.story.expect_text("task show 2", "state: started", f"holder_id: {new_id}", actor=worker.story.agent)
     worker.story.expect_text(f"worker status {agent_number(worker.story, new_id)}", "Unit: plan 1", actor=worker.story.agent)
 
 
