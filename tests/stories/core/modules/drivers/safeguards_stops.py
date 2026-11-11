@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-from engine.query.queries import Queries
 from core.modules.drivers.commands.wake_safeguards_stopped_agent.wake_safeguards_stopped_agent_handler import WAKE_SOURCE
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.models.enums.message_type import MessageType
@@ -15,11 +14,11 @@ OTHER_ERROR = "API Error: the service is overloaded, try again"
 
 
 def wake_lines(story) -> list[AgentLine]:
-    return list(story.container.get(Queries).query(AgentLine).filter(source=WAKE_SOURCE).oldest().all_rows())
+    return list(story.story_rows(AgentLine, source=WAKE_SOURCE))
 
 
 def chat_notes(story) -> list[Message]:
-    return list(story.container.get(Queries).query(Message).filter(type=MessageType.JOURNAL).oldest().all_rows())
+    return list(story.story_rows(Message, type=MessageType.JOURNAL))
 
 
 class AgentRunning(StoryFixture):

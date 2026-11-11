@@ -1,3 +1,4 @@
+from core.modules.messages.models.message import Message
 import pytest
 
 from engine.testing.examples.hook_samples import HookSamples
@@ -17,7 +18,7 @@ def test_a_text_block_is_built_from_its_parts(new_story, parts, shown, missing_t
     story = new_story(fixture=BuilderStarted)
     for text, final, message in parts:
         story.hook("s-1", HookSamples.message_display(text, final=final, message_id=message))
-    latest = story.run("message list").output_text.count("  agent  ")
+    latest = story.story_rows(Message, type="agent")[-1].id
     story.expect_text(f"message show {latest}", *shown.split("\n\n"))
     expect_absent_messages_text(story, missing_text)
 

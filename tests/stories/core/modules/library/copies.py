@@ -49,28 +49,16 @@ def test_getting_an_item_again_is_refused_and_names_the_row_that_follows_it(new_
     story.expect_rows(len(list(story.story_rows(Doc))) == 1)
 
 
-def test_a_kind_this_journal_lacks_is_refused_in_plain_words_and_nothing_is_made(new_story, shared_server):
+def test_library_get_refuses_a_kind_this_journal_lacks_a_removed_item_and_an_unread_warning_and_gets_the_warned_item_once_read(new_story, shared_server):
     server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    story.expect_refusal("library get memo 1", "this journal shares no memo with the library", actor=story.user)
-    story.expect_rows(len(list(story.story_rows(LibraryCopy))) == 0)
-
-
-def test_an_item_removed_from_the_library_is_not_got(new_story, shared_server):
-    server, tokens = shared_server
-    item_id = new_item(server, tokens.admin, "Basalt removed")
-    server.send(tokens.admin, "DELETE", f"/items/doc/{item_id}")
-    story = connected(new_story, server, tokens.editor)
-    story.expect_refusal(f"library get doc {item_id}", f"library doc {item_id} is removed from the library", actor=story.user)
-    story.expect_rows(len(list(story.story_rows(Doc))) == 0)
-
-
-def test_an_item_that_warns_is_got_only_when_it_was_read_first(new_story, shared_server):
-    server, tokens = shared_server
+    removed_id = new_item(server, tokens.admin, "Basalt removed")
+    server.send(tokens.admin, "DELETE", f"/items/doc/{removed_id}")
     code, item = server.send(tokens.admin, "POST", "/items/check", {"fields": {"title": "Granite check", "command": "echo hello", "brief": "Says hello", "interval_minutes": 5}})
     story = connected(new_story, server, tokens.editor)
+    story.expect_refusal("library get memo 1", "this journal shares no memo with the library", actor=story.user)
+    story.expect_refusal(f"library get doc {removed_id}", f"library doc {removed_id} is removed from the library", actor=story.user)
     story.expect_refusal(f"library get check {item['id']}", "this check runs on your computer: echo hello", actor=story.user)
-    story.expect_rows(code == 201, len(list(story.story_rows(Check))) == 0)
+    story.expect_rows(code == 201, len(story.story_rows(LibraryCopy)) == 0, len(story.story_rows(Doc)) == 0, len(story.story_rows(Check)) == 0)
     story.expect_text(f"library get check {item['id']} --read", f"library check {item['id']}, version 1 is now check 1", actor=story.user)
     story.expect_rows(story.row(Check, 1).command == "echo hello", story.row(Check, 1).stopped)
 

@@ -118,7 +118,7 @@ def test_compaction_keeps_source_and_a_new_session_starts_without_one(scenario):
     feature(scenario.source_ids(replacement.id) == (), "the new session inherited the request the session before it selected")
 
 
-@pytest.mark.parametrize("number", [999, 0, -1])
+@pytest.mark.parametrize("number", [999, 999_999, -999_999])
 def test_invalid_sources_leave_no_partial_write(scenario, number):
     outcome = scenario.story.run(f"message work-from {number}", actor=scenario.story.agent)
     feature(outcome.code == 1, outcome.output_text)

@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
@@ -26,7 +25,7 @@ def story_after_fixture(new_story, fixture: type[StoryFixture]) -> Story:
 
 
 def agent_messages(story: Story) -> list[Message]:
-    return list(story.container.get(Queries).query(Message).filter(type=MessageType.AGENT).oldest().all_rows())
+    return list(story.story_rows(Message, type=MessageType.AGENT))
 
 
 class MessageToStoppedAgent(StoryFixture):
@@ -59,7 +58,7 @@ def test_the_closing_text_of_a_turn_is_no_reply_to_a_message_that_came_during_it
     story.hook("s-1", HookSamples.message_display(CLOSING))
     story.hook("s-1", HookSamples.stop())
     closing = agent_messages(story)[0]
-    story.expect_rows(closing.text == CLOSING, closing.parent_id is None)
+    story.expect_rows(closing.text == CLOSING, closing.parent_id is None, detail=str(agent_messages(story)))
 
 
 def test_a_message_read_and_answered_in_the_turn_is_linked_only_by_the_reply_command(new_story):
