@@ -93,10 +93,10 @@ def test_a_listener_whose_event_does_not_match_is_never_imported(tmp_path):
     assert "tests.unit.engine.samples.listener_sample" not in sys.modules
 
 
-def test_a_save_listener_that_holds_the_write_lock_half_a_second_is_logged_by_name(tmp_path, monkeypatch):
+def test_a_save_listener_that_runs_half_a_second_inside_the_write_lock_is_logged_by_name(tmp_path, monkeypatch):
     times = iter([10.0, 10.6])
     monkeypatch.setattr(listener_runner, "perf_counter", lambda: next(times))
     registry = Registry("abc", {}, {}, {}, (), (entry(SaveFirst, ListenerTiming.SAVE, 1),))
     runner = listeners(tmp_path, registry)
     runner.run_save_listeners(Change(None, Item(id=4, version=1, title="Dune"), CONTEXT))
-    assert "save listener items.first held the write lock 600 ms on item.create" in runner.system_log.path.read_text()
+    assert "save listener items.first ran 600 ms inside the write lock on item.create" in runner.system_log.path.read_text()

@@ -15,13 +15,13 @@ from time import perf_counter
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
 
-SLOW_HELD_LISTENER_SECONDS = 0.5
+SLOW_SAVE_LISTENER_SECONDS = 0.5
 
 
 class Listeners:
     """Runs the listeners registered for a change's event inside its transaction: deletion listeners before a
-    row is deleted, save listeners after a change is saved. A save listener that holds the transaction for half a
-    second or more is written to the system log by name, since every other writer waits on it."""
+    row is deleted, save listeners after a change is saved. A save listener that runs half a second or more
+    inside the transaction is written to the system log by name, since every other writer waits on it."""
 
     def __init__(self, registry: Registry, container: Container, change_filter: ChangeFilter, scopes: Scopes, system_log: SystemLogWriter) -> None:
         self.registry, self.container, self.change_filter, self.scopes, self.system_log = registry, container, change_filter, scopes, system_log
@@ -59,5 +59,5 @@ class Listeners:
             with self.scopes.change_scope(listener_class.disabled_scopes, change):
                 self.container.get(listener_class).handle(change.typed_event(listener_class), change.context)
             elapsed = perf_counter() - started_at
-            if elapsed >= SLOW_HELD_LISTENER_SECONDS:
-                self.system_log.write(LogLevel.INFORMATION, f"save listener {entry.name} held the write lock {elapsed * 1000:.0f} ms on {change.event}")
+            if elapsed >= SLOW_SAVE_LISTENER_SECONDS:
+                self.system_log.write(LogLevel.INFORMATION, f"save listener {entry.name} ran {elapsed * 1000:.0f} ms inside the write lock on {change.event}")
