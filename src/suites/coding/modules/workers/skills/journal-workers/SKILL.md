@@ -174,7 +174,8 @@ An open question lets you stop; the answer wakes you. Going on with other work e
 - A task already built needs no change: prove each point with where it is, and commit with `--differences "<why no change was needed>"`.
   With `--differences none`, a commit that changed nothing is refused. The main agent reads your line.
 - While a started task is left, the commit is interim and you go on with that task. With none left it is final: your
-  work waits for its tests and its merge, so stop and wait.
+  work waits for its tests and its merge, so stop and wait. Once it is merged the journal starts you on the
+  next of your tasks, in a new worktree.
 - The tests of a commit: outside a plan the journal queues the tests of your proofs on that commit and returns any
   failure. In a started plan they run at a checkpoint of the plan, by the journal itself, and a failure comes back to
   the worker whose task it is. You may go on working meanwhile: your later edits do not change the result.
