@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.errors.refusal import Refusal
 from engine.event.created import Created
 from engine.guard.guard import Guard
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.model.assignable import Assignable
 from engine.module.module import Module
 from engine.query.queries import Queries

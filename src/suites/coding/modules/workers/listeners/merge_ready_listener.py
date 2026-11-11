@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.event.logged_event import LoggedEvent
 from engine.event.moved import Moved
 from engine.command.bus import Bus
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle

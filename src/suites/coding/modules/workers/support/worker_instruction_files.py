@@ -3,7 +3,7 @@ from pathlib import Path
 from engine.file.file_access import FileAccess
 from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from engine.profile.agent_profile import AgentProfile
-from engine.file.file_version import FileVersion
+from engine.file.versions.file_version import FileVersion
 from engine.registry.registry import Registry
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins

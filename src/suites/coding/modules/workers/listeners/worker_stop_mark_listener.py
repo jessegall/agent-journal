@@ -5,7 +5,7 @@ from engine.enums.mark_outcome import MarkOutcome
 from engine.command.bus import Bus
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.scope.actor_scope import ActorScope
 from engine.scope.scopes import DisabledScopes
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent

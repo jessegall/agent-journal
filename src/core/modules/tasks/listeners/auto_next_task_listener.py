@@ -5,8 +5,8 @@ from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
-from engine.listener.commit_listener import CommitListener
-from engine.listener.event_rows import EventRows
+from engine.listener.commit.commit_listener import CommitListener
+from engine.listener.rows.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.task import Task

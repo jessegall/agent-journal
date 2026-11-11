@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.tasks.models.task import Task

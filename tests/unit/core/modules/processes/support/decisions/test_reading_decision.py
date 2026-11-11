@@ -6,7 +6,7 @@ from core.modules.processes.models.enums.reader_action import ReaderAction
 from core.modules.processes.models.enums.reader_state import ReaderState
 from core.modules.processes.models.enums.reading_exit import ReadingExit
 from core.modules.processes.models.enums.reason_code import ReasonCode
-from core.modules.processes.support.reading.reading_decision import ReadingDecision
+from core.modules.processes.support.decisions.reading_decision import ReadingDecision
 
 PRESSING_LEVELS = [level for level in PressureLevel if level > PressureLevel.SUGGEST]
 OTHER_PARTY_EXITS = (ReadingExit.PERSON_RELEASES, ReadingExit.MAIN_AGENT_HELPS, ReadingExit.EXPIRES)

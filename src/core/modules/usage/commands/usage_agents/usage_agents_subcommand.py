@@ -1,4 +1,3 @@
-from engine.enums.agent_role import AgentRole
 from core.modules.drivers.support.current_context_window import CurrentContextWindow
 from engine.cli.agent_number import AgentNumber
 from core.modules.agents.support.agent_rows import RUNNING_AGENTS_REASON
@@ -81,8 +80,9 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         account = self.files.plan_windows(statuses)
         sandboxes = self.sandboxes(cards_read, read_rows)
         session_costs = self.spend.session_costs(agent_id) if agent_id is not None else ()
+        unit_names = self.activity.work.unit_names([card.id for card in cards_read])
         return AgentFactsList(tuple(replace(self.facts(card, policy, titles, pending.get(card.id), statuses[card.session], account, sandboxes.get(card.id, True)), session_costs=session_costs,
-                                            unit_name=self.activity.work.unit_name(card.id) if card.role != AgentRole.MAIN else "")
+                                            unit_name=unit_names.get(card.id, ""))
                                     for card in cards_read))
 
     def sandboxes(self, cards: Sequence[AgentCard], read_rows: Sequence[Agent]) -> dict[int, bool]:

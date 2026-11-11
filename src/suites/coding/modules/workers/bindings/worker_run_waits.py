@@ -1,5 +1,5 @@
 from engine.enums.agent_role import AgentRole
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.support.run_waits import RunWaits
 from engine.setting.setting_values import SettingValues

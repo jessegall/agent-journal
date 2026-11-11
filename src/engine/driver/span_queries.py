@@ -1,4 +1,4 @@
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.database.kept_rows import KeptRows
 

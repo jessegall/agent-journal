@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.event.logged_event import LoggedEvent
 from engine.event.moved import Moved
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.query.queries import Queries
 from engine.setting.setting_values import SettingValues
 from core.modules.plans.models.checkpoint_reach import CheckpointReach

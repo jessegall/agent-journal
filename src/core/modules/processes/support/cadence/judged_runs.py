@@ -9,8 +9,8 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.process_query import ProcessQuery
+from core.modules.processes.support.silent_runs import PYTHON_PROGRAM
 
-PYTHON_PROGRAM = "python"
 
 
 class JudgedRuns:

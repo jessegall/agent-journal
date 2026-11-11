@@ -3,7 +3,7 @@ from typing import ClassVar
 from engine.event.changed import RowChange
 from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
 from engine.scope.actor_scope import ActorScope
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem

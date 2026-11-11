@@ -8,7 +8,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.provider.providers import Providers
 from engine.query.queries import Queries
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.profile.agent_profile import AgentProfile
 from engine.errors.refusal import Refusal

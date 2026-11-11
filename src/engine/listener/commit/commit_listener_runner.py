@@ -12,7 +12,7 @@ from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
 from engine.log.exception_sink import ExceptionSink
 from engine.listener.round_yield import RoundYield
-from engine.listener.commit_listener import is_commit_listener_class
+from engine.listener.commit.commit_listener import is_commit_listener_class
 from engine.database.listener_cursor_table import ListenerCursorTable
 from engine.registry.listener_entry import ListenerEntry
 from engine.enums.listener_timing import ListenerTiming

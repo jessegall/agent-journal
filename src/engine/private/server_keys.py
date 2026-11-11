@@ -1,6 +1,6 @@
 import json
 
-from engine.file.kept_file_text import KeptFileText
+from engine.file.versions.kept_file_text import KeptFileText
 
 from engine.private.private_folder import PrivateFolder
 from engine.private.secret_values import SecretValues

@@ -5,7 +5,7 @@ from engine.container.container import Container
 from engine.request.request_queue import RequestQueue
 from engine.database.reported_findings import ReportedFindings
 from engine.journal.journal_home import JournalHome
-from engine.listener.commit_listener_runner import CommitListenerRunner
+from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from server.endpoints.cli_request import CliRequest
 
 CLI_LIMIT_SECONDS = 600.0

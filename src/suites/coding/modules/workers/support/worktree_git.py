@@ -6,7 +6,7 @@ import subprocess
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from functools import lru_cache
-from engine.file.file_version import FileVersion
+from engine.file.versions.file_version import FileVersion
 import shutil
 from pathlib import Path, PurePosixPath
 

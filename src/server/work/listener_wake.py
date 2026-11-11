@@ -1,5 +1,5 @@
 from server.work.listener_thread import ListenerThread
-from engine.listener.commit_listener_runner import CommitListenerRunner
+from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 
 
 class ListenerWake(CommitListenerRunner):

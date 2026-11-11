@@ -7,7 +7,7 @@ import json
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.modules.helpers.support.agent_admission import AgentAdmission
 from engine.repository.repository import Repository

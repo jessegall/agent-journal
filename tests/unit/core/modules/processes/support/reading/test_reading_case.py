@@ -11,7 +11,7 @@ from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
 from core.modules.processes.support.reader_judgement import ReaderJudgement
 from core.modules.processes.support.reading.output_facts import OutputFacts
-from core.modules.processes.support.reading.reader_layer import ReaderLayer
+from core.modules.processes.models.enums.reader_layer import ReaderLayer
 from core.modules.processes.support.reading.reading_case import ReadingCase
 
 TEST_OUTPUT = b"collected 3 items\n\n===== 3 passed in 0.10s =====\n"

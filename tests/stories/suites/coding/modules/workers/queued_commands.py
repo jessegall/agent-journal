@@ -14,7 +14,7 @@ from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from engine.journal.journal_home import LAUNCHER_SOCKET
-from engine.listener.commit_listener_runner import CommitListenerRunner
+from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent

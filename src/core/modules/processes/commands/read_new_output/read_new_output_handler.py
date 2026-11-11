@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.output import Output

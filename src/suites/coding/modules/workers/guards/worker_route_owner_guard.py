@@ -4,7 +4,7 @@ from engine.event.deleted import Deleted
 from engine.event.updated import Updated
 from engine.command.context import Context
 from engine.guard.guard import Guard
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from core.modules.actors.models.actor_record import ActorRecord
 from suites.coding.modules.workers.commands.delete_worker_route.delete_worker_route import DeleteWorkerRoute
 from suites.coding.modules.workers.models.worker_route import WorkerRoute

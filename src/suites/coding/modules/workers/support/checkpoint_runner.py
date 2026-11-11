@@ -5,7 +5,7 @@ from dataclasses import replace
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.enums.command_category import CommandCategory
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from engine.setting.setting_values import SettingValues
 from core.modules.environments.models.environment import Environment

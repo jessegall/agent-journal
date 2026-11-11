@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.plans.commands.record_plan_agent.record_plan_agent import RecordPlanAgent

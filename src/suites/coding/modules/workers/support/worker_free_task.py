@@ -1,5 +1,5 @@
 from core.modules.agents.models.agent import Agent
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.command.bus import Bus
 from engine.command.context import Context
 from core.modules.plans.support.next_plan_tasks import NextPlanTasks

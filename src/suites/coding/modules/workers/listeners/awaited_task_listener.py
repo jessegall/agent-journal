@@ -8,7 +8,7 @@ from engine.command.context import Context
 from engine.driver.nudger import Nudger
 from engine.event.moved import Moved
 from engine.listener.save_listener import SaveListener
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_AWAITED

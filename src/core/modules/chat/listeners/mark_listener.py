@@ -6,7 +6,7 @@ from engine.enums.actor_type import ActorType
 from engine.event.logged_event import LoggedEvent
 from engine.enums.mark_outcome import MarkOutcome
 from engine.command.bus import Bus
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
@@ -15,7 +15,7 @@ from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
 from core.modules.chat.queries.conditions.mark_round_key import MarkRoundKey
 from engine.event.event_subscriber import E
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 
 
 class MarkListener(CommitListener[E]):

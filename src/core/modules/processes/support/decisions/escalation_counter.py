@@ -6,7 +6,7 @@ from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
-from core.modules.processes.support.reading.escalation_resets import EscalationResets
+from core.modules.processes.support.decisions.escalation_resets import EscalationResets
 from core.modules.processes.support.reading.key_run import KeyRun
 
 RUNS_READ = 10

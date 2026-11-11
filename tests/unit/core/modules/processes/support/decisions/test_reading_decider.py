@@ -13,9 +13,9 @@ from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.models.enums.reason_code import ReasonCode
 from core.modules.processes.support.reader_judgement import ReaderJudgement
 from core.modules.processes.support.reading.output_facts import OutputFacts
-from core.modules.processes.support.reading.reader_layer import ReaderLayer
+from core.modules.processes.models.enums.reader_layer import ReaderLayer
 from core.modules.processes.support.reading.reading_case import ReadingCase
-from core.modules.processes.support.reading.reading_decider import ReadingDecider
+from core.modules.processes.support.decisions.reading_decider import ReadingDecider
 
 SUGGEST = PressureLevel.SUGGEST.exits
 PREVENT = PressureLevel.PREVENT.exits

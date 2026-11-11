@@ -11,9 +11,9 @@ from threading import RLock
 from typing import IO, Any
 from weakref import WeakValueDictionary
 
-from engine.file.file_contents import FileContents
-from engine.file.file_version import FileVersion
-from engine.file.file_changes import FileChanges
+from engine.file.versions.file_contents import FileContents
+from engine.file.versions.file_version import FileVersion
+from engine.file.versions.file_changes import FileChanges
 
 FILE_READ_EVENT = "journal.file.read"
 FILE_CHANGE_EVENT = "journal.file.write"

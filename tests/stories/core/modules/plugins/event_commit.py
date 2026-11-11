@@ -7,7 +7,7 @@ from engine.event.event_log import HIDDEN
 from engine.command.bus import Bus
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from engine.database.database import Database
-from engine.listener.commit_listener_runner import CommitListenerRunner
+from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.enums.event_form import EventForm
 from core.modules.plugins.support.plugin_subscriptions import PluginSubscriptions
 from tests.stories.core.modules.plugins.support.event_modules import FAILS_LATER, LATER_REFUSAL, NOTES, REFUSED_TITLE

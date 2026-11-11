@@ -1,7 +1,7 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.time.clock import Clock
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice
@@ -21,10 +21,10 @@ from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.reader_writers import ReaderWriters
 from core.modules.processes.support.cadence.run_cadences import RunCadences
-from core.modules.processes.support.reading.escalation_counter import EscalationCounter
-from core.modules.processes.support.reading.escalation_resets import EscalationResets
+from core.modules.processes.support.decisions.escalation_counter import EscalationCounter
+from core.modules.processes.support.decisions.escalation_resets import EscalationResets
 from core.modules.processes.support.reading.output_facts import SAMPLE_BYTES, OutputFacts
-from core.modules.processes.support.reading.reader_layer import ReaderLayer
+from core.modules.processes.models.enums.reader_layer import ReaderLayer
 from core.modules.processes.support.reading.reading_case import ReadingCase
 from core.modules.processes.support.silent_start_runs import SilentStartRuns
 

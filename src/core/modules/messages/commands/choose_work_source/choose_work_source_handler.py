@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from core.modules.messages.commands.choose_work_source.choose_work_source import ChooseWorkSource
 from core.modules.messages.models.enums.work_source_origin import WorkSourceOrigin
 from core.modules.messages.models.message import Message

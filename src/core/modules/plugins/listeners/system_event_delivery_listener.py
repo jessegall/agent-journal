@@ -6,7 +6,7 @@ from engine.event.registry_synced import RegistrySynced
 from engine.event.upgrade_finished import UpgradeFinished
 from engine.event.upgrade_moved import UpgradeMoved
 from engine.command.bus import Bus
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.enums.event_form import EventForm
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries

@@ -3,7 +3,7 @@ from engine.event.deleted import Deleted
 from engine.event.journal_booting import JournalBooting
 from engine.event.logged_event import LoggedEvent
 from engine.event.updated import Updated
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.support.journal_instruction_file import JournalInstructionFile
 

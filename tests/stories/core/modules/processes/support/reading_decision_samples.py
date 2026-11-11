@@ -11,8 +11,8 @@ from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.models.enums.reason_code import ReasonCode
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
-from core.modules.processes.support.reading.reading_decision import ReadingDecision
-from core.modules.processes.support.reading.reading_decisions import ReadingDecisions
+from core.modules.processes.support.decisions.reading_decision import ReadingDecision
+from core.modules.processes.support.decisions.reading_decisions import ReadingDecisions
 
 
 def stored_decision(story: Story, process: Process, moment: ReadingMoment, decision: ReadingDecision) -> None:

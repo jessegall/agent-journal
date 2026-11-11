@@ -6,7 +6,7 @@ from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
 from core.modules.processes.support.silent_start_runs import SilentStartRuns
-from core.modules.processes.support.reading.reading_decision import ReadingDecision
+from core.modules.processes.support.decisions.reading_decision import ReadingDecision
 
 
 class ReadingDecisions:

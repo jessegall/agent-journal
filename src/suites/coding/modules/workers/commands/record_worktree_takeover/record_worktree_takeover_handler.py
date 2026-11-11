@@ -5,7 +5,7 @@ from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from suites.coding.modules.workers.commands.record_worktree_takeover.record_worktree_takeover import RecordWorktreeTakeover

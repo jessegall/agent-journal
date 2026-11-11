@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from engine.file.file_version import FileVersion
+from engine.file.versions.file_version import FileVersion
 
 
 @dataclass(frozen=True)

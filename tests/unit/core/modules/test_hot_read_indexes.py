@@ -22,7 +22,7 @@ def database(tmp_path):
     (Statement("SELECT * FROM plugin_queue_files WHERE plugin_id = ? AND name = ?", (1, "card.json")), "plugin_queue_files_plugin_name"),
     (Statement("SELECT * FROM checks WHERE removed_at IS NULL AND task_wait_id > ?", [0]), "checks_open_task_wait"),
     (Statement("SELECT id FROM agents WHERE role <> ?", ["main"]), "agents_role"),
-    (Statement("SELECT * FROM worker_worktrees WHERE environment_id = ? AND removed_at IS NULL ORDER BY id", [1]), "worker_worktrees_open_environment"),
+    (Statement("SELECT * FROM worker_worktrees WHERE environment_id = ? AND removed_at IS NULL ORDER BY id", [1]), "worker_worktrees_environment (environment_id=?)"),
     (Statement("SELECT * FROM watches WHERE process_id = ? AND state = ?", (1, "open")), "watches_process_state"),
     (Statement("SELECT * FROM reader_requests WHERE completed_at IS NULL"), "reader_requests_open_command"),
     (Statement("SELECT * FROM proofs WHERE process_id = ? AND state = ?", (1, "running")), "proofs_process_state"),

@@ -3,7 +3,7 @@ from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.tasks.models.task import Task
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from suites.coding.modules.workers.commands.open_kept_worktree.open_kept_worktree import OpenKeptWorktree
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery

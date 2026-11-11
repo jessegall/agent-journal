@@ -1,6 +1,6 @@
 from engine.event.logged_event import LoggedEvent
 from engine.event.moved import Moved
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from core.modules.plans.listeners.support.task_plan_preparation import TaskPlanPreparation
 from core.modules.plans.support.finished_plans import FinishedPlans
 from core.modules.plans.support.task_plans import TaskPlans

@@ -1,6 +1,6 @@
 from engine.event.changed import Changed
 from engine.event.logged_event import LoggedEvent
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.agents.support.agent_rows import AgentRows

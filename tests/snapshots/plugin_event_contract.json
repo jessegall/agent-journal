@@ -3827,6 +3827,7 @@
       "is_early",
       "phase_id",
       "plan_id",
+      "source",
       "state",
       "task_ids"
     ]
@@ -3844,6 +3845,7 @@
       "is_early",
       "phase_id",
       "plan_id",
+      "source",
       "state",
       "task_ids"
     ]
@@ -3861,6 +3863,7 @@
       "is_early",
       "phase_id",
       "plan_id",
+      "source",
       "state",
       "task_ids"
     ]
@@ -3878,6 +3881,7 @@
       "is_early",
       "phase_id",
       "plan_id",
+      "source",
       "state",
       "task_ids"
     ]
@@ -3895,6 +3899,7 @@
       "is_early",
       "phase_id",
       "plan_id",
+      "source",
       "state",
       "task_ids"
     ]
@@ -5135,6 +5140,60 @@
       "reason",
       "sample_process_id",
       "skip_reason"
+    ]
+  },
+  "core.processes.reading_decision.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "action",
+      "command_key",
+      "decided_at",
+      "level",
+      "moment",
+      "part_position",
+      "process_id",
+      "reason",
+      "state"
+    ]
+  },
+  "core.processes.reading_decision.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "action",
+      "command_key",
+      "decided_at",
+      "level",
+      "moment",
+      "part_position",
+      "process_id",
+      "reason",
+      "state"
+    ]
+  },
+  "core.processes.reading_decision.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "action",
+      "command_key",
+      "decided_at",
+      "level",
+      "moment",
+      "part_position",
+      "process_id",
+      "reason",
+      "state"
     ]
   },
   "core.processes.watch.created": {
@@ -8413,6 +8472,96 @@
     ],
     "fields": []
   },
+  "suites.coding.workers.worker_merge_ask.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "commit_id",
+      "creator_id",
+      "environment_id",
+      "is_whole",
+      "note",
+      "state",
+      "task_ids",
+      "unit_name",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worker_merge_ask.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "commit_id",
+      "creator_id",
+      "environment_id",
+      "is_whole",
+      "note",
+      "state",
+      "task_ids",
+      "unit_name",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worker_merge_ask.merge": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "commit_id",
+      "creator_id",
+      "environment_id",
+      "is_whole",
+      "note",
+      "state",
+      "task_ids",
+      "unit_name",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worker_merge_ask.send_back": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "commit_id",
+      "creator_id",
+      "environment_id",
+      "is_whole",
+      "note",
+      "state",
+      "task_ids",
+      "unit_name",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worker_merge_ask.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "commit_id",
+      "creator_id",
+      "environment_id",
+      "is_whole",
+      "note",
+      "state",
+      "task_ids",
+      "unit_name",
+      "worktree_id"
+    ]
+  },
   "suites.coding.workers.worker_merging": {
     "forms": [
       "commit",
@@ -9359,6 +9508,88 @@
       "tests_passed_at"
     ]
   },
+  "suites.coding.workers.worker_worktree.take_over_cut": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "libraries_dropped_at",
+      "library_copies",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merge_ready_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "returned_at",
+      "route_reason",
+      "session_agent_id",
+      "starts_program",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.take_over_delivered": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "libraries_dropped_at",
+      "library_copies",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merge_ready_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "returned_at",
+      "route_reason",
+      "session_agent_id",
+      "starts_program",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
   "suites.coding.workers.worker_worktree.updated": {
     "forms": [
       "commit",
@@ -9398,6 +9629,45 @@
       "task_count",
       "task_id",
       "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worktree_reach.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "commit_id",
+      "phase_id",
+      "reach_id",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_reach.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "commit_id",
+      "phase_id",
+      "reach_id",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_reach.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "commit_id",
+      "phase_id",
+      "reach_id",
+      "worktree_id"
     ]
   }
 }

@@ -2,7 +2,7 @@ from engine.file.file_access import FileAccess
 import fcntl
 import json
 from functools import lru_cache
-from engine.file.file_version import FileVersion
+from engine.file.versions.file_version import FileVersion
 import os
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager

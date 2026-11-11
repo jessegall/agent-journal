@@ -1,6 +1,6 @@
 from core.modules.processes.events.output_ended import OutputEnded
 from engine.listener.save_listener import SaveListener
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent

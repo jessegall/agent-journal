@@ -2,9 +2,9 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from core.modules.plans.listeners.support.task_plan_preparation import TaskPlanPreparation
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from core.modules.agents.models.agent import MAIN_ROLE, Agent
 from core.modules.plans.support.focus.focused_plan_tasks import FocusedPlanTasks
 from core.modules.plans.models.enums.plan_state import PlanState

@@ -2,7 +2,7 @@ from collections.abc import Iterable
 
 from engine.actor.actor import CORE_ACTOR_ID
 from core.modules.processes.models.reader import Reader
-from core.modules.processes.support.reading.reader_layer import ReaderLayer
+from core.modules.processes.models.enums.reader_layer import ReaderLayer
 
 
 class ReaderLayers:

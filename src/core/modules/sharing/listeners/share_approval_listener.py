@@ -5,7 +5,7 @@ from engine.event.registry_synced import RegistrySynced
 from engine.command.bus import Bus
 from engine.command.close_user_approval import CloseUserApproval
 from engine.command.request_user_approval import RequestUserApproval
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope

@@ -2,7 +2,7 @@ from engine.event.changed import Changed
 from engine.event.deleted import Deleted
 from engine.event.logged_event import LoggedEvent
 from engine.enums.command_category import CommandCategory
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.database.kept_rows import KeptRows
 from engine.module.performance_tools import PerformanceTools
 from core.modules.processes.queries.process_query import OPEN, ProcessQuery

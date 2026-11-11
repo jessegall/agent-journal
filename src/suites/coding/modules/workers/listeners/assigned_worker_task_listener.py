@@ -1,5 +1,5 @@
 from engine.command.context import Context
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.scope.actor_scope import ActorScope
 from engine.tasks.tasks_changed_together import TasksChangedTogether
 from core.modules.assignments.listeners.assigned_listener import AssignedListener

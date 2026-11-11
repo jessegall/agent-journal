@@ -3,7 +3,7 @@ from dataclasses import replace
 
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope

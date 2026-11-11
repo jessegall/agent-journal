@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.command.move_command import MoveCommand
 from engine.model.model import Model
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from engine.command.errors.move_method_error import MoveMethodError
 

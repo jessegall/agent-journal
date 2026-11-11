@@ -7,8 +7,8 @@ from core.modules.processes.errors.decision_without_exit_error import DecisionWi
 from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
-from core.modules.processes.support.reading.reading_decider import ReadingDecider
-from core.modules.processes.support.reading.reading_decisions import ReadingDecisions
+from core.modules.processes.support.decisions.reading_decider import ReadingDecider
+from core.modules.processes.support.decisions.reading_decisions import ReadingDecisions
 from core.modules.processes.support.reading.reading_facts import ReadingFacts
 
 

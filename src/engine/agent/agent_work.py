@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 
 class AgentWork:
@@ -8,5 +8,5 @@ class AgentWork:
     def pending(self) -> Mapping[int, str]:
         return {}
 
-    def unit_name(self, agent_id: int) -> str:
-        return ""
+    def unit_names(self, agent_ids: Sequence[int]) -> Mapping[int, str]:
+        return {}

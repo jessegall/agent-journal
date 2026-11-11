@@ -8,7 +8,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.hook_history import HookHistory
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.seconds import Seconds
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees

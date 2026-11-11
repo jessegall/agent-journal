@@ -8,8 +8,8 @@ from core.modules.processes.models.enums.reader_state import ReaderState
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.models.reader import Reader
-from core.modules.processes.support.reading.escalation_counter import EscalationCounter
-from core.modules.processes.support.reading.escalation_resets import EscalationResets
+from core.modules.processes.support.decisions.escalation_counter import EscalationCounter
+from core.modules.processes.support.decisions.escalation_resets import EscalationResets
 from core.modules.processes.support.reading.key_run import KeyRun
 
 START = datetime(2026, 11, 11, 12, 0, tzinfo=timezone.utc)

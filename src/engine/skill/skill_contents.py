@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from engine.file.file_access import FileAccess
-from engine.file.file_version import FileVersion
+from engine.file.versions.file_version import FileVersion
 from engine.skill.skill_digest import SkillDigest
 
 FRONT_MATTER_MARK = "---"

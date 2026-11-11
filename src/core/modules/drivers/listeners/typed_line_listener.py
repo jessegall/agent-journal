@@ -1,5 +1,5 @@
 from engine.event.logged_event import LoggedEvent
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.waiting_line_typing import IDLE_MESSAGE_SOURCE, PAUSE_SOURCE, RESUME_SOURCE, TERMINAL_SOURCES, WaitingLineTyping
 from engine.event.created import Created

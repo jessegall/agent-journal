@@ -4,7 +4,7 @@ from engine.enums.actor_type import ActorType
 from engine.event.logged_event import LoggedEvent
 from engine.event.created import Created
 from engine.command.bus import Bus
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.query.queries import Queries
 from core.modules.documents.commands.record_subject_link.record_subject_link import RecordSubjectLink
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES, MessageType

@@ -1,4 +1,4 @@
-from engine.listener.commit_listener_runner import CommitListenerRunner
+from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.database.database import Database
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted

@@ -4,7 +4,7 @@ from engine.enums.agent_role import AgentRole
 from engine.command.handler import Handler
 from engine.command.request_user_approval import RequestUserApproval
 from engine.database.actor_table import ActorTable
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.query.conditions.among import Among
 from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries

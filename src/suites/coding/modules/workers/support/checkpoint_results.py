@@ -1,6 +1,6 @@
 from engine.command.bus import Bus
 from engine.command.context import Context
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.plans.commands.fail_checkpoint.fail_checkpoint import FailCheckpoint

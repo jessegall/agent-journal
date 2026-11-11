@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.event.logged_event import LoggedEvent
 from engine.event.moved import Moved
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from core.modules.plans.models.enums.checkpoint_state import CheckpointState
 from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 from core.modules.plans.models.plan import Plan

@@ -9,7 +9,7 @@ from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.journal.journal_home import JournalHome
 from engine.module.code_fingerprint import CodeFingerprint
-from engine.listener.commit_listener_runner import CommitListenerRunner
+from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.registry.registry import Registry
 from tests.unit.engine.samples.module_copy import items_module_copy
 from tests.unit.engine.module.test_module_sync import ITEMS, synced

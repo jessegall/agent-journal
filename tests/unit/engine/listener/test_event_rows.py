@@ -3,7 +3,7 @@ import pytest
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.journal.journal_home import JournalHome
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.model.tables import Tables
 from engine.query.queries import Queries
 from tests.unit.engine.model.test_table import LogEntry

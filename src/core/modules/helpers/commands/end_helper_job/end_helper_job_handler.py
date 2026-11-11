@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.helpers.commands.end_helper_job.end_helper_job import EndHelperJob

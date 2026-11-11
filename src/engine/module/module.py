@@ -18,7 +18,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.driver.overlay import Overlay
 from engine.module.suite import Suite
 from engine.guard.guard import Guard
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.listener.deletion_listener import DeletionListener
 from engine.listener.save_listener import SaveListener
 from engine.model.state_addition import StateAddition
