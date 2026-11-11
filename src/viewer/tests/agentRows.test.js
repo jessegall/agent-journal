@@ -115,7 +115,8 @@ test("a closed card shows the profile, name and status without open-card details
     expect(card.title).toBe("");
     card.click();
     await settle();
-    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high · helper 3");
+    expect(cardOf(element, 3).querySelector("[data-agent-identity]")).toBeNull();
+    expect(cardOf(element, 3).querySelector("[data-agent-title]").textContent).toBe("Researcher 3");
 });
 
 test("closed cards use the shared agent facts read for their identity", async () => {
@@ -128,7 +129,7 @@ test("closed cards use the shared agent facts read for their identity", async ()
 });
 
 test("worker identity stays the same when opened", async () => {
-    const row = {id: 4, number: 4, session: "s-worker", program: "codex", role: "worker", ended_at: null, created_at: new Date(Date.now() - 6 * 60000).toISOString(), process_started_at: new Date(Date.now() - 60000).toISOString()};
+    const row = {id: 4, number: 4, session: "s-worker", program: "codex", program_model: "gpt-6.1-sol", role: "worker", ended_at: null, created_at: new Date(Date.now() - 6 * 60000).toISOString(), process_started_at: new Date(Date.now() - 60000).toISOString()};
     const facts = {model: "gpt-6.1-sol", effort: "high", given_name: "Mary Shelley", last_activity: "2026-11-01T10:00:00Z", job_enabled: true, task_title: "Window converter", tasks: [{id: 1, title: "Window converter", state: "started"}]};
     const element = await mounted({render: () => h(AgentCard, {row, facts})}, context({}));
     const card = element.querySelector("[data-agent-open]");
@@ -138,15 +139,18 @@ test("worker identity stays the same when opened", async () => {
     expect(identity.parentElement.previousElementSibling.classList.contains("agent-head")).toBe(true);
     expect(identity.parentElement.nextElementSibling.querySelector("[data-agent-task]").textContent).toContain("Task 1");
     const opened = await mounted({render: () => h(AgentCard, {row, facts, open: true})}, context({}));
-    expect(opened.querySelector("[data-agent-identity]").textContent).toBe("codex · gpt-6.1-sol · high · worker 4");
+    expect(opened.querySelector("[data-agent-identity]")).toBeNull();
+    expect(opened.querySelector("[data-agent-title]").textContent).toBe("Worker 4");
     expect(opened.querySelector("[data-agent-open]").title).toBe("");
-    expect(opened.querySelector("[data-agent-last-heard]").parentElement).toBe(opened.querySelector("[data-agent-identity]").parentElement);
+    const live = opened.querySelector("[data-information-bar]");
+    expect(live.querySelector("[data-agent-last-heard]").textContent).toContain("Seen:");
+    expect(live.querySelector("[data-agent-run-time]").textContent).toBe("Run time: 1m");
+    expect(live.previousElementSibling).toBe(opened.querySelector(".agent-head"));
     const dispatched = opened.querySelector("[data-agent-first-dispatched]");
-    expect(dispatched.textContent).toBe("Started 6m ago");
+    expect(dispatched.textContent).toBe("6m ago");
     expect(dispatched.querySelector("[data-icon]")).toBeNull();
     expect(dispatched.querySelector("time").dateTime).toBe(row.created_at);
-    expect(dispatched.nextElementSibling).toBe(opened.querySelector("[data-agent-last-heard]"));
-    expect(opened.querySelector("[data-information-bar]").previousElementSibling).toBe(opened.querySelector("[data-agent-identity]").parentElement);
+    expect(opened.querySelector("[data-agent-driver-name]").textContent).toBe("Codex, gpt-6.1-sol, high");
 });
 
 test("reports tab lists messages in order and offers their message links", async () => {
