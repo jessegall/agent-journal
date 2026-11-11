@@ -50,3 +50,13 @@ def test_tests_builds_and_python_are_watched_for_silence(category, program, is_w
 ])
 def test_go_test_over_several_packages_holds_back_the_output_of_each(command, is_delayed):
     assert StreamingHints.is_serial_packages_run(command) is is_delayed
+
+
+def test_an_unknown_tool_gets_the_general_hint():
+    assert StreamingHints.hint("frobnicate --all") == GENERAL_HINT
+
+
+def test_the_text_of_a_command_never_comes_into_a_hint():
+    command = "custom-tool {output}\nrm -rf /tmp/x"
+    hint = StreamingHints.hint(command)
+    assert "{output}" not in hint and "rm -rf" not in hint and "\n" not in hint
