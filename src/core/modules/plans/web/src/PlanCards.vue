@@ -81,7 +81,7 @@ if (view.shared) {
                             <span class="plan-title" :title="row.title">{{ row.title }}</span>
                             <TaskBar class="plan-bar" :total="row.task_count" :done="row.completed_count" :testing="row.testing_count" />
                             <span class="plan-foot">{{ row.completed_count }} of {{ row.task_count }} tasks done<template v-if="row.current_phase"> · phase {{ row.current_phase }}</template></span>
-                            <PlanAgents :plan-id="row.id" :agents="row.agents" />
+                            <PlanAgents :plan-id="row.id" :agents="row.agents" :assignee="row.assignee" />
                         </div>
                     </template>
                 </div>

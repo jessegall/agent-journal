@@ -31,7 +31,9 @@ PLAN_CARDS_SELECT = (
     " WHERE plan_tasks.plan_id = plans.id AND plan_tasks.closed_at IS NULL) AS agents,"
     " (SELECT json_group_array(json_object('id', tasks.id, 'title', tasks.title))"
     " FROM plan_tasks JOIN tasks ON tasks.id = plan_tasks.task_id"
-    " WHERE plan_tasks.plan_id = plans.id AND plan_tasks.state = 'started') AS working"
+    " WHERE plan_tasks.plan_id = plans.id AND plan_tasks.state = 'started') AS working,"
+    " (SELECT json_object('id', assignee.id, 'name', coalesce(nullif(assignee.given_name, ''), 'Agent ' || assignee.id), 'main', assignee.role = 'main')"
+    " FROM agents AS assignee WHERE assignee.id = json_extract(plans.metadata, '$.\"journal.core.plans\".assignee_id')) AS assignee"
     " FROM plans"
     " JOIN plan_progress ON plan_progress.plan_id = plans.id"
 )

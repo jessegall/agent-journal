@@ -25,4 +25,4 @@ class PlanBoard:
         agents = PlanAgent.listed(plan.agents)
         return {"id": plan.id, "title": plan.title, "state": plan.state.value, "task_count": plan.task_count, "completed_count": plan.completed_count, "testing_count": plan.testing_count,
                 "current_phase": plan.current_phase, "delegated": bool(agents), "agents": [agent.json() for agent in agents],
-                "working": json.loads(plan.working)}
+                "working": json.loads(plan.working), "assignee": json.loads(plan.assignee) if plan.assignee is not None else None}

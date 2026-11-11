@@ -1,3 +1,5 @@
+import json
+
 from suites.coding.modules.workers.support.work_units import WorkUnits
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, start_planned_worker, unplanned_group_worker
@@ -35,3 +37,16 @@ def test_the_status_of_a_plan_worker_opens_with_its_unit_and_its_build_line_name
     name_line = unit_of(worker).name_line
     worker.story.expect_rows(status.splitlines()[1] == "Unit: plan 1, Rebuild the cart. 4 of 4 tasks left; nothing merged yet.", "4 left in your unit" in status,
                              name_line == "Your unit is plan 1, Rebuild the cart: 4 tasks. Work all of it before you report.", detail=f"{status} / {name_line}")
+
+
+def test_the_plan_card_names_the_worker_that_works_the_plan_and_no_agent_before_one_is_assigned(new_story, monkeypatch):
+    worker = start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
+    before = plan_card(worker)
+    worker.story.expect_success(f"plan assign 1 --to {agent_number(worker.story, worker.worker.id)} --environment main", actor=worker.story.user)
+    after = plan_card(worker)
+    worker.story.expect_rows(before["assignee"] is None, after["assignee"] is not None and after["assignee"]["id"] == worker.worker.id, detail=f"{before} / {after}")
+
+
+def plan_card(worker):
+    board = json.loads(worker.story.run("plan board --environment main --json", actor=worker.story.user).output_text)
+    return next(card for card in board["plans"] if card["id"] == 1)
