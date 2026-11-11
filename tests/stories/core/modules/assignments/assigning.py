@@ -1,3 +1,5 @@
+from tests.stories.core.modules.assignments.support.assignment_reads import assignment_rows as own_assignment_rows
+import json
 import pytest
 
 from engine.actor.actor import CORE_ACTOR_ID
@@ -21,7 +23,7 @@ def assign_line(actor_id: int) -> str:
 
 
 def assignment_rows(story) -> str:
-    return story.run(ASSIGNMENTS, actor=story.user).output_text
+    return json.dumps(own_assignment_rows(story), indent=2)
 
 
 def test_a_person_assigns_a_crate_to_an_agent_and_assigning_the_actor_it_already_has_is_a_quiet_success(depot):

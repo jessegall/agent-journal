@@ -46,7 +46,8 @@ class WorkerQuestions:
                               "worker_id = ? AND outcome IS NULL", [worker_id], name="workers.open_worker_lines")
 
     def task_lines(self, task_id: int) -> tuple[MergerLine, ...]:
-        return tuple(self.queries.query(MergerLine).filter(task_id=task_id).matching(HasValue("worker_id")).matching(IsNull("outcome")).oldest().all_rows())
+        open_lines = self.kept.scoped_read("merger_lines", self.open_lines, "worker_id IS NOT NULL AND outcome IS NULL", [], name="workers.open_questions")
+        return tuple(line for line in open_lines if line.task_id == task_id)
 
     def find_line(self, line_id: int) -> MergerLine:
         line = self.queries.query(MergerLine).filter(id=line_id).first()

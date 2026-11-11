@@ -1,3 +1,4 @@
+from tests.stories.core.modules.assignments.support.assignment_reads import assignment_rows
 import json
 from pathlib import Path
 
@@ -35,7 +36,7 @@ def test_an_assigned_listener_gets_one_call_per_assignment_and_a_one_actor_repla
 
 def test_a_guard_on_created_assignment_refuses_the_assignment(depot):
     depot.expect_refusal(f"assign crate 1 --to {second_person(depot).id} --environment main", GUARD_REFUSAL, actor=depot.user)
-    depot.expect_rows(listener_lines(depot) == [], '"subject_model"' not in depot.run("assignment list --json --environment main", actor=depot.user).output_text, detail=str(listener_lines(depot)))
+    depot.expect_rows(listener_lines(depot) == [], assignment_rows(depot) == [], detail=str(listener_lines(depot)))
 
 
 def test_a_plugin_hears_assignment_create_and_delete(depot):

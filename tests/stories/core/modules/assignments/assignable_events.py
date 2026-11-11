@@ -1,3 +1,4 @@
+from tests.stories.core.modules.assignments.support.assignment_reads import assignment_rows
 import json
 
 import pytest
@@ -29,7 +30,7 @@ def test_deleting_an_assignable_row_removes_its_assignments_each_logged(depot):
     deletion = events(depot, "pallet.delete")
     removed = events(depot, "assignment.delete")
     depot.expect_rows(len(deletion) == 1, len(removed) == 2, all(event["command"] == deletion[0]["command"] for event in removed),
-                      '"subject_model"' not in depot.run("assignment list --json --environment main", actor=depot.user).output_text, detail=str(removed))
+                      assignment_rows(depot) == [], detail=str(removed))
 
 
 def test_deleting_an_actor_that_has_assignments_is_refused(depot):

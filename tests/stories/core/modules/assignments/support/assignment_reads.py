@@ -2,12 +2,14 @@ import json
 
 from engine.testing.stories.story import Story
 
+FIRST_STORY_ID = 1
+
 ASSIGNMENTS = "assignment list --json --limit 50 --environment main"
 EVENTS = "event list --json --limit 50"
 
 
 def assignment_rows(story: Story) -> list[dict]:
-    return json.loads(story.run(ASSIGNMENTS, actor=story.user).output_text)["rows"]
+    return [row for row in json.loads(story.run(ASSIGNMENTS, actor=story.user).output_text)["rows"] if row["id"] >= FIRST_STORY_ID]
 
 
 def row_actors(story: Story, model: str) -> dict[int, int]:
