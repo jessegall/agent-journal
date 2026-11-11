@@ -15,7 +15,7 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 FIRST_LAUNCHER_PID, SECOND_LAUNCHER_PID, THIRD_LAUNCHER_PID = 7001, 7002, 7003
-MESSAGES = "message list --json --limit 20 --environment main"
+MARKS = "chat-mark list --json --limit 20 --environment main"
 
 
 @pytest.fixture
@@ -52,9 +52,9 @@ def test_558_two_launchers_that_run_are_named_once_to_the_person_with_their_proc
     story.tick(main_session)
     story.tick(main_session)
     story.run_listeners()
-    rows = json.loads(story.run(MESSAGES, actor=story.user).output_text)["rows"]
+    rows = json.loads(story.run(MARKS, actor=story.user).output_text)["rows"]
     naming = [row["text"] for row in rows if str(FIRST_LAUNCHER_PID) in row["text"] and str(SECOND_LAUNCHER_PID) in row["text"]]
-    story.expect_rows(len(naming) == 1, stopped_pids == [SECOND_LAUNCHER_PID], detail=f"messages naming both launchers: {naming}, stopped: {stopped_pids}")
+    story.expect_rows(len(naming) == 1, stopped_pids == [SECOND_LAUNCHER_PID], detail=f"marks naming both launchers: {naming}, stopped: {stopped_pids}")
 
 
 def test_558_a_launcher_a_terminal_started_or_one_with_a_process_under_it_is_never_stopped(new_story, monkeypatch):
@@ -68,4 +68,4 @@ def test_558_a_launcher_a_terminal_started_or_one_with_a_process_under_it_is_nev
     monkeypatch.setattr(LeftoverProcess, "stop", lambda pid, program: stopped_pids.append(pid) or True)
     story.tick(story.row(Agent, story.agent.id).session)
     story.run_listeners()
-    story.expect_rows(stopped_pids == [], str(SECOND_LAUNCHER_PID) not in story.run(MESSAGES, actor=story.user).output_text, detail=f"stopped: {stopped_pids}")
+    story.expect_rows(stopped_pids == [], str(SECOND_LAUNCHER_PID) not in story.run(MARKS, actor=story.user).output_text, detail=f"stopped: {stopped_pids}")

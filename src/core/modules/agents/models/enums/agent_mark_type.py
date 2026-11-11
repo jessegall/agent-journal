@@ -6,3 +6,4 @@ class AgentMarkType(StrEnum):
 
     SUBAGENT = "agents.subagent"
     MENU = "agents.menu"
+    LAUNCHER = "agents.launcher"
