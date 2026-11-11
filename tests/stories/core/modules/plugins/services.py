@@ -3,13 +3,11 @@ import pytest
 import json
 from pathlib import Path
 import os
-import select
 import shutil
 import signal
 from datetime import timedelta
 from threading import Event, Thread
 import subprocess
-import time
 
 from engine.actor.actor import Actor
 from engine.file.file_access import FileAccess
@@ -36,14 +34,13 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.plugins.support.event_stories import plugin_row
 from tests.stories.core.support.scanned_edits import scanned_edit
-from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE, start_counter
+from tests.stories.core.modules.plugins.hooks import start_counter
 from tests.stories.core.modules.plugins.support.service_samples import SERVICE, service_plugin_folder
 from core.modules.plugins.models.plugin import Plugin
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 END_LIMIT_SECONDS = 5
-OTHER_SERVER_START_SECONDS = 0.5
 SERVED = ("served", "answers")
 REMOVAL_PART = ShellPart("rm", CommandCategory.EDIT, ["-rf", "build"], effects=[CommandEffect.DELETES_FILES])
 
@@ -458,12 +455,12 @@ def service_process_ids(story) -> list[int]:
     return [pid for pid, _, command_parts in OrphanServices.listed() if program in command_parts[:2]]
 
 
-def other_server_start(story, is_locked: Event, started: list[subprocess.Popen]) -> None:
+def other_server_start(story, is_locked: Event, is_following: Event, started: list[subprocess.Popen]) -> None:
     code, pid_file = story.container.get(PluginFolders).code("served"), story.services.sockets.pid(*SERVED)
     environment = story.services.environment(SERVED, PluginManifest.read(code))
     with story.services.start_lock(SERVED):
         is_locked.set()
-        time.sleep(OTHER_SERVER_START_SECONDS)
+        is_following.wait(END_LIMIT_SECONDS)
         started.append(subprocess.Popen([str(code / "serve.py")], cwd=code, env=environment, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True))
         pid_file.write_text(str(started[0].pid))
 
@@ -480,11 +477,12 @@ def test_one_service_has_one_process_across_a_restart_by_command_two_servers_and
     story.services.follow(story.processes)
     story.expect_rows(second_server.running[SERVED].pid == first.pid, service_process_ids(story) == [first.pid], detail=str(service_process_ids(story)))
     story.processes.close()
-    is_locked, started = Event(), []
-    other_server = Thread(target=other_server_start, args=[story, is_locked, started])
+    is_locked, is_following, started = Event(), Event(), []
+    other_server = Thread(target=other_server_start, args=[story, is_locked, is_following, started])
     other_server.start()
     try:
         is_locked.wait(END_LIMIT_SECONDS)
+        is_following.set()
         story.services.follow(after_restart)
         other_server.join(END_LIMIT_SECONDS)
         story.expect_rows(after_restart.running[SERVED].pid == started[0].pid, service_process_ids(story) == [started[0].pid], detail=str(service_process_ids(story)))

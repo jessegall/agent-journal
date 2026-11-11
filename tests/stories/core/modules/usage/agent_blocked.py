@@ -10,9 +10,7 @@ from engine.enums.nudge_type import NudgeType
 from core.modules.drivers.support.driver_settings import BLOCK_CARD_SECONDS
 from tests.stories.engine.driver.support.fixtures import LeadStarted
 from tests.stories.engine.driver.support.samples import SAMPLES
-from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
-from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson, StartedTaskBuilder
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
 REFUSAL_TEXT = "read the task first"
@@ -57,8 +55,7 @@ def test_an_agent_whose_task_is_blocked_shows_blocked_at_once_and_not_after_it_e
 
 
 def test_a_worker_with_a_started_task_does_not_show_a_hook_hold_as_a_block(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    UserJoined().steps(story)
+    story = new_story(fixture=OrchestratorWithPerson)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.container.get(Bus).run(BlockUntil(worker.id, Nudge("samples.wait", NudgeType.REFUSAL, REFUSAL_TEXT), RanCommand("journal overview")), Actor.core())

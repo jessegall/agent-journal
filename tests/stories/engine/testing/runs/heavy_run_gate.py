@@ -9,14 +9,12 @@ GATE_LINE = "holding the gate"
 WAITING = "waits in place 1"
 GATE_TEST = f"""
 import os
-import time
 from pathlib import Path
 
 
 def test_hold():
     print("{GATE_LINE}", flush=True)
-    while not Path(os.environ["HOLD_RELEASE"]).exists():
-        time.sleep(0.05)
+    Path(os.environ["HOLD_RELEASE"]).read_text()
 """
 QUICK_TEST = """
 def test_quick():
@@ -59,13 +57,14 @@ def read_line_containing(stream, text: str) -> None:
 
 
 def holder(tmp_path: Path) -> subprocess.Popen[str]:
+    os.mkfifo(tmp_path / "release")
     running = started(tmp_path, project(tmp_path, "holder", "test_hold.py", GATE_TEST), "tests")
     read_line_containing(running.stdout, GATE_LINE)
     return running
 
 
 def release(tmp_path: Path, running: subprocess.Popen[str]) -> None:
-    (tmp_path / "release").touch()
+    (tmp_path / "release").write_text("go")
     running.communicate(timeout=120)
 
 

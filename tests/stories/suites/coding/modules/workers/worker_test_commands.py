@@ -9,10 +9,9 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.errors.missing_runner_error import MissingRunnerError
 from core.modules.processes.support.runner_binary import RunnerBinary
 from engine.testing.examples.shell_part import ShellPart
-from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
-from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, dispatched_story_worker, shell_test_part, start_planned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, dispatched_story_worker, start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_with
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 
@@ -32,8 +31,7 @@ def worker_test_part(*test_arguments: str) -> ShellPart:
 
 @pytest.fixture
 def task_story(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    UserJoined().steps(story)
+    story = new_story(fixture=OrchestratorWithPerson)
     repository_environment(story)
     return story
 

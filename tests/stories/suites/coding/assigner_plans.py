@@ -5,15 +5,13 @@ from engine.testing.stories.story_fixture import StoryFixture
 from datetime import timedelta
 
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import OpenTaskBuilder, StartedTaskBuilder
 from tests.stories.suites.coding.support.task_expectations import expect_started_task_count
-from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.core.support.plan_steps import ready_plan
+from tests.stories.core.support.coding_fixtures import OpenBuilderWithPerson, StartedBuilderWithPerson
 
 
 # task 3 then task 2 sit in plan 1's first phase; task 4 is outside any plan and most urgent
 def planned_tasks(story, *, started: bool) -> None:
-    UserJoined().steps(story)
     story.run('plan make "The rebuild" --brief "all of it" --environment main', actor=story.agent)
     story.run('phase make --plan 1 "First" --goal "it works"', actor=story.agent)
     story.run('task make "Second in the plan" --environment main', actor=story.agent)
@@ -59,8 +57,7 @@ def test_a_critical_task_goes_before_a_task_above_high(new_story):
 
 
 def test_a_later_phase_waits_until_the_earlier_phase_is_finished(new_story):
-    story = new_story(fixture=StartedTaskBuilder)
-    UserJoined().steps(story)
+    story = new_story(fixture=StartedBuilderWithPerson)
     story.run('plan make "The rebuild" --brief "all of it" --environment main', actor=story.agent)
     story.run('phase make --plan 1 "First" --goal "it works"', actor=story.agent)
     story.run('phase make --plan 1 "Second" --goal "it ships"', actor=story.agent)
@@ -78,7 +75,7 @@ def test_a_later_phase_waits_until_the_earlier_phase_is_finished(new_story):
 
 
 def test_a_stop_with_empty_hands_is_handed_the_started_plans_next_task(new_story):
-    story = new_story(fixture=OpenTaskBuilder)
+    story = new_story(fixture=OpenBuilderWithPerson)
     story.run('task cancel 1 --reason "not needed"', actor=story.agent)
     planned_tasks(story, started=True)
     story.run('task release 3 --reason "later"', actor=story.agent)
@@ -106,8 +103,7 @@ def test_when_the_plan_has_nothing_free_the_next_task_outside_it_is_handed_out(n
 
 
 def test_of_two_started_plans_the_one_started_first_goes_first(new_story):
-    story = new_story(fixture=StartedTaskBuilder)
-    UserJoined().steps(story)
+    story = new_story(fixture=StartedBuilderWithPerson)
     for plan_id, title in ((1, "Made first"), (2, "Made second")):
         story.run(f'plan make "{title}" --brief "all of it" --environment main', actor=story.agent)
         story.run(f'phase make --plan {plan_id} "First" --goal "it works"', actor=story.agent)
@@ -125,7 +121,7 @@ def test_of_two_started_plans_the_one_started_first_goes_first(new_story):
 
 
 class StartedPlanTasks(StoryFixture):
-    parent = StartedTaskBuilder
+    parent = StartedBuilderWithPerson
 
     def steps(self, story):
         planned_tasks(story, started=True)
@@ -155,7 +151,7 @@ def urgent_plan_task(new_story):
 
 
 class UnstartedPlanTasks(StoryFixture):
-    parent = StartedTaskBuilder
+    parent = StartedBuilderWithPerson
 
     def steps(self, story):
         planned_tasks(story, started=False)

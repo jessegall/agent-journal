@@ -25,13 +25,13 @@ while True:
 """
 
 LOCK_HOLDER_SCRIPT = """
-import sys, time
+import signal, sys
 from pathlib import Path
 from engine.journal.journal_home import JournalHome
 from install.update.server_lock import ServerLock
 with ServerLock(JournalHome(Path(sys.argv[1]))):
     print("held", flush=True)
-    time.sleep(120)
+    signal.pause()
 """
 
 
@@ -48,7 +48,6 @@ def test_a_client_started_while_the_lock_is_held_waits_and_starts_the_new_server
     with ServerLock(journal.home):
         running = subprocess.Popen([str(client), "setting", "list"], env=journal.environment(), cwd=journal.home.folder.parent, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE, text=True)
-        time.sleep(1.5)
         assert running.poll() is None and not (journal.home.folder / "server.pid").exists()
     stdout, stderr = running.communicate(timeout=TIMEOUT_SECONDS)
     journal.wait_healthy()
@@ -94,11 +93,13 @@ def test_releasing_after_a_crash_of_the_holder_lets_the_next_start_proceed(journ
 
 def test_two_installs_at_once_take_the_lock_in_turn(journal):
     spans: list[tuple[float, float]] = []
+    at_the_lock = threading.Semaphore(0)
 
     def install() -> None:
+        at_the_lock.release()
         with ServerLock(journal.home, lock_limit_seconds=30):
             started = time.monotonic()
-            time.sleep(0.5)
+            at_the_lock.acquire(timeout=10)
             spans.append((started, time.monotonic()))
 
     threads = [threading.Thread(target=install) for _ in range(2)]

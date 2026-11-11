@@ -1,6 +1,4 @@
 import subprocess
-import threading
-import time
 
 import pytest
 
@@ -28,15 +26,14 @@ def test_the_lock_is_let_go_when_a_step_fails(journal):
 
 
 def test_a_client_started_during_the_steps_waits_and_is_served_by_a_server_started_after_the_release(journal, client):
-    client_runs: list[subprocess.CompletedProcess[str]] = []
+    clients: list[subprocess.Popen[str]] = []
+    waited: list[bool] = []
 
-    def run_client() -> None:
-        client_runs.append(subprocess.run([str(client), "setting", "list"], env=journal.environment(), cwd=journal.home.folder.parent, capture_output=True,
-                                      text=True, timeout=TIMEOUT_SECONDS))
+    def start_client() -> None:
+        clients.append(subprocess.Popen([str(client), "setting", "list"], env=journal.environment(), cwd=journal.home.folder.parent,
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True))
 
-    client_thread = threading.Thread(target=run_client)
-    CodeReplacement(journal.home).run([client_thread.start, lambda: time.sleep(1.5)])
-    client_thread.join(timeout=TIMEOUT_SECONDS)
-    assert len(client_runs) == 1 and client_runs[0].returncode == 0, client_runs
-    journal.wait_healthy()
+    CodeReplacement(journal.home).run([start_client, lambda: waited.append(clients[0].poll() is None)])
+    output, errors = clients[0].communicate(timeout=TIMEOUT_SECONDS)
     journal.stop_with(client)
+    assert waited == [True] and clients[0].returncode == 0, (output, errors)
