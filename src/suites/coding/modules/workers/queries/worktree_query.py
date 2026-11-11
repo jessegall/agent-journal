@@ -4,6 +4,7 @@ from engine.database.database import Database
 from engine.database.kept_rows import KeptRows
 from engine.model.tables import Tables
 from engine.query.query import Query
+from engine.query.kept_row_changes import KeptRowChanges
 from engine.query.conditions.among import Among
 from engine.query.conditions.less import Less
 from engine.query.conditions.minimum import Minimum
@@ -15,7 +16,7 @@ from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
 
 
-class WorktreeQuery(Query[Worktree]):
+class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
     """Reads worktrees, with the one a worker has out and those an environment has out by name."""
 
     def __init__(self, database: Database, tables: Tables, kept: KeptRows, numbers: RowNumbers) -> None:
@@ -60,13 +61,7 @@ class WorktreeQuery(Query[Worktree]):
     def all_worktrees(self) -> tuple[Worktree, ...]:
         return self.kept.scoped_read(self.table.name, lambda: tuple(self.with_removed().oldest().all_rows()), name="workers.all_worktrees")
 
-    def remember(self, worktree: Worktree) -> None:
-        self.replace_cached(worktree, tuple([worktree]))
-
-    def remove(self, worktree: Worktree) -> None:
-        self.replace_cached(worktree, ())
-
-    def replace_cached(self, worktree: Worktree, present: tuple[Worktree, ...]) -> None:
+    def update_kept(self, worktree: Worktree, present: tuple[Worktree, ...]) -> None:
         active = [row for row in present if row.removed_at is None]
         self.kept.update(self.table.name, lambda previous: next(iter(active), None), "session_agent_id = ? AND removed_at IS NULL",
                          [worktree.session_agent_id], name="workers.worker_worktree")

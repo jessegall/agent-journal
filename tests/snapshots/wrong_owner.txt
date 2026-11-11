@@ -42,10 +42,6 @@
 4: src/suites/coding/modules/workers/support/worker_settings.py: collects more than 3 classes, functions and values
 4: src/suites/coding/support/coding_nudges.py: collects more than 3 classes, functions and values
 4: src/suites/coding/support/coding_settings.py: collects more than 3 classes, functions and values
-5: src/core/modules/messages/support/unread_messages.py: defines replace_cached and remember
-5: src/core/modules/tasks/queries/task_query.py: defines replace_cached and remember
-5: src/core/modules/tasks/support/task_waits.py: defines replace_cached and remember
-5: src/suites/coding/modules/workers/queries/worktree_query.py: defines replace_cached and remember
 6: tests/unit/core/modules/agents/test_agent_program.py: tests src/core/modules/agents/support/agent_program.py
 6: tests/unit/core/modules/claude_code/providers/test_claude_inbox.py: tests src/core/modules/claude_code/providers/support/claude_inbox.py
 6: tests/unit/core/modules/claude_code/providers/test_claude_trust.py: tests src/core/modules/claude_code/providers/support/claude_trust.py
