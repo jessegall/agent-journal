@@ -40,16 +40,16 @@ test("a sidebar that never loaded in this browser shimmers", async () => {
     expect(element.querySelector("[aria-busy=true]")).not.toBeNull();
 });
 
-test("the agent bar shimmers while it loads and says No agent once it knows", async () => {
+test("the agent bar shimmers while it loads and says No session yet once it knows", async () => {
     const element = document.createElement("div");
     document.body.append(element);
     const state = reactive({loading: true});
     createApp({render: () => h(AgentBar, {agent: null, loading: state.loading})}).mount(element);
     await settle();
     expect(element.querySelector(".skeleton-line")).not.toBeNull();
-    expect(element.textContent).not.toContain("No agent");
+    expect(element.textContent).not.toContain("No session yet");
     state.loading = false;
     await settle();
     expect(element.querySelector(".skeleton-line")).toBeNull();
-    expect(element.textContent).toContain("No agent");
+    expect(element.textContent).toContain("No session yet");
 });
