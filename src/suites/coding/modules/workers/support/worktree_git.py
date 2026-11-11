@@ -17,6 +17,7 @@ from core.modules.environments.models.environment import Environment
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.worktree import Worktree
 from engine.enums.file_status import FileStatus
+from suites.coding.modules.workers.support.commit_subject import subject_search
 from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
 from suites.coding.modules.workers.support.worktree_changes import WorktreeChanges
 from suites.coding.modules.workers.support.worktree_file_change import WorktreeFileChange
@@ -87,8 +88,7 @@ class WorktreeGit:
 
     def earlier_branch(self, folder: str, worktree: Worktree, task_ids: Sequence[int]) -> str | None:
         pattern = f"{PurePosixPath(worktree.branch).parent}/*"
-        tasks = "|".join(str(task_id) for task_id in task_ids)
-        newest = self.git(folder, GIT_LIMIT_SECONDS, "log", "-1", "--no-merges", "--format=%H", "-E", f"--grep=^task ({tasks}): ", f"--branches={pattern}", "--not", worktree.base_branch).stdout.strip()
+        newest = self.git(folder, GIT_LIMIT_SECONDS, "log", "-1", "--no-merges", "--format=%H", "-E", f"--grep={subject_search(task_ids)}", f"--branches={pattern}", "--not", worktree.base_branch).stdout.strip()
         if not newest:
             return None
         return self.checked(folder, GIT_LIMIT_SECONDS, "for-each-ref", "--contains", newest, "--sort=-version:refname", "--sort=-committerdate", "--format=%(refname:short)", f"refs/heads/{pattern}").stdout.split()[0]
