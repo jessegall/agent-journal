@@ -11,11 +11,10 @@ import {useAgentControls} from "../composables/agentControls.js";
 import {compactionLine, openContextChangeLine} from "../domain/compaction.js";
 
 // the one line under the agent bar: who the agent is, its state, the plan's allowance used, how full its context is, its model and cost, its scheduled jobs, and last how fit and how loaded it is; a window has no place here, only what opens a dropdown;
-// a live bar leaves out the program, the model and the effort, which a card names once among its lasting facts, and shows only what changes while the agent works
+// an inspector's card draws this same bar for its agent, with card set: its facts show once here and its buttons are read only
 const props = defineProps({
     agent: {type: Object, default: null},
     card: Boolean,
-    live: Boolean,
     controlGroups: {type: Array, default: () => []},
     agentPrograms: {type: Array, default: () => []},
     skills: {type: Array, default: () => []},
@@ -68,7 +67,7 @@ const cost = computed(() => (status.value?.cost_dollars ? `$${status.value.cost_
 <template>
     <div :class="['information', {card}]" data-information-bar>
         <template v-if="agent">
-            <template v-if="!live"><button type="button" class="fact lead" :disabled="card" data-fact="agent" :title="`Session ${agent.session}: stop it`" @click="openMenu($event, 'agent')"><Icon name="agents" :size="12" /> {{ agentPrograms.find((program) => program.name === agent.program)?.title || agent.program }}</button></template>
+            <button type="button" class="fact lead" :disabled="card" data-fact="agent" :title="`Session ${agent.session}: stop it`" @click="openMenu($event, 'agent')"><Icon name="agents" :size="12" /> {{ agentPrograms.find((program) => program.name === agent.program)?.title || agent.program }}</button>
             <AllowanceBar :windows="usage.windows" :disabled="card" @open="(anchor) => emit('open', 'usage', anchor)" />
             <template v-if="context !== null">
                 <button type="button" class="fact" :disabled="card" data-fact="context" :title="`Context ${context}% full: clear or compact it`" @click="offers('context') ? openMenu($event, 'context') : emit('open', 'context', $event.currentTarget)">
@@ -78,10 +77,10 @@ const cost = computed(() => (status.value?.cost_dollars ? `$${status.value.cost_
             <template v-else-if="status?.context_unknown">
                 <span class="fact" data-fact="context-unknown" title="The context was compacted or cleared and its new size is not reported yet"><Icon name="gauge" :size="12" /> Context: unknown</span>
             </template>
-            <template v-if="model && !live">
+            <template v-if="model">
                 <button type="button" class="fact" :disabled="card" data-fact="model" :title="`${model}: change the model`" @click="offers('model') ? openMenu($event, 'model') : null"><Icon name="model" :size="12" /> {{ model }}</button>
             </template>
-            <template v-if="!live && (offers('effort') || (card && effort))">
+            <template v-if="offers('effort') || (card && effort)">
                 <button type="button" class="fact" :disabled="card" data-fact="effort" title="Reasoning effort: change it" @click="openMenu($event, 'effort')"><Icon name="bolt" :size="12" /> {{ effort }}</button>
             </template>
             <template v-if="cost">

@@ -150,7 +150,11 @@ test("worker identity stays the same when opened", async () => {
     expect(dispatched.textContent).toBe("6m ago");
     expect(dispatched.querySelector("[data-icon]")).toBeNull();
     expect(dispatched.querySelector("time").dateTime).toBe(row.created_at);
-    expect(opened.querySelector("[data-agent-driver-name]").textContent).toBe("Codex, gpt-6.1-sol, high");
+    const bar = opened.querySelector("[data-information-bar]");
+    expect(bar.querySelector("[data-fact='agent']").textContent).toMatch(/codex/i);
+    expect(bar.querySelector("[data-fact='model']").textContent).toContain("gpt-6.1-sol");
+    expect(bar.querySelector("[data-fact='effort']").textContent).toContain("high");
+    expect(opened.querySelector("[data-agent-driver-name]")).toBeNull();
 });
 
 test("reports tab lists messages in order and offers their message links", async () => {
