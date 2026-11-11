@@ -52,25 +52,25 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
         facts = self.stop_facts.read(new, context.actor.id)
         if facts is None:
             return
-        reading = facts.reading()
+        stop_case = facts.reading()
         worker_round = self.unfinished.steps.round(new.id)
         tasks = self.unfinished.names(self.unfinished.round_rows(worker_round))
-        if reading.resumes_worker:
+        if stop_case.resumes_worker:
             self.nudger.send(new.id, WORKER_UNFINISHED_TASKS, UNFINISHED_TASKS_SOURCE, context, line=self.guidance.round_point(worker_round).line)
-        if reading is StopReading.RESUMED_PROGRAM_STARTING:
+        if stop_case is StopReading.RESUMED_PROGRAM_STARTING:
             self.waits.notify_wait(new, context)
-        if reading.line_target is None:
+        if stop_case.line_target is None:
             return
         with self.scopes.row_scope(new):
-            self.send_line(new, reading, tasks, context)
+            self.send_line(new, stop_case, tasks, context)
 
-    def send_line(self, worker: Agent, reading: StopReading, tasks: str, context: Context) -> None:
-        if reading is StopReading.LAUNCH_FAILURE:
+    def send_line(self, worker: Agent, stop_case: StopReading, tasks: str, context: Context) -> None:
+        if stop_case is StopReading.LAUNCH_FAILURE:
             self.nudger.send(worker.parent_id, WORKER_LAUNCH_FAILED, SOURCE, context, worker=worker.number, line=self.launches.error_text(worker))
             return
-        declaration = WORKER_RESTARTED if reading.resumes_worker else WORKER_ENDED_WITH_TASKS
+        declaration = WORKER_RESTARTED if stop_case.resumes_worker else WORKER_ENDED_WITH_TASKS
         line = declaration.nudge(worker=worker.number, tasks=tasks)
-        if reading.line_target is StopLineTarget.MAIN_AGENT:
+        if stop_case.line_target is StopLineTarget.MAIN_AGENT:
             self.main_line.send_nudge(line, SOURCE, context)
             return
         self.inbox.send_nudge(line, SOURCE, context)
