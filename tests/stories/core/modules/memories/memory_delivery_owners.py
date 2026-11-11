@@ -88,8 +88,10 @@ def test_a_keyword_of_the_main_agent_s_memory_gives_a_worker_nothing(new_story):
 def test_a_main_agent_s_compaction_leaves_a_worker_s_memories(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
     story.hook("s-1", COMPACTION)
+    story.hook("s-1", HookSamples.session_start().with_raw({"source": "compact"}))
     story.run_listeners()
     story.expect_rows(stored_memory(story, MAIN_MEMORY).weight == 4, stored_memory(story, WORKER_MEMORY).weight == 5)
+    story.expect_success("memory faded --environment main", actor=story.agent)
 
 
 def test_a_worker_s_faded_memory_is_not_listed_for_the_main_agent(new_story):

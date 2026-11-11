@@ -51,6 +51,7 @@ def test_a_fade_shows_how_many_memories_are_still_shown(new_story):
     story.run_listeners()
     starting_count = mark_count(story)
     story.hook("s-1", HookSamples.sample("compact"))
+    story.hook("s-1", HookSamples.session_start().with_raw({"source": "compact"}))
     story.run_listeners()
     expect_mark_count_greater(story, starting_count)
     expect_marks_text(story, "Memories faded by one: 1 of 2 still shown")

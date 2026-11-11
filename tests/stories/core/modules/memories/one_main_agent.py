@@ -27,6 +27,7 @@ def test_a_compaction_of_a_new_main_session_fades_the_memories_of_the_session_be
     story = new_story(fixture=MainAndWorkerMemories)
     started_agent(story, "s-2", "main")
     story.hook("s-2", COMPACTION)
+    story.hook("s-2", HookSamples.session_start().with_raw({"source": "compact"}))
     story.run_listeners()
     story.expect_rows(stored_memory(story, MAIN_MEMORY).weight == 4)
 

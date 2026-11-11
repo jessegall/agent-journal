@@ -38,6 +38,11 @@ class ContextCompaction(Model):
     is_retry: bool = False
     failure: str = ""
 
+    def is_newly_ended(self, previous: "ContextCompaction | None") -> bool:
+        if self.change is not ContextChange.COMPACT or self.state is not CompactionState.ENDED:
+            return False
+        return previous is None or previous.state is not CompactionState.ENDED
+
     def blocks_request_at(self, timestamp: Timestamp) -> bool:
         if self.state is CompactionState.FAILED or (self.state is CompactionState.REQUESTED and self.is_retry):
             return True

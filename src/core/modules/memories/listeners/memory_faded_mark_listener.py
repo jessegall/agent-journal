@@ -8,11 +8,14 @@ from core.modules.memories.listeners.memory_mark_listener import MemoryMarkListe
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
 from core.modules.memories.models.memory import LOWEST_WEIGHT
 from core.modules.memories.commands.fade_memories.fade_memories import FadeMemories
-from core.modules.drivers.events.agent_compacted import AgentCompacted
+from engine.event.changed import Changed
+from engine.event.deleted import Deleted
+from core.modules.drivers.models.context_compaction import ContextCompaction
 
 
-class MemoryFadedMarkListener(MemoryMarkListener[AgentCompacted]):
-    """After a compaction has faded an agent's memories, the chat shows how many of them are still shown."""
+class MemoryFadedMarkListener(MemoryMarkListener[Changed[ContextCompaction]]):
+    """After a compaction that ended has faded an agent's memories, the chat shows how many of them are still
+    shown. The fades are the changes the fade command made right after the compaction ended."""
 
     name = "memories.faded-mark"
 
@@ -20,9 +23,11 @@ class MemoryFadedMarkListener(MemoryMarkListener[AgentCompacted]):
         super().__init__(bus, actors, queries, event_rows)
         self.events = events
 
-    def handle(self, event: AgentCompacted, logged: LoggedEvent) -> None:
+    def handle(self, event: Changed[ContextCompaction], logged: LoggedEvent) -> None:
         call = event.row
-        changes = [change for change in self.events.child_events(logged.id) if change.event in ("memory.update", "memory.remove") and change.command == FadeMemories.label()]
+        if isinstance(event, Deleted) or not call.is_newly_ended(event.old_row):
+            return
+        changes = [change for change in self.events.events_after(logged.id) if change.event in ("memory.update", "memory.remove") and change.command == FadeMemories.label()]
         if changes:
             shown = sum(change.data["weight"][1] != LOWEST_WEIGHT for change in changes)
             self.show_memory(logged, MemoryMarkVariant.FADED, f"Memories faded by one: {shown} of {len(changes)} still shown", agent_id=call.session_agent_id, row_model="",
