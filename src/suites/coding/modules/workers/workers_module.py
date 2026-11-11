@@ -219,7 +219,7 @@ from suites.coding.modules.workers.bindings.worker_run_waits import WorkerRunWai
 from core.modules.processes.support.run_waits import RunWaits
 from suites.coding.modules.workers.listeners.worker_test_count_listener import WorkerTestCountListener
 from suites.coding.modules.workers.rules.worker_test_count_rule import WorkerTestCountRule
-from suites.coding.modules.workers.support.test_limit_nudges import TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL
+from suites.coding.modules.workers.support.worker_test_limit_nudges import TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL
 from suites.coding.modules.workers.migrations.m008_test_limit_setting import WorkerTestSettingMigration
 from suites.coding.modules.workers.migrations.m009_report_visibility import ReportVisibilityMigration
 from suites.coding.modules.workers.migrations.m010_alias_access import AliasAccessMigration

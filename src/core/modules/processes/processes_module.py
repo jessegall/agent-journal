@@ -130,7 +130,7 @@ from core.modules.processes.rules.redirected_run_rule import RedirectedRunRule
 from core.modules.processes.rules.silent_run_hold_rule import SilentRunHoldRule
 from core.modules.processes.rules.silent_start_rule import SilentStartRule
 from core.modules.processes.rules.long_run_dock_rule import LongRunDockRule
-from core.modules.processes.listeners.test_run_marker_listener import TestRunMarkerListener
+from core.modules.processes.listeners.running_tests_marker_listener import RunningTestsMarkerListener
 from core.modules.processes.listeners.process_output_listener import ProcessOutputListener
 from core.modules.processes.rules.output_status_monitor_rule import OutputStatusMonitorRule
 from core.modules.processes.guards.ended_process_dock_guard import EndedProcessDockGuard
@@ -261,7 +261,7 @@ class ProcessesModule(Module):
     subcommands = [RequestReaderSubcommand, ConfirmOutputSubcommand, RecordSandboxSubcommand, SetOutputTimeoutSubcommand, PageOutputSubcommand, HookOutputPageSubcommand, InspectRunQueueSubcommand,MakeReaderDraftSubcommand, SkipReaderRequestSubcommand, ListRunQueueSubcommand, ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, StartProcessPartSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand, HaltRunQueueSubcommand, ResumeRunQueueSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard, EndedProcessDockGuard]
     driver_rules = [FailedFullRunRule, RetryLoopRule, ReaderRequestRule, LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReaderHintRule, LargeOutputReadRule, RunTitleRule, SleepPollRule, JournalChainRule, ReadCommandOutputRule, JournalPipeRule, RedirectedRunRule, SilentStartRule, SilentRunHoldRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule, RunQueueHaltedRule]
-    listeners = [EndDecisionListener, EndedRunLineListener, FullOutputReadListener, StockReadersPublishListener, StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, ProcessFolderRemovalListener, RunSlotListener, TestRunMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, ProcessPruneListener, ProcessRemovalListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, ProcessPartStartMarkListener, ProcessOutputMarkListener, ProcessOutputListener]
+    listeners = [EndDecisionListener, EndedRunLineListener, FullOutputReadListener, StockReadersPublishListener, StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, ProcessFolderRemovalListener, RunSlotListener, RunningTestsMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, ProcessPruneListener, ProcessRemovalListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, ProcessPartStartMarkListener, ProcessOutputMarkListener, ProcessOutputListener]
     marks = PROCESS_MARKS
     bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets, RunOwners: ProcessRunOwners}
     docks = PROCESS_DOCKS

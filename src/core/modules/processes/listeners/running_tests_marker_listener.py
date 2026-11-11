@@ -9,7 +9,7 @@ from core.modules.processes.queries.process_query import OPEN, ProcessQuery
 from core.modules.processes.models.process import Process
 
 
-class TestRunMarkerListener(CommitListener[Changed[Process]]):
+class RunningTestsMarkerListener(CommitListener[Changed[Process]]):
     """Keeps the file that says tests are running up to date as runs start and end, however they end, also lost."""
 
     name = "processes.test-run-marker"

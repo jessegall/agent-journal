@@ -10,14 +10,14 @@ TEST_COMMAND_EXAMPLE = f"name each with {EXAMPLE}"
 
 
 @dataclass(frozen=True)
-class TestCommandEntry:
+class WorkerTestCommandEntry:
     """A test command with the name a worker calls it by, as a dispatch writes it: name=command."""
 
     name: str
     command: str
 
     @classmethod
-    def parsed(cls, values: Sequence[str]) -> tuple["TestCommandEntry", ...]:
+    def parsed(cls, values: Sequence[str]) -> tuple["WorkerTestCommandEntry", ...]:
         commands = tuple(cls.parsed_value(value) for value in values)
         names = [entry.name for entry in commands]
         if len(set(names)) < len(names):
@@ -27,7 +27,7 @@ class TestCommandEntry:
         return commands
 
     @classmethod
-    def parsed_value(cls, value: str) -> "TestCommandEntry":
+    def parsed_value(cls, value: str) -> "WorkerTestCommandEntry":
         name, separator, command = value.partition("=")
         if not separator:
             raise Refusal(f"{value} is no name=command", EXAMPLE)

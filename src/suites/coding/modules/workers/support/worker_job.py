@@ -1,6 +1,6 @@
 from core.modules.agents.support.report_nudges import PARENT_REPORT_SOURCE
 from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfinished_tasks_line import UNFINISHED_TASKS_SOURCE
-from suites.coding.modules.workers.support.test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
+from suites.coding.modules.workers.support.worker_test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
 
 SILENT_AGENT_SOURCE = "workers.silent-agent"
 ENDED_WORKER_SOURCE = "workers.ended-worker"

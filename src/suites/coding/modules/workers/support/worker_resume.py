@@ -25,7 +25,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.environments.models.environment import Environment
-from suites.coding.modules.workers.support.test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
+from suites.coding.modules.workers.support.worker_test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from core.modules.agents.support.agent_resume import AgentResume
 from core.modules.agents.models.enums.dispatch import Dispatch

@@ -21,8 +21,8 @@ from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.commands.stop_process.stop_process import StopProcess
 from engine.driver.nudger import Nudger
-from suites.coding.modules.workers.support.test_limit_nudges import TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE
-from suites.coding.modules.workers.support.test_listing import TestListing
+from suites.coding.modules.workers.support.worker_test_limit_nudges import TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE
+from suites.coding.modules.workers.support.part_test_listing import PartTestListing
 
 
 class WorkerTestListings(RunCounts):
@@ -32,22 +32,22 @@ class WorkerTestListings(RunCounts):
         self.queries, self.settings, self.run, self.folder, self.outputs, self.readers, self.visibility, self.rows = queries, settings, run, folder, outputs, readers, visibility, rows
         self.bus, self.nudger = bus, nudger
 
-    def parts(self, process: Process) -> tuple[TestListing, ...]:
+    def parts(self, process: Process) -> tuple[PartTestListing, ...]:
         agent = self.rows.required(Agent, process.session_agent_id)
         return self.output_parts(process, self.outputs.process_output(process.id)) if self.is_counted(process, agent) else ()
 
     def is_counted(self, process: Process, agent: Agent) -> bool:
         return process.is_queue_run and process.creator_id == process.session_agent_id and self.settings.number(WORKER_TEST_LIMIT) > 0 and agent.role == CodingHelperRole.WORKER
 
-    def output_parts(self, process: Process, output: Output | None) -> tuple[TestListing, ...]:
+    def output_parts(self, process: Process, output: Output | None) -> tuple[PartTestListing, ...]:
         readers = self.readers.all()
-        listings: list[TestListing] = []
+        listings: list[PartTestListing] = []
         for part in self.visibility.parts(process.id):
             if part.category is not CommandCategory.TEST_RUN:
                 continue
             reader = self.counting_reader(part, output, readers)
             if reader is not None:
-                listings.append(TestListing(part.position, reader, part.command or part.text))
+                listings.append(PartTestListing(part.position, reader, part.command or part.text))
         return tuple(listings)
 
     def reader_reason(self, process: Process, spec: PartSpec, reader: Reader | None, reason: str) -> str:
