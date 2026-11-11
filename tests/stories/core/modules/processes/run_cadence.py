@@ -6,7 +6,7 @@ from engine.enums.actor_type import ActorType
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
-from tests.stories.core.modules.processes.support.cadence_probe import (TICK, TOOL_USE, HelperBesideWorker, agent_run, cadence_lines, cadence_tick,
+from tests.stories.core.modules.processes.support.cadence_probe import (TICK, HelperBesideWorker, agent_run, cadence_lines, cadence_tick,
                                                                        expect_told, has_cadence_record, kept_lines, owned_run, printed, running_run, side_run,
                                                                        tick_named, ticks, told, waiting_run, worker_agent)
 from tests.stories.core.modules.processes.background import SavedBuildMoved, SilentVitestRun, expect_streaming_line, expect_without_hint
@@ -167,7 +167,7 @@ def test_a_silent_run_is_told_again_only_after_ten_minutes_at_most_three_times_a
     second = kept_lines(story).count(NOT_STREAMING)
     ticks(story, 1260)
     story.expect_rows((first, second, kept_lines(story).count(NOT_STREAMING)) == (1, 2, 3), detail=kept_lines(story))
-    story.expect_hook_refusal(MAIN, TOOL_USE, f"output {process.id} printed nothing for")
+    story.expect_hook_refusal(MAIN, HookSamples.edit("cart.py"), f"output {process.id} printed nothing for")
     started_tree(story, 12.0)
     story.advance(timedelta(seconds=HANG_SECONDS + 10))
     watch_tick(story)

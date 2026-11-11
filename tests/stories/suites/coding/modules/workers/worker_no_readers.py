@@ -135,11 +135,12 @@ def test_a_worker_is_never_refused_or_taught_after_silent_runs(busy_worker):
     busy_worker.expect_rows(not any("reader" in line for line in hook_lines(busy_worker, WORKER, sample)))
 
 
-def test_a_long_worker_run_asks_for_no_title_and_holds_nothing(readers_disabled):
+def test_a_long_worker_run_is_asked_for_a_title_like_a_main_agents_and_asked_for_no_reader(readers_disabled):
     process = worker_run(readers_disabled, "custom-build run", CommandCategory.BUILD)
     readers_disabled.advance(timedelta(seconds=10))
-    readers_disabled.expect_rows(not any(f"output {process.id}" in line for line in hook_lines(readers_disabled, WORKER, HookSamples.prompt("go on"))))
-    expect_unblocked(readers_disabled)
+    lines = hook_lines(readers_disabled, WORKER, HookSamples.prompt("go on"))
+    readers_disabled.expect_rows(any(f"output {process.id} has its raw command as its title" in line for line in lines),
+                                 not readers_disabled.container.get(ReaderRequestQuery).open().filter(creator_id=reader_worker(readers_disabled).id).exists(), detail="\n".join(lines))
 
 
 def test_every_role_hears_the_shorter_read_of_a_reader():
