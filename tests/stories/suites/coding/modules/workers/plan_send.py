@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
@@ -38,6 +39,7 @@ def idle_plan(new_story, monkeypatch):
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_success('plan make "Next plan" --environment main', actor=story.user)
     story.expect_success('phase make --plan 1 "Build"', actor=story.user)

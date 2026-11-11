@@ -4,7 +4,7 @@ from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.errors.refusal import Refusal
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.agent_label import AgentLabel

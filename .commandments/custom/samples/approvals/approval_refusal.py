@@ -1,4 +1,4 @@
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 
 
 def refused_without_command():

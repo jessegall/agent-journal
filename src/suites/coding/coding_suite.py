@@ -1,6 +1,6 @@
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.enums.agent_role import AgentRole
-from engine.driver.suite import Suite
+from engine.module.suite import Suite
 from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.layout_shape import split, tabs
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT

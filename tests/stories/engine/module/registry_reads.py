@@ -1,5 +1,5 @@
 from engine.database.database import Database
-from engine.container.journal_container import synced_database_container
+from engine.module.journal_container import synced_database_container
 from engine.registry.registry import Registry
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples

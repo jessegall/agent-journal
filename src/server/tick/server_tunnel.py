@@ -1,5 +1,5 @@
 from engine.database.database import Database
-from engine.container.journal_container import synced_container
+from engine.module.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from engine.tunnel.tunnel import Tunnel
 from engine.enums.tunnel_state import TunnelState

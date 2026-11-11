@@ -4,12 +4,12 @@ from engine.event.registry_synced import RegistrySynced
 from engine.command.bus import Bus
 from engine.command.close_user_approval import CloseUserApproval
 from engine.command.request_user_approval import RequestUserApproval
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from engine.scope.environment_scope import EnvironmentScope
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.models.agent import Agent
 from core.modules.triggers.models.trigger import Trigger
 
@@ -36,7 +36,7 @@ class TriggerApprovalListener(CommitListener[Changed[Trigger] | RegistrySynced])
             if environment_id is None:
                 environment_id = self.queries.query(Agent).find(trigger.creator_id).environment_id
             approval = UserApprovalRefusal(f"Enable the trigger {trigger.name or trigger.text}?", arguments,
-                                    ("trigger", "strike", str(trigger.id)), source_version=trigger.version, why=trigger.text)
+                                    ("trigger", "strike", str(trigger.id)), source_version=trigger.version, request_reason=trigger.text)
             self.bus.run(RequestUserApproval(approval, arguments, trigger.creator_id), actor, cause_id=logged.id, environment_id=environment_id)
             return
         self.bus.run(CloseUserApproval(arguments), actor, cause_id=logged.id, environment_id=environment_id)

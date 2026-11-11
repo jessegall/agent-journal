@@ -33,7 +33,7 @@ from suites.coding.modules.workers.support.worker_settings import PHASE_TEST_DEF
 
 LOG_LINE = "merger deferred {paths} of the test of checkpoint phase {phase} until the checkpoint of phase {due}: was {command}; now {shorter}; why: {reason}"
 WORKER_LINE = ("the failing test paths {paths} of checkpoint phase {phase} wait for the checkpoint of phase {due}: there is nothing to fix,"
-               ' hand your task in again with --differences "nothing to fix: its failing test paths are deferred"')
+               ' commit again with --differences "nothing to fix: its failing test paths are deferred"')
 STATUS_HINT = "journal worker status of the worker shows its task"
 
 
@@ -41,7 +41,7 @@ class DeferPhaseTestHandler(Handler[DeferPhaseTest, str]):
     """Leaves failing test paths out of the own test of the checkpoint a worker's returned task belongs to,
     until the next checkpoint of the plan, within PhaseTestDeferralRules. It saves the deferral, writes an
     important log line on the task with the old and the new command and the reason, and settles the worker's
-    question as fixed: the worker hands its task in again, and the next run of the checkpoint leaves the paths
+    question as fixed: the worker commits again, and the next run of the checkpoint leaves the paths
     out. It changes no code, brief, dependency or state, and the main agent gets no message."""
 
     command = DeferPhaseTest
@@ -76,7 +76,7 @@ class DeferPhaseTestHandler(Handler[DeferPhaseTest, str]):
         return f"deferred {deferral.paths} until the checkpoint of phase {due.id}"
 
     def failed_paths(self, checkpoint: Phase) -> tuple[str, ...] | None:
-        reaches = [reach for reach in self.checkpoints.reaches(checkpoint.plan_id) if reach.phase_id == checkpoint.id and not reach.is_early]
+        reaches = [reach for reach in self.checkpoints.reaches(checkpoint.plan_id) if reach.phase_id == checkpoint.id and reach.source.opens_phases()]
         if not reaches or reaches[-1].state is not CheckpointState.FAILED:
             return None
         return self.failed_test_paths(reaches[-1])

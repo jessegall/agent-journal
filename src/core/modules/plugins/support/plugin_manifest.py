@@ -1,6 +1,6 @@
 from engine.enums.event_form import EventForm
 from engine.file.file_access import FileAccess
-from engine.file.file_version import FileVersion
+from engine.file.versions.file_version import FileVersion
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass, replace

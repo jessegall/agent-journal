@@ -38,7 +38,7 @@ def test_a_worker_given_only_blocked_tasks_starts_nothing(unstarted):
 
 
 def test_a_worker_given_only_blocked_tasks_still_holds_them(unstarted):
-    unstarted.expect_text("task info 1", f"delegated to: agent {newest_worker(unstarted).id}", actor=unstarted.agent)
+    unstarted.expect_text("task info 1", f"assigned to: agent {newest_worker(unstarted).id}", actor=unstarted.agent)
 
 
 def test_it_starts_when_one_of_its_tasks_opens(unstarted):

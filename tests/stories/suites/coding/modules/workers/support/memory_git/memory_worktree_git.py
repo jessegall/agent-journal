@@ -31,6 +31,12 @@ class MemoryWorktreeGit(WorktreeGit):
     def test_checkout(self, worktree: Worktree) -> str:
         return worktree.folder
 
+    def commit_checkout(self, worktree: Worktree, commit: str) -> str:
+        return worktree.folder
+
+    def is_ancestor(self, folder: str, ancestor: str, commit: str) -> bool:
+        return True
+
     def base_checkout(self, environment: Environment, name: str) -> str:
         return environment.folder
 

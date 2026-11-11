@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from engine.time.timing import Timing
+from engine.performance.timing import Timing
 from engine.journal.journal_home import JournalHome
 from engine.performance.performance_state import PerformanceState
 

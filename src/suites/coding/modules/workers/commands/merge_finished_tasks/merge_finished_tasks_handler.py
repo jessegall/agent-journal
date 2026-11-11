@@ -1,4 +1,3 @@
-from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.query.queries import Queries
@@ -18,9 +17,7 @@ from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
-
-TASK_NUMBER_MOST_DIGITS = 6
-
+from suites.coding.modules.workers.support.worker_merge_range import WorkerMergeRange
 
 # A task whose work is committed and not merged is in testing, or completed by its checked proofs.
 COMMITTED_TASK_STATES = (TaskState.TESTING, TaskState.COMPLETED)
@@ -34,8 +31,9 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, checks: MergeChecks, environments: EnvironmentRows, queries: Queries, proofs: ProofQuery, repository: Repository, numbers: RowNumbers, wait_text: CheckpointWaitText) -> None:
-        self.numbers, self.wait_text = numbers, wait_text
+    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, checks: MergeChecks, environments: EnvironmentRows, queries: Queries, proofs: ProofQuery, repository: Repository, numbers: RowNumbers, wait_text: CheckpointWaitText,
+                 merge_range: WorkerMergeRange) -> None:
+        self.numbers, self.wait_text, self.range = numbers, wait_text, merge_range
         self.worktrees, self.git, self.checks, self.environments = worktrees, git, checks, environments
         self.queries, self.proofs, self.repository = queries, proofs, repository
 
@@ -61,22 +59,20 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
         return MergeOutcome(worktree, ())
 
     def target_commit(self, worktree: Worktree, target: str) -> str:
-        if target.isdigit() and len(target) <= TASK_NUMBER_MOST_DIGITS:
-            commits = self.git.task_commits(worktree, int(target))
-            if not commits:
+        if self.range.names_task(target):
+            commit = self.range.task_commit(worktree, int(target))
+            if commit is None:
                 raise Refusal(f"task {target} has no commit on the branch of {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text}", "name a task the worker has handed in")
-            return commits[0].short_id
-        if not self.git.branch_contains(worktree, target):
+            return commit
+        if not self.range.is_on_branch(worktree, target):
             raise Refusal(f"commit {target} is not on the branch of {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text}", "journal worker logs lists its tasks: give one of them or one of its commits")
         return target
 
     def finished_tasks(self, worktree: Worktree, commit: str) -> list[Task]:
-        commits = self.git.branch_commits(worktree.folder, f"{worktree.base_commit}..{commit}")
-        assigned = tuple(self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).oldest().all_rows(TASK_PAGE_ROWS))
-        tasks = [task for task in assigned if any(row.has_task_subject([task.id]) for row in commits)]
+        tasks = self.range.tasks_up_to(worktree, commit)
         unfinished = [str(task.id) for task in tasks if task.state not in COMMITTED_TASK_STATES]
         if unfinished or not tasks:
-            raise Refusal(f"task {', '.join(unfinished) or commit} is not handed in", "take in only work the worker has handed in")
+            raise Refusal(f"task {', '.join(unfinished) or commit} is not committed", "take in only work the worker has committed")
         return tasks
 
     def check_proofs(self, worktree: Worktree, tasks: list[Task]) -> None:

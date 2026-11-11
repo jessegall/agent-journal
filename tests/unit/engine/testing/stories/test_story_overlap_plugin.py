@@ -120,3 +120,16 @@ def test_first(new_story):
     pytest_run = pytester.runpytest_subprocess("-q", "--tb=short")
     assert pytest_run.ret == pytest.ExitCode.TESTS_FAILED
     assert "fixture adds no step to Base" in pytest_run.stdout.str() and "Empty" in pytest_run.stdout.str()
+
+
+def test_a_story_goes_on_after_a_failed_expectation_and_fails_once_with_all_of_them(pytester, monkeypatch):
+    configure_run(pytester, monkeypatch)
+    pytester.makepyfile(test_soft='''
+def test_two_failed_expectations(new_story):
+    story = new_story()
+    story.expect_rows(False, detail="the first check")
+    story.expect_rows(False, detail="the second check")
+''')
+    pytest_run = pytester.runpytest_subprocess("-q", "--tb=short", "test_soft.py")
+    output = pytest_run.stdout.str()
+    assert "2 expectations failed" in output and "the first check" in output and "the second check" in output

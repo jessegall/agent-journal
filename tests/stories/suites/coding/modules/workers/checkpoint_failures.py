@@ -7,7 +7,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
-from tests.stories.suites.coding.modules.workers.checkpoint_runs import BUILD_TEST, CART_COMMAND, OUTLINE, PASSES, PICKER, REACHES, TOTALS_COMMAND, WAITING_PHASE_WORDS, merge, proofs_by_task, rows, run_lines
+from tests.stories.suites.coding.modules.workers.checkpoint_runs import branch_runs_only, BUILD_TEST, CART_COMMAND, OUTLINE, PASSES, PICKER, REACHES, TOTALS_COMMAND, WAITING_PHASE_WORDS, merge, proofs_by_task, rows, run_lines
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import committed_window, running_checkpoint  # noqa: F401
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
@@ -126,6 +126,7 @@ def test_175_183_the_run_makes_the_selected_run_over_the_files_the_window_change
 
 
 def test_187_a_failed_test_of_a_run_the_main_agent_started_early_returns_the_task_in_testing_to_its_worker(new_story, monkeypatch):
+    branch_runs_only(monkeypatch)
     worker = dispatched_story_worker(planned_story(new_story), PHASE_DISPATCH, monkeypatch)
     worker.story.run("task start 2", actor=worker.worker)
     worker.prove_commit(TEST_LINE)

@@ -1,5 +1,5 @@
 from engine.event.logged_event import LoggedEvent
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.database.kept_rows import KeptRows
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message

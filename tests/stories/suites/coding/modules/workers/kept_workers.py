@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 from engine.provider.context_window import ContextWindow
@@ -130,6 +131,7 @@ def test_the_merge_of_a_delivered_worker_starts_the_task_sent_while_it_waited(ne
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
     story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task_id}", actor=story.agent)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
     story.expect_text(f"task show {task_id}", "state: started", f"holder_id: {worker.id}", actor=story.agent)
@@ -143,6 +145,7 @@ def test_a_merged_worker_gets_a_new_cut_on_its_session(new_story):
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
     story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task_id}", actor=story.agent)
@@ -167,6 +170,7 @@ def test_a_dispatch_with_an_idle_worker_is_refused_with_its_send_line_and_fresh_
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda provider, folder, session: True)
     stopped(story, worker)
@@ -191,6 +195,7 @@ def merged_kept_worker(story, repository):
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     return worker
 
@@ -260,6 +265,7 @@ def test_a_plain_job_after_merge_starts_a_task_and_keeps_the_worktree_links(new_
     repository.library("node_modules", "index.js", "module.exports = 1\n")
     worker = checked_worker(story, repository, "worker dispatch --test-command python=pytest --model sonnet 1 --library-link node_modules")
     repository.checkout(ENVIRONMENT_BRANCH)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     session = worker_session(story, worker)
     story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Fix the findings"', actor=story.agent)

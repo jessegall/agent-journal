@@ -20,11 +20,11 @@ from urllib.parse import urlencode
 
 from engine.cli.console import ERROR_CODE
 from engine.journal.journal_home import JournalHome
-from engine.container.journal_container import synced_database_container
+from engine.module.journal_container import synced_database_container
 from server.endpoints.cli_endpoint import CliEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
-from engine.time.timing import TIMING_HEADER, Timing
-from engine.time.timing_log import TimingLog
+from engine.performance.timing import TIMING_HEADER, Timing
+from engine.performance.timing_log import TimingLog
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
 from tests.stories.server.support.story_line_route import StoryLineRoute

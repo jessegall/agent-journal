@@ -9,13 +9,13 @@ from engine.cli.console import Console, REFUSED_CODE, SUCCESS_CODE, USAGE_CODE
 from engine.cli.errors.usage_error import UsageError
 from engine.cli.write_flags import WriteFlags
 from engine.database.database import Database
-from engine.container.journal_container import synced_container
+from engine.module.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from engine.model.tables import Tables
 from engine.module.errors.module_error import ModuleError
 from engine.module.module_removal import ModuleRemoval
 from engine.errors.refusal import Refusal
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from engine.subcommand.output import Output
 
 MODULE_REMOVAL_ARGUMENTS = ["module", "remove"]

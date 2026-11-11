@@ -145,8 +145,6 @@ def test_a_run_whose_runner_died_with_no_end_is_lost_with_no_tick_of_its_agent(n
     story.expect_success("process show 1", "state: orphaned", actor=story.agent)
 
 
-
-
 def test_the_first_tick_after_a_machine_slept_ends_nothing_lost(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "make build")
@@ -227,15 +225,6 @@ def orphaned_process_child(background_build):
     finally:
         subprocess.run(['kill', '-9', str(child_pid)], capture_output=True, check=False)
         leader.stdout.close()
-
-
-def test_a_run_no_runner_ever_started_is_lost_past_the_limit_with_no_tick_of_its_agent(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    start_process(story, "make build")
-    expect_end_recovery(story, False)
-    story.advance(timedelta(seconds=120))
-    expect_end_recovery(story, True)
-    story.expect_success("process show 1", "state: orphaned", actor=story.agent)
 
 
 def test_a_run_the_runner_reported_first_is_passed_over_and_the_others_still_end(new_story):

@@ -1,3 +1,6 @@
+from core.modules.processes.models.enums.process_state import ProcessState
+from core.modules.processes.models.process import Process
+from engine.query.queries import Queries
 from tests.stories.core.support.agent_labels import agent_number
 import json
 import shlex
@@ -121,6 +124,8 @@ class StoryWorker:
         return self.story.run("worker commit --wait --differences none", actor=self.worker)
 
     def end_test(self, process_id: int, code: int = 0) -> None:
+        if self.story.container.get(Queries).query(Process).find(process_id).state is not ProcessState.RUNNING:
+            return
         ended(self.story, process_id, code)
 
     def end_all_tests(self) -> None:
@@ -194,6 +199,13 @@ def unplanned_worker(new_story, monkeypatch) -> StoryWorker:
     repository_environment(story)
     story.run('task make "Tax" --brief "The tax"', actor=story.agent)
     return dispatched_story_worker(story, EXTERNAL_DISPATCH, monkeypatch)
+
+
+def single_task_worker(new_story, monkeypatch) -> StoryWorker:
+    """A worker sent task 1 alone, in no plan: a unit of one."""
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository_environment(story)
+    return dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1", monkeypatch)
 
 
 def unplanned_group_worker(new_story, monkeypatch) -> StoryWorker:

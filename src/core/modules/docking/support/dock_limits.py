@@ -1,4 +1,4 @@
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.registry.registry import Registry
 from engine.setting.setting_values import SettingValues
 from engine.enums.setting_type import SettingType

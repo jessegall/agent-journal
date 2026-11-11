@@ -118,17 +118,17 @@ def test_after_its_limit_a_worker_that_ended_names_its_tasks_left_and_the_commit
 @pytest.mark.parametrize("fixture, reason", [("advanced_worker", "the plan changed"), ("phase_delivered", "the tests take too long")], ids=["in the middle of a phase", "after the hand-in"])
 def test_a_release_leaves_the_unfinished_tasks_open_and_not_delegated(request, fixture, reason):
     worker = request.getfixturevalue(fixture)
-    worker.story.expect_success(f'worker release {agent_number(worker.story, worker.worker.id)} "{reason}"', actor=worker.story.agent)
+    worker.story.expect_success(f'worker release {agent_number(worker.story, worker.worker.id)} --abandon "{reason}"', actor=worker.story.agent)
     expect_open_undelegated(worker, 1, 2, 3)
 
 
 def test_a_release_leaves_a_task_with_all_its_proofs_checked_as_it_is(advanced_worker):
     advanced_worker.story.expect_success("proof check 1", actor=advanced_worker.story.agent)
-    advanced_worker.story.expect_success(f'worker release {agent_number(advanced_worker.story, advanced_worker.worker.id)} "the plan is done with"', actor=advanced_worker.story.agent)
+    advanced_worker.story.expect_success(f'worker release {agent_number(advanced_worker.story, advanced_worker.worker.id)} --abandon "the plan is done with"', actor=advanced_worker.story.agent)
     advanced_worker.story.expect_no_text("task show 1", "state: open", actor=advanced_worker.story.agent)
     expect_open_undelegated(advanced_worker, 2, 3)
 
 
 def test_after_a_release_the_plan_can_be_handed_to_another_worker(advanced_worker):
-    advanced_worker.story.expect_success(f'worker release {agent_number(advanced_worker.story, advanced_worker.worker.id)} "another will take it"', actor=advanced_worker.story.agent)
+    advanced_worker.story.expect_success(f'worker release {agent_number(advanced_worker.story, advanced_worker.worker.id)} --abandon "another will take it"', actor=advanced_worker.story.agent)
     advanced_worker.story.expect_rows(advanced_worker.added_worker(PLAN_DISPATCH).current_task() == 1)

@@ -42,8 +42,8 @@ class ShortProofHandler(Handler[ShortProof, Proof]):
         worktree = self.queries.query(Worktree).find(proof.worktree_id)
         if worktree.state is WorktreeState.DELIVERED:
             self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)
-            task = self.queries.query(Task).find(proof.task_id)
-            if task.state is not TaskState.STARTED:
-                self.repository.save(task.moved(TaskLifecycle.retest), context)
+        task = self.queries.query(Task).find(proof.task_id)
+        if task.state is TaskState.TESTING:
+            self.repository.save(task.moved(TaskLifecycle.retest), context)
         self.nudger.send(worktree.session_agent_id, WORKER_PROOF_SHORT, SHORT_PROOF_SOURCE, context, proof=proof.id, task=proof.task_id)
         return proof

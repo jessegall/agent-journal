@@ -11,7 +11,7 @@ from engine.database.database import Database
 from engine.database.table_statements import TableStatements
 from engine.guard.guards import Guards
 from engine.listener.listeners import Listeners
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.row.metadata import Metadata
 from engine.model.model import Model
 from engine.model.table import Table

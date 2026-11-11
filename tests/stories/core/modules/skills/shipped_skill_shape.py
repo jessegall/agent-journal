@@ -4,7 +4,7 @@ from pathlib import Path
 
 from engine.database.database import Database
 from engine.registry.registry import Registry
-from engine.skill.skill_shape import DESCRIPTION_CHARACTER_LIMIT, IMPERATIVE_VERBS, READ_IT_PHRASES
+from engine.skill.skill_shape import DESCRIPTION_MOST_CHARACTERS, IMPERATIVE_STARTS, TRIGGER_PHRASES
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_absent_value
 
@@ -31,13 +31,13 @@ def front_matter_description(path: Path) -> str:
 def description_faults(path: Path) -> list[str]:
     description, name = front_matter_description(path), path.parent.name
     faults = []
-    if description.split()[0] not in IMPERATIVE_VERBS:
+    if description.split()[0] not in IMPERATIVE_STARTS:
         faults.append(f"{name}: starts with {description.split()[0]}, not an imperative verb")
-    if not any(phrase in description.rsplit(";", 1)[-1] for phrase in READ_IT_PHRASES):
+    if not any(phrase in description.rsplit(";", 1)[-1] for phrase in TRIGGER_PHRASES):
         faults.append(f"{name}: does not end on a read-it half")
     if re.search(r"[.!?]\s", description) or description.endswith("."):
         faults.append(f"{name}: is not one sentence without a full stop")
-    if len(description) > DESCRIPTION_CHARACTER_LIMIT:
+    if len(description) > DESCRIPTION_MOST_CHARACTERS:
         faults.append(f"{name}: is {len(description)} characters long")
     return faults
 

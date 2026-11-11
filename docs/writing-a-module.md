@@ -124,7 +124,7 @@ Installing a third-party suite does not change an environment's current suite.
 The Acme suite adds the findings window and keeps coding's windows. Its `acme_suite.py` is:
 
 ```python
-from engine.driver.suite import Suite
+from engine.module.suite import Suite
 
 
 class AcmeSuite(Suite):

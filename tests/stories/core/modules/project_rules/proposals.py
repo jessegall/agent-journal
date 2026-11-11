@@ -34,3 +34,12 @@ def test_an_agent_that_runs_the_command_of_a_docked_card_makes_no_second_approva
     story.expect_success('rule make "Name things plainly"', "state: proposed", actor=story.agent)
     story.expect_refusal("rule approve 1 --reason needed", "a person was asked to decide this rule in the dock", actor=story.agent)
     story.expect_absent("approval list", "approval 2", actor=story.user)
+
+
+def test_a_person_who_accepts_an_agents_removal_of_a_rule_removes_it(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success('rule make "Name things plainly"', "state: active")
+    story.run('rule remove 1 --reason "replaced"', actor=story.agent)
+    with viewer_client(story) as viewer:
+        viewer.value("messages.chat", ["approval", "accept", "1"])
+    story.expect_no_text("rule list --state active", "Name things plainly", actor=story.agent)

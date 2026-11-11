@@ -6,7 +6,7 @@ from engine.cli.line_run import LineRun
 from engine.container.container import Container
 from engine.database.database import Database
 from engine.time.deadline import Deadline
-from engine.time.timing import Timing
+from engine.performance.timing import Timing
 from engine.database.repeated_work import OPEN_REQUEST, RepeatedWork
 
 

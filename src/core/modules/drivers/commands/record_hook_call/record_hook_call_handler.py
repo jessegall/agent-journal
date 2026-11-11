@@ -7,7 +7,7 @@ from engine.command.command import Command
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.database.database import Database
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
 from engine.driver.agent_hook import AgentHook
@@ -22,7 +22,7 @@ from engine.row.metadata import Metadata
 from engine.provider.providers import Providers
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from engine.time.timing import Timing
+from engine.performance.timing import Timing
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import DeliverAgentLine
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall

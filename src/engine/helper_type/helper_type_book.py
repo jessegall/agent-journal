@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from engine.enums.access import Access
 from engine.errors.refusal import Refusal
-from engine.registry.helper_type_entry import HelperTypeEntry
+from engine.helper_type.helper_type_entry import HelperTypeEntry
 
 
 MAIN_KEY = "main"

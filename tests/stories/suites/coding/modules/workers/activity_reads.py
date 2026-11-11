@@ -67,7 +67,8 @@ def test_a_worker_dispatch_reads_its_whole_task_batch_once_per_transaction(four_
     story = four_tasks
     with patch.object(Database, "rows", autospec=True, side_effect=Database.rows) as reads:
         story.expect_success("worker dispatch --test-command python=pytest --fresh 'A new worker' --model sonnet 1 2 3 4", actor=story.agent)
-    batch_reads = [call for call in reads.call_args_list if "FROM tasks WHERE id IN (?, ?, ?, ?)" in call.args[1].sql and "delegated_to" not in call.args[1].sql]
+    batch_reads = [call for call in reads.call_args_list if "FROM tasks WHERE id IN (?, ?, ?, ?)" in call.args[1].sql and "delegated_to" not in call.args[1].sql
+                   and "FROM assignments" not in call.args[1].sql]
     expect_value(len(batch_reads), BATCH_READS)
 
 

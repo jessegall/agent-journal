@@ -5,7 +5,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from engine.file.file_access import FileAccess
-from engine.file.file_version import FileVersion
+from engine.file.versions.file_version import FileVersion
 from engine.types.type_guards import is_mapping
 
 

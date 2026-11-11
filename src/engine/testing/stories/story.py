@@ -27,8 +27,8 @@ from engine.driver.hook_event import HookEvent
 from engine.driver.hook_reply import HookReply
 from engine.driver.hook_route import HookRoute
 from engine.command.script_policy import ScriptPolicy
-from engine.container.journal_container import synced_container
-from engine.listener.commit_listener_runner import CommitListenerRunner
+from engine.module.journal_container import synced_container
+from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.hosting.hosting import Hosting
 from engine.journal.journal_home import JournalHome
 from engine.model.model import Model
@@ -85,6 +85,7 @@ class Story:
         self.home, self.container, self.clock, self.process_table = home, container, clock, process_table
         self.journal = COMMITTING_JOURNAL
         self.results: list[LineOutcome] = []
+        self.failed_expectations: list[str] = []
         self.steps: list[str] = []
         self.path: list[str] = []
         self.agent, self.user, self.helper = state.agent, state.user, state.helper
@@ -196,33 +197,37 @@ class Story:
 
     def expect_hook_allowed(self, session: str, sample: HookSample, *expected_lines: str) -> None:
         reply = self.hook(session, sample)
-        assert reply.refusal == "", f"the hook was refused: {reply.refusal}"
+        self.expected(reply.refusal == "", f"the hook was refused: {reply.refusal}")
         missing = [line for line in expected_lines if not any(line in reply_line for reply_line in reply.lines)]
-        assert not missing, f"the hook's lines {list(reply.lines)} hold none of {missing}"
+        self.expected(not missing, f"the hook's lines {list(reply.lines)} hold none of {missing}")
 
     def expect_ordered_hook_lines(self, session: str, sample: HookSample, *texts: str) -> None:
         reply = self.hook(session, sample)
         places = [next((place for place, line in enumerate(reply.lines) if text in line), -1) for text in texts]
-        assert -1 not in places and places == sorted(places), f"the hook's lines {list(reply.lines)} do not hold {list(texts)} in this order"
+        self.expected(-1 not in places and places == sorted(places), f"the hook's lines {list(reply.lines)} do not hold {list(texts)} in this order")
 
     def expect_hook_silent(self, session: str, sample: HookSample) -> None:
         reply = self.hook(session, sample)
-        assert reply.refusal == "" and not reply.lines, f"the hook was answered: {reply}"
+        self.expected(reply.refusal == "" and not reply.lines, f"the hook was answered: {reply}")
 
     def expect_absent_hook_line(self, session: str, sample: HookSample, line: str) -> None:
         reply = self.hook(session, sample)
-        assert not any(line in reply_line for reply_line in reply.lines), f"the hook's lines {list(reply.lines)} hold {line!r}"
+        self.expected(not any(line in reply_line for reply_line in reply.lines), f"the hook's lines {list(reply.lines)} hold {line!r}")
 
     def expect_hook_refusal(self, session: str, sample: HookSample, reason: str) -> None:
         reply = self.hook(session, sample)
-        assert reason in reply.refusal, f"the hook's refusal {reply.refusal!r} does not say {reason!r}"
+        self.expected(reason in reply.refusal, f"the hook's refusal {reply.refusal!r} does not say {reason!r}")
+
+    def expected(self, passed: bool, message: str) -> None:
+        if not passed:
+            self.failed_expectations.append(message)
 
     def expect_success(self, line: str, *expected_lines: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
-        assert outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}"
+        self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
         lines = self.with_touched_rows(outcome).splitlines()
         for expected_line in expected_lines:
-            assert expected_line in lines, f"{line} printed no line {expected_line!r}:\n{outcome.output_text}"
+            self.expected(expected_line in lines, f"{line} printed no line {expected_line!r}:\n{outcome.output_text}")
 
     def with_touched_rows(self, outcome: LineOutcome) -> str:
         loaded_classes = (entry.model.loaded() for entry in self.container.get(Registry).models.values())
@@ -238,45 +243,45 @@ class Story:
     def expect_ordered_lines(self, line: str, *texts: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
         places = [outcome.output_text.find(text) for text in texts]
-        assert outcome.code == 0 and -1 not in places and places == sorted(places), f"{line} did not name {texts} in order: {outcome.output_text}"
+        self.expected(outcome.code == 0 and -1 not in places and places == sorted(places), f"{line} did not name {texts} in order: {outcome.output_text}")
 
     def expect_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
-        assert outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}"
+        self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
         output_text = self.with_touched_rows(outcome)
         missing = [text for text in texts if text not in output_text]
-        assert not missing, f"{line} printed none of {missing}:\n{outcome.output_text}"
+        self.expected(not missing, f"{line} printed none of {missing}:\n{outcome.output_text}")
 
     def expect_no_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
         matching = [text for text in texts if text in outcome.output_text]
-        assert not matching, f"{line} printed {matching}:\n{outcome.output_text}"
+        self.expected(not matching, f"{line} printed {matching}:\n{outcome.output_text}")
 
     def expect_refusal(self, line: str, reason: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
-        assert outcome.code == 1, f"{line} was not refused: {outcome.code} {outcome.output_text}"
-        assert reason in outcome.output_text, f"{line} was refused, but not for {reason!r}: {outcome.output_text}"
+        self.expected(outcome.code == 1, f"{line} was not refused: {outcome.code} {outcome.output_text}")
+        self.expected(reason in outcome.output_text, f"{line} was refused, but not for {reason!r}: {outcome.output_text}")
 
     def expect_usage_error(self, line: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
-        assert outcome.code == 2, f"{line} was no usage error: {outcome.code} {outcome.output_text}"
+        self.expected(outcome.code == 2, f"{line} was no usage error: {outcome.code} {outcome.output_text}")
 
     def expect_absent(self, line: str, *absent_lines: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
-        assert outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}"
+        self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
         for absent_line in absent_lines:
-            assert absent_line not in outcome.output_text.splitlines(), f"{line} printed {absent_line!r}:\n{outcome.output_text}"
+            self.expected(absent_line not in outcome.output_text.splitlines(), f"{line} printed {absent_line!r}:\n{outcome.output_text}")
 
     def expect_requested_success(self, line: str, request: CallerRequest, *expected_lines: str) -> None:
         outcome = self.run_requested(line, request)
-        assert outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}"
+        self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
         lines = self.with_touched_rows(outcome).splitlines()
         for expected_line in expected_lines:
-            assert expected_line in lines, f"{line} printed no line {expected_line!r}:\n{outcome.output_text}"
+            self.expected(expected_line in lines, f"{line} printed no line {expected_line!r}:\n{outcome.output_text}")
 
     def expect_requested_exit(self, line: str, request: CallerRequest, code: int, text: str) -> None:
         outcome = self.run_requested(line, request)
-        assert outcome.code == code and text in outcome.output_text, f"{line} did not exit {code} naming {text!r}: {outcome.code} {outcome.output_text}"
+        self.expected(outcome.code == code and text in outcome.output_text, f"{line} did not exit {code} naming {text!r}: {outcome.code} {outcome.output_text}")
 
     def new_row_id(self, line: str, actor: Actor | None = None) -> int:
         outcome = self.run(f"{line} --json", actor)
@@ -298,27 +303,27 @@ class Story:
 
     def expect_sync_success(self, module: str) -> None:
         code, output_text = self.synced_with(module)
-        assert code == 0, f"module sync with {module} gave {code}: {output_text}"
+        self.expected(code == 0, f"module sync with {module} gave {code}: {output_text}")
 
     def expect_default_module_sync_refusal(self, module: type[Module], text: str) -> None:
         with patch("core.modules.DEFAULT_MODULES", (*DEFAULT_MODULES, module)):
             code, output_text = self.synced()
-        assert code != 0 and text in output_text, f"module sync with the shipped {module.name} gave {code}: {output_text}"
+        self.expected(code != 0 and text in output_text, f"module sync with the shipped {module.name} gave {code}: {output_text}")
 
     def expect_registered_window(self, name: str, text: str) -> None:
         windows = [window for window in Registry.read(self.container.get(Database)).windows if window.name == name]
-        assert windows and text in windows[0].unavailable_reason, f"window {name} is registered as {windows}"
+        self.expected(windows and text in windows[0].unavailable_reason, f"window {name} is registered as {windows}")
 
     def expect_registered_inspectors(self, models: list[type[Model]]) -> None:
         registered = [inspector.declaration.model for inspector in Registry.read(self.container.get(Database)).inspectors]
-        assert registered == models, f"inspectors are registered for {registered}"
+        self.expected(registered == models, f"inspectors are registered for {registered}")
 
     def expect_registered_provider(self, name: str, module: str) -> None:
         providers = [provider for provider in Registry.read(self.container.get(Database)).providers if provider.name == name]
-        assert [provider.module for provider in providers] == [module], f"agent program {name} is registered as {providers}"
+        self.expected([provider.module for provider in providers] == [module], f"agent program {name} is registered as {providers}")
 
     def expect_logged_event(self, name: str) -> None:
-        assert self.container.get(EventLog).latest_event(name) is not None, f"no {name} event was logged"
+        self.expected(self.container.get(EventLog).latest_event(name) is not None, f"no {name} event was logged")
 
     def synced_with(self, module: str) -> tuple[int, str]:
         modules = json.loads(FileAccess.shared().read(self.home.module_list))
@@ -336,7 +341,7 @@ class Story:
         return code, stream.getvalue()
 
     def expect_rows(self, *checks: object, detail: str = "") -> None:
-        assert all(checks), detail or f"a row check failed: {checks}"
+        self.expected(all(checks), detail or f"a row check failed: {checks}")
 
 
 def story_container(home: JournalHome, clock: ManualClock, process_table: "FixedProcessTable", journal: StoryJournal = COMMITTING_JOURNAL) -> Container:

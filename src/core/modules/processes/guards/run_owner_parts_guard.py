@@ -1,6 +1,6 @@
 from engine.enums.actor_type import ActorType
 from engine.guard.guard import Guard
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart

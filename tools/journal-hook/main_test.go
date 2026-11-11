@@ -151,7 +151,7 @@ func TestWithNoServerAWorkerOrHelperRunsNoToolOnAnyProgramAndAMainAgentGoesOn(t 
 		for _, role := range []string{"worker", "helper"} {
 			root := project(t, "")
 			output := runProgram(t, binary, program, root, body, "AGENT_JOURNAL_ACTIVE=1", "JOURNAL_ENV=scratch", RoleVariable+"="+role)
-			if !strings.Contains(output, "this tool did not run") || !strings.Contains(output, "stop and write in your report") {
+			if !strings.Contains(output, "so this is held") || !strings.Contains(output, "stop and write in your report") {
 				t.Errorf("a %s on %s was answered %q", role, program, output)
 			}
 			if _, err := os.Stat(filepath.Join(root, ".journal", "runtime", "bypass.log")); err == nil {
@@ -160,7 +160,7 @@ func TestWithNoServerAWorkerOrHelperRunsNoToolOnAnyProgramAndAMainAgentGoesOn(t 
 		}
 		root := project(t, "")
 		output := runProgram(t, binary, program, root, body, "AGENT_JOURNAL_ACTIVE=1", "JOURNAL_ENV=scratch", RoleVariable+"=main")
-		if strings.Contains(output, "this tool did not run") || read(t, filepath.Join(root, ".journal", "runtime", "bypass.log")) == "" {
+		if strings.Contains(output, "so this is held") || read(t, filepath.Join(root, ".journal", "runtime", "bypass.log")) == "" {
 			t.Errorf("a main agent on %s was answered %q", program, output)
 		}
 	}

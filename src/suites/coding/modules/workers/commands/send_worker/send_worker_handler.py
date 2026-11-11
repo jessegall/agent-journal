@@ -7,7 +7,7 @@ import json
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.modules.helpers.support.agent_admission import AgentAdmission
 from engine.repository.repository import Repository
@@ -16,6 +16,7 @@ from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from engine.model.model import Model
 from engine.driver.nudger import Nudger
+from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_JOINS
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.tasks.models.task import TASK_TITLE_LIMIT_CHARACTERS, Task
@@ -155,6 +156,10 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
             self.bus.run(CancelWorkerOpening(opened.id, retain_agent=True), actor, environment_id=worker.environment_id)
             raise
 
+    def tell_joined(self, worker_id: int, context: Context) -> None:
+        for task_id in self.task_ids:
+            self.nudger.send(worker_id, WORKER_TASK_JOINS, WORKER_TASK_JOINS.key, context, task=task_id)
+
     def handle(self, command: SendWorker, context: Context) -> Model:
         if command.test_commands:
             self.bus.run_with_context(NameWorkerTests(command.worker_id, command.test_commands), context)
@@ -178,6 +183,8 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
             self.repository.save(Message(creator_id=context.actor.id, type=MessageType.PEER, text=command.job, read_at=context.timestamp, delivered_at=context.timestamp,
                                          recipient=WorkerRecipient.text(command.worker_id)), context)
         if self.task_ids:
+            if worktree.state is WorktreeState.CUT:
+                self.tell_joined(command.worker_id, context)
             return self.kept_tasks.handed(worker, worktree, self.task_ids, self.job_text(command, worktree), context)
         if worktree.state is WorktreeState.DELIVERED:
             self.advance.restart_task(worktree, self.rows.required(Task, worktree.task_id), context)

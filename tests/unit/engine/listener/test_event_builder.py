@@ -15,7 +15,7 @@ from engine.event.logged_event import LoggedEvent
 from engine.event.moved import Moved
 from engine.event.touched import Touched
 from engine.listener.event_builder import EventBuilder
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.command.context import Context
 from engine.model.added_state import AddedState
 from engine.model.move import Move

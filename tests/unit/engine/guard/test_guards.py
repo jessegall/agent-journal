@@ -9,7 +9,7 @@ from engine.event.change import Change
 from engine.event.event_pattern import EventPattern
 from engine.command.context import Context
 from engine.container.container import Container
-from engine.guard.change_filter import ChangeFilter
+from engine.listener.change_filter import ChangeFilter
 from engine.guard.guard import Guard
 from engine.guard.guard_switches import GuardSwitches
 from engine.guard.guards import Guards

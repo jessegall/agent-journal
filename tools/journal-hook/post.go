@@ -52,10 +52,11 @@ const RoleVariable = "JOURNAL_ROLE"
 // checkRequired is the status a hook gets whose tool may not run unchecked and which the journal did not answer.
 const checkRequired = http.StatusPreconditionRequired
 
-// mustBeChecked says whether the hook is a tool of an agent that is not a main agent, which never runs a tool the journal
-// did not check; only a main agent goes on when the journal does not answer.
-func mustBeChecked(role, eventName string) bool {
-	return eventName == "pre_tool_use" && role != "" && role != "main"
+// mustBeChecked says whether the hook is one of an agent that is not a main agent, whose hooks are never let through
+// unchecked: when the journal does not answer in time the hook is held and the agent may try again. Only a main agent
+// goes on when the journal does not answer.
+func mustBeChecked(role string) bool {
+	return role != "" && role != "main"
 }
 
 // LimitFor is how long the hook waits for the journal's answer before it goes on without it, as hook.sh's
@@ -131,7 +132,7 @@ func post(outgoing delivery, transport http.RoundTripper, firedTime time.Time) (
 	stamped(outgoing, firedTime)
 	status, answer = heldThroughRestart(outgoing, transport)
 	if status != http.StatusOK && status != http.StatusConflict && status != restartTimedOut {
-		if !mustBeChecked(outgoing.role, outgoing.event) {
+		if !mustBeChecked(outgoing.role) {
 			noteBypass(outgoing, firedTime)
 		}
 		startMissingServer(outgoing.root)

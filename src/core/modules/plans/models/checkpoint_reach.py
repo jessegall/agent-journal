@@ -2,6 +2,7 @@ from dataclasses import dataclass, replace
 
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
+from core.modules.plans.models.enums.checkpoint_reach_source import CheckpointReachSource
 from core.modules.plans.models.enums.checkpoint_state import CheckpointState
 from core.modules.plans.models.lifecycles.checkpoint_lifecycle import CheckpointLifecycle
 
@@ -25,6 +26,7 @@ class CheckpointReach(EnvironmentScoped, Model):
     task_ids: str
     state: CheckpointState = CheckpointState.RUNNING
     is_early: bool = False
+    source: CheckpointReachSource = CheckpointReachSource.MERGED
     failed_task_ids: str = ""
 
     @classmethod
@@ -33,7 +35,11 @@ class CheckpointReach(EnvironmentScoped, Model):
 
     @classmethod
     def started_early(cls, creator_id: int, plan_id: int, phase_id: int, task_ids: tuple[int, ...]) -> "CheckpointReach":
-        return replace(cls.started(creator_id, plan_id, phase_id, task_ids), is_early=True)
+        return replace(cls.started(creator_id, plan_id, phase_id, task_ids), is_early=True, source=CheckpointReachSource.EARLY)
+
+    @classmethod
+    def started_worker(cls, creator_id: int, plan_id: int, phase_id: int, task_ids: tuple[int, ...]) -> "CheckpointReach":
+        return replace(cls.started(creator_id, plan_id, phase_id, task_ids), source=CheckpointReachSource.WORKER)
 
     def tasks(self) -> tuple[int, ...]:
         return self.listed(self.task_ids)

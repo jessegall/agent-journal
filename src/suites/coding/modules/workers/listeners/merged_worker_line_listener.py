@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.event.logged_event import LoggedEvent
 from engine.event.moved import Moved
 from engine.command.bus import Bus
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from suites.coding.modules.workers.commands.send_merged_worker_line.send_merged_worker_line import SendMergedWorkerLine
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -18,4 +18,4 @@ class MergedWorkerLineListener(CommitListener[Moved[Worktree]]):
         self.bus = bus
 
     def handle(self, event: Moved[Worktree], logged: LoggedEvent) -> None:
-        self.bus.run(SendMergedWorkerLine(event.row.session_agent_id), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)
+        self.bus.run(SendMergedWorkerLine(event.row.session_agent_id, event.row.id), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)

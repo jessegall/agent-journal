@@ -2,7 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import field, dataclass
 from pathlib import Path
 
-from engine.module.declaration_names import DeclarationNames
+from engine.viewer.declaration_names import DeclarationNames
 from engine.enums.auto_scroll import AutoScroll
 from engine.viewer.choice_option import ChoiceOption
 from engine.viewer.registry_lines import RegistryLines

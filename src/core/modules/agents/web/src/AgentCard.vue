@@ -87,6 +87,9 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
             <span class="agent-live-fact" data-agent-motion data-agent-run-time title="How long this session has run">Run time: {{ runTime }}</span>
             <template v-if="facts?.last_activity"><span class="agent-live-fact" data-agent-last-heard>Seen: <TimeAgo :at="facts.last_activity" /></span></template>
         </InformationBar></template>
+        <template v-if="facts?.unit_name">
+            <div class="agent-unit" data-agent-unit>Unit: {{ facts.unit_name }}</div>
+        </template>
         <template v-if="!open"><AgentTaskLine :tasks="tasks" :in-hand="row.role !== 'helper' && facts?.job_enabled ? jobTask || null : null" :job="row.role === 'helper' ? job : ''" :job-title="row.role === 'helper' ? facts?.helper_job_title || '' : ''" :job-launch="row.role === 'helper' ? jobLaunch : ''" :per-hour="rate" /></template>
         <AgentStatusDot :state="dotState" :doing="statusWords" :since="statusSince" :seen="statusSeen" />
         <template v-if="open"><AgentCardDetails :row="row" :facts="facts" :progress="progress" :wait-reason="waitReason" :tasks="tasks" :stopped-with-work="stoppedWithWork" :open="open" /></template>
@@ -94,6 +97,14 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
 </template>
 
 <style scoped>
+.agent-unit {
+    overflow: hidden;
+    color: var(--text-3);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .agent-card {
     position: relative;
     display: flex;

@@ -5,7 +5,7 @@ import shlex
 
 from engine.event.logged_event import LoggedEvent
 from engine.journal.journal_home import JournalHome
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.models.alias import ARGS_MARK, Alias
 from core.modules.aliases.support.alias_names import AliasNames

@@ -30,11 +30,11 @@ stays kept on the same agent number and session until retired.
   `.venv` into its worktree and `--library-copy <folder>` copies it. `--program <program>` names the agent program.
 - `journal worker dispatch --plan <plan> [--phase <phase>] --tier strongest` hands a worker the available tasks of an approved or
   started plan, or of one phase of it, in the plan's order. Use `journal worker send <number> --plan <plan> [--phase <phase>]`
-  to give the same work to a kept worker. The plan is assigned to the worker and shows so on the plan and on the agent. A dispatch or send of several tasks is one unit in the same way. Its tests run at the checkpoints of the plan.
+  to give the same work to a kept worker. The plan is assigned to the worker and shows so on the plan and on the agent. The worker works it to its end, asks for the merge itself with `journal worker ask-merge`, and you hear from it at the merge. A dispatch or send of several tasks is one unit in the same way.
   Completed, started and already assigned tasks are left alone.
 - Any blocked task can go to a worker, alone, in a phase or in a whole plan: it stays assigned while it waits, and the
   worker takes it when it opens, sent to it at once when the worker is idle. A new worker given only blocked tasks is made and not started; it starts by itself when one of them opens.
-- A started plan runs its tests at its checkpoints, by the journal itself, and you hear nothing until then. A proof with no test in a
+- A worker's plan runs the tests of each checkpoint on the worker's own commit, in the background; you hear nothing until the worker's unit is merged. A proof with no test in a
   started plan needs no check from you; you can still read it and send it back. A worker out of test runs asks with `journal worker ask --about tests`. After you ask, the merger or the journal
   settles it and you are woken: you are told by when an answer is due, you may stop meanwhile, and a question nobody
   answers in time goes to the main agent by itself. `journal worker status` shows your open question.
@@ -57,6 +57,9 @@ stays kept on the same agent number and session until retired.
   tasks. A dispatch is refused when a compatible idle worker can take those tasks. Use `--fresh "<why>"` on dispatch
   only when a separate session is needed; its reason stays with the new worktree.
 - `journal worker merge <number> --up-to <task or commit>` takes in the worker's handed-in tasks up to that point while it goes on with its next ones; their proofs must be checked first, and its later merge brings only the rest.
+- `journal worker dispatch --take-over <number> --tier <tier>` starts a fresh worker, on its profile as it is now, in
+  the place of a stopped worker: it takes over that worker's open worktree with its commits, proofs and files, the tasks
+  it held and its plan, and goes on where it stopped. Then ask the person to retire the stopped worker.
 - `journal agent retire <number> --reason "<why>"` asks the person to retire a stopped worker for good; the worker
   is kept until the person agrees, since an agent is never retired by an agent. A retired worker retains its history and transcript but
   can never resume or receive another job. Dirty files or unmerged work prevent retirement; settle
@@ -68,6 +71,7 @@ stays kept on the same agent number and session until retired.
 - An important line is one the worker marked, a difference it stated at its commit, or one the journal wrote when a task
   failed its commits or a test failed over and over in the worker's own runs. A merge with such lines needs your
   answer: `journal worker merge <number> --read-important "<what you make of them>"`.
+- A worker on a unit of several tasks asks for its own merge; `journal merger next` shows the ask and its note. Do not merge such a worker before it asks.
 - Take the work in with `journal worker merge <number>` once every point is checked; nothing else adds a worker's work.
   Merging a worker's work is the main agent's own decision, never a question for the person: when the merge command
   cannot reach finished work (a branch kept after its worktree was removed), run its tasks' tests and merge that branch
@@ -120,8 +124,8 @@ never starts is ended after the idle time; no worker is retired unless a person 
 
 ## When this happens
 
-Read `journal worker status` first: it says the point you are at (build, commit, wait, fix, conflict, blocked or
-question) and the one thing to do there. Every refusal at a commit says what is wrong and what fixes it.
+Read `journal worker status` first: it says the point you are at (build, commit, wait, fix, conflict, blocked, merge due or
+question) and the one thing to do there. It names your unit and what is left of it. You do not stop to report until the unit is merged. Every refusal at a commit says what is wrong and what fixes it.
 When you cannot go on, ask the merger; it hears your point, your last refusal, your last outputs, your task and your files.
 
 | You saw | Ask | Meanwhile |
@@ -173,12 +177,17 @@ An open question lets you stop; the answer wakes you. Going on with other work e
   what you did. When you followed the brief, `--differences none`.
 - A task already built needs no change: prove each point with where it is, and commit with `--differences "<why no change was needed>"`.
   With `--differences none`, a commit that changed nothing is refused. The main agent reads your line.
-- While a started task is left, the commit is interim and you go on with that task. With none left it is final: your
-  work waits for its tests and its merge, so stop and wait. Once it is merged the journal starts you on the
-  next of your tasks, in a new worktree.
+- A commit is never a merge, and nothing limits commits. It takes every started task whose points are all proved and
+  leaves the others started; commit after each task, before a risky change and before you stop. A task sent to you alone
+  asks for its merge by its last commit: then stop and wait. A unit of several tasks (a plan, a phase, tasks sent
+  together) is merged when you ask: `journal worker ask-merge "<what the merge holds>"`, by default once, when all of it
+  is committed and its tests passed. Ask earlier with `--up-to <task>` only when a finished, tested part is needed by
+  someone now or your work has run so long that a late clash would be large; it carries every earlier commit. The ask is refused while a task is started, while tests of that work run or
+  failed, or while a clash waits. The note is your report. Once it is merged the journal starts you on your next
+  unit, in a new worktree.
 - The tests of a commit: outside a plan the journal queues the tests of your proofs on that commit and returns any
-  failure. In a started plan they run at a checkpoint of the plan, by the journal itself, and a failure comes back to
-  the worker whose task it is. You may go on working meanwhile: your later edits do not change the result.
+  failure. In a plan the tests of each checkpoint run in the background on your commit, by the journal itself,
+  and a failure comes back to you first: fix it before you go on. You may go on working meanwhile: your later edits do not change the result.
 - When a test fails, its task is yours again and its proof is short: fix it, show the proof again with
   `journal proof make` and commit again. Only what failed runs again.
 - Run a test yourself only if you really need it. Each worker has three test commands between two commits by default,

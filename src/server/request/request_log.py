@@ -10,7 +10,7 @@ from time import perf_counter
 
 from engine.database.database import Database
 from engine.database.hook_requests_table import HookRequestsTable
-from engine.container.journal_container import synced_database_container
+from engine.module.journal_container import synced_database_container
 from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource

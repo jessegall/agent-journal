@@ -1,4 +1,4 @@
-from engine.driver.suite import Suite
+from engine.module.suite import Suite
 from engine.module.module import Module
 from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.layout_shape import tabs

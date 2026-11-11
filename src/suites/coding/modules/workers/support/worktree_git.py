@@ -6,7 +6,7 @@ import subprocess
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from functools import lru_cache
-from engine.file.file_version import FileVersion
+from engine.file.versions.file_version import FileVersion
 import shutil
 from pathlib import Path, PurePosixPath
 
@@ -100,8 +100,13 @@ class WorktreeGit:
     def merge_base(self, folder: str, base_branch: str, branch: str) -> str:
         return self.checked(folder, GIT_LIMIT_SECONDS, "merge-base", base_branch, branch).stdout.strip()
 
+    def is_ancestor(self, folder: str, ancestor: str, commit: str) -> bool:
+        return self.git(folder, GIT_LIMIT_SECONDS, "merge-base", "--is-ancestor", ancestor, commit).returncode == 0
+
     def test_checkout(self, worktree: Worktree) -> str:
-        commit = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "HEAD").stdout.strip()
+        return self.commit_checkout(worktree, self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "HEAD").stdout.strip())
+
+    def commit_checkout(self, worktree: Worktree, commit: str) -> str:
         return self.detached_checkout(worktree.folder, self.test_folder(worktree), commit, self.library_names(worktree))
 
     def base_checkout(self, environment: Environment, name: str) -> str:
@@ -234,7 +239,7 @@ class WorktreeGit:
         kept = [path for path in deleted if self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", path.split(BUILT_FOLDER, 1)[0]).stdout.strip() and not self.is_rebuilt(worktree, path)]
         if kept:
             raise Refusal(f"it deletes {len(kept)} built files under web/dist while their sources stay, such as {kept[0]}",
-                          AskTopic.TOOL.hint("build them again with npm --prefix src/viewer run build, then hand in again"))
+                          AskTopic.TOOL.hint("build them again with npm --prefix src/viewer run build, then commit again"))
 
     def rebuild(self, worktree: Worktree, base_folder: str) -> None:
         changed = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", worktree.base_branch, worktree.branch).stdout.splitlines()

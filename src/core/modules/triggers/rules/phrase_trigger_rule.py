@@ -5,7 +5,7 @@ from core.modules.skills.support.skill_files import SkillFiles
 from core.modules.skills.support.skill_block import SkillBlock
 from core.modules.skills.support.skill_nudges import READ_SKILL_FIRST
 from core.modules.triggers.support.trigger_nudges import TRIGGER_DENIES, TRIGGER_LINE
-from engine.enums.role_group import RoleGroup
+from engine.agent.enums.role_group import RoleGroup
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName

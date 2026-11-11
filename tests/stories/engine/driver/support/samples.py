@@ -19,7 +19,7 @@ from engine.enums.hook_wildcard import HookWildcard
 from engine.driver.open_row import OpenRow
 from engine.driver.overlay import Overlay
 from engine.driver.rule_answer import RuleAnswer
-from engine.driver.suite import Suite
+from engine.module.suite import Suite
 from engine.enums.tool_type import ToolType
 from engine.guard.guard import Guard
 from engine.model.lifecycle import Lifecycle

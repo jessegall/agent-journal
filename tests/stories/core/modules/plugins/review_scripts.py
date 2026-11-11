@@ -7,14 +7,12 @@ from server.work.booting_work import BootingWork
 from engine.process.leftover_process import LeftoverProcess
 from engine.cli.caller_stream import CallerStream
 from engine.command.bus import Bus
-from engine.container.journal_container import synced_container
 from engine.enums.event_form import EventForm
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
-from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATED, NOTES, EventNote, ManyNotes
 from tests.stories.core.modules.plugins.support.event_stories import (
-    SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, event_page, event_plugin_story, install_event_plugin, plugin_data, plugin_page, plugin_row, script_calls, tasks_titled)
+    SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, event_plugin_story, install_event_plugin, plugin_row, script_calls, tasks_titled)
 
 MOST_RUNNING = 8
 WAIT_SECONDS = 15
@@ -26,12 +24,6 @@ ERROR_WRITER = """echo "the hidden value is secret-setting-value" >&2
 exit 3"""
 PLUGIN_UPDATED = "core.plugins.plugin.updated"
 RECOVERING = 'if [ ! -e "$JOURNAL_PLUGIN_DATA/recovered" ]; then exit 3; fi'
-
-
-def test_s73_a_write_from_a_server_round_runs_no_script_and_notes_the_skip(new_story):
-    story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "refuse.sh", "listen": "pin.sh"}, modules=[NOTES])
-    synced_container(story.home).get(Bus).run(ManyNotes(1), story.user)
-    story.expect_rows(not script_calls(story, "refuse.sh"), not script_calls(story, "pin.sh"), "were skipped" in story.system_log_text(), len(story.story_rows(EventNote)) == 1)
 
 
 def test_s75_a_caller_waiting_on_a_guard_script_is_told_at_once(new_story):

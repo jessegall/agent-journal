@@ -11,9 +11,9 @@ from threading import RLock
 from typing import IO, Any
 from weakref import WeakValueDictionary
 
-from engine.file.file_contents import FileContents
-from engine.file.file_version import FileVersion
-from engine.file.file_changes import FileChanges
+from engine.file.versions.file_contents import FileContents
+from engine.file.versions.file_version import FileVersion
+from engine.file.versions.file_changes import FileChanges
 
 FILE_READ_EVENT = "journal.file.read"
 FILE_CHANGE_EVENT = "journal.file.write"
@@ -68,7 +68,7 @@ class FileAccess:
             if changes is None:
                 changes = FileChanges()
                 self.versions[path] = changes
-            return FileVersion(status.st_mtime_ns, status.st_size, status.st_ino, changes.count, changes)
+            return FileVersion(status.st_mtime_ns, status.st_size, status.st_ino, changes.version, changes)
 
     def write(self, file: Path | str, text: str, encoding: str | None = None, errors: str | None = None, newline: str | None = None) -> int:
         path = Path(file).resolve()
@@ -141,6 +141,6 @@ class FileAccess:
     def invalidate(self, path: Path) -> None:
         changes = self.versions.get(path)
         if changes is not None:
-            changes.count += 1
+            changes.version += 1
         self.contents.pop(path, None)
         sys.audit(FILE_CHANGE_EVENT, str(path))

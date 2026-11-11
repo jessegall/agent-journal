@@ -3,7 +3,7 @@ from engine.event.logged_event import LoggedEvent
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.journal.journal_home import JournalHome
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport

@@ -4,7 +4,7 @@ from engine.enums.agent_role import AgentRole
 from engine.command.handler import Handler
 from engine.command.request_user_approval import RequestUserApproval
 from engine.database.actor_table import ActorTable
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.query.conditions.among import Among
 from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries
@@ -28,7 +28,7 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
         self.actors, self.rows = actors, rows
 
     def handle(self, command: RequestUserApproval, context: Context) -> ApprovalRequest:
-        why = (command.why or command.approval.why).strip()
+        why = (command.why or command.approval.request_reason).strip()
         if not why:
             raise Refusal("an approval needs a reason: the person sees it with the question", "add --reason \"<why this is asked>\" to the line")
         requester_id = command.requester_id if command.requester_id is not None else context.actor.id

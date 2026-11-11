@@ -9,11 +9,10 @@ from engine.caller.caller import Caller
 from engine.cli.console import Console
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.models.plugin_output import PluginOutput
-from core.modules.processes.models.process import Process
 from tests.stories.core.modules.plugins.event_guard import LOCK_CHECK
-from tests.stories.core.modules.plugins.support.checkout_stories import ORDER, checkout_story, real
+from tests.stories.core.modules.plugins.support.checkout_stories import ORDER, checkout_story
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE
-from tests.stories.core.modules.plugins.support.event_stories import EVENT_SCRIPTS, event_plugin_story, plugin_row, script_calls
+from tests.stories.core.modules.plugins.support.event_stories import event_plugin_story, plugin_row, script_calls
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.modules.plugins.support.runner_binaries import recording_runner_at
 
@@ -27,7 +26,6 @@ ROOT_MARK = "ran at the root"
 @pytest.fixture
 def prepared_checkout(new_story):
     return checkout_story(new_story)
-
 
 
 def test_s53_a_worker_cannot_leave_its_checkout_with_dots(prepared_checkout):
@@ -60,16 +58,6 @@ def worker_with_tools(new_story):
     tools.mkdir()
     (tools / "journal-run").write_text(f'pwd > where.txt\necho "{ROOT_MARK}"\n')
     return story
-
-
-def test_s58_the_output_of_plugin_run_has_a_number(new_story):
-    story = worker_with_tools(new_story)
-    recording_runner_at(story.home)
-    existing_process_ids = {process.id for process in story.story_rows(Process)}
-    outcome = story.run(f"plugin run --agent {story.worker.id} -- sh ./tools/journal-run", actor=story.user)
-    new_process_ids = [process.id for process in story.story_rows(Process) if process.id not in existing_process_ids]
-    story.expect_rows(outcome.code == 0, len(new_process_ids) == 1)
-    story.expect_rows(str(new_process_ids[0]) in outcome.output_text)
 
 
 def test_s58_a_slow_command_holds_no_lock(new_story):

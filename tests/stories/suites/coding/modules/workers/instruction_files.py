@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 from dataclasses import dataclass
@@ -92,6 +93,7 @@ def hand_in(branch):
 
 
 def merge_worker(branch):
+    asked_for_merge(branch.story, branch.worker)
     branch.story.expect_success(f"worker merge --wait {agent_number(branch.story, branch.worker.id)}", actor=branch.story.agent)
 
 

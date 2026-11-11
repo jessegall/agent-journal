@@ -5,7 +5,7 @@ from pathlib import Path
 
 from engine.enums.access import Access
 from engine.file.file_access import FileAccess
-from engine.file.kept_file_text import KeptFileText
+from engine.file.versions.kept_file_text import KeptFileText
 from engine.journal.journal_home import JournalHome
 from engine.profile.agent_profile import AgentProfile
 from engine.profile.profile_name import PROFILE_NAME

@@ -3,7 +3,7 @@ from engine.database.row_history import RowHistory
 from unittest.mock import patch
 from engine.event.event_log import EventLog
 from engine.query.query import Query
-from engine.listener.commit_listener_runner import CommitListenerRunner
+from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.command.bus import Bus
 from engine.module.module_actors import ModuleActors
 from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions

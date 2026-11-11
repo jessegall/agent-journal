@@ -2,7 +2,7 @@ from engine.enums.command_category import CommandCategory
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.time.duration import Duration
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.commands.start_process.start_process import StartProcess
@@ -18,7 +18,7 @@ from core.modules.processes.support.reader_requests import ReaderRequests
 from core.modules.processes.support.run_slots import RunSlots
 from core.modules.processes.support.part_visibility import PartVisibility
 from core.modules.processes.models.enums.reading_moment import ReadingMoment
-from core.modules.processes.support.reading.shadow_decisions import ShadowDecisions
+from core.modules.processes.support.decisions.shadow_decisions import ShadowDecisions
 
 
 class StartProcessHandler(Handler[StartProcess, Process]):

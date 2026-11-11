@@ -6,7 +6,7 @@ from engine.listener.save_listener import SaveListener
 from engine.repository.repository import Repository
 from core.modules.processes.models.output import Output
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.reader_judge import ReaderJudge
 from engine.command.context import Context

@@ -1,4 +1,4 @@
-from engine.driver.suite import Suite
+from engine.module.suite import Suite
 from engine.module.module import Module
 
 PATH = "tests.stories.core.modules.drivers.support.module_memberships"

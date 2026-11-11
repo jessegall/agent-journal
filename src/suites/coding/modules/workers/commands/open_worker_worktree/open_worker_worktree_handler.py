@@ -5,7 +5,7 @@ from suites.coding.modules.workers.support.worktree_git import WORKTREES_FOLDER
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from engine.errors.refusal import Refusal
 from core.modules.environments.support.environment_rows import EnvironmentRows

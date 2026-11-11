@@ -2,7 +2,7 @@ from engine.enums.actor_type import ActorType
 from engine.event.event_subscriber import E
 from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord

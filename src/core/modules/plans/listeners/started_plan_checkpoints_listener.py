@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.event.logged_event import LoggedEvent
 from engine.event.moved import Moved
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.scope.actor_scope import ActorScope
 from core.modules.plans.commands.record_checkpoints.record_checkpoints import RecordCheckpoints
 from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle

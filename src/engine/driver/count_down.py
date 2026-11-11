@@ -6,7 +6,7 @@ from engine.enums.nudge_type import NudgeType
 from engine.driver.span import Span
 from engine.driver.times_span import TimesSpan
 
-COUNTDOWN_LINE_LIMIT = 3
+COUNTDOWN_TOOL_USES = 3
 
 
 @dataclass(frozen=True)
@@ -19,7 +19,7 @@ class CountDown:
     action: str
     span: Span | TimesSpan
     is_silent: bool = False
-    line_limit: int = COUNTDOWN_LINE_LIMIT
+    line_limit: int = COUNTDOWN_TOOL_USES
 
     @property
     def declaration(self) -> NudgeDeclaration:

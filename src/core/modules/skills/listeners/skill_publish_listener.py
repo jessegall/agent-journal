@@ -1,5 +1,5 @@
 from engine.event.logged_event import LoggedEvent
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.registry.registry import Registry
 from core.modules.skills.support.skill_files import SkillFiles
 from engine.event.file_publishing import FilePublishing

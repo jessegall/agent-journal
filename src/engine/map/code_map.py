@@ -1,7 +1,6 @@
 import ast
 from pathlib import Path
 
-from engine.module.layer_check import SKIPPED_FOLDERS
 from engine.enums.area_use import AreaUse
 from engine.file.file_access import FileAccess
 from engine.map.errors.missing_summary_error import MissingSummaryError
@@ -16,6 +15,7 @@ TOP_FOLDERS = {
     "viewer": "The web code of the viewer.",
 }
 STANDARD_FOLDERS = {"errors", "enums", "__pycache__"}
+SKIPPED_FOLDERS = {"__pycache__", "node_modules"}
 LEVEL_INDENT = "  "
 
 
@@ -104,9 +104,9 @@ class CodeMap:
         return " ".join(described[-1].split())
 
     def needed_modules(self, classes: list[ast.ClassDef]) -> str:
-        needed = self.class_values(classes).get("dependencies")
-        names = [element.value for element in needed.elts if isinstance(element, ast.Constant)] if isinstance(needed, ast.List) else []
-        return f" Needs: {', '.join(str(name) for name in names)}." if names else ""
+        declared_value = self.class_values(classes).get("dependencies")
+        module_names = [element.value for element in declared_value.elts if isinstance(element, ast.Constant)] if isinstance(declared_value, ast.List) else []
+        return f" Needs: {', '.join(str(module_name) for module_name in module_names)}." if module_names else ""
 
     def folder_names(self, folder: Path) -> list[str]:
         if not folder.is_dir():

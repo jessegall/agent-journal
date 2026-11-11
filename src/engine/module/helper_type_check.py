@@ -7,11 +7,11 @@ from engine.agent.agent_roster import AgentRoster
 from engine.agent.agent_group_book import AgentGroupBook
 from engine.helper_type.helper_type import HelperType
 from engine.profile.agent_profile import AgentProfile
-from engine.registry.agent_group_entry import AgentGroupEntry
+from engine.agent.agent_group_entry import AgentGroupEntry
 from engine.helper_type.helper_type_book import MAIN_KEY, HelperTypeBook
 from engine.module.module import Module
 from engine.module.suite_list import SuiteList
-from engine.registry.helper_type_entry import HelperTypeEntry
+from engine.helper_type.helper_type_entry import HelperTypeEntry
 from engine.registry.driver_rule_entry import DriverRuleEntry
 
 HELPER_TYPE_WORD = re.compile(r"[a-z]+(-[a-z]+)*")
@@ -43,8 +43,8 @@ class HelperTypeCheck:
                 problems.append(f"{declaration.key}: default profile {profile.name} has type {profile.agent_type}, not {declaration.key}")
         names = frozenset(book.entries)
         uses = [(driver.name, driver.role) for module in modules for driver in module.drivers]
-        uses.extend((suite.name, role) for module in modules for suite in suites.shipped_suites(module) for role in suite.defaults)
-        uses.extend((suite.name, role) for module in modules for suite in suites.shipped_suites(module)
+        uses.extend((suite.name, role) for module in modules for suite in suites.module_suites(module) for role in suite.defaults)
+        uses.extend((suite.name, role) for module in modules for suite in suites.module_suites(module)
                     for field in fields(suite.agent_policy) if field.name.endswith("_roles")
                     for role in getattr(suite.agent_policy, field.name))
         uses.extend((rule.name, role) for rule in rules for role in rule.roles)

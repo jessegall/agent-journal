@@ -4,7 +4,7 @@ import json
 
 from engine.enums.agent_role import AgentRole
 from engine.time.clock import Clock
-from engine.enums.role_group import RoleGroup
+from engine.agent.enums.role_group import RoleGroup
 from engine.command.command import Command
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule

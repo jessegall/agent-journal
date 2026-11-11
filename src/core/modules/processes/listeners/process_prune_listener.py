@@ -1,7 +1,7 @@
 from core.modules.processes.events.output_ended import OutputEnded
 from engine.command.bus import Bus
 from engine.listener.save_listener import SaveListener
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.commands.prune_processes.prune_processes import PruneProcesses
 from engine.command.context import Context
 

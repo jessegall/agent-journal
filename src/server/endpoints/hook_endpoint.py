@@ -14,12 +14,12 @@ from engine.driver.hook_reply import HookReply
 from engine.driver.hook_route import HookRoute
 from engine.provider.providers import Providers
 from engine.provider.transcript_entries import TranscriptEntries
-from engine.container.journal_container import synced_database_container
+from engine.module.journal_container import synced_database_container
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
 from engine.registry.registry import Registry
 from engine.registry.errors.stale_registry_error import StaleRegistryError
-from engine.time.timing import Timing
+from engine.performance.timing import Timing
 from engine.module.performance_tools import PerformanceTools
 from engine.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.hook_request_log import HookRequestLog
@@ -36,7 +36,7 @@ from server.request.server_context import ServerContext
 
 LEAST_BUSY_SECONDS = 0.1
 REQUEST_LOG_BUSY_SECONDS = 0.0
-UNCHECKED_TOOL = "the journal could not check this tool, so it did not run: {reason}. Run it once more. If that is refused as well, stop and write in your report that the journal does not answer."
+UNCHECKED_TOOL = "the journal could not check this, so it is held: {reason}. A worker or helper goes on with nothing the journal did not check. Try once more. If that is held as well, stop and write in your report that the journal does not answer."
 
 
 class HookEndpoint:

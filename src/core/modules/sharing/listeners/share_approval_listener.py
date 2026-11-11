@@ -5,12 +5,12 @@ from engine.event.registry_synced import RegistrySynced
 from engine.command.bus import Bus
 from engine.command.close_user_approval import CloseUserApproval
 from engine.command.request_user_approval import RequestUserApproval
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from engine.scope.environment_scope import EnvironmentScope
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.sharing.commands.support.share_targets import ShareTargets
 from core.modules.sharing.models.enums.share_link_state import ShareLinkState
 from core.modules.sharing.models.share_link import ShareLink
@@ -39,7 +39,7 @@ class ShareApprovalListener(CommitListener[Created[ShareLink] | Moved[ShareLink]
             shared = self.targets.shared_row(link)
             approval = UserApprovalRefusal(f"Share {shared.title} with a read-only link?", arguments,
                                     ("share", "deny", str(link.id)), source_version=link.version, returns_output=True,
-                                    why=f"Agent {link.creator_id} made a link that lets anyone who has it read {shared.title}.")
+                                    request_reason=f"Agent {link.creator_id} made a link that lets anyone who has it read {shared.title}.")
             self.bus.run(RequestUserApproval(approval, arguments, link.creator_id), actor,
                          cause_id=cause_id, environment_id=link.environment_id)
             return

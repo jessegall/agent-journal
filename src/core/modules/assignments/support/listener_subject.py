@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.model.assignable import Assignable
 from core.modules.assignments.errors.listener_subject_error import ListenerSubjectError
 

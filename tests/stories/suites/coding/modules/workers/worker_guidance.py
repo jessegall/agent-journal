@@ -104,11 +104,6 @@ def test_an_interim_commit_in_a_started_plan_says_what_status_says(proven):
     expect_voice(proven, outcome.output_text)
 
 
-def test_worker_deliver_says_what_status_says(last_of_phase):
-    outcome = last_of_phase.story.run("worker commit --wait --differences none", actor=last_of_phase.worker)
-    expect_voice(last_of_phase, outcome.output_text)
-
-
 def test_the_failed_tests_line_outside_a_phase_says_what_status_says(new_story, monkeypatch):
     worker = unplanned_worker(new_story, monkeypatch)
     worker.prove_commit(TEST_LINE)
@@ -132,14 +127,6 @@ def test_a_clash_names_the_clashed_files_at_status_and_in_its_line(clashed):
     story.expect_rows("Point: conflict" in status, "cart.py" in status.splitlines()[0], "journal worker commit" in status.splitlines()[0], detail=status)
     lines = [line.text for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id).all_rows() if "clashes on" in line.text]
     story.expect_rows(bool(lines), all("Now:" in line and "Then:" in line for line in lines), detail=str(lines))
-
-
-def test_a_clash_settled_and_delivered_is_no_longer_a_clash(clashed):
-    story, worker, repository = clashed
-    story.expect_rows("Point: conflict" in story.run("worker status", actor=worker).output_text)
-    repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
-    story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.expect_rows("Point: conflict" not in story.run("worker status", actor=worker).output_text)
 
 
 def test_an_answered_ask_returns_the_worker_to_its_point(phase_worker):

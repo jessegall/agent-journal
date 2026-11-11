@@ -2,7 +2,7 @@ from core.modules.drivers.commands.end_program_compaction.end_program_compaction
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.event.logged_event import LoggedEvent
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.events.agent_ended import AgentEnded
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction

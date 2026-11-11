@@ -1,9 +1,9 @@
 import re
 
 from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.cadence.run_cadence import GROWTHS_KEPT
 
 CADENCE_FILE = "cadence"
-GROWTHS_KEPT = 5
 TICK_SECONDS = 10
 BREAK_SECONDS = 3 * TICK_SECONDS
 KEPT_LINE = re.compile(r"^\d+ \d+(\.\d+)? \d+(\.\d+)?( \d+(\.\d+)?)*$")

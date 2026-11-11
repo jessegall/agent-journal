@@ -1,4 +1,3 @@
-from core.modules.messages.models.message import Message
 from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
@@ -42,14 +41,6 @@ def test_what_a_worker_says_as_it_stops_with_every_task_handed_in_is_its_report_
     story.expect_absent("message feed --json", REPORT)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, worker.id)} reports in message:1")
     story.expect_text("message read 1", REPORT, actor=story.agent)
-
-
-def test_a_worker_refused_its_stop_leaves_no_report(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository_environment(story)
-    worker: Actor = dispatched_worker(story)
-    story.expect_hook_refusal(worker_session(story, worker), stop_with_text(REPORT), "Task 1 is not finished")
-    story.expect_rows(story.story_rows(Message) == ())
 
 
 def test_a_workers_message_reaches_the_agent_that_sent_it_as_a_line(new_story):

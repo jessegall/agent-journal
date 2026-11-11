@@ -7,10 +7,10 @@ import pytest
 from engine.caller.caller_request import CallerRequest
 from engine.caller.errors.caller_request_error import CallerRequestError
 from engine.cli.line_run import LineRun
-from engine.container.journal_container import synced_container
+from engine.module.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
-from engine.listener.commit_listener_runner import CommitListenerRunner
-from engine.time.timing import Timing
+from engine.listener.commit.commit_listener_runner import CommitListenerRunner
+from engine.performance.timing import Timing
 from tests.unit.engine.module.test_module_sync import ITEMS
 
 from server.endpoints.cli_endpoint import CliEndpoint

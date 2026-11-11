@@ -3,7 +3,7 @@ from pathlib import Path
 
 from engine.time.clock import Clock
 from engine.database.database import Database
-from engine.container.journal_container import synced_container
+from engine.module.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from engine.setting.setting_values import SettingValues
 from core.modules.settings.support.settings_tree import BACKUP_COUNT_SETTING, BACKUP_MINUTES_SETTING

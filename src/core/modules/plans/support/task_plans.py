@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from engine.database.kept_rows import KeptRows
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.plans.models.phase import Phase
@@ -39,7 +39,7 @@ class TaskPlans:
         for task_id in distinct_ids:
             self.kept.read("phase_tasks", lambda task_id=task_id: places.get(task_id),
                            "task_id = ?", [task_id], name="plans.task_phase")
-        phases = self.rows.required_by_id(Phase, [place.phase_id for place in places.values()])
+        phases = self.rows.required_index(Phase, [place.phase_id for place in places.values()])
         self.rows.prepare(Plan, [phase.plan_id for phase in phases.values()])
 
     def remember(self, place: PhaseTask) -> None:

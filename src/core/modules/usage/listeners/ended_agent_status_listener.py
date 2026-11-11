@@ -1,6 +1,6 @@
 from core.modules.agents.events.agent_ended import AgentEnded
 from engine.event.logged_event import LoggedEvent
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent, ENDED_FIELD

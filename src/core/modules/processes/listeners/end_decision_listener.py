@@ -1,6 +1,6 @@
 from engine.command.bus import Bus
 from engine.event.logged_event import LoggedEvent
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
 from core.modules.processes.commands.store_end_decisions.store_end_decisions import StoreEndDecisions
 from core.modules.processes.events.output_ended import OutputEnded

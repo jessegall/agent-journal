@@ -14,4 +14,4 @@ def test_the_span_has_elapsed_once_its_seconds_have_gone_by():
 
 
 def test_the_moment_before_is_the_span_back_from_a_timestamp():
-    assert Seconds.minutes(2).before(MOMENT) == Timestamp(MOMENT.value - timedelta(minutes=2))
+    assert Seconds.minutes(2).deducted(MOMENT) == Timestamp(MOMENT.value - timedelta(minutes=2))

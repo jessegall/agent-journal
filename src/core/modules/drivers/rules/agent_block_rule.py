@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from engine.enums.role_group import RoleGroup
+from engine.agent.enums.role_group import RoleGroup
 from engine.container.container import Container
 from engine.driver.agent_hook import AgentHook
 from engine.module.block_conditions import BlockConditions

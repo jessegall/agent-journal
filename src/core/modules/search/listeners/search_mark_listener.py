@@ -4,7 +4,7 @@ from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.processes.models.process import Process

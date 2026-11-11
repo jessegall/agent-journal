@@ -2,7 +2,7 @@ from engine.file.file_access import FileAccess
 import fcntl
 import json
 from functools import lru_cache
-from engine.file.file_version import FileVersion
+from engine.file.versions.file_version import FileVersion
 import os
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager
@@ -13,7 +13,7 @@ from engine.journal.journal_home import JournalHome
 from engine.provider.hook_source import HookSource
 from engine.provider.managed_hook import ManagedHook
 from engine.enums.managed_state import ManagedState
-from engine.enums.hook_effect import HookEffect
+from engine.provider.enums.hook_effect import HookEffect
 from engine.errors.refusal import Refusal
 
 

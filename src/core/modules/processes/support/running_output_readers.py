@@ -21,7 +21,6 @@ class RunningOutputReaders:
 
     def attach(self, reader: Reader, context: Context) -> None:
         outputs = self.queries.query(Output).filter(ended_at=None, reader_id=None).all_rows()
-        print('ATTACH', reader.name, [(o.process_id, o.reader_id, o.ended_at) for o in outputs], [(o.process_id, o.reader_id) for o in self.queries.query(Output).all_rows()])
         if not outputs:
             return
         parts: dict[int, list[ProcessPart]] = defaultdict(list)

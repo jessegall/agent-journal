@@ -2,11 +2,12 @@ from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from engine.driver.nudger import Nudger
+from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
@@ -44,7 +45,8 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, repository: Repository, main_agent_line: MergerInbox, nudger: Nudger, rows: EventRows, plans: TaskPlans, failures: WorkerTestFailures, settings: SettingValues,
-                 guidance: WorkerGuidance, numbers: RowNumbers, checkpoint_results: CheckpointResults) -> None:
+                 guidance: WorkerGuidance, numbers: RowNumbers, checkpoint_results: CheckpointResults, proofs: ProofQuery) -> None:
+        self.proofs = proofs
         self.numbers, self.checkpoint_results, self.guidance = numbers, checkpoint_results, guidance
         self.failures, self.settings = failures, settings
         self.queries, self.repository, self.main_agent_line, self.nudger = queries, repository, main_agent_line, nudger
@@ -69,10 +71,10 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         self.finish_tasks(worktree, context)
 
     def finish_tasks(self, worktree: Worktree, context: Context) -> list[Proof]:
-        proofs = tuple(self.queries.query(Proof).filter(worktree_id=worktree.id).all_rows())
+        proofs = self.proofs.worktree_rows(worktree.id)
         if any(row.state in TEST_WAITING_STATES for row in proofs):
             return []
-        tasks = self.rows.required_by_id(Task, sorted({row.task_id for row in proofs}))
+        tasks = self.rows.required_index(Task, sorted({row.task_id for row in proofs}))
         failed = [row for row in proofs if row.state is ProofState.SHORT and tasks[row.task_id].state is TaskState.TESTING]
         current = self.reopen_work(worktree, failed, context) if failed else worktree
         pending = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).all_rows()
@@ -113,7 +115,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         return self.reopen_tasks(worktree, sorted({row.task_id for row in failed}), ", ".join(str(row.process_id) for row in failed), context)
 
     def reopen_tasks(self, worktree: Worktree, task_ids: list[int], outputs: str, context: Context) -> Worktree:
-        for task in self.rows.required_by_id(Task, task_ids).values():
+        for task in self.rows.required_index(Task, task_ids).values():
             if task.state is TaskState.TESTING:
                 self.repository.save_change(task, task.moved(TaskLifecycle.retest), context)
         current = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context) if worktree.state is WorktreeState.DELIVERED else worktree

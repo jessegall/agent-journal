@@ -11,6 +11,7 @@ class WorkerStep(StrEnum):
     CONFLICT = "conflict"
     QUESTION = "question"
     BLOCKED = "blocked"
+    MERGE_DUE = "merge_due"
 
     def may_stop(self) -> bool:
         return self in (WorkerStep.WAIT, WorkerStep.QUESTION, WorkerStep.BLOCKED)

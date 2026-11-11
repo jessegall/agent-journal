@@ -1,5 +1,5 @@
 from engine.cli.agent_number import AgentNumber
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from argparse import ArgumentParser, Namespace
 
 from engine.enums.access import Access

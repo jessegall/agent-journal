@@ -1,6 +1,5 @@
 import fcntl
 import os
-import time
 from collections.abc import Generator
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
@@ -13,6 +12,7 @@ from engine.enums.log_source import LogSource
 from engine.log.system_log_writer import LOG_LIMIT_BYTES, SystemLogWriter
 from engine.hosting.server_restart_state import ServerRestartState
 from engine.errors.server_files_error import ServerFilesError
+from engine.time.polled_wait import PolledWait
 
 
 SOCKET_FILE_MODE = 0o600
@@ -64,12 +64,7 @@ class ServerFiles:
         return self.lock_file.fileno()
 
     def acquire_waiting(self, wait_seconds: float) -> bool:
-        deadline = time.monotonic() + wait_seconds
-        while not self.acquire_lock():
-            if time.monotonic() >= deadline:
-                return False
-            time.sleep(LOCK_POLL_SECONDS)
-        return True
+        return PolledWait(wait_seconds, LOCK_POLL_SECONDS).until(self.acquire_lock)
 
     @contextmanager
     def locked(self, wait_seconds: float) -> Generator[None]:

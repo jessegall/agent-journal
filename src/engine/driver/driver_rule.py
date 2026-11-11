@@ -6,7 +6,7 @@ from engine.enums.hook_wildcard import HookWildcard
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.enums.tool_type import ToolType
-from engine.enums.role_group import RoleGroup
+from engine.agent.enums.role_group import RoleGroup
 from engine.scope.scopes import WholeScopes
 
 

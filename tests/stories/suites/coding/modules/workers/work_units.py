@@ -1,5 +1,8 @@
 import json
 
+from suites.coding.modules.workers.migrations.m072_plan_worker_backfill import PlanWorkerBackfillMigration
+from engine.database.statement import Statement
+from engine.database.database import Database
 from suites.coding.modules.workers.support.work_units import WorkUnits
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, start_planned_worker, unplanned_group_worker
@@ -50,3 +53,20 @@ def test_the_plan_card_names_the_worker_that_works_the_plan_and_no_agent_before_
 def plan_card(worker):
     board = json.loads(worker.story.run("plan board --environment main --json", actor=worker.story.user).output_text)
     return next(card for card in board["plans"] if card["id"] == 1)
+
+
+def test_a_plan_dispatched_before_dispatch_named_its_worker_gets_its_worker_from_the_upgrade(new_story, monkeypatch):
+    worker = start_planned_worker(new_story, monkeypatch)
+    database = worker.story.container.get(Database)
+    database.update(Statement("UPDATE plans SET metadata = '{}', version = version + 1 WHERE id = 1"))
+    before = unit_of(worker)
+    PlanWorkerBackfillMigration().run(database)
+    card = plan_card(worker)
+    worker.story.expect_rows(before.plan is None, card["assignee"] is not None and card["assignee"]["id"] == worker.worker.id, detail=str(card))
+
+
+def test_the_agent_card_names_the_unit_of_a_worker_on_a_plan(new_story, monkeypatch):
+    worker = start_planned_worker(new_story, monkeypatch)
+    listed = json.loads(worker.story.run("usage agents --environment main --json", actor=worker.story.user).output_text)
+    card = next(row for row in listed["rows"] if row["id"] == worker.worker.id)
+    worker.story.expect_rows(card["unit_name"] == "Plan 1 · Rebuild the cart", detail=str(card))

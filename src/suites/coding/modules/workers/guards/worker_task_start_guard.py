@@ -5,7 +5,7 @@ from core.modules.tasks.models.task import Task
 from engine.command.context import Context
 from engine.event.moved import Moved
 from engine.guard.guard import Guard
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.support.worker_task_access import WorkerTaskAccess
 

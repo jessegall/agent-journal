@@ -6,7 +6,7 @@ from engine.command.command import Command
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.database.migration import Migration
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.listener.save_listener import SaveListener
 from engine.model.model import Model
 from engine.module.model_declaration import ModelDeclaration

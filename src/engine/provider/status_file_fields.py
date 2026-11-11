@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Mapping
 
 from engine.file.file_access import FileAccess
-from engine.file.file_version import FileVersion
+from engine.file.versions.file_version import FileVersion
 from engine.types.type_guards import is_text_mapping
 
 

@@ -1,4 +1,4 @@
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.query.queries import Queries

@@ -25,8 +25,7 @@ from tests.stories.core.support import story_lines as lines
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_folder, story_repository
-from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import story_repository
 
 RECOVERY_SOURCE = "workers.silent-agent"
 FAILED_SOURCE = "workers.silent-agent-failed"
@@ -75,6 +74,10 @@ class RecoveryCase:
         WorkerResumeRetry()(self.story.container)
         self.story.tick("s-1")
         self.story.run_listeners()
+
+    def stopped_lines(self) -> int:
+        rows = json.loads(self.story.run("merger-line list --json", actor=self.story.agent).output_text)["rows"]
+        return sum(f"worker:{agent_number(self.story, self.worker.id)} has stopped" in row["text"] for row in rows)
 
     def lines(self, agent_id, source=RECOVERY_SOURCE):
         return list(self.story.container.get(Queries).query(AgentLine).filter(session_agent_id=agent_id, source=source).all_rows())
@@ -180,8 +183,8 @@ def test_silent_recovery_waits_for_a_growing_gap_and_stops_after_three_attempts(
     notices = recovery.lines(recovery.story.agent.id, FAILED_SOURCE)
     rows = json.loads(recovery.story.run("merger-line list --json", actor=recovery.story.agent).output_text)["rows"]
     matching = [row for row in rows if f"agent:{agent_number(recovery.story, recovery.worker.id)} could not resume" in row["text"]]
-    recovery.story.expect_rows(len(matching) == 1, "three waking lines got no hook" in matching[0]["text"],
-                               any(f'merger-line:{matching[0]["id"]}' in line.text for line in notices))
+    recovery.story.expect_rows(len(matching) == 1, "3 waking lines got no hook" in matching[0]["text"],
+                               any(f'merger-line:{matching[0]["id"]}' in line.text for line in notices), detail=f"{matching} | {[line.text for line in notices]}")
 
 
 
@@ -299,20 +302,18 @@ def test_a_stopped_worker_with_work_is_reported_after_fifteen_minutes_and_every_
     story, worker = recovery.story, recovery.worker
     monkeypatch.setattr(recovery, "request", lambda *_args: b"failed\n")
     story.expect_success(f"agent end {worker.id}", actor=worker)
-    line = f"worker:{agent_number(story, worker.id)} has stopped"
     recovery.advance(14 * 60)
     story.tick("s-1")
-    story.expect_no_text(f"agent-line list --agent {story.agent.id}", line)
+    story.expect_rows(recovery.stopped_lines() == 0)
     recovery.advance(60)
     story.tick("s-1")
-    notices = story.run(f"agent-line list --agent {story.agent.id}").output_text
-    story.expect_rows(notices.count(line) == 1, detail=notices)
+    story.expect_rows(recovery.stopped_lines() == 1)
     recovery.advance(5 * 60)
     story.tick("s-1")
-    story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}").output_text.count(line) == 2)
+    story.expect_rows(recovery.stopped_lines() == 2)
     story.hook(recovery.session, HookSamples.prompt("Continue the task"))
     story.tick("s-1")
-    story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}").output_text.count(line) == 2)
+    story.expect_rows(recovery.stopped_lines() == 2)
 
 
 def test_a_paused_worker_is_not_reported_as_stopped(recovery):
@@ -329,11 +330,11 @@ def test_a_delivery_without_tests_passed_is_reported_as_stopped(recovery):
     story.expect_success('proof make 1 --task 1 "cart.py:1, checked"', actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.container.get(Database).update(Statement("UPDATE worker_worktrees SET tests_passed_at = NULL WHERE session_agent_id = ?", [worker.id]))
+    story.container.get(Database).update(Statement("UPDATE worker_worktrees SET tests_passed_at = NULL, merge_ready_at = NULL WHERE session_agent_id = ?", [worker.id]))
     story.expect_success(f"agent end {worker.id}", actor=worker)
     recovery.advance(20 * 60)
     story.tick("s-1")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
+    story.expect_rows(recovery.stopped_lines() == 1)
 
 
 def test_the_stopped_worker_warning_intervals_are_settings(recovery, monkeypatch):
@@ -342,14 +343,12 @@ def test_the_stopped_worker_warning_intervals_are_settings(recovery, monkeypatch
     story.expect_success("setting set journal.suites.coding.workers.idle-worker-minutes 2 --environment main", actor=story.user)
     story.expect_success("setting set journal.suites.coding.workers.idle-worker-repeat-minutes 1 --environment main", actor=story.user)
     story.expect_success(f"agent end {worker.id}", actor=worker)
-    line = f"worker:{agent_number(story, worker.id)} has stopped"
     recovery.advance(2 * 60)
     story.tick("s-1")
-    notices = story.run(f"agent-line list --agent {story.agent.id}").output_text
-    story.expect_rows(notices.count(line) == 1, detail=notices)
+    story.expect_rows(recovery.stopped_lines() == 1)
     recovery.advance(60)
     story.tick("s-1")
-    story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}").output_text.count(line) == 2)
+    story.expect_rows(recovery.stopped_lines() == 2)
 
 
 def test_a_stopped_worker_with_a_running_command_is_not_reported(running_command_recovery):
@@ -417,9 +416,9 @@ def test_a_message_to_a_stopped_worker_waits_for_a_place_and_starts_when_one_fre
 
 def test_a_worker_stopped_by_a_person_is_not_restarted_for_its_old_job(person_stopped_worker):
     recovery = person_stopped_worker
-    story, worker = recovery.story, recovery.worker
+    story = recovery.story
     recovery.advance(20 * 60)
     WorkerResumeRetry()(story.container)
     story.expect_rows(not recovery.launches, detail=str(recovery.launches))
     story.tick("s-1")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
+    story.expect_rows(recovery.stopped_lines() == 1)

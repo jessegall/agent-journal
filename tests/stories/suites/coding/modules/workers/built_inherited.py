@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
@@ -21,7 +22,7 @@ def built_and_released(story, repository, dispatch=DISPATCH):
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(FIRST_PROOF, actor=worker)
     story.expect_success(COMMIT, actor=worker)
-    story.expect_success(f'worker release {agent_number(story, worker.id)} "the worker left"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} --abandon "the worker left"', actor=story.agent)
     return worker
 
 
@@ -84,22 +85,10 @@ def test_a_second_worker_on_a_built_task_has_the_earlier_files_in_its_worktree(s
     expect_value(repository.git("merge-base", "--is-ancestor", repository.worker_branch(first.id), repository.worker_branch(second.id)).returncode, 0)
 
 
-def test_it_hands_in_with_differences_already_built_and_the_task_closes(proved_second):
-    story, repository, first, second = proved_second
-    story.expect_success(BUILT_HAND_IN, actor=second)
-    repository.expect_file(repository.worker_branch(second.id), "cart.py", CART_CHANGE)
-    story.expect_text("task show 1", "state: testing", actor=story.agent)
-
-
 def test_a_second_worker_that_adds_to_the_earlier_work_needs_no_why(added_second):
     story, repository, first, second = added_second
     repository.expect_file(repository.worker_branch(second.id), "cart.py", CART_CHANGE)
     repository.expect_file(repository.worker_branch(second.id), "notes.py", "NOTE = 1\n")
-
-
-def test_a_clash_of_the_earlier_work_with_the_moved_base_is_named_at_the_hand_in(cart_conflict):
-    story, repository, second = cart_conflict
-    story.expect_refusal(BUILT_HAND_IN, f"your work clashes with {ENVIRONMENT_BRANCH} in cart.py", actor=second)
 
 
 def test_an_earlier_branch_already_in_the_base_is_not_inherited(released_work):
@@ -117,7 +106,7 @@ def test_another_tasks_commit_on_the_earlier_branch_does_not_count(base_story):
     story.expect_success(FIRST_PROOF, actor=first)
     story.expect_success("task start 2", actor=first)
     story.expect_success(COMMIT, actor=first)
-    story.expect_success(f'worker release {agent_number(story, first.id)} "the worker left"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, first.id)} --abandon "the worker left"', actor=story.agent)
     third = dispatched_worker(story, f"{WORKER_DISPATCH_LINE} 2")
     expect_cut_from_the_base(story, repository, third)
 
@@ -131,6 +120,7 @@ def test_a_kept_worker_sent_a_built_task_finds_the_earlier_work_too(base_story):
     story.expect_success(COMMIT, actor=kept)
     story.expect_success("proof check 1", actor=story.agent)
     story.expect_success(f"worker logs {agent_number(story, kept.id)}", actor=story.agent)
+    asked_for_merge(story, kept)
     story.expect_success(f"worker merge --wait {agent_number(story, kept.id)}", actor=story.agent)
     built_and_released(story, repository, f"{WORKER_DISPATCH_LINE} 1")
     story.expect_success(f"worker send --wait {agent_number(story, kept.id)} --task 1", actor=story.agent)

@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.tasks.models.task import Task
@@ -38,5 +38,5 @@ class CheckpointFailures:
 
     def last_task_id(self, reach: CheckpointReach) -> int:
         window_order = list(reach.tasks())
-        tasks = self.rows.required_by_id(Task, window_order).values()
+        tasks = self.rows.required_index(Task, window_order).values()
         return max(tasks, key=lambda task: ("" if task.closed_at is None else task.closed_at.text, window_order.index(task.id))).id

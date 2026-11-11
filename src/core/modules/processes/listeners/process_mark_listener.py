@@ -7,8 +7,8 @@ from engine.command.bus import Bus
 from engine.driver.project_paths import ProjectPaths
 from engine.enums.command_category import CommandCategory
 from engine.event.event_subscriber import E
-from engine.listener.commit_listener import CommitListener
-from engine.listener.event_rows import EventRows
+from engine.listener.commit.commit_listener import CommitListener
+from engine.listener.rows.event_rows import EventRows
 from engine.module.module_actors import ModuleActors
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.chat.commands.show_mark.show_mark import ShowMark

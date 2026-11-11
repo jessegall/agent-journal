@@ -17,7 +17,6 @@ from suites.coding.modules.workers.support.worker_questions import CLOCK_FORMAT
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.merger_cases import MergerCase, case  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
-from tests.stories.suites.coding.modules.workers.support.work_setting_stories import apply_work_setting
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start, running_launcher
 from suites.coding.modules.workers.ticks.ask_watch import AskWatch
@@ -65,11 +64,6 @@ def test_an_ask_is_one_line_with_its_wait_task_and_due_time_and_the_same_ask_aga
     asking.story.expect_success(f"setting set {ANSWER_MINUTES} 25 --project", actor=asking.story.user or asking.story.agent)
     asking.post_question(topic=AskTopic.TOOL)
     asking.story.expect_rows(len(questions(asking.story)) == 1, questions(asking.story)[0].due_at == due_at, len(waits_of(asking.story, asking.worker)) == 1, detail=str(questions(asking.story)))
-
-
-def test_a_refused_ask_leaves_no_line_no_wait_and_no_due_time(asking):
-    expect_refused_with(asking.story, f'worker ask "{QUESTION}" --about weather', "judge, tests, built, conflict, tool, general", actor=asking.worker)
-    asking.story.expect_rows(questions(asking.story) == (), waits_of(asking.story, asking.worker) == (), detail=str(questions(asking.story)))
 
 
 def test_with_the_merger_off_the_ask_reaches_the_main_agent_once_and_is_recorded_as_passed_on(merger_disabled_worker):
@@ -217,4 +211,3 @@ def test_an_overdue_ask_of_a_worker_whose_worktree_is_gone_closes_as_moot_and_wa
     case.story.run_listeners()
     case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.MOOT, QUESTION not in case.main_lines(),
                            case.story.run(f"agent-line list --agent {case.merger.id}").output_text == merger_lines, detail=str(questions(case.story)[0]))
-

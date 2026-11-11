@@ -1,7 +1,7 @@
 import pytest
 
 from engine.enums.hook_event_name import HookEventName
-from engine.enums.hook_effect import HookEffect
+from engine.provider.enums.hook_effect import HookEffect
 from engine.provider.managed_hook import ManagedHook
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 

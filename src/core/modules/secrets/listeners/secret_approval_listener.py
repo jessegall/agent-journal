@@ -3,11 +3,11 @@ from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.command.close_user_approval import CloseUserApproval
 from engine.command.request_user_approval import RequestUserApproval
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
 from engine.scope.actor_scope import ActorScope
 from engine.scope.environment_scope import EnvironmentScope
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.secrets.models.secret import Secret
 
 
@@ -28,7 +28,7 @@ class SecretApprovalListener(CommitListener[Changed[Secret]]):
                 continue
             arguments = ("secret", "allow", str(secret.id), program)
             approval = UserApprovalRefusal(f"Allow {program} to use the secret {secret.title}?", arguments,
-                                           why=f"The secret was proposed for {program}; it can use the secret once you allow it.")
+                                           request_reason=f"The secret was proposed for {program}; it can use the secret once you allow it.")
             self.bus.run(RequestUserApproval(approval, arguments, logged.actor_id), actor,
                          cause_id=logged.id, environment_id=logged.environment_id)
         for program in secret.programs:

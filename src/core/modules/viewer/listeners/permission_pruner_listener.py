@@ -1,7 +1,7 @@
 from engine.actor.actor import Actor
 from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from core.modules.viewer.commands.prune_window_permissions.prune_window_permissions import PruneWindowPermissions
 from engine.event.registry_synced import RegistrySynced
 

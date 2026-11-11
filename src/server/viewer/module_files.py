@@ -2,7 +2,7 @@ import mimetypes
 
 from engine.database.database import Database
 from engine.file.file_access import FileAccess
-from engine.container.journal_container import synced_container
+from engine.module.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from engine.module.module_finder import ModuleFinder
 from engine.registry.registry import Registry

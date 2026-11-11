@@ -1,8 +1,8 @@
 from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.scope.actor_scope import ActorScope
 from engine.scope.environment_scope import EnvironmentScope
 from core.modules.docking.commands.schedule_dock_item_leave.schedule_dock_item_leave import ScheduleDockItemLeave
@@ -27,7 +27,7 @@ class DockItemLeaveListener(CommitListener[Touched[Model]]):
         actor = self.actors.actor(MODULE_NAME)
         model_name = logged.event.split(".")[0]
         items = self.items.matching(model_name.replace("_", "-"), logged.row_id)
-        docks = self.rows.required_by_id(Dock, [item.dock_id for item in items])
+        docks = self.rows.required_index(Dock, [item.dock_id for item in items])
         for item in items:
             leaves_at = self.leave_time.departure(item, logged.timestamp)
             if leaves_at is not None:

@@ -8,7 +8,7 @@ from core.modules.agents.commands.retire_agent.retire_agent_handler import Retir
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 
 ENDED_AT = datetime(2026, 11, 1, 9, 0, tzinfo=timezone.utc)
 RETIRED_AT = datetime(2026, 11, 2, 9, 0, tzinfo=timezone.utc)
@@ -57,7 +57,7 @@ def test_an_agent_that_retires_an_agent_asks_a_person_with_its_reason(asking_age
     command = RetireAgent(HELPER_ID, REASON)
     with pytest.raises(UserApprovalRefusal) as approval_request:
         retiring.prepare(command, Actor(asking_agent_id, ActorType.AGENT))
-    assert (approval_request.value.command, approval_request.value.why) == (command, REASON)
+    assert (approval_request.value.command, approval_request.value.request_reason) == (command, REASON)
     assert "helper 4" in str(approval_request.value)
     assert stored.saved == []
 

@@ -50,3 +50,21 @@ class WorkUnit:
             return ""
         *first_ids, last_id = (str(task_id) for task_id in self.task_ids)
         return f"Your unit is tasks {', '.join(first_ids)} and {last_id}, sent to you together. Work all of them before you report."
+
+    @property
+    def merge_name(self) -> str:
+        if self.plan is not None:
+            return f"plan {self.plan.id}"
+        if self.phase is not None:
+            return f"phase {self.phase.position} of plan {self.phase.plan_id}"
+        return f"tasks {', '.join(str(task_id) for task_id in self.task_ids)}"
+
+    @property
+    def card_name(self) -> str:
+        if self.is_committed and self.has_several_tasks:
+            return f"Waiting for the merge of {self.merge_name}"
+        if self.plan is not None:
+            return f"Plan {self.plan.id} · {self.plan.title}"
+        if self.phase is not None:
+            return f"Plan {self.phase.plan_id}, phase {self.phase.position} · {self.phase.title}"
+        return f"{len(self.task_ids)} tasks sent together" if self.has_several_tasks else ""

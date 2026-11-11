@@ -10,7 +10,7 @@ from engine.journal.journal_home import JournalHome
 from engine.process.leftover_process import LeftoverProcess
 from engine.provider.providers import Providers
 from engine.query.queries import Queries
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_program import AgentProgram
 from core.modules.agents.models.enums.agent_session_state import AgentSessionState

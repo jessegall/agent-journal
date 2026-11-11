@@ -4,6 +4,7 @@ from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.cli.console import Console, SUCCESS_CODE
 from engine.cli.module_remove_line import MODULE_REMOVAL_ARGUMENTS, ModuleRemoveLine
+from engine.cli.subcommand_lookup import SubcommandLookup
 from engine.command.bus import Bus
 from engine.command.command_json import CommandJson
 from engine.command.context import Context
@@ -23,9 +24,9 @@ class AnswerApprovalHandler(Handler[AnswerApproval, ApprovalResult]):
     command = AnswerApproval
     runs_once = True
 
-    def __init__(self, bus: Bus, console: Console, scopes: Scopes, removal: ModuleRemoveLine) -> None:
+    def __init__(self, bus: Bus, console: Console, scopes: Scopes, removal: ModuleRemoveLine, lookup: SubcommandLookup) -> None:
         self.bus, self.console, self.scopes = bus, console, scopes
-        self.removal = removal
+        self.removal, self.lookup = removal, lookup
 
     def handle(self, command: AnswerApproval, context: Context) -> ApprovalResult:
         if context.actor.type is not ActorType.USER:
@@ -39,7 +40,7 @@ class AnswerApprovalHandler(Handler[AnswerApproval, ApprovalResult]):
                 code = self.run_action(arguments, caller, output)
                 should_run_command = code == SUCCESS_CODE and request.command_json and command.decision.choose(True, False)
                 if should_run_command:
-                    self.bus.run(CommandJson.load(request.command_json), context.actor, environment_id=context.environment_id, approval_id=request.id)
+                    self.bus.run(CommandJson.load(request.command_json, self.lookup), context.actor, environment_id=context.environment_id, approval_id=request.id)
                 continued = command.decision.choose(request.continued_arguments, ())
                 if code == SUCCESS_CODE and continued:
                     code = self.run_action(continued, caller, output)

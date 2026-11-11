@@ -25,7 +25,7 @@ class Part:
     timeout_duration: str | None = None
     nested_journal_commands: tuple[tuple[str, ...], ...] = ()
 
-    def names_any(self, names: Sequence[str]) -> bool:
+    def includes_name(self, names: Sequence[str]) -> bool:
         return any(name in self.text for name in names)
 
     @classmethod

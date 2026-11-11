@@ -4,7 +4,7 @@ from engine.event.logged_event import LoggedEvent
 from engine.enums.mark_outcome import MarkOutcome
 from engine.command.bus import Bus
 from engine.journal.journal_home import JournalHome
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
 from engine.module.module_actors import ModuleActors

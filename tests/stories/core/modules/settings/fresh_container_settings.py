@@ -1,5 +1,5 @@
 from engine.database.database import Database
-from engine.container.journal_container import synced_container
+from engine.module.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.setting_rows import SettingRows

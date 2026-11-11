@@ -60,7 +60,7 @@ class KeptRows:
         return self.read(table, loader, *self.condition_with_scope(condition, parameters), name=name)
 
     def scoped_current(self, loader: Callable[[], T], *, name: str) -> T:
-        with self.database.snapshot():
+        with self.database.consistent_read():
             signature = self.database.content_mark()
             return self.kept_value(f"current:{name}:{self.database.scope_environment_id}", lambda _signature: loader(),
                                    Statement("SELECT ?, ?, ?", signature))

@@ -3,7 +3,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
-from engine.enums.role_group import RoleGroup
+from engine.agent.enums.role_group import RoleGroup
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 
 

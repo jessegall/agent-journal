@@ -19,8 +19,8 @@ from engine.command.move_command import MoveCommand
 from engine.database.database import Database
 from engine.database.listener_cursor_table import ListenerCursorTable
 from engine.database.statement import Statement
-from engine.listener.commit_listener import CommitListener
-from engine.listener.commit_listener_runner import PLUGIN_RUN_ORDER, CommitListenerRunner
+from engine.listener.commit.commit_listener import CommitListener
+from engine.listener.commit.commit_listener_runner import PLUGIN_RUN_ORDER, CommitListenerRunner
 from engine.performance.performance_state import PerformanceState
 from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.listener_entry import ListenerEntry

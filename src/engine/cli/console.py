@@ -31,7 +31,7 @@ from engine.command.errors.server_stopping_error import ServerStoppingError
 from engine.errors.deadline_passed_error import DeadlinePassedError
 from engine.environment.environment_names import EnvironmentNames
 from engine.log.error_log import ErrorLog
-from engine.listener.commit_listener_runner import CommitListenerRunner
+from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.model.tables import Tables
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
@@ -43,7 +43,7 @@ from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.errors.refusal import Refusal
 from engine.log.refusal_log import RefusalLog
 from engine.scope.scopes import Scopes
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 
 SUCCESS_CODE, REFUSED_CODE, USAGE_CODE, ERROR_CODE = 0, 1, 2, 3
 HELP_FLAGS = ("--help", "-h")

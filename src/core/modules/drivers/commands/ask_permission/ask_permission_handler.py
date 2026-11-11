@@ -7,7 +7,7 @@ from engine.command.request_user_approval import RequestUserApproval
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.commands.allow_permission.allow_permission import AllowPermission
 from core.modules.drivers.commands.ask_permission.ask_permission import AskPermission
@@ -40,7 +40,7 @@ class AskPermissionHandler(Handler[AskPermission, PermissionRequest]):
         request = self.repository.save(PermissionRequest(asker_id=context.actor.id, action=command.action, reason=command.reason, needs_person=command.needs_person), context)
         if command.needs_person:
             question = f"Allow {AgentLabel.from_agent(self.queries.query(Agent).find(context.actor.id)).text} to do this once: {command.action}?"
-            self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(question, command=AllowPermission(request.id), why=command.reason), (), context.actor.id), context)
+            self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(question, command=AllowPermission(request.id), request_reason=command.reason), (), context.actor.id), context)
             return request
         main = MainAgentFinder.newest(self.queries)
         if main is not None:

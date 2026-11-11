@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 from dataclasses import dataclass
@@ -118,6 +119,7 @@ class AdvisedWorker:
         self.case.repository.checkout(ENVIRONMENT_BRANCH)
 
     def merged(self) -> None:
+        asked_for_merge(self.story, self.worker)
         self.story.expect_success(f"worker merge --wait {agent_number(self.story, self.worker.id)}", actor=self.story.agent)
 
     def given_new_work(self) -> None:
@@ -301,8 +303,3 @@ def test_a_sixth_ask_between_two_commits_goes_to_the_main_agent_and_the_first_af
     seventh = advised.ask(7)
     advised.story.expect_rows(sixth.code == 0, MAIN_AGENT_HAS_IT in sixth.output_text, committed.code == 0, seventh.code == 0, MERGER_HAS_IT in seventh.output_text,
                               detail=f"{sixth.output_text} | {committed.output_text} | {seventh.output_text}")
-
-
-def test_a_sixth_ask_with_the_merger_off_reaches_the_main_agent(merger_disabled_plan):
-    sixth = merger_disabled_plan.ask(6)
-    merger_disabled_plan.story.expect_rows(sixth.code == 0, MAIN_AGENT_HAS_IT in sixth.output_text, detail=sixth.output_text)

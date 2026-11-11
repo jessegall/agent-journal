@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from typing import ClassVar, Never
 
 from engine.driver.driver_rule import DriverRule
-from engine.driver.suite import Suite
+from engine.module.suite import Suite
 from engine.guard.guard import Guard
 
 

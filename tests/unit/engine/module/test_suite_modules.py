@@ -1,4 +1,4 @@
-from engine.driver.suite import Suite
+from engine.module.suite import Suite
 from engine.helper_type.helper_type import HelperType
 from engine.journal.journal_home import JournalHome
 from engine.module.module import Module
@@ -22,7 +22,7 @@ def suite(name: str, *modules: type[Module], helper_types: tuple[HelperType, ...
 def test_the_first_module_a_suite_lists_ships_it_and_the_others_are_part_of_it():
     shop, carts = module("shop"), module("carts")
     suites = SuiteList([suite("shop", shop, carts)])
-    assert [listed.name for listed in suites.shipped_suites(shop)] == ["shop"] and suites.shipped_suites(carts) == []
+    assert [listed.name for listed in suites.module_suites(shop)] == ["shop"] and suites.module_suites(carts) == []
     assert suites.parent_name(carts) == "shop" and suites.parent_name(shop) is None
     assert suites.suite_names(shop) == tuple(["shop"]) and suites.suite_names(carts) == tuple(["shop"]) and suites.problems() == ()
 

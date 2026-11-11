@@ -4,7 +4,7 @@ import pytest
 
 from engine.caller.process_row import ProcessRow
 from engine.database.database import Database
-from engine.container.journal_container import database_container
+from engine.module.journal_container import database_container
 from engine.journal.journal_home import JournalHome
 from engine.enums.event_form import EventForm
 from engine.process.plugin_script_processes import PluginScriptProcesses

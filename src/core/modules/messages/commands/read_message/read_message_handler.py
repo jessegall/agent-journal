@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.messages.models.message import Message

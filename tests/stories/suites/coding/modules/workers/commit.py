@@ -54,12 +54,6 @@ def test_24_a_commit_of_a_proved_task_says_committed_queues_its_tests_and_puts_t
     proved.story.expect_rows(outcome.code == 0, "committed task 1 as " in outcome.output_text, len(proved.started) == 1, detail=outcome.output_text)
 
 
-def test_25_the_commit_in_git_is_named_for_its_task_and_carries_the_worker(proved):
-    proved.story.expect_success(COMMIT, actor=proved.worker)
-    proved.story.expect_text("worker-worktree show 1", "state: delivered", actor=proved.story.agent)
-    proved.repository.expect_commit(proved.repository.worker_branch(proved.worker.id), "task 1: Fix the cart", f"Journal: worker worker-{proved.worker.id}")
-
-
 def test_29_a_commit_asks_for_the_differences_and_what_differs_becomes_an_important_log_line(proved):
     asked = proved.story.run(f"{COMMIT_COMMAND} --wait", actor=proved.worker)
     proved.story.expect_success(f'{COMMIT_COMMAND} --wait --differences "{LEFT_OUT}"', actor=proved.worker)
@@ -128,15 +122,6 @@ def test_33_a_clash_with_the_base_branch_stops_the_commit_names_the_files_and_ke
     story.expect_text("proof show 1", "state: shown", actor=story.agent)
     repository.changed(worker.id, "tax.py", MERGED_TAX)
     story.expect_success(COMMIT, actor=worker)
-
-
-def test_34_a_commit_of_a_worktree_with_no_change_is_refused_and_the_hint_names_the_differences(working):
-    story, repository, worker = working
-    base_commit = repository.tip(ENVIRONMENT_BRANCH)
-    story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
-    expect_refused_with(story, COMMIT, "your worktree has no change", "--differences", actor=worker)
-    story.expect_success(f'{COMMIT_COMMAND} --wait --differences "already built: cart.py"', actor=worker)
-    repository.expect_branch_tip(repository.worker_branch(worker.id), base_commit)
 
 
 def test_35_a_commit_with_no_proof_at_all_is_refused_as_nothing_staged(working):

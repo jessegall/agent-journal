@@ -7,7 +7,7 @@ import pytest
 from engine.journal.journal_home import JournalHome
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.refusal_style import RefusalStyle
-from engine.enums.hook_effect import HookEffect
+from engine.provider.enums.hook_effect import HookEffect
 from engine.provider.hook_manager import HookManager
 from engine.provider.managed_hooks import ManagedHooks
 from engine.enums.managed_state import ManagedState

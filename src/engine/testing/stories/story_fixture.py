@@ -33,8 +33,7 @@ class StoryFixture:
         return None
 
     @classmethod
-    def adds_a_step(cls) -> bool:
-        """Whether its own steps method uses the story it is given."""
+    def has_steps(cls) -> bool:
         if "steps" not in cls.__dict__:
             return False
         function = ast.parse(textwrap.dedent(inspect.getsource(cls.steps))).body[0]

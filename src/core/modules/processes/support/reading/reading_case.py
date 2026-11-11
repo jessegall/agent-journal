@@ -9,7 +9,7 @@ from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
 from core.modules.processes.support.reader_judgement import ReaderJudgement
 from core.modules.processes.support.reading.output_facts import OutputFacts
-from core.modules.processes.support.reading.reader_layer import ReaderLayer
+from core.modules.processes.models.enums.reader_layer import ReaderLayer
 
 SHORT_RUN_SECONDS = 15
 

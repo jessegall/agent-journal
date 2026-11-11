@@ -2,7 +2,7 @@ import pytest
 
 from engine.database.database import Database
 from engine.database.statement import Statement
-from engine.container.journal_container import opened_container
+from engine.module.journal_container import opened_container
 from engine.journal.journal_home import JournalHome
 from engine.module.module_sync import ModuleSync
 from core.modules.tasks.models.support.views import closed_task_counts_select
@@ -22,7 +22,7 @@ def database(tmp_path):
     (Statement("SELECT * FROM plugin_queue_files WHERE plugin_id = ? AND name = ?", (1, "card.json")), "plugin_queue_files_plugin_name"),
     (Statement("SELECT * FROM checks WHERE removed_at IS NULL AND task_wait_id > ?", [0]), "checks_open_task_wait"),
     (Statement("SELECT id FROM agents WHERE role <> ?", ["main"]), "agents_role"),
-    (Statement("SELECT * FROM worker_worktrees WHERE environment_id = ? AND removed_at IS NULL ORDER BY id", [1]), "worker_worktrees_open_environment"),
+    (Statement("SELECT * FROM worker_worktrees WHERE environment_id = ? AND removed_at IS NULL ORDER BY id", [1]), "worker_worktrees_environment (environment_id=?)"),
     (Statement("SELECT * FROM watches WHERE process_id = ? AND state = ?", (1, "open")), "watches_process_state"),
     (Statement("SELECT * FROM reader_requests WHERE completed_at IS NULL"), "reader_requests_open_command"),
     (Statement("SELECT * FROM proofs WHERE process_id = ? AND state = ?", (1, "running")), "proofs_process_state"),
@@ -54,6 +54,8 @@ def database(tmp_path):
     (Statement("SELECT * FROM share_comments WHERE share_link_id = ? ORDER BY id", [1]), "share_comments_link"),
     (Statement("SELECT * FROM reviews WHERE state = ? ORDER BY id", ["queued"]), "reviews_state"),
     (Statement("SELECT * FROM agents WHERE parent_id = ? ORDER BY id DESC LIMIT 25", [1]), "agents_parent"),
+    (Statement("SELECT * FROM hook_calls WHERE session_agent_id = ? AND hook = ? AND tool = ? AND answer = ? ORDER BY id DESC LIMIT 1", [1, "pre_tool_use", "Monitor", "allowed"]),
+     "hook_calls_allowed_agent_tool"),
     (Statement("SELECT count(*) FROM chat_marks WHERE session_agent_id = ? OR session_agent_id IS NULL", [1]), "chat_marks_agent"),
     (Statement("SELECT * FROM sequence_run_rows ORDER BY id DESC LIMIT 25"), "sequence_runs_open_id"),
     (Statement("SELECT * FROM chat_messages ORDER BY id DESC LIMIT 25"), "messages_chat_visible_id"),

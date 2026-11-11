@@ -1,6 +1,6 @@
 from engine.event.change import Change
 from engine.container.container import Container
-from engine.guard.change_filter import ChangeFilter
+from engine.listener.change_filter import ChangeFilter
 from engine.listener.event_listeners import EventListeners
 from engine.guard.guard import Guard
 from engine.guard.guard_switches import GuardSwitches

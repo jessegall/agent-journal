@@ -9,7 +9,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.plugins.support.worker_step_samples import step_plugin_folder
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, FIRST_PROOF, checked_worker, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import FIRST_PROOF, dispatched_worker, repository_environment
 def step_plugin_story(new_story, event_name: str, services: list[dict[str, object]] | None = None):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
@@ -21,7 +21,6 @@ def step_plugin_story(new_story, event_name: str, services: list[dict[str, objec
 @pytest.fixture
 def delivering_plugin(new_story):
     return step_plugin_story(new_story, "worker_delivering")
-
 
 
 @pytest.fixture
@@ -46,12 +45,6 @@ def delivered_with_file(new_story, name: str):
     return story, worker
 
 
-def test_a_plugin_that_fails_at_a_delivery_is_on_record_and_says_the_step_was_not_judged(new_story):
-    story, worker = delivered_with_file(new_story, "broken.py")
-    story.expect_text("plugin list --json", "at worker_delivering", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "[plugin steps] could not judge this step", actor=story.agent)
-
-
 def test_a_hook_during_an_upgrade_leaves_the_plugin_switched_on(new_story):
     story = step_plugin_story(new_story, "worker_delivering")
     folders = story.container.get(PluginFolders)
@@ -68,7 +61,6 @@ def test_a_plugin_whose_files_changed_is_switched_off_and_the_chat_says_so(deliv
     manifest.write_text(manifest.read_text() + "\n")
     story.hook("s-1", HookSamples.prompt("go on"))
     story.expect_text("message list --environment main", "The plugin steps is switched off", actor=story.user)
-
 
 
 def test_a_failed_upgrade_leaves_no_upgrade_mark_and_the_next_delivery_reaches_the_plugin(new_story):

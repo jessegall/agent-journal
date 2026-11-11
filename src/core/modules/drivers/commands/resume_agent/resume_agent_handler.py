@@ -6,7 +6,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.resume_agent.resume_agent import ResumeAgent

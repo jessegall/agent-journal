@@ -1,6 +1,6 @@
 from engine.event.file_publishing import FilePublishing
 from engine.event.logged_event import LoggedEvent
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 

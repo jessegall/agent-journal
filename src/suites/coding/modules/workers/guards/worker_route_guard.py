@@ -3,7 +3,7 @@ from engine.enums.agent_role import AgentRole
 from engine.event.created import Created
 from engine.command.context import Context
 from engine.guard.guard import Guard
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.assignments.models.assignment import Assignment
 from core.modules.tasks.models.task import Task

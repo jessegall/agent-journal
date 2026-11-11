@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.models.agent import Agent
 import json
@@ -194,6 +195,7 @@ def test_the_last_delivery_delivers_the_worktree_and_the_merge_closes_every_task
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
     story.expect_success('proof make 1 --task 2 "cart.py:1, the second story"', actor=worker)
     story.run("worker commit --wait --differences none", actor=worker)
+    asked_for_merge(story, worker)
     story.expect_text("worker-worktree show 1", "state: delivered", actor=story.agent)
     story.expect_text("task show 1", "state: testing", actor=story.agent)
     story.expect_text("task show 2", "state: testing", actor=story.agent)
@@ -202,7 +204,9 @@ def test_the_last_delivery_delivers_the_worktree_and_the_merge_closes_every_task
     story.run("proof check 1", actor=story.agent)
     story.run("proof check 2", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
     story.expect_text("task show 2", "state: completed", actor=story.agent)
@@ -279,7 +283,9 @@ def test_a_merged_worker_with_a_task_still_assigned_is_not_listed_as_running(new
     story.run("proof check 1", actor=story.agent)
     story.run("proof check 2", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     expect_card_listed(story, "running", worker.id, False)
     expect_card_listed(story, "idle", worker.id, True)

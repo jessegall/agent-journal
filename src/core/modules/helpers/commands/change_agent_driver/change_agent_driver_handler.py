@@ -3,7 +3,7 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from core.modules.agents.commands.replace_agent_session.replace_agent_session import ReplaceAgentSession
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.enums.end_reason import EndReason

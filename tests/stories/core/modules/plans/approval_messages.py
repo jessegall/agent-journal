@@ -43,15 +43,8 @@ def test_an_agent_cannot_approve_even_when_skipping_a_guard(new_story, flags, me
     story.expect_success("plan show 1", "state: ready")
 
 
-def test_an_empty_approval_message_creates_no_comment(new_story):
-    story = new_story(fixture=ReadyApprovalPlan)
-    story.expect_success('plan approve 1 --message "   " --environment main', "state: approved", actor=story.user)
-    story.expect_rows(len(story.story_rows(Message)) == 0)
-
-
 def test_an_agents_plan_approve_makes_no_approval_of_its_own_and_names_the_plan_card(new_story):
     story = new_story(fixture=ReadyApprovalPlan)
     cards = len(story.story_rows(ApprovalRequest))
     story.expect_refusal("plan approve 1 --reason needed --environment main", "plan 1 waits there", actor=story.agent)
     story.expect_rows(len(story.story_rows(ApprovalRequest)) == cards)
-

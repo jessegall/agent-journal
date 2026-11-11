@@ -3,7 +3,7 @@ import shlex
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.make_proof.make_proof import MakeProof

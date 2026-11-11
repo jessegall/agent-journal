@@ -2,12 +2,12 @@ from engine.event.logged_event import LoggedEvent
 from engine.event.registry_synced import RegistrySynced
 from engine.command.bus import Bus
 from engine.command.request_user_approval import RequestUserApproval
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from engine.scope.environment_scope import EnvironmentScope
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question
 from core.modules.setting_requests.commands.request_setting.request_setting_handler import APPROVE_OPTION, REFUSE_OPTION
@@ -31,6 +31,6 @@ class PendingSettingApprovalListener(CommitListener[RegistrySynced]):
             question = questions[request.question_id]
             arguments = ("question", "answer", str(question.id), "--answer", APPROVE_OPTION)
             refused = ("question", "answer", str(question.id), "--answer", REFUSE_OPTION)
-            approval = UserApprovalRefusal(question.text, arguments, refused, source_version=question.version, why=question.context or "An agent asked this before the upgrade and has not had an answer.")
+            approval = UserApprovalRefusal(question.text, arguments, refused, source_version=question.version, request_reason=question.context or "An agent asked this before the upgrade and has not had an answer.")
             self.bus.run(RequestUserApproval(approval, arguments, request.creator_id), self.actors.actor("journal.core.setting-requests"),
                          cause_id=logged.id, environment_id=request.environment_id)

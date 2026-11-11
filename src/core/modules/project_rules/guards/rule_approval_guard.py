@@ -5,7 +5,7 @@ from engine.event.moved import Moved
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.project_rules.models.enums.rule_state import RuleState
 from core.modules.project_rules.models.project_rule import ProjectRule
 

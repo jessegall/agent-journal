@@ -1,6 +1,6 @@
 from engine.command.bus import Bus
 from engine.command.context import Context
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.plans.commands.fail_checkpoint.fail_checkpoint import FailCheckpoint
@@ -47,7 +47,7 @@ class CheckpointResults:
         if failed_task_ids:
             self.bus.dispatch(FailCheckpoint(reach.id, failed_task_ids=",".join(str(task_id) for task_id in failed_task_ids)), context)
             return
-        if not reach.is_early:
+        if reach.source.opens_phases():
             self.deferrals.close_due(reach.phase_id, context)
         self.repository.save_change(reach, reach.moved(CheckpointLifecycle.passed), context)
 

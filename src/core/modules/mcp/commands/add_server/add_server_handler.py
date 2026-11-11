@@ -5,7 +5,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
-from engine.actor.person_check import PersonCheck
+from engine.command.person_check import PersonCheck
 from core.modules.mcp.commands.add_server.add_server import AddServer
 from core.modules.mcp.models.mcp_server import McpServer
 from core.modules.mcp.queries.mcp_server_query import McpServerQuery

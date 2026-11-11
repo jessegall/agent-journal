@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
@@ -90,6 +91,7 @@ def test_a_single_task_committed_with_its_next_task_not_started_stops_quietly(ne
 
 
 def test_a_worker_whose_commit_in_a_started_plan_waits_for_its_merge_stops_quietly(committed):
+    asked_for_merge(committed.story, committed.worker)
     committed.story.expect_hook_allowed(committed.session, HookSamples.stop())
     committed.program_ended()
     expect_silent_stop(committed)

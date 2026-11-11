@@ -1,4 +1,4 @@
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from suites.coding.modules.checks.models.check import Check
 

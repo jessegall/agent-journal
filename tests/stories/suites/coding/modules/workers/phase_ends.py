@@ -2,7 +2,6 @@ import pytest
 
 from engine.query.queries import Queries
 from suites.coding.modules.workers.models.affected_test import AffectedTest
-from tests.stories.support.story_checks import expect_value
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story, start_planned_worker
@@ -45,11 +44,11 @@ def test_a_worker_cannot_make_a_proof_at_the_point_of_a_phases_own_test(new_stor
     worker.story.expect_refusal('proof make 0 --task 1 "cart.py:1, the phase"', "start at 1", actor=worker.worker)
 
 
-def test_the_phases_own_test_is_not_run_at_the_commit_of_its_last_task_in_a_started_plan(new_story, monkeypatch):
+def test_the_phases_own_test_runs_in_the_background_on_the_commit_of_its_last_task_in_a_started_plan(new_story, monkeypatch):
     worker = proved_phase(holding_worker(new_story, monkeypatch, BUILD_TASKS, build_test=PHASE_TEST))
     worker.story.expect_text(COMMIT, "committed tasks 1, 2, 3", actor=worker.worker)
     worker.story.expect_absent("proof list --task 3", PHASE_TEST, actor=worker.story.agent)
-    expect_value(worker.started, [])
+    worker.story.expect_rows(PHASE_TEST in [process.line for process in worker.started_processes()], detail=str(worker.started))
 
 
 def test_no_selected_test_is_queued_at_the_commit_of_a_phase_of_a_started_plan(declared_tests):

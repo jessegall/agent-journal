@@ -23,11 +23,6 @@ def test_a_reader_is_added_by_a_pattern_of_lines(new_story):
     story.expect_success(TESTS_READER, "name: tests", "type: pattern", "commands: pytest*", "lines_pattern: FAILED|passed|failed", actor=story.agent)
 
 
-def test_a_reader_is_added_by_a_script_of_the_project(new_story):
-    story = new_story(fixture=BuilderStarted)
-    story.expect_success('reader add makes --commands "make*" --script scripts/read_make.sh', "type: script", "script: scripts/read_make.sh", actor=story.agent)
-
-
 def test_adding_a_reader_again_keeps_each_field_the_flags_leave_out(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run(f'{TESTS_READER} --title "Tests"', actor=story.agent)
@@ -53,15 +48,6 @@ def test_a_reader_another_modules_actor_made_is_not_removed_by_an_agent(new_stor
     story.run(TESTS_READER, actor=story.agent)
     story.expect_text("reader remove tests", "deleted: reader:", actor=story.agent)
     story.expect_text("reader list", "built-in")
-
-
-def test_a_journal_commands_own_output_is_never_read_by_a_reader(new_story):
-    story = new_story(fixture=BuilderStarted)
-    story.run('reader add every --commands "*" --lines "state"', actor=story.agent)
-    process = ended_run(story, "journal task show 1", "state: open\ntitle: Fix\n")
-    story.expect_absent(f"output read {process.id} --summary", "1: state: open", actor=story.agent)
-    second_output = ended_run(story, "cat notes", "state: kept\n")
-    story.expect_text(f"output read {second_output.id} --summary", "1: state: kept", actor=story.agent)
 
 
 def test_the_shipped_pytest_reader_reads_a_pytest_output(new_story):

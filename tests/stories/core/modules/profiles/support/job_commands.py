@@ -20,14 +20,14 @@ SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES)
 
 ROOT = Path(__file__).resolve().parents[6]
 PROFILE_COMMANDS = {
-    "journal-worker": tuple(["journal task --help"]),
+    "journal-worker": ("journal task --help", "journal worker ask-merge"),
     "journal-merger": ("journal merger next", "journal merger merge", "journal merger findings", "journal proof list --task", "journal proof show", "journal proof check", "journal proof short", "journal worker logs"),
     "journal-planner": ("journal plan make", "journal phase make", "journal task make", "journal doc make"),
     "journal-researcher": ("journal search find", "journal doc make", "journal report make"),
     "journal-debugger": ("journal search find", "journal task show", "journal output read"),
     "journal-plan-reviewer": ("journal plan outline", "journal phase show", "journal task show"),
-    "journal-medior": ("journal task overview", "journal task log", "journal proof make", "journal task start", "journal worker commit"),
-    "journal-senior": ("journal task overview", "journal task log", "journal proof make", "journal task start", "journal worker commit"),
+    "journal-medior": ("journal task overview", "journal task log", "journal proof make", "journal task start", "journal worker commit", "journal worker ask-merge"),
+    "journal-senior": ("journal task overview", "journal task log", "journal proof make", "journal task start", "journal worker commit", "journal worker ask-merge"),
     "journal-code-reviewer": ("journal search find", "journal task make", "journal task list", "journal doc show", "journal report make"),
     "journal-functional-designer": ("journal sequence list", "journal sequence run", "journal doc make", "journal search find"),
     "journal-designer": ("journal doc make", "journal doc show", "journal report make", "journal search find", "journal task show"),

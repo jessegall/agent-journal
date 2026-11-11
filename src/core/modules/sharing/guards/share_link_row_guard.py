@@ -6,7 +6,7 @@ from engine.command.context import Context
 from engine.guard.guard import Guard
 from core.modules.sharing.models.lifecycles.share_link_lifecycle import ShareLinkLifecycle
 from engine.errors.refusal import Refusal
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.sharing.models.enums.share_link_state import ShareLinkState
 from core.modules.sharing.models.share_link import ShareLink
 

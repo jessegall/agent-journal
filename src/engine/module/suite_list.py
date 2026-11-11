@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from engine.driver.suite import Suite
+from engine.module.suite import Suite
 from engine.helper_type.helper_type import HelperType
 from engine.module.module import Module
 
@@ -16,7 +16,7 @@ class SuiteList:
     def modules(self) -> tuple[type[Module], ...]:
         return tuple(dict.fromkeys(module for suite in self.suites for module in suite.modules))
 
-    def shipped_suites(self, module: type[Module]) -> list[type[Suite]]:
+    def module_suites(self, module: type[Module]) -> list[type[Suite]]:
         return [*(suite for suite in self.suites if list(suite.modules[:1]) == [module]), *module.suites]
 
     def parent_name(self, module: type[Module]) -> str | None:
@@ -24,11 +24,11 @@ class SuiteList:
         return listing[0] if listing else module.parent_suite
 
     def suite_names(self, module: type[Module]) -> tuple[str, ...]:
-        names = (self.parent_name(module), *(suite.name for suite in self.shipped_suites(module)))
+        names = (self.parent_name(module), *(suite.name for suite in self.module_suites(module)))
         return tuple(dict.fromkeys(name for name in names if name is not None))
 
     def helper_types(self, module: type[Module]) -> list[HelperType]:
-        return [*module.helper_types, *(declaration for suite in self.shipped_suites(module) for declaration in suite.helper_types)]
+        return [*module.helper_types, *(declaration for suite in self.module_suites(module) for declaration in suite.helper_types)]
 
     def problems(self) -> tuple[str, ...]:
         return (*self.modules_listed_twice(), *self.core_modules_listed(), *self.doubly_declared_modules())

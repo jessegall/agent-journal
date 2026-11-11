@@ -6,8 +6,8 @@ from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
 from engine.performance.performance_state import PerformanceState
-from engine.time.timing import Timing
-from engine.time.timing_log import TimingLog
+from engine.performance.timing import Timing
+from engine.performance.timing_log import TimingLog
 from engine.serving.server_files import ServerFiles, socket_path
 from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.server_client import request_answer

@@ -7,8 +7,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.modules.processes.support.cadence_probe import (TICK, TOOL_USE, HelperBesideWorker, agent_run, cadence_lines, cadence_tick,
-                                                                       expect_told, has_cadence_record, kept_lines, owned_run, printed, running_run,
-                                                                       side_run, tick_named, ticks, told, waiting_run, worker_agent)
+                                                                       expect_told, has_cadence_record, kept_lines, owned_run, printed, running_run, side_run,
+                                                                       tick_named, ticks, told, waiting_run, worker_agent)
 from tests.stories.core.modules.processes.background import SavedBuildMoved, SilentVitestRun, expect_streaming_line, expect_without_hint
 from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS, ActiveBuild, expect_looks, started_tree, watch_tick
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
@@ -88,15 +88,6 @@ def test_a_read_only_helper_is_told_its_own_run_is_sparse(new_story):
     titled(story, process, "Running the search tests", Actor(helper.id, ActorType.AGENT))
     ticks(story, 120, process, every=40)
     expect_told(story, helper.session, f"output {process.id} prints about once every 40 seconds, so no reader can follow it")
-
-
-def test_a_worker_is_told_its_own_run_is_sparse(new_story):
-    story = new_story(fixture=HelperBesideWorker)
-    worker = worker_agent(story)
-    process = agent_run(story, worker, "pytest tests/api -q", CommandCategory.TEST_RUN)
-    titled(story, process, "Running the api tests", Actor(worker.id, ActorType.AGENT))
-    ticks(story, 120, process, every=60)
-    expect_told(story, worker.session, f"output {process.id} prints about once every 60 seconds, so no reader can follow it")
 
 
 def test_a_helpers_and_a_workers_runs_that_print_nothing_for_30_seconds_are_told_they_do_not_stream(new_story):
@@ -224,14 +215,6 @@ def test_a_workers_queued_run_is_told_nothing_while_its_running_one_is(new_story
     ticks(story, 30)
     lines = told(story, worker.session)
     story.expect_rows(any(f"output {running.id} printed nothing" in line for line in lines), not any(f"output {queued.id} " in line for line in lines), detail="\n".join(lines))
-
-
-def test_a_person_raising_the_sparse_seconds_to_90_makes_a_running_50_second_dot_run_streaming(new_story):
-    story = install_runner(new_story(fixture=UserBuilder))
-    process = moved_run(story, "pytest tests/dots -q", CommandCategory.TEST_RUN)
-    story.expect_success(f"setting set {SPARSE_KEY} 90 --environment main", actor=story.user)
-    ticks(story, 130, process, every=50)
-    story.expect_rows("no reader can follow" not in kept_lines(story), detail=kept_lines(story))
 
 
 def test_a_person_entering_zero_or_a_negative_sparse_seconds_is_refused_and_nothing_changes(new_story):

@@ -146,8 +146,24 @@ class Assignments:
     def unassign(self, row: Assignable, context: Context, actor_id: int | None = None) -> tuple[Assignment, ...]:
         removed = tuple(assignment for assignment in self.assignments(row) if actor_id is None or assignment.actor_id == actor_id)
         for assignment in removed:
-            self.remove(assignment, context)
+            self.remove_of(row, assignment, context)
         return removed
+
+    def unassign_rows(self, rows: Sequence[Assignable], context: Context) -> None:
+        if not rows or rows[0].assigns:
+            for row in rows:
+                self.unassign(row, context)
+            return
+        model, row_ids = type(rows[0]), [row.id for row in rows]
+        assigned = self.queries.query(Assignment).filter(subject_model=model.model_name).matching(Among("subject_id", row_ids)).all_rows(ASSIGNMENT_PAGE_ROWS)
+        self.repository.delete_many_stored(list(assigned), context)
+        self.keep_rows(model, row_ids)
+
+    def remove_of(self, row: Assignable, assignment: Assignment, context: Context) -> None:
+        if not row.assigns:
+            self.repository.delete_stored(assignment, context)
+            return
+        self.remove(assignment, context)
 
     def remove(self, assignment: Assignment, context: Context) -> None:
         for inherited in self.queries.query(Assignment).filter(source_id=assignment.id).all_rows():
@@ -181,7 +197,7 @@ class Assignments:
         if [assignment.actor_id for assignment in current] == [actor_id]:
             return
         for assignment in current:
-            self.remove(assignment, context)
+            self.remove_of(row, assignment, context)
         if actor_id is not None and self.actor_exists(actor_id):
             self.repository.save(Assignment(creator_id=context.actor.id, subject_model=row.model_name, subject_id=row.id, actor_id=actor_id), context)
 

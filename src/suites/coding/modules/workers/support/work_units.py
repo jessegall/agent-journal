@@ -1,6 +1,8 @@
+from core.modules.plans.conditions.plan_tasks_condition import PlanTasksCondition
 from engine.database.kept_rows import KeptRows
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.excluding import Excluding
+from engine.query.conditions.minimum import Minimum
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_progress import PlanProgress
@@ -13,15 +15,18 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.support.work_unit import WorkUnit
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+
+CLOSED_NEVER = "9999"
 
 
 class WorkUnits:
-    """Reads the unit of a worker: the ids of its assigned tasks that are not closed, and the plan whose agent it
-    is, or else the one phase all of them belong to. The one reader of a worker's plan, so the move of plan
+    """Reads the unit of a worker: the ids of its assigned tasks that are not closed or were completed since its
+    worktree was cut, and the plan whose agent it is, or else the one phase all of them belong to. The one reader of a worker's plan, so the move of plan
     assignment to the assignments table changes only here. Counts are counted, never read row by row."""
 
-    def __init__(self, tasks: TaskQuery, plans: TaskPlans, agents: AgentRows, queries: Queries, kept: KeptRows) -> None:
-        self.tasks, self.plans, self.agents, self.queries, self.kept = tasks, plans, agents, queries, kept
+    def __init__(self, tasks: TaskQuery, plans: TaskPlans, agents: AgentRows, queries: Queries, kept: KeptRows, worktrees: WorktreeQuery) -> None:
+        self.tasks, self.plans, self.agents, self.queries, self.kept, self.worktrees = tasks, plans, agents, queries, kept, worktrees
 
     def plan_worker(self, plan: Plan) -> Agent | None:
         agent_id = PlanAssignee.agent_id(plan)
@@ -30,19 +35,25 @@ class WorkUnits:
 
     def unit(self, worker_id: int) -> WorkUnit:
         assignee = TaskQuery.assignee(worker_id).statement()
-        return self.kept.read("tasks", lambda: self.loaded_unit(worker_id), f"closed_at IS NULL AND {assignee.sql}", assignee.parameters, name="workers.work_unit")
-
-    def loaded_unit(self, worker_id: int) -> WorkUnit:
-        open_work = self.tasks.assignee_tasks(worker_id).unclosed()
-        task_ids = tuple(task.id for task in open_work.oldest().all_rows(TASK_PAGE_ROWS))
-        uncommitted_count = open_work.matching(Excluding(Equal("state", TaskState.TESTING))).count()
+        worktree = self.worktrees.worker_worktree(worker_id)
+        cut_text = worktree.cut_at.text if worktree is not None and worktree.cut_at is not None else CLOSED_NEVER
+        task_ids, uncommitted_count = self.kept.read("tasks", lambda: self.open_work(worker_id, cut_text), f"(closed_at IS NULL OR closed_at >= ?) AND {assignee.sql}",
+                                                     [cut_text, *assignee.parameters], name="workers.work_unit_tasks")
         self.plans.prepare(task_ids)
         plan = self.assigned_plan(worker_id, task_ids)
         phase = None if plan is not None else self.shared_phase(task_ids)
         if plan is None:
             return WorkUnit(plan, phase, task_ids, uncommitted_count, len(task_ids), uncommitted_count)
-        progress = self.queries.query(PlanProgress).find(plan.id)
+        plan_tasks = PlanTasksCondition(tuple([plan.id])).statement()
+        progress = self.kept.read("tasks", lambda: self.queries.query(PlanProgress).find(plan.id), plan_tasks.sql, plan_tasks.parameters, name="workers.unit_plan_progress")
         return WorkUnit(plan, phase, task_ids, uncommitted_count, progress.task_count, progress.task_count - progress.completed_count - progress.testing_count)
+
+    def open_work(self, worker_id: int, cut_text: str) -> tuple[tuple[int, ...], int]:
+        open_work = self.tasks.assignee_tasks(worker_id).unclosed()
+        open_ids = tuple(task.id for task in open_work.oldest().all_rows(TASK_PAGE_ROWS))
+        completed = self.tasks.assignee_tasks(worker_id).filter(state=TaskState.COMPLETED).matching(Minimum("closed_at", cut_text))
+        completed_ids = tuple(task.id for task in completed.oldest().all_rows(TASK_PAGE_ROWS))
+        return tuple(sorted({*open_ids, *completed_ids})), open_work.matching(Excluding(Equal("state", TaskState.TESTING))).count()
 
     def assigned_plan(self, worker_id: int, task_ids: tuple[int, ...]) -> Plan | None:
         plan = self.plans.find(task_ids[0]) if task_ids else None

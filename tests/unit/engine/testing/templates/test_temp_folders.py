@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from engine.testing.templates.temp_folders import FAILED_PREFIX, KEPT_FAILED_RUNS, PYTEST_PREFIX, RUNNING_FOLDER_SECONDS, RUNNING_PREFIX, TempFolders
-from engine.testing.templates.template_cache import TemplateCache
+from engine.testing.cache.template_cache import TemplateCache
 
 CHECK = Path(__file__).resolve().parents[5] / "scripts" / "checks" / "pytest_folder_size.py"
 

@@ -3,7 +3,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.query.queries import Queries
-from engine.enums.role_group import RoleGroup
+from engine.agent.enums.role_group import RoleGroup
 from core.modules.project_rules.models.enums.rule_state import RuleState
 from core.modules.project_rules.models.project_rule import ProjectRule
 from core.modules.project_rules.support.rule_nudges import START_RULES

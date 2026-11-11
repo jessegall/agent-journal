@@ -1,5 +1,5 @@
 from engine.guard.guard import Guard
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from engine.registry.registry import Registry
 from core.modules.actors.models.actor_record import ActorRecord

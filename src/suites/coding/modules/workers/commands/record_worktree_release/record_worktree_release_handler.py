@@ -4,7 +4,7 @@ from dataclasses import replace
 
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
@@ -45,7 +45,9 @@ class RecordWorktreeReleaseHandler(Handler[RecordWorktreeRelease, Worktree]):
         for unproved_task in [assigned_task for assigned_task in assigned_tasks if not self.has_all_proofs_checked(assigned_task, worktree)]:
             self.release_task(unproved_task, command.reason, context)
             changed_ids.append(unproved_task.id)
-        for delegated in tuple(worker_tasks.matching(Among("state", WAITING_STATES)).all_rows(TASK_PAGE_ROWS)):
+        waiting = tuple(worker_tasks.matching(Among("state", WAITING_STATES)).all_rows(TASK_PAGE_ROWS))
+        self.assignments.unassign_rows(waiting, context)
+        for delegated in waiting:
             self.repository.update(delegated, context, delegated_to=None)
             changed_ids.append(delegated.id)
         self.waits.update_tasks(changed_ids, context)

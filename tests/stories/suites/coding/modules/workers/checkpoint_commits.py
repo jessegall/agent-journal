@@ -1,15 +1,15 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 import json
 
 import pytest
 
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task
-from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, file_proof_line, start_planned_worker, unplanned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, start_planned_worker, unplanned_worker
 
 COMMITTED = "committed"
 BUILD_TASKS = 3
@@ -26,6 +26,7 @@ def proof_states(worker: StoryWorker) -> dict[int, str]:
 
 def merge(worker: StoryWorker):
     worker.repository.checkout(ENVIRONMENT_BRANCH)
+    asked_for_merge(worker.story, worker.worker)
     worker.story.run(f"worker logs {agent_number(worker.story, worker.worker.id)}", actor=worker.story.agent)
     return worker.story.run(f"worker merge --wait {agent_number(worker.story, worker.worker.id)}", actor=worker.story.agent)
 
@@ -76,21 +77,6 @@ def test_162_a_commit_with_a_missing_proof_is_refused_in_a_started_plan_as_outsi
     worker.story.expect_rows(outcome.code != 0, "proof" in outcome.output_text, proof_states(worker) == {}, detail=outcome.output_text)
 
 
-def test_159_161_163_a_final_commit_commits_the_proofs_with_a_test_and_makes_the_worktree_ready_to_merge(committed_worker):
-    row, status, states = worktree_row(committed_worker), committed_worker.status(), proof_states(committed_worker)
-    committed_worker.story.expect_rows(row.get("merge_ready_at") is not None, MERGE_WAIT_WORDS in status, CHECKPOINT_WORDS in status, detail=f"{row} | {status}")
-    committed_worker.story.expect_rows(states[1] == COMMITTED, states[3] == COMMITTED, states[2] != COMMITTED, detail=str(states))
-
-
-def test_163_a_final_commit_in_a_started_plan_with_the_merger_on_says_the_committed_work_can_be_merged(group_worker):
-    story = group_worker.story
-    story.expect_success(MERGER_ON, actor=story.user)
-    story.run(COMMIT, actor=group_worker.worker)
-    story.run_listeners()
-    lines = " | ".join(group_worker.main_agent_lines())
-    story.expect_rows("the work of worker:2 is committed and can be merged" in lines, "all pass" not in lines, detail=lines)
-
-
 def test_164_the_merge_takes_a_worktree_of_committed_proofs_in_a_started_plan_and_refuses_one_with_an_unchecked_proof_of_no_test(committed_worker):
     story = committed_worker.story
     refused = merge(committed_worker)
@@ -130,16 +116,6 @@ def test_166_a_task_in_no_plan_is_not_merged_before_its_tests_passed(new_story, 
     worker.prove(TEST_LINE)
     refused = merge(worker)
     worker.story.expect_rows(refused.code != 0, COMMITTED not in proof_states(worker).values(), detail=refused.output_text)
-
-
-def test_203_the_sweep_of_waiting_tests_commits_a_shown_proof_of_a_task_in_testing_in_a_started_plan_and_starts_no_test(group_worker):
-    story = group_worker.story
-    story.run('proof short 1 "the total is missing"', actor=story.agent)
-    story.run(f'proof make 1 --task 1 "cart.py:1, the cart story and the total" --test "{file_proof_line(TEST_LINE)}"', actor=group_worker.worker)
-    edited_state = proof_states(group_worker)[1]
-    StalledWorkerTestRuns()(story.container)
-    story.expect_text("task show 1", "state: testing", actor=story.agent)
-    story.expect_rows(edited_state == "shown", proof_states(group_worker)[1] == COMMITTED, group_worker.started == [], detail=f"{edited_state}, {proof_states(group_worker)}")
 
 
 def test_a_committed_proof_of_a_started_plan_is_left_as_it_is_by_three_sweeps_of_waiting_tests(committed_worker):

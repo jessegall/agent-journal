@@ -1,7 +1,7 @@
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.event.moved import Moved
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
@@ -31,7 +31,7 @@ class CheckpointPassListener(SaveListener[Moved[CheckpointReach]]):
 
     def handle(self, event: Moved[CheckpointReach], context: Context) -> None:
         reach = event.row
-        if not reach.is_early and self.checkpoints.save_pass(reach.plan_id, reach.phase_id, context):
+        if reach.source.opens_phases() and self.checkpoints.save_pass(reach.plan_id, reach.phase_id, context):
             phase = self.rows.required(Phase, reach.phase_id)
             self.main_agents.send(self.rows.required(Plan, reach.plan_id), CHECKPOINT_FINISHED, PASS_SOURCE, context, phase=phase.title)
         for task_id in reach.tasks():

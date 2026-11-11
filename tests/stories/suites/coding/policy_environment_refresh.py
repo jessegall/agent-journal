@@ -3,7 +3,6 @@ import json
 from engine.event.event_log import EventLog
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
-from tests.stories.support.story_checks import expect_value
 
 HELPERS = "journal.suites.coding.main-starts-read-only-helpers"
 MERGER = "journal.suites.coding.workers.merger-on"
@@ -59,4 +58,4 @@ def test_s60_a_project_change_reaches_a_viewer_of_another_environment_as_a_refer
         with server.viewer_stream(cookie, cursor_id, ["setting.*"]) as response:
             story.expect_success(f"setting set {HELPERS} off --project", actor=story.user)
             event = next_event(response)
-    expect_value(bool(set(event) == REFERENCE_KEYS and event["environment"] is None and str(event["event"]).startswith("setting.")), True)
+    story.expect_rows(set(event) == REFERENCE_KEYS, event.get("environment") is None, str(event.get("event")).startswith("setting."), detail=str(event))

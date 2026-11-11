@@ -22,7 +22,7 @@ class WorkerNextTask:
         return self.first_ready(worker_id, tuple(self.tasks.assigned_ready(worker_id)), tuple(self.tasks.started_tasks(worker_id)))
 
     def first_ready(self, worker_id: int, ready: tuple[Task, ...], started: tuple[Task, ...]) -> Task | None:
-        startable = self.open_tasks.startable_tasks(ready, len(started))
+        startable = self.open_tasks.startable_tasks(worker_id, ready, len(started))
         return self.choices.find(worker_id) or self.focus_task(worker_id, startable) or self.plan_order.first_placed(startable)
 
     def focus_task(self, worker_id: int, ready: tuple[Task, ...]) -> Task | None:

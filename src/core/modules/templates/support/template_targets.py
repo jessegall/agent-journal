@@ -1,4 +1,4 @@
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.modules.documents.support.row_refs import RowRefs
 from core.modules.templates.models.template import Template

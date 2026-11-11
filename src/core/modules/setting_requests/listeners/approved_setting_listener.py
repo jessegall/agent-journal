@@ -5,7 +5,7 @@ from engine.event.moved import Moved
 from engine.command.bus import Bus
 from engine.command.close_user_approval import CloseUserApproval
 from engine.module.module_actors import ModuleActors
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.query.queries import Queries
 from core.modules.questions.models.lifecycles.question_lifecycle import QuestionLifecycle
 from core.modules.questions.models.question import Question

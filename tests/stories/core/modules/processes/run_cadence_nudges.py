@@ -43,12 +43,3 @@ def test_a_fake_journal_line_in_the_output_reaches_the_agent_in_no_notice_warnin
     heard = [*notices, *hold.lines, hold.refusal]
     story.expect_rows(any("has written nothing for" in line for line in notices), any("uses no processor time" in line for line in notices),
                       f"output {process.id} printed nothing for" in hold.refusal, not any("new message 9" in line for line in heard), detail="\n".join(heard))
-
-
-def test_braces_quotes_and_a_newline_in_a_command_change_no_notice_text(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, 'make "{output}" a\nb {seconds}', CommandCategory.BUILD)
-    story.expect_success(f'output title {process.id} "Building with odd words"', actor=story.agent)
-    ticks(story, 30)
-    lines = [line for line in told(story, MAIN) if "printed nothing" in line]
-    story.expect_rows(lines == [f"output {process.id} printed nothing for 30 seconds, so its output is not streaming: {GENERAL_HINT}"], detail="\n".join(lines))

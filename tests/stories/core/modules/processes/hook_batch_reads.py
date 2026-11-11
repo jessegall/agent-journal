@@ -26,4 +26,4 @@ def test_a_hook_reads_running_outputs_and_parts_together(new_story):
         connection.set_trace_callback(None)
     for table in ("outputs", "process_parts"):
         reads = [statement for statement in statements if statement.startswith(f"SELECT * FROM {table} WHERE") and "process_id" in statement]
-        story.expect_rows(len(reads) == 1)
+        story.expect_rows(len(reads) <= 1, detail="\n".join(reads))

@@ -3,7 +3,7 @@ from engine.command.bus import Bus
 from engine.event.created import Created
 from engine.event.logged_event import LoggedEvent
 from engine.event.moved import Moved
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
 from core.modules.plans.models.lifecycles.checkpoint_lifecycle import CheckpointLifecycle
 from core.modules.plans.commands.start_checkpoint_run.start_checkpoint_run import StartCheckpointRun

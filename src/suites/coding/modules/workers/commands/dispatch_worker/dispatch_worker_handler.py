@@ -8,7 +8,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.provider.providers import Providers
 from engine.query.queries import Queries
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.profile.agent_profile import AgentProfile
 from engine.errors.refusal import Refusal
@@ -31,12 +31,15 @@ from core.modules.helpers.support.agent_admission import AgentAdmission
 from core.modules.helpers.support.allowed_models import AllowedModels
 from core.modules.helpers.support.profile_model import ProfileModel
 from suites.coding.modules.workers.support.worker_routing import WorkerRouting
+from suites.coding.modules.workers.support.worker_choice import WorkerChoice
+from suites.coding.modules.workers.support.worker_route_fallback import WorkerRouteFallback
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.commands.name_worker_tests.name_worker_tests import NameWorkerTests
 from suites.coding.modules.workers.commands.open_worker_worktree.open_worker_worktree import OpenWorkerWorktree
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
+from suites.coding.modules.workers.commands.record_worktree_takeover.record_worktree_takeover import RecordWorktreeTakeover
 from suites.coding.modules.workers.commands.switch_worker_sandbox.switch_worker_sandbox import SwitchWorkerSandbox
 from core.modules.messages.support.work_sources import WorkSources
 from dataclasses import replace
@@ -64,9 +67,12 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.sources, self.routing = sources, routing
 
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
-        self.reservations.check([command.task_id, *command.delegated_ids])
         read = self.queries.query(Task).find_many([command.task_id, *command.delegated_ids])
-        tasks = AssignableTasks.checked(self.release.released(read, context.actor, context.environment_id))
+        if command.taken_from is not None:
+            tasks = list(read)
+        else:
+            self.reservations.check([command.task_id, *command.delegated_ids])
+            tasks = AssignableTasks.checked(self.release.released(read, context.actor, context.environment_id))
         with self.scopes.row_scope(tasks[0]):
             return self.dispatched(command, tasks, replace(context, environment_id=tasks[0].environment_id))
 
@@ -84,6 +90,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         if not command.new_agent_reason.strip():
             self.check_idle(environment.folder, WorkerRequest(profile.name, program, model), tasks, command)
         start = StartAgent(command.session or str(uuid4()), program, CodingHelperRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
+        if command.taken_from is not None:
+            return self.taken_over(command, start, choice, environment, context)
         source = self.sources.source_copy(replace(context, environment_id=task.environment_id))
         task_sources = self.copies.copies(tasks, source)
         opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id, command.new_agent_reason.strip(), choice.reason, command.starts_program and AssignableTasks.has_open(tasks)), context)
@@ -101,13 +109,27 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise
         if command.plan_id is not None:
             self.bus.run_with_context(AssignPlan(command.plan_id, opened.worker.id, command.phase_id), context)
-        if command.test_commands:
-            self.bus.run_with_context(NameWorkerTests(opened.worker.id, command.test_commands), context)
-        if not command.sandboxed:
-            self.bus.run_with_context(SwitchWorkerSandbox(opened.worker.id, False), context)
-        if choice.fallback is not None:
-            self.bus.run_with_context(ReportWorkerRouteFallback(opened.worker.id, tuple(listed.id for listed in tasks), choice.fallback), context)
+        self.configure(command, opened.worker, choice.fallback, context)
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
+
+    def taken_over(self, command: DispatchWorker, start: StartAgent, choice: WorkerChoice, environment: Environment, context: Context) -> WorkerLaunch:
+        stopped = self.queries.query(Agent).find(command.taken_from)
+        worktree = self.worktrees.required_worker_worktree(stopped.id)
+        if stopped.ended_at is None:
+            raise Refusal(f"{AgentLabel.from_agent(stopped).text} is still running", f"journal agent stop {stopped.number}, then take its worktree over")
+        self.places.check_new_place()
+        worker = self.bus.dispatch(start, context)
+        taken = self.bus.run_with_context(RecordWorktreeTakeover(worktree.id, worker.id), context)
+        self.configure(command, worker, choice.fallback, context)
+        return WorkerLaunch(worker, taken, self.worker_command.command(worker, taken, environment, self.queries.query(Task).find(taken.task_id)))
+
+    def configure(self, command: DispatchWorker, worker: Agent, fallback: WorkerRouteFallback | None, context: Context) -> None:
+        if command.test_commands:
+            self.bus.run_with_context(NameWorkerTests(worker.id, command.test_commands), context)
+        if not command.sandboxed:
+            self.bus.run_with_context(SwitchWorkerSandbox(worker.id, False), context)
+        if fallback is not None:
+            self.bus.run_with_context(ReportWorkerRouteFallback(worker.id, (command.task_id, *command.delegated_ids), fallback), context)
 
     @staticmethod
     def check_unstarted(command: DispatchWorker, context: Context, environment: Environment) -> None:

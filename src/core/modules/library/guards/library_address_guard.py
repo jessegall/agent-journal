@@ -1,4 +1,4 @@
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from engine.enums.actor_type import ActorType
 from engine.guard.guard import Guard
 from core.modules.library.support.library_address import ADDRESS_SETTING

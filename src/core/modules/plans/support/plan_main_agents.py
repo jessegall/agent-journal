@@ -16,6 +16,8 @@ class PlanMainAgents:
 
     def send(self, plan: Plan, declaration: NudgeDeclaration, source: str, context: Context, **fields: object) -> None:
         assignee_id = PlanAssignee.agent_id(plan)
-        for agent in MainAgentFinder.rows(self.queries):
-            if assignee_id in (None, agent.id):
+        main_agents = tuple(MainAgentFinder.rows(self.queries))
+        is_main_assignee = any(agent.id == assignee_id for agent in main_agents)
+        for agent in main_agents:
+            if not is_main_assignee or agent.id == assignee_id:
                 self.nudger.send(agent.id, declaration, source, context, plan=plan.id, **fields)

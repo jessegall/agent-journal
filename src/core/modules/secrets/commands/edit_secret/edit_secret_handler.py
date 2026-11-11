@@ -4,7 +4,7 @@ from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from core.modules.secrets.commands.edit_secret.edit_secret import EditSecret
 from core.modules.secrets.models.secret import Secret
-from engine.actor.person_check import PersonCheck
+from engine.command.person_check import PersonCheck
 from core.modules.secrets.queries.secret_query import SecretQuery
 from engine.private.secret_values import SecretValues
 

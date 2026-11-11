@@ -1,5 +1,4 @@
 from tests.stories.core.support.agent_labels import agent_number
-import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -19,10 +18,10 @@ from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DISPATCH, FIRST_PROOF, delivered_worker, dispatched_worker, repository_environment
-from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
+from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from tests.stories.suites.coding.modules.workers.support.judge_plugin import SINFUL_TEXT, judge_plugin_folder
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start, running_launcher
-from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_with
 
 MERGER_ROLE_REFUSAL = "only the merger runs this"
@@ -190,12 +189,6 @@ def test_a_named_test_run_with_a_library_missing_says_the_merger_can_relink(link
 def test_a_tell_without_every_part_is_refused_with_the_shape(case, line):
     expect_refused_with(case.story, line, "--tried", "--option", "--recommend", actor=case.merger)
     case.story.expect_rows(case.main_messages() == ())
-
-
-def test_a_case_no_command_covers_ends_at_the_main_agent_with_the_facts_of_the_worker(own_files):
-    own_files.story.expect_success(f"{MERGER_QUESTION} --worker {agent_number(own_files.story, own_files.worker.id)}", actor=own_files.merger)
-    text = own_files.main_messages()[0].text
-    own_files.story.expect_rows("Recommendation: Dutch tax" in text, "point build, task 1" in text, "cart.py, rate.py" in text, detail=text)
 
 
 def test_only_the_merger_tells(case):

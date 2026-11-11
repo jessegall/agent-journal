@@ -97,7 +97,6 @@ class StoryOverlap:
         return {f"{start}: {step}" for step in path} | {f"{start}: {step} then {following}" for step, following in pairwise(path)}
 
     def no_fixture_lines(self) -> list[str]:
-        """Names each story that starts from no fixture and a fixture its folder's other stories start from."""
         fixtures = {test_id.partition("[")[0]: fixture for test_id, fixture in self.story_fixtures.items()}
         used: dict[str, Counter[str]] = defaultdict(Counter)
         for test_id, fixture in fixtures.items():
@@ -116,7 +115,6 @@ class StoryOverlap:
         return str(PurePosixPath(test_id.partition("::")[0]).parent)
 
     def file_opening_lines(self) -> list[str]:
-        """Names stories of different files that start the same way and open with the same steps."""
         openings: dict[tuple[str, ...], set[str]] = defaultdict(set)
         for test_id, (start, *steps) in self.stories.items():
             if len(steps) >= FILE_OPENING_STEPS:
@@ -126,6 +124,5 @@ class StoryOverlap:
 
     @staticmethod
     def empty_fixture_lines(fixtures: Sequence[type[StoryFixture]]) -> list[str]:
-        """Names each fixture that builds on another and adds no step to it."""
         return [f"fixture adds no step to {fixture.parent.__name__} that it builds on, remove it or give it a step: {fixture.__module__}.{fixture.__name__}"
-                for fixture in fixtures if fixture.parent is not None and not fixture.adds_a_step()]
+                for fixture in fixtures if fixture.parent is not None and not fixture.has_steps()]

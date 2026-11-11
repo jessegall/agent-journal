@@ -5,7 +5,7 @@ from engine.file.file_access import FileAccess
 from engine.instruction.instruction_imports import INSTRUCTION_FILES, InstructionImports
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.commands.remove_instruction_import.remove_instruction_import import RemoveInstructionImport
 from core.modules.agents.commands.remove_instruction_import.support.instruction_import_question import InstructionImportQuestion
 

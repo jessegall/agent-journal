@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.database.database import Database
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.actors.models.actor_record import ActorRecord

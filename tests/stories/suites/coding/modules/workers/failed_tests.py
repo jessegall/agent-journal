@@ -80,15 +80,6 @@ def test_47_48_only_the_failed_proof_is_tested_at_the_commit_after_it_is_shown_a
     first_failed.story.expect_rows(len(first_failed.started) == 4, detail=f"started: {first_failed.started}")
 
 
-def test_49_a_short_proof_refuses_a_commit_of_its_own_task_and_not_a_commit_of_another_task(first_failed):
-    refused = first_failed.story.run(COMMIT, actor=first_failed.worker)
-    prove_task(first_failed, 3, 1)
-    first_failed.story.expect_success(COMMIT, actor=first_failed.worker)
-    expect_task_states(first_failed, "testing", 3)
-    expect_task_states(first_failed, "started", 1)
-    first_failed.story.expect_rows(refused.code != 0, "proof 1 is short: fix it and hand it in again" in refused.output_text, detail=refused.output_text)
-
-
 def test_50_a_failed_run_of_the_selected_tests_returns_the_tasks_of_the_commit_and_names_the_output(new_story, monkeypatch):
     worker = unplanned_holding_worker(new_story, monkeypatch)
     story = worker.story

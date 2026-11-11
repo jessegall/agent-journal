@@ -29,6 +29,8 @@ class WorkerStepFacts:
     missing: MissingPoints | None = None
     is_planned: bool = False
     unit_open_count: int | None = None
+    unit_name: str = ""
+    unit_task_count: int = 0
 
     @property
     def waiting_text(self) -> str:
@@ -60,4 +62,5 @@ class WorkerStepFacts:
     def words(self) -> StepFields:
         return StepFields(waiting=self.waiting_text, task=self.task_id, open_tasks=f"{self.open_task_count} task(s)", runs=run_count_text(self.test_runs_available), label=self.label,
                          files=self.conflict_files, proven=self.proven_text, commit=self.commit_text,
-                         commit_tests=PLANNED_COMMIT_TEXT if self.is_planned else COMMIT_TEXT, missing=self.missing_text, unit_open=self.unit_open_text)
+                         commit_tests=PLANNED_COMMIT_TEXT if self.is_planned else COMMIT_TEXT, missing=self.missing_text, unit_open=self.unit_open_text,
+                         unit=self.unit_name, unit_tasks=self.unit_task_count)

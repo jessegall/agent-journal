@@ -3,7 +3,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
 from engine.enums.managed_state import ManagedState
-from engine.enums.hook_effect import HookEffect
+from engine.provider.enums.hook_effect import HookEffect
 from engine.provider.hook_source import HookSource
 
 DEFAULT_TIMEOUT_SECONDS = 30

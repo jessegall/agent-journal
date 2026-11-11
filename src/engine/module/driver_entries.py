@@ -22,7 +22,7 @@ class DriverEntries:
                                       tuple(suite.windows), dict(suite.layouts), {page: tuple(presets) for page, presets in suite.presets.items()},
                                       suite.agent_policy,
                                       DottedPath.class_path(suite.task_assigner).text if suite.task_assigner else "", shipped=module in shipped_modules)
-                     for module in modules for suite in suites.shipped_suites(module))
+                     for module in modules for suite in suites.module_suites(module))
 
     def drivers(self, modules: Sequence[type[Module]]) -> tuple[DriverEntry, ...]:
         return tuple(DriverEntry(driver.name, DottedPath.class_path(driver), module.name, driver.suite.name, driver.role, tuple(driver.opening_lines),

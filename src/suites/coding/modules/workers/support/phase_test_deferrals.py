@@ -1,5 +1,5 @@
 from engine.command.context import Context
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
@@ -37,7 +37,7 @@ class PhaseTestDeferrals:
     def run_commands(self, phase: Phase) -> tuple[str, ...]:
         due = self.due(phase.id)
         if not phase.test_command:
-            source_phases = self.rows.required_by_id(Phase, sorted({deferral.phase_id for deferral in due}))
+            source_phases = self.rows.required_index(Phase, sorted({deferral.phase_id for deferral in due}))
             return tuple(OwnTestCommand.parse(source_phases[deferral.phase_id].test_command).with_paths(deferral.path_words()).text() for deferral in due)
         omitted_paths = tuple(path for deferral in self.omitted(phase.id) for path in deferral.path_words())
         due_paths = tuple(path for deferral in due for path in deferral.path_words())

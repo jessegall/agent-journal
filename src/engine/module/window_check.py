@@ -66,7 +66,7 @@ class WindowCheck:
         suites = self.finder.suite_list()
         sections = {window.name for module in modules for window in module.windows if window.place is WindowPlace.SECTION}
         return [f"suite {suite.name} names the section {name}, which an inspector draws and no pane offers"
-                for module in modules for suite in suites.shipped_suites(module) for name in suite.windows if name in sections]
+                for module in modules for suite in suites.module_suites(module) for name in suite.windows if name in sections]
 
     def button_problems(self, modules: Sequence[type[Module]], shipped: set[str]) -> list[str]:
         buttons = self.mark_dock_lines(modules, shipped)

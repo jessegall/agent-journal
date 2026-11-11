@@ -1,5 +1,5 @@
 from engine.guard.guard import Guard
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.processes.models.enums.process_state import RUNNING_STATES

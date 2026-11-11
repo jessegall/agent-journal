@@ -4,7 +4,7 @@ from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 from engine.command.context import Context
 from engine.event.moved import Moved
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole

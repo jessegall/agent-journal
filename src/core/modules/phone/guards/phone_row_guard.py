@@ -5,7 +5,7 @@ from engine.command.context import Context
 from engine.guard.guard import Guard
 from core.modules.phone.models.lifecycles.phone_lifecycle import PhoneLifecycle
 from engine.errors.refusal import Refusal
-from engine.errors.user_approval_refusal import UserApprovalRefusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.phone.models.phone import Phone
 
 

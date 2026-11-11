@@ -5,7 +5,7 @@ from engine.event.logged_event import LoggedEvent
 from engine.event.deleted import Deleted
 from engine.command.bus import Bus
 from engine.library.library_lookup import LibraryLookup
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.registry.registry import Registry

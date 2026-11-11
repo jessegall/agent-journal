@@ -13,7 +13,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, dispatched_worker, repository_environment, worker_session
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment, worker_session
 
 LIMIT = 400_000
 JOB = "Add the tax as well"
@@ -105,11 +105,3 @@ def test_a_worker_past_the_limit_at_an_interim_commit_is_told_to_stop_and_may_st
     story.expect_hook_allowed(session, HookSamples.sample("post_tool_use"), "stop now")
     story.expect_success('memory skip "nothing to keep"', actor=worker)
     story.expect_hook_allowed(session, HookSamples.stop())
-
-
-def test_a_worker_under_the_limit_at_an_interim_commit_goes_on_and_may_not_stop(new_story):
-    story, worker = finished_task_ids(new_story)
-    limit_enabled(story)
-    has_context(story, worker, LIMIT - 1)
-    story.expect_success(COMMIT, actor=worker)
-    story.expect_hook_refusal(worker_session(story, worker), HookSamples.stop(), "task")

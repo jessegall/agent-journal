@@ -7,7 +7,7 @@ from engine.command.context import Context
 from engine.file.conflict_files import ConflictFiles
 from pathlib import Path
 from engine.command.handler import Handler
-from engine.listener.event_rows import EventRows
+from engine.listener.rows.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from engine.scope.actor_scope import ActorScope
 from core.modules.environments.models.environment import Environment
@@ -29,6 +29,8 @@ from suites.coding.modules.workers.commands.record_merge_request.record_merge_re
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
+from suites.coding.modules.workers.support.work_units import WorkUnits
+from suites.coding.modules.workers.support.merge_return_text import merge_return_line
 
 class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     """Merges a checked worktree into its base branch in the environment's folder, in the order of doc 1101
@@ -40,25 +42,32 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     command = MergeWorker
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, checks: MergeChecks, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, followups: MergeFollowups, log_lines: WorkerLogLines, queued_start: WorkerQueuedStart, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, checks: MergeChecks, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, followups: MergeFollowups, log_lines: WorkerLogLines, queued_start: WorkerQueuedStart, numbers: RowNumbers,
+                 units: WorkUnits) -> None:
+        self.numbers, self.units = numbers, units
         self.log_lines, self.queued_start = log_lines, queued_start
         self.rows, self.worktrees, self.checks, self.git = rows, worktrees, checks, git
         self.environments, self.bus, self.followups = environments, bus, followups
 
     def check_rows(self, command: MergeWorker, actor: Actor) -> None:
-        worktree = self.worktrees.worker_worktree(command.worker_id)
-        if worktree is None or worktree.state is not WorktreeState.DELIVERED:
-            raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has delivered nothing to merge", "journal worker-worktree list shows the worktrees")
+        worktree = self.delivered_worktree(command.worker_id)
         self.checks.check_proofs(worktree)
         self.checks.check_logs(worktree)
         self.checks.check_base_branch(worktree)
         self.checks.check_important_lines(worktree, self.log_lines.review(worktree), command.important_answer)
 
-    def handle(self, command: MergeWorker, context: Context) -> MergeOutcome:
-        worktree = self.worktrees.worker_worktree(command.worker_id)
+    def delivered_worktree(self, worker_id: int) -> Worktree:
+        worktree = self.worktrees.worker_worktree(worker_id)
+        label = AgentLabel.from_row_id(worker_id, self.numbers, "worker").text
+        unit = self.units.unit(worker_id)
+        if worktree is not None and worktree.state is WorktreeState.CUT and unit.has_several_tasks:
+            raise Refusal(f"{label} works {unit.merge_name} and has not asked for its merge", "merge its committed work so far with --up-to <task>")
         if worktree is None or worktree.state is not WorktreeState.DELIVERED:
-            raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has delivered nothing to merge", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{label} has delivered nothing to merge", "journal worker-worktree list shows the worktrees")
+        return worktree
+
+    def handle(self, command: MergeWorker, context: Context) -> MergeOutcome:
+        worktree = self.delivered_worktree(command.worker_id)
         environment = self.environments.find(worktree.environment_id)
         self.check(worktree, environment)
         planned = self.followups.planned(worktree.id)
@@ -106,7 +115,8 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
             self.bus.run_with_context(RecordMergeRequest(worktree.id, target_commit, branch_commit, worktree.folder), context)
         except Refusal as refusal:
             findings = f"{refusal.reason}: {refusal.suggestion}" if refusal.suggestion else refusal.reason
-            self.bus.run_with_context(SendWorker(worktree.session_agent_id, f"Your merge into {worktree.base_branch} was refused before anything was merged:\n{findings}\nFix it in your worktree and deliver again."), context)
+            reason = f"the merge into {worktree.base_branch} was refused before anything was merged: {findings}"
+            self.bus.run_with_context(SendWorker(worktree.session_agent_id, merge_return_line(reason, self.units.unit(worktree.session_agent_id))), context)
             return findings
         return ""
 

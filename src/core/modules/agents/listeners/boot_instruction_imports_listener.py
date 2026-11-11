@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.event.journal_booting import JournalBooting
 from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.query.queries import Queries
 from core.modules.agents.commands.warn_instruction_imports.warn_instruction_imports import WarnInstructionImports
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
