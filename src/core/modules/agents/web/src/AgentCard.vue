@@ -75,7 +75,7 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
         <template v-if="open"><InformationBar :agent-programs="context.props.programs.rows.value" :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: facts?.windows ?? []}" card>
             <AgentActions :row="row" />
             <Btn variant="ghost" small data-agent-inspector @click.stop="peekRef(`agents:${row.id}`)">Open inspector</Btn>
-            <template v-if="row.role === 'helper' && !row.ended_at"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.number)])">Stop</Btn></template>
+            <template v-if="row.role === 'helper' && (!row.ended_at || facts?.helper_job_open)"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.number)])">{{ row.ended_at ? "End job" : "Stop" }}</Btn></template>
         </InformationBar></template>
         <template v-if="!open"><AgentTaskLine :tasks="tasks" :in-hand="row.role !== 'helper' && facts?.job_enabled ? jobTask || null : null" :job="row.role === 'helper' ? job : ''" :job-title="row.role === 'helper' ? facts?.helper_job_title || '' : ''" :job-launch="row.role === 'helper' ? jobLaunch : ''" :per-hour="rate" /></template>
         <AgentStatusDot :state="dotState" :doing="statusWords" :since="statusSince" :seen="statusSeen" />

@@ -48,6 +48,7 @@ class AgentCard(EnvironmentScoped, ViewModel):
     helper_job_title: str
     helper_job_program: str
     helper_job_new_session: bool | None
+    is_helper_job_open: bool
     session_count: int
     replaced_session_end_reason: str | None
     memory_count: int
