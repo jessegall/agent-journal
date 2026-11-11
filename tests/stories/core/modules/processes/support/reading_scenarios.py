@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+from engine.actor.actor import Actor
+from engine.command.context import Context
 from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from engine.testing.stories.story import Story
@@ -7,6 +9,8 @@ from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
+from core.modules.messages.commands.read_message.read_message import ReadMessage
+from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
 from tests.stories.core.modules.processes.support.cadence_probe import told
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, moved_run, start_process
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
@@ -87,3 +91,16 @@ def end_positions(story: Story, process: Process) -> list[int]:
 def heard(story: Story, session: str = "s-1") -> str:
     """The lines an agent hears on its next two hooks, as a hook gives only a few lines at a time."""
     return "\n".join([*told(story, session), *told(story, session)])
+
+
+def marks_context(story: Story, actor: Actor) -> Context:
+    return Context(actor, story.clock.timestamp(), ReadMessage(1))
+
+
+def declared_unreadable(story: Story, words: str, note: str) -> None:
+    """The main agent marks a command unreadable through the one keeper of the marks."""
+    story.container.get(UnreadableMarks).declare(story.agent.id, words, note, marks_context(story, story.agent))
+
+
+def lifted_unreadable(story: Story, words: str, actor: Actor) -> None:
+    story.container.get(UnreadableMarks).lift(words, actor.id, marks_context(story, actor))

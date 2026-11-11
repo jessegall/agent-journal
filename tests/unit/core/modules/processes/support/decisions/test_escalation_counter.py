@@ -60,8 +60,8 @@ class ResetsSample(EscalationResets):
     marked_at: dict[str, Timestamp] = field(default_factory=dict)
     skipped_at: dict[str, Timestamp] = field(default_factory=dict)
 
-    def marked_since(self, command_key: str, timestamp: Timestamp) -> bool:
-        return command_key in self.marked_at and self.marked_at[command_key] > timestamp
+    def last_marked_at(self, command_key: str) -> Timestamp | None:
+        return self.marked_at.get(command_key)
 
     def skipped_since(self, command_key: str, timestamp: Timestamp) -> bool:
         return command_key in self.skipped_at and self.skipped_at[command_key] > timestamp
@@ -71,8 +71,8 @@ def missing_runs(key: str, count: int) -> list[DecisionSample]:
     return [DecisionSample(key, ReaderState.MISSING, minute(number)) for number in range(1, count + 1)]
 
 
-def counter(rows: list[DecisionSample], readers: tuple[Reader, ...] = (), resets: EscalationResets = EscalationResets()) -> EscalationCounter:
-    return EscalationCounter(DecisionsSample(rows), ReadersSample(readers), resets)
+def counter(rows: list[DecisionSample], readers: tuple[Reader, ...] = (), resets: EscalationResets | None = None) -> EscalationCounter:
+    return EscalationCounter(DecisionsSample(rows), ReadersSample(readers), resets or ResetsSample())
 
 
 @pytest.mark.parametrize("runs", [0, 1, 2, 3])
