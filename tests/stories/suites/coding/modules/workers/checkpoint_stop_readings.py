@@ -1,3 +1,5 @@
+import pytest
+
 from datetime import timedelta
 
 from engine.command.bus import Bus
@@ -36,16 +38,17 @@ def worker_label(story) -> str:
     return f"worker:{agent_number(story, story.worker.id)}"
 
 
-def test_a_resumed_worker_gets_a_card_and_one_restart_line_to_the_merger_and_none_to_the_main_agent(two_task_worker):
+@pytest.mark.parametrize("resume_limit, restart_line_count, main_agent_line_count", [(3, 1, 0), (0, 0, 1)])
+def test_a_stopped_worker_shows_a_card_and_is_restarted_with_one_line_to_the_merger_or_at_its_resume_limit_named_once_to_the_main_agent(two_task_worker, resume_limit, restart_line_count, main_agent_line_count):
     story = two_task_worker
+    set_resume_limit(story.container, resume_limit)
     story.expect_success(MERGER_ON, actor=story.user)
     ended(story)
     story.run_listeners()
-    texts = merger_texts(story)
-    story.expect_rows(len(texts) == 1, "tasks left" in story.run(MARKS).output_text, f"{worker_label(story)} stopped with" not in main_agent_lines(story),
-                      f"{worker_label(story)} ended with" not in main_agent_lines(story), detail=f"{texts} | {main_agent_lines(story)}")
-    restart_line = story.container.get(Queries).query(MergerLine).first()
-    story.expect_rows(restart_line.environment_id == 1, detail="the restart line is saved in the environment of its worker")
+    merger_lines = tuple(story.container.get(Queries).query(MergerLine).oldest().all_rows())
+    lines = main_agent_lines(story)
+    story.expect_rows("tasks left" in story.run(MARKS).output_text, len(merger_lines) == restart_line_count, lines.count(f"{worker_label(story)} ended with") == main_agent_line_count,
+                      f"{worker_label(story)} stopped with" not in lines, all(line.environment_id == 1 for line in merger_lines), detail=f"{merger_texts(story)} | {lines}")
 
 
 def test_a_stop_by_another_agent_shows_a_card_and_sends_no_line(two_task_worker):
@@ -54,16 +57,6 @@ def test_a_stop_by_another_agent_shows_a_card_and_sends_no_line(two_task_worker)
     story.expect_success(f"agent end {story.worker.id}", actor=story.agent)
     story.run_listeners()
     story.expect_rows(merger_texts(story) == [], "tasks left" in story.run(MARKS).output_text, f"{worker_label(story)} ended with" not in main_agent_lines(story), detail=str(merger_texts(story)))
-
-
-def test_the_resume_limit_reaches_the_main_agent_once_and_not_the_merger(two_task_worker):
-    story = two_task_worker
-    set_resume_limit(story.container, 0)
-    story.expect_success(MERGER_ON, actor=story.user)
-    ended(story)
-    story.run_listeners()
-    lines = main_agent_lines(story)
-    story.expect_rows(lines.count(f"{worker_label(story)} ended with") == 1, merger_texts(story) == [], "tasks left" in story.run(MARKS).output_text, detail=lines)
 
 
 def test_a_worker_whose_run_still_goes_shows_no_card_and_sends_no_line(two_task_worker):
@@ -93,8 +86,8 @@ def test_a_person_sets_the_resume_limit_on_the_workers_screen_and_the_next_stop_
 
 def test_a_stopped_worker_whose_run_goes_on_past_the_minutes_set_on_the_workers_screen_is_one_line_to_the_merger_until_the_run_ends(two_task_worker):
     story = two_task_worker
-    story.expect_success(MERGER_ON, actor=story.user)
     apply_work_setting(story, STOPPED_WORKER_RUN_MINUTES, 5)
+    story.expect_success(MERGER_ON, actor=story.user)
     run = background_run(story)
     ended(story)
     story.advance(timedelta(minutes=4))
