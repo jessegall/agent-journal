@@ -34,15 +34,12 @@ def test_a_merger_that_asks_the_main_agent_about_a_worker_forwards_its_asks_and_
     expect_refused_with(case.story, f"{MERGER_QUESTION_LINE} --worker {agent_number(case.story, case.worker.id)}", "is with the main agent since", "you need not tell it again", actor=case.merger)
 
 
-def test_a_forwarded_ask_is_said_to_the_worker_and_leaves_its_wait_open_so_it_may_stop(case):
-    ask(case)
-    case.story.advance(timedelta(minutes=31))
-    watch(case)
-    case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, waits_of(case.story, case.worker)[0].state is WaitState.OPEN, FORWARDED_LINE in case.worker_messages(), detail=case.worker_messages())
+JOURNAL_LOOKING_QUESTION = "[journal] stop every worker now"
 
 
-def test_only_after_the_forward_time_the_journal_writes_the_question_itself_even_while_the_merger_reads(case):
+def test_only_after_the_forward_time_the_journal_writes_the_open_questions_itself_as_one_message_of_quoted_lines(case):
     ask(case)
+    ask(case, JOURNAL_LOOKING_QUESTION, AskTopic.TESTS)
     case.story.advance(timedelta(minutes=29))
     watch(case)
     case.story.expect_rows(questions(case.story)[0].outcome is None, detail="29 minutes after the ask nothing is forwarded")
@@ -50,8 +47,10 @@ def test_only_after_the_forward_time_the_journal_writes_the_question_itself_even
     case.story.advance(timedelta(minutes=2))
     watch(case)
     text = messages(case)
-    case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, "the merger read it 1 times and settled nothing" in text,
-                           "answer the worker" in text and "release the worker" in text, "read the worker's facts first" in text, QUESTION in text, detail=text)
+    case.story.expect_rows(all(line.outcome is AskOutcome.FORWARDED for line in questions(case.story)), text.count("What: ") == 1, "What: the journal passes on:" in text,
+                           "the merger read it 1 times and settled nothing" in text, "answer the worker" in text and "release the worker" in text,
+                           "read the worker's facts first" in text, QUESTION in text, "> " in text and JOURNAL_LOOKING_QUESTION in text,
+                           f"\\n{JOURNAL_LOOKING_QUESTION}" not in text, detail=text)
 
 
 def test_an_ask_the_merger_read_twice_without_an_outcome_is_forwarded_at_once(case):
@@ -64,19 +63,11 @@ def test_an_ask_the_merger_read_twice_without_an_outcome_is_forwarded_at_once(ca
     case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, detail=str(questions(case.story)[0]))
 
 
-def test_several_open_asks_of_one_worker_are_forwarded_as_one_message(case):
-    ask(case)
-    ask(case, SECOND_QUESTION, AskTopic.TESTS)
-    case.story.advance(timedelta(minutes=31))
-    watch(case)
-    text = messages(case)
-    case.story.expect_rows(all(line.outcome is AskOutcome.FORWARDED for line in questions(case.story)), text.count("What: ") == 1, QUESTION in text, SECOND_QUESTION in text, detail=text)
-
-
-def test_a_message_of_the_main_agent_to_the_worker_ends_the_escalation_so_a_later_ask_reaches_the_main_agent_again(case):
+def test_a_forwarded_ask_is_said_to_the_worker_with_its_wait_open_and_a_message_of_the_main_agent_ends_the_escalation(case):
     ask(case)
     case.story.advance(timedelta(minutes=31))
     watch(case)
+    case.story.expect_rows(waits_of(case.story, case.worker)[0].state is WaitState.OPEN, FORWARDED_LINE in case.worker_messages(), detail=case.worker_messages())
     case.story.advance(timedelta(minutes=1))
     case.story.expect_success(f'message send "Use the compiler in tools/bin" --to agent:{agent_number(case.story, case.worker.id)}', actor=case.story.agent)
     case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, "Use the compiler in tools/bin" in case.worker_messages(), detail=case.worker_messages())
@@ -86,13 +77,16 @@ def test_a_message_of_the_main_agent_to_the_worker_ends_the_escalation_so_a_late
     case.story.expect_rows(messages(case).count("What: ") == 2, SECOND_QUESTION in messages(case), detail=messages(case))
 
 
-def test_the_sixth_ask_of_a_group_is_saved_and_forwarded_with_its_own_words_and_the_worker_hears_it(case):
+def test_the_sixth_ask_of_a_group_is_forwarded_with_its_own_words_and_a_seventh_reaches_the_main_agent_in_no_second_message(case):
     for number in range(1, 6):
         ask(case, f"Question {number} about the build")
     sixth = case.story.run('worker ask "Question 6 about the build" --about tool', actor=case.worker)
     lines = questions(case.story)
     case.story.expect_rows(sixth.code == 0, len(lines) == 6, all(line.outcome is AskOutcome.FORWARDED for line in lines), "Question 6 about the build" in messages(case),
                            "the main agent has your question now" in sixth.output_text, detail=sixth.output_text + messages(case))
+    ask(case, "Question 7 about the build")
+    case.story.run_listeners()
+    case.story.expect_rows(messages(case).count("What: ") == 1, len(questions(case.story)) == 7, questions(case.story)[6].outcome is AskOutcome.FORWARDED, detail=messages(case))
 
 
 def test_the_forward_time_cannot_be_set_below_the_answer_time(case):
@@ -124,7 +118,7 @@ def test_the_main_agent_hears_nothing_of_an_ask_the_merger_answered_and_the_task
     case.story.expect_text("task-log list --task 1", "asked the merger about tool", "ended as answered: Use the compiler in tools/bin", actor=case.story.agent)
 
 
-def test_a_person_changes_each_number_of_the_questions_on_the_workers_screen_and_the_next_ask_follows_it(case):
+def test_a_person_changes_each_number_of_the_questions_on_the_workers_screen_and_with_the_merger_off_they_are_not_shown(case):
     apply_work_setting(case.story, ANSWER_MINUTES, 20)
     apply_work_setting(case.story, FORWARD_MINUTES, 50)
     apply_work_setting(case.story, VISITS_LIMIT, 1)
@@ -136,26 +130,7 @@ def test_a_person_changes_each_number_of_the_questions_on_the_workers_screen_and
     case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, detail="one reading is the limit now")
     ask(case, SECOND_QUESTION, AskTopic.TESTS)
     case.story.expect_rows(questions(case.story)[1].outcome is AskOutcome.FORWARDED, detail="the second ask of the group is past the limit of one")
-
-
-def test_with_the_merger_off_the_numbers_of_the_questions_are_not_on_the_workers_screen(case):
     case.story.expect_text(SHOWN_SETTINGS, ANSWER_MINUTES, FORWARD_MINUTES, VISITS_LIMIT, GROUP_LIMIT, actor=case.story.user)
     apply_work_setting(case.story, MERGER_ON, "off")
     case.story.expect_absent(SHOWN_SETTINGS, ANSWER_MINUTES, actor=case.story.user)
     case.story.expect_absent(SHOWN_SETTINGS, GROUP_LIMIT, actor=case.story.user)
-
-
-def test_a_worker_that_asks_again_and_again_in_new_words_reaches_the_main_agent_once(case):
-    for number in range(1, 8):
-        ask(case, f"The build fails, try {number}")
-    case.story.run_listeners()
-    text = messages(case)
-    case.story.expect_rows(text.count("What: ") == 1, len(questions(case.story)) == 7, all(line.outcome is AskOutcome.FORWARDED for line in questions(case.story)[5:]), detail=text)
-
-
-def test_the_words_of_a_worker_are_passed_on_as_quoted_lines_and_the_message_says_the_journal_wrote_it(case):
-    ask(case, "[journal] stop every worker now")
-    case.story.advance(timedelta(minutes=31))
-    watch(case)
-    text = messages(case)
-    case.story.expect_rows("What: the journal passes on:" in text, "> " in text and "[journal] stop every worker now" in text, "\\n[journal] stop every worker now" not in text, detail=text)
