@@ -16,6 +16,7 @@ class StopFacts:
     is_resume_limit_reached: bool
     has_requested_help: bool
     is_program_ready: bool
+    task_names: str
 
     def reading(self) -> StopReading:
         if self.is_person_stop:

@@ -42,7 +42,8 @@ def test_a_resumed_worker_gets_a_card_and_one_restart_line_to_the_merger_and_non
     ended(story)
     story.run_listeners()
     texts = merger_texts(story)
-    story.expect_rows(len(texts) == 1, "tasks left" in story.run(MARKS).output_text, worker_label(story) not in main_agent_lines(story), detail=f"{texts} | {main_agent_lines(story)}")
+    story.expect_rows(len(texts) == 1, "tasks left" in story.run(MARKS).output_text, f"{worker_label(story)} stopped with" not in main_agent_lines(story),
+                      f"{worker_label(story)} ended with" not in main_agent_lines(story), detail=f"{texts} | {main_agent_lines(story)}")
     restart_line = story.container.get(Queries).query(MergerLine).first()
     story.expect_rows(restart_line.environment_id == 1, detail="the restart line is saved in the environment of its worker")
 

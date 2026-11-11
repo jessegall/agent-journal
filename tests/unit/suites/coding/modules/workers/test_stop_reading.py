@@ -7,7 +7,7 @@ from suites.coding.modules.workers.models.enums.stop_reading import StopReading
 from suites.coding.modules.workers.support.stop_facts import StopFacts
 
 DELEGATED_STOP = StopFacts(is_busy=False, is_person_stop=False, has_launch_failed=False, is_delegated=True, is_resume_limit_reached=False,
-                           has_requested_help=False, is_program_ready=True)
+                           has_requested_help=False, is_program_ready=True, task_names="task:1")
 
 
 @pytest.mark.parametrize("facts, expected", [

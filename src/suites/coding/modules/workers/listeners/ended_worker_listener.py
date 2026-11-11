@@ -54,7 +54,6 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
             return
         stop_case = facts.reading()
         worker_round = self.unfinished.steps.round(new.id)
-        tasks = self.unfinished.names(self.unfinished.round_rows(worker_round))
         if stop_case.resumes_worker:
             self.nudger.send(new.id, WORKER_UNFINISHED_TASKS, UNFINISHED_TASKS_SOURCE, context, line=self.guidance.round_point(worker_round).line)
         if stop_case is StopReading.RESUMED_PROGRAM_STARTING:
@@ -62,7 +61,7 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
         if stop_case.line_target is None:
             return
         with self.scopes.row_scope(new):
-            self.send_line(new, stop_case, tasks, context)
+            self.send_line(new, stop_case, facts.task_names, context)
 
     def send_line(self, worker: Agent, stop_case: StopReading, tasks: str, context: Context) -> None:
         if stop_case is StopReading.LAUNCH_FAILURE:
