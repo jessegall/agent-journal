@@ -1,6 +1,6 @@
 from engine.environment.environment_names import EnvironmentNames
 from core.modules.environments.bindings.environment_table_names import EnvironmentTableNames
-from core.modules.environments.guards.test_grant_guard import TestGrantGuard
+from core.modules.environments.guards.environment_grant_guard import EnvironmentGrantGuard
 from core.modules.environments.migrations.m001_environments import EnvironmentsTableMigration
 from core.modules.environments.migrations.m002_test_environments import TestEnvironmentsMigration
 from engine.module.module import Module
@@ -21,7 +21,7 @@ class EnvironmentsModule(Module):
     models = [ModelDeclaration(Environment, query=EnvironmentQuery, excluded_subcommands=["list"])]
     subcommands = [EnvironmentListSubcommand]
     migrations = [EnvironmentsTableMigration, TestEnvironmentsMigration]
-    guards = [TestGrantGuard]
+    guards = [EnvironmentGrantGuard]
     bindings = {EnvironmentNames: EnvironmentTableNames}
     seeders = [EnvironmentsSeeder]
     moves = [EnvironmentsMove]

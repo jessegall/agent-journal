@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.model.model import Model
-from suites.coding.modules.workers.models.enums.test_failure_source import TestFailureSource
+from suites.coding.modules.workers.models.enums.failed_test_source import FailedTestSource
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -13,5 +13,5 @@ class WorkerTestFailure(Model):
 
     worker_id: int
     task_id: int
-    source: TestFailureSource
+    source: FailedTestSource
     test_name: str

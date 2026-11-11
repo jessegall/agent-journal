@@ -29,3 +29,19 @@ def test_two_runs_that_redraw_one_line_mark_their_command_once_and_two_readable_
     story.expect_rows(f"output {first.id} is one redrawn line" not in marked, marked.count(f"output {second.id} is one redrawn line") == 1,
                       "command make spin prints readable lines again" in lifted, detail=f"{marked}\n{lifted}")
     story.expect_text("unreadable-mark show 1", "lifted_at: ", actor=story.agent)
+
+
+def test_a_person_marks_a_runs_command_from_its_card_so_its_agent_is_asked_no_reader_and_lifts_it_so_the_asks_resume(new_story):
+    story = install_runner(new_story(fixture=UserBuilder))
+    first = ended_after_a_while(story, moved_run(story, "make serve", CommandCategory.BUILD), STEPS)
+    story.expect_text(f"process card {first.id} --json", '"markable": true', '"marked_words": ""', actor=story.user)
+    story.expect_success(f"output unreadable {first.id} --environment main", actor=story.user)
+    story.expect_text(f"process card {first.id} --json", '"marked_words": "make serve"', actor=story.user)
+    marked = heard(story)
+    quiet = ended_after_a_while(story, moved_run(story, "make serve", CommandCategory.BUILD), STEPS)
+    after_mark = heard(story)
+    story.expect_success(f"output readable {quiet.id} --environment main", actor=story.user)
+    resumed = heard(story)
+    story.expect_rows("command make serve was marked unreadable" in marked, f"output {quiet.id} ended" in after_mark, "no reader reads" not in after_mark,
+                      "command make serve prints readable lines again: asks resume" in resumed, detail=f"{marked}\n{after_mark}\n{resumed}")
+    story.expect_text("unreadable-mark show 1", f"creator_id: {story.user.id}", f"lifter_id: {story.user.id}", actor=story.user)

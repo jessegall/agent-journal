@@ -5,7 +5,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTestListings
-from suites.coding.modules.workers.support.test_limit_nudges import TEST_LIMIT_REFUSAL
+from suites.coding.modules.workers.support.worker_test_limit_nudges import TEST_LIMIT_REFUSAL
 from engine.setting.setting_values import SettingValues
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from core.modules.processes.support.reader_demands import ASKING_FLAGS

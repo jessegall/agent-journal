@@ -18,3 +18,5 @@ class ProcessCardJsonRecord(TypedDict):
     reads_progress: object
     reader_requested: object
     reading_text: object
+    marked_words: object
+    markable: object

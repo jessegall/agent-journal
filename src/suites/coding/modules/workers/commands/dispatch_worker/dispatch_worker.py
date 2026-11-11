@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from suites.coding.modules.workers.support.test_command_entry import TestCommandEntry
+from suites.coding.modules.workers.support.worker_test_command_entry import WorkerTestCommandEntry
 
 from engine.enums.model_tier import ModelTier
 
@@ -33,5 +33,5 @@ class DispatchWorker(Command[WorkerLaunch]):
     session: str = ""
     starts_program: bool = True
     sandboxed: bool = True
-    test_commands: tuple[TestCommandEntry, ...] = ()
+    test_commands: tuple[WorkerTestCommandEntry, ...] = ()
     taken_from: int | None = None

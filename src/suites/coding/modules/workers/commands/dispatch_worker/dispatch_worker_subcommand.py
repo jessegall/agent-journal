@@ -17,7 +17,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
-from suites.coding.modules.workers.support.test_command_entry import TEST_COMMAND_EXAMPLE, TestCommandEntry
+from suites.coding.modules.workers.support.worker_test_command_entry import TEST_COMMAND_EXAMPLE, WorkerTestCommandEntry
 from suites.coding.modules.workers.support.plan_worker_tasks import PlanWorkerTasks
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 
@@ -59,7 +59,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
             raise Refusal("--session is the session of a program that is not started", "add --no-program")
         taken_from = self.stopped_worker(arguments, caller)
         task_ids = self.taken_over_tasks(taken_from) if taken_from is not None else self.picked(arguments)
-        commands = TestCommandEntry.parsed(arguments.test_command)
+        commands = WorkerTestCommandEntry.parsed(arguments.test_command)
         if not commands and caller.actor.type is ActorType.AGENT:
             raise Refusal("a worker gets the test commands it may run", TEST_COMMAND_EXAMPLE)
         return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], arguments.model, arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program, sandboxed=not arguments.no_sandbox, test_commands=commands, taken_from=taken_from.id if taken_from is not None else None)

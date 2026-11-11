@@ -5,7 +5,7 @@ import pytest
 
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.reader_run import ReaderRun
-from suites.coding.modules.workers.support.test_listing import TestListing as PartListing
+from suites.coding.modules.workers.support.part_test_listing import PartTestListing as PartListing
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from engine.testing.expectations.expect_row import expect_row
 

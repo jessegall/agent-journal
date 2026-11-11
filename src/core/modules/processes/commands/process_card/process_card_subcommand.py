@@ -13,6 +13,8 @@ from core.modules.processes.queries.reading_decision_query import ReadingDecisio
 from core.modules.processes.support.reading.reading_card_text import ReadingCardText
 from core.modules.processes.support.process_card import ProcessCard
 from core.modules.processes.support.run_title import RunTitle
+from core.modules.processes.support.reading.run_command_words import RunCommandWords
+from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
 
 
 class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
@@ -21,9 +23,10 @@ class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
     cli_name = "process"
     name = "card"
 
-    def __init__(self, processes: ProcessQuery, outputs: OutputQuery, parts: ProcessPartQuery, readers: ReaderQuery, decisions: ReadingDecisionQuery) -> None:
+    def __init__(self, processes: ProcessQuery, outputs: OutputQuery, parts: ProcessPartQuery, readers: ReaderQuery, decisions: ReadingDecisionQuery,
+                 marks: UnreadableMarks) -> None:
         self.processes, self.outputs, self.parts, self.readers = processes, outputs, parts, readers
-        self.decisions = decisions
+        self.decisions, self.marks = decisions, marks
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("process_id", type=int)
@@ -34,8 +37,14 @@ class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
         process = self.processes.find(arguments.process_id)
         visible = next((part for part in parts if part.category.is_watched), None)
         reader = self.readers.find(kept.reader_id) if kept is not None and kept.reader_id else None
+        words = RunCommandWords.of_parts(parts)
         return ProcessCard(process, kept, RunTitle.temporary(visible), reader, visible.category if visible else CommandCategory.UNKNOWN, any(part.reader_request_id is not None for part in parts),
-                           self.reading_text(process.id, visible))
+                           self.reading_text(process.id, visible), words, self.marked_words(words))
+
+    def marked_words(self, words: str) -> str:
+        """The leading words of the standing mark that covers the run's command, empty when none does."""
+        mark = self.marks.marked(words) if words else None
+        return mark.words if mark is not None else ""
 
     def reading_text(self, process_id: int, visible: ProcessPart | None) -> str | None:
         decision = self.decisions.end_for_part(process_id, visible.position) if visible is not None else None

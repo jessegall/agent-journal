@@ -7,7 +7,7 @@ LISTING_MARK = "JOURNAL_COUNT_PART_"
 
 
 @dataclass(frozen=True)
-class TestListing:
+class PartTestListing:
     """The reader and listing command for one test part."""
 
     position: int

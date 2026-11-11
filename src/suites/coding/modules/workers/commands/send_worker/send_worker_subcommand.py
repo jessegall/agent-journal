@@ -18,7 +18,7 @@ from suites.coding.modules.workers.commands.send_worker.send_worker import SendW
 from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
 from suites.coding.modules.workers.support.worker_route_policy import WorkerRoutePolicy
 from suites.coding.modules.workers.support.worker_route_request import WorkerRouteRequest
-from suites.coding.modules.workers.support.test_command_entry import TEST_COMMAND_EXAMPLE, TestCommandEntry
+from suites.coding.modules.workers.support.worker_test_command_entry import TEST_COMMAND_EXAMPLE, WorkerTestCommandEntry
 from suites.coding.modules.workers.support.plan_worker_tasks import PlanWorkerTasks
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
@@ -60,7 +60,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
             raise Refusal("--phase needs --plan", "add --plan <plan>")
         if arguments.plan is not None and arguments.task:
             raise Refusal("a send takes tasks or a plan, not both", "drop the task numbers or drop --plan")
-        commands = TestCommandEntry.parsed(arguments.test_command)
+        commands = WorkerTestCommandEntry.parsed(arguments.test_command)
         with self.scopes.opened(caller.read_actor_id, caller.environment_id):
             task_ids = self.plan_tasks.task_ids(arguments.plan, arguments.phase) if arguments.plan is not None else tuple(arguments.task)
             if task_ids:
@@ -87,7 +87,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
             argv.extend(("--test-command", value))
         return self.requests.command(command, arguments.worker_id, argv, arguments, caller)
 
-    def check_test_commands(self, worker: Agent, commands: tuple[TestCommandEntry, ...], caller: Caller) -> None:
+    def check_test_commands(self, worker: Agent, commands: tuple[WorkerTestCommandEntry, ...], caller: Caller) -> None:
         if not commands and caller.actor.type is ActorType.AGENT and not self.test_names.rows(worker.id):
             raise Refusal(f"{AgentLabel.from_agent(worker).text} has no test command for new work", TEST_COMMAND_EXAMPLE)
 

@@ -9,7 +9,7 @@ from engine.enums.log_level import LogLevel
 from engine.repository.repository import Repository
 from engine.log.system_log_writer import SystemLogWriter
 from engine.setting.setting_values import SettingValues
-from suites.coding.modules.workers.models.enums.test_failure_source import TestFailureSource
+from suites.coding.modules.workers.models.enums.failed_test_source import FailedTestSource
 from suites.coding.modules.workers.models.worker_test_failure import WorkerTestFailure
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.merger_nudges import MERGER_SOURCE
@@ -33,16 +33,16 @@ class WorkerTestFailures:
         self.queries, self.repository, self.settings, self.system_log, self.inbox = queries, repository, settings, system_log, inbox
 
     def record_delivery(self, worker_id: int, task_id: int, test_name: str, context: Context) -> None:
-        self.record(worker_id, task_id, TestFailureSource.DELIVERY, test_name, context)
-        failures = self.queries.query(WorkerTestFailure).filter(task_id=task_id, source=TestFailureSource.DELIVERY).count()
+        self.record(worker_id, task_id, FailedTestSource.DELIVERY, test_name, context)
+        failures = self.queries.query(WorkerTestFailure).filter(task_id=task_id, source=FailedTestSource.DELIVERY).count()
         if failures % DELIVERY_REVIEW_INTERVAL_COUNT == 0:
             self.inbox.send(f"worker:{self.numbers.number(AGENT_MODEL_NAME, worker_id)} failed {failures} hand-ins in a row on task:{task_id}: work out where it goes wrong and tell it", MERGER_SOURCE, context)
 
     def record_worker_run(self, worker_id: int, task_id: int, line: str, context: Context) -> None:
         for test_name in self.test_names(line):
-            self.record(worker_id, task_id, TestFailureSource.WORKER_RUN, test_name, context)
+            self.record(worker_id, task_id, FailedTestSource.WORKER_RUN, test_name, context)
 
-    def record(self, worker_id: int, task_id: int, source: TestFailureSource, test_name: str, context: Context) -> None:
+    def record(self, worker_id: int, task_id: int, source: FailedTestSource, test_name: str, context: Context) -> None:
         self.system_log.write(LogLevel.WARNING, f"{AgentLabel.from_row_id(worker_id, self.numbers, "worker").text}, task {task_id}: {source} failed: {test_name}")
         self.repository.save(WorkerTestFailure(worker_id=worker_id, task_id=task_id, source=source, test_name=test_name), context)
 
@@ -51,8 +51,8 @@ class WorkerTestFailures:
         return {task_id: self.task_lines([row for row in failures if row.task_id == task_id]) for task_id in task_ids}
 
     def task_lines(self, failures: Sequence[WorkerTestFailure]) -> tuple[str, ...]:
-        delivery_tests = [row.test_name for row in failures if row.source is TestFailureSource.DELIVERY]
-        worker_run_tests = [row.test_name for row in failures if row.source is TestFailureSource.WORKER_RUN]
+        delivery_tests = [row.test_name for row in failures if row.source is FailedTestSource.DELIVERY]
+        worker_run_tests = [row.test_name for row in failures if row.source is FailedTestSource.WORKER_RUN]
         repeated_tests = sorted({name for name in worker_run_tests if worker_run_tests.count(name) >= self.settings.number(WORKER_RUN_FAILURE_LIMIT)})
         lines = [f"its own runs failed {worker_run_tests.count(name)} times: {name}" for name in repeated_tests]
         if len(delivery_tests) >= self.settings.number(DELIVERY_FAILURE_LIMIT):
