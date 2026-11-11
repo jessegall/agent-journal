@@ -1,5 +1,7 @@
 import pytest
 
+from engine.testing.examples.hook_samples import HookSamples
+
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from tests.stories.suites.coding.modules.workers.ask_ledger import QUESTION, SECOND_QUESTION, questions, waits_of
 from tests.stories.suites.coding.modules.workers.support.held_tasks import unplanned_holding_worker
@@ -35,3 +37,10 @@ def test_91c_91d_an_ask_with_no_task_is_about_the_task_of_the_worktree_and_close
     story.run_listeners()
     first, second = questions(story)
     story.expect_rows((first.task_id, first.outcome) == (1, AskOutcome.MOOT), (second.task_id, second.outcome) == (2, None), detail=f"{first} | {second}")
+
+
+def test_232_a_worker_with_a_started_task_that_has_no_proof_may_not_stop_until_it_has_an_open_ask(two_started):
+    story = two_started.story
+    story.expect_hook_refusal(two_started.session, HookSamples.stop(), "Task 1 is not finished")
+    story.expect_success(f'worker ask "{QUESTION}" --about tool --task 2', actor=two_started.worker)
+    story.expect_hook_allowed(two_started.session, HookSamples.stop())
