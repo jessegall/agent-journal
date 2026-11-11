@@ -35,7 +35,9 @@ class WorkerCompaction:
         self.finished_task_ids.discard(worker.id)
         tokens = self.limit_check.tokens(worker.id)
         provider = self.providers.provider(worker.program)
-        if tokens is None or not provider.compacts_headless or self.is_attempted(worker.id, tokens):
+        if tokens is None or self.is_attempted(worker.id, tokens):
+            return None
+        if not provider.compacts_headless:
             return None
         line = next(choice.line for group in provider.controls if group.key == CONTROL_KEY for choice in group.choices if choice.value == CONTROL_VALUE)
         return RecordProgramCompaction(worker.id, tokens, line)
