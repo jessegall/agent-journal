@@ -60,6 +60,7 @@ from core.modules.agents.models.agent_session import AgentSession
 from core.modules.agents.listeners.session_end_listener import SessionEndListener
 from core.modules.agents.listeners.session_launch_listener import SessionLaunchListener
 from core.modules.agents.migrations.m023_agent_sessions import AgentSessionsMigration
+from core.modules.agents.migrations.m024_main_agent_parent import MainAgentParentMigration
 from core.modules.agents.upgrade.agents_move import AgentsMove
 from core.modules.agents.listeners.ended_agent_program_listener import EndedAgentProgramListener
 from core.modules.agents.listeners.menu_answer_mark_listener import MenuAnswerMarkListener
@@ -136,7 +137,7 @@ class AgentsModule(Module):
     models = [ModelDeclaration(Agent, query=AgentQuery, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(AgentSession, excluded_subcommands=["make", "edit", "delete"])]
     moves = [AgentsMove]
-    migrations = [AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
+    migrations = [MainAgentParentMigration, AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
     nudges = [AGENT_START_FAILED, *REPORT_NUDGES]
     guards = [AgentNameGuard, NumberGuard, RetiredRowGuard, RetiredDeleteGuard, AgentChatGuard]
     handlers = [HaltAgentHandler, EndAgentHaltHandler, ReplaceAgentSessionHandler, WarnInstructionImportsHandler, RemoveInstructionImportHandler, RecordAgentInterruptHandler, SetAgentUsageLimitHandler, RetireAgentHandler, EndReplacedMainHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
