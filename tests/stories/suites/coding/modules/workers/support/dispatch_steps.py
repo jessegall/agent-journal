@@ -1,3 +1,6 @@
+from tests.stories.core.modules.agents.support.numbered_agents import FIRST_STORY_NUMBER
+import json
+from core.modules.agents.models.agent import Agent
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 import shlex
@@ -90,6 +93,7 @@ def merged_worker_lines(story: Story, worker: Actor) -> list[AgentLine]:
 
 def expect_clean_environment(story: Story, repository: GitRepository) -> None:
     story.expect_success("worker-worktree list", "nothing found")
-    story.expect_success("agent list --role worker", "nothing found")
+    workers = json.loads(story.run("agent list --role worker --limit 100 --json").output_text)["rows"]
+    story.expect_rows([worker for worker in workers if worker["number"] >= FIRST_STORY_NUMBER] == [], story.story_rows(Agent, role="worker") == ())
     story.expect_success(lines.TASK_DETAILS, "state: open")
     repository.expect_no_worktree()

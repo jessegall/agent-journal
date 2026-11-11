@@ -1,3 +1,4 @@
+from core.modules.agents.models.agent import Agent
 from tests.stories.core.support.agent_labels import agent_number
 import json
 
@@ -36,8 +37,7 @@ def dispatch_story(new_story):
 
 
 def worker_rows(story) -> list[dict[str, object]]:
-    rows = json.loads(story.run("agent list --environment main --json").output_text)["rows"]
-    return [row for row in rows if row["role"] == "worker"]
+    return list(story.story_rows(Agent, role="worker"))
 
 
 @pytest.fixture(params=[(WorktreeGit, "tip"), (WorktreeGit, "cut"), (PrepareWorktreeHandler, "handle"), (RecordWorktreeCutHandler, "handle")], ids=["tip", "cut", "prepare", "record"])
@@ -68,7 +68,7 @@ def test_a_dispatch_failing_once_a_row_refers_to_its_worker_ends_the_worker_and_
     with monkeypatch.context() as broken:
         broken.setattr(WorktreeGit, "cut", line_failure)
         story.expect_refusal(DISPATCH, STEP_FAILURE, actor=story.agent)
-    story.expect_rows(open_worktrees(story) == [], [row["ended_at"] is not None for row in worker_rows(story)] == [True])
+    story.expect_rows(open_worktrees(story) == [], [row.ended_at is not None for row in worker_rows(story)] == [True])
     story.expect_success(DISPATCH, actor=story.agent)
 
 

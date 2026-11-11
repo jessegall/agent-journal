@@ -1,3 +1,4 @@
+from core.modules.agents.models.agent import Agent
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.modules.drivers.support.confirmed_skips import confirmed_skip
 import json
@@ -191,7 +192,7 @@ def test_worker_split_previews_a_task(split_story):
     route = story.new_row_id('worker-route make --program codex --tags preview --environment main', actor=story.agent)
     story.expect_text('worker split --task 1', 'codex', 'gpt-6.1-terra', f'route {route}')
     story.expect_text('worker-worktree list', 'nothing found')
-    story.expect_text('agent list --role worker', 'nothing found')
+    story.expect_rows(story.story_rows(Agent, role="worker") == ())
     story.expect_text('task show 1', 'state: open')
 
 

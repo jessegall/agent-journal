@@ -1,3 +1,4 @@
+from core.modules.agents.models.agent import Agent
 from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -58,7 +59,7 @@ def test_a_dispatch_of_a_task_that_is_not_open_is_refused_and_makes_nothing(new_
     story.expect_success('task cancel 1 --reason "a story needs it cancelled"', actor=story.agent)
     story.expect_refusal(DISPATCH, "task 1 is cancelled: only an open or a blocked task can be assigned to a worker", actor=story.agent)
     story.expect_success("worker-worktree list", "nothing found")
-    story.expect_success("agent list --role worker", "nothing found")
+    story.expect_rows(story.story_rows(Agent, role="worker") == ())
     story.expect_success(lines.TASK_DETAILS, "state: cancelled")
     repository.expect_no_worktree()
 
@@ -76,7 +77,8 @@ def test_a_zero_worker_run_limit_refuses_dispatch_without_creating_a_worker(new_
     repository_environment(story)
     story.expect_success("setting make journal.suites.coding.workers.worker-run-limit 0 --environment main", "key: journal.suites.coding.workers.worker-run-limit")
     story.expect_refusal(DISPATCH, "0 workers are running", actor=story.agent)
-    story.expect_success("agent list --role worker", "nothing found")
+    story.expect_rows(story.story_rows(Agent, role="worker") == ())
+    story.expect_success("worker-worktree list", "nothing found")
 
 
 def test_a_persons_dispatch_with_a_program_uses_the_tasks_environment(new_story):

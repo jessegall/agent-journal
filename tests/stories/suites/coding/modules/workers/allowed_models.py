@@ -1,3 +1,4 @@
+from core.modules.agents.models.agent import Agent
 import shutil
 
 from engine.actor.actor import Actor
@@ -47,7 +48,7 @@ def test_a_worker_for_a_program_that_is_not_installed_is_refused_before_any_work
     monkeypatch.setattr(shutil, "which", lambda name: None)
     story.expect_refusal(DISPATCH, "claude is not installed here", actor=story.agent)
     story.expect_success("worker-worktree list", "nothing found")
-    story.expect_success("agent list --role worker", "nothing found")
+    story.expect_rows(story.story_rows(Agent, role="worker") == ())
     repository.expect_no_worktree()
 
 

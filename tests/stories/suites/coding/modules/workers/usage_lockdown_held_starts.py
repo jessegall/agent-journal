@@ -33,7 +33,7 @@ def person(story) -> Actor:
 
 
 def worker_count(story) -> int:
-    return story.container.get(Queries).query(Agent).filter(role="worker").count()
+    return len(story.story_rows(Agent, role="worker"))
 
 
 def waiting_lines(story, worker) -> int:
