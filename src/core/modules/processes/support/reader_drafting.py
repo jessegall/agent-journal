@@ -19,8 +19,8 @@ NEAREST_LINES = 8
 
 
 class ReaderDrafting:
-    """Tries the saved readers of the command in the order of their layers, then the shipped readers, those of
-    the command first, then candidate patterns, against a reader request's sample."""
+    """Tries the saved readers of the command in the order of their layers, then the shipped readers as they are
+    stored, those of the command first, then candidate patterns, against a reader request's sample."""
 
     def __init__(self, readers: ReaderRows, parts: ProcessPartQuery, judge: ReaderJudge, run: ReaderRun) -> None:
         self.readers, self.parts, self.judge, self.run = readers, parts, judge, run
@@ -35,8 +35,10 @@ class ReaderDrafting:
                          commands=stock.commands, title=stock.title, lines_pattern=stock.lines, progress_pattern=stock.progress,
                          finished_pattern=stock.finished, failed_pattern=stock.failed, summary_pattern=stock.summary,
                          count_pattern=stock.count, count_command=stock.count_command, step_pattern=stock.step) for stock in STOCK_READERS)
-        matching = self.readers.layers().ordered(reader for reader in self.readers.all() if ReaderSelection.matches(reader.commands, request.command))
-        shipped = sorted(stock_readers, key=lambda reader: not ReaderSelection.matches(reader.commands, request.command))
+        stored = self.readers.all()
+        matching = self.readers.layers().ordered(reader for reader in stored if ReaderSelection.matches(reader.commands, request.command))
+        stored_by_name = {reader.name: reader for reader in stored}
+        shipped = sorted((stored_by_name.get(reader.name, reader) for reader in stock_readers), key=lambda reader: not ReaderSelection.matches(reader.commands, request.command))
         readers = (*matching, *shipped)
         for reader in readers:
             if not self.judge.fields_missing(reader, request.category) and not self.judge.misses(reader, request.category, text):
