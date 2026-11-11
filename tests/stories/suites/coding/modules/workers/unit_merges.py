@@ -111,3 +111,10 @@ def test_an_ask_is_heard_by_the_main_agent_with_the_merger_off(new_story, monkey
     worker.end_all_tests()
     worker.story.expect_success(ASK_MERGE, actor=worker.worker)
     worker.story.expect_rows(any("merge-ask 1" in line for line in worker.main_agent_lines()), detail=str(worker.main_agent_lines()))
+
+
+def test_a_send_onto_a_waiting_ask_sends_the_ask_back(new_story, monkeypatch):
+    worker = asked_list(new_story, monkeypatch)
+    task_id = worker.story.new_row_id('task make "Receipts" --brief "Print them" --environment main', actor=worker.story.agent)
+    worker.story.run(f"worker send {agent_number(worker.story, worker.worker.id)} --task {task_id}", actor=worker.story.agent)
+    worker.story.expect_text(MERGE_ASK, "state: returned", actor=worker.story.agent)
