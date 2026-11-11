@@ -43,8 +43,10 @@ class Assignments:
             self.repository.delete_many_stored(current, context)
         self.repository.save(Assignment(creator_id=context.actor.id, subject_model=row.model_name, subject_id=row.id, actor_id=actor_id), context)
 
-    def unassign(self, row: Assignable, context: Context, actor_id: int | None = None) -> None:
-        self.repository.delete_many_stored([assignment for assignment in self.assignments(row) if actor_id is None or assignment.actor_id == actor_id], context)
+    def unassign(self, row: Assignable, context: Context, actor_id: int | None = None) -> tuple[Assignment, ...]:
+        removed = tuple(assignment for assignment in self.assignments(row) if actor_id is None or assignment.actor_id == actor_id)
+        self.repository.delete_many_stored(removed, context)
+        return removed
 
     def require_working_actor(self, actor_id: int) -> None:
         actor = self.queries.query(ActorRecord).filter(id=actor_id).first()
