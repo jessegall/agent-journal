@@ -48,6 +48,7 @@ class Worktree(Removable, EnvironmentScoped, Model):
     library_copies: str = "[]"
     libraries_dropped_at: Timestamp | None = None
     task_count: int = 1
+    commit_count: int = 0
     route_reason: str = ""
     starts_program: bool = True
 

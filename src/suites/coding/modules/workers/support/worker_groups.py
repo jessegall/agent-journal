@@ -10,7 +10,7 @@ from suites.coding.modules.workers.support.worker_phases import BATCH_SIZE
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 from suites.coding.modules.workers.support.worker_test_group import WorkerTestGroup
 
-RUN_WINDOW_KEY = "commit:{worktree}:{task}"
+RUN_WINDOW_KEY = "commit:{worktree}:{task}:{commit}"
 
 class WorkerGroups:
     """A worker's group of tasks: its key, the tasks of it not handed in, and the worker's own test runs left.
@@ -36,7 +36,7 @@ class WorkerGroups:
 
     @staticmethod
     def run_window_key(worktree: Worktree) -> str:
-        return RUN_WINDOW_KEY.format(worktree=worktree.id, task=worktree.task_id)
+        return RUN_WINDOW_KEY.format(worktree=worktree.id, task=worktree.task_id, commit=worktree.commit_count)
 
     def test_runs_available(self, worktree: Worktree) -> int:
         worker_id, window_key = worktree.session_agent_id, self.run_window_key(worktree)

@@ -17,7 +17,6 @@ from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import W
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.models.enums.submission import Submission
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskCommit
@@ -41,10 +40,10 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
     command = CommitWorkerWork
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, phases: WorkerPhases, results: RecordWorkerTestHandler,
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, results: RecordWorkerTestHandler,
                  differences: DeliveryDifferences, free_task: WorkerFreeTask, guidance: WorkerGuidance, staging: WorkerStaging) -> None:
         self.rows, self.worktrees, self.proof_queue, self.repository, self.task_commit = rows, worktrees, proof_queue, repository, task_commit
-        self.phases, self.results, self.differences, self.free_task, self.guidance, self.staging = phases, results, differences, free_task, guidance, staging
+        self.results, self.differences, self.free_task, self.guidance, self.staging = results, differences, free_task, guidance, staging
 
     def check_rows(self, command: CommitWorkerWork, actor: Actor) -> None:
         self.checked_staging(actor)
@@ -82,10 +81,10 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         self.free_task.give_next(context.actor.id, context)
         for ready in staging.ready:
             self.repository.save_change(ready, ready.moved(TaskLifecycle.test), context)
-        task = self.rows.required(Task, committed.task_id)
+        tasks = self.commit_tasks(committed, staging)
         delivered = self.repository.save_change(committed, committed.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, logs_read_at=None, logs_output_id=None, tests_passed_at=None, returned_at=None,
-                                                                             merge_ready_at=self.proof_queue.merge_ready_time(task, context)), context)
-        submission = self.proof_queue.submit(delivered, task, self.phases.group(delivered, task), context)
+                                                                             merge_ready_at=self.proof_queue.merge_ready_time(tasks[0], context), commit_count=committed.commit_count + 1), context)
+        submission = self.proof_queue.submit_ready(delivered, tasks, context)
         if submission is Submission.UNTESTED:
             self.results.finish(delivered, context)
-        return CommitOutcome(self.commit_tasks(delivered, staging), delivered, submission, staging.notes())
+        return CommitOutcome(tasks, delivered, submission, staging.notes())

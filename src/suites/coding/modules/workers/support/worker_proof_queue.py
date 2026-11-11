@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from engine.cli.row_numbers import RowNumbers
 from engine.model.move import Move
 from engine.cli.agent_number import AGENT_MODEL_NAME
@@ -14,6 +16,7 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.enums.submission import Submission
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
+from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.worker_nudges import PROOF_WAITS
@@ -49,6 +52,20 @@ class WorkerProofQueue:
             return Submission.COMMITTED
         queued_count = self.queue(worktree, context) if group is None else self.queue_group(worktree, task, group, context)
         return Submission.QUEUED if queued_count else Submission.UNTESTED
+
+    def submit_ready(self, worktree: Worktree, tasks: tuple[Task, ...], context: Context) -> Submission:
+        task_ids = [task.id for task in tasks]
+        proofs = tuple(self.proofs.worktree_proofs(worktree.id).matching(Among("task_id", task_ids)).oldest().all_rows())
+        tested = [proof for proof in proofs if proof.test_command and proof.state in UNTESTED_STATES]
+        self.send_waiting_line(worktree, [proof for proof in proofs if not proof.test_command and proof.state is ProofState.SHOWN], context)
+        if self.plans.is_started_plan(task_ids[0]):
+            for proof in tested:
+                if proof.state is ProofState.SHOWN:
+                    self.repository.save_change(proof, proof.moved(ProofLifecycle.commit), context)
+            return Submission.COMMITTED
+        for proof in tested:
+            self.repository.save_change(proof, proof.moved(ProofLifecycle.queue), context)
+        return Submission.QUEUED if len(tested) + self.queue_selected(worktree, task_ids[0], context) else Submission.UNTESTED
 
     def merge_ready_time(self, task: Task, context: Context) -> Timestamp | None:
         return context.timestamp if self.plans.is_started_plan(task.id) else None
@@ -88,23 +105,25 @@ class WorkerProofQueue:
     def queue(self, worktree: Worktree, context: Context) -> int:
         queued_count = self.queue_proofs(worktree, context)
         self.send_untested_line(worktree, context)
-        return queued_count + self.queue_selected(worktree, context)
+        return queued_count + self.queue_selected(worktree, worktree.task_id, context)
 
     def queue_group(self, worktree: Worktree, task: Task, group: WorkerTestGroup, context: Context) -> int:
         for proof in tuple(self.proofs.untested_proofs(worktree.id).all_rows()):
             self.repository.save_change(proof, proof.moved(ProofLifecycle.check), context)
-        return self.queue_proofs(worktree, context) + self.queue_selected(worktree, context)
+        return self.queue_proofs(worktree, context) + self.queue_selected(worktree, worktree.task_id, context)
 
-    def queue_selected(self, worktree: Worktree, context: Context) -> int:
+    def queue_selected(self, worktree: Worktree, task_id: int, context: Context) -> int:
         picker = self.settings.text(AFFECTED_TESTS_COMMAND).strip()
         test = self.settings.text(PROJECT_TEST_COMMAND).strip()
         if not picker or not test:
             return 0
         line = shlex.join([*shlex.split(picker), *self.git.changed_files(worktree)])
-        self.repository.save(AffectedTest(worktree_id=worktree.id, task_id=worktree.task_id, picker_command=line, test_command=test), context)
+        self.repository.save(AffectedTest(worktree_id=worktree.id, task_id=task_id, picker_command=line, test_command=test), context)
         return 1
 
     def send_untested_line(self, worktree: Worktree, context: Context) -> None:
-        proofs = [str(proof.id) for proof in self.proofs.untested_proofs(worktree.id).oldest().all_rows()]
+        self.send_waiting_line(worktree, tuple(self.proofs.untested_proofs(worktree.id).oldest().all_rows()), context)
+
+    def send_waiting_line(self, worktree: Worktree, proofs: Sequence[Proof], context: Context) -> None:
         if proofs:
-            self.main_agent_line.send_nudge(PROOF_WAITS.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), proofs=" ".join(proofs)), PROOF_WAITS_SOURCE, context)
+            self.main_agent_line.send_nudge(PROOF_WAITS.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), proofs=" ".join(str(proof.id) for proof in proofs)), PROOF_WAITS_SOURCE, context)
