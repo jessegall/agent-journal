@@ -21,6 +21,7 @@ from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.agents.support.local_launcher_transport import LocalLauncherTransport
 from core.modules.agents.support.program_exit import ProgramExit
+from core.modules.agents.support.program_process import ProgramProcess
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.process.leftover_process import LeftoverProcess
 from engine.provider.launch_command import LaunchCommand
@@ -53,15 +54,19 @@ class RecordingRepository:
     """Keeps the rows the dispatcher wrote: each row it ended and each row it opened again."""
 
     def __init__(self) -> None:
-        self.ended_ids, self.opened_ids = list[int](), list[int]()
+        self.ended_ids, self.saved_rows, self.updates = list[int](), list[Agent](), list[dict[str, object]]()
 
     def save_change(self, row: Agent, changed: Agent, context: object) -> Agent:
         self.ended_ids.append(changed.id)
         return changed
 
-    def update(self, row: Agent, context: object, **fields: object) -> Agent:
-        self.opened_ids.append(row.id)
+    def save(self, row: Agent, context: object) -> Agent:
+        self.saved_rows.append(row)
         return row
+
+    def update(self, row: Agent, context: object, **fields: object) -> Agent:
+        self.updates.append(fields)
+        return replace(row, **fields)
 
 
 class FakeAgentQuery:
@@ -163,7 +168,7 @@ def test_reconcile_opens_a_row_that_ended_while_its_program_runs_and_records_it(
     parts = Parts(recently_ended=tuple([ENDED_HELPER]))
     parts.launcher(RUNNING)
     parts.dispatcher.reconcile(CONTEXT)
-    assert parts.repository.opened_ids == [41]
+    assert [(row.id, row.ended_at) for row in parts.repository.saved_rows] == [(41, None)]
     assert parts.log_lines == [f"helper 2 {OPENED_ROW_TEXT}"]
 
 
@@ -174,3 +179,12 @@ def test_reconcile_ends_an_open_row_whose_started_program_is_gone_and_leaves_one
     parts.dispatcher.reconcile(CONTEXT)
     assert parts.repository.ended_ids == [41]
     assert f"helper 2 {ENDED_ROW_TEXT}" in parts.log_lines
+
+
+def test_the_dispatcher_writes_the_opening_of_a_row_the_process_of_a_session_and_the_record_of_a_launch():
+    parts, process = Parts(), ProgramProcess(701, NOW)
+    parts.dispatcher.open_row(replace(ENDED_HELPER, pid=650), CONTEXT)
+    parts.dispatcher.record_process(ENDED_HELPER, process, CONTEXT)
+    parts.dispatcher.record_launch(replace(ENDED_HELPER, launch_failed_at=NOW), process, CONTEXT)
+    assert [(row.ended_at, row.pid, row.process_started_at) for row in parts.repository.saved_rows] == [(None, 650, None), (None, 701, NOW)]
+    assert parts.repository.updates == [{"pid": 701, "ended_at": None, "process_started_at": NOW, "launched_at": NOW, "launch_failed_at": None}]

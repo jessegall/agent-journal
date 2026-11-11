@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from types import SimpleNamespace
 
 from core.modules.agents.commands.start_agent.start_agent_handler import StartAgentHandler
@@ -21,7 +21,7 @@ class FakeMainRow:
 
 
 class FakeWrites:
-    """Keeps what the handler saved, which session it ended and which history row it asked for."""
+    """Keeps what the handler and the dispatcher saved, which session was ended and which history row was asked for."""
 
     def __init__(self) -> None:
         self.saved: list[FakeMainRow] = []
@@ -31,6 +31,9 @@ class FakeWrites:
     def save(self, row: FakeMainRow, context: SimpleNamespace) -> FakeMainRow:
         self.saved.append(row)
         return row
+
+    def record_process(self, row: FakeMainRow, process: SimpleNamespace, context: SimpleNamespace) -> FakeMainRow:
+        return self.save(replace(row, ended_at=None, pid=process.pid, process_started_at=process.started_at), context)
 
     def ended_session(self, main: FakeMainRow, context: SimpleNamespace) -> FakeMainRow:
         self.ended.append(main)
@@ -43,7 +46,7 @@ class FakeWrites:
 def handler_with_writes() -> tuple[StartAgentHandler, FakeWrites]:
     writes = FakeWrites()
     chain = SimpleNamespace(start_timestamp=lambda pid: STARTED_AT)
-    return StartAgentHandler(SimpleNamespace(), writes, chain, SimpleNamespace(), SimpleNamespace(), writes, SimpleNamespace(), writes), writes
+    return StartAgentHandler(SimpleNamespace(), writes, chain, SimpleNamespace(), SimpleNamespace(), writes, SimpleNamespace(), writes, writes), writes
 
 
 def codex_start() -> SimpleNamespace:
