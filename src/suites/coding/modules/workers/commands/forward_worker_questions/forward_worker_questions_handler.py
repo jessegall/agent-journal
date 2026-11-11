@@ -20,7 +20,8 @@ FORWARDED_TEXT = "the main agent has it now and answers you"
 class ForwardWorkerQuestionsHandler(Handler[ForwardWorkerQuestions, None]):
     """Writes the open questions of one worker to the main agent as one message and records each as forwarded.
     While the main agent already has a question of the worker, the questions are only recorded: the main agent
-    gets one message for one stuck worker."""
+    gets one message for one stuck worker. The message says the journal wrote it, and the worker's words are in
+    it as quoted lines, never as lines of the journal."""
 
     command = ForwardWorkerQuestions
     disabled_scopes = [ActorScope]
@@ -40,5 +41,5 @@ class ForwardWorkerQuestionsHandler(Handler[ForwardWorkerQuestions, None]):
     def question(self, worker_id: int, lines: tuple[MergerLine, ...]) -> MainAgentQuestion:
         worker = AgentLabel.from_row_id(worker_id, self.numbers, "worker").text
         visits = max(line.visit_count for line in lines)
-        return MainAgentQuestion(f"{worker} has {len(lines)} unanswered question(s)", f"the merger read it {visits} times and settled nothing", OPTIONS, RECOMMENDATION,
-                                 tuple(line.text for line in lines))
+        quoted = tuple(f"> {text}" for line in lines for text in line.text.splitlines())
+        return MainAgentQuestion(f"the journal passes on: {worker} has {len(lines)} unanswered question(s)", f"the merger read it {visits} times and settled nothing", OPTIONS, RECOMMENDATION, quoted)
