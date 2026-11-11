@@ -57,22 +57,17 @@ def test_4_a_proof_of_a_blocked_task_is_refused_with_what_the_task_waits_for(two
 
 def test_5_a_proof_of_a_point_past_the_points_of_the_brief_is_refused(four_points):
     refused = prove_task(four_points, 1, 5)
-    four_points.story.expect_rows(refused.code != 0, "task 1's brief has 4 points, not 5" in refused.output_text, proofs(four_points) == (), detail=refused.output_text)
+    last_point = prove_task(four_points, 1, 4)
+    four_points.story.expect_text("proof show 1", "point: 4", actor=four_points.story.agent)
+    four_points.story.expect_rows(refused.code != 0, "task 1's brief has 4 points, not 5" in refused.output_text, last_point.code == 0, len(proofs(four_points)) == 1, detail=refused.output_text)
 
 
-def test_6_the_proofs_of_one_task_are_registered_in_any_order_and_none_is_judged(four_points):
-    outcomes = [prove_task(four_points, 1, point, TEST_LINE) for point in (3, 1, 2)]
+def test_6_7_the_proofs_of_one_task_are_registered_in_any_order_with_or_without_a_test_and_none_is_judged(four_points):
+    outcomes = [prove_task(four_points, 1, point, test_line) for point, test_line in ((3, TEST_LINE), (1, ""), (2, SECOND_TEST_LINE))]
     four_points.story.run_listeners()
     listed = four_points.story.run("proof list", actor=four_points.story.agent).output_text
-    four_points.story.expect_rows(all(outcome.code == 0 for outcome in outcomes), [proof.point for proof in proofs(four_points)] == [3, 1, 2],
+    four_points.story.expect_rows(all(outcome.code == 0 for outcome in outcomes), [(proof.point, bool(proof.test_command)) for proof in proofs(four_points)] == [(3, True), (1, False), (2, True)],
                                   listed.count("shown") == 3, four_points.started == [], detail=listed)
-
-
-def test_7_a_proof_with_no_test_is_registered_and_waits(one_task):
-    outcome = prove_task(one_task, 1, 1)
-    one_task.story.run_listeners()
-    one_task.story.expect_text("proof show 1", "state: shown", actor=one_task.story.agent)
-    one_task.story.expect_rows(outcome.code == 0, proofs(one_task)[0].test_command == "", one_task.started == [], detail=outcome.output_text)
 
 
 def test_8_a_shown_proof_is_corrected_by_a_second_proof_of_its_point_and_by_an_edit(one_task):

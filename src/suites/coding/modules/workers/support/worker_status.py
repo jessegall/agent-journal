@@ -17,6 +17,7 @@ class WorkerStatus:
     worker_number: int
     worktree: Worktree
     current_task: Task
+    started_tasks: tuple[Task, ...]
     tests: Page[Proof]
     assignments: Page[Task]
     skills: tuple[str, ...]

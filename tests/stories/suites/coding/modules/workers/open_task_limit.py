@@ -32,9 +32,9 @@ def started_ids(worker: StoryWorker) -> list[int]:
     return [task_id for task_id in BUILD_TASK_IDS if f'"id": {task_id},' in listed]
 
 
-def test_12_a_worker_starts_a_second_task_and_hears_how_many_more_it_may_start(one_task):
+def test_12_a_worker_starts_a_second_task_and_hears_how_many_it_holds_of_the_most_it_may(one_task):
     outcome = one_task.story.run("task start 2", actor=one_task.worker)
-    one_task.story.expect_rows(outcome.code == 0, started_ids(one_task) == [1, 2], "you hold 2 tasks and may start 3 more" in outcome.output_text, detail=outcome.output_text)
+    one_task.story.expect_rows(outcome.code == 0, started_ids(one_task) == [1, 2], "you hold 2 tasks of the 5 you may hold at once" in one_task.worker_lines(), detail=f"{outcome.output_text} | {one_task.worker_lines()}")
 
 
 def test_13_a_worker_holds_five_started_tasks_and_its_status_lists_them(five_tasks):
@@ -51,7 +51,8 @@ def test_14_a_sixth_task_is_refused_at_the_limit_and_nothing_changes(five_tasks)
 
 def test_15_a_person_lowers_the_limit_the_next_start_is_refused_at_it_and_a_limit_below_one_is_refused(three_tasks):
     story = three_tasks.story
-    story.expect_text(f"setting show {LIMIT_SETTING} --environment main", "Tasks a worker holds at once", "value: 5", actor=story.user)
+    story.expect_text("work-settings show --json --environment main", "Tasks a worker holds at once", actor=story.user)
+    story.expect_text(f"setting show {LIMIT_SETTING} --environment main", "value: 5", actor=story.user)
     story.expect_success(f"setting set {LIMIT_SETTING} 3 --environment main", actor=story.user)
     refused = story.run("task start 5", actor=three_tasks.worker)
     below_one = story.run(f"setting set {LIMIT_SETTING} 0 --environment main", actor=story.user)

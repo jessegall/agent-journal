@@ -27,6 +27,7 @@ QUESTION_FORWARD_MINUTES = f"{MODULE_KEY}.ask-pass-on-minutes"
 QUESTION_VISITS_LIMIT = f"{MODULE_KEY}.ask-visits-limit"
 MERGER_GROUP_MESSAGE_LIMIT = f"{MODULE_KEY}.most-merger-messages-per-group"
 PHASE_TEST_DEFERRAL_LIMIT = f"{MODULE_KEY}.most-phase-test-deferrals"
+MOST_OPEN_TASKS = f"{MODULE_KEY}.most-open-tasks"
 SILENT_RECOVERY_ATTEMPTS = f"{MODULE_KEY}.silent-recovery-attempts"
 WORKER_RESUME_LIMIT = f"{MODULE_KEY}.worker-resume-limit"
 INACTIVE_HELPER_MINUTES = f"{MODULE_KEY}.quiet-helper-minutes"
@@ -60,6 +61,7 @@ WORKER_SETTING_VALUES = [
     SettingValue("silent-recovery-attempts", "Wake-up lines for a silent agent", "How many wake-up lines a silent agent gets before it is reported as not answering.", SettingType.NUMBER, default=3, person_set=True),
     SettingValue("worker-resume-limit", "Go-on lines for a stopped worker", "How often a stopped worker with tasks left is told to go on, with no task moved, before it is reported.", SettingType.NUMBER, default=3, person_set=True),
     SettingValue("idle-worker-repeat-minutes", "Worker idle warning repeat", "Minutes between warnings about a worker with work left.", SettingType.NUMBER, default=5, person_set=True),
+    SettingValue("most-open-tasks", "Tasks a worker holds at once", "Most tasks a worker may have started before it commits some of them.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("worker-phase-test-runs", "A worker's test runs between two commits", "Test commands a worker may run itself between two commits before it asks the main agent.", SettingType.NUMBER, default=3, person_set=True),
     SettingValue("silent-agent-minutes", "Silent agent minutes", "Minutes without tool use or a running command before an agent with unfinished work is resumed.", SettingType.NUMBER, default=3, person_set=True),
     SettingValue("affected-tests-command", "Affected tests command", "Find tests for changed files, one argument per line. Set the project test command too.", SettingType.TEXT, default="", person_set=True),
@@ -105,6 +107,7 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         QUESTION_VISITS_LIMIT: NumberRule(1),
                         MERGER_GROUP_MESSAGE_LIMIT: NumberRule(1),
                         PHASE_TEST_DEFERRAL_LIMIT: NumberRule(1),
+                        MOST_OPEN_TASKS: NumberRule(1),
                         SILENT_RECOVERY_ATTEMPTS: NumberRule(1),
                         WORKER_RESUME_LIMIT: NumberRule(0),
                         INACTIVE_HELPER_GRACE_MINUTES: NumberRule(1),
