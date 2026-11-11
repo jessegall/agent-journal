@@ -146,7 +146,6 @@ class ForeignPresetModule(Module):
     name = "presets"
     requires_core = ">=5,<6"
     dependencies = [*DEPENDENCIES, "journal.core.drivers"]
-    suites = [ForeignPresetSuite]
     windows = [frame("presets.board")]
 
 
@@ -155,3 +154,7 @@ class NoSkeletonModule(Module):
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("bare.board", "Board", "board.html", WindowLoading.FRAME)]
+
+
+class ForeignPresetSuiteOfForeignPresetModule(ForeignPresetSuite):
+    modules = [ForeignPresetModule]

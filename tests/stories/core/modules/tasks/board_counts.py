@@ -6,7 +6,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.core.modules.tasks.board import board_totals
 from tests.stories.support.story_checks import expect_value
 
-LEGAL_MODULE = "tests.stories.fixtures.acme_legal.module:AcmeLegalModule"
+LEGAL_MODULE = "tests.stories.fixtures.acme_legal.module:AcmeLegalModuleJoining"
 
 
 def test_the_board_counts_each_group_once_including_added_states_and_cursor_pages(new_story):

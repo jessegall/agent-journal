@@ -36,7 +36,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.event.created import Created
 
-SAMPLES = "tests.stories.engine.driver.support.samples:SamplesModule"
+SAMPLES = "tests.stories.engine.driver.support.samples:SampleSuiteOfSamplesModule", "tests.stories.engine.driver.support.samples:ControlSuiteOfSamplesModule"
 LEAD = "samples.lead"
 
 
@@ -366,7 +366,14 @@ class SamplesModule(Module):
     migrations = [EditLocksTable]
     guards = [LeadLockGuard]
     handlers = [SampleNumberHandler]
-    suites = [SampleSuite, ControlSuite]
     drivers = [Lead, ControlLead]
     overlays = [EditLockOverlay]
     driver_rules = [ReturnLine, FailingRule, EssentialClaim, CodingRewrite]
+
+
+class SampleSuiteOfSamplesModule(SampleSuite):
+    modules = [SamplesModule]
+
+
+class ControlSuiteOfSamplesModule(ControlSuite):
+    modules = [SamplesModule]

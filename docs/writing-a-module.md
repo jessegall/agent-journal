@@ -14,6 +14,7 @@ This is the complete review module's `module.py`:
 
 ```python
 from engine.module.module import Module
+from engine.module.suite import Suite
 from engine.template.template_declaration import TemplateDeclaration
 from engine.viewer.button_declaration import ButtonCondition, ButtonDeclaration
 
@@ -24,7 +25,6 @@ from .audit_plan_subcommand import AuditPlanSubcommand
 class AcmeReviewModule(Module):
     name = "acme.review"
     requires_core = ">=5,<6"
-    parent_suite = "coding"
     dependencies = ["journal.core.plans", "journal.core.templates", "journal.core.viewer", "journal.suites.coding"]
     handlers = [AuditPlanHandler]
     subcommands = [AuditPlanSubcommand]
@@ -32,6 +32,12 @@ class AcmeReviewModule(Module):
                                      brief="Read the plan as an attacker. Name each way in and what closes it.")]
     buttons = [ButtonDeclaration("review.audit", ("dock.plans.waiting", "row.plan"), "Audit", "acme audit {row_id}", icon="review",
                                  condition=ButtonCondition("state", tuple(["ready"])))]
+
+
+class AcmeReviewModuleJoining(Suite):
+    name = "acme.review"
+    joins = "coding"
+    modules = [AcmeReviewModule]
 ```
 
 The package also contains [AuditPlan](../tests/stories/fixtures/acme_review/audit_plan.py),
@@ -116,8 +122,9 @@ subcommand of those kinds. A model's built `edit`, `delete` and moves count as o
 
 ## Join a suite or add one
 
-`parent_suite = "coding"` makes the review module's templates and buttons active in environments
-using coding, including suites that require coding. It does not limit its commands: `acme audit`
+A module never names a suite. The package's `module.py` declares a suite that lists the module and
+joins `coding` (`joins = "coding"`), and `journal module add` loads that suite with its modules. It
+makes the review module's templates and buttons active in environments using coding, including suites that require coding. It does not limit its commands: `acme audit`
 stays registered for the journal when another suite is selected. A suite names its windows.
 Installing a third-party suite does not change an environment's current suite.
 
@@ -133,8 +140,9 @@ class AcmeSuite(Suite):
     windows = ["findings.findings"]
 ```
 
-The package's [module.py](../tests/stories/fixtures/acme_suite/module.py) registers this class in
-`suites = [AcmeSuite]`. The findings module depends on that package and joins `acme`.
+The package's [module.py](../tests/stories/fixtures/acme_suite/module.py) ships this suite with a subclass that lists its module, `class AcmeSuiteOfAcmeSuiteModule(AcmeSuite)` with
+`modules = [AcmeSuiteModule]`. The findings module depends on that package, and its own package declares a
+suite that joins `acme`.
 Its complete `module.py` is:
 
 ```python
@@ -149,7 +157,6 @@ from engine.enums.window_place import WindowPlace
 class AcmeFindingsModule(Module):
     name = "acme.findings"
     requires_core = ">=5,<6"
-    parent_suite = "acme"
     dependencies = ["acme.suite", "journal.core.plans", "journal.core.viewer"]
     button_slots = ["findings.row"]
     windows = [WindowDeclaration("findings.findings", "Findings", "findings.js", WindowLoading.COMPONENT,
@@ -235,7 +242,6 @@ plans with no change in the plans module. Its `module.py` is:
 class AcmePlanNotesModule(Module):
     name = "acme.plan_notes"
     requires_core = ">=5,<6"
-    parent_suite = "coding"
     dependencies = ["journal.core.plans", "journal.core.viewer", "journal.suites.coding"]
     handlers = [NotePlanHandler]
     subcommands = [NotePlanSubcommand]

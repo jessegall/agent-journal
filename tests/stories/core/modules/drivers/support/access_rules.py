@@ -18,7 +18,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.fixtures import MainEnvironment
 
-ACCESS_MODULE = "tests.stories.core.modules.drivers.support.access_rules:AccessModule"
+ACCESS_MODULE = "tests.stories.core.modules.drivers.support.access_rules:AccessSuiteOfAccessModule"
 
 
 class AccessSuite(Suite):
@@ -102,7 +102,6 @@ class AccessModule(Module):
     name = "samples.access"
     requires_core = ">=5.0,<6"
     dependencies = ["journal.core.drivers"]
-    suites = [AccessSuite]
     drivers = [ReaderDriver, WriterDriver, JournalDriver, NoShellDriver, NoGitDriver,
                FileTestsDriver, ReadToolDriver, ReadCommandsDriver, NoCurlDriver, UnrestrictedDriver]
 
@@ -113,3 +112,7 @@ class AccessStarted(StoryFixture):
     def steps(self, story):
         story.expect_success("suite choose access --environment main")
         story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
+
+
+class AccessSuiteOfAccessModule(AccessSuite):
+    modules = [AccessModule]

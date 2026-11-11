@@ -37,8 +37,7 @@ class LayerCheck:
         return f"{self.relative(folder)}: has no declaration class"
 
     def declared_folders(self) -> set[str]:
-        classes = [*self.modules, *(suite for module in self.modules for suite in module.suites)]
-        return {f"src/{declaration.__module__.rpartition('.')[0].replace('.', '/')}" for declaration in classes}
+        return {f"src/{declaration.__module__.rpartition('.')[0].replace('.', '/')}" for declaration in self.modules}
 
     def module_folders(self) -> set[Path]:
         source = self.project_folder / "src"

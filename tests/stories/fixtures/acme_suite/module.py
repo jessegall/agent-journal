@@ -7,4 +7,7 @@ class AcmeSuiteModule(Module):
     name = "acme.suite"
     requires_core = ">=5,<6"
     dependencies = ["journal.suites.coding"]
-    suites = [AcmeSuite]
+
+
+class AcmeSuiteOfAcmeSuiteModule(AcmeSuite):
+    modules = [AcmeSuiteModule]
