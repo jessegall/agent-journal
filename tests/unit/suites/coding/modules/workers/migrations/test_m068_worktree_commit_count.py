@@ -9,4 +9,4 @@ def test_the_upgrade_gives_each_worktree_a_commit_count_of_zero_and_no_tasks_of_
     database.execute("INSERT INTO worker_worktrees VALUES (1), (2)")
     for statement in WorktreeCommitCountMigration.statements:
         database.execute(statement)
-    assert database.execute("SELECT id, commit_count, commit_task_ids FROM worker_worktrees ORDER BY id").fetchall() == [(1, 0, ""), (2, 0, "")]
+    assert database.execute("SELECT id, commit_count, commit_task_ids, commit_short_id FROM worker_worktrees ORDER BY id").fetchall() == [(1, 0, "", ""), (2, 0, "", "")]

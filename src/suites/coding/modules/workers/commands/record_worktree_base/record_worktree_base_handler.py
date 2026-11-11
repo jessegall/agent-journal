@@ -19,4 +19,4 @@ class RecordWorktreeBaseHandler(Handler[RecordWorktreeBase, Worktree]):
 
     def handle(self, command: RecordWorktreeBase, context: Context) -> Worktree:
         worktree = self.rows.required(Worktree, command.worktree_id)
-        return self.repository.save_change(worktree, worktree.committed(command.base_commit, command.task_ids), context)
+        return self.repository.save_change(worktree, worktree.committed(command.base_commit, command.task_ids, command.short_id), context)

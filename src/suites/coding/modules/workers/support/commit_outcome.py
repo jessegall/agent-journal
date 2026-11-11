@@ -18,5 +18,5 @@ class CommitOutcome:
     next_step_text: str
     notes: tuple[str, ...] = ()
 
-    def text(self, short_id: str) -> str:
-        return f"committed {CommitSubject(self.tasks).label()} as {short_id}; {self.submission.answer_text}"
+    def text(self) -> str:
+        return f"committed {CommitSubject(self.tasks).label()} as {self.worktree.commit_short_id}; {self.submission.answer_text}"

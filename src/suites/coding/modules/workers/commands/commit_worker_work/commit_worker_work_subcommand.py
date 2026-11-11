@@ -13,7 +13,6 @@ from suites.coding.modules.workers.support.delivery_differences import differenc
 from suites.coding.modules.workers.support.worker_command_request import WorkerCommandRequest
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_run_answer import WorkerRunAnswer
-from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class CommitWorkerWorkSubcommand(Subcommand[Command[object], CommitOutcome]):
@@ -28,9 +27,9 @@ class CommitWorkerWorkSubcommand(Subcommand[Command[object], CommitOutcome]):
         WorkerCommandRequest.arguments(parser)
         differences_flag(parser)
 
-    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, requests: WorkerCommandRequest, run_answer: WorkerRunAnswer, guidance: WorkerGuidance, git: WorktreeGit) -> None:
+    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, requests: WorkerCommandRequest, run_answer: WorkerRunAnswer, guidance: WorkerGuidance) -> None:
         self.worktrees, self.step_check, self.requests, self.run_answer = worktrees, step_check, requests, run_answer
-        self.guidance, self.git = guidance, git
+        self.guidance = guidance
 
     def command(self, arguments: Namespace, caller: Caller) -> Command[object]:
         differences = required_differences(arguments)
@@ -44,7 +43,7 @@ class CommitWorkerWorkSubcommand(Subcommand[Command[object], CommitOutcome]):
             return
         if not isinstance(value, CommitOutcome):
             return
-        output.line(value.text(self.git.short_tip(value.worktree)))
+        output.line(value.text())
         output.line(value.next_step_text)
         for note in value.notes:
             output.line(note)
