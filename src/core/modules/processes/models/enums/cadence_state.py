@@ -9,3 +9,7 @@ class CadenceState(StrEnum):
     NO_OUTPUT = "no output"
     STOPPED_WRITING = "stopped writing"
     SPARSE = "sparse"
+
+    @property
+    def has_no_growth(self) -> bool:
+        return self in (CadenceState.NO_OUTPUT, CadenceState.STOPPED_WRITING)

@@ -1,8 +1,11 @@
+from datetime import timedelta
+
 from engine.enums.command_category import CommandCategory
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper
-from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, start_process
+from tests.stories.core.modules.processes.support.cadence_probe import cadence_tick, has_cadence_record, printed, ring
+from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, moved_run, start_process
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, worker_run
-from tests.stories.core.modules.processes.support.reading_case_samples import ENDED, STARTED, case_of, helper_search, plugin_check
+from tests.stories.core.modules.processes.support.reading_case_samples import ENDED, RUNNING, STARTED, case_of, helper_search, plugin_check
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 PYTEST_OUTPUT = "================ test session starts ================\ncollected 2 items\n\ntests/cart.py .. [100%]\n\n================ 2 passed in 0.04s ================\n"
@@ -41,3 +44,29 @@ def test_a_plugin_run_needs_no_reader(new_story):
     end_run(story, process, "lint clean\n")
     case = case_of(story, process, ENDED)
     story.expect_rows(case.is_plugin_run, case.is_not_needed, case.output is not None and case.output.byte_count > 0, detail=repr(case))
+
+
+TICK = timedelta(seconds=10)
+
+
+def test_the_case_of_a_run_has_its_cadence_and_a_prompt_is_interactive_only_once_the_output_stops_growing(new_story):
+    story = new_story(fixture=BuilderStarted)
+    silent = moved_run(story, "make package", CommandCategory.BUILD)
+    talking = moved_run(story, "make build", CommandCategory.BUILD)
+    asking = moved_run(story, "make install", CommandCategory.BUILD)
+    printed(story, asking, "Installing\nProceed (y/n)?")
+    text = ""
+    for step in range(4):
+        text += f"step {step}\n"
+        printed(story, talking, text)
+        cadence_tick(story)
+        story.advance(TICK)
+    silent_case, talking_case, printing = case_of(story, silent, RUNNING), case_of(story, talking, RUNNING), case_of(story, asking, RUNNING)
+    for _ in range(9):
+        story.advance(TICK)
+        cadence_tick(story)
+    waiting = case_of(story, asking, RUNNING)
+    story.expect_rows(len(ring(story, talking)) == 4, ring(story, silent) == (), has_cadence_record(story, silent),
+                      silent_case.cadence_state == "no output", talking_case.cadence_state == "streaming",
+                      printing.output is not None and printing.output.ends_on_prompt, printing.cadence_state == "streaming", printing.unreadable_reason is None,
+                      waiting.cadence_state == "stopped writing", waiting.unreadable_reason == "interactive", detail=f"{silent_case!r} {talking_case!r} {printing!r} {waiting!r}")

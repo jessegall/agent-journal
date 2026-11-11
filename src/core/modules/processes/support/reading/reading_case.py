@@ -30,7 +30,7 @@ class ReadingCase:
     moment: ReadingMoment
     age_seconds: int
     run_state: ProcessState
-    cadence_state: CadenceState = CadenceState.STREAMING
+    cadence_state: CadenceState
     exit_code: int | None
     reader_layer: ReaderLayer | None
     reader_judgement: ReaderJudgement | None
@@ -67,7 +67,11 @@ class ReadingCase:
     def unreadable_reason(self) -> UnreadableReason | None:
         if self.has_unreadable_mark:
             return UnreadableReason.DECLARED
-        return None if self.output is None else self.output.unreadable_reason
+        if self.output is None:
+            return None
+        if self.output.unreadable_reason is not None:
+            return self.output.unreadable_reason
+        return UnreadableReason.INTERACTIVE if self.output.ends_on_prompt and self.cadence_state.has_no_growth else None
 
     def exits_for(self, level: PressureLevel) -> tuple[ReadingExit, ...]:
         return level.exits if self.classification_known else (*level.exits, ReadingExit.CLASSIFY)

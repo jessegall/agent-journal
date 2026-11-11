@@ -3,6 +3,7 @@ from dataclasses import replace
 import pytest
 
 from engine.enums.command_category import CommandCategory
+from core.modules.processes.models.enums.cadence_state import CadenceState
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.enums.reader_action import ReaderAction
@@ -23,7 +24,7 @@ TEST_OUTPUT = b"collected 3 items\n\n===== 3 passed in 0.10s =====\n"
 
 MAIN_BUILD = ReadingCase(command_key="custom-build run", category=CommandCategory.BUILD, classification_known=True, has_asking_flag=False,
                          output_hidden=False, is_saved_command=False, is_plugin_run=False, moment=ReadingMoment.START, age_seconds=0,
-                         run_state=ProcessState.RUNNING, exit_code=None, reader_layer=None, reader_judgement=None, reader_is_default=False,
+                         run_state=ProcessState.RUNNING, cadence_state=CadenceState.STREAMING, exit_code=None, reader_layer=None, reader_judgement=None, reader_is_default=False,
                          draft_fits=False, output=None, runs_without_change=0, request_is_waiting=False, was_skipped=False, has_unreadable_mark=False,
                          role_must_have_reader=False, role_may_write_readers=True, role_uses_saved_commands=True, readers_forced=True)
 WORKER_BUILD = replace(MAIN_BUILD, role_must_have_reader=True, role_uses_saved_commands=False)

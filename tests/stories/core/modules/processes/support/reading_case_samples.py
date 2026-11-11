@@ -14,6 +14,7 @@ from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 
 ENDED = ReadingMoment.END
 STARTED = ReadingMoment.START
+RUNNING = ReadingMoment.RUNNING
 
 
 def case_of(story: Story, process: Process, moment: ReadingMoment) -> ReadingCase:

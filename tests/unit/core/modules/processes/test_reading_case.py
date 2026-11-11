@@ -3,6 +3,7 @@ from dataclasses import replace
 import pytest
 
 from engine.enums.command_category import CommandCategory
+from core.modules.processes.models.enums.cadence_state import CadenceState
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.enums.reading_exit import ReadingExit
@@ -16,7 +17,7 @@ from core.modules.processes.support.reading.reading_case import ReadingCase
 TEST_OUTPUT = b"collected 3 items\n\n===== 3 passed in 0.10s =====\n"
 RUNNING_TESTS = ReadingCase(command_key="pytest", category=CommandCategory.TEST_RUN, classification_known=True, has_asking_flag=False,
                             output_hidden=False, is_saved_command=False, is_plugin_run=False, moment=ReadingMoment.RUNNING, age_seconds=120,
-                            run_state=ProcessState.BACKGROUND, exit_code=None, reader_layer=None, reader_judgement=None, reader_is_default=False, draft_fits=False,
+                            run_state=ProcessState.BACKGROUND, cadence_state=CadenceState.STREAMING, exit_code=None, reader_layer=None, reader_judgement=None, reader_is_default=False, draft_fits=False,
                             output=None, runs_without_change=0, request_is_waiting=False, was_skipped=False, has_unreadable_mark=False,
                             role_must_have_reader=True, role_may_write_readers=True, role_uses_saved_commands=False, readers_forced=True)
 
@@ -77,3 +78,15 @@ def test_every_level_above_a_suggestion_has_an_exit_the_agent_takes_on_its_own(l
 
 def test_a_command_of_unknown_type_can_also_be_classified():
     assert replace(RUNNING_TESTS, classification_known=False).exits_for(PressureLevel.PREVENT)[-1] is ReadingExit.CLASSIFY
+
+
+@pytest.mark.parametrize("cadence, reason", [
+    (CadenceState.NO_OUTPUT, UnreadableReason.INTERACTIVE),
+    (CadenceState.STOPPED_WRITING, UnreadableReason.INTERACTIVE),
+    (CadenceState.STREAMING, None),
+    (CadenceState.SPARSE, None),
+], ids=["no output", "stopped writing", "streaming", "sparse"])
+def test_a_prompt_is_interactive_only_when_the_cadence_says_the_output_does_not_grow(cadence, reason):
+    sample = b"Installing\nProceed (y/n)?"
+    case = replace(RUNNING_TESTS, cadence_state=cadence, output=OutputFacts.measured(sample, len(sample), None, CommandCategory.TEST_RUN))
+    assert case.unreadable_reason is reason

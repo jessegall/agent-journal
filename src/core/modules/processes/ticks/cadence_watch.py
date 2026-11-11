@@ -13,10 +13,10 @@ from core.modules.processes.models.enums.notice_kind import NoticeKind
 from core.modules.processes.models.enums.part_state import PartState
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
-from core.modules.processes.support.cadence.cadence_limits_reader import CadenceLimitsReader
 from core.modules.processes.support.cadence.cadence_log import CadenceLog
 from core.modules.processes.support.cadence.judged_runs import JudgedRuns
 from core.modules.processes.support.cadence.run_cadence import RunCadence
+from core.modules.processes.support.cadence.run_cadences import RunCadences
 from core.modules.processes.support.cadence.run_notices import RunNotices
 from core.modules.processes.support.cadence.run_silences import RunSilences
 from core.modules.processes.support.output_folder import OutputFolder
@@ -48,15 +48,10 @@ class CadenceWatch:
             container.get(SystemLogWriter).write(LogLevel.WARNING, f"cadence watch: output {process.id} could not be read: {error}")
             return False
         hang = HangWatch.limits(container, process.environment_id).hang
-        cadence = RunCadence(self.age(process, now), now, growths, CadenceLimitsReader.limits(container, process.environment_id))
+        cadence = container.get(RunCadences).for_process(process, current)
         self.judged(container, process, part, cadence, hang)
         self.frozen(container, process, part, current, hang)
         return growths != before
-
-    @staticmethod
-    def age(process: Process, now: float) -> float:
-        started = process.started_at or process.creation_timestamp()
-        return now - started.value.timestamp()
 
     def judged(self, container: Container, process: Process, part: ProcessPart, cadence: RunCadence, hang: int) -> None:
         notices = container.get(RunNotices)
