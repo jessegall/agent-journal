@@ -1,5 +1,3 @@
-from collections.abc import Iterator
-
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.proof import Proof
@@ -24,12 +22,9 @@ class WorktreeProofs:
         self.rows = rows
         self.worktree_ids: list[int] = []
 
-    def worktree_proofs(self, worktree_id: int) -> "WorktreeProofs":
+    def worktree_rows(self, worktree_id: int) -> tuple[Proof, ...]:
         self.worktree_ids.append(worktree_id)
-        return self
-
-    def all_rows(self) -> Iterator[Proof]:
-        return iter(self.rows)
+        return self.rows
 
 
 class NoTasks:
@@ -100,6 +95,6 @@ def test_a_cancelled_task_is_named_in_the_notes_as_left_out():
 
 def test_the_staging_of_a_worktree_reads_the_started_tasks_of_its_worker_and_the_proofs_of_the_worktree():
     proofs, tasks = WorktreeProofs((proof(CART, 1), proof(CART, 2))), StartedTasks((CART, TOTALS))
-    staging = WorkerStaging(proofs, tasks, NoTasks()).read(WORKTREE)
+    staging = WorkerStaging(proofs, tasks, NoTasks(), NoTasks()).read(WORKTREE)
     assert (staging.ready, staging.unproved, staging.cancelled) == (tuple([CART]), tuple([TOTALS]), ())
     assert (proofs.worktree_ids, tasks.agent_ids) == ([WORKTREE.id], [WORKER_ID])

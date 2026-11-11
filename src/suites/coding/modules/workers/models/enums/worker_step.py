@@ -5,6 +5,7 @@ class WorkerStep(StrEnum):
     """The fixed points of a worker's round, each with the one thing to do there."""
 
     BUILD = "build"
+    COMMIT = "commit"
     TASK_PROVEN = "task-proven"
     GROUP_END = "group-end"
     WAIT = "wait"

@@ -41,6 +41,9 @@ class Staging:
     def open_tasks(self) -> tuple[Task, ...]:
         return tuple(entry.task for entry in self.entries if not entry.is_ready())
 
+    def missing_points(self, task_id: int) -> MissingPoints | None:
+        return next((entry.missing() for entry in self.entries if entry.task.id == task_id), None)
+
     def refused_short(self) -> tuple[Proof, ...]:
         refused = tuple(proof for entry in self.entries if entry.is_refused_short() for proof in entry.short())
         if refused or self.ready:

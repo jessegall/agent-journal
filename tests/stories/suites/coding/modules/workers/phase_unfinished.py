@@ -72,14 +72,14 @@ def test_a_worker_waiting_on_the_tests_of_its_hand_in_is_not_told_to_go_on(ended
     ended_during_tests.story.expect_rows(not any("tasks left" in line for line in ended_during_tests.worker_lines()))
 
 
-def test_a_worker_whose_tests_are_running_is_not_restarted_while_it_holds_a_started_task(ended_during_tests):
+def test_a_worker_that_ended_while_its_tests_run_and_holds_a_started_task_is_told_to_go_on_with_it(ended_during_tests):
     worker = ended_during_tests
     worker.story.run('task make "Receipts" --brief "The receipts"', actor=worker.story.agent)
     worker.story.expect_success("task start 4", actor=worker.worker)
-    worker.story.expect_text(f"worker status {agent_number(worker.story, worker.worker.id)}", "Point: wait", actor=worker.story.agent)
+    worker.story.expect_text(f"worker status {agent_number(worker.story, worker.worker.id)}", "Point: build", actor=worker.story.agent)
     worker.story.tick(MAIN_SESSION)
     WorkerResumeRetry()(worker.story.container)
-    worker.story.expect_rows(not any("tasks left" in line for line in worker.worker_lines()), detail=str(worker.worker_lines()))
+    worker.story.expect_rows(any("you ended with tasks left, task:4" in line for line in worker.worker_lines()), detail=str(worker.worker_lines()))
 
 
 def test_a_worker_that_ended_while_its_hand_in_runs_leaves_no_stopped_line(handoff_worker):

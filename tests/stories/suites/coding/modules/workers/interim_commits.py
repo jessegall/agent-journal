@@ -130,6 +130,7 @@ def test_44_the_answer_of_a_commit_names_it_interim_or_final_and_says_what_to_do
 
 
 def test_45_a_worker_with_a_started_task_that_has_no_proof_may_not_stop_and_one_whose_last_commit_is_tested_may(interim):
+    interim.end_all_tests()
     interim.story.expect_hook_refusal(interim.session, HookSamples.stop(), "Task 3 is not finished")
     prove_task(interim, 3, 1, TEST_LINE)
     interim.story.expect_success(COMMIT, actor=interim.worker)

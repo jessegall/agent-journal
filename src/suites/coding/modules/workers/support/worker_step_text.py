@@ -15,11 +15,12 @@ class WorkerStepText:
 
     def line(self, facts: WorkerStepFacts) -> str:
         filled = facts.words()
-        return f"{self.outcome_text.format(**filled)} Now: {self.action_text.format(**filled)}. Then: {self.next_text.format(**filled)}."
+        return f"{self.outcome_text.format_map(filled)} Now: {self.action_text.format_map(filled)}. Then: {self.next_text.format_map(filled)}."
 
 
 STEP_TEXTS = {
-    WorkerStep.BUILD: WorkerStepText("Task {task} is not finished.", "prove each point of its brief with journal proof make, then {deliver}", "{open_tasks} open in this group, own test runs available: {runs}"),
+    WorkerStep.BUILD: WorkerStepText("Task {task} is not finished{missing}.", "prove each point of its brief with journal proof make, then {deliver}", "{open_tasks} open in this group, own test runs available: {runs}"),
+    WorkerStep.COMMIT: WorkerStepText("{proven} proven.", "{commit}", "{commit_tests}"),
     WorkerStep.TASK_PROVEN: WorkerStepText("Every point of task {task} is proven and the group goes on.", "{deliver}", "your next task starts at once"),
     WorkerStep.GROUP_END: WorkerStepText("Every point of task {task} is proven and it ends its group.", "{deliver}", "the journal judges the group and queues its tests on the commit handed in"),
     WorkerStep.WAIT: WorkerStepText("{waiting}", "stop", "you are woken when its tests end or it is merged"),

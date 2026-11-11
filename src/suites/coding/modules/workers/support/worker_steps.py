@@ -8,19 +8,20 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.brief_points import brief_point_count
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 from suites.coding.modules.workers.support.worker_nudges import WORKER_MERGE_CONFLICT
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_round import WorkerRound
+from suites.coding.modules.workers.support.worker_staging import WorkerStaging
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 
 
 class WorkerSteps:
     """Which fixed point of its round a worker is at, read from the rows the journal keeps."""
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, phases: WorkerPhases, next_task: WorkerNextTask, stop: WorkerStop, queries: Queries) -> None:
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, phases: WorkerPhases, next_task: WorkerNextTask, stop: WorkerStop, queries: Queries, staging: WorkerStaging) -> None:
+        self.staging = staging
         self.tasks, self.worktrees, self.proofs, self.phases = tasks, worktrees, proofs, phases
         self.next_task, self.stop, self.queries = next_task, stop, queries
 
@@ -30,7 +31,8 @@ class WorkerSteps:
         ready = tuple(self.tasks.ready_delegated(worker_id))
         conflict = None if worktree is None else self.conflict_line(worktree)
         group = None if worktree is None else self.phases.group(worktree, self.queries.query(Task).find(worktree.task_id))
-        return WorkerRound(worker_id, worktree, started, ready, self.next_task.first_ready(worker_id, ready, started), self.stop.has_open_help_request(worker_id), conflict, group)
+        staging = None if worktree is None else self.staging.read(worktree)
+        return WorkerRound(worker_id, worktree, started, ready, self.next_task.first_ready(worker_id, ready, started), self.stop.has_open_help_request(worker_id), conflict, group, staging)
 
     def current_step(self, worker_id: int) -> WorkerStep:
         return self.step(self.round(worker_id))
@@ -49,15 +51,12 @@ class WorkerSteps:
             return WorkerStep.WAIT
         if self.phases.has_open_failure(worktree):
             return WorkerStep.FIX
-        return self.working_step(worker_round, worktree)
+        return self.working_step(worker_round)
 
-    def working_step(self, worker_round: WorkerRound, worktree: Worktree) -> WorkerStep:
-        if not worker_round.started or not self.is_proven(worktree, worker_round.started[0]):
-            return WorkerStep.BUILD
-        return WorkerStep.TASK_PROVEN if self.continues_group(worker_round) else WorkerStep.GROUP_END
-
-    def continues_group(self, worker_round: WorkerRound) -> bool:
-        return worker_round.following is not None and worker_round.group is not None and self.phases.continues_group(worker_round.group, worker_round.following)
+    @staticmethod
+    def working_step(worker_round: WorkerRound) -> WorkerStep:
+        staging = worker_round.staging
+        return WorkerStep.COMMIT if staging is not None and staging.ready else WorkerStep.BUILD
 
     def is_blocked(self, worker_round: WorkerRound, worktree: Worktree) -> bool:
         if worktree.state is not WorktreeState.CUT or worker_round.started or worker_round.following is not None or self.proofs.tests_waiting(worktree.id):
@@ -70,15 +69,11 @@ class WorkerSteps:
         worktree = worker_round.worktree
         if worktree is None:
             return False
-        if self.proofs.tests_waiting(worktree.id):
+        if worktree.state is WorktreeState.DELIVERED:
             return True
         if worker_round.started:
             return False
-        return worktree.state is WorktreeState.DELIVERED or worker_round.following is None
-
-    def is_proven(self, worktree: Worktree, task: Task) -> bool:
-        proved = {proof.point for proof in self.proofs.worktree_proofs(worktree.id).filter(task_id=task.id).all_rows()}
-        return all(point in proved for point in range(1, brief_point_count(task.brief) + 1))
+        return self.proofs.tests_waiting(worktree.id) or worker_round.following is None
 
     def conflict_line(self, worktree: Worktree) -> AgentLine | None:
         if worktree.state is not WorktreeState.CUT or worktree.delivered_at is None:

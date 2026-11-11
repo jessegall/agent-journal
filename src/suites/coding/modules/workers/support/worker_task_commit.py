@@ -32,7 +32,7 @@ class WorkerTaskCommit:
         self.protected = protected
 
     def check_proofs(self, worktree: Worktree, task: Task) -> None:
-        proved = {proof.point for proof in self.proofs.worktree_proofs(worktree.id).all_rows() if proof.task_id == task.id}
+        proved = {proof.point for proof in self.proofs.worktree_rows(worktree.id) if proof.task_id == task.id}
         unproved = [str(point) for point in range(1, brief_point_count(task.brief) + 1) if point not in proved]
         if unproved:
             raise Refusal(f"point {', '.join(unproved)} has no proof", AskTopic.GENERAL.hint(f"journal proof make {unproved[0]} --task {task.id} \"<file:line, and the test that shows it>\""))

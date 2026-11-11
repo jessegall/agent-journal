@@ -22,6 +22,9 @@ class ProofQuery(Query[Proof]):
     def worktree_proofs(self, worktree_id: int) -> Self:
         return self.filter(worktree_id=worktree_id)
 
+    def worktree_rows(self, worktree_id: int) -> tuple[Proof, ...]:
+        return self.kept.read(self.table.name, lambda: tuple(self.worktree_proofs(worktree_id).all_rows()), "worktree_id = ?", [worktree_id], name="workers.worktree_proofs")
+
     def tests_waiting(self, worktree_id: int) -> bool:
         return self.kept.read(self.table.name, self.worktree_proofs(worktree_id).matching(Among("state", TEST_WAITING_STATES)).exists,
                               f"worktree_id = ? AND state IN ({', '.join('?' for _ in TEST_WAITING_STATES)})", [worktree_id, *TEST_WAITING_STATES], name="workers.tests_waiting")

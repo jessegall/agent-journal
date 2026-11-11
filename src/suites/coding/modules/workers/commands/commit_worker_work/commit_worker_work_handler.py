@@ -58,9 +58,10 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
 
     def checked_staging(self, actor: Actor) -> Staging:
         worktree = self.worktrees.worker_worktree(actor.id)
-        if worktree is None or worktree.state is not WorktreeState.CUT or self.guidance.point(actor.id).step is WorkerStep.BLOCKED:
-            raise Refusal(self.guidance.line(actor.id))
-        staging = self.staging.read(worktree)
+        point = self.guidance.point(actor.id)
+        if worktree is None or worktree.state is not WorktreeState.CUT or point.step is WorkerStep.BLOCKED:
+            raise Refusal(point.line)
+        staging = point.round.required_staging()
         if not staging.entries:
             return staging
         if staging.incomplete:
