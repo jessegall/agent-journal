@@ -219,3 +219,16 @@ def test_two_asks_made_close_together_are_read_in_one_visit_of_one_merger(case):
     ask(case, SECOND_QUESTION, AskTopic.TESTS)
     case.story.expect_text("merger next", QUESTION, SECOND_QUESTION, actor=case.merger)
     case.story.expect_rows([line.visit_count for line in questions(case.story)] == [1, 1], len({line.visit_id for line in questions(case.story)}) == 1, detail=str(questions(case.story)))
+
+
+def test_a_person_retiring_a_worker_with_tasks_left_leaves_the_merger_one_line_and_closes_its_asks(case):
+    story = case.story
+    for number in range(2, 6):
+        story.expect_success(f'task make "Job {number}" --brief "Do job {number}" --environment main', actor=story.agent)
+        story.expect_success(f"worker send --wait {agent_number(story, case.worker.id)} --task {number}", actor=story.agent)
+    ask(case)
+    story.expect_success(f'agent retire {agent_number(story, case.worker.id)} --reason "no longer needed"', actor=story.user)
+    story.run_listeners()
+    lines = [line.text for line in story.container.get(Queries).query(MergerLine).oldest().all_rows() if "was retired" in line.text]
+    story.expect_rows(len(lines) == 1, all(f"task:{number}" in lines[0] for number in range(1, 6)), questions(story)[0].outcome is AskOutcome.MOOT,
+                      "was retired" not in case.main_lines(), detail=f"{lines} | {case.main_lines()}")
