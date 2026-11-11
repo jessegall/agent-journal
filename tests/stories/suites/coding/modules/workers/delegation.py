@@ -145,12 +145,6 @@ def test_a_comment_on_a_task_with_no_worker_tells_no_worker_and_links_none(new_s
     story.expect_no_text(f"link list --source message:{last_message_id(story)}", "sent_to")
 
 
-def test_a_worker_delivers_nothing_while_a_task_is_queued(new_story):
-    story, repository, worker = delegated_story(new_story)
-    repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
-    story.expect_refusal("worker deliver --wait --differences none", "task 2 is still in your queue", actor=worker)
-    story.expect_text("task show 1", "state: started", actor=story.agent)
 
 
 def test_moving_to_the_next_task_hands_nothing_in_and_the_last_task_has_no_next(new_story):

@@ -23,9 +23,9 @@ UNCHANGED_TASK_HINT = 'make the change, block the task on what it waits for, or 
 
 
 class WorkerTaskCommit:
-    """Commits a worker's worktree for its current task on the latest of its base branch, once each point of
-    the task's brief has a proof; a clash stops the hand-in with the conflict markers in the worktree. It
-    runs before the hand-in's transaction opens, so git's wait holds no write lock."""
+    """Commits a worker's worktree for the tasks of one commit on the latest of its base branch; a clash stops
+    the commit with the conflict markers in the worktree. It runs before the commit's transaction opens, so
+    git's wait holds no write lock."""
 
     def __init__(self, proofs: ProofQuery, git: WorktreeGit, queries: Queries, bus: Bus, protected: ProtectedFolders) -> None:
         self.proofs, self.git, self.queries, self.bus = proofs, git, queries, bus
@@ -37,32 +37,33 @@ class WorkerTaskCommit:
         if unproved:
             raise Refusal(f"point {', '.join(unproved)} has no proof", AskTopic.GENERAL.hint(f"journal proof make {unproved[0]} --task {task.id} \"<file:line, and the test that shows it>\""))
 
-    def commit(self, worktree: Worktree, task: Task, actor: Actor, differences: str) -> None:
+    def commit(self, worktree: Worktree, tasks: tuple[Task, ...], actor: Actor, differences: str) -> None:
         for path in self.git.uncommitted_files(worktree.folder):
             folder = self.protected.match(worktree.folder, path)
             if folder:
                 raise Refusal(f"{folder} is protected", AskTopic.TOOL.hint("undo the change in that folder"))
         base_commit = self.git.tip(worktree.folder, worktree.base_branch)
-        conflicts = self.git.rebased_commit(worktree, CommitSubject(tuple([task])).text(), f"Journal: worker worker-{worktree.session_agent_id}")
+        conflicts = self.git.rebased_commit(worktree, CommitSubject(tasks).text(), f"Journal: worker worker-{worktree.session_agent_id}")
         if conflicts:
             raise Refusal(f"your work clashes with {worktree.base_branch} in {', '.join(conflicts)}", AskTopic.CONFLICT.hint("settle the conflict markers in those files, then commit again"))
         current = worktree.moved(WorktreeLifecycle.advance, base_commit=base_commit)
         changes = self.git.comparison(current)
         if is_none_answer(differences):
-            self.check_built(current, task, changes)
+            self.check_built(current, tasks, changes)
         self.git.refuse_deleted_built_files(current, changes)
         if base_commit != worktree.base_commit:
             self.git.rebuild(current, self.queries.query(Environment).find(worktree.environment_id).folder)
         self.bus.run(RecordWorktreeBase(worktree.id, base_commit), actor, environment_id=worktree.environment_id)
 
-    def check_built(self, worktree: Worktree, task: Task, changes: WorktreeChanges) -> None:
+    def check_built(self, worktree: Worktree, tasks: tuple[Task, ...], changes: WorktreeChanges) -> None:
         if not changes.files:
             raise Refusal("your worktree has no change", AskTopic.BUILT.hint(UNCHANGED_TASK_HINT))
-        if task.state is not TaskState.STARTED:
-            return
-        commits = self.git.task_commits(worktree, task.id)
-        if not any(commit.worker_id == worktree.session_agent_id for commit in commits):
-            raise Refusal(f"task {task.id} changed no file, so it is not built", AskTopic.BUILT.hint(self.no_change_hint(commits)))
+        for task in tasks:
+            if task.state is not TaskState.STARTED:
+                continue
+            commits = self.git.task_commits(worktree, task.id)
+            if not any(commit.worker_id == worktree.session_agent_id for commit in commits):
+                raise Refusal(f"task {task.id} changed no file, so it is not built", AskTopic.BUILT.hint(self.no_change_hint(commits)))
 
     @staticmethod
     def no_change_hint(commits: tuple[TaskBranchCommit, ...]) -> str:

@@ -60,28 +60,23 @@ def three_started(new_story, monkeypatch) -> StoryWorker:
     return worker
 
 
-def test_24_a_commit_of_two_proved_tasks_says_committed_tasks_and_puts_both_in_testing_with_their_tests_queued(two_proved_unplanned):
-    outcome = two_proved_unplanned.story.run(COMMIT, actor=two_proved_unplanned.worker)
-    two_proved_unplanned.story.run_listeners()
+def test_24_26_proofs_shown_forty_minutes_before_a_commit_of_two_tasks_start_no_test_until_it_and_both_tasks_go_to_testing(two_proved_unplanned):
+    story = two_proved_unplanned.story
+    story.advance(WAIT_BEFORE_COMMIT)
+    story.run_listeners()
+    states_before_commit, started_before_commit = states(two_proved_unplanned), list(two_proved_unplanned.started)
+    story.expect_text("proof list", "shown", actor=story.agent)
+    outcome = story.run(COMMIT, actor=two_proved_unplanned.worker)
+    story.run_listeners()
     expect_task_states(two_proved_unplanned, "testing", 1, 2)
-    two_proved_unplanned.story.expect_rows(outcome.code == 0, "committed tasks 1, 2 as " in outcome.output_text, len(two_proved_unplanned.started) == 2, detail=outcome.output_text)
+    story.expect_rows(states_before_commit == [ProofState.SHOWN] * 2, started_before_commit == [], outcome.code == 0, "committed tasks 1, 2 as " in outcome.output_text,
+                      len(two_proved_unplanned.started) == 2, detail=f"{outcome.output_text} | {states_before_commit} | {two_proved_unplanned.started}")
 
 
 def test_25_one_commit_in_git_carries_both_tasks_in_its_subject_and_the_worker_in_its_trailer(two_proved):
     two_proved.story.expect_success(COMMIT, actor=two_proved.worker)
     two_proved.story.expect_text("worker-worktree show 1", "state: delivered", actor=two_proved.story.agent)
     two_proved.repository.expect_commit(two_proved.repository.worker_branch(two_proved.worker.id), "tasks 1, 2: Fix the cart", f"Journal: worker worker-{two_proved.worker.id}")
-
-
-def test_26_proofs_shown_forty_minutes_before_the_commit_start_no_test_until_the_commit(two_proved_unplanned):
-    story = two_proved_unplanned.story
-    story.advance(WAIT_BEFORE_COMMIT)
-    story.run_listeners()
-    states_before_commit, started_before_commit = states(two_proved_unplanned), list(two_proved_unplanned.started)
-    story.expect_text("proof list", "shown", actor=story.agent)
-    story.expect_success(COMMIT, actor=two_proved_unplanned.worker)
-    story.run_listeners()
-    story.expect_rows(states_before_commit == [ProofState.SHOWN] * 2, started_before_commit == [], len(two_proved_unplanned.started) == 2, detail=f"{states_before_commit} | {two_proved_unplanned.started}")
 
 
 def test_27_a_started_task_with_no_proof_is_named_as_no_part_of_the_commit_and_stays_started(three_started):
@@ -137,23 +132,22 @@ def test_32_a_commit_of_two_tasks_on_a_base_branch_that_moved_is_rebased_and_its
 
 @pytest.mark.real_git
 def test_33_a_clash_stops_a_commit_of_two_tasks_names_the_file_and_the_proofs_of_both_stay_shown(two_proved):
+    two_proved.repository.changed(two_proved.worker.id, "cart.py", CART_CHANGE)
     two_proved.repository.checkout(ENVIRONMENT_BRANCH)
-    two_proved.repository.committed("task_1.txt", "another point\n", "Another point")
-    expect_refused_with(two_proved.story, COMMIT, f"your work clashes with {ENVIRONMENT_BRANCH} in task_1.txt", "settle the conflict markers in those files, then commit again", actor=two_proved.worker)
+    two_proved.repository.committed("cart.py", "TOTAL = 2\n", "Another total")
+    expect_refused_with(two_proved.story, COMMIT, f"your work clashes with {ENVIRONMENT_BRANCH} in cart.py", "settle the conflict markers in those files, then commit again", actor=two_proved.worker)
+    two_proved.story.expect_text("proof list", "shown", actor=two_proved.story.agent)
     two_proved.story.expect_rows(states(two_proved) == [ProofState.SHOWN] * 2, detail=str(states(two_proved)))
-    expect_task_states(two_proved, "started", 1, 2)
+    two_proved.repository.changed(two_proved.worker.id, "cart.py", "TOTAL = 3\n")
+    two_proved.story.expect_success(COMMIT, actor=two_proved.worker)
+    expect_task_states(two_proved, "testing", 1, 2)
 
 
-def test_34_a_commit_of_two_tasks_with_no_change_is_refused_until_the_differences_say_what_was_already_built(two_started):
+def test_34_35_a_commit_of_two_tasks_is_refused_with_no_proof_and_then_with_no_change_until_the_differences_say_what_was_already_built(two_started):
     story = two_started.story
+    expect_refused_with(story, COMMIT, "nothing is staged", "journal proof make", actor=two_started.worker)
     for task_id in (1, 2):
         story.expect_success(f'proof make 1 --task {task_id} "cart.py:1, the cart total"', actor=two_started.worker)
     expect_refused_with(story, COMMIT, "your worktree has no change", "--differences", actor=two_started.worker)
     story.expect_success(f'{COMMIT_COMMAND} --wait --differences "already built: cart.py"', actor=two_started.worker)
     expect_task_states(two_started, "testing", 1, 2)
-
-
-def test_35_a_commit_of_two_started_tasks_with_no_proof_is_refused_as_nothing_staged(two_started):
-    two_started.repository.changed(two_started.worker.id, "cart.py", CART_CHANGE)
-    expect_refused_with(two_started.story, COMMIT, "nothing is staged", "journal proof make", actor=two_started.worker)
-    expect_task_states(two_started, "started", 1, 2)

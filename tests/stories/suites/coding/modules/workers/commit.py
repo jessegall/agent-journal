@@ -50,6 +50,7 @@ def test_24_a_commit_of_a_proved_task_says_committed_queues_its_tests_and_puts_t
     outcome = proved.story.run(COMMIT, actor=proved.worker)
     proved.story.run_listeners()
     proved.story.expect_text("task show 1", "state: testing", actor=proved.story.agent)
+    proved.story.expect_text("worker status", "tests of task 1 are queued", actor=proved.worker)
     proved.story.expect_rows(outcome.code == 0, "committed task 1 as " in outcome.output_text, len(proved.started) == 1, detail=outcome.output_text)
 
 

@@ -109,9 +109,8 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2 3", actor=story.agent), ActorType.AGENT)
     expect_states(story, task1="started", task2="open", task3="open")
 
-    # the first task: delivering is refused while tasks are queued; next commits it and queues its test
+    # the first task: next commits it and queues its test
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
-    story.expect_refusal("worker deliver --wait --differences none", "task 2 is still in your queue", actor=worker)
     story.expect_text("worker next --wait --differences none", "tests of task 1 are queued", actor=worker)
     story.run_listeners()
     expect_states(story, task1="testing", task2="open", task3="open")

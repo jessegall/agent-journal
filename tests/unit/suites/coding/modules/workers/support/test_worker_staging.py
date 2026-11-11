@@ -32,6 +32,11 @@ class WorktreeProofs:
         return iter(self.rows)
 
 
+class NoTasks:
+    def query(self, model: type) -> "NoTasks":
+        raise AssertionError(f"no {model.__name__} is read when every shown proof is of a started task")
+
+
 class StartedTasks:
     def __init__(self, rows: tuple[Task, ...]) -> None:
         self.rows = rows
@@ -44,13 +49,16 @@ class StartedTasks:
 
 def test_a_task_with_a_shown_proof_of_every_point_is_ready_and_the_commit_is_final():
     staging = Staging.grouped(tuple([CART]), (proof(CART, 1), proof(CART, 2)))
-    assert staging == Staging(tuple([CART]), (), ())
+    assert (staging.ready, staging.incomplete, staging.unproved) == (tuple([CART]), (), ())
     assert staging.is_final()
 
 
-def test_a_checked_or_short_proof_proves_its_point_beside_a_shown_one_and_a_queued_proof_proves_none():
+def test_the_tasks_of_a_commit_come_in_the_order_of_their_numbers():
+    assert Staging.grouped((TOTALS, CART), (proof(CART, 1), proof(CART, 2), proof(TOTALS, 1))).ready == (CART, TOTALS)
+
+
+def test_a_checked_proof_stands_for_its_point_beside_a_shown_one_and_a_queued_proof_does_not():
     assert Staging.grouped(tuple([CART]), (proof(CART, 1, ProofState.CHECKED), proof(CART, 2))).ready == tuple([CART])
-    assert Staging.grouped(tuple([CART]), (proof(CART, 1, ProofState.SHORT), proof(CART, 2))).ready == tuple([CART])
     assert Staging.grouped(tuple([CART]), (proof(CART, 1, ProofState.QUEUED), proof(CART, 2))).incomplete == tuple([MissingPoints(CART, tuple([1]))])
 
 
@@ -61,18 +69,37 @@ def test_a_task_with_a_shown_proof_that_misses_points_is_incomplete_and_its_text
     assert not staging.is_final()
 
 
-def test_a_started_task_that_misses_points_and_has_no_shown_proof_is_unproved_and_the_commit_is_not_final():
+def test_a_started_task_with_no_shown_proof_is_unproved_named_in_the_notes_and_the_commit_is_not_final():
     staging = Staging.grouped((CART, TOTALS), (proof(CART, 1), proof(CART, 2), proof(TOTALS, 1, ProofState.QUEUED)))
-    assert staging == Staging(tuple([CART]), (), tuple([TOTALS]))
+    assert (staging.ready, staging.incomplete, staging.unproved) == (tuple([CART]), (), tuple([TOTALS]))
+    assert staging.notes() == tuple(["task 16 is not part of this commit: it has no proof"])
     assert not staging.is_final()
 
 
 def test_a_task_whose_every_point_has_a_checked_proof_is_ready_with_no_shown_proof():
-    assert Staging.grouped(tuple([TOTALS]), tuple([proof(TOTALS, 1, ProofState.CHECKED)])) == Staging(tuple([TOTALS]), (), ())
+    assert Staging.grouped(tuple([TOTALS]), tuple([proof(TOTALS, 1, ProofState.CHECKED)])).ready == tuple([TOTALS])
+
+
+def test_a_short_proof_of_a_task_with_a_shown_proof_refuses_the_commit_beside_a_ready_task():
+    short = proof(CART, 1, ProofState.SHORT)
+    staging = Staging.grouped((CART, TOTALS), (short, proof(CART, 2), proof(TOTALS, 1)))
+    assert (staging.ready, staging.incomplete, staging.refused_short()) == (tuple([TOTALS]), (), tuple([short]))
+
+
+def test_a_short_proof_of_a_task_with_no_shown_proof_leaves_that_task_out_and_refuses_only_when_nothing_is_ready():
+    short = proof(CART, 1, ProofState.SHORT)
+    beside_a_ready_task = Staging.grouped((CART, TOTALS), (short, proof(CART, 2, ProofState.CHECKED), proof(TOTALS, 1)))
+    alone = Staging.grouped(tuple([CART]), (short, proof(CART, 2, ProofState.CHECKED)))
+    assert (beside_a_ready_task.ready, beside_a_ready_task.unproved, beside_a_ready_task.refused_short()) == (tuple([TOTALS]), tuple([CART]), ())
+    assert (alone.ready, alone.refused_short()) == ((), tuple([short]))
+
+
+def test_a_cancelled_task_is_named_in_the_notes_as_left_out():
+    assert Staging.grouped(tuple([CART]), (proof(CART, 1), proof(CART, 2)), tuple([TOTALS])).notes() == tuple(["task 16 is cancelled and left out"])
 
 
 def test_the_staging_of_a_worktree_reads_the_started_tasks_of_its_worker_and_the_proofs_of_the_worktree():
     proofs, tasks = WorktreeProofs((proof(CART, 1), proof(CART, 2))), StartedTasks((CART, TOTALS))
-    staging = WorkerStaging(proofs, tasks).read(WORKTREE)
-    assert staging == Staging(tuple([CART]), (), tuple([TOTALS]))
+    staging = WorkerStaging(proofs, tasks, NoTasks()).read(WORKTREE)
+    assert (staging.ready, staging.unproved, staging.cancelled) == (tuple([CART]), tuple([TOTALS]), ())
     assert (proofs.worktree_ids, tasks.agent_ids) == ([WORKTREE.id], [WORKER_ID])
