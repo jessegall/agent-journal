@@ -26,3 +26,6 @@ class TaskBlocksReviewed(BlockCondition):
         versions = dict(zip(self.numbers[::2], self.numbers[1::2]))
         return any(task.task_id in versions and task.state is TaskState.BLOCKED and not task.automatic
                    and task.block_version <= versions[task.task_id] for task in tasks)
+
+    def task_ids(self) -> tuple[int, ...]:
+        return tuple(self.numbers[::2])

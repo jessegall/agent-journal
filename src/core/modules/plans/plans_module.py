@@ -94,6 +94,8 @@ from core.modules.plans.support.block_conditions.plan_finished import PlanFinish
 from core.modules.plans.support.skeletons import PLANS_PLANS_SKELETON
 from engine.plan.plan_authors import PlanAuthors
 from core.modules.plans.bindings.plan_row_authors import PlanRowAuthors
+from core.modules.plans.bindings.focused_block_review_scope import FocusedBlockReviewScope
+from core.modules.tasks.support.block_review_scope import BlockReviewScope
 from core.modules.plans.commands.choose_plan_focus.choose_plan_focus_handler import ChoosePlanFocusHandler
 from core.modules.plans.commands.choose_plan_focus.choose_plan_focus_subcommand import ChoosePlanFocusSubcommand
 
@@ -123,7 +125,7 @@ class PlansModule(Module):
     name = "journal.core.plans"
     requires_core = ">=5,<6"
     block_conditions = [PlanApproved, PlanFinished, PlanContextReadCondition]
-    bindings = {PlanAuthors: PlanRowAuthors}
+    bindings = {PlanAuthors: PlanRowAuthors, BlockReviewScope: FocusedBlockReviewScope}
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers", "journal.core.messages"]
     skills = [SkillDeclaration("journal-plans", "Build and follow a plan of ordered tasks; read it before the first plan command of a session, or when the user asks for a plan or a roadmap", keywords=("plan", "plans", "roadmap", "phases"), commands=("plan", "phase")),
               SkillDeclaration("journal-planning", "Build a thorough plan with real steps in each phase, one task per step, and a brief that can be carried out alone; read it before you make a plan or a phase", keywords=("plan", "phases"), commands=("plan make", "phase make"))]

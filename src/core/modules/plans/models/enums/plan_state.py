@@ -11,3 +11,7 @@ class PlanState(StrEnum):
     BLOCKED = "blocked"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
+
+    @property
+    def can_be_focused(self) -> bool:
+        return self in (PlanState.STARTED, PlanState.APPROVED)
