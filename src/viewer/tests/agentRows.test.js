@@ -130,7 +130,7 @@ test("closed cards use the shared agent facts read for their identity", async ()
 
 test("worker identity stays the same when opened", async () => {
     const row = {id: 4, number: 4, session: "s-worker", program: "codex", program_model: "gpt-6.1-sol", role: "worker", ended_at: null, created_at: new Date(Date.now() - 6 * 60000).toISOString(), process_started_at: new Date(Date.now() - 60000).toISOString()};
-    const facts = {model: "gpt-6.1-sol", effort: "high", given_name: "Mary Shelley", last_activity: "2026-11-01T10:00:00Z", job_enabled: true, task_title: "Window converter", tasks: [{id: 1, title: "Window converter", state: "started"}]};
+    const facts = {id: row.id, model: "gpt-6.1-sol", effort: "high", given_name: "Mary Shelley", last_activity: "2026-11-01T10:00:00Z", job_enabled: true, task_title: "Window converter", tasks: [{id: 1, title: "Window converter", state: "started"}]};
     const element = await mounted({render: () => h(AgentCard, {row, facts})}, context({}));
     const card = element.querySelector("[data-agent-open]");
     const identity = card.querySelector("[data-agent-identity]");
