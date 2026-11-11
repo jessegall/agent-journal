@@ -64,9 +64,9 @@ test("a retired agent with all its tasks done shows a full bar and says All done
     expect(widths(element)).toEqual(["100%", "0%"]);
 });
 
-test("a helper's line reads Job with its question in the tooltip, and has no count or bar", async () => {
+test("a helper's line names its job by the first words of its question, with the question in the tooltip, and has no count or bar", async () => {
     const element = await card({id: 7, role: "helper", access: "read-only", session: "s-7", program: "claude", state: "running", ended_at: null, created_at: STARTED}, {tasks: [], helper_job: "How does the phone app read the chat?"});
-    expect(labelOf(element.querySelector("[data-agent-job]"))).toBe("Job");
+    expect(labelOf(element.querySelector("[data-agent-job]"))).toBe("How does the phone app");
     expect(tip(element, "[data-agent-job]").textContent).toBe("How does the phone app read the chat?");
     expect(element.querySelector("[data-agent-count]")).toBeNull();
     expect(element.querySelector("[data-agent-bar]")).toBeNull();
@@ -89,4 +89,11 @@ test("after the task the row says Plan and its number, with no title, when the t
 test("a task in no plan shows no plan after it", async () => {
     const element = await card(worker(), {tasks: tasksOf(1, "started", 3).map((task) => ({...task, plan_id: null, plan_title: null}))});
     expect(element.querySelector("[data-agent-plan]")).toBeNull();
+});
+
+test("the count and the bar draw the tasks the card was given for its current round, never those of an earlier merged round", async () => {
+    const currentRound = [{id: 4, title: "Fourth", state: "completed"}, {id: 5, title: "Fifth", state: "started"}, {id: 6, title: "Sixth", state: "open"}];
+    const element = await card(worker(), {tasks: currentRound});
+    expect(labelOf(element.querySelector("[data-agent-count]"))).toBe("1 of 3");
+    expect(element.querySelector("[data-task-bar-done]").style.width).toMatch(/^33\.3/);
 });

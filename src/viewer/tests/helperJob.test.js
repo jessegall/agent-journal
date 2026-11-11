@@ -21,6 +21,15 @@ test("a helper's row shows the title its sender gave the job, with the job in th
     expect(job.textContent.startsWith("Job")).toBe(false);
 });
 
+test("a helper's row whose job has no title shows the first words of the job, with the whole job in the tooltip", async () => {
+    const row = {id: 6, role: "helper", access: "read-only", ended_at: null, session: "s-6", program: "claude"};
+    const facts = {tasks: [], helper_job: "Review plan 1120 against its card and report what is missing", helper_job_title: ""};
+    const element = await mounted({render: () => h(AgentCard, {row, facts})}, context({}));
+    const job = element.querySelector("[data-agent-job]");
+    expect([...job.childNodes].filter((node) => node.nodeType === 3).map((node) => node.textContent).join("").trim()).toBe("Review plan 1120 against its");
+    expect(job.querySelector("[role='tooltip']").textContent).toBe("Review plan 1120 against its card and report what is missing");
+});
+
 test.each([["fresh", "codex, new conversation"], ["resumed", "codex, resumed"]])("a helper's row names the program of its job and whether the job began a new conversation", async (occupant_launch, text) => {
     const row = {id: 6, role: "helper", access: "read-only", ended_at: null, session: "s-6", program: "claude"};
     const facts = {tasks: [], helper_job: "Reviewing plan 1093", helper_job_program: "codex", occupant_launch};

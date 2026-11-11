@@ -5,6 +5,7 @@ from engine.database.kept_rows import KeptRows
 from engine.model.tables import Tables
 from engine.query.query import Query
 from engine.query.conditions.among import Among
+from engine.query.conditions.greater import Greater
 from engine.query.conditions.less import Less
 from engine.query.conditions.minimum import Minimum
 from engine.time.timestamp import Timestamp
@@ -50,6 +51,9 @@ class WorktreeQuery(Query[Worktree]):
 
     def has_merge(self, agent_id: int, earliest_at: Timestamp) -> bool:
         return self.with_removed().filter(session_agent_id=agent_id).matching(Minimum("merged_at", earliest_at.text)).exists()
+
+    def last_merged(self, agent_id: int) -> Worktree | None:
+        return self.with_removed().filter(session_agent_id=agent_id).matching(Greater("merged_at", "")).newest().first()
 
     def open_worktrees(self) -> list[Worktree]:
         return list(self.kept.scoped_read(self.table.name, lambda: tuple(self.oldest().all_rows()), "removed_at IS NULL", name="workers.open_worktrees"))
