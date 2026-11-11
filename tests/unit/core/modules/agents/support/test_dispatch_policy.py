@@ -4,8 +4,7 @@ from dataclasses import replace
 import pytest
 
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
-from core.modules.agents.support.agent_stops import AgentStops
+from core.modules.agents.models.enums.agent_session_state import AgentSessionState
 from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from engine.time.timestamp import Timestamp
 
@@ -32,15 +31,16 @@ class StrictPolicy(DispatchPolicy):
 
 
 @pytest.mark.parametrize("agent", AGENTS)
-def test_the_default_policy_answers_as_the_launch_guard_and_the_stops_do_and_wants_no_agent_started(agent):
-    policy, stops = DispatchPolicy(AgentLaunchGuard(), AgentStops()), AgentStops()
+def test_the_default_policy_lets_a_session_start_wants_no_agent_started_and_calls_an_ended_agent_final(agent):
+    policy, is_ended = DispatchPolicy(), agent.ended_at is not None
     with policy.lock(agent.session) as available:
         assert available
-    assert (policy.is_wanted(agent), policy.is_final(agent), policy.takes_messages(agent)) == (False, stops.is_final(agent), stops.takes_messages(agent))
+    assert policy.prepare(agent) is AgentSessionState.READY
+    assert (policy.is_wanted(agent), policy.is_final(agent), policy.takes_messages(agent)) == (False, is_ended, not is_ended or agent.is_kept_helper)
 
 
 def test_a_suite_policy_gives_its_own_answers_and_keeps_the_default_for_what_it_leaves():
-    policy, ended = StrictPolicy(AgentLaunchGuard(), AgentStops()), replace(SUBAGENT, ended_at=ENDED_AT)
+    policy, ended = StrictPolicy(), replace(SUBAGENT, ended_at=ENDED_AT)
     with policy.lock(ended.session) as available:
         assert not available
     assert (policy.is_wanted(ended), policy.is_final(ended), policy.takes_messages(ended)) == (True, False, False)

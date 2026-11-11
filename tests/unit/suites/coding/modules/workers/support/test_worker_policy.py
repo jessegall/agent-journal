@@ -4,8 +4,6 @@ from types import SimpleNamespace
 import pytest
 
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
-from core.modules.agents.support.agent_stops import AgentStops
 from engine.time.timestamp import Timestamp
 from suites.coding.modules.workers.support.worker_policy import WorkerPolicy
 
@@ -34,7 +32,7 @@ class FakeLineQuery:
 
 def policy(stopped: bool, jobs: tuple = ()) -> WorkerPolicy:
     worker_stop = SimpleNamespace(was_stopped=lambda worker: stopped, is_job_due=lambda worker, work: not stopped)
-    return WorkerPolicy(AgentLaunchGuard(), AgentStops(), worker_stop, SimpleNamespace(query=lambda model: FakeLineQuery(jobs)))
+    return WorkerPolicy(SimpleNamespace(), worker_stop, SimpleNamespace(query=lambda model: FakeLineQuery(jobs)))
 
 
 @pytest.mark.parametrize("agent, stopped, jobs, wanted, final, messages", [

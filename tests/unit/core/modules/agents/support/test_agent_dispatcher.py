@@ -13,10 +13,8 @@ from core.modules.agents.models.enums.standing_state import StandingState
 from core.modules.agents.models.enums.stop_reason import StopReason
 from core.modules.agents.models.enums.stopped import Stopped
 from core.modules.agents.support.agent_dispatcher import ENDED_ROW_TEXT, OPENED_ROW_TEXT, AgentDispatcher
-from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from core.modules.agents.support.agent_program import AgentProgram
-from core.modules.agents.support.agent_stops import AgentStops
 from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.agents.support.local_launcher_transport import LocalLauncherTransport
@@ -38,6 +36,16 @@ NOTHING = b"\n"
 COMMAND = LaunchCommand(arguments=("claude", "-p", "Read src/cart.py"), folder=Path("/work/journal"), variables={})
 HELPER = Agent(id=41, environment_id=1, number=2, creator_id=1, session="s-1", program="claude", role="helper", profile="journal-researcher")
 ENDED_HELPER = replace(HELPER, ended_at=NOW, launched_at=NOW)
+
+
+class SamplePolicy(DispatchPolicy):
+    """A made-up suite policy with one answer for every ended agent: gone for good, or not."""
+
+    def __init__(self, final: bool) -> None:
+        self.final = final
+
+    def is_final(self, agent: Agent) -> bool:
+        return self.final
 
 
 class RecordingBus:
@@ -91,14 +99,14 @@ class Parts:
         self.session_reasons = list[StopReason]()
         home = SimpleNamespace(socket=lambda name: self.folder / name)
         link = LocalLauncherTransport(LauncherLink(home, SimpleNamespace(start=lambda: False)))
-        launcher = AgentLauncher(link, self.bus, AgentLaunchGuard(), SimpleNamespace(lockdown=lambda program: SimpleNamespace(is_active=False)))
+        launcher = AgentLauncher(link, self.bus, DispatchPolicy(), SimpleNamespace(lockdown=lambda program: SimpleNamespace(is_active=False)))
         providers = SimpleNamespace(executable=lambda program: program)
         program = AgentProgram(providers, link, SimpleNamespace(rows=lambda: []), Clock())
         self.dispatcher = AgentDispatcher(
             launcher, program, link, providers, self.repository, POLICY, SimpleNamespace(running=lambda: open_agents),
             SimpleNamespace(current=lambda agent_id: SimpleNamespace(end_reason=end_reason), ended=lambda agent_id, reason, context: self.session_reasons.append(reason)), SimpleNamespace(find=lambda environment_id: SimpleNamespace(id=1, name="main")),
             SimpleNamespace(query=lambda model: FakeAgentQuery(recently_ended)), SimpleNamespace(timestamp=lambda: NOW),
-            SimpleNamespace(write=lambda level, text: self.log_lines.append(text)), DispatchPolicy(AgentLaunchGuard(), SimpleNamespace(is_final=lambda agent: final, takes_messages=lambda agent: True)))
+            SimpleNamespace(write=lambda level, text: self.log_lines.append(text)), SamplePolicy(final))
 
     def launcher(self, *answers: bytes) -> FakeLauncher:
         return FakeLauncher.listening(self.folder / "launcher", request_count=len(answers), answers=answers)

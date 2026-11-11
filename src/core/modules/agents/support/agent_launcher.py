@@ -8,7 +8,7 @@ from core.modules.agents.support.program_transport import ProgramTransport
 from core.modules.environments.models.environment import Environment
 from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure import RecordAgentLaunchFailure
 from core.modules.agents.commands.record_agent_process.record_agent_process import RecordAgentProcess
-from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
+from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from core.modules.agents.models.enums.agent_session_state import AgentSessionState
 from core.modules.agents.models.enums.launch_answer import LaunchAnswer
 from core.modules.agents.support.agent_label import AgentLabel
@@ -23,18 +23,18 @@ class AgentLauncher:
     """Start an agent through the launcher and record its process. A program at a usage limit is not started:
     it answers locked down before anything is asked of the launcher."""
 
-    def __init__(self, transport: ProgramTransport, bus: Bus, sessions: AgentLaunchGuard, lockdown: ProgramLockdown) -> None:
-        self.transport, self.bus, self.sessions, self.lockdown = transport, bus, sessions, lockdown
+    def __init__(self, transport: ProgramTransport, bus: Bus, policy: DispatchPolicy, lockdown: ProgramLockdown) -> None:
+        self.transport, self.bus, self.policy, self.lockdown = transport, bus, policy, lockdown
 
     def hand(self, agent: Agent, environment: Environment, command: LaunchCommand) -> LaunchAnswer:
         if agent.retired_at is not None:
             raise Refusal(f"{AgentLabel.from_agent(agent).text} is retired, for good", "start a new agent")
         if self.lockdown.lockdown(agent.program).is_active:
             return LaunchAnswer.LOCKED_DOWN
-        with self.sessions.lock(agent.session) as available:
+        with self.policy.lock(agent.session) as available:
             if not available:
                 return LaunchAnswer.LOCKED
-            state = self.sessions.prepare(agent)
+            state = self.policy.prepare(agent)
             if state is not AgentSessionState.READY:
                 return LaunchAnswer.FAILED if state is AgentSessionState.BLOCKED else LaunchAnswer.RUNNING
             return self.start(agent, environment, command)

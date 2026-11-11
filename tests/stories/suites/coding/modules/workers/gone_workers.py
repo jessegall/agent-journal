@@ -10,7 +10,7 @@ from engine.journal.journal_home import LAUNCHER_SOCKET
 from engine.process.leftover_process import LeftoverProcess
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
+from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from engine.testing.examples.hook_samples import HookSamples
@@ -86,7 +86,7 @@ def test_a_worker_resumed_before_the_stop_of_its_end_keeps_its_new_program(runni
 def test_a_launch_that_holds_the_session_keeps_the_stop_of_the_end_away(ended_worker):
     story = ended_worker
     launcher = start_launcher(story, b"stopped\n", request_count=2)
-    with story.container.get(AgentLaunchGuard).lock(story.row(Agent, story.worker.id).session):
+    with story.container.get(DispatchPolicy).lock(story.row(Agent, story.worker.id).session):
         story.run_listeners()
     story.expect_rows(launcher.requests == [])
 
@@ -142,7 +142,7 @@ def test_a_program_the_launcher_still_holds_is_told_to_the_main_agent_once_with_
 def test_a_resume_a_launch_in_hand_holds_stops_nothing(worker_with_waiting_job):
     story = worker_with_waiting_job
     launcher = replaced_launcher(story, b"stopped\n")
-    with story.container.get(AgentLaunchGuard).lock(story.row(Agent, story.worker.id).session):
+    with story.container.get(DispatchPolicy).lock(story.row(Agent, story.worker.id).session):
         WorkerResumeRetry()(story.container)
     story.expect_rows(launcher.requests == [])
 

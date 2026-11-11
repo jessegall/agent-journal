@@ -12,7 +12,6 @@ from engine.provider.providers import Providers
 from engine.query.queries import Queries
 from engine.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
 from core.modules.agents.support.agent_program import AgentProgram
 from core.modules.agents.models.enums.agent_session_state import AgentSessionState
 from core.modules.drivers.models.agent_activity import AgentActivity
@@ -22,7 +21,7 @@ from suites.coding.modules.workers.support.worker_recovery_reports import Worker
 from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES
 
 
-class WorkerSessions(AgentLaunchGuard):
+class WorkerSessions:
     """Serializes session launches and confirms its previous process tree has ended before a resume."""
 
     def __init__(self, home: JournalHome, queries: Queries, processes: ProcessQuery, settings: SettingValues,
