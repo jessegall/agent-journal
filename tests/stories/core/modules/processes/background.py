@@ -1,4 +1,3 @@
-import os
 
 import pytest
 
@@ -17,7 +16,6 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.ended_output_text import EndedOutputText
 from core.modules.processes.support.run_visibility import RunVisibility
-from core.modules.processes.rules.silent_run_rule import STALLED_SECONDS
 
 from engine.enums.command_category import CommandCategory
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
@@ -193,35 +191,6 @@ def expect_without_hint(story) -> None:
 def expect_without_failure_line(story) -> None:
     lines = read_lines(story, READ_NOTES)
     assert not any("failed and printed nothing" in line for line in lines), lines
-
-
-def test_a_python_run_that_prints_nothing_for_30_seconds_is_told_it_is_not_streaming(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "python3 tools/deploy.py staging", category=CommandCategory.BUILD)
-    expect_without_hint(story)
-    story.advance(timedelta(seconds=31))
-    expect_streaming_line(story, f"output {process.id} printed nothing for 30 seconds, so its output is not streaming: it may hold its output back")
-
-
-def test_a_silent_test_gets_its_hint_once_and_again_when_it_stops_printing(new_story):
-    story = new_story(fixture=SilentVitestRun)
-    story.advance(timedelta(seconds=31))
-    expect_streaming_line(story, "run vitest with --reporter=verbose")
-    story.advance(timedelta(seconds=31))
-    expect_without_hint(story)
-    folder = story.container.get(OutputFolder)
-    process_id = next(iter(story.container.get(ProcessQuery).agent(story.agent.id).running().all_rows())).id
-    folder.write_output(process_id, 1, "first line\n")
-    modified_at = story.clock.timestamp().value.timestamp() - STALLED_SECONDS
-    os.utime(folder.home.folder / "processes" / str(process_id) / "1.out", (modified_at, modified_at))
-    expect_streaming_line(story, f"output {process_id} has written nothing for {STALLED_SECONDS} seconds and still runs: run vitest with --reporter=verbose")
-
-
-def test_a_silent_saved_command_is_told_to_fix_its_alias(new_story):
-    story = new_story(fixture=SavedBuildMoved)
-    story.expect_text("process show 1", "state: background", actor=story.agent)
-    story.advance(timedelta(seconds=31))
-    expect_streaming_line(story, "alias build-npm printed nothing for 30 seconds: make it print each step; this run stays silent, the next shows its steps")
 
 
 def test_a_saved_command_that_fails_and_prints_nothing_is_told_to_fix_the_saved_command(new_story):

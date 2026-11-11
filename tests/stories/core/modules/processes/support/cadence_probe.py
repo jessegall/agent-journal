@@ -2,6 +2,7 @@ from engine.module.module_finder import ModuleFinder
 from engine.testing.stories.story import Story
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.cadence.cadence_log import CADENCE_FILE, CadenceLog
+from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
 
 CADENCE_TICK = "cadence watch"
@@ -23,3 +24,7 @@ def has_cadence_record(story: Story, process: Process) -> bool:
 
 def printed(story: Story, process: Process, text: str) -> None:
     story.container.get(OutputFolder).write_output(process.id, 1, text)
+
+
+def running_run(story: Story) -> Process:
+    return next(iter(story.container.get(ProcessQuery).agent(story.agent.id).running().all_rows()))
