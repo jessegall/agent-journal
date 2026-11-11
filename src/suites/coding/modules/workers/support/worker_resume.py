@@ -27,7 +27,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.support.test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from core.modules.agents.commands.start_agent_program.start_agent_program import StartAgentProgram
+from core.modules.agents.support.agent_resume import AgentResume
 from core.modules.agents.models.enums.dispatch import Dispatch
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
@@ -54,8 +54,8 @@ class WorkerResume:
     dispatcher's start command."""
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement,
-                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows, admission: AgentAdmission, started_work: WorkerStartedWork, cold: ColdSessions, instruction_files: WorkerInstructionFiles, compaction: WorkerCompaction, conversations: AgentConversations, lockdown: ProgramLockdown) -> None:
-        self.lockdown = lockdown
+                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows, admission: AgentAdmission, started_work: WorkerStartedWork, cold: ColdSessions, instruction_files: WorkerInstructionFiles, compaction: WorkerCompaction, conversations: AgentConversations, lockdown: ProgramLockdown, agent_resume: AgentResume) -> None:
+        self.lockdown, self.agent_resume = lockdown, agent_resume
         self.admission, self.started_work, self.instruction_files = admission, started_work, instruction_files
         self.queries, self.worktrees, self.worker_command, self.bus, self.clock = queries, worktrees, worker_command, bus, clock
         self.cold, self.conversations = cold, conversations
@@ -89,7 +89,7 @@ class WorkerResume:
         return f"the launcher still holds its program, process {worker.pid}" if worker.pid is not None else "the launcher still holds its program"
 
     def resume(self, worker: Agent, actor: Actor) -> Dispatch:
-        if worker.ended_at is None or worker.paused_at is not None:
+        if worker.ended_at is None or not self.agent_resume.may_resume(worker):
             return Dispatch.REFUSED
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is None or self.is_job_delivering(worker, worker.ended_at):
@@ -108,12 +108,12 @@ class WorkerResume:
     def restart(self, worker: Agent, job: AgentLine, actor: Actor) -> None:
         worktree = self.worktrees.worker_worktree(worker.id)
         last_started_at = worker.ended_at if worker.ended_at is not None else worker.creation_timestamp()
-        if worktree is None or worker.paused_at is not None or self.is_job_delivering(worker, last_started_at):
+        if worktree is None or not self.agent_resume.may_resume(worker) or self.is_job_delivering(worker, last_started_at):
             return
         self.launch_job(worker, worktree, job, actor)
 
     def started(self, worker: Agent, command: LaunchCommand) -> Dispatch:
-        return self.bus.run(StartAgentProgram.launching(worker.id, command), Actor.core(), environment_id=worker.environment_id)
+        return self.agent_resume.resume(worker, command)
 
     def launch_job(self, worker: Agent, worktree: Worktree, job: AgentLine, actor: Actor) -> Dispatch:
         if not self.may_resume(worker) or not self.places.can_resume(worker):

@@ -21,12 +21,13 @@ class WorkerLaunch:
         stored_rows = SimpleNamespace(find=lambda row_id: SimpleNamespace(id=row_id, folder="/work/project"))
         self.resume = WorkerResume(
             queries=SimpleNamespace(query=lambda model: stored_rows), worktrees=SimpleNamespace(), worker_command=SimpleNamespace(restarted=self.restarted),
-            bus=SimpleNamespace(run=self.run), clock=SimpleNamespace(), requirement=SimpleNamespace(), places=SimpleNamespace(can_resume=lambda worker: True), program=SimpleNamespace(),
+            bus=SimpleNamespace(), clock=SimpleNamespace(), requirement=SimpleNamespace(), places=SimpleNamespace(can_resume=lambda worker: True), program=SimpleNamespace(),
             states=SimpleNamespace(outage_state=lambda program: SimpleNamespace(is_ready=program_ready)), shares=SimpleNamespace(is_configured=False), environments=SimpleNamespace(),
             scopes=SimpleNamespace(row_scope=lambda row: nullcontext()), reports=SimpleNamespace(), routes=SimpleNamespace(listed=lambda: []), rows=SimpleNamespace(),
             admission=SimpleNamespace(resume_reasons=lambda role, profile: [], model_reasons=lambda role, profile, program, model: []), started_work=SimpleNamespace(),
             cold=SimpleNamespace(replaced_silent=self.replaced_silent, is_silent=lambda worker: True), instruction_files=SimpleNamespace(refresh=lambda worktree: None),
-            compaction=SimpleNamespace(start_record=lambda worker: None), conversations=SimpleNamespace(exists=lambda worker: False), lockdown=SimpleNamespace(lockdown=lambda program: SimpleNamespace(is_active=locked_down)))
+            compaction=SimpleNamespace(start_record=lambda worker: None), conversations=SimpleNamespace(exists=lambda worker: False), lockdown=SimpleNamespace(lockdown=lambda program: SimpleNamespace(is_active=locked_down)),
+            agent_resume=SimpleNamespace(may_resume=lambda worker: True, resume=self.resumed))
 
     def replaced_silent(self, worker) -> SimpleNamespace:
         self.replaced.append(worker.session)
@@ -35,8 +36,8 @@ class WorkerLaunch:
     def restarted(self, worker, worktree, environment, task, job_text) -> SimpleNamespace:
         return SimpleNamespace(arguments=(worker.session, worktree.branch, job_text), folder=worktree.folder, variables={})
 
-    def run(self, command, actor, environment_id=None) -> str:
-        self.handed.append(command)
+    def resumed(self, worker, command) -> str:
+        self.handed.append((worker.id, command))
         return LAUNCHER_ANSWER
 
     def answer_name(self) -> str:
@@ -47,7 +48,7 @@ class WorkerLaunch:
 def test_a_new_session_of_a_cold_worker_is_launched_in_the_folder_and_branch_of_its_open_worktree():
     launch = WorkerLaunch()
     assert launch.answer_name() == LAUNCHER_ANSWER
-    assert [(start.agent_id, start.arguments, start.folder) for start in launch.handed] == [(7, ("s-8", WORKTREE.branch, JOB.text), WORKTREE.folder)]
+    assert [(worker_id, command.arguments, command.folder) for worker_id, command in launch.handed] == [(7, ("s-8", WORKTREE.branch, JOB.text), WORKTREE.folder)]
 
 
 def test_a_worker_of_a_program_at_its_usage_limit_is_not_launched_and_keeps_its_session():
