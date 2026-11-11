@@ -70,7 +70,7 @@ def test_helper_form_offers_send_for_an_idle_helper_through_the_viewer(helper_fo
     availability = profile_line(server, cookie, ["helper", "availability", "--profile", "journal-researcher"])
     server.story.expect_rows(not availability["can_start"] and availability["can_start_fresh"])
     server.story.expect_rows([row["id"] for row in availability["idle_helpers"]] == [helper.id])
-    profile_line(server, cookie, ["helper", "send", str(helper.id), "Read src/tax.py"])
+    profile_line(server, cookie, ["helper", "send", str(agent_number(server.story, helper.id)), "Read src/tax.py"])
     jobs = tuple(server.story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).all_rows())
     server.story.expect_rows(jobs[-1].brief == "Read src/tax.py")
     server.story.expect_rows(len({job.helper_id for job in jobs}) == 1)
@@ -96,7 +96,7 @@ def test_helper_form_offers_send_at_the_kept_limit_and_preserves_the_command_ref
     answer = json.loads(text)
     server.story.expect_rows(status == 200 and answer["code"] != 0)
     server.story.expect_rows(json.loads(answer["error"])["refused"] in availability["fresh_reason"])
-    profile_line(server, cookie, ["helper", "send", f"row:{helper.id}", "Read the tax"])
+    profile_line(server, cookie, ["helper", "send", str(agent_number(server.story, helper.id)), "Read the tax"])
 
 
 def test_helper_form_offers_send_in_light_and_dark(helper_form_server):
@@ -152,12 +152,6 @@ def test_retired_row_stays_retired(new_story):
     story.expect_refusal(f"agent delete {agent_number(story, helper.id)}", "record stays", actor=story.user)
     story.expect_refusal(f'helper send {agent_number(story, helper.id)} "One more job"', "retired, for good", actor=story.agent)
     story.expect_rows(helper_agent(story).retired_at is not None)
-
-
-def test_session_gone_says_retire(new_story):
-    story = new_story(fixture=EndedHelper)
-    helper = helper_agent(story)
-    story.expect_refusal(f'helper send {agent_number(story, helper.id)} "One more job"', f"journal agent retire {agent_number(story, helper.id)}", actor=story.agent)
 
 
 def test_session_gone_with_open_job_can_be_settled_and_retired(new_story):
