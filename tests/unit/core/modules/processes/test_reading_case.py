@@ -15,7 +15,7 @@ from core.modules.processes.support.reading.reading_case import ReadingCase
 
 TEST_OUTPUT = b"collected 3 items\n\n===== 3 passed in 0.10s =====\n"
 RUNNING_TESTS = ReadingCase(command_key="pytest", category=CommandCategory.TEST_RUN, classification_known=True, has_asking_flag=False,
-                            output_hidden=False, saved_command=None, is_plugin_run=False, moment=ReadingMoment.RUNNING, age_seconds=120,
+                            output_hidden=False, is_saved_command=False, is_plugin_run=False, moment=ReadingMoment.RUNNING, age_seconds=120,
                             run_state=ProcessState.BACKGROUND, exit_code=None, reader_layer=None, reader_judgement=None, reader_is_default=False,
                             output=None, runs_without_change=0, request_is_waiting=False, was_skipped=False, has_unreadable_mark=False,
                             role_must_have_reader=True, role_may_write_readers=True, role_uses_saved_commands=False, readers_forced=True)

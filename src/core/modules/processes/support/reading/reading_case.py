@@ -25,7 +25,7 @@ class ReadingCase:
     classification_known: bool
     has_asking_flag: bool
     output_hidden: bool
-    saved_command: str | None
+    is_saved_command: bool
     is_plugin_run: bool
     moment: ReadingMoment
     age_seconds: int
