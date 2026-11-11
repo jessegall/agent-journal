@@ -3,6 +3,7 @@ from datetime import timedelta
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.query.queries import Queries
+from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.wait import Wait
@@ -21,6 +22,9 @@ QUESTION = "The sandbox has no compiler"
 SECOND_QUESTION = "The fixture file is empty"
 ANSWER = "Use the compiler in tools/bin"
 ANSWER_MINUTES = "journal.suites.coding.workers.ask-answer-minutes"
+VISITS_LIMIT = "journal.suites.coding.workers.ask-visits-limit"
+HELP_REQUEST_LINE = 'wait stuck "the build tool is missing"'
+READ_OF_A_FILE = HookSamples.tool_use("Read", ToolType.READ, ["cart.py"], None)
 
 
 def questions(story) -> tuple[MergerLine, ...]:
@@ -83,6 +87,7 @@ def test_two_asks_while_the_merger_runs_both_show_in_merger_next_and_no_second_m
 
 
 def test_a_merger_that_read_an_ask_and_did_nothing_gets_it_again_at_every_visit_and_each_read_is_counted(case):
+    case.story.expect_success(f"setting set {VISITS_LIMIT} 5 --project", actor=case.story.agent)
     ask(case)
     end_unanswered_visit(case)
     first = questions(case.story)[0]
@@ -156,3 +161,39 @@ def test_an_ask_carries_the_phase_its_checkpoint_test_and_the_unfinished_tasks_w
     ask(case)
     text = questions(case.story)[0].text
     case.story.expect_rows("phase: First, its test: pytest tests/cart" in text, "task 1 (started) waits on nothing" in text, "task 2 (open) waits on task 1" in text, detail=text)
+
+
+def test_a_help_request_is_a_question_like_any_other_with_its_wait_and_its_due_time(case):
+    case.story.expect_success(HELP_REQUEST_LINE, actor=case.worker)
+    case.story.run_listeners()
+    line = questions(case.story)[0]
+    case.story.expect_rows(line.topic is AskTopic.GENERAL, line.wait_id == waits_of(case.story, case.worker)[0].id, line.outcome is None,
+                           line.due_at.value - line.created_at.value == timedelta(minutes=10), detail=str(line))
+    case.story.expect_success(f'merger answer {line.id} "{ANSWER}"', actor=case.merger)
+    case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.ANSWERED, ANSWER in case.worker_lines(), detail=case.worker_lines())
+
+
+def test_worker_status_names_the_open_ask_with_its_due_time_and_then_how_it_ended(case):
+    ask(case)
+    line = questions(case.story)[0]
+    due = line.due_at.value.strftime(CLOCK_FORMAT)
+    case.story.expect_text("worker status", f"ask {line.id} open since", f"answer due {due}, with the merger", actor=case.worker)
+    case.story.expect_success(f'merger answer {line.id} "{ANSWER}"', actor=case.merger)
+    case.story.expect_text("worker status", f"ask {line.id} was answered", actor=case.worker)
+    case.story.expect_absent("worker status", "open since", actor=case.worker)
+
+
+def test_a_worker_that_goes_on_working_after_asking_still_gets_its_answer(case):
+    ask(case)
+    case.story.hook(worker_session(case.story, case.worker), READ_OF_A_FILE)
+    line = questions(case.story)[0]
+    case.story.expect_rows(waits_of(case.story, case.worker)[0].state is not WaitState.OPEN, line.outcome is None, detail="working ends the wait and leaves the question open")
+    case.story.expect_success(f'merger answer {line.id} "{ANSWER}"', actor=case.merger)
+    case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.ANSWERED, ANSWER in case.worker_lines(), detail=case.worker_lines())
+
+
+def test_a_reading_of_the_merger_that_closes_at_the_limit_forwards_the_ask_without_the_watch(case):
+    ask(case)
+    end_unanswered_visit(case)
+    end_unanswered_visit(case)
+    case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, detail=str(questions(case.story)[0]))
