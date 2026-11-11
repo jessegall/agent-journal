@@ -18,11 +18,10 @@ from core.modules.waits.commands.end_wait.end_wait import EndWait
 from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.wait import Wait
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
-from suites.coding.modules.workers.models.merger_line import MergerLine
+from suites.coding.modules.workers.models.merger_line import CLOCK_FORMAT, MergerLine
 from suites.coding.modules.workers.support.ask_deadline import AskDeadline
 from suites.coding.modules.workers.support.worker_settings import QUESTION_ANSWER_MINUTES, QUESTION_FORWARD_MINUTES
 
-CLOCK_FORMAT = "%H:%M"
 
 
 class WorkerQuestions:
@@ -67,6 +66,11 @@ class WorkerQuestions:
     def close_worker_lines(self, worker_id: int, reason: str, context: Context) -> None:
         for line in self.worker_lines(worker_id):
             self.record(line, AskOutcome.MOOT, reason, context)
+
+    def status_lines(self, worker_id: int) -> tuple[str, ...]:
+        open_texts = tuple(line.status_text() for line in self.worker_lines(worker_id))
+        newest_closed = self.queries.query(MergerLine).filter(worker_id=worker_id).matching(HasValue("outcome")).matching(HasValue("topic")).newest().first()
+        return open_texts if newest_closed is None else (*open_texts, newest_closed.status_text())
 
     def due_workers(self, visits_limit: int, timestamp: Timestamp) -> tuple[int, ...]:
         return tuple(dict.fromkeys(line.worker_id for line in self.open_lines() if AskDeadline.from_line(line, visits_limit).is_forward_due(timestamp)))

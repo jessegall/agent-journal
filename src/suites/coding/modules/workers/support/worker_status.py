@@ -24,6 +24,7 @@ class WorkerStatus:
     program_state: ProgramState | None
     point: WorkerPoint
     is_paused: bool
+    question_lines: tuple[str, ...]
 
     @property
     def runs_text(self) -> str:

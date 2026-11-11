@@ -6,6 +6,8 @@ from engine.time.timestamp import Timestamp
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 
+CLOCK_FORMAT = "%H:%M"
+
 
 @dataclass(frozen=True, kw_only=True)
 class MergerLine(EnvironmentScoped, Model):
@@ -42,6 +44,13 @@ class MergerLine(EnvironmentScoped, Model):
         if self.creation_timestamp() < activity_at:
             return False
         return self.is_open_question() or self.creation_timestamp().elapsed_seconds(timestamp) < repeat_seconds
+
+    def status_text(self) -> str:
+        if self.outcome is not None:
+            return f"ask {self.id} was {self.outcome.description()}"
+        asked = self.creation_timestamp().value.strftime(CLOCK_FORMAT)
+        due = f", answer due {self.due_at.value.strftime(CLOCK_FORMAT)}" if self.due_at is not None else ""
+        return f"ask {self.id} open since {asked}{due}, with the merger"
 
     def is_open_question(self) -> bool:
         return self.worker_id is not None and self.outcome is None

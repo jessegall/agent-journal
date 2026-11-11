@@ -102,7 +102,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         grace = self.settings.minutes(IDLE_WORKER_MINUTES).count
         repeat = self.settings.minutes(IDLE_WORKER_REPEAT_MINUTES).count
         for worker in agents:
-            if worker.ended_at is None and f"idle:{worker.id}" in idle_lines and idle_lines[f"idle:{worker.id}"].is_open_question():
+            if self.has_stale_idle_line(worker, idle_lines):
                 self.questions.close_idle_line(idle_lines[f"idle:{worker.id}"], context)
             if worker.ended_at is None or worker.paused_at is not None or worker.id in excluded:
                 continue
@@ -120,6 +120,11 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
                 continue
             with self.bus.scopes.row_scope(worker):
                 self.inbox.deliver(MergerLine(text=line.text, fallback_source=IDLE_WORKER.key, nudge_json=line.stored.json, worker_id=worker.id, source_key=source_key), context)
+
+    @staticmethod
+    def has_stale_idle_line(worker: Agent, idle_lines: dict[str | None, MergerLine]) -> bool:
+        key = f"idle:{worker.id}"
+        return worker.ended_at is None and key in idle_lines and idle_lines[key].is_open_question()
 
     def checked_agents(self) -> tuple[Agent, ...]:
         checked = {agent.id: agent for agent in (*self.agent_rows.running(), *self.places.kept_workers())}
