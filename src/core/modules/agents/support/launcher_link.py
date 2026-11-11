@@ -1,9 +1,11 @@
 import json
+import os
 import socket
 import time
 from collections.abc import Mapping
 
 from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
+from engine.process.leftover_process import LeftoverProcess
 from core.modules.agents.support.launcher_service import LauncherService
 
 ANSWER_LIMIT_SECONDS = 9
@@ -16,12 +18,15 @@ RUNNING_FIELD = "running"
 RUNNING_ANSWER = b"running\n"
 REFUSED_TRIES = 3
 REFUSED_PAUSE_SECONDS = 0.1
+OWNER_LINK_ENDING = ".pid"
 
 
 class LauncherLink:
     """Hands the running launcher a request on its socket; with an answer asked for, gives what it answered,
     and gives nothing when it could not be reached. A socket nobody answers on, left by a launcher that was
-    killed, is removed, and a request to start a program then goes to a launcher started in its place."""
+    killed, is removed, and a request to start a program then goes to a launcher started in its place. The
+    launcher keeps a link beside its socket whose target is its process number: while that process runs, a
+    socket that refuses is a launcher slow to answer, and it is neither removed nor replaced."""
 
     def __init__(self, home: JournalHome, service: LauncherService) -> None:
         self.home, self.service = home, service
@@ -64,8 +69,19 @@ class LauncherLink:
                 continue
             except OSError:
                 return None
+        if self.has_running_owner:
+            return None
         self.home.socket(LAUNCHER_SOCKET).unlink(missing_ok=True)
         return self.exchanged_after_start(request, answer_bytes) if START_FIELD in request and self.service.start() else None
+
+    @property
+    def has_running_owner(self) -> bool:
+        socket_path = self.home.socket(LAUNCHER_SOCKET)
+        try:
+            pid_text = os.readlink(socket_path.with_name(socket_path.name + OWNER_LINK_ENDING))
+        except OSError:
+            return False
+        return pid_text.isdigit() and LeftoverProcess.is_running(int(pid_text))
 
     def exchanged_after_start(self, request: Mapping[str, object], answer_bytes: int) -> bytes | None:
         try:

@@ -4,7 +4,7 @@ from engine.driver.program_lockdown import ProgramLockdown
 from engine.errors.refusal import Refusal
 from engine.provider.launch_command import LaunchCommand
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.launcher_link import ANSWER_BYTES, LauncherLink
+from core.modules.agents.support.program_transport import ProgramTransport
 from core.modules.environments.models.environment import Environment
 from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure import RecordAgentLaunchFailure
 from core.modules.agents.commands.record_agent_process.record_agent_process import RecordAgentProcess
@@ -23,8 +23,8 @@ class AgentLauncher:
     """Start an agent through the launcher and record its process. A program at a usage limit is not started:
     it answers locked down before anything is asked of the launcher."""
 
-    def __init__(self, link: LauncherLink, bus: Bus, sessions: AgentLaunchGuard, lockdown: ProgramLockdown) -> None:
-        self.link, self.bus, self.sessions, self.lockdown = link, bus, sessions, lockdown
+    def __init__(self, transport: ProgramTransport, bus: Bus, sessions: AgentLaunchGuard, lockdown: ProgramLockdown) -> None:
+        self.transport, self.bus, self.sessions, self.lockdown = transport, bus, sessions, lockdown
 
     def hand(self, agent: Agent, environment: Environment, command: LaunchCommand) -> LaunchAnswer:
         if agent.retired_at is not None:
@@ -40,8 +40,8 @@ class AgentLauncher:
             return self.start(agent, environment, command)
 
     def start(self, agent: Agent, environment: Environment, command: LaunchCommand) -> LaunchAnswer:
-        answer = self.link.request_launcher({"agent_id": agent.id, "session": agent.session, "environment": environment.name, "folder": str(command.folder),
-                                 "command": list(command.arguments), "variables": {**command.variables, LAUNCH_VARIABLE: agent.session, ROLE_VARIABLE: agent.role}}, ANSWER_BYTES)
+        answer = self.transport.start({"agent_id": agent.id, "session": agent.session, "environment": environment.name, "folder": str(command.folder),
+                                 "command": list(command.arguments), "variables": {**command.variables, LAUNCH_VARIABLE: agent.session, ROLE_VARIABLE: agent.role}})
         if answer == RUNNING_ANSWER:
             return LaunchAnswer.RUNNING
         if answer in (None, FAILED_ANSWER):

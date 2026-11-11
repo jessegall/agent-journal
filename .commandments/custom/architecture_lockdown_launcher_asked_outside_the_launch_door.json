@@ -19,7 +19,8 @@
                     "AgentLauncher",
                     "TerminalTyping",
                     "LaunchAgentHandler",
-                    "LauncherLink"
+                    "LauncherLink",
+                    "LocalLauncherTransport"
                 ]
             },
             {

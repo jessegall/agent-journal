@@ -24,7 +24,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.agent_sessions import AgentSessions
 from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy
 from core.modules.agents.support.dispatch_policy import DispatchPolicy
-from core.modules.agents.support.launcher_link import LauncherLink
+from core.modules.agents.support.program_transport import ProgramTransport
 from core.modules.agents.support.program_exit import ProgramExit
 from core.modules.agents.support.standing import Standing
 from core.modules.environments.support.environment_rows import EnvironmentRows
@@ -43,11 +43,11 @@ class AgentDispatcher:
     round of reconcile opens a row that ended while its program runs and ends an open row whose started
     program is gone, and writes each correction to the system log."""
 
-    def __init__(self, launcher: AgentLauncher, program: AgentProgram, link: LauncherLink, providers: Providers, repository: Repository,
+    def __init__(self, launcher: AgentLauncher, program: AgentProgram, transport: ProgramTransport, providers: Providers, repository: Repository,
                  policy: CurrentAgentPolicy, agents: AgentRows, sessions: AgentSessions, environments: EnvironmentRows, queries: Queries, clock: Clock,
                  system_log: SystemLogWriter, dispatch_policy: DispatchPolicy) -> None:
         self.dispatch_policy = dispatch_policy
-        self.launcher, self.program, self.link, self.providers, self.repository, self.policy = launcher, program, link, providers, repository, policy
+        self.launcher, self.program, self.transport, self.providers, self.repository, self.policy = launcher, program, transport, providers, repository, policy
         self.agents, self.sessions, self.environments, self.queries, self.clock, self.system_log = agents, sessions, environments, queries, clock, system_log
 
     def start(self, agent: Agent, command: LaunchCommand) -> Dispatch:
@@ -92,7 +92,7 @@ class AgentDispatcher:
         return self.repository.save_change(agent, agent.ended(context.timestamp, self.policy.agent_policy()), context)
 
     def has_program(self, agent: Agent) -> bool:
-        return self.link.has_program(agent.terminal_id) or self.has_open_process(agent)
+        return self.transport.has_program(agent.terminal_id) or self.has_open_process(agent)
 
     def has_open_process(self, agent: Agent) -> bool:
         return agent.ended_at is None and agent.pid is not None and LeftoverProcess.runs_program(agent.pid, self.providers.executable(agent.program))
@@ -100,7 +100,7 @@ class AgentDispatcher:
     def wrongly_ended_agents(self) -> tuple[Agent, ...]:
         earliest = Timestamp(self.clock.timestamp().value - timedelta(seconds=RECENT_END_SECONDS))
         ended = self.queries.query(Agent).matching(Minimum("ended_at", earliest.text)).matching(IsNull("retired_at")).all_rows()
-        return tuple(agent for agent in ended if self.link.has_program(agent.terminal_id))
+        return tuple(agent for agent in ended if self.transport.has_program(agent.terminal_id))
 
     def wrongly_open_agents(self) -> tuple[Agent, ...]:
         return tuple(agent for agent in self.agents.running() if agent.is_launched_helper and not self.has_program(agent))

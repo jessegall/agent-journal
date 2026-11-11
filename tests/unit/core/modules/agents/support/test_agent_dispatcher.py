@@ -19,10 +19,12 @@ from core.modules.agents.support.agent_program import AgentProgram
 from core.modules.agents.support.agent_stops import AgentStops
 from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from core.modules.agents.support.launcher_link import LauncherLink
+from core.modules.agents.support.local_launcher_transport import LocalLauncherTransport
 from core.modules.agents.support.program_exit import ProgramExit
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.process.leftover_process import LeftoverProcess
 from engine.provider.launch_command import LaunchCommand
+from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
 
 NOW = Timestamp.parsed("2026-10-31T09:00:00+00:00")
@@ -82,10 +84,10 @@ class Parts:
         self.folder = Path(tempfile.mkdtemp())
         self.bus, self.repository, self.log_lines = RecordingBus(), RecordingRepository(), list[str]()
         home = SimpleNamespace(socket=lambda name: self.folder / name)
-        link = LauncherLink(home, SimpleNamespace(start=lambda: False))
+        link = LocalLauncherTransport(LauncherLink(home, SimpleNamespace(start=lambda: False)))
         launcher = AgentLauncher(link, self.bus, AgentLaunchGuard(), SimpleNamespace(lockdown=lambda program: SimpleNamespace(is_active=False)))
         providers = SimpleNamespace(executable=lambda program: program)
-        program = AgentProgram(providers, link, SimpleNamespace(rows=lambda: []))
+        program = AgentProgram(providers, link, SimpleNamespace(rows=lambda: []), Clock())
         self.dispatcher = AgentDispatcher(
             launcher, program, link, providers, self.repository, POLICY, SimpleNamespace(running=lambda: open_agents),
             SimpleNamespace(current=lambda agent_id: SimpleNamespace(end_reason=end_reason)), SimpleNamespace(find=lambda environment_id: SimpleNamespace(id=1, name="main")),

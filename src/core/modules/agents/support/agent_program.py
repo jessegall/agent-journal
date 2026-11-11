@@ -1,10 +1,9 @@
-import time
-
 from engine.caller.process_table import ProcessTable
 from engine.process.leftover_process import POLL_SECONDS, LeftoverProcess
 from engine.provider.providers import Providers
+from engine.time.clock import Clock
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.launcher_link import LauncherLink
+from core.modules.agents.support.program_transport import ProgramTransport
 
 STOP_WAIT_SECONDS = 5
 
@@ -12,8 +11,8 @@ STOP_WAIT_SECONDS = 5
 class AgentProgram:
     """Stops an agent's program through its launcher, or its recorded process with the processes under it."""
 
-    def __init__(self, providers: Providers, launcher: LauncherLink, process_table: ProcessTable) -> None:
-        self.providers, self.launcher, self.process_table = providers, launcher, process_table
+    def __init__(self, providers: Providers, launcher: ProgramTransport, process_table: ProcessTable, clock: Clock) -> None:
+        self.providers, self.launcher, self.process_table, self.clock = providers, launcher, process_table, clock
 
     def stop(self, agent: Agent) -> bool:
         if self.launcher.stop(agent.terminal_id):
@@ -38,10 +37,7 @@ class AgentProgram:
                 LeftoverProcess.stop(child, commands[child])
         if not LeftoverProcess.stop(pid, program):
             commands[pid] = program
-        deadline = time.monotonic() + STOP_WAIT_SECONDS
-        while self.running(commands) and time.monotonic() < deadline:
-            time.sleep(POLL_SECONDS)
-        return not self.running(commands)
+        return self.clock.poll(lambda: not self.running(commands), STOP_WAIT_SECONDS, POLL_SECONDS)
 
     def descendants(self, pid: int) -> list[int]:
         rows = self.process_table.rows()

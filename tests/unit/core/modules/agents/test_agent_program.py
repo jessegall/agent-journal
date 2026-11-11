@@ -1,3 +1,4 @@
+from engine.time.clock import Clock
 from unittest.mock import Mock
 
 from engine.process.leftover_process import LeftoverProcess
@@ -9,7 +10,7 @@ def test_a_reused_pid_does_not_stop_the_new_programs_children(monkeypatch):
     stopped = Mock()
     monkeypatch.setattr(LeftoverProcess, 'command_line', lambda pid: 'different-program')
     monkeypatch.setattr(LeftoverProcess, 'stop', stopped)
-    program = AgentProgram(Mock(), Mock(), table)
+    program = AgentProgram(Mock(), Mock(), table, Clock())
     assert program.stop_tree(123, 'claude')
     table.rows.assert_not_called()
     stopped.assert_not_called()

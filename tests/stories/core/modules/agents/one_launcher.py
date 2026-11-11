@@ -1,5 +1,5 @@
-import fcntl
 import json
+import os
 from datetime import datetime, timezone
 
 import pytest
@@ -16,26 +16,26 @@ from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, hel
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
-LAUNCHER_LOCK = "launcher.lock"
 FIRST_LAUNCHER_PID, SECOND_LAUNCHER_PID = 7001, 7002
 STARTED_AT = Timestamp(datetime(2026, 10, 31, 9, 0, tzinfo=timezone.utc))
 MESSAGES = "message list --json --limit 20 --environment main"
 
 
 @pytest.fixture
-def held_launcher_lock(new_story):
-    """An ended helper, and a launcher that is alive and holds the launcher lock of the journal home but answers no
-    connection: its socket file is there and a connect to it is refused."""
+def slow_launcher(new_story):
+    """An ended helper, and a launcher that is alive but answers no connection: its socket file is there, a
+    connect to it is refused, and the link beside the socket names a process that runs."""
     story = new_story(fixture=EndedHelper)
-    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET))
-    launcher.server.close()
-    with open(story.home.folder / LAUNCHER_LOCK, "w") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
-        yield story
+    socket_path = story.home.socket(LAUNCHER_SOCKET)
+    FakeLauncher.listening(socket_path).server.close()
+    owner_link = socket_path.with_name(socket_path.name + ".pid")
+    owner_link.unlink(missing_ok=True)
+    owner_link.symlink_to(str(os.getpid()))
+    return story
 
 
-def test_548_a_launcher_that_holds_the_lock_and_is_slow_to_answer_is_not_replaced_by_a_second_launcher(held_launcher_lock, monkeypatch):
-    story = held_launcher_lock
+def test_548_a_launcher_whose_process_runs_and_is_slow_to_answer_is_not_replaced_by_a_second_launcher(slow_launcher, monkeypatch):
+    story = slow_launcher
     started_launchers: list[str] = []
     monkeypatch.setattr(LauncherService, "start", lambda service: started_launchers.append("launcher") or False)
     resumable_session(story, helper_agent(story), monkeypatch)

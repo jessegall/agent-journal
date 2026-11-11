@@ -8,7 +8,7 @@
             {"of": "receiver", "typeLike": "*LauncherLink"}
         ],
         "reject": [
-            {"of": "enclosingType", "name": "AgentProgram"},
+            {"of": "enclosingType", "nameIn": ["AgentProgram", "LocalLauncherTransport"]},
             {"testCode": true}
         ]
     },
