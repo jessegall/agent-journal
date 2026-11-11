@@ -13,7 +13,7 @@ SMALL_CONTEXT = 20_000
 EDIT = HookSamples.edit("src/cart.py")
 
 
-class ClearChosen(StoryFixture):
+class LimitClears(StoryFixture):
     """The context limit is on and clears the context instead of compacting it."""
 
     parent = LimitEnabled
@@ -24,7 +24,7 @@ class ClearChosen(StoryFixture):
 
 @pytest.fixture
 def clearing(new_story):
-    return typing_recorded(new_story(fixture=ClearChosen))
+    return typing_recorded(new_story(fixture=LimitClears))
 
 
 def rows(story) -> list[tuple[ContextChange, CompactionState]]:
