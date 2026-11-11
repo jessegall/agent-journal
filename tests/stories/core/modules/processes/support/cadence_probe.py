@@ -42,18 +42,22 @@ class HelperBesideWorker(StoryFixture):
 
 
 def cadence_tick(story: Story) -> None:
-    handlers = [handler for module in ModuleFinder(story.home).modules() for handler in module.tick_handlers if handler.label == CADENCE_TICK]
+    tick_named(story, CADENCE_TICK)
+
+
+def tick_named(story: Story, label: str) -> None:
+    handlers = [handler for module in ModuleFinder(story.home).modules() for handler in module.tick_handlers if handler.label == label]
     story.expect_rows(len(handlers) == 1)
     handlers[0].handler(story.container)
 
 
 def ticks(story: Story, seconds: int, *processes: Process, every: int = 0, text: str = ".") -> None:
     """Moves the clock ten seconds at a time for the given seconds and runs the cadence watch after each step; with
-    every, the given runs print the text at each multiple of every seconds."""
+    every, the given runs print the text at the first step at or after each multiple of every seconds."""
     folder = story.container.get(OutputFolder)
     for elapsed in range(TICK_SECONDS, seconds + 1, TICK_SECONDS):
         story.advance(TICK)
-        for process in processes if every and elapsed % every == 0 else ():
+        for process in processes if every and elapsed % every < TICK_SECONDS else ():
             folder.write_output(process.id, 1, folder.output(process.id, 1) + text)
         cadence_tick(story)
 
