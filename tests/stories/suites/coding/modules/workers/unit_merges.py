@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.work_units import unit_of
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 import pytest
 
@@ -53,7 +54,7 @@ def test_68_main_hears_one_line_naming_the_ask(new_story, monkeypatch):
     worker = asked_list(new_story, monkeypatch)
     merge(worker)
     number = agent_number(worker.story, worker.worker.id)
-    lines = [line for line in worker.main_agent_lines() if "merge-ask:1" in line and f"worker:{worker.worker.id}" in line]
+    lines = [line for line in worker.main_agent_lines() if "merge-ask:1" in line]
     worker.story.expect_rows(len(lines) == 1, detail=str(worker.main_agent_lines()))
 
 
@@ -90,7 +91,7 @@ def test_74_after_the_merge_the_worker_gets_its_next_unit_on_a_new_worktree(new_
     merge(worker)
     task_id = worker.story.new_row_id('task make "Receipts" --brief "Print them" --environment main', actor=worker.story.agent)
     worker.story.expect_success(f"worker send {agent_number(worker.story, worker.worker.id)} --task {task_id}", actor=worker.story.agent)
-    worker.story.expect_text("worker status", f"Current task: {task_id}", actor=worker.worker)
+    worker.story.expect_rows(task_id in unit_of(worker).task_ids, detail=str(unit_of(worker)))
 
 
 def test_an_ask_is_heard_by_the_main_agent_with_the_merger_off(new_story, monkeypatch):

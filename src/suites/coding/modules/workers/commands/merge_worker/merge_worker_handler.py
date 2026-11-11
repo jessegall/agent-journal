@@ -50,22 +50,24 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         self.environments, self.bus, self.followups = environments, bus, followups
 
     def check_rows(self, command: MergeWorker, actor: Actor) -> None:
-        worktree = self.worktrees.worker_worktree(command.worker_id)
-        unit = self.units.unit(command.worker_id)
-        if worktree is not None and worktree.state is WorktreeState.CUT and unit.has_several_tasks:
-            raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} works {unit.merge_name} and has not asked for its merge",
-                          "merge its committed work so far with --up-to <task>")
-        if worktree is None or worktree.state is not WorktreeState.DELIVERED:
-            raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has delivered nothing to merge", "journal worker-worktree list shows the worktrees")
+        worktree = self.delivered_worktree(command.worker_id)
         self.checks.check_proofs(worktree)
         self.checks.check_logs(worktree)
         self.checks.check_base_branch(worktree)
         self.checks.check_important_lines(worktree, self.log_lines.review(worktree), command.important_answer)
 
-    def handle(self, command: MergeWorker, context: Context) -> MergeOutcome:
-        worktree = self.worktrees.worker_worktree(command.worker_id)
+    def delivered_worktree(self, worker_id: int) -> Worktree:
+        worktree = self.worktrees.worker_worktree(worker_id)
+        label = AgentLabel.from_row_id(worker_id, self.numbers, "worker").text
+        unit = self.units.unit(worker_id)
+        if worktree is not None and worktree.state is WorktreeState.CUT and unit.has_several_tasks:
+            raise Refusal(f"{label} works {unit.merge_name} and has not asked for its merge", "merge its committed work so far with --up-to <task>")
         if worktree is None or worktree.state is not WorktreeState.DELIVERED:
-            raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has delivered nothing to merge", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{label} has delivered nothing to merge", "journal worker-worktree list shows the worktrees")
+        return worktree
+
+    def handle(self, command: MergeWorker, context: Context) -> MergeOutcome:
+        worktree = self.delivered_worktree(command.worker_id)
         environment = self.environments.find(worktree.environment_id)
         self.check(worktree, environment)
         planned = self.followups.planned(worktree.id)
