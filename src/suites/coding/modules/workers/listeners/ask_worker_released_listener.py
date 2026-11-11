@@ -16,5 +16,5 @@ class AskWorkerReleasedListener(SaveListener[Changed[Worktree]]):
 
     def handle(self, event: Changed[Worktree], context: Context) -> None:
         old, new = event.old_row, event.row
-        if old is not None and new.is_released_since(old):
+        if old is not None and new.is_newly_released(old):
             self.questions.close_worker_lines(new.session_agent_id, "the worker was released", context)

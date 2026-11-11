@@ -25,7 +25,7 @@ class RetiredWorkerListener(SaveListener[Updated[Agent]]):
 
     def handle(self, event: Updated[Agent], context: Context) -> None:
         worker = event.row
-        if worker.role != CodingHelperRole.WORKER or not worker.is_retired_since(event.previous):
+        if worker.role != CodingHelperRole.WORKER or not worker.is_newly_retired(event.previous):
             return
         self.questions.close_worker_lines(worker.id, "the worker was retired", context)
         tasks = self.unfinished.rows(worker.id)

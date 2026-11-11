@@ -15,7 +15,7 @@ PID_FIELD = "pid"
 MAIN_ROLE = "main"
 LAUNCH_CHANGE = "launch"
 MAIN_TITLE = "Main agent"
-ENDED_MAIN_TITLE = "Main agent, earlier session"
+ENDED_MAIN_TITLE = "Main agent, previous session"
 MAIN_NUMBER = 1
 
 
@@ -87,8 +87,8 @@ class Agent(EnvironmentScoped, Model):
     def retired(self, timestamp: Timestamp, reason: str, actor_id: int) -> "Agent":
         return self.changed(retired_at=timestamp, retirement_reason=reason, retiring_actor_id=actor_id)
 
-    def is_retired_since(self, earlier: "Agent") -> bool:
-        return self.retired_at is not None and earlier.retired_at is None
+    def is_newly_retired(self, previous: "Agent") -> bool:
+        return self.retired_at is not None and previous.retired_at is None
 
     def is_unrelated_agent(self, actor: Actor) -> bool:
         return self.is_foreign_helper(actor) and actor.id != self.id
