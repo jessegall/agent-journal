@@ -81,9 +81,11 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         if task.state is TaskState.TESTING:
             if self.proof_queue.tests_pending(worktree):
                 raise Refusal(self.guidance.line(context.actor.id))
-            if self.proof_queue.queue_proofs(worktree, context):
+            submission = self.proof_queue.resubmit(worktree, task, context)
+            if submission is Submission.QUEUED:
                 return task
-            self.close_checked(task, context)
+            if submission is Submission.UNTESTED:
+                self.close_checked(task, context)
             task = self.rows.required(Task, worktree.task_id)
         started_task = self.tasks.holder(context.actor.id).started().first()
         if task.state is not TaskState.STARTED and started_task is not None:

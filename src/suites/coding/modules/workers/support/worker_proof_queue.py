@@ -54,9 +54,19 @@ class WorkerProofQueue:
     def merge_ready_time(self, task: Task, context: Context) -> Timestamp | None:
         return context.timestamp if self.plans.is_started_plan(task.id) else None
 
+    def resubmit(self, worktree: Worktree, task: Task, context: Context) -> Submission:
+        if self.plans.is_started_plan(task.id):
+            self.commit_proofs(worktree, context)
+            return Submission.COMMITTED
+        return Submission.QUEUED if self.queue_proofs(worktree, context) else Submission.UNTESTED
+
     def commit_proofs(self, worktree: Worktree, context: Context) -> None:
-        for proof in tuple(self.proofs.worktree_proofs(worktree.id).filter(state=ProofState.SHOWN).oldest().all_rows()):
-            if proof.test_command:
+        for proof in tuple(self.proofs.worktree_proofs(worktree.id).oldest().all_rows()):
+            if not proof.test_command:
+                continue
+            if proof.state is ProofState.SHORT:
+                proof = self.repository.save_change(proof, proof.revise(context.timestamp, context.actor, proof.text), context)
+            if proof.state is ProofState.SHOWN:
                 self.repository.save_change(proof, proof.moved(ProofLifecycle.commit), context)
 
     def queue_proofs(self, worktree: Worktree, context: Context) -> int:

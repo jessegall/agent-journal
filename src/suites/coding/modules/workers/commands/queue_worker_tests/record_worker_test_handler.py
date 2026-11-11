@@ -85,15 +85,17 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
 
     def complete_tested(self, proofs: tuple[Proof, ...], context: Context) -> None:
         task_ids = sorted({row.task_id for row in proofs})
-        self.rows.prepare(Task, task_ids)
+        tasks = self.rows.required_by_id(Task, task_ids)
         self.phases.plans.prepare(task_ids)
         for task_id in task_ids:
-            task = self.rows.required(Task, task_id)
+            task = tasks[task_id]
             task_proofs = [row for row in proofs if row.task_id == task_id]
             if self.has_passed(task, task_proofs):
                 self.repository.save_change(task, task.close(context.timestamp, context.actor, "its tests passed"), context)
 
     def has_passed(self, task: Task, proofs: list[Proof]) -> bool:
+        if self.phases.plans.is_started_plan(task.id):
+            return False
         is_closable = self.phases.is_grouped(task) or any(row.test_command for row in proofs)
         return is_closable and task.state is TaskState.TESTING and all(row.state is ProofState.CHECKED for row in proofs)
 
@@ -110,8 +112,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     def reopen_work(self, worktree: Worktree, failed: list[Proof], context: Context) -> None:
         for task_id in sorted({row.task_id for row in failed}):
             self.failures.record_delivery(worktree.session_agent_id, task_id, ", ".join(sorted({row.test_command for row in failed if row.task_id == task_id})), context)
-        for task_id in sorted({row.task_id for row in failed}):
-            task = self.rows.required(Task, task_id)
+        for task in self.rows.required_by_id(Task, sorted({row.task_id for row in failed})).values():
             if task.state is TaskState.TESTING:
                 self.repository.save_change(task, task.moved(TaskLifecycle.retest), context)
         current = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context) if worktree.state is WorktreeState.DELIVERED else worktree
