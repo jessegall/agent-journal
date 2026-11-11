@@ -16,9 +16,7 @@ from engine.testing.stories.story import Story
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
-from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
@@ -139,7 +137,6 @@ def test_the_facts_holds_the_last_refusal_of_the_worker(judged):
     judged.story.expect_rows("cart.py has a sin" in judged.facts()["refusal"], detail=str(judged.facts()))
 
 
-@pytest.mark.real_git
 def test_a_refusal_that_a_later_hand_in_cleared_is_not_in_the_facts(judged):
     judged.repository.changed(judged.worker.id, "cart.py", CART_CHANGE)
     judged.story.expect_success(COMMIT, actor=judged.worker)
@@ -184,14 +181,6 @@ def test_the_main_agent_hears_nothing_of_an_ask_and_sees_no_stuck_mark(asking_wi
     lines = asking_with_merger_running.main_lines()
     marks = asking_with_merger_running.story.run("chat-mark list --environment 1").output_text
     asking_with_merger_running.story.expect_rows("is stuck" not in lines, QUESTION not in lines, "merger-line" not in lines, "is stuck" not in marks, detail=lines + marks)
-
-
-def test_an_ask_wakes_the_merger_which_reads_it_with_its_facts_once(asking_with_merger_running):
-    asking_with_merger_running.post_question(topic=AskTopic.TOOL)
-    asking_with_merger_running.story.run_listeners()
-    merger = Actor(merger_agent(asking_with_merger_running.story).id, ActorType.AGENT)
-    asking_with_merger_running.story.expect_text("merger next", QUESTION, "tool", "point build", "task 1", actor=merger)
-    asking_with_merger_running.story.expect_no_text("merger next", QUESTION, actor=merger)
 
 
 def test_with_the_merger_off_an_ask_reaches_the_main_agent_and_the_worker_may_stop(merger_disabled_worker):

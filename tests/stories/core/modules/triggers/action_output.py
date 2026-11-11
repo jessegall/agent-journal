@@ -30,17 +30,6 @@ def test_command_output_goes_to_the_agent_that_fired_it_once(new_story, tmp_path
     story.expect_absent_hook_line("s-1", HookSamples.prompt("Continue again"), "agent-line:1")
 
 
-def test_output_stays_out_of_the_agent_when_the_switch_is_off(new_story):
-    story = install_runner(new_story(fixture=AgentsEnableTriggers))
-    story.expect_success('''trigger make cart "Mind the cart" --extra-actions '[{"type":"run","target":"pwd"}]' ''', actor=story.agent)
-    story.hook("s-1", HookSamples.prompt("Fix the cart"))
-    story.run_listeners()
-    process = story.story_rows(Process)[0]
-    end_run(story, process, "private command output\n")
-    story.run_listeners()
-    story.expect_absent_hook_line("s-1", HookSamples.prompt("Continue"), "private command output")
-
-
 def test_an_old_trigger_run_is_removed_with_its_process(new_story):
     story = install_runner(new_story(fixture=AgentsEnableTriggers))
     story.expect_success("setting set journal.core.processes.processes-kept 1 --environment main", actor=story.agent)

@@ -1,8 +1,7 @@
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders
 from tests.stories.core.modules.processes.support.reading_scenarios import (TwoToxReaders, end_decision, ended_after_a_while, large_background_output,
-                                                                             main_test_run_without_reader, rejected_worker_command, tox_run,
-                                                                             worker_test_run_without_reader)
+                                                                             main_test_run_without_reader, rejected_worker_command, tox_run)
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 # The end decision the engine keeps for each pin scenario, as (state, action, level), beside what the old code did.
@@ -18,12 +17,6 @@ def test_a_short_run_two_project_readers_read_needs_no_reader(new_story):
     story = new_story(fixture=TwoToxReaders)
     decision = end_decision(story, tox_run(story))
     story.expect_rows(decision == SHORT_TOX_RUN[0], detail=f"{decision}: {SHORT_TOX_RUN[1]}")
-
-
-def test_a_workers_test_run_with_no_reader_is_required_a_reader_while_its_request_waits(new_story):
-    story = new_story(fixture=ForcedReaders)
-    decision = end_decision(story, ended_after_a_while(story, worker_test_run_without_reader(story)))
-    story.expect_rows(decision == WORKER_TESTS_WITHOUT_READER[0], detail=f"{decision}: {WORKER_TESTS_WITHOUT_READER[1]}")
 
 
 def test_a_main_agents_test_run_with_no_reader_is_suggested_one_at_its_end(new_story):

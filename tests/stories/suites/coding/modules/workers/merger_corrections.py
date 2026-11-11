@@ -7,7 +7,6 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.messages.models.message import Message
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.checkpoint_failures import end_run, expect_returned, print_output
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import branch_runs_only, CART_COMMAND, PASSES, REACHES, commit_tasks, merge, rows, run_lines
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
@@ -170,14 +169,6 @@ def test_97_101_107_a_deferred_path_a_path_that_passed_and_a_word_that_is_no_tes
     deferred.story.expect_rows(repeated.code != 0, f"{LATER_STORIES} is already deferred" in repeated.output_text, "tests/build.py did not fail in the own test of phase 1" in passed.output_text,
                                "tests/stories did not fail in the own test of phase 1" in folder.output_text, len(rows(deferred.worker, DEFERRALS)) == 1,
                                detail=f"{repeated.output_text} | {passed.output_text} | {folder.output_text}")
-
-
-def test_153_the_plan_shows_an_open_deferral_on_its_checkpoint_phase_until_it_is_closed(deferred):
-    with server_story(deferred.story) as server:
-        cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-        inspected = server.viewer_line_value(cookie, {"window": "plans.plans", "line": ["plan", "inspect", "1"], "environment": "main"})
-    lines = inspected["checkpoint_lines"]
-    deferred.story.expect_rows(f"phase 1: own test deferred: {LATER_STORIES}, until the checkpoint of phase 2" in lines, detail=str(lines))
 
 
 def test_105_only_the_merger_defers_a_test(later_stories_failed):

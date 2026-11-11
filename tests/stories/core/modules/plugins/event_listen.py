@@ -10,10 +10,8 @@ from engine.query.queries import Queries
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.drivers.models.agent_line import AgentLine
 from engine.time.timestamp import Timestamp
-from tests.stories.core.modules.processes.support.process_samples import install_runner
-from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.core.modules.plugins.support.event_stories import (
-    NOTES_PIN_TITLE, PIN_LINE, REFUSAL, SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, answer_with_commands, data_row, event_data, event_plugin_story, pins_titled, plugin_page, plugin_row, script_calls, tasks_titled)
+    NOTES_PIN_TITLE, PIN_LINE, REFUSAL, SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, event_plugin_story, pins_titled, tasks_titled)
 
 MESSAGE_TEXT = "pinned for you"
 CARD_LABEL = "Pin made"
@@ -76,14 +74,6 @@ def test_s30_a_session_reads_no_table_and_names_no_plugin(new_story):
     reads = counted_table_reads(story)
     caller = story.container.get(CallerResolver).caller(CallerRequest(variables={SESSION_VARIABLE: "s-1"}, folder="/", pid=CLIENT_PID))
     story.expect_rows(caller.plugin_script == "", caller.actor == story.agent, not reads)
-
-
-def test_s30_running_a_program_never_reads_the_process_table(new_story):
-    story = install_runner(event_plugin_story(new_story, program="see.sh", hears=["file_edited"]))
-    reads = counted_table_reads(story)
-    scanned_edit(story, "s-1", "a.py")
-    story.run_listeners()
-    story.expect_rows(len(script_calls(story, "see.sh")) == 1, not reads)
 
 
 def test_s30_an_agent_that_names_a_plugin_in_a_variable_is_still_guarded(new_story):

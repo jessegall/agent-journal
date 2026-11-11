@@ -1,4 +1,3 @@
-import pytest
 from engine.enums.tool_type import ToolType
 from engine.testing.expectations.expect_reply import expect_reply_allowed
 from core.modules.agents.testing.fake_launcher import FakeLauncher
@@ -39,7 +38,6 @@ def test_the_designer_writes_under_docs_designs_and_nowhere_else(new_story):
     story.expect_hook_refusal(designer.session, write(repository, "docs/designs-other/page.html"), REFUSED)
 
 
-@pytest.mark.real_git
 def test_a_designer_job_ends_with_its_page_and_picture_committed(new_story):
     story = new_story(fixture=UserBuilder)
     repository = repository_environment(story)

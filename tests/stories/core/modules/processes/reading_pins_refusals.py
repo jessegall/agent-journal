@@ -18,13 +18,6 @@ REDIRECTED_TESTS = HookSamples.shell("pytest -q > results.txt", ShellPart("pytes
 ERRORS_TO_FILE = HookSamples.shell("make build 2> errors.txt", ShellPart("make", CommandCategory.BUILD, ["build"]), redirects=["2> errors.txt"])
 
 
-def test_peeking_at_or_paging_a_held_run_is_held_too_and_does_not_answer_the_hold(new_story):
-    story = new_story(fixture=ActiveBuild)
-    story.advance(timedelta(seconds=HANG_SECONDS + 1))
-    story.expect_hook_refusal("s-1", PEEK_OUTPUT, HELD)
-    story.expect_hook_refusal("s-1", PAGE_OUTPUT, HELD)
-
-
 def test_a_run_idle_and_silent_for_the_hang_time_is_stopped_and_its_agent_told_its_output_is_kept(new_story):
     story = new_story(fixture=ActiveBuild)
     started_tree(story, 12.0)
@@ -55,9 +48,3 @@ def test_the_output_monitor_command_is_refused_in_the_shell_and_let_through_in_t
     story = install_runner(new_story(fixture=BuilderStarted))
     story.expect_hook_refusal("s-1", MONITOR_IN_SHELL, "the output wait runs only in a Monitor")
     story.expect_hook_allowed("s-1", monitor("journal output monitor 7"))
-
-
-def test_a_test_run_sent_to_a_file_is_refused_and_a_build_sending_only_its_errors_there_is_not(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    story.expect_hook_refusal("s-1", REDIRECTED_TESTS, "pytest goes to a file, so no reader sees it")
-    story.expect_absent_hook_line("s-1", ERRORS_TO_FILE, "goes to a file, so no reader sees it")

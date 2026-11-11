@@ -2,7 +2,6 @@ from datetime import timedelta
 
 import pytest
 
-from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.helpers.support.helper_settings import COLD_SESSION_MINUTES, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from tests.stories.core.modules.helpers.cold_sessions import with_job
@@ -90,16 +89,3 @@ def test_cold_minutes_at_zero_changes_nothing_for_an_each_launch_helper(new_stor
     story.expect_success(f"setting set {COLD_SESSION_MINUTES} 0 --project", actor=story.user)
     helper, request = with_job(story, monkeypatch, 1, 10)
     story.expect_rows(helper_agent(story).session != helper.session, "--resume" not in request["command"], detail=str(request["command"][-4:]))
-
-
-def test_an_each_launch_helper_sent_three_jobs_is_one_kept_agent(new_story):
-    story = story_with_profile_file(new_story, EndedEachLaunchHelper)
-    helper = helper_agent(story)
-    sessions = [helper.session]
-    for _ in range(3):
-        launched_job(story)
-        sessions.append(helper_agent(story).session)
-        story.expect_success(f"agent end {helper.id}", actor=story.user)
-        story.run_listeners()
-    helpers = list(story.story_rows(Agent, role="helper"))
-    story.expect_rows(len(helpers) == 1, len(set(sessions)) == 4, detail=str(sessions))

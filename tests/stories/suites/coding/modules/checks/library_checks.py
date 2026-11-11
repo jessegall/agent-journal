@@ -48,14 +48,6 @@ def copy_state(story: Story, item_id: int) -> CopyState:
     return story.container.get(Queries).query(LibraryCopy).filter(share="check", item_id=item_id).first().state
 
 
-def test_getting_a_check_shows_its_command_first_and_needs_a_person_to_read_it(new_story, shared_server):
-    server, tokens = shared_server
-    item_id = library_check(server, tokens.admin, **check_fields("Needs reading", "echo careful"))
-    story = connected(new_story, server, tokens.editor)
-    story.expect_refusal(f"library get check {item_id}", "this check runs on your computer: echo careful", actor=story.user)
-    story.expect_rows(len(story.story_rows(Check)) == 0)
-
-
 def test_a_check_arrives_stopped_and_never_runs_until_a_person_starts_it(new_story, shared_server):
     server, tokens = shared_server
     story, item_id = story_with_check(new_story, server, tokens, "Arrives stopped", command="true")

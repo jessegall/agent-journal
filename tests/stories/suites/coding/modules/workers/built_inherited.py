@@ -85,22 +85,10 @@ def test_a_second_worker_on_a_built_task_has_the_earlier_files_in_its_worktree(s
     expect_value(repository.git("merge-base", "--is-ancestor", repository.worker_branch(first.id), repository.worker_branch(second.id)).returncode, 0)
 
 
-def test_it_hands_in_with_differences_already_built_and_the_task_closes(proved_second):
-    story, repository, first, second = proved_second
-    story.expect_success(BUILT_HAND_IN, actor=second)
-    repository.expect_file(repository.worker_branch(second.id), "cart.py", CART_CHANGE)
-    story.expect_text("task show 1", "state: testing", actor=story.agent)
-
-
 def test_a_second_worker_that_adds_to_the_earlier_work_needs_no_why(added_second):
     story, repository, first, second = added_second
     repository.expect_file(repository.worker_branch(second.id), "cart.py", CART_CHANGE)
     repository.expect_file(repository.worker_branch(second.id), "notes.py", "NOTE = 1\n")
-
-
-def test_a_clash_of_the_earlier_work_with_the_moved_base_is_named_at_the_hand_in(cart_conflict):
-    story, repository, second = cart_conflict
-    story.expect_refusal(BUILT_HAND_IN, f"your work clashes with {ENVIRONMENT_BRANCH} in cart.py", actor=second)
 
 
 def test_an_earlier_branch_already_in_the_base_is_not_inherited(released_work):

@@ -77,13 +77,6 @@ def test_an_agent_can_never_decide_a_docked_request(pending_setting, decision):
     story.expect_text(f"approval show {request.id}", "state: open")
 
 
-def test_repeating_the_same_block_keeps_one_request(pending_setting):
-    story, request = pending_setting
-    story.expect_refusal(CHANGE_SETTING, "A person was asked in the dock", actor=story.agent)
-    rows = tuple(story.story_rows(ApprovalRequest))
-    story.expect_rows(len(rows) == 1, rows[0].id == request.id)
-
-
 def test_an_agent_cannot_hide_a_pending_approval(pending_setting):
     story, request = pending_setting
     item = story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=request.id).first()

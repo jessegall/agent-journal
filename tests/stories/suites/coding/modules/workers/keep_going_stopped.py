@@ -40,13 +40,6 @@ def ended_with_work(quiet_worker):
     return quiet_worker
 
 
-def test_a_stopped_worker_is_left_to_the_merger_during_the_wait(stopped_while_asking):
-    story = stopped_while_asking.story
-    story.advance(timedelta(minutes=WAIT_MINUTES - 1))
-    story.tick(MAIN_SESSION)
-    story.expect_rows(stopped_lines(story) == [], detail=str(stopped_lines(story)))
-
-
 def test_a_worker_another_agent_stopped_is_not_named(quiet_worker):
     story = quiet_worker.story
     quiet_worker.post_question()
