@@ -63,6 +63,12 @@ test("the opened agent card shows the plan allowance its facts carry in the info
     expect(element.querySelector("[data-information-bar] [data-fact='usage']").textContent).toContain("30%");
 });
 
+test("the Reports tab counts the agent's reports before the tab is opened", async () => {
+    const row = {...AGENTS[2], number: 770, report_count: 4};
+    const element = await mounted({render: () => h(AgentCard, {row, facts: {tasks: []}, open: true})}, {...context({}), tabs: TABS});
+    expect(element.querySelector("[data-tab='reports'] [data-tab-count]").textContent).toBe("4");
+});
+
 test("the opened agent card names its role and number once, and its program, model and effort once, in its bar", async () => {
     const row = {...AGENTS[2], number: 770, program_model: "opus", session_count: 2, memory_count: 3, created_at: "2026-11-01T10:00:00Z"};
     const facts = {id: row.id, tasks: [], model: "opus", effort: "high", last_activity: "2026-11-11T10:00:00Z", context_percent: 15, cost_dollars: 1.5};

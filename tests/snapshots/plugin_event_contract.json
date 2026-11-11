@@ -521,6 +521,23 @@
       "started_at"
     ]
   },
+  "core.agents.agent_session.stop": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "end_reason",
+      "ended_at",
+      "environment_id",
+      "program",
+      "program_model",
+      "session",
+      "session_agent_id",
+      "started_at"
+    ]
+  },
   "core.agents.agent_session.updated": {
     "forms": [
       "commit",
