@@ -86,6 +86,9 @@ class HookCallQuery(Query[HookCall]):
         return self.kept.read_newest(self.table.name, self.agent(agent_id).filter(hook=HookEventName.PROMPT).matching(Maximum("created_at", cutoff_at.text)).newest().first,
                                      "session_agent_id = ? AND hook = ? AND created_at <= ?", [agent_id, HookEventName.PROMPT, cutoff_at.text], name="drivers.prompt_before")
 
+    def last_allowed_stop(self, agent_id: int, cutoff_at: Timestamp) -> HookCall | None:
+        return self.agent(agent_id).filter(hook=HookEventName.STOP, answer=HookAnswer.ALLOWED).matching(Maximum("created_at", cutoff_at.text)).newest().first()
+
     def latest_file_edit_call(self, agent_id: int) -> HookCall | None:
         return self.kept.read_newest(self.table.name, self.agent(agent_id).filter(writes_files=True).newest().first,
                                      "session_agent_id = ? AND writes_files = 1", [agent_id], name="drivers.latest_write")

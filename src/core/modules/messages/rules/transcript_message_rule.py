@@ -23,6 +23,7 @@ from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.commands.edit_message_text.edit_message_text import EditMessageText
 from core.modules.messages.support.agent_text_filter import AgentTextFilter
 from core.modules.messages.support.message_settings import TRANSCRIPT_LOOKBACK_SECONDS, TRANSCRIPT_OLDEST_MINUTES, TRANSCRIPT_WAIT_SECONDS
+from core.modules.messages.support.turn_reply_targets import TurnReplyTargets
 from engine.setting.setting_values import SettingValues
 
 
@@ -36,8 +37,8 @@ class TranscriptMessageRule(DriverRule):
     overlay_proof = True
     is_notice = True
 
-    def __init__(self, queries: Queries, providers: Providers, transcripts: TranscriptEntries, hook_calls: HookCallQuery, texts: AgentTextFilter, settings: SettingValues) -> None:
-        self.queries, self.providers, self.transcripts, self.hook_calls, self.texts, self.settings = queries, providers, transcripts, hook_calls, texts, settings
+    def __init__(self, queries: Queries, providers: Providers, transcripts: TranscriptEntries, hook_calls: HookCallQuery, texts: AgentTextFilter, settings: SettingValues, targets: TurnReplyTargets) -> None:
+        self.queries, self.providers, self.transcripts, self.hook_calls, self.texts, self.settings, self.targets = queries, providers, transcripts, hook_calls, texts, settings, targets
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         provider = self.providers.provider(hook.event.program)
@@ -66,7 +67,7 @@ class TranscriptMessageRule(DriverRule):
             return [EditMessageText(message.id, text)]
         if self.is_filtered(hook, text, row.created_at):
             return []
-        return [SendMessage(text, is_agent_text=True)]
+        return [SendMessage(text, self.targets.parent_id(hook.agent_id, text, row.created_at), is_agent_text=True)]
 
     def is_filtered(self, hook: AgentHook, text: str, created_at: Timestamp) -> bool:
         is_closing = self.texts.is_closing(hook, created_at)
