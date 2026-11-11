@@ -28,5 +28,6 @@ class RunningOutputReaders:
             parts[part.process_id].append(part)
         for output in outputs:
             read = next((part for part in parts[output.process_id] if ReaderSelection.reads_command(reader, part.command or part.text, part.category)), None)
+            print('TRACE read', reader.id, output.process_id, output.version, read)
             if read is not None:
-                self.repository.save(replace(output, reader_id=reader.id, reader_position=read.position, read_offset=0, displayed_offset=0), context)
+                print('TRACE saved', self.repository.save(replace(output, reader_id=reader.id, reader_position=read.position, read_offset=0, displayed_offset=0), context))
