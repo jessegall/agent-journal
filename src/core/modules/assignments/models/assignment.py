@@ -11,6 +11,7 @@ class Assignment(Model):
 
     model_name = "assignment"
     cli_name = "assignment"
+    filter_fields = ["subject_model"]
 
     creator_id: int
     subject_model: str
