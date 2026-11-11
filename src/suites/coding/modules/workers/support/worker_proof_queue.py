@@ -1,4 +1,5 @@
 from engine.cli.row_numbers import RowNumbers
+from engine.model.move import Move
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.query.conditions.among import Among
@@ -81,10 +82,10 @@ class WorkerProofQueue:
                 queued_count += 1
         return queued_count
 
-    def queue_delivered(self, worktree: Worktree, context: Context) -> None:
+    def move_delivered(self, worktree: Worktree, move: Move, context: Context) -> None:
         for proof in tuple(self.proofs.delivered_proofs(worktree.id).all_rows()):
             if proof.test_command:
-                self.repository.save_change(proof, proof.moved(ProofLifecycle.queue), context)
+                self.repository.save_change(proof, proof.moved(move), context)
 
     def queue(self, worktree: Worktree, context: Context) -> int:
         queued_count = self.queue_proofs(worktree, context)

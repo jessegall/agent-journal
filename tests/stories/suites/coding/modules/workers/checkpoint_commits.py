@@ -1,23 +1,20 @@
-import importlib
 import json
 
 import pytest
 
-from engine.actor.actor import Actor
-from engine.command.bus import Bus
+from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, start_planned_worker, unplanned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, file_proof_line, start_planned_worker, unplanned_worker
 
 COMMITTED = "committed"
 CHECKPOINT_WORDS = "tests run at the checkpoint of phase 2, when tasks 4 are in"
 MERGE_WAIT_WORDS = "committed: the merger merges; tests run at the checkpoint"
 MERGED_REASON = "merged; its tests run at the checkpoint of phase 2"
 CHECK_UNTESTED_PROOF = "proof check 2"
-UPGRADE_COMMAND = "suites.coding.modules.workers.commands.commit_shown_proofs.commit_shown_proofs"
 
 
 def proof_states(worker: StoryWorker) -> dict[int, str]:
@@ -141,13 +138,21 @@ def test_166_a_task_in_no_plan_is_not_merged_before_its_tests_passed(new_story, 
     worker.story.expect_rows(refused.code != 0, COMMITTED not in proof_states(worker).values(), detail=refused.output_text)
 
 
-def test_203_the_upgrade_commits_the_shown_proofs_of_a_task_in_testing_in_a_started_plan(new_story, monkeypatch):
-    worker = start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
-    worker.prove_advance(TEST_LINE)
-    command = importlib.import_module(UPGRADE_COMMAND).CommitShownProofs()
-    worker.story.container.get(Bus).run(command, Actor.core(), environment_id=1)
-    worker.story.expect_text("task show 1", "state: testing", actor=worker.story.agent)
-    worker.story.expect_rows(proof_states(worker)[1] == COMMITTED, worker.started == [], detail=str(proof_states(worker)))
+def test_203_the_sweep_of_waiting_tests_commits_a_shown_proof_of_a_task_in_testing_in_a_started_plan_and_starts_no_test(group_worker):
+    story = group_worker.story
+    story.run('proof short 1 "the total is missing"', actor=story.agent)
+    story.run(f'proof make 1 --task 1 "cart.py:1, the cart story and the total" --test "{file_proof_line(TEST_LINE)}"', actor=group_worker.worker)
+    edited_state = proof_states(group_worker)[1]
+    StalledWorkerTestRuns()(story.container)
+    story.expect_text("task show 1", "state: testing", actor=story.agent)
+    story.expect_rows(edited_state == "shown", proof_states(group_worker)[1] == COMMITTED, group_worker.started == [], detail=f"{edited_state}, {proof_states(group_worker)}")
+
+
+def test_a_committed_proof_of_a_started_plan_is_left_as_it_is_by_three_sweeps_of_waiting_tests(committed_worker):
+    for _ in range(3):
+        StalledWorkerTestRuns()(committed_worker.story.container)
+    states = proof_states(committed_worker)
+    committed_worker.story.expect_rows(states[1] == COMMITTED, states[3] == COMMITTED, committed_worker.started == [], detail=f"{states}, started: {committed_worker.started}")
 
 
 def test_239_a_worker_that_stops_with_committed_tasks_that_are_not_merged_has_them_named(group_worker):
