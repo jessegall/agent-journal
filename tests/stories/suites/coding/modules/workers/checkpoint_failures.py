@@ -87,19 +87,13 @@ def test_180_a_worker_with_two_failed_proof_tests_gets_both_tasks_and_one_line_w
     worker.story.expect_rows(len(lines) == 1, detail=str(worker.worker_lines()))
 
 
-def test_181_the_run_after_a_fix_runs_the_failed_proof_and_the_own_test_and_no_proof_that_passed(fixed_cart_proof):
-    worker = fixed_cart_proof
-    second_run = sorted(run_lines(worker)[FIRST_RUN_SIZE:])
-    worker.story.expect_rows(second_run == sorted([BUILD_TEST, CART_COMMAND]), proofs_by_task(worker)[3]["state"] == "checked", detail=str(run_lines(worker)))
-
-
 def test_182_a_failed_own_test_goes_to_the_task_whose_proof_names_the_failing_path(running_checkpoint):
     worker, story = running_checkpoint, running_checkpoint.story
     print_output(worker, BUILD_TEST, "FAILED tests/cart.py::test_total - assert 3 == 4\n")
     end_run(worker, BUILD_TEST)
     reach = rows(worker, REACHES)[0]
     expect_returned(worker, 1)
-    story.expect_text("task show 3", "state: completed", actor=story.agent)
+    story.expect_text("proof show 1", "state: checked", actor=story.agent)
     story.expect_rows(reach["failed_task_ids"] == "1", f"output {output_id(worker, BUILD_TEST)}" in " | ".join(failure_lines(worker)), detail=f"{reach} | {worker.worker_lines()}")
 
 
@@ -141,11 +135,13 @@ def test_187_a_failed_test_of_a_run_the_main_agent_started_early_returns_the_tas
     worker.story.expect_rows(proofs_by_task(worker)[1]["state"] == "short", len(failure_lines(worker)) == 1, detail=str(worker.worker_lines()))
 
 
-def test_192_a_fix_for_a_failed_checkpoint_ends_in_a_pass_that_opens_the_later_phases(fixed_cart_proof):
+def test_181_192_the_run_after_a_fix_runs_what_failed_and_the_own_test_and_its_pass_opens_the_later_phases(fixed_cart_proof):
     worker, story = fixed_cart_proof, fixed_cart_proof.story
+    second_run = sorted(run_lines(worker)[FIRST_RUN_SIZE:])
     end_run(worker)
-    story.expect_rows([row["state"] for row in rows(worker, REACHES)] == ["failed", "passed"], [row["phase_id"] for row in rows(worker, PASSES)] == [1],
-                      WAITING_PHASE_WORDS not in story.run(OUTLINE, actor=story.user).output_text, detail=str(rows(worker, REACHES)))
+    passed_phase_ids, outline = [row["phase_id"] for row in rows(worker, PASSES)], story.run(OUTLINE, actor=story.user).output_text
+    story.expect_rows(passed_phase_ids == [1], WAITING_PHASE_WORDS not in outline, [row["state"] for row in rows(worker, REACHES)] == ["failed", "passed"], detail=str(rows(worker, REACHES)))
+    story.expect_rows(second_run == sorted([BUILD_TEST, CART_COMMAND]), proofs_by_task(worker)[3]["state"] == "checked", detail=str(run_lines(worker)))
 
 
 @pytest.mark.real_git

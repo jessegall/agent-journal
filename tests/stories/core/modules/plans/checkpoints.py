@@ -251,3 +251,13 @@ def test_190_a_failed_run_names_its_tasks_and_the_progress_of_a_plan_names_each_
     story.expect_success("checkpoint-reach failed 1 --failed-task-ids 1", actor=Actor.core())
     story.expect_text(OUTLINE, "checkpoint of phase 1: failed: tasks 1", actor=story.user)
     story.expect_text("plan progress 1 --environment main", "checkpoint of phase 1: failed: tasks 1", "checkpoint of phase 2: waits for tasks 2", actor=story.user)
+
+
+def test_192_a_checkpoint_whose_run_failed_is_reached_again_when_its_returned_task_is_closed_again(new_story):
+    story = new_story(fixture=ReachedCheckpoint)
+    story.expect_success("checkpoint-reach failed 1 --failed-task-ids 3", actor=Actor.core())
+    story.expect_success("task reopen 3", actor=story.user)
+    story.run_listeners()
+    still_failed = [row["state"] for row in rows(story, REACHES)]
+    close(story, 3)
+    story.expect_rows(still_failed == ["failed"], [row["state"] for row in rows(story, REACHES)] == ["failed", "running"], detail=str(rows(story, REACHES)))
