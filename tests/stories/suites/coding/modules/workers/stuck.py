@@ -21,6 +21,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
 from tests.stories.core.support.agent_labels import agent_label
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
+from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 
 MAIN_SESSION = "s-1"
 PROCESS_START = "2026-10-31T09:00:00+00:00"
@@ -94,7 +95,9 @@ def test_a_stuck_worker_tells_its_main_agent_at_once_and_shows_a_mark_in_the_mai
     last_reply(tmp_path, worker_session(story, worker), "The build tool is gone from the path")
     story.expect_success('wait stuck "the build tool is missing"', actor=worker)
     story.run_listeners()
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} is stuck on task:1, wait:", "send it a job")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "merger-line:1", "workers.help-request")
+    help_request = story.container.get(Queries).query(MergerLine).first()
+    story.expect_rows(help_request.worker_id == worker.id, "is stuck on task:1" in help_request.text, help_request.outcome is AskOutcome.FORWARDED, detail=str(help_request))
     story.expect_text("chat-mark list --environment 1", f"Worker {worker.id} is stuck: the build tool is missing")
     story.expect_text(f"chat-mark show {stop_mark(story, 'help request')}", "Tasks left: task 1", "Task 1: ", "Last words: The build tool is gone from the path", f"target_id: {worker.id}", "outcome: warned")
     story.expect_absent(f"chat-mark show {stop_mark(story, 'help request')}", "agent_id:")
@@ -136,7 +139,7 @@ def test_a_worker_a_person_stops_loses_its_tasks_and_is_not_started_again(new_st
     story.expect_success(f"agent stop {agent_number(story, worker.id)}", f"stopped {agent_label(story, worker.id)}", actor=user)
     story.expect_no_text(lines.TASK_DETAILS, f"delegated_to: {worker.id}")
     story.expect_no_text(f"agent-line list --agent {worker.id}", "you ended with tasks left")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "ended with task:1 left")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", "ended with task:1 left")
 
 
 def test_a_stopped_worker_keeps_its_task_in_testing_and_loses_the_one_queued_which_its_main_agent_hears_of(new_story):
