@@ -1,8 +1,10 @@
 from datetime import timedelta
 
+from engine.enums.command_category import CommandCategory
+from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.stories.core.modules.processes.support.process_samples import moved_run
+from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
 from tests.stories.core.modules.processes.support.reading_decision_samples import ReadingMoment, stored_missing_reader, stored_suitable_reader
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -32,3 +34,26 @@ def test_a_second_decision_for_the_same_moment_replaces_the_first_and_an_end_dec
     story.expect_text("reading-decision show 2", "moment: start", "state: missing", actor=story.agent)
     story.expect_text("reading-decision show 3", "moment: end", "state: suitable", actor=story.agent)
     story.expect_refusal("reading-decision show 4", "no reading-decision 4", actor=story.agent)
+
+
+PYTEST_OUTPUT = "================ test session starts ================\ncollected 2 items\n\ntests/cart.py .. [100%]\n\n================ 2 passed in 0.04s ================\n"
+LONG_RUN = timedelta(seconds=20)
+
+
+def test_a_background_build_with_no_reader_keeps_a_missing_reader_at_its_end_and_its_agent_hears_the_same_lines(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "custom-build run", category=CommandCategory.BUILD)
+    story.advance(LONG_RUN)
+    end_run(story, process, "compiling\n" * 3 + "done\n")
+    story.expect_text("reading-decision show 2", "moment: end", "state: missing", "reason: reader missing", actor=story.agent)
+    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), f"output {process.id} ended", "no reader reads custom-build yet")
+
+
+def test_a_pytest_run_the_stock_reader_reads_is_suitable_and_a_read_command_needs_no_reader(new_story):
+    story = new_story(fixture=BuilderStarted)
+    tests_run = start_process(story, "pytest tests/cart -q", category=CommandCategory.TEST_RUN)
+    story.advance(LONG_RUN)
+    end_run(story, tests_run, PYTEST_OUTPUT)
+    end_run(story, start_process(story, "cat notes", category=CommandCategory.READ), "notes\n")
+    story.expect_text("reading-decision show 4", "moment: end", "state: not needed", actor=story.agent)
+    story.expect_text("reading-decision show 2", "moment: end", "state: suitable", actor=story.agent)
