@@ -43,7 +43,8 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
         if command.conflicts:
             return MergeOutcome(self.returned(worktree, task, command.conflicts, context), command.conflicts)
         delivered_tasks = self.delivered_tasks(worktree, task)
-        reasons = self.wait_text.merged_reasons(worktree, [delivered.id for delivered in delivered_tasks])
+        task_ids = [delivered.id for delivered in delivered_tasks]
+        reasons = dict.fromkeys(task_ids, command.reason) if command.reason else self.wait_text.merged_reasons(worktree, task_ids)
         for delivered in delivered_tasks:
             self.repository.save_change(delivered, delivered.close(context.timestamp, context.actor, reasons[delivered.id]), context)
         waiting_ask = self.queries.query(MergeAsk).filter(worktree_id=worktree.id, state=MergeAskState.WAITING).first()

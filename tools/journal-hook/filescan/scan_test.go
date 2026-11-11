@@ -233,7 +233,7 @@ func expectCounts(t *testing.T, changes []Change, want map[string][3]int) {
 // outerEdits are the true counts of editedOuterProject, each file having been there before.
 var outerEdits = map[string][3]int{"tako/src/Tako/Node.cs": {1, 1, 1}, "site/index.html": {2, 1, 1}, "notes.md": {0, 1, 1}}
 
-func TestTheScanRootIsTheProjectFolderFromAnyFolderOfTheProject(t *testing.T) {
+func TestAScanRootIsTheProjectFolderFromAnyFolderOfTheProject(t *testing.T) {
 	project, home := outerProject(t)
 	for _, folder := range []string{project, filepath.Join(project, "tako"), filepath.Join(project, "tako", "src", "Tako"), filepath.Join(project, "site"), t.TempDir()} {
 		if root := ScanRoot(home, folder); root != project {
@@ -242,7 +242,7 @@ func TestTheScanRootIsTheProjectFolderFromAnyFolderOfTheProject(t *testing.T) {
 	}
 }
 
-func TestTheScanRootOfAWorkerIsItsWorktree(t *testing.T) {
+func TestAWorkersScanRootIsItsWorktree(t *testing.T) {
 	project, home := outerProject(t)
 	worktree := filepath.Join(home, "worktrees", "development", "worker-1")
 	if err := os.MkdirAll(filepath.Join(worktree, "src"), 0o700); err != nil {
@@ -292,7 +292,7 @@ func TestAProjectWithNoRepositoryCountsAnEditAgainstTheTextKeptAtTheFirstScan(t 
 	expectCounts(t, scanned(t, root, state), map[string][3]int{"plan/fresh.md": {2, 0, 0}})
 }
 
-func TestTheFirstScanOfAProjectKeepsTheEditThatStartedIt(t *testing.T) {
+func TestAFirstScanOfAProjectKeepsTheEditThatStartedIt(t *testing.T) {
 	project, home := outerProject(t)
 	root := ScanRoot(home, project)
 	since := time.Now()
