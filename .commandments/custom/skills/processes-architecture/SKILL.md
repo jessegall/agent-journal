@@ -27,8 +27,8 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
   answers; the commands it wants go in its answer with `running()`.
 - **`go-updated-input-shape-outside-programs`** - Go outside `journal-hook/programs` writes `run_in_background`. What a
   program's rewritten input carries is in its row of the program table.
-- **`reader-judged-outside-one-place`** - Reader findings become messages outside `EndedOutputText`.
-  `ReaderJudge` produces findings; `EndedOutputText` turns them into declarations from `process_nudges`.
+- **`reader-judged-outside-one-place`** - Reader findings become messages outside `ReadingNotices`.
+  `ReaderJudge` produces findings; `ReadingNotices` turns them into declarations from `process_nudges`.
 
 - **`reader-saved-outside-add-reader`** - a reader definition is persisted outside `AddReaderHandler`.
   Save definitions through `AddReader` so writer checks and output proof always run. Unsaved readers used

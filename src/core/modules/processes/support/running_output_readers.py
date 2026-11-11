@@ -20,7 +20,7 @@ class RunningOutputReaders:
         self.queries, self.repository = queries, repository
 
     def attach(self, reader: Reader, context: Context) -> None:
-        outputs = self.queries.query(Output).filter(ended_at=None, reader_id=None).all_rows()
+        outputs = tuple(self.queries.query(Output).filter(ended_at=None, reader_id=None).all_rows())
         if not outputs:
             return
         parts: dict[int, list[ProcessPart]] = defaultdict(list)
@@ -28,6 +28,5 @@ class RunningOutputReaders:
             parts[part.process_id].append(part)
         for output in outputs:
             read = next((part for part in parts[output.process_id] if ReaderSelection.reads_command(reader, part.command or part.text, part.category)), None)
-            print('TRACE read', reader.id, output.process_id, output.version, read)
             if read is not None:
-                print('TRACE saved', self.repository.save(replace(output, reader_id=reader.id, reader_position=read.position, read_offset=0, displayed_offset=0), context))
+                self.repository.save(replace(output, reader_id=reader.id, reader_position=read.position, read_offset=0, displayed_offset=0), context)

@@ -7,13 +7,13 @@
             {"nameIn": ["READER_MISSED", "READER_WIDTH", "READER_SUMMARY_MISSING", "READER_PROGRESS_MISSING"]}
         ],
         "reject": [
-            {"fileMatches": "(^|/)src/core/modules/processes/support/(ended_output_text|process_nudges)\\.py$"}
+            {"fileMatches": "(^|/)src/core/modules/processes/support/(reading/reading_notices|process_nudges)\\.py$"}
         ]
     },
     "sin": {
         "name": "reader-judged-outside-one-place",
-        "description": "Reader findings become messages outside EndedOutputText.",
-        "rule": "ReaderJudge produces findings; EndedOutputText turns them into reader messages declared in process_nudges.",
+        "description": "Reader findings become messages outside ReadingNotices.",
+        "rule": "ReaderJudge produces findings; ReadingNotices turns them into reader messages declared in process_nudges.",
         "skill": "processes-architecture"
     }
 }
