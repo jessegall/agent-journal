@@ -35,12 +35,16 @@ from suites.coding.modules.workers.models.enums.worker_step import WorkerStep
 from suites.coding.modules.workers.support.worker_free_task import WorkerFreeTask
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
+from suites.coding.modules.workers.support.work_unit import WorkUnit
+from suites.coding.modules.workers.support.work_units import WorkUnits
 
 
 INTERIM_TEXT = "Interim: go on with {tasks}"
 BACKGROUND_TESTS_TEXT = "tests run in the background"
 FINAL_TEXT = "Final: your work is handed in, stop and wait"
 FINAL_MERGE_TEXT = "Final: your work is handed in, stop and wait for the merge"
+UNIT_TEXT = "Your unit goes on: {count} tasks left. Nothing is merged until you ask for it."
+UNIT_COMMITTED_TEXT = 'Every task of your unit is committed. Nothing is merged until you ask for it with journal worker ask-merge "<what the merge holds>".'
 WORKER_RUN_TEXT = "The tests of checkpoint phase {phase} now run on this commit in the background."
 PROOF_HINT = 'journal proof make <point> --task <task> "<file:line, and the test>"'
 
@@ -60,8 +64,8 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
 
     def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, results: RecordWorkerTestHandler,
                  differences: CommitDifferences, free_task: WorkerFreeTask, guidance: WorkerGuidance, staging: WorkerStaging, wait_text: CheckpointWaitText, bus: Bus, numbers: RowNumbers,
-                 compaction: WorkerCompaction) -> None:
-        self.wait_text, self.bus, self.numbers, self.compaction = wait_text, bus, numbers, compaction
+                 compaction: WorkerCompaction, units: WorkUnits) -> None:
+        self.wait_text, self.bus, self.numbers, self.compaction, self.units = wait_text, bus, numbers, compaction, units
         self.rows, self.worktrees, self.proof_queue, self.repository, self.task_commit = rows, worktrees, proof_queue, repository, task_commit
         self.results, self.differences, self.free_task, self.guidance, self.staging = results, differences, free_task, guidance, staging
 
@@ -107,7 +111,8 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         for task in tasks:
             if task.state is TaskState.STARTED:
                 self.repository.save_change(task, task.moved(TaskLifecycle.test), context)
-        worktree = self.repository.save_change(committed, self.moved_worktree(committed, open_tasks, tasks, context), context)
+        unit = self.units.unit(context.actor.id)
+        worktree = self.repository.save_change(committed, self.moved_worktree(committed, open_tasks, tasks, unit, context), context)
         if open_tasks:
             self.compaction.stop_after_task(context.actor.id)
         submission = self.proof_queue.submit_ready(worktree, tasks, context)
@@ -115,13 +120,19 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
             self.results.finish(worktree, context)
         reaches = self.bus.dispatch(StartWorkerRuns(worktree.id, worktree.commit_short_id), context) if submission is Submission.COMMITTED else ()
         run_notes = tuple(WORKER_RUN_TEXT.format(phase=reach.phase_id) for reach in reaches)
-        return CommitOutcome(tasks, worktree, submission, self.next_step_text(tasks, open_tasks, submission), (*staging.notes(), *run_notes))
+        step_text = self.unit_text(self.units.unit(context.actor.id)) if unit.has_several_tasks else self.next_step_text(tasks, open_tasks, submission)
+        return CommitOutcome(tasks, worktree, submission, step_text, (*staging.notes(), *run_notes))
 
-    def moved_worktree(self, worktree: Worktree, open_tasks: tuple[Task, ...], tasks: tuple[Task, ...], context: Context) -> Worktree:
-        if not open_tasks:
-            return worktree.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, logs_read_at=None, logs_output_id=None, tests_passed_at=None, returned_at=None,
-                                  merge_ready_at=self.proof_queue.merge_ready_time(tasks[0], context), commit_count=worktree.commit_count + 1)
-        return worktree.moved(WorktreeLifecycle.advance, task_id=open_tasks[0].id, commit_count=worktree.commit_count + 1)
+    @staticmethod
+    def unit_text(unit: WorkUnit) -> str:
+        return UNIT_TEXT.format(count=unit.uncommitted_count) if unit.uncommitted_count else UNIT_COMMITTED_TEXT
+
+    def moved_worktree(self, worktree: Worktree, open_tasks: tuple[Task, ...], tasks: tuple[Task, ...], unit: WorkUnit, context: Context) -> Worktree:
+        if open_tasks or unit.has_several_tasks:
+            next_task_id = open_tasks[0].id if open_tasks else tasks[-1].id
+            return worktree.moved(WorktreeLifecycle.advance, task_id=next_task_id, commit_count=worktree.commit_count + 1)
+        return worktree.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, logs_read_at=None, logs_output_id=None, tests_passed_at=None, returned_at=None,
+                              merge_ready_at=self.proof_queue.merge_ready_time(tasks[0], context), commit_count=worktree.commit_count + 1)
 
     def next_step_text(self, tasks: tuple[Task, ...], open_tasks: tuple[Task, ...], submission: Submission) -> str:
         if not open_tasks:
