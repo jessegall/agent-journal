@@ -19,6 +19,10 @@ from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
 from engine.command.context import Context
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
+from core.modules.agents.models.agent import Agent
+from suites.coding.modules.workers.models.enums.stop_line_target import StopLineTarget
+from suites.coding.modules.workers.models.enums.stop_reading import StopReading
+from suites.coding.modules.workers.support.stop_facts_reader import StopFactsReader
 from suites.coding.modules.workers.support.worker_program_wait import WorkerProgramWait
 
 SOURCE = "workers.ended-worker"
@@ -38,41 +42,38 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
     name = "workers.ended-worker"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, nudger: Nudger, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, resume: WorkerResume, waits: WorkerProgramWait, inbox: MergerInbox, scopes: Scopes, handoff: WorkerHandoff, launches: WorkerLaunchFailures, guidance: WorkerGuidance, main_line: MainAgentLine) -> None:
-        self.guidance, self.main_line = guidance, main_line
+    def __init__(self, nudger: Nudger, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, resume: WorkerResume, waits: WorkerProgramWait, inbox: MergerInbox, scopes: Scopes, handoff: WorkerHandoff, launches: WorkerLaunchFailures, guidance: WorkerGuidance, main_line: MainAgentLine, stop_facts: StopFactsReader) -> None:
+        self.guidance, self.main_line, self.stop_facts = guidance, main_line, stop_facts
         self.nudger, self.queries, self.unfinished, self.stop = nudger, queries, unfinished, stop
         self.resume, self.waits, self.inbox, self.scopes = resume, waits, inbox, scopes
         self.handoff, self.launches = handoff, launches
 
     def handle(self, event: AgentEnded, context: Context) -> None:
         new = event.row
-        if new.role != CodingHelperRole.WORKER or new.parent_id is None or self.resume.compaction.is_running(new.id):
+        if new.role != CodingHelperRole.WORKER or new.parent_id is None:
             return
+        facts = self.stop_facts.read(new, context.actor.id)
+        if facts is None:
+            return
+        reading = facts.reading()
         worker_round = self.unfinished.steps.round(new.id)
-        unfinished = self.unfinished.round_rows(worker_round)
-        if not unfinished:
+        tasks = self.unfinished.names(self.unfinished.round_rows(worker_round))
+        if reading.resumes_worker:
+            self.nudger.send(new.id, WORKER_UNFINISHED_TASKS, UNFINISHED_TASKS_SOURCE, context, line=self.guidance.round_point(worker_round).line)
+        if reading is StopReading.RESUMED_PROGRAM_STARTING:
+            self.waits.notify_wait(new, context)
+        if reading.line_target is None:
             return
-        is_final = self.stop.is_final(new, context.actor.id)
-        if (self.unfinished.has_running_process(new.id) or self.handoff.is_pending(new)) and not is_final:
-            return
-        if self.launches.has_failed(new) and not is_final:
-            self.nudger.send(new.parent_id, WORKER_LAUNCH_FAILED, SOURCE, context, worker=new.number, line=self.launches.error_text(new))
-            return
-        delegated = any(task.delegated_to == new.id for task in unfinished)
-        tasks = self.unfinished.names(unfinished)
-        help_requested = worker_round.is_asking
-        progress = Minimum("created_at", self.unfinished.last_progress_text(new.id))
-        resume_count = self.queries.query(AgentLine).filter(session_agent_id=new.id, source=UNFINISHED_TASKS_SOURCE).matching(progress).count()
-        should_resume = delegated and not is_final and resume_count < worker_job.RESUME_LIMIT_COUNT
-        if should_resume:
-            if not help_requested:
-                self.nudger.send(new.id, WORKER_UNFINISHED_TASKS, UNFINISHED_TASKS_SOURCE, context, line=self.guidance.round_point(worker_round).line)
-                state = self.resume.program_state(new)
-                if not state.is_ready:
-                    self.waits.notify_wait(new, context)
-                with self.scopes.row_scope(new):
-                    self.inbox.send_nudge(WORKER_RESTARTED.nudge(worker=new.number, tasks=tasks), SOURCE, context)
-                return
-        resume_limit_reached = delegated and not is_final and not help_requested
         with self.scopes.row_scope(new):
-            (self.main_line if resume_limit_reached else self.inbox).send_nudge(WORKER_ENDED_WITH_TASKS.nudge(worker=new.number, tasks=tasks), SOURCE, context)
+            self.send_line(new, reading, tasks, context)
+
+    def send_line(self, worker: Agent, reading: StopReading, tasks: str, context: Context) -> None:
+        if reading is StopReading.LAUNCH_FAILURE:
+            self.nudger.send(worker.parent_id, WORKER_LAUNCH_FAILED, SOURCE, context, worker=worker.number, line=self.launches.error_text(worker))
+            return
+        declaration = WORKER_RESTARTED if reading.resumes_worker else WORKER_ENDED_WITH_TASKS
+        line = declaration.nudge(worker=worker.number, tasks=tasks)
+        if reading.line_target is StopLineTarget.MAIN_AGENT:
+            self.main_line.send_nudge(line, SOURCE, context)
+            return
+        self.inbox.send_nudge(line, SOURCE, context)
