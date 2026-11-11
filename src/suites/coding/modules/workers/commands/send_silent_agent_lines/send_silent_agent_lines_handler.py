@@ -34,6 +34,7 @@ from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 RECOVERY_ATTEMPTS = 3
 CHECKED_AGENTS_REASON = "One activity row for each running agent and each worker that is not retired, which the agent limits bound."
+from engine.query.conditions.prefix import Prefix
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 
@@ -96,6 +97,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         workers = {row.session_agent_id for row in worktrees if row.state is WorktreeState.CUT}
         stalled = {row.session_agent_id for row in worktrees if row.state is WorktreeState.DELIVERED and row.tests_passed_at is None and row.returned_at is None}
         waiting_jobs = {row.session_agent_id for row in self.queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("source", RESUMING_SOURCES)).all_rows()}
+        idle_lines = {line.source_key: line for line in self.queries.query(MergerLine).matching(Prefix("source_key", "idle:")).oldest().all_rows()}
         grace = self.settings.minutes(IDLE_WORKER_MINUTES).count
         repeat = self.settings.minutes(IDLE_WORKER_REPEAT_MINUTES).count
         for worker in agents:
@@ -111,8 +113,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
                 continue
             line = IDLE_WORKER.nudge(worker=worker.number)
             source_key = f"idle:{worker.id}"
-            earlier = self.queries.query(MergerLine).filter(worker_id=worker.id, source_key=source_key).newest().first()
-            if earlier is not None and earlier.is_repeated_within(activity_at, context.timestamp, repeat):
+            if source_key in idle_lines and idle_lines[source_key].is_recent_repeat(activity_at, context.timestamp, repeat):
                 continue
             with self.bus.scopes.row_scope(worker):
                 self.inbox.deliver(MergerLine(text=line.text, fallback_source=IDLE_WORKER.key, nudge_json=line.stored.json, worker_id=worker.id, source_key=source_key), context)
