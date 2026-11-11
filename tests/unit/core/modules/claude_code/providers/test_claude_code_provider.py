@@ -36,7 +36,7 @@ def provider(tmp_path: Path) -> ClaudeCodeProvider:
 def test_a_session_runs_claude_with_its_model_and_its_new_session_id(provider):
     command = provider.session_command(Launch(ROOT, FOLDER, "sonnet", "launch-1", SessionStart("s-1"), VARIABLES))
     assert (list(command.arguments), command.folder, dict(command.variables), command.session) == (
-        ["claude", "--model", "sonnet", "--effort", "high", "--dangerously-skip-permissions", "--session-id", "s-1"], FOLDER, VARIABLES, "s-1")
+        ["claude", "--model", "sonnet", "--effort", "medium", "--dangerously-skip-permissions", "--session-id", "s-1"], FOLDER, VARIABLES, "s-1")
 
 
 def test_a_session_starts_on_opus_and_the_person_s_own_flags_win(provider):
@@ -54,7 +54,7 @@ def test_a_resumed_session_runs_claude_with_resume(provider):
 
 def test_a_helper_runs_its_brief_without_a_terminal_and_prints_stream_json(provider):
     command = provider.helper_command(HelperLaunch(ROOT, FOLDER, "sonnet", "worker-7", SessionStart("s-2"), VARIABLES, brief="Write the tests"))
-    assert list(command.arguments) == ["claude", "-p", "Write the tests", "--model", "sonnet", "--effort", "high", "--dangerously-skip-permissions", "--output-format",
+    assert list(command.arguments) == ["claude", "-p", "Write the tests", "--model", "sonnet", "--effort", "medium", "--dangerously-skip-permissions", "--output-format",
                                        "stream-json", "--verbose", "--session-id", "s-2"]
 
 

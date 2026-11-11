@@ -1,3 +1,4 @@
+from engine.agent.agent_roster import AgentRoster
 from dataclasses import dataclass
 
 from engine.enums.access import Access
@@ -16,7 +17,7 @@ class HelperType:
     separate_folder: bool = False
     default_profile: str = ""
     start_line: str = ""
-    roster: type | None = None
+    roster: type[AgentRoster] | None = None
     run_limit_key: str = ""
     kept_limit_key: str = ""
     profile_limits_key: str = ""

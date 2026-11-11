@@ -50,7 +50,7 @@ TEMPORARY_FILES_FOLDER = Path("/tmp")
 
 MODEL_CHOICES = (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("fable", "Fable"))
 EFFORT_CHOICES = (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhigh", "Extra high"), ("max", "Maximum"))
-SESSION_EFFORT = "high"
+SESSION_EFFORT = "medium"
 
 COMPACT_LINE = "/compact Focus on continuing the work at once: what you were doing last, what comes next, and the facts those depend on. Keep every instruction, request, direction and correction the user gave you. Leave out the rest of the earlier history and old messages: the journal gives back recent messages, tasks, memories and rules."
 

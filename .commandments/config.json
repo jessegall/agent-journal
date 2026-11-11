@@ -284,7 +284,8 @@
         "architecture_agents_driver_changed_outside_the_driver_command",
         "architecture_agents_number_read_without_an_environment",
         "architecture_agents_number_returned_as_its_row_id",
-        "architecture_workers_later_branch_named_by_hand"
+        "architecture_workers_later_branch_named_by_hand",
+        "architecture_core_product_file_named_like_a_test"
     ],
     "parallel": 2,
     "configure": {
