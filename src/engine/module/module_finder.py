@@ -51,7 +51,17 @@ class ModuleFinder:
     def suite_list(self) -> SuiteList:
         default_entries = [entry for path in DEFAULT_MODULE_LISTS for entry in self.listed_entries(path)]
         entries = [*default_entries, *(self.loaded_entry(DottedPath(path)) for path in self.plugin_paths())]
-        return SuiteList([entry for entry in entries if isinstance(entry, type) and issubclass(entry, Suite)])
+        suites = [entry for entry in entries if isinstance(entry, type) and issubclass(entry, Suite)]
+        listing = [suite for entry in entries if isinstance(entry, type) and issubclass(entry, Module) for suite in self.listing_suites(entry)]
+        return SuiteList([*suites, *listing])
+
+    @staticmethod
+    def listing_suites(module: type[Module]) -> list[type[Suite]]:
+        """The suites declared beside a listed module, in its own Python file, that list it: a plugin names its
+        module in modules.json and the module names no suite."""
+        declared = vars(sys.modules[module.__module__]).values()
+        return [item for item in declared if isinstance(item, type) and issubclass(item, Suite) and item is not Suite
+                and item.__module__ == module.__module__ and module in item.modules]
 
     def plugin_paths(self) -> tuple[str, ...]:
         if not self.home.module_list.exists():
