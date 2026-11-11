@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from dataclasses import replace
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
@@ -19,7 +19,6 @@ from engine.enums.hook_trust import HookTrust
 from engine.provider.launch import Launch
 from engine.provider.launch_command import LaunchCommand
 from engine.provider.program_folders import ProgramFolders
-from engine.provider.managed_hook import ManagedHook
 from engine.provider.program_settings import ProgramSettings
 from engine.enums.model_tier import ModelTier
 from engine.provider.peer_note import PeerNote
@@ -35,6 +34,8 @@ from engine.provider.transcript_entry import TranscriptEntry
 from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
 
+if TYPE_CHECKING:
+    from engine.provider.managed_hook import ManagedHook
 
 class Provider(ABC):
     """The base of every agent program's provider: how the journal starts the program, which hooks it sends
@@ -222,5 +223,5 @@ class Provider(ABC):
     def hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]:
         return {}
 
-    def journal_settings(self, home: JournalHome, runner: str, managed: Sequence[ManagedHook], folders: Sequence[Path]) -> ProgramSettings:
+    def journal_settings(self, home: JournalHome, runner: str, managed: Sequence["ManagedHook"], folders: Sequence[Path]) -> ProgramSettings:
         raise NotImplementedError

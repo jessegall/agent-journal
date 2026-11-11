@@ -66,7 +66,7 @@ class ProgramSettingsWriter:
     def _created(folder: Path) -> None:
         for missing in reversed([folder, *folder.parents]):
             if not missing.exists():
-                missing.mkdir(mode=FOLDER_MODE)
+                missing.mkdir(mode=FOLDER_MODE, exist_ok=True)
 
     @staticmethod
     def _remove_stale_temporaries(folder: Path) -> None:
