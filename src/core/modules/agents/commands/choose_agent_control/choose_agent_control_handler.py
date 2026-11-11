@@ -12,9 +12,10 @@ from core.modules.agents.support.context_change_requests import CONTEXT_CONTROL_
 
 class ChooseAgentControlHandler(Handler[ChooseAgentControl, Agent]):
     """Finds the line of a choice its program offers and types it into the agent's terminal; a choice it does
-    not offer is refused. A choice that compacts or clears the context is recorded first, which refuses it while
-    a compaction of that agent is open; when its line cannot be typed, that is recorded as its failure and the
-    request is kept, so it is not tried again at every stop."""
+    not offer is refused, and so is an agent that chooses for an agent that is neither itself nor its helper.
+    A choice that compacts or clears the context is recorded first, which refuses it while a compaction of
+    that agent is open; when its line cannot be typed, that is recorded as its failure and the request is
+    kept, so it is not tried again at every stop."""
 
     command = ChooseAgentControl
     runs_once = True
@@ -27,6 +28,8 @@ class ChooseAgentControlHandler(Handler[ChooseAgentControl, Agent]):
         choices = [choice for group in self.providers.provider(agent.program).controls if group.key == command.key for choice in group.choices if choice.value == command.value]
         if not choices:
             raise Refusal(f"{command.key} {command.value} is not a choice the agent bar offers", f"journal agent controls {agent.number} lists them")
+        if agent.is_unrelated_agent(context.actor):
+            raise Refusal(f"{AgentLabel.from_agent(agent).text} is neither you nor your helper", "an agent chooses only for itself and its helpers")
         if agent.ended_at is not None:
             raise Refusal(f"{AgentLabel.from_agent(agent).text} has ended")
         if command.key != CONTEXT_CONTROL_KEY:

@@ -1958,6 +1958,111 @@
       "wakes_agent"
     ]
   },
+  "core.drivers.context_compaction.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "change",
+      "ended_at",
+      "failure",
+      "is_retry",
+      "line",
+      "reason",
+      "request_tokens",
+      "session_agent_id",
+      "started_at",
+      "state",
+      "tokens_after",
+      "woken_at"
+    ]
+  },
+  "core.drivers.context_compaction.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "change",
+      "ended_at",
+      "failure",
+      "is_retry",
+      "line",
+      "reason",
+      "request_tokens",
+      "session_agent_id",
+      "started_at",
+      "state",
+      "tokens_after",
+      "woken_at"
+    ]
+  },
+  "core.drivers.context_compaction.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "change",
+      "ended_at",
+      "failure",
+      "is_retry",
+      "line",
+      "reason",
+      "request_tokens",
+      "session_agent_id",
+      "started_at",
+      "state",
+      "tokens_after",
+      "woken_at"
+    ]
+  },
+  "core.drivers.context_compaction_notice.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_number",
+      "cause",
+      "compaction_id",
+      "notice",
+      "session_agent_id"
+    ]
+  },
+  "core.drivers.context_compaction_notice.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_number",
+      "cause",
+      "compaction_id",
+      "notice",
+      "session_agent_id"
+    ]
+  },
+  "core.drivers.context_compaction_notice.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "agent_number",
+      "cause",
+      "compaction_id",
+      "notice",
+      "session_agent_id"
+    ]
+  },
   "core.drivers.countdown.created": {
     "forms": [
       "commit",
@@ -2017,6 +2122,7 @@
       "helper_id",
       "instruction",
       "new_agent_reason",
+      "new_session",
       "profile",
       "program",
       "program_model",
@@ -2050,6 +2156,7 @@
       "helper_id",
       "instruction",
       "new_agent_reason",
+      "new_session",
       "profile",
       "program",
       "program_model",
@@ -2083,6 +2190,7 @@
       "helper_id",
       "instruction",
       "new_agent_reason",
+      "new_session",
       "profile",
       "program",
       "program_model",

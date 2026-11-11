@@ -25,7 +25,7 @@ class ReportCompactionFaultHandler(Handler[ReportCompactionFault, None]):
     def handle(self, command: ReportCompactionFault, context: Context) -> None:
         compaction = self.queries.query(ContextCompaction).find(command.compaction_id)
         agent = self.queries.query(Agent).find(compaction.session_agent_id)
-        if compaction.state.is_open and not agent.accepts_typed_lines:
+        if compaction.state.is_open and not agent.is_typable:
             self.compactions.abandon(compaction, context)
         elif compaction.state is CompactionState.REQUESTED:
             self.notices.report(self.compactions.fail(compaction, UNSTARTED_LINE_FAILURE, context), agent, CompactionNoticeType.UNSTARTED, context)

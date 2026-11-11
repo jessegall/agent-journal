@@ -26,13 +26,15 @@ def test_j1_a_helper_that_runs_the_context_control_of_the_main_agent_is_refused_
     limited.expect_rows(outcome.code != 0, compactions(limited) == [], detail=outcome.output_text)
 
 
-def test_j3_a_session_start_that_claims_a_compaction_ends_a_row_and_an_older_size_over_the_limit_asks_for_none(limited):
+def test_c4_j3_a_session_start_that_claims_a_compaction_twice_ends_one_row_with_no_start_time_and_an_older_size_over_the_limit_asks_for_none(limited):
+    limited.hook(SESSION, COMPACTION_START)
     limited.hook(SESSION, COMPACTION_START)
     limited.run_listeners()
     set_context_older_than_compaction(limited, LIMIT_TOKENS)
     stops(limited)
     expect_compaction_count(limited, 0)
-    limited.expect_rows([compaction.state for compaction in compactions(limited)] == [CompactionState.ENDED], detail=str(compactions(limited)))
+    ended = compactions(limited)
+    limited.expect_rows(len(ended) == 1, ended[0].state is CompactionState.ENDED, ended[0].started_at is None, ended[0].ended_at is not None, detail=str(ended))
 
 
 def test_j4_ten_compactions_a_person_types_at_the_terminal_are_ten_rows_and_the_journal_types_none(limited):

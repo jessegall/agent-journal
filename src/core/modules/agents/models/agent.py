@@ -59,7 +59,7 @@ class Agent(EnvironmentScoped, Model):
     halted_at: Timestamp | None = None
 
     @property
-    def accepts_typed_lines(self) -> bool:
+    def is_typable(self) -> bool:
         return self.paused_at is None and self.ended_at is None and self.retired_at is None
 
     @property
@@ -81,14 +81,14 @@ class Agent(EnvironmentScoped, Model):
     def ended(self, timestamp: Timestamp, policy: AgentPolicy) -> "Agent":
         return self.changed(ended_at=timestamp, paused_at=self.paused_at if self.role in policy.pause_retention_roles else None)
 
-    def is_child_of_another_agent(self, actor: Actor) -> bool:
+    def is_foreign_helper(self, actor: Actor) -> bool:
         return actor.type is ActorType.AGENT and self.parent_id != actor.id
 
     def retired(self, timestamp: Timestamp, reason: str, actor_id: int) -> "Agent":
         return self.changed(retired_at=timestamp, retirement_reason=reason, retiring_actor_id=actor_id)
 
-    def has_other_parent_than(self, actor: Actor) -> bool:
-        return actor.type is ActorType.AGENT and self.parent_id != actor.id
+    def is_unrelated_agent(self, actor: Actor) -> bool:
+        return self.is_foreign_helper(actor) and actor.id != self.id
 
     @property
     def activity(self) -> AgentActivity:

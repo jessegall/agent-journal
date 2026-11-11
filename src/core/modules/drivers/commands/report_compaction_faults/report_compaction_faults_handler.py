@@ -30,7 +30,7 @@ class ReportCompactionFaultsHandler(Handler[ReportCompactionFaults, None]):
 
     def handle(self, command: ReportCompactionFaults, context: Context) -> None:
         newest_creation = Timestamp(context.timestamp.value - timedelta(seconds=FAULT_SECONDS))
-        rows = self.queries.query(ContextCompaction).matching(Among("state", UNFINISHED_STATES)).matching(Maximum("created_at", newest_creation.text)).full_table(FAULT_ROWS_REASON).all_rows()
+        rows = list(self.queries.query(ContextCompaction).matching(Among("state", UNFINISHED_STATES)).matching(Maximum("created_at", newest_creation.text)).full_table(FAULT_ROWS_REASON).all_rows())
         agents = {agent.id: agent for agent in self.queries.query(Agent).find_many(list({row.session_agent_id for row in rows}))}
         for row in rows:
             self.bus.dispatch(ReportCompactionFault(row.id), replace(context, environment_id=agents[row.session_agent_id].environment_id))

@@ -1,0 +1,33 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "request"
+            },
+            {
+                "of": "receiver",
+                "typeLike": "*ContextCompactions"
+            }
+        ],
+        "reject": [
+            {
+                "of": "enclosingType",
+                "nameIn": [
+                    "RecordedContextChangeRequests"
+                ]
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "compaction-request-recorded-outside-the-control",
+        "description": "Code records a compaction request itself, past the agent control that records the request and then types its line, so a row can exist with no line typed or a line with no row.",
+        "rule": "Run ChooseAgentControl for the context control, or CompactAgentContext from a suite rule: the control records the request through ContextChangeRequests and types the line.",
+        "skill": "drivers-architecture"
+    }
+}

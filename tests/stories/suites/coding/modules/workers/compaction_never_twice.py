@@ -145,7 +145,7 @@ def test_a_later_stop_types_the_compaction_a_second_time_only_after_three_minute
     expect_compaction_count(agent, compaction_count)
 
 
-@pytest.mark.parametrize("compaction", [AutoCompacted, ManualCompacted], ids=["b2-by-the-program", "b3-by-a-person"])
+@pytest.mark.parametrize("compaction", [AutoCompacted, ManualCompacted], ids=["b2-e4-by-the-program", "b3-by-a-person"])
 def test_a_stop_after_a_compaction_with_the_old_reading_types_nothing(new_story, compaction):
     agent = typing_recorded(new_story(fixture=compaction))
     set_context_older_than_compaction(agent, LIMIT_TOKENS)
@@ -194,14 +194,6 @@ def test_c8_a_post_tool_use_while_the_reading_is_unsettled_says_no_stop_now_and_
     set_context_older_than_compaction(story, LIMIT_TOKENS)
     reply = story.hook(SESSION, EDITED)
     story.expect_rows(not any("stop now" in line or "tool uses to weigh" in line for line in reply.lines), detail=str(reply.lines))
-
-
-def test_e4_a_reading_over_the_limit_older_than_the_end_of_the_newest_compaction_is_not_due(new_story):
-    agent = typing_recorded(new_story(fixture=AutoCompacted))
-    set_context_older_than_compaction(agent, LIMIT_TOKENS + 1)
-    agent.advance(STATUS_FILE_AGE)
-    stops(agent)
-    expect_compaction_count(agent, 0)
 
 
 def test_a_reading_the_program_rewrote_after_the_compaction_ended_counts_and_the_limit_applies_to_that_number(new_story):

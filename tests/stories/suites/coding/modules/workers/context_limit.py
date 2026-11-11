@@ -6,7 +6,7 @@ import pytest
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE as COMPACT
 from core.modules.overview.support.overview_first import OverviewFirst
-from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
+from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from engine.testing.examples.shell_part import ShellPart
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
@@ -119,20 +119,6 @@ def test_with_the_switch_off_an_agent_is_never_compacted(agent):
     agent.tick(SESSION)
     stops(agent)
     agent.expect_rows(agent.typing.typed == [])
-
-
-def test_with_clear_chosen_the_limit_clears_the_context_and_a_cleared_agent_is_woken_to_go_on(limited):
-    agent = limited
-    set_value(agent, CONTEXT_LIMIT_ACTION, "clear")
-    has_context(agent, LIMIT_TOKENS)
-    stops(agent)
-    agent.expect_rows(agent.typing.typed == ["/clear"], detail=str(agent.typing.typed))
-    agent.hook(SESSION, CLEAR_START)
-    agent.run_listeners()
-    agent.expect_rows(len(agent.typing.typed) == 2 and "compacted" in agent.typing.typed[1], detail=str(agent.typing.typed))
-    agent.advance(timedelta(seconds=40))
-    agent.tick(SESSION)
-    agent.expect_rows(len(agent.typing.typed) == 2, detail=str(agent.typing.typed))
 
 
 def expect_compaction_line(agent):

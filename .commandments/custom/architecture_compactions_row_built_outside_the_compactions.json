@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "constructs": "ContextCompaction"
+            }
+        ],
+        "reject": [
+            {
+                "of": "enclosingType",
+                "nameIn": [
+                    "ContextCompactions"
+                ]
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "compaction-row-built-outside-the-compactions",
+        "description": "Code builds a ContextCompaction row itself, so a compaction is recorded past the one place that refuses a second one while the first is open.",
+        "rule": "Ask ContextCompactions: request for a line the journal or a person sends, record_start and record_end for what the program reports, record_program_start for a worker's run.",
+        "skill": "drivers-architecture"
+    }
+}

@@ -27,7 +27,7 @@ class JudgeRefusalSkipHandler(Handler[JudgeRefusalSkip, RefusalSkip]):
         if not skip.needs_approval:
             raise Refusal(f"skip {skip.id} waits for no approval", "journal refusal show prints its state")
         agent = self.queries.query(Agent).find(skip.session_agent_id)
-        if agent.is_child_of_another_agent(context.actor):
+        if agent.is_foreign_helper(context.actor):
             raise Refusal(f"skip {skip.id} is for {AgentLabel.from_agent(self.queries.query(Agent).find(agent.parent_id)).text} to answer", "only the agent's parent or a person answers it")
         if command.is_approved:
             answered = self.repository.update(skip, context, needs_approval=False, approved_at=context.timestamp)

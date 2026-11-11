@@ -15,8 +15,9 @@ class MainStopRule(DriverRule):
     """A main agent that stops is handed the next task when it may work on it, and is held back while a task
     can still be sent to a worker and its work controls ask it to keep going; with nothing it can do it may
     stop. While a task can go to a worker and a place is free, a stop is held once for each state of the
-    tasks and places, so the agent sends them or says why not; while it has unfinished tasks of its own and waits
-    on nothing, a stop is held once for each set of those tasks, so it starts one, blocks it or says why not."""
+    tasks and places, so the agent sends them or says why not; while it has unfinished tasks of its own and
+    waits on nothing, a stop is held once for each set of those tasks, so it starts one, blocks it or says why
+    not, unless the stop is the one that compacts its context."""
 
     name = "coding.main-stop"
     hook = HookEventName.STOP
@@ -40,6 +41,8 @@ class MainStopRule(DriverRule):
         return self.unfinished_answer(hook)
 
     def unfinished_answer(self, hook: AgentHook) -> RuleAnswer:
+        if self.work.is_stop_compacting(hook.agent_id):
+            return RuleAnswer.allowed("this stop compacts the context of the main agent")
         task_ids = self.unfinished_work.unfinished_tasks([hook.agent_id]).get(hook.agent_id, ())
         if task_ids and hook.agent_id not in self.unfinished_work.waiting_agents([hook.agent_id], hook.timestamp):
             notice = UNFINISHED_TASKS.nudge(tasks=", ".join(str(task_id) for task_id in task_ids))

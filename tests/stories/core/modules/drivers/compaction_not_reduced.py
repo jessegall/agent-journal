@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+import pytest
+
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_TOKENS
 from tests.stories.suites.coding.modules.workers.compaction_never_twice import AutoCompacted, STATUS_FILE_AGE, compacted, expect_compaction_count, modified_at_story_time
@@ -27,20 +29,14 @@ def compaction_rows(story) -> str:
     return story.run("context-compaction list --json", actor=story.user).output_text
 
 
-def test_b10_a_reading_after_a_compaction_that_is_still_over_the_limit_moves_its_row_to_unreduced_and_types_nothing(new_story):
+@pytest.mark.parametrize("tokens, state", [(TOKENS_OVER_LIMIT, "unreduced"), (LIMIT_TOKENS - 1, "measured")], ids=["b10-still-over-the-limit", "under-the-limit"])
+def test_the_first_reading_after_a_compaction_moves_its_row_to_measured_or_to_unreduced_and_types_nothing(new_story, tokens, state):
     agent = typing_recorded(new_story(fixture=AutoCompacted))
-    reports_context_after_compaction(agent, TOKENS_OVER_LIMIT)
+    reports_context_after_compaction(agent, tokens)
     rows = compaction_rows(agent)
-    agent.expect_rows('"state": "unreduced"' in rows, f'"tokens_after": {TOKENS_OVER_LIMIT}' in rows, detail=rows)
+    agent.expect_rows(rows.count('"state"') == 1, f'"state": "{state}"' in rows, f'"tokens_after": {tokens}' in rows, detail=rows)
     agent.tick(SESSION)
     expect_compaction_count(agent, 0)
-
-
-def test_a_reading_after_a_compaction_under_the_limit_moves_its_row_to_measured(new_story):
-    agent = typing_recorded(new_story(fixture=AutoCompacted))
-    reports_context_after_compaction(agent, LIMIT_TOKENS - 1)
-    rows = compaction_rows(agent)
-    agent.expect_rows('"state": "measured"' in rows, '"state": "unreduced"' not in rows, detail=rows)
 
 
 def test_j2_with_the_limit_at_one_token_an_agent_is_compacted_once_and_again_only_after_its_context_grows(new_story):

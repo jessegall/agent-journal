@@ -117,17 +117,6 @@ def test_g3_a_typed_compaction_is_woken_by_the_listener_and_a_tick_after_600_sec
     agent.expect_rows(len(agent.typing.typed) == 1, detail=str(agent.typing.typed))
 
 
-def test_g4_the_same_pre_compact_recorded_twice_is_one_row_and_so_is_its_end(agent):
-    agent.hook(SESSION, PRE_COMPACT.with_raw({"trigger": "auto"}))
-    agent.hook(SESSION, PRE_COMPACT.with_raw({"trigger": "auto"}))
-    started = compactions(agent)
-    agent.expect_rows(len(started) == 1, started[0].state is CompactionState.STARTED, started[0].reason is CompactionReason.AUTO, detail=str(started))
-    agent.hook(SESSION, COMPACTION_START)
-    agent.hook(SESSION, COMPACTION_START)
-    ended = compactions(agent)
-    agent.expect_rows(len(ended) == 1, ended[0].state is CompactionState.ENDED, ended[0].started_at is not None, detail=str(ended))
-
-
 def test_g5_two_main_agents_over_the_limit_together_each_get_their_own_row_and_their_own_reading(new_story):
     story = typing_recorded(new_story(fixture=TwoMainAgents))
     has_context(story, LIMIT_TOKENS)

@@ -6,13 +6,14 @@ from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, 
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from tests.stories.suites.coding.modules.workers.worker_context_limit import JOB, LIMIT, compacting_worker, ended_worker, has_context
+from tests.stories.suites.coding.modules.workers.worker_context_limit import JOB, LIMIT, compacting_worker, ended_worker, has_context, launched
 from tests.stories.suites.coding.modules.workers.context_limit import typing_recorded
 
 CODEX_SESSION = "codex-limit"
 CODEX_TOKENS = LIMIT + 50_000
 CODEX_WINDOW = 475_000
 STOPS = 3
+CODEX_COMPACT_LINE = "/compact"
 TOO_LONG = timedelta(seconds=601)
 
 
@@ -27,12 +28,11 @@ def test_h3_a_worker_compacted_before_its_job_is_not_compacted_a_second_time_aft
     launcher.server.close()
     story.home.socket(LAUNCHER_SOCKET).unlink()
     has_context(story, worker, LIMIT)
-    following = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
+    following = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET))
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.run_listeners()
     following.drain_requests()
-    commands = [json.dumps(start["command"]) for start in following.starts if "--resume" in json.dumps(start["command"])]
-    command = commands[0] if commands else ""
+    command = launched(following, 0) if following.requests else ""
     story.expect_rows("/compact" not in command, JOB in command, detail=command or "the worker was not sent on after the restart")
 
 
@@ -44,14 +44,14 @@ def codex_rollout(story, monkeypatch):
     rollout.write_text(json.dumps(count) + "\n")
 
 
-def test_h6_a_codex_agent_over_the_limit_types_nothing_runs_no_failing_command_at_each_stop_and_is_still_told(new_story, monkeypatch):
+def test_h6_a_codex_agent_over_the_limit_is_typed_its_own_line_once_and_once_more_and_not_at_every_stop(new_story, monkeypatch):
     story = typing_recorded(new_story(fixture=UserBuilder))
     story.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} true --project", actor=story.user)
     story.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} {LIMIT} --project", actor=story.user)
     story.new_row_id(f"agent start {CODEX_SESSION} codex worker --environment main")
     codex_rollout(story, monkeypatch)
-    told = []
+    nudge_lines = []
     for _ in range(STOPS):
-        told += story.hook(CODEX_SESSION, HookSamples.stop().with_fields(program="codex")).lines
+        nudge_lines += story.hook(CODEX_SESSION, HookSamples.stop().with_fields(program="codex")).lines
         story.advance(TOO_LONG)
-    story.expect_rows(story.typing.typed == [], len(story.refusals()) == 0, any("passed the limit" in line for line in told), detail=f"typed {story.typing.typed}, refusals {len(story.refusals())}, told {told}")
+    story.expect_rows(story.typing.typed == [CODEX_COMPACT_LINE, CODEX_COMPACT_LINE], len(story.refusals()) == 0, any("passed the limit" in line for line in nudge_lines), detail=f"typed {story.typing.typed}, refusals {len(story.refusals())}, nudge_lines {nudge_lines}")
