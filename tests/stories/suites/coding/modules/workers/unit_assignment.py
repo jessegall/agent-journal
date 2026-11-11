@@ -72,7 +72,7 @@ def test_10_the_person_sees_the_worker_on_the_plan_card(new_story, monkeypatch):
 def test_11_the_person_sees_the_unit_on_the_agent_card(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch)
     listed = json.loads(worker.story.run("usage agents --environment main --json", actor=worker.story.user).output_text)
-    assert next(row for row in listed["agents"] if row["id"] == worker.worker.id)["unit_name"] == "Plan 1 · Rebuild the cart"
+    assert next(row for row in listed["rows"] if row["id"] == worker.worker.id)["unit_name"] == "Plan 1 · Rebuild the cart"
 
 
 def test_12_a_second_worker_on_a_worked_plan_is_refused(new_story, monkeypatch):

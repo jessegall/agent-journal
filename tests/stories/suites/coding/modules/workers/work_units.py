@@ -68,5 +68,5 @@ def test_a_plan_dispatched_before_dispatch_named_its_worker_gets_its_worker_from
 def test_the_agent_card_names_the_unit_of_a_worker_on_a_plan(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch)
     listed = json.loads(worker.story.run("usage agents --environment main --json", actor=worker.story.user).output_text)
-    card = next(row for row in listed["agents"] if row["id"] == worker.worker.id)
+    card = next(row for row in listed["rows"] if row["id"] == worker.worker.id)
     worker.story.expect_rows(card["unit_name"] == "Plan 1 · Rebuild the cart", detail=str(card))
