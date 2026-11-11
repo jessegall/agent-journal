@@ -19,6 +19,8 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
 from suites.coding.modules.workers.support.worker_test_command_entry import TEST_COMMAND_EXAMPLE, WorkerTestCommandEntry
 from suites.coding.modules.workers.support.plan_worker_tasks import PlanWorkerTasks
+from suites.coding.modules.workers.support.worker_test_presets import WorkerTestPresets
+from core.modules.environments.support.environment_rows import EnvironmentRows
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 
 
@@ -33,8 +35,9 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
     outward = True
     background = True
 
-    def __init__(self, home: JournalHome, plan_tasks: PlanWorkerTasks, agents: AgentRows, worktrees: WorktreeQuery, scopes: Scopes) -> None:
+    def __init__(self, home: JournalHome, plan_tasks: PlanWorkerTasks, agents: AgentRows, worktrees: WorktreeQuery, scopes: Scopes, presets: WorkerTestPresets, environments: EnvironmentRows) -> None:
         self.home, self.plan_tasks, self.agents, self.worktrees, self.scopes = home, plan_tasks, agents, worktrees, scopes
+        self.presets, self.environments = presets, environments
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("task_ids", type=int, nargs="*")
@@ -52,7 +55,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         parser.add_argument("--no-program", action="store_true", help="a person only: cut the worktree and start no program")
         parser.add_argument("--session", default="", help="with --no-program, the session whose hooks are the worker's")
         parser.add_argument("--no-sandbox", action="store_true", help="the worker runs its shell lines outside the sandbox")
-        parser.add_argument("--test-command", action="append", default=[], metavar="NAME=COMMAND", help="a test command the worker may run as journal worker test <name>; an agent gives at least one")
+        parser.add_argument("--test-command", action="append", default=[], metavar="NAME=COMMAND", help="a test command the worker may run as journal worker test <name>; an agent gives at least one when the project gives none: journal worker presets lists them")
 
     def command(self, arguments: Namespace, caller: Caller) -> DispatchWorker:
         if arguments.session and not arguments.no_program:
@@ -60,9 +63,14 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         taken_from = self.stopped_worker(arguments, caller)
         task_ids = self.taken_over_tasks(taken_from) if taken_from is not None else self.picked(arguments)
         commands = WorkerTestCommandEntry.parsed(arguments.test_command)
-        if not commands and caller.actor.type is ActorType.AGENT:
+        if not commands and caller.actor.type is ActorType.AGENT and not self.has_presets(caller):
             raise Refusal("a worker gets the test commands it may run", TEST_COMMAND_EXAMPLE)
         return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], arguments.model, arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program, sandboxed=not arguments.no_sandbox, test_commands=commands, taken_from=taken_from.id if taken_from is not None else None)
+
+    def has_presets(self, caller: Caller) -> bool:
+        if caller.environment_id is None:
+            return False
+        return bool(self.presets.presets(self.environments.find(caller.environment_id).folder))
 
     def stopped_worker(self, arguments: Namespace, caller: Caller) -> Agent | None:
         if arguments.take_over is None:
