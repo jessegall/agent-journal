@@ -20,7 +20,7 @@ class PrivateCorpusRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     overlay_proof = True
-    refuses_one_action = "The private command corpus is never named by a shell line, whoever runs it"
+    single_action_refusal = "The private command corpus is never named by a shell line, whoever runs it"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None

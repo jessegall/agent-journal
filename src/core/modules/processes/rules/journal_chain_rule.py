@@ -20,7 +20,7 @@ class JournalChainRule(DriverRule):
     name = "processes.journal-chain"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    refuses_one_action = "A journal command after a long command, or inside a loop, is refused"
+    single_action_refusal = "A journal command after a long command, or inside a loop, is refused"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None

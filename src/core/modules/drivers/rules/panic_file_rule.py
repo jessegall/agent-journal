@@ -22,7 +22,7 @@ class PanicFileRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     overlay_proof = True
-    refuses_one_action = "An agent may write the panic file only after hooks went through unchecked because the server did not answer"
+    single_action_refusal = "An agent may write the panic file only after hooks went through unchecked because the server did not answer"
 
     def __init__(self, home: JournalHome, lockdown: ProgramLockdown) -> None:
         self.home, self.lockdown = home, lockdown

@@ -21,7 +21,7 @@ class DeliveredWorkStopRule(DriverRule):
     hook = HookEventName.STOP
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
-    refuses_one_action = "A stop while a worker's delivered work waits for its checks is refused once per delivery"
+    single_action_refusal = "A stop while a worker's delivered work waits for its checks is refused once per delivery"
 
     def __init__(self, delivered: WorkerWorktrees, proofs: ProofQuery, history: HookHistory, phases: WorkerPhases, numbers: RowNumbers) -> None:
         self.numbers = numbers

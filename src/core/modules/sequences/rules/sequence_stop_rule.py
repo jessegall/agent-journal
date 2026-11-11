@@ -14,7 +14,7 @@ class SequenceStopRule(DriverRule):
     drivers = ["*"]
     exempt = True
     priority = -5
-    refuses_one_action = "An agent with a running sequence may not stop, however often it asks, unless it is waiting"
+    single_action_refusal = "An agent with a running sequence may not stop, however often it asks, unless it is waiting"
 
     def __init__(self, work: SequenceStopBlockers) -> None:
         self.work = work

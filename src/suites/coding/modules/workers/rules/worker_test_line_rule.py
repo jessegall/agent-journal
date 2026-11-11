@@ -8,7 +8,7 @@ from engine.driver.nudge import Nudge
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.processes.support.background_commands import BackgroundCommands
 from core.modules.processes.support.reader_demands import ASKING_FLAGS
-from suites.coding.modules.workers.support.worker_nudges import WORKER_NO_TEST_COMMANDS, WORKER_TEST_LINE_REFUSED
+from suites.coding.modules.workers.support.worker_nudges import WORKER_TEST_COMMANDS_MISSING, WORKER_TEST_LINE_REFUSED
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
@@ -22,7 +22,7 @@ class WorkerTestLineRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [CodingHelperRole.WORKER]
-    refuses_one_action = "A worker runs a test only through its named test commands"
+    single_action_refusal = "A worker runs a test only through its named test commands"
 
     def __init__(self, commands: BackgroundCommands, names: WorkerTestNames, numbers: RowNumbers) -> None:
         self.numbers = numbers
@@ -39,4 +39,4 @@ class WorkerTestLineRule(DriverRule):
 
     def refusal(self, worker_id: int) -> Nudge:
         names = self.names.names_text(worker_id)
-        return WORKER_TEST_LINE_REFUSED.nudge(names=names) if names else WORKER_NO_TEST_COMMANDS.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id))
+        return WORKER_TEST_LINE_REFUSED.nudge(names=names) if names else WORKER_TEST_COMMANDS_MISSING.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id))

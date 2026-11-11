@@ -26,7 +26,7 @@ class WorkerReuseRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN]
-    refuses_one_action = "A dispatch for work that an ended worker still holds in its worktree is refused"
+    single_action_refusal = "A dispatch for work that an ended worker still holds in its worktree is refused"
 
     def __init__(self, queries: Queries, git: WorktreeGit, numbers: RowNumbers) -> None:
         self.numbers = numbers

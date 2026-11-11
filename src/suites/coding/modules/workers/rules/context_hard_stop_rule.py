@@ -1,4 +1,5 @@
 from engine.driver.agent_hook import AgentHook
+from core.modules.processes.support.output_watch_call import OutputWatchCall
 from core.modules.drivers.models.enums.compaction_reason import CompactionReason
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -14,22 +15,23 @@ from suites.coding.support.context_limit_check import ContextLimitCheck
 class ContextHardStopRule(DriverRule):
     """An agent whose context has passed the second limit may run no more tools, so it stops, whatever task it
     holds, and its context is compacted at once: the compaction is typed the first time and again after the
-    retry time. A journal memory command still runs, because a stop waits for the memories to be weighed."""
+    retry time. A journal memory command still runs, because a stop waits for the memories to be weighed, and
+    so does the watch of an output, because a stop waits for a run still going to be watched."""
 
     name = "workers.context-limit-hard-stop"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN, CodingHelperRole.WORKER]
     disabled_scopes = [ActorScope]
-    refuses_one_action = "An agent past the second context limit may run no more tools, so it must stop"
+    single_action_refusal = "An agent past the second context limit may run no more tools, so it must stop"
 
-    def __init__(self, limit_check: ContextLimitCheck) -> None:
-        self.limit_check = limit_check
+    def __init__(self, limit_check: ContextLimitCheck, watch_call: OutputWatchCall) -> None:
+        self.limit_check, self.watch_call = limit_check, watch_call
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool =hook.event.tool
+        tool = hook.event.tool
         is_memory_command = tool is not None and tool.shell is not None and bool(tool.shell.parts_running_journal_command("memory"))
-        if is_memory_command or not self.limit_check.exceeds_hard_limit(hook.agent_id):
+        if is_memory_command or self.watch_call.is_watch(hook) or not self.limit_check.exceeds_hard_limit(hook.agent_id):
             return RuleAnswer.allowed()
         refusal = RuleAnswer.refused(CONTEXT_HARD_STOP.nudge())
         return refusal if self.limit_check.is_compaction_requested(hook.agent_id, hook.timestamp) else refusal.running(CompactAgentContext(hook.agent_id, CompactionReason.HARD_STOP))

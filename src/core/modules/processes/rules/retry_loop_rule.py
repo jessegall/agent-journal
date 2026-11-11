@@ -11,7 +11,7 @@ class RetryLoopRule(DriverRule):
     name = "processes.retry-loop"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    refuses_one_action = "Refuses a shell line that runs something again until it works"
+    single_action_refusal = "Refuses a shell line that runs something again until it works"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None

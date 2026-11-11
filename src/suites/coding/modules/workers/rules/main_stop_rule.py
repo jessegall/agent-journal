@@ -22,7 +22,7 @@ class MainStopRule(DriverRule):
     hook = HookEventName.STOP
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
-    refuses_one_action = "A main agent that stops is handed the next task when it may work on it, and is held back while a task can"
+    single_action_refusal = "A main agent that stops is handed the next task when it may work on it, and is held back while a task can"
 
     def __init__(self, work: AvailableWork, options: CodingMainOptions, notices: StopNotices, unfinished_work: MainAgentWork) -> None:
         self.work, self.options, self.notices, self.unfinished_work = work, options, notices, unfinished_work

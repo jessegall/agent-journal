@@ -24,7 +24,7 @@ class GraphifySearchRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     role_group = RoleGroup.PROMPT
-    refuses_one_action = "While the Graphify tool is on, an agent's searches of the project's code that do not use Graphify are counted"
+    single_action_refusal = "While the Graphify tool is on, an agent's searches of the project's code that do not use Graphify are counted"
 
     def __init__(self, hook_calls: HookCallQuery, settings: SettingValues, home: JournalHome) -> None:
         self.hook_calls, self.settings, self.home = hook_calls, settings, home

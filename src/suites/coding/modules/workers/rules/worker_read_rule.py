@@ -21,7 +21,7 @@ class WorkerReadRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [CodingHelperRole.WORKER]
-    refuses_one_action = "A worker reads only its own worktree, the temporary folder and its program's home"
+    single_action_refusal = "A worker reads only its own worktree, the temporary folder and its program's home"
 
     def __init__(self, worktrees: WorktreeQuery, providers: Providers) -> None:
         self.worktrees, self.providers = worktrees, providers

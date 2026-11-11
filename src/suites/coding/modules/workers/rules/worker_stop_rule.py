@@ -28,7 +28,7 @@ class WorkerStopRule(DriverRule):
     hook = HookEventName.STOP
     drivers = ["coding.worker"]
     roles = [CodingHelperRole.WORKER]
-    refuses_one_action = "A worker may stop with no task, at a point of its round that waits, while a run or a helper of its own"
+    single_action_refusal = "A worker may stop with no task, at a point of its round that waits, while a run or a helper of its own"
 
     def __init__(self, tasks: TaskQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows, compaction: WorkerCompaction, guidance: WorkerGuidance, numbers: RowNumbers) -> None:
         self.numbers = numbers

@@ -18,7 +18,7 @@ class NativeMemoryRule(DriverRule):
     exempt = True
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    refuses_one_action = "A write into Claude Code's own memory folder is refused, under every overlay"
+    single_action_refusal = "A write into Claude Code's own memory folder is refused, under every overlay"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool

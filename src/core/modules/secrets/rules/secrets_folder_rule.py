@@ -19,7 +19,7 @@ class SecretsFolderRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     essential = True
-    refuses_one_action = "A tool that names the secrets folder, or version 4's folder of server keys, by any spelling of its path"
+    single_action_refusal = "A tool that names the secrets folder, or version 4's folder of server keys, by any spelling of its path"
 
     def __init__(self, folder: PrivateFolder) -> None:
         self.folder = folder

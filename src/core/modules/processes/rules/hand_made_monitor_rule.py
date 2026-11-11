@@ -4,10 +4,10 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.enums.tool_type import ToolType
 from engine.provider.providers import Providers
+from core.modules.processes.support.output_watch_call import MONITOR_LINE
 from core.modules.processes.support.process_nudges import HAND_MADE_MONITOR, MONITOR_TOOL_REQUIRED
 
 OUTPUT_LINE = "journal output "
-MONITOR_LINE = "journal output monitor "
 
 
 class HandMadeMonitorRule(DriverRule):
@@ -18,7 +18,7 @@ class HandMadeMonitorRule(DriverRule):
     name = "processes.hand-made-monitor"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    refuses_one_action = "A Monitor that loops over an output by hand is refused"
+    single_action_refusal = "A Monitor that loops over an output by hand is refused"
 
     def __init__(self, providers: Providers) -> None:
         self.providers = providers

@@ -37,7 +37,7 @@ class RunnerRewriteRule(DriverRule):
     drivers = ["*"]
     history = True
     overlay_proof = True
-    refuses_one_action = "A shell line of any agent runs through the journal's runner"
+    single_action_refusal = "A shell line of any agent runs through the journal's runner"
 
     def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, count_lines: RunCountLines, types: HelperTypeBook, folders: AgentWriteFolder, shell_sandbox: ShellSandbox, project_reads: ProjectReads, checkouts: AgentCheckouts, choice: AgentSandboxChoice) -> None:
         self.limits, self.runner, self.hook_history, self.count_lines = limits, runner, hook_history, count_lines

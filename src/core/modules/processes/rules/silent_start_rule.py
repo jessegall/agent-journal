@@ -28,7 +28,7 @@ class SilentStartRule(DriverRule):
     roles = [AgentRole.MAIN]
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    refuses_one_action = "A command that ran a minute with no percent shown is refused until a reader or a reason is given"
+    single_action_refusal = "A command that ran a minute with no percent shown is refused until a reader or a reason is given"
 
     def __init__(self, runs: SilentStartRuns, folder: OutputFolder, readers: ReaderRows) -> None:
         self.runs, self.folder, self.readers = runs, folder, readers

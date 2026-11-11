@@ -19,7 +19,7 @@ class AliasExpansionRule(DriverRule):
     drivers = ["*"]
     essential = True
     overlay_proof = True
-    refuses_one_action = "Checks expanded alias references and permissions before the shell line runs"
+    single_action_refusal = "Checks expanded alias references and permissions before the shell line runs"
 
     def __init__(self, aliases: AliasQuery, access: AliasAccess) -> None:
         self.aliases, self.access = aliases, access

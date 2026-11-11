@@ -21,7 +21,7 @@ class BlockStopRule(DriverRule):
     hook = HookEventName.STOP
     drivers = ["*"]
     role_group = RoleGroup.PROMPT
-    refuses_one_action = "An agent's stop is refused while a block that holds the stop only is still open"
+    single_action_refusal = "An agent's stop is refused while a block that holds the stop only is still open"
 
     def __init__(self, queries: Queries, conditions: BlockConditions, container: Container) -> None:
         self.queries, self.conditions, self.container = queries, conditions, container

@@ -9,7 +9,7 @@ class AutoModeTaskStopRule(TaskStopRule):
 
     name = "tasks.carry-on-at-stop-in-auto-mode"
     overlay_proof = True
-    yields_to_pause = True
+    is_pause_skipped = True
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         assigner = self.assigners.assigner()

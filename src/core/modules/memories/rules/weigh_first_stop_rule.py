@@ -10,7 +10,7 @@ class WeighFirstStopRule(DriverRule):
 
     name = "memories.weigh-first-stop"
     hook = HookEventName.STOP
-    refuses_one_action = "While a memory mark is open, a stop is refused with the way to weigh or skip"
+    single_action_refusal = "While a memory mark is open, a stop is refused with the way to weigh or skip"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         return RuleAnswer.refused(WEIGH_FIRST.nudge())

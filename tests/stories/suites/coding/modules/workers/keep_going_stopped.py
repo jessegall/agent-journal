@@ -56,9 +56,18 @@ def test_a_worker_another_agent_stopped_is_not_named(quiet_worker):
     story.expect_rows(stopped_lines(story) == [], detail=str(stopped_lines(story)))
 
 
-def test_a_worker_that_used_up_its_restarts_is_named_as_nothing_will_start_it(ended_with_work, monkeypatch):
-    monkeypatch.setattr(RESUME_LIMIT, 0)
+def test_a_worker_whose_process_ended_with_work_left_is_named_and_named_as_kept_stopping_once_its_restarts_are_used_up(ended_with_work, monkeypatch):
     story = ended_with_work.story
     story.tick(MAIN_SESSION)
+    ended_lines = stopped_lines(story)
+    monkeypatch.setattr(RESUME_LIMIT, 0)
+    story.tick(MAIN_SESSION)
     lines = stopped_lines(story)
-    story.expect_rows(len(lines) == 1, "kept stopping" in lines[0], "task:1" in lines[0], detail=str(lines))
+    story.expect_rows(len(ended_lines) == 1, "its process ended" in ended_lines[0], "task:1" in ended_lines[0], len(lines) == 2, "kept stopping" in lines[0], "task:1" in lines[0], detail=str(lines))
+
+
+def test_a_worker_whose_process_ended_with_no_task_left_is_not_named(ended_with_work):
+    story = ended_with_work.story
+    story.expect_success('task cancel 1 --reason "The receipt is no longer needed"', actor=story.agent)
+    story.tick(MAIN_SESSION)
+    story.expect_rows(stopped_lines(story) == [], detail=str(stopped_lines(story)))

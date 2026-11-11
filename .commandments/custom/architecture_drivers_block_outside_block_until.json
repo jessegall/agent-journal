@@ -35,7 +35,7 @@
                         },
                         {
                             "child": {
-                                "name": "refuses_one_action"
+                                "name": "single_action_refusal"
                             }
                         }
                     ]
@@ -46,7 +46,7 @@
     "sin": {
         "name": "block-outside-block-until",
         "description": "A rule holds an agent's tools by itself until something becomes true, so its exceptions and its ending are its own.",
-        "rule": "Hold an agent with RuleAnswer.blocked(hook, NUDGE, condition): a block refuses everything but reading and journal commands and ends when its condition is true. A rule that refuses one action outright declares why in refuses_one_action.",
+        "rule": "Hold an agent with RuleAnswer.blocked(hook, NUDGE, condition): a block refuses everything but reading and journal commands and ends when its condition is true. A rule that refuses one action outright declares why in single_action_refusal.",
         "skill": "plain-code-words"
     }
 }

@@ -30,7 +30,7 @@ class PhraseTriggerRule(DriverRule):
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
     role_group = RoleGroup.PROMPT
-    refuses_one_action = "A trigger whose words appear where it watches hands the agent its text or refuses"
+    single_action_refusal = "A trigger whose words appear where it watches hands the agent its text or refuses"
 
     def __init__(self, triggers: TriggerQuery, conditions: TriggerConditions, catalogue: SkillCatalogue, loaded: LoadedSkills, files: SkillFiles) -> None:
         self.triggers, self.conditions = triggers, conditions

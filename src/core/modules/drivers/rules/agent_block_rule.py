@@ -29,7 +29,7 @@ class AgentBlockRule(DriverRule):
     drivers = ["*"]
     role_group = RoleGroup.PROMPT
     tools = tuple(ToolType)
-    refuses_one_action = "A blocked agent's tools are refused but for reading and journal commands"
+    single_action_refusal = "A blocked agent's tools are refused but for reading and journal commands"
 
     def __init__(self, queries: Queries, conditions: BlockConditions, container: Container, calls: HookCallQuery) -> None:
         self.queries, self.conditions, self.container = queries, conditions, container

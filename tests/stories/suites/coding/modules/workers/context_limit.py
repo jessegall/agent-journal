@@ -11,6 +11,8 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
+from engine.enums.tool_type import ToolType
+from tests.stories.core.modules.processes.support.process_samples import moved_run
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
@@ -193,6 +195,19 @@ def test_past_the_second_limit_a_memory_command_still_runs_so_a_stop_waiting_on_
     weigh = HookSamples.shell("journal memory weigh 1 5", ShellPart("journal", CommandCategory.JOURNAL, ["memory", "weigh", "1", "5"]))
     agent.expect_hook_allowed(SESSION, weigh)
     agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
+
+
+def test_past_the_second_limit_the_watch_of_a_run_still_going_passes_so_the_stop_it_blocks_can_end(hard_limited_worker):
+    agent = hard_limited_worker
+    process = moved_run(agent, "make build")
+    agent.run_listeners()
+    has_context(agent, HARD)
+    stop_unwatched = agent.hook(SESSION, HookSamples.stop())
+    monitor = HookSamples.tool_use("Monitor", ToolType.MONITOR, [], None)
+    agent.expect_hook_refusal(SESSION, monitor.with_raw({"tool_input": {"command": "tail -f build.log"}}), "no more tools, stop now")
+    agent.expect_hook_allowed(SESSION, monitor.with_raw({"tool_input": {"command": f"journal output monitor {process.id}"}}))
+    stop_watched = agent.hook(SESSION, HookSamples.stop())
+    agent.expect_rows(f"output {process.id}" in stop_unwatched.refusal, f"output {process.id}" not in stop_watched.refusal, detail=f"{stop_unwatched.refusal} | {stop_watched.refusal}")
 
 
 def test_between_the_limits_a_tool_with_a_task_in_hand_is_not_refused(hard_limited_worker):

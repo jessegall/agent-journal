@@ -17,7 +17,7 @@ class JournalPipeRule(DriverRule):
     name = "processes.journal-pipe"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    refuses_one_action = "Refuses a journal command piped into a program that cuts its output"
+    single_action_refusal = "Refuses a journal command piped into a program that cuts its output"
 
     def __init__(self, registry: Registry) -> None:
         self.registry = registry

@@ -17,7 +17,7 @@ class PluginProgramRule(DriverRule):
     name = "plugins.plugin-program"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    refuses_one_action = "Refuses a shell line that runs a program from the folder of a plugin that is switched off or no longer"
+    single_action_refusal = "Refuses a shell line that runs a program from the folder of a plugin that is switched off or no longer"
 
     def __init__(self, plugins: RunnablePlugins) -> None:
         self.plugins = plugins

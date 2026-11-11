@@ -43,7 +43,7 @@ class Walk:
     def silences(self, rule: type[DriverRule]) -> bool:
         if rule.wakes_agent:
             return self.holds_wakes
-        return (self.is_silenced and not rule.overlay_proof) or (self.is_paused and rule.yields_to_pause) or (self.delays_notices and rule.is_notice)
+        return (self.is_silenced and not rule.overlay_proof) or (self.is_paused and rule.is_pause_skipped) or (self.delays_notices and rule.is_notice)
 
     def answers(self) -> RuleAnswers:
         return RuleAnswers(self.layers, self.rules, self.delays_lines)

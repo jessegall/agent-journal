@@ -15,7 +15,7 @@ class OpenDocumentStopRule(DriverRule):
     drivers = ["*"]
     exempt = True
     priority = -5
-    refuses_one_action = "An agent with an open document may not stop until it closes it, however often it asks"
+    single_action_refusal = "An agent with an open document may not stop until it closes it, however often it asks"
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

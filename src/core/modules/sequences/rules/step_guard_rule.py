@@ -14,7 +14,7 @@ class StepGuardRule(DriverRule):
     name = "sequences.step-guard"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    refuses_one_action = "A step that holds file edits refuses a writing call, except journal lines and the commands the step allows"
+    single_action_refusal = "A step that holds file edits refuses a writing call, except journal lines and the commands the step allows"
 
     def __init__(self, runs: SequenceRunQuery, sequences: SequenceQuery) -> None:
         self.runs, self.sequences = runs, sequences

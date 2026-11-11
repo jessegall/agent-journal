@@ -14,7 +14,10 @@ from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from engine.setting.setting_values import SettingValues
-from suites.coding.modules.workers.support.worker_nudges import WORKER_ASKING_STOPPED, WORKER_LIMIT_STOPPED
+from engine.driver.nudge_declaration import NudgeDeclaration
+from suites.coding.modules.workers.support.worker_handoff import WorkerHandoff
+from suites.coding.modules.workers.support.worker_nudges import WORKER_ASKING_STOPPED, WORKER_LIMIT_STOPPED, WORKER_PROCESS_ENDED
+from suites.coding.modules.workers.support.worker_round import WorkerRound
 from suites.coding.modules.workers.support.worker_settings import MERGER_WAIT_MINUTES
 from suites.coding.modules.workers.support.worker_started_work import WorkerStartedWork
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
@@ -24,7 +27,8 @@ from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 class StoppedWorkerRule(DriverRule):
     """A tick names to the main agent, and again after the line's interval, each stopped worker with work left
-    that nothing will start again: one whose question nobody answered, and one that used up its restarts. The
+    that nothing will start again: one whose question nobody answered, one that used up its restarts, and one
+    whose process ended with no run and no hand-in of its own under way, as at a restart of the journal. The
     merger has the wait setting's minutes first, and a worker a person or another agent stopped is left alone."""
 
     name = "workers.stopped-worker"
@@ -32,7 +36,8 @@ class StoppedWorkerRule(DriverRule):
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries, stop: WorkerStop, unfinished: WorkerUnfinishedTasks, started_work: WorkerStartedWork, settings: SettingValues) -> None:
+    def __init__(self, queries: Queries, stop: WorkerStop, unfinished: WorkerUnfinishedTasks, started_work: WorkerStartedWork, settings: SettingValues, handoff: WorkerHandoff) -> None:
+        self.handoff = handoff
         self.queries, self.stop, self.unfinished, self.started_work, self.settings = queries, stop, unfinished, started_work, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -51,9 +56,12 @@ class StoppedWorkerRule(DriverRule):
         tasks = self.unfinished.round_rows(worker_round)
         if not tasks:
             return None
-        if not worker_round.is_asking and not self.started_work.reached_restart_limit(worker):
+        if self.stop.was_stopped(worker) or self.unfinished.has_running_process(worker.id) or self.handoff.is_pending(worker):
             return None
-        if self.stop.was_stopped(worker):
-            return None
-        declaration = WORKER_ASKING_STOPPED if worker_round.is_asking else WORKER_LIMIT_STOPPED
+        declaration = self.declaration(worker, worker_round)
         return replace(declaration.nudge(worker=worker.number, tasks=self.unfinished.names(tasks)), key=f"{declaration.key}.{worker.id}")
+
+    def declaration(self, worker: Agent, worker_round: WorkerRound) -> NudgeDeclaration:
+        if worker_round.is_asking:
+            return WORKER_ASKING_STOPPED
+        return WORKER_LIMIT_STOPPED if self.started_work.reached_restart_limit(worker) else WORKER_PROCESS_ENDED

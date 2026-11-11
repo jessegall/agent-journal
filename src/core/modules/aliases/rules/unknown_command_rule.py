@@ -14,7 +14,7 @@ class UnknownCommandRule(DriverRule):
     name = "aliases.unknown-command"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    refuses_one_action = "A command of a type the journal does not know is refused until its leading words are classified"
+    single_action_refusal = "A command of a type the journal does not know is refused until its leading words are classified"
 
     def __init__(self, suites: SuiteChoice) -> None:
         self.suites = suites
