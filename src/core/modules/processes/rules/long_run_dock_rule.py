@@ -2,7 +2,6 @@ from collections import defaultdict
 
 from engine.driver.nudge import Nudge
 from core.modules.processes.support.process_nudges import RUN_NAME
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_wildcard import HookWildcard
@@ -55,8 +54,8 @@ class LongRunDockRule(DriverRule):
         due = [process for process in fresh if self.needs_dock(process, hook, dock, tuple(parts[process.id]))]
         placed = due[:self.room.places(ProcessDockType.OUTPUT.value)]
         shown = [*docked, *placed]
-        outputs = {output.process_id: output for output in self.outputs.matching(Among("process_id", [process.id for process in shown])).all_rows()} if shown and hook.role == AgentRole.MAIN else {}
-        titles = self.title_nudges(shown, outputs) if hook.role == AgentRole.MAIN else ()
+        outputs = {output.process_id: output for output in self.outputs.matching(Among("process_id", [process.id for process in shown])).all_rows()} if shown else {}
+        titles = self.title_nudges(shown, outputs)
         return RuleAnswer.with_nudges(*titles).running(*(AddDockItem(ProcessDockType.OUTPUT.value, process.model_name, process.id) for process in placed))
 
     def title_nudges(self, due: list[Process], outputs: dict[int, Output]) -> list[Nudge]:
