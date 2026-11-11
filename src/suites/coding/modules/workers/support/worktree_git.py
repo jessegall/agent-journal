@@ -101,7 +101,9 @@ class WorktreeGit:
         return self.checked(folder, GIT_LIMIT_SECONDS, "merge-base", base_branch, branch).stdout.strip()
 
     def test_checkout(self, worktree: Worktree) -> str:
-        commit = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "HEAD").stdout.strip()
+        return self.commit_checkout(worktree, self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "HEAD").stdout.strip())
+
+    def commit_checkout(self, worktree: Worktree, commit: str) -> str:
         return self.detached_checkout(worktree.folder, self.test_folder(worktree), commit, self.library_names(worktree))
 
     def base_checkout(self, environment: Environment, name: str) -> str:
