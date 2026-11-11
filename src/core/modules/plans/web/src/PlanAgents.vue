@@ -3,8 +3,8 @@ import {computed, ref} from "vue";
 import {AgentBadge, AgentTip, Icon, MenuItem, MenuLabel, MenuPanel, agentLabel, peekRef} from "@journal/window-kit";
 
 // who has a plan, on its card: always one row, so every card keeps its height. One agent shows its badge, several a button that lists them
-const props = defineProps({planId: {type: Number, required: true}, agents: {type: Array, default: () => []}});
-const named = computed(() => [...new Map(props.agents.map((agent) => [agent.id, agent])).values()]);
+const props = defineProps({planId: {type: Number, required: true}, agents: {type: Array, default: () => []}, assignee: {type: Object, default: null}});
+const named = computed(() => [...new Map(props.agents.filter((agent) => agent.id !== props.assignee?.id).map((agent) => [agent.id, agent])).values()]);
 const anchor = ref(null);
 const open = ref(false);
 const openAgent = (agent) => peekRef(`agents:${agent.id}`);
@@ -12,8 +12,14 @@ const openAgent = (agent) => peekRef(`agents:${agent.id}`);
 
 <template>
     <span class="plan-agents" data-plan-agents @click.stop @keydown.enter.stop>
+        <template v-if="assignee">
+            <span class="plan-agents-label">Works this plan:</span>
+            <AgentTip as="button" :agent-id="assignee.id" :label="agentLabel(assignee.name, assignee.main)" class="plan-agents-button" data-plan-assignee @click="openAgent(assignee)"><AgentBadge :name="assignee.name" :main="assignee.main" /></AgentTip>
+        </template>
         <template v-if="!named.length">
-            <span class="plan-agents-none" data-plan-agents-none>No agent assigned</span>
+            <template v-if="!assignee">
+                <span class="plan-agents-none" data-plan-agents-none>No agent assigned</span>
+            </template>
         </template>
         <template v-else-if="named.length === 1">
             <AgentTip as="button" :agent-id="named[0].id" :label="agentLabel(named[0].name, named[0].main)" class="plan-agents-button" data-plan-agent @click="openAgent(named[0])"><AgentBadge :name="named[0].name" :main="named[0].main" /></AgentTip>
@@ -46,6 +52,11 @@ const openAgent = (agent) => peekRef(`agents:${agent.id}`);
     border-top: 1px solid var(--border-inner);
     color: var(--text-3);
     font-size: 12px;
+}
+
+.plan-agents-label {
+    margin-right: 6px;
+    color: var(--text-4);
 }
 
 .plan-agents-none {

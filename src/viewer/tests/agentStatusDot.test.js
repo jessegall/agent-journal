@@ -65,11 +65,11 @@ test("a row shows no age and no dot at its left, and the dot is a button a keybo
     expect(element.contains(dotOf(element))).toBe(true);
 });
 
-test("an open header shows the run time, Started and Seen as plain text, and the information bar shows no run time", async () => {
+test("an open card shows the run time and Seen in its live bar and Started among its lasting facts, as plain text", async () => {
     const element = await card(worker(), {tasks: [], last_activity: new Date().toISOString()}, true);
-    expect(element.querySelector("[data-agent-run-time]").textContent).toBe("7m");
-    expect(element.querySelector("[data-agent-first-dispatched]").textContent).toBe("Started 6h ago");
-    expect(element.querySelector("[data-agent-last-heard]").textContent).toBe("Seen just now");
+    expect(element.querySelector("[data-information-bar] [data-agent-run-time]").textContent).toBe("Run time: 7m");
+    expect(element.querySelector("[data-agent-first-dispatched]").textContent).toBe("6h ago");
+    expect(element.querySelector("[data-information-bar] [data-agent-last-heard]").textContent).toBe("Seen: just now");
     expect(element.querySelector("[data-agent-first-dispatched] [data-icon]")).toBeNull();
     expect(element.querySelector("[data-information-bar] [data-fact='uptime']")).toBeNull();
     expect(element.querySelector("[data-information-bar] [data-icon='reminders']")).toBeNull();

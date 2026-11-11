@@ -2,7 +2,7 @@ from typing import TypedDict
 
 
 class PlanAssigneeJsonRecord(TypedDict):
-    """The JSON form of PlanInspection.assignee_json."""
+    """The agent that works a plan, as its card draws it."""
 
     id: int
     name: str

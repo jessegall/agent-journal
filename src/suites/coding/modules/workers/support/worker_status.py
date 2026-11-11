@@ -31,6 +31,7 @@ class WorkerStatus:
     is_paused: bool
     question_lines: tuple[str, ...]
     standing: StandingState
+    unit_line: str
 
     @property
     def blocked_tasks(self) -> tuple[Task, ...]:
