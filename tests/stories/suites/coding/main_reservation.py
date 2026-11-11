@@ -22,7 +22,7 @@ def assigned_task(story):
 
 def delegated_cards(story) -> list[dict[str, object]]:
     board = json.loads(story.run("task board --environment main --state open --json", actor=story.agent).output_text)
-    return [row for row in board["groups"][0]["rows"] if row["delegated_to"] is not None]
+    return [row for row in board["groups"][0]["rows"] if row["assigned_to"] is not None]
 
 
 def expect_reserved(story, task: int) -> None:
@@ -39,7 +39,7 @@ def test_a_person_assigns_a_task_to_the_main_agent_and_the_board_shows_who_it_wa
     story = planned_story(new_story)
     story.expect_success(f"task assign 1 --to {agent_number(story, story.agent.id)}", actor=story.user)
     card = delegated_cards(story)[0]
-    expect_value((card["id"], card["delegated_to"], card["delegated_name"]), (1, story.agent.id, f"Agent {story.agent.id}"))
+    expect_value((card["id"], card["assigned_to"], card["assigned_name"]), (1, story.agent.id, f"Agent {story.agent.id}"))
 
 
 def test_a_reserved_task_reaches_a_stopping_main_agent_with_auto_mode_off(new_story):
@@ -88,11 +88,11 @@ def test_a_blocked_task_can_be_assigned_to_a_main_agent_and_stays_blocked(new_st
     story.expect_success('task make "Waits for a person" --environment main', actor=story.user)
     story.expect_success('task block 1 --reason "needs an answer"', actor=story.user)
     story.expect_success(f"task assign 1 --to {agent_number(story, story.agent.id)}", actor=story.user)
-    story.expect_text("task info 1", "state: blocked", f"delegated to: agent {story.agent.id}", actor=story.agent)
+    story.expect_text("task info 1", "state: blocked", f"assigned to: agent {story.agent.id}", actor=story.agent)
 
 
 def test_a_task_an_agent_starts_is_assigned_to_it(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run('task make "Taken by the agent" --environment main', actor=story.user)
     story.expect_success("task start 1", actor=story.agent)
-    story.expect_text("task info 1", f"delegated to: agent {story.agent.id}", actor=story.agent)
+    story.expect_text("task info 1", f"assigned to: agent {story.agent.id}", actor=story.agent)

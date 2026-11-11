@@ -12,7 +12,7 @@ def test_task_info_prints_the_delegating_facts_and_no_brief(new_story):
     story.run(f"task-dependency make {cart} {totals}", actor=story.agent)
     story.expect_success(f'task comment {cart} "Look at rounding" --environment main', actor=story.user)
     text = story.run(f"task info {cart}", actor=story.agent).output_text
-    for line in (f"task {cart}: Fix the cart", "state: blocked", "priority: ", "complexity: 4", "tags: cart", "comments: 1", "delegated to: nobody", f"waits on: task {totals} (open)"):
+    for line in (f"task {cart}: Fix the cart", "state: blocked", "priority: ", "complexity: 4", "tags: cart", "comments: 1", "assigned to: nobody", f"waits on: task {totals} (open)"):
         expect_value_with(text, line)
     expect_value("The total adds up" not in text, True)
     expect_value("Look at rounding" not in text, True)
@@ -22,8 +22,8 @@ def test_task_info_in_json_names_each_field_and_holds_no_brief(new_story):
     story = new_story(fixture=UserJoined)
     task = story.new_row_id('task make "Fix the cart" --environment main --brief "Hidden brief" --complexity 2', actor=story.agent)
     answer = json.loads(story.run(f"task info {task} --json", actor=story.agent).output_text)
-    expect_value(bool(answer["title"] == "Fix the cart" and answer["complexity"] == 2 and answer["comments"] == 0 and answer["delegated_to"] is None), True)
-    expect_value(set(answer), {"id", "title", "state", "priority", "complexity", "tags", "comments", "delegated_to", "waits"})
+    expect_value(bool(answer["title"] == "Fix the cart" and answer["complexity"] == 2 and answer["comments"] == 0 and answer["assigned_to"] is None), True)
+    expect_value(set(answer), {"id", "title", "state", "priority", "complexity", "tags", "comments", "assigned_to", "waits"})
 
 
 def test_task_info_says_a_task_has_no_score_yet(new_story):
