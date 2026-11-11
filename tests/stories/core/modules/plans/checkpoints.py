@@ -4,6 +4,8 @@ import pytest
 
 from engine.actor.actor import Actor
 from core.modules.plans.commands.start_checkpoint_run.start_checkpoint_run_handler import StartCheckpointRunHandler
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support import story_lines as lines
@@ -13,6 +15,9 @@ from tests.stories.core.support.plan_steps import ready_plan
 REACHES = "checkpoint-reach list --json --oldest --environment main"
 PASSES = "checkpoint-pass list --json --oldest --environment main"
 OUTLINE = "plan outline 1 --environment main"
+PHASE_TEST = "pytest tests/build.py"
+CHECKPOINT_ONLY_WORDS = "only a checkpoint phase has a test of its own: add --checkpoint"
+UNRUN_WORDS = "not run: this phase is not a checkpoint"
 
 
 def pass_reach(story: Story, reach_id: int) -> None:
@@ -261,3 +266,20 @@ def test_192_a_checkpoint_whose_run_failed_is_reached_again_when_its_returned_ta
     still_failed = [row["state"] for row in rows(story, REACHES)]
     close(story, 3)
     story.expect_rows(still_failed == ["failed"], [row["state"] for row in rows(story, REACHES)] == ["failed", "running"], detail=str(rows(story, REACHES)))
+
+
+def test_197_a_test_command_on_a_phase_that_is_no_checkpoint_is_refused_and_a_checkpoint_phase_takes_one(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run(lines.NEW_PLAN)
+    story.expect_refusal(f'phase make --plan 1 "Build" --test "{PHASE_TEST}"', CHECKPOINT_ONLY_WORDS)
+    story.expect_success('phase make --plan 1 "Build"')
+    story.expect_refusal(f'phase edit 1 --test-command "{PHASE_TEST}"', CHECKPOINT_ONLY_WORDS)
+    story.expect_success(f'phase make --plan 1 "Check" --checkpoint --test "{PHASE_TEST}"')
+    story.expect_rows([row["test_command"] for row in rows(story, "phase list --json --oldest --environment main")] == ["", PHASE_TEST])
+
+
+def test_198_a_test_command_an_older_journal_stored_on_a_phase_that_is_no_checkpoint_is_kept_and_shown_as_not_run(new_story):
+    story = new_story(fixture=UnflaggedPlan)
+    story.container.get(Database).update(Statement("UPDATE phases SET test_command = ? WHERE id = 1", [PHASE_TEST]))
+    story.expect_text("phase show 1 --environment main", PHASE_TEST, actor=story.user)
+    story.expect_text(OUTLINE, UNRUN_WORDS, actor=story.user)
