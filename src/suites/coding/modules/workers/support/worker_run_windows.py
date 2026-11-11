@@ -18,9 +18,10 @@ class WorkerRunWindows:
     def completed_by(self, worktree: Worktree) -> tuple[WorkerRunWindow, ...]:
         unit_ids = frozenset(self.units.unit(worktree.session_agent_id).task_ids)
         self.plans.prepare(worktree.commit_tasks())
-        phases = (self.plans.find_phase(task_id) for task_id in worktree.commit_tasks())
-        checkpoints = {checkpoint.id: checkpoint for checkpoint in (self.checkpoints.windows(phase.plan_id).window_checkpoint(phase.id) for phase in phases if phase is not None)}
-        windows = (self.window(self.checkpoints.windows(checkpoint.plan_id), checkpoint, unit_ids) for checkpoint in checkpoints.values())
+        phases = [phase for phase in (self.plans.find_phase(task_id) for task_id in worktree.commit_tasks()) if phase is not None]
+        plan_windows = {plan_id: self.checkpoints.windows(plan_id) for plan_id in {phase.plan_id for phase in phases}}
+        checkpoints = {checkpoint.id: checkpoint for checkpoint in (plan_windows[phase.plan_id].window_checkpoint(phase.id) for phase in phases)}
+        windows = (self.window(plan_windows[checkpoint.plan_id], checkpoint, unit_ids) for checkpoint in checkpoints.values())
         return tuple(window for window in windows if window is not None)
 
     @staticmethod

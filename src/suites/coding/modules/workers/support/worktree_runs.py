@@ -1,4 +1,5 @@
 from engine.query.conditions.among import Among
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
 from core.modules.plans.models.enums.checkpoint_state import CheckpointState
@@ -11,8 +12,8 @@ class WorktreeRuns:
     """Reads the worker runs of a worktree: which checkpoints passed on which of its commits, and whether the
     newest run of a checkpoint still goes or failed, which keeps the worktree from its merge."""
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, kept: KeptRows) -> None:
+        self.queries, self.kept = queries, kept
 
     def passed_text(self, worktree_id: int) -> str:
         links = self.links(worktree_id)
@@ -35,7 +36,8 @@ class WorktreeRuns:
         return next(((links[reach.id], reach) for reach in newest.values() if reach.state is not CheckpointState.PASSED), None)
 
     def links(self, worktree_id: int) -> tuple[WorktreeReach, ...]:
-        return tuple(self.queries.query(WorktreeReach).filter(worktree_id=worktree_id).all_rows())
+        return self.kept.read("worktree_reaches", lambda: tuple(self.queries.query(WorktreeReach).filter(worktree_id=worktree_id).all_rows()),
+                              "worktree_id = ?", [worktree_id], name="workers.worktree_reaches")
 
     def reaches(self, links: tuple[WorktreeReach, ...]) -> tuple[CheckpointReach, ...]:
         if not links:
