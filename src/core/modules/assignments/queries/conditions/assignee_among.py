@@ -5,7 +5,7 @@ from engine.model.model import Model
 
 
 @dataclass(frozen=True)
-class AssignedTo:
+class AssigneeAmong:
     """Matches the rows of a model that are assigned to one of the actors."""
 
     model: type[Model]

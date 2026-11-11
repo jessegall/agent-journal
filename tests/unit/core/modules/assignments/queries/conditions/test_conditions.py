@@ -1,5 +1,5 @@
 from engine.model.model import Model
-from core.modules.assignments.queries.conditions.assigned_to import AssignedTo
+from core.modules.assignments.queries.conditions.assignee_among import AssigneeAmong
 from core.modules.assignments.queries.conditions.unassigned import Unassigned
 
 
@@ -9,7 +9,7 @@ class Parcel(Model):
 
 
 def test_assigned_to_matches_the_rows_of_the_model_that_one_of_the_actors_holds():
-    statement = AssignedTo(Parcel, (3, 7)).statement()
+    statement = AssigneeAmong(Parcel, (3, 7)).statement()
     assert statement.sql == "id IN (SELECT subject_id FROM assignments WHERE subject_model = ? AND actor_id IN (?, ?))"
     assert list(statement.parameters) == ["parcel", 3, 7]
 

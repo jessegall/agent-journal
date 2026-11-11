@@ -5,7 +5,7 @@ from engine.model.model import Model
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.actors.models.actor_record import ActorRecord
-from core.modules.assignments.errors.idle_actor_type_refusal import IdleActorTypeRefusal
+from core.modules.assignments.errors.actor_type_refusal import ActorTypeRefusal
 from core.modules.assignments.errors.repeated_assignment_refusal import RepeatedAssignmentRefusal
 from core.modules.assignments.errors.several_actors_error import SeveralActorsError
 from core.modules.assignments.errors.unknown_actor_refusal import UnknownActorRefusal
@@ -34,13 +34,13 @@ class Assignments:
 
     def assign(self, row: Assignable, actor_id: int, context: Context, *, cascade: bool = True, override: bool = False) -> None:
         self.require_working_actor(actor_id)
-        held = self.assignments(row)
-        if any(assignment.actor_id == actor_id for assignment in held):
+        current = self.assignments(row)
+        if any(assignment.actor_id == actor_id for assignment in current):
             if row.takes_actors is ActorCount.SEVERAL:
                 raise RepeatedAssignmentRefusal(row.model_name, row.id, actor_id)
             return
         if row.takes_actors is ActorCount.SINGLE:
-            self.repository.delete_many_stored(held, context)
+            self.repository.delete_many_stored(current, context)
         self.repository.save(Assignment(creator_id=context.actor.id, subject_model=row.model_name, subject_id=row.id, actor_id=actor_id), context)
 
     def unassign(self, row: Assignable, context: Context, actor_id: int | None = None) -> None:
@@ -51,4 +51,4 @@ class Assignments:
         if actor is None:
             raise UnknownActorRefusal(actor_id)
         if not actor.type.can_receive_work:
-            raise IdleActorTypeRefusal(actor_id, actor.type)
+            raise ActorTypeRefusal(actor_id, actor.type)
