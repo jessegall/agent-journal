@@ -3,12 +3,16 @@ from datetime import timedelta
 
 import pytest
 
+from engine.actor.actor import Actor
+from engine.enums.actor_type import ActorType
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from engine.query.queries import Queries
 from core.modules.tasks.models.task_block_review import TaskBlockReview
 from tests.stories.core.modules.tasks.task_waits import posted
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
+from tests.stories.core.support.plan_steps import started_plan
+from tests.stories.core.modules.documents.support.trail_fixtures import Scenario
 
 
 class ManuallyBlockedTask(StoryFixture):
@@ -95,16 +99,59 @@ def test_acting_on_the_task_releases_the_hold(new_story, answer):
     expect_review_absent(story)
 
 
-@pytest.mark.parametrize("answer", ['task block 1 --reason "The supplier still has not sent it"', 'agent-block skip 1 --reason "Nothing is needed before the supplier writes"'])
-def test_a_renewal_or_a_reason_releases_the_hold_and_the_count_starts_over(new_story, answer):
+def test_a_renewal_releases_the_hold_and_the_count_starts_over(new_story):
     story = new_story(fixture=ReminderPaused)
     story.clock.advance(timedelta(minutes=45))
-    story.expect_success(answer, actor=story.agent)
+    story.expect_success('task block 1 --reason "The supplier still has not sent it"', actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
     expect_review_absent(story)
     pass_twice(story)
     story.clock.advance(timedelta(minutes=15))
     expectation_kept(story)
+
+
+def test_a_review_skipped_with_a_reason_does_not_come_back_until_the_task_moves(new_story):
+    story = new_story(fixture=ReminderPaused)
+    story.expect_success('agent-block skip 1 --reason "Nothing is needed before the supplier writes"', actor=story.agent)
+    for _ in range(4):
+        story.clock.advance(timedelta(minutes=15))
+        expect_review_absent(story)
+        story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
+    story.run('task block 1 --reason "The supplier wrote that it comes next week"', actor=story.agent)
+    pass_twice(story)
+    story.clock.advance(timedelta(minutes=15))
+    expectation_kept(story)
+
+
+class BlockedTaskBesideAFocusedPlan(StoryFixture):
+    """Task 1 is blocked and in no plan; plan 1, Shop, with tasks 2 and 3, is started, and the agent named it
+    as its focus."""
+
+    parent = ManuallyBlockedTask
+
+    def steps(self, story):
+        story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+        started_plan(story, 1, "Shop")
+        story.run("plan focus 1", actor=story.agent)
+        Scenario(story).context("plan")
+        story.hook("s-1", HookSamples.tick())
+
+
+def test_a_focused_agent_is_not_held_for_a_blocked_task_outside_its_plan_but_is_for_one_inside(new_story):
+    story = new_story(fixture=BlockedTaskBesideAFocusedPlan)
+    story.run('task block 2 --reason "Needs the shop keys"', actor=story.agent)
+    for _ in range(2):
+        story.clock.advance(timedelta(minutes=15))
+        expects_notice(story, "review blocked task 2")
+        expect_absent_line(review(story), "review blocked task 1")
+    story.clock.advance(timedelta(minutes=15))
+    answer = review(story)
+    expect_absent_line(answer, "review blocked task 1")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "review blocked task 2: act on each")
+    story.run("plan focus --clear", actor=story.agent)
+    story.run("task unblock 2", actor=story.agent)
+    story.clock.advance(timedelta(minutes=15))
+    expect_line(review(story), "review blocked task 1")
 
 
 def test_a_task_that_moved_between_reminders_starts_the_count_over(new_story):
