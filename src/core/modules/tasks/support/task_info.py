@@ -14,7 +14,7 @@ class TaskInfo:
     complexity: int | None
     tags: tuple[str, ...]
     comment_count: int
-    assigned_to: int | None
+    assigned_actor_id: int | None
     assignee_label: str
     waits: tuple[str, ...]
 
@@ -26,4 +26,4 @@ class TaskInfo:
 
     def json(self) -> Mapping[str, object]:
         return {"id": self.id, "title": self.title, "state": self.state, "priority": self.priority, "complexity": self.complexity, "tags": list(self.tags),
-                "comments": self.comment_count, "assigned_to": self.assigned_to, "waits": list(self.waits)}
+                "comments": self.comment_count, "assigned_actor_id": self.assigned_actor_id, "waits": list(self.waits)}

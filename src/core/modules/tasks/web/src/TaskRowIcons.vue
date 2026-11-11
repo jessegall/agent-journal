@@ -1,17 +1,19 @@
 <script setup>
 import {computed, ref} from "vue";
-import {AgentBadge, AgentTip, HoverTip, Icon, PRIORITY_LEVELS, PriorityIcon, agentLabel, namedPriority, peekRef, priorityLabel, scoreMeaning} from "@journal/window-kit";
+import {AgentBadge, AgentTip, HoverTip, Icon, PRIORITY_LEVELS, PriorityIcon, SwitchCase, agentLabel, namedPriority, peekRef, priorityLabel, scoreMeaning} from "@journal/window-kit";
 
-// the three fixed columns at the right of a task row: the agent on the task, its complexity and its priority; a task with no agent or no
+// the three fixed columns at the right of a task row: the agent or person the task is assigned to, its complexity and its priority; a task assigned to nobody or with no
 // complexity leaves that column empty, so the columns line up from row to row
 const HELD_STATES = new Set(["started", "testing", "blocked"]);
 const MOST_COMPLEX = 5;
 const HARD_FROM = 4;
+const PERSON_TYPE = "user";
 const props = defineProps({row: {type: Object, required: true}});
 const emit = defineEmits(["priority"]);
 const held = computed(() => HELD_STATES.has(props.row.state));
 const named = computed(() => namedPriority(props.row.priority));
-const tipLabel = computed(() => agentLabel(`Worker ${props.row.delegated_to}`, props.row.main_delegate));
+const tipLabel = computed(() => agentLabel(`Worker ${props.row.assigned_actor_id}`, props.row.is_main_assignee));
+const assigneeType = computed(() => (props.row.assigned_type === PERSON_TYPE ? "person" : "agent"));
 const open = ref(false);
 const levels = PRIORITY_LEVELS.toReversed();
 
@@ -23,10 +25,20 @@ function pick(key) {
 
 <template>
     <span class="icons" data-task-icons @click.stop @keydown.enter.stop>
-        <template v-if="row.delegated_to">
-            <AgentTip as="button" :agent-id="row.delegated_to" :label="tipLabel" :class="['cell', 'agent', {queued: !held}]" place="right" data-task-agent :data-held="held ? '' : null" :aria-label="tipLabel" @click="peekRef(`agents:${row.delegated_to}`)">
-                <span class="mark"><AgentBadge :name="tipLabel" :main="row.main_delegate" icon-only /></span>
-            </AgentTip>
+        <template v-if="row.assigned_actor_id">
+            <SwitchCase :value="assigneeType">
+                <template #person>
+                    <HoverTip :class="['cell', 'agent', {queued: !held}]" place="right" tabindex="0" role="img" data-task-person :data-held="held ? '' : null" :aria-label="`Assigned: ${row.assigned_name}`">
+                        <span class="mark"><Icon name="people" :size="15" /></span>
+                        <template #tip><b>{{ row.assigned_name }}</b></template>
+                    </HoverTip>
+                </template>
+                <template #agent>
+                    <AgentTip as="button" :agent-id="row.assigned_actor_id" :label="tipLabel" :class="['cell', 'agent', {queued: !held}]" place="right" data-task-agent :data-held="held ? '' : null" :aria-label="tipLabel" @click="peekRef(`agents:${row.assigned_actor_id}`)">
+                        <span class="mark"><AgentBadge :name="tipLabel" :main="row.is_main_assignee" icon-only /></span>
+                    </AgentTip>
+                </template>
+            </SwitchCase>
         </template>
         <template v-else>
           <span class="cell empty" />

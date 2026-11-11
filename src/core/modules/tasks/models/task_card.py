@@ -8,7 +8,7 @@ from core.modules.tasks.models.support.task_complexity import TaskComplexity
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.support.views import TASK_CARDS_SELECT
 
-NOBODY = "nobody"
+UNASSIGNED_LABEL = "nobody"
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -30,12 +30,12 @@ class TaskCard(EnvironmentScoped, ViewModel):
     reason: str
     automatic: bool
     closed_at: str | None
-    assigned_to: int | None
+    assigned_actor_id: int | None
     assigned_name: str | None
     assigned_type: ActorType | None
-    assigned_is_main: bool
+    is_main_assignee: bool
 
     def assignee_label(self) -> str:
-        if self.assigned_to is None or self.assigned_name is None:
-            return NOBODY
-        return f"agent {self.assigned_to}" if self.assigned_type is ActorType.AGENT else self.assigned_name
+        if self.assigned_actor_id is None or self.assigned_name is None:
+            return UNASSIGNED_LABEL
+        return f"agent {self.assigned_actor_id}" if self.assigned_type is ActorType.AGENT else self.assigned_name

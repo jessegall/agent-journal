@@ -22,7 +22,7 @@ def assigned_task(story):
 
 def delegated_cards(story) -> list[dict[str, object]]:
     board = json.loads(story.run("task board --environment main --state open --json", actor=story.agent).output_text)
-    return [row for row in board["groups"][0]["rows"] if row["assigned_to"] is not None]
+    return [row for row in board["groups"][0]["rows"] if row["assigned_actor_id"] is not None]
 
 
 def expect_reserved(story, task: int) -> None:
@@ -39,7 +39,7 @@ def test_a_person_assigns_a_task_to_the_main_agent_and_the_board_shows_who_it_wa
     story = planned_story(new_story)
     story.expect_success(f"task assign 1 --to {agent_number(story, story.agent.id)}", actor=story.user)
     card = delegated_cards(story)[0]
-    expect_value((card["id"], card["assigned_to"], card["assigned_name"]), (1, story.agent.id, f"Agent {story.agent.id}"))
+    expect_value((card["id"], card["assigned_actor_id"], card["assigned_name"]), (1, story.agent.id, f"Agent {story.agent.id}"))
 
 
 def test_a_reserved_task_reaches_a_stopping_main_agent_with_auto_mode_off(new_story):

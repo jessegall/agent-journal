@@ -5,7 +5,7 @@ import TaskGroups from "../../core/modules/tasks/web/src/TaskGroups.vue";
 
 afterEach(() => (document.body.innerHTML = ""));
 
-const task = (overrides) => ({id: 1, title: "A task", state: "open", priority: 200, complexity: 0, tags: [], delegated_to: null, delegated_name: null, ...overrides});
+const task = (overrides) => ({id: 1, title: "A task", state: "open", priority: 200, complexity: 0, tags: [], assigned_actor_id: null, assigned_name: null, ...overrides});
 const board = (rows) => ({ok: true, value: {groups: [{state: "open", total: rows.length, rows}]}});
 const drawn = async (rows, runs = []) => {
     const window = context({"task board": board(rows)});
@@ -31,7 +31,7 @@ test("a row shows its tags in full as outlined chips after the title", async () 
 });
 
 test("a task assigned to a main agent shows the solid purple user icon and any other agent keeps its icon", async () => {
-    const element = await drawn([task({id: 1, state: "started", delegated_to: 78, delegated_name: "Main", main_delegate: true}), task({id: 2, state: "started", delegated_to: 12, delegated_name: "Joan Clarke", main_delegate: false})]);
+    const element = await drawn([task({id: 1, state: "started", assigned_actor_id: 78, assigned_name: "Main", is_main_assignee: true}), task({id: 2, state: "started", assigned_actor_id: 12, assigned_name: "Joan Clarke", is_main_assignee: false})]);
     const main = cell(element, 1, "data-task-agent");
     const worker = cell(element, 2, "data-task-agent");
     expect(main.querySelector("[data-agent-main-icon]")).not.toBeNull();
@@ -42,7 +42,7 @@ test("a task assigned to a main agent shows the solid purple user icon and any o
 });
 
 test("the agent column shows the agent icon, solid when it holds the task and dashed when the task waits, with a tooltip that opens the agent", async () => {
-    const element = await drawn([task({id: 1, state: "started", delegated_to: 12, delegated_name: "Joan Clarke"}), task({id: 2, delegated_to: 12, delegated_name: "Joan Clarke"}), task({id: 3})]);
+    const element = await drawn([task({id: 1, state: "started", assigned_actor_id: 12, assigned_name: "Joan Clarke"}), task({id: 2, assigned_actor_id: 12, assigned_name: "Joan Clarke"}), task({id: 3})]);
     const held = cell(element, 1, "data-task-agent");
     const queued = cell(element, 2, "data-task-agent");
     expect(held.querySelector("[data-icon='agent']")).not.toBeNull();
@@ -85,4 +85,15 @@ test("a click on a cell does not open the task, and the priority menu opens on a
     await Promise.resolve();
     expect(priority.classList.contains("shown")).toBe(true);
     expect(element.querySelector('[data-row="7"]').classList.contains("selected")).toBe(false);
+});
+
+test("a task assigned to a person shows the people icon with the person's name and opens nothing", async () => {
+    const element = await drawn([task({id: 1, state: "started", assigned_actor_id: 4, assigned_name: "Ada", assigned_type: "user"}), task({id: 2, assigned_actor_id: 4, assigned_name: "Ada", assigned_type: "user"})]);
+    const held = cell(element, 1, "data-task-person");
+    const queued = cell(element, 2, "data-task-person");
+    expect(held.querySelector("[data-icon='people']")).not.toBeNull();
+    expect(cell(element, 1, "data-task-agent")).toBeNull();
+    expect(held.classList.contains("queued")).toBe(false);
+    expect(queued.classList.contains("queued")).toBe(true);
+    expect(tipOf(await hovered(held))[0]).toBe("Ada");
 });

@@ -36,13 +36,13 @@ test("a task an agent holds names it and says what merging and releasing do", ()
 });
 
 test("a task queued for an agent names it as queued and not as held", () => {
-    const element = mountedFor({state: "open", delegated_to: 12, helper_id: 12, helper_name: "Lady Lovelace"});
+    const element = mountedFor({state: "open", assigned_actor_id: 12, helper_id: 12, helper_name: "Lady Lovelace"});
     expect([...element.querySelectorAll(".fact-label")].map((label) => label.textContent)).toContain("Queued for");
     expect(element.querySelector("[data-task-held-by]").textContent).toContain("takes it after the task it is on");
 });
 
 test("a blocked task reserved for an agent that never started it says nothing about holding it", () => {
-    const element = mountedFor({state: "blocked", delegated_to: 12, helper_id: 12, helper_name: "Lady Lovelace"});
+    const element = mountedFor({state: "blocked", assigned_actor_id: 12, helper_id: 12, helper_name: "Lady Lovelace"});
     expect(element.querySelector("[data-task-agent]").textContent).toBe("Lady Lovelace");
     expect(element.querySelector("[data-task-held-by]")).toBeNull();
 });

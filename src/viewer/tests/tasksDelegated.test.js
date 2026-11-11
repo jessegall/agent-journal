@@ -7,7 +7,7 @@ import TaskGroups from "../../core/modules/tasks/web/src/TaskGroups.vue";
 
 afterEach(() => (document.body.innerHTML = ""));
 
-const task = (id, title, state, delegatedTo = null) => ({id, title, state, priority: 200, delegated_to: delegatedTo, delegated_name: delegatedTo ? "Lady Lovelace" : null});
+const task = (id, title, state, delegatedTo = null) => ({id, title, state, priority: 200, assigned_actor_id: delegatedTo, assigned_name: delegatedTo ? "Lady Lovelace" : null});
 const BOARD = {groups: [
     {state: "started", total: 2, rows: [task(3, "Mine", "started"), task(1, "First job", "started", 12)]},
     {state: "testing", total: 1, rows: [task(4, "Being tested", "testing")]},

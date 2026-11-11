@@ -36,4 +36,4 @@ class TaskInfoSubcommand(ReadSubcommand[TaskInfo]):
         listed = {f"tasks:{wait['id']}" for wait in dependencies}
         waits = (*(f"task {wait['id']} ({wait['state']})" for wait in dependencies),
                  *(TaskOpener.parsed(wait, attempts.get(wait["id"], "")).text for wait in openers if wait["target"] not in listed))
-        return TaskInfo(task.id, task.title, task.state.value, task.priority, task.complexity, tuple(row.tags), self.comments.total(task), card.assigned_to, card.assignee_label(), waits)
+        return TaskInfo(task.id, task.title, task.state.value, task.priority, task.complexity, tuple(row.tags), self.comments.total(task), card.assigned_actor_id, card.assignee_label(), waits)
