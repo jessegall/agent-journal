@@ -11,11 +11,10 @@ class ReadingRule(DriverRule):
     name = "processes.reading"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
+    single_action_refusal = "A command that ran without a good reader is refused its next start until a reader or a reason is given"
 
     def __init__(self, enforcer: ReadingEnforcer) -> None:
         self.enforcer = enforcer
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if ReadingEnforcer.answers_exit(hook):
-            return RuleAnswer.allowed()
         return self.enforcer.answer(hook)
