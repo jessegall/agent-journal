@@ -71,14 +71,14 @@ class ContextCompactions:
         newest = self.newest(agent_id)
         return newest is not None and newest.woken_at is not None
 
-    def record_end(self, agent_id: int, context: Context) -> None:
+    def record_end(self, agent_id: int, change: ContextChange, context: Context) -> None:
         running = self.open_compaction(agent_id)
         if running is not None:
             self.repository.save(replace(running, state=CompactionState.ENDED, ended_at=context.timestamp), context)
             return
         newest = self.newest(agent_id)
         if newest is None or newest.state is not CompactionState.ENDED:
-            self.repository.save(ContextCompaction(session_agent_id=agent_id, change=ContextChange.COMPACT, reason=CompactionReason.AUTO, state=CompactionState.ENDED, ended_at=context.timestamp), context)
+            self.repository.save(ContextCompaction(session_agent_id=agent_id, change=change, reason=change.unrequested_reason, state=CompactionState.ENDED, ended_at=context.timestamp), context)
 
     def abandon_open(self, agent_id: int, context: Context) -> None:
         unfinished = self.open_compaction(agent_id)

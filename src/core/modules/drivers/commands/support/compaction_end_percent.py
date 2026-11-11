@@ -8,6 +8,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.enums.compaction_notice_type import CompactionNoticeType
 from core.modules.drivers.models.enums.compaction_reason import CompactionReason
 from core.modules.drivers.models.enums.compaction_state import CompactionState
+from core.modules.drivers.models.enums.context_change import ContextChange
 from core.modules.drivers.support.compaction_notices import CompactionNotices
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.compaction_limit import CompactionLimit
@@ -30,8 +31,8 @@ class CompactionEndPercent:
         self.hook_calls, self.share, self.repository, self.compactions, self.current_window, self.limit = hook_calls, share, repository, compactions, current_window, limit
 
     def finish_compaction(self, event: HookEvent, agent: Agent, context: Context) -> None:
-        if event.is_compaction_start:
-            self.compactions.record_end(agent.id, context)
+        if event.is_compaction_start or event.is_clear_start:
+            self.compactions.record_end(agent.id, ContextChange.CLEAR if event.is_clear_start else ContextChange.COMPACT, context)
             self.mark_ended(agent, context)
             return
         if event.event == HookEventName.COMPACT:
