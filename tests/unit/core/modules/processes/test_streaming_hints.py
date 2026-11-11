@@ -4,13 +4,14 @@ from engine.enums.command_category import CommandCategory
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.silent_runs import SilentRuns
 from engine.driver.nudge_declaration import LONGEST_FIELD_CHARACTERS
-from core.modules.processes.support.streaming_hints import GENERAL_HINT, STREAMING_HINTS, StreamingHints
+from core.modules.processes.support.streaming_hints import GENERAL_HINT, SERIAL_PACKAGES_HINT, STREAMING_HINTS, StreamingHints
 
 
 @pytest.mark.parametrize("command,hint_part", [
     ("npx vitest run", "--reporter=verbose"),
     ("npm test -- --watch=false | head", GENERAL_HINT),
-    ("CI=1 go test ./...", "go test with -v"),
+    ("CI=1 go test ./...", "go test -p 1"),
+    ("go test ./internal/a", "go test with -v"),
     ("./gradlew build", "--console=plain"),
     ("cargo test", "--no-capture"),
     ("vendor/bin/phpunit", "--testdox"),
@@ -26,6 +27,7 @@ def test_a_command_gets_the_hint_of_its_tool(command, hint_part):
 def test_every_hint_fits_a_nudge_field_whole():
     assert [hint for _, hint in STREAMING_HINTS if len(hint) > LONGEST_FIELD_CHARACTERS] == []
     assert len(GENERAL_HINT) <= LONGEST_FIELD_CHARACTERS
+    assert len(SERIAL_PACKAGES_HINT) <= LONGEST_FIELD_CHARACTERS
 
 
 @pytest.mark.parametrize("category,program,is_watched", [
