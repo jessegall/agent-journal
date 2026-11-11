@@ -18,7 +18,7 @@ def command(story, line: str) -> None:
     story.expect_success(f"{line} --environment main", actor=story.user)
 
 
-def moved_to_second_bay(story, parcel_id: int) -> None:
+def relink_in_second_bay(story, parcel_id: int) -> None:
     """A parcel moves as a task moves between phases: its link is deleted and a new one is made."""
     command(story, f"bay-parcel delete {parcel_id}")
     command(story, f"bay-parcel make 2 {parcel_id}")
@@ -67,20 +67,20 @@ def two_bays(yard):
 
 
 def test_a_parcel_moved_to_another_bay_keeps_a_hand_given_assignment(two_bays):
-    moved_to_second_bay(two_bays, HAND_GIVEN_PARCEL)
+    relink_in_second_bay(two_bays, HAND_GIVEN_PARCEL)
     two_bays.expect_rows(row_actors(two_bays, "parcel")[HAND_GIVEN_PARCEL] == chain_worker(two_bays, 2).id, detail=str(row_actors(two_bays, "parcel")))
 
 
 def test_a_parcel_moved_to_another_bay_takes_the_new_bays_actor_if_inherited(two_bays):
-    moved_to_second_bay(two_bays, 1)
+    relink_in_second_bay(two_bays, 1)
     two_bays.expect_rows(row_actors(two_bays, "parcel")[1] == chain_worker(two_bays, 3).id, detail=str(row_actors(two_bays, "parcel")))
 
 
 def test_a_parcel_removed_from_a_bay_loses_an_inherited_assignment_and_keeps_a_hand_given_one(two_bays):
     command(two_bays, "bay-parcel delete 3")
     command(two_bays, f"bay-parcel delete {HAND_GIVEN_PARCEL}")
-    held = row_actors(two_bays, "parcel")
-    two_bays.expect_rows(3 not in held, held[HAND_GIVEN_PARCEL] == chain_worker(two_bays, 2).id, held[1] == chain_worker(two_bays, 1).id, detail=str(held))
+    actors = row_actors(two_bays, "parcel")
+    two_bays.expect_rows(3 not in actors, actors[HAND_GIVEN_PARCEL] == chain_worker(two_bays, 2).id, actors[1] == chain_worker(two_bays, 1).id, detail=str(actors))
 
 
 def test_a_shipped_parcel_is_left_out_of_a_cascade_and_reopening_it_does_not_assign_it(yard):
