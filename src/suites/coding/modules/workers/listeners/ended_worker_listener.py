@@ -70,8 +70,8 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
                 state = self.resume.program_state(new)
                 if not state.is_ready:
                     self.waits.notify_wait(new, context)
-                    return
-                self.nudger.send(new.parent_id, WORKER_RESTARTED, SOURCE, context, worker=new.number, tasks=tasks)
+                with self.scopes.row_scope(new):
+                    self.inbox.send_nudge(WORKER_RESTARTED.nudge(worker=new.number, tasks=tasks), SOURCE, context)
                 return
         resume_limit_reached = delegated and not is_final and not help_requested
         with self.scopes.row_scope(new):

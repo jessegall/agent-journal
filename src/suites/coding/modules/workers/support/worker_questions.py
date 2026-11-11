@@ -49,7 +49,7 @@ class WorkerQuestions:
             raise Refusal(f"line {line_id} is not a worker's question", "journal merger next lists the questions that wait")
         return line
 
-    def timed(self, line: MergerLine, wait_id: int, task_id: int, timestamp: Timestamp) -> MergerLine:
+    def timed(self, line: MergerLine, wait_id: int, task_id: int | None, timestamp: Timestamp) -> MergerLine:
         due_at = Timestamp(timestamp.value + timedelta(minutes=self.settings.number(QUESTION_ANSWER_MINUTES)))
         forward_at = Timestamp(timestamp.value + timedelta(minutes=self.settings.number(QUESTION_FORWARD_MINUTES)))
         return replace(line, wait_id=wait_id, task_id=task_id, due_at=due_at, forward_at=forward_at)
