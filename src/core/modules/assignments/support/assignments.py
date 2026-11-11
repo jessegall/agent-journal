@@ -57,7 +57,7 @@ class Assignments:
         replaced = current if row.takes_actors is ActorCount.SINGLE else ()
         given = self.repository.save(Assignment(creator_id=context.actor.id, subject_model=row.model_name, subject_id=row.id, actor_id=actor_id), context)
         outcome = Cascade().with_assigned(row.model_name)
-        for previous in replaced or (None,):
+        for previous in replaced or [None]:
             outcome = self.cascaded(row, given, previous, CascadeWalk(context, override), outcome) if cascade else outcome
         for previous in replaced:
             self.release(previous, context)
@@ -74,7 +74,7 @@ class Assignments:
         current = self.assignments(child)
         inherited = tuple(assignment for assignment in current if previous is not None and assignment.source_id == previous.id)
         if current and not inherited and not walk.override:
-            reason = KeptReason.HAND_GIVEN if any(assignment.source_id is None for assignment in current) else KeptReason.INHERITED_ELSEWHERE
+            reason = KeptReason.HAND_GIVEN if any(assignment.source_id is None for assignment in current) else KeptReason.FOREIGN_SOURCE
             return outcome.with_kept(child.model_name, child.id, reason)
         replaced = inherited or current
         kept_row = next((assignment for assignment in replaced if assignment.actor_id == given.actor_id), None)
@@ -84,7 +84,7 @@ class Assignments:
         inherited_row = self.repository.save(Assignment(creator_id=walk.context.actor.id, subject_model=child.model_name, subject_id=child.id, actor_id=given.actor_id, source_id=given.id), walk.context)
         outcome = outcome.with_assigned(child.model_name)
         deeper = walk.deeper(child.model_name)
-        for former in replaced or (None,):
+        for former in replaced or [None]:
             outcome = self.cascaded(child, inherited_row, former, deeper, outcome)
         for former in replaced:
             self.release(former, walk.context)
