@@ -70,6 +70,8 @@ from core.modules.memories.support.block_conditions.memories_weighed import Memo
 from core.modules.memories.support.skeletons import MEMORIES_MEMORIES_SKELETON
 from core.modules.memories.support.memory_inspector import MEMORY_INSPECTOR
 from engine.viewer.skeleton_part import SkeletonPart
+from engine.viewer.window_extension import WindowExtension
+from engine.viewer.window_tab import WindowTab
 
 
 class MemoriesModule(Module):
@@ -109,5 +111,9 @@ class MemoriesModule(Module):
                WindowDeclaration("memories.memory-facts", "Keywords", "memory-facts.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.FILED, skeleton=[SkeletonPart.line()],
                                  reads=["memory-keyword list"], runs=["memory-keyword make", "memory-keyword delete"], events=["memory_keyword.*"],
                                  keys=[WindowKey("keywords.*", "memory-keyword list --memory {id}", loading=KeyLoading.REQUESTED)])]
+    window_extensions = [WindowExtension(name, reads=["memory page"], events=["memory.*"], keys=[
+        WindowKey("agent-memories.*", "memory page --agent {id} --state active --order weight --limit 100", tab="memories", events=["memory.*"], loading=KeyLoading.REQUESTED),
+        WindowKey("agent-removed-memories.*", "memory page --agent {id} --removed --state removed --order weight --limit 100", tab="memories", events=["memory.*"], loading=KeyLoading.REQUESTED),
+    ], tabs=[WindowTab("memories", "Memories", "memory page", count_field="memories", component="/modules/journal.core.memories/agent-memories.js")]) for name in ("agents.agents", "agents.helpers")]
     inspectors = [MEMORY_INSPECTOR]
     seeders = [MemoriesSeeder]

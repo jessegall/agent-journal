@@ -1,16 +1,24 @@
 <script setup>
 import {computed} from "vue";
-import {peekRef} from "@journal/window-kit";
+import {peekRef, wordLabel} from "@journal/window-kit";
 
-// one memory in a list: its text, then its weight or that it is removed, the task it belongs to and the reason it was removed
+// one memory in a list: its text, then its state and weight with a mark of ten steps, the task it belongs to and the reason it was removed
+const HIGHEST_WEIGHT = 10;
 const props = defineProps({row: {type: Object, required: true}});
-const facts = computed(() => [props.row.state === "removed" ? "Removed" : `Weight: ${props.row.weight}`, props.row.task_id ? `Task ${props.row.task_id}` : "", props.row.reason ? `Reason: ${props.row.reason}` : ""].filter(Boolean));
+const facts = computed(() => [props.row.task_id ? `Task ${props.row.task_id}` : "", props.row.reason ? `Reason: ${props.row.reason}` : ""].filter(Boolean));
 </script>
 
 <template>
     <button type="button" :class="['memory', {removed: row.state === 'removed'}]" :data-memory="row.id" @click="peekRef(`memories:${row.id}`)">
         <span class="memory-text">{{ row.text }}</span>
         <span class="memory-meta">
+            <span data-memory-state>State: {{ wordLabel(row.state) }}</span>
+            <span class="memory-weight" data-memory-weight>
+                Weight: {{ row.weight }} of {{ HIGHEST_WEIGHT }}
+                <span class="steps" aria-hidden="true">
+                    <template v-for="step in HIGHEST_WEIGHT" :key="step"><i :class="{on: step <= row.weight}" /></template>
+                </span>
+            </span>
             <template v-for="fact in facts" :key="fact">
                 <span>{{ fact }}</span>
             </template>
@@ -34,7 +42,29 @@ const facts = computed(() => [props.row.state === "removed" ? "Removed" : `Weigh
     cursor: pointer;
 }
 
-.memory:hover .memory-text {
+.memory:hover .memory-weight {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.steps {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.steps i {
+    width: 4px;
+    height: 8px;
+    border-radius: 1px;
+    background: var(--border-2);
+}
+
+.steps i.on {
+    background: var(--text-3);
+}
+
+.memory-text {
     color: var(--accent-text);
 }
 

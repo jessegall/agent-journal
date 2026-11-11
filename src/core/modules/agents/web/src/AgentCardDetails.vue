@@ -21,9 +21,9 @@ const {rows: reports} = context.props.reports;
 context.state["reports.agent"] = String(props.row.number);
 const isReader = computed(() => props.row.access === "read-only");
 const retired = computed(() => Boolean(props.row.retired_at) || props.row.state === "retired");
-const tabOrder = ["tasks", "transcript", "terminal", "file-feed", "reports"];
+const tabOrder = ["tasks", "transcript", "terminal", "file-feed", "reports", "memories"];
 const cardTabs = computed(() => {
-    const tabs = retired.value ? context.tabs.filter((item) => ["reports", "transcript"].includes(item.key)) : isReader.value ? context.tabs.filter((item) => ["reports", "transcript", "terminal"].includes(item.key)) : [...context.tabs];
+    const tabs = retired.value ? context.tabs.filter((item) => ["reports", "transcript", "memories"].includes(item.key)) : isReader.value ? context.tabs.filter((item) => ["reports", "transcript", "terminal", "memories"].includes(item.key)) : [...context.tabs];
     return tabs.sort((one, two) => (tabOrder.indexOf(one.key) < 0 ? tabOrder.length : tabOrder.indexOf(one.key)) - (tabOrder.indexOf(two.key) < 0 ? tabOrder.length : tabOrder.indexOf(two.key)));
 });
 const firstTab = () => isReader.value || retired.value ? cardTabs.value.find((item) => item.key === "transcript") : cardTabs.value[0];
@@ -35,6 +35,7 @@ watch(() => props.open, (open) => { if (open) tab.value = firstTab(); });
 const components = Object.fromEntries(context.tabs.filter((tab) => tab.component).map((tab) => [tab.key, defineAsyncComponent(() => loadWindowComponent(tab.component))]));
 const instructionOpen = ref(false);
 const {data: tool} = context.props.tool;
+const programTitle = computed(() => context.props.programs.rows.value.find((program) => program.name === props.row.program)?.title ?? "");
 const runningCommand = computed(() => tool.value?.tool ?? "");
 const noCommandNote = computed(() => tool.value?.note ?? "");
 const showsCommand = computed(() => props.row.role !== "main" && (!props.row.ended_at || props.stoppedWithWork || props.waitReason));
@@ -51,12 +52,12 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
 
 <template>
     <div class="agent-more" data-agent-more @click.stop>
-        <AgentLastingFacts :row="row" />
+        <AgentLastingFacts :row="row" :program-title="programTitle" :effort="facts?.effort || ''" />
         <template v-if="row.retirement_reason"><p class="agent-summary" data-agent-retirement-reason>Retirement reason: {{ row.retirement_reason }}</p></template>
         <template v-if="row.resume_reason"><p class="agent-summary" data-agent-resume-reason>{{ row.resume_reason }}</p></template>
                 <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
                 <template v-if="endedReason"><p class="agent-ended-reason" data-agent-ended-reason>{{ endedReason }}</p></template>
-                <InnerTabs class="agent-tabs" :tabs="cardTabs" :active="tab" :answer="{tasks: tasks.length, reports: reports.length}" @choose="tab = $event" />
+                <InnerTabs class="agent-tabs" :tabs="cardTabs" :active="tab" :answer="{tasks: tasks.length, reports: reports.length, memories: row.memory_count ?? 0}" @choose="tab = $event" />
                 <TabBody class="agent-tab-body" :tab="tab" :data-agent-tab-body="tab?.key">
                     <SwitchCase :value="tab?.key">
                         <template #reports>

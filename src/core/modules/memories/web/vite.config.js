@@ -9,6 +9,7 @@ export default windowBuild({
         "memory-round": here("./src/memory-round.js"),
         "memories": here("./src/memories.js"),
         "memory-facts": here("./src/memory-facts.js"),
+        "agent-memories": here("./src/agent-memories.js"),
     },
     outDir: here("./dist"),
 });

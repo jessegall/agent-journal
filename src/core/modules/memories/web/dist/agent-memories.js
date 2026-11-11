@@ -1,0 +1,78 @@
+if (!document.getElementById("window-styles-cbcba352656f")) { const style = document.createElement("style"); style.id = "window-styles-cbcba352656f"; style.textContent = ".memory[data-v-5f94a4c5]{display:flex;flex-direction:column;gap:3px;width:100%;padding:9px 0;border:0;border-bottom:1px solid var(--border-inner);background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}.memory:hover .memory-weight[data-v-5f94a4c5]{display:inline-flex;gap:6px;align-items:center}.steps[data-v-5f94a4c5]{display:inline-flex;gap:2px}.steps i[data-v-5f94a4c5]{width:4px;height:8px;border-radius:1px;background:var(--border-2)}.steps i.on[data-v-5f94a4c5]{background:var(--text-3)}.memory-text[data-v-5f94a4c5]{color:var(--accent-text)}.memory[data-v-5f94a4c5]:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}.memory.removed .memory-text[data-v-5f94a4c5]{color:var(--text-3)}.memory-text[data-v-5f94a4c5]{max-width:74ch}.memory-meta[data-v-5f94a4c5]{display:flex;flex-wrap:wrap;gap:2px 12px;color:var(--text-3);font-size:12px}@media(max-width:720px){.memory[data-v-5f94a4c5]{min-height:44px}}.agent-memories[data-v-aafe78e6]{display:flex;flex-direction:column;min-width:0}.band[data-v-aafe78e6]{margin:0;padding:8px 14px 4px;color:var(--text-3);font-size:12px}.agent-memories .row[data-v-aafe78e6]{padding:8px 14px}.notice[data-v-aafe78e6]{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:12px 14px;padding:8px 11px;border:1px solid var(--border-2);border-radius:7px;color:var(--danger);font-size:12.5px}.who[data-v-465f8e32]{display:flex;gap:8px;align-items:center;width:100%;min-height:32px;padding:5px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-align:left;cursor:pointer}.who[data-v-465f8e32]:hover{background:var(--hover);color:var(--text)}.who.selected[data-v-465f8e32]{background:var(--sel);color:var(--text)}.who.main[data-v-465f8e32]{min-height:44px;color:var(--text)}.who.main .who-name[data-v-465f8e32]{font-weight:600}.who[data-v-465f8e32]:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}.who-mark[data-v-465f8e32]{flex:none;width:8px;height:8px;border-radius:50%}.who-mark.main[data-v-465f8e32]{background:var(--accent)}.who-mark.live[data-v-465f8e32]{width:6px;height:6px;background:var(--tone-good)}.who-text[data-v-465f8e32]{display:flex;flex:1;flex-direction:column;min-width:0}.who-name[data-v-465f8e32],.who-meta[data-v-465f8e32]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.who-meta[data-v-465f8e32]{color:var(--text-3);font-size:11.5px}.who-count[data-v-465f8e32]{flex:none;color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums}@media(max-width:720px){.who[data-v-465f8e32]{min-height:44px}}.head[data-v-84cdaf4a]{display:flex;gap:6px;align-items:center;width:100%;margin:0;padding:9px 8px 4px;border:0;background:none;color:var(--text-3);font:inherit;font-size:11.5px;font-weight:600;text-align:left}.fold[data-v-84cdaf4a]{cursor:pointer}.head em[data-v-84cdaf4a]{font-style:normal;font-weight:400}.caret[data-v-84cdaf4a]{width:10px}.more[data-v-84cdaf4a]{display:flex;justify-content:center;padding:8px 0 0}.more-button[data-v-84cdaf4a]{min-height:26px;padding:3px 10px;border:1px solid var(--border-2);border-radius:6px;background:none;color:var(--text);font:inherit;font-size:12.5px;cursor:pointer}.more-button[data-v-84cdaf4a]:hover{background:var(--hover)}.column[data-v-e5cb71b1]{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--border)}.pinned[data-v-e5cb71b1]{display:flex;flex:none;flex-direction:column;gap:2px;padding:8px;border-bottom:1px solid var(--border)}.tools[data-v-e5cb71b1]{display:flex;flex:none;flex-direction:column;gap:6px;padding:8px}.input[data-v-e5cb71b1]{width:100%;padding:6px 9px;border:1px solid var(--border-2);border-radius:7px;outline:0;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px}.input[data-v-e5cb71b1]:focus{border-color:var(--accent)}.list[data-v-e5cb71b1]{flex:1;min-height:0;overflow:auto;padding:0 8px 12px}.note[data-v-e5cb71b1]{margin:8px;color:var(--text-3);font-size:11.5px}@media(max-width:720px){.column[data-v-e5cb71b1]{border-right:0}.input[data-v-e5cb71b1]{min-height:44px;font-size:16px}}.empty[data-v-842c6bb2]{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding:26px 0;color:var(--text-3)}.empty b[data-v-842c6bb2]{color:var(--text);font-size:13px;font-weight:600}.empty p[data-v-842c6bb2]{max-width:380px;margin:0}.group-head[data-v-55da54af]{position:sticky;z-index:1;top:0;display:flex;gap:8px;align-items:baseline;justify-content:space-between;padding:12px 0 5px;border-bottom:1px solid var(--border);background:var(--bg)}.group-link[data-v-55da54af]{min-width:0;padding:0;border:0;background:none;color:var(--text);font:inherit;font-weight:600;text-align:left;cursor:pointer}.group-link[data-v-55da54af]:hover{color:var(--accent-text)}small[data-v-55da54af]{flex:none;color:var(--text-3);font-size:11.5px}.pane[data-v-de73b929]{display:flex;flex-direction:column;min-width:0;min-height:0}.head[data-v-de73b929]{display:flex;flex:none;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;padding:12px 20px 10px}.title[data-v-de73b929]{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin:0;font-size:15px;font-weight:600}.pill[data-v-de73b929]{padding:1px 7px;border-radius:4px;background:var(--chip);color:var(--text-2);font-size:11.5px;font-weight:400}.line[data-v-de73b929]{margin:1px 0 0;color:var(--text-3);font-size:12.5px}.ended-note[data-v-de73b929]{margin:0 20px 10px;padding:7px 11px;border:1px solid var(--border-2);border-radius:7px;color:var(--text-2);font-size:12.5px}.make[data-v-de73b929]{display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:10px 20px;border-bottom:1px solid var(--border);background:var(--bg-2)}.make-text[data-v-de73b929]{min-height:0}.make-foot[data-v-de73b929]{display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%}.make-foot span[data-v-de73b929]{flex:1 1 180px;color:var(--text-3);font-size:12px}.refusal[data-v-de73b929]{margin:8px 20px 0;color:var(--danger);font-size:12.5px}.notice[data-v-de73b929]{margin:8px 20px 0;padding:7px 11px;border-radius:7px;background:var(--accent-dim);font-size:12.5px}.list[data-v-de73b929]{flex:1;min-height:0;overflow:auto;padding:0 20px 24px}.more[data-v-de73b929]{display:flex;justify-content:center;padding:14px 0 0}@media(max-width:720px){.head[data-v-de73b929],.list[data-v-de73b929]{padding-right:0;padding-left:0}.ended-note[data-v-de73b929],.refusal[data-v-de73b929],.notice[data-v-de73b929]{margin-right:0;margin-left:0}}.browser[data-v-7650a998]{display:grid;grid-template-columns:300px minmax(0,1fr);align-self:stretch;height:calc(100vh - 100px);min-height:420px;border:1px solid var(--border);border-radius:8px;overflow:hidden}.chooser[data-v-7650a998]{display:none}@media(max-width:720px){.browser[data-v-7650a998]{display:flex;flex-direction:column;height:auto;min-height:0;border:0;border-radius:0}.chooser[data-v-7650a998]{display:block;padding:8px 0}.chooser-label[data-v-7650a998]{display:block;margin-bottom:4px;color:var(--text-3);font-size:12px}.chooser-button[data-v-7650a998]{display:flex;gap:8px;align-items:center;width:100%;min-height:48px;padding:6px 12px;border:1px solid var(--border-2);border-radius:8px;background:var(--raised);color:var(--text);font:inherit;text-align:left}.chooser-name[data-v-7650a998]{flex:1;min-width:0;font-weight:600}.chooser-count[data-v-7650a998]{color:var(--text-3);font-size:12px}.browser:not(.picking) .who[data-v-7650a998],.browser.picking .memories[data-v-7650a998]{display:none}}.memory-facts[data-v-d3a9a909]{display:flex;flex-direction:column;gap:6px}.memory-none[data-v-d3a9a909]{margin:0;color:var(--text-2);font-size:12.5px}.memory-words[data-v-d3a9a909],.memory-add[data-v-d3a9a909]{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.memory-word-input[data-v-d3a9a909]{flex:1 1 140px}.memory-word[data-v-d3a9a909]{display:inline-flex;gap:4px;align-items:center;padding:1px 8px;border:1px solid var(--border);border-radius:10px;font-size:12.5px}.memory-word-off[data-v-d3a9a909]{padding:0;border:0;background:none;color:var(--text-3);cursor:pointer}.memory-refusal[data-v-d3a9a909]{margin:0;color:var(--danger);font-size:12.5px}.memory-round[data-v-6eef2620]{margin:0 0 0 20px}.memory-round-rows[data-v-6eef2620]{margin:0;padding:0;list-style:none}.memory-round-row[data-v-6eef2620]{display:flex;flex-wrap:wrap;gap:2px 8px;padding:2px 0;color:var(--text-2);font-size:12px;line-height:1.45;overflow-wrap:anywhere}.memory-round-ref[data-v-6eef2620]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;cursor:pointer}.memory-round-weight[data-v-6eef2620]{color:var(--text-4)}\n"; document.head.appendChild(style); }
+import { ref as C, computed as y, onMounted as T, openBlock as o, createElementBlock as l, createBlock as s, unref as e, createElementVNode as k, createVNode as V, withCtx as v, createTextVNode as _, Fragment as m, toDisplayString as $, renderList as N, createCommentVNode as h } from "vue";
+import { useWindow as A, Skeleton as E, Btn as S, EmptyState as F, FoldGroup as O } from "@journal/window-kit";
+import { M as b } from "./MemoryRow-DlwDdQ-7.mjs";
+import { _ as R } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+const j = {
+  class: "agent-memories",
+  "data-agent-memories": ""
+}, q = {
+  key: 1,
+  class: "notice",
+  role: "alert",
+  "data-agent-memories-failure": ""
+}, D = {
+  class: "band",
+  "data-agent-memories-active": ""
+}, G = {
+  __name: "AgentMemories",
+  props: { agent: { type: Number, required: !0 } },
+  setup(x) {
+    const c = x, i = A(), g = `agent-memories.${c.agent}`, p = `agent-removed-memories.${c.agent}`, a = i.props[g], r = i.props[p], u = C(!1), M = y(() => a.loaded.value && r.loaded.value), B = y(() => a.failure.value || r.failure.value), f = (d) => {
+      var t;
+      return ((t = d.listing.value) == null ? void 0 : t.total) ?? d.rows.value.length;
+    }, w = () => i.reload([g, p]);
+    return T(w), (d, t) => (o(), l("section", j, [
+      M.value ? B.value ? (o(), l("div", q, [
+        t[2] || (t[2] = k("span", null, "Could not read the memories of this agent: the journal did not answer.", -1)),
+        V(e(S), {
+          small: "",
+          bordered: "",
+          "data-agent-memories-retry": "",
+          onClick: w
+        }, {
+          default: v(() => [...t[1] || (t[1] = [
+            _("Try again", -1)
+          ])]),
+          _: 1
+        })
+      ])) : !e(a).rows.value.length && !e(r).rows.value.length ? (o(), s(e(F), {
+        key: 2,
+        title: "No memories"
+      }, {
+        default: v(() => [...t[3] || (t[3] = [
+          _("This agent has not made any, and none were given to it.", -1)
+        ])]),
+        _: 1
+      })) : (o(), l(m, { key: 3 }, [
+        e(a).rows.value.length ? (o(), l(m, { key: 0 }, [
+          k("p", D, "Active: " + $(f(e(a))), 1),
+          (o(!0), l(m, null, N(e(a).rows.value, (n) => (o(), s(b, {
+            key: n.id,
+            class: "row",
+            row: n
+          }, null, 8, ["row"]))), 128))
+        ], 64)) : h("", !0),
+        e(r).rows.value.length ? (o(), s(e(O), {
+          key: 1,
+          label: `Removed: ${f(e(r))}`,
+          open: u.value,
+          "data-agent-memories-removed": "",
+          onToggle: t[0] || (t[0] = (n) => u.value = !u.value)
+        }, {
+          default: v(() => [
+            (o(!0), l(m, null, N(e(r).rows.value, (n) => (o(), s(b, {
+              key: n.id,
+              class: "row",
+              row: n
+            }, null, 8, ["row"]))), 128))
+          ]),
+          _: 1
+        }, 8, ["label", "open"])) : h("", !0)
+      ], 64)) : (o(), s(e(E), { key: 0 }))
+    ]));
+  }
+}, H = /* @__PURE__ */ R(G, [["__scopeId", "data-v-aafe78e6"]]);
+export {
+  H as default
+};

@@ -27,6 +27,8 @@ const jobTask = computed(() => currentTask.value || tasks.value.find((task) => t
 const job = computed(() => props.row.role === "helper" ? props.facts?.helper_job || "" : (props.facts?.job_enabled ? currentTask.value?.title || props.facts?.task_title || queuedTasks.value[0]?.title || tasks.value.at(-1)?.title || "" : ""));
 const roleLabel = computed(() => `${props.row.role} ${props.row.number}`);
 const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, roleLabel.value].filter(Boolean).join(" · "));
+// an opened card names who the agent is once: its role and number, and no number for the main agent
+const openTitle = computed(() => (props.row.role === "main" ? title.value : `${title.value} ${props.row.number}`));
 const context = useWindow();
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
@@ -63,21 +65,27 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
     <div :class="['agent-card', {open}]" :data-agent-open="row.id" :aria-expanded="open" :role="open ? undefined : 'button'" :tabindex="open ? undefined : 0" @click="!open && emit('toggle')" @keydown.enter.self.prevent="!open && emit('toggle')" @keydown.space.self.prevent="!open && emit('toggle')">
         <AgentTip :agent-id="row.id" :label="title" class="agent-head">
             <template v-if="open"><button type="button" class="agent-back" title="Back" aria-label="Back" @click.stop="emit('toggle')"><Icon name="chevronRight" facing="left" :size="14" /></button></template>
-            <span class="agent-title" data-agent-title data-agent-motion>{{ title }}</span>
+            <span class="agent-title" data-agent-title data-agent-motion>{{ open ? openTitle : title }}</span>
             <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
             <template v-if="!open"><Icon class="agent-chevron" name="chevronRight" :size="12" /></template>
-            <template v-if="open"><span class="agent-time" data-agent-motion data-agent-run-time title="How long this session has run">{{ runTime }}</span></template>
+            <template v-if="open">
+                <span class="agent-head-actions" data-agent-head-actions>
+                    <AgentActions :row="row" />
+                    <Btn variant="ghost" small data-agent-inspector @click.stop="peekRef(`agents:${row.id}`)">Open inspector</Btn>
+                    <template v-if="row.role === 'helper' && (!row.ended_at || facts?.helper_job_open)"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.number)])">{{ row.ended_at ? "End job" : "Stop" }}</Btn></template>
+                </span>
+            </template>
         </AgentTip>
-        <span class="agent-line">
-            <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
+        <template v-if="!open">
+            <span class="agent-line">
+                <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
+                <template v-if="facts?.sandbox_off"><span class="agent-sandbox-off" data-agent-sandbox-off>sandbox off</span></template>
+            </span>
+        </template>
+        <template v-if="open && !retired"><InformationBar class="agent-live" :agent-programs="context.props.programs.rows.value" :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: facts?.windows ?? []}" card live>
             <template v-if="facts?.sandbox_off"><span class="agent-sandbox-off" data-agent-sandbox-off>sandbox off</span></template>
-            <template v-if="open"><span class="agent-first-dispatched" data-agent-first-dispatched>Started <TimeAgo :at="row.created_at" /></span></template>
-            <template v-if="open && facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Seen <TimeAgo :at="facts.last_activity" /></span></template>
-        </span>
-        <template v-if="open"><InformationBar :agent-programs="context.props.programs.rows.value" :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: facts?.windows ?? []}" card>
-            <AgentActions :row="row" />
-            <Btn variant="ghost" small data-agent-inspector @click.stop="peekRef(`agents:${row.id}`)">Open inspector</Btn>
-            <template v-if="row.role === 'helper' && (!row.ended_at || facts?.helper_job_open)"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.number)])">{{ row.ended_at ? "End job" : "Stop" }}</Btn></template>
+            <span class="agent-live-fact" data-agent-motion data-agent-run-time title="How long this session has run">Run time: {{ runTime }}</span>
+            <template v-if="facts?.last_activity"><span class="agent-live-fact" data-agent-last-heard>Seen: <TimeAgo :at="facts.last_activity" /></span></template>
         </InformationBar></template>
         <template v-if="!open"><AgentTaskLine :tasks="tasks" :in-hand="row.role !== 'helper' && facts?.job_enabled ? jobTask || null : null" :job="row.role === 'helper' ? job : ''" :job-title="row.role === 'helper' ? facts?.helper_job_title || '' : ''" :job-launch="row.role === 'helper' ? jobLaunch : ''" :per-hour="rate" /></template>
         <AgentStatusDot :state="dotState" :doing="statusWords" :since="statusSince" :seen="statusSeen" />
@@ -126,18 +134,11 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
     font-size: 12px;
 }
 
-.agent-time,
 .agent-identity,
 .agent-usage,
 .agent-label {
     color: var(--text-3);
     font-size: 12px;
-}
-
-.agent-time {
-    flex: none;
-    margin-left: auto;
-    font-variant-numeric: tabular-nums;
 }
 
 .agent-chevron {
@@ -183,8 +184,6 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
 
 .agent-card { --agent-padding: 14px; gap: 2px; padding: 9px var(--agent-padding); }
 .agent-head { gap: 6px; padding-right: 22px; }
-.agent-first-dispatched, .agent-last-heard { color: var(--text-3); font-size: 12px; white-space: nowrap; }
-.agent-first-dispatched { margin-left: auto; }
 .agent-name { flex: 0 1 auto; }
 .agent-head { flex-wrap: wrap; }
 .agent-chevron { position: static; flex: none; margin-left: -2px; color: var(--text-4); opacity: 1; }
@@ -193,7 +192,9 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
 .agent-back { display: grid; place-items: center; flex: none; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--text-3); cursor: pointer; }
 .agent-back:hover { background: var(--hover); color: var(--text); }
 .agent-card.open { padding: 0; gap: 0; cursor: default; }
-.agent-card.open .agent-head { gap: 9px; padding: 7px 36px 0 8px; background: var(--side); }
-.agent-card.open .agent-title { font-weight: 600; }
-.agent-card.open .agent-line { padding: 0 36px 7px 41px; border-bottom: 1px solid var(--border-inner); background: var(--side); }
+.agent-card.open .agent-head { gap: 9px; padding: 7px 36px 7px 8px; border-bottom: 1px solid var(--border-inner); background: var(--side); }
+.agent-card.open .agent-title { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.agent-head-actions { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; justify-content: flex-end; margin-left: auto; }
+.agent-live { background: var(--bg-2); }
+.agent-live-fact { flex: none; color: var(--text-3); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 </style>
