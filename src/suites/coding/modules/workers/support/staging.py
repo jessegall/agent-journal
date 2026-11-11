@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Collection, Sequence
 from dataclasses import dataclass
 
 from core.modules.tasks.models.task import Task
@@ -43,6 +43,9 @@ class Staging:
 
     def missing_points(self, task_id: int) -> MissingPoints | None:
         return next((entry.missing() for entry in self.entries if entry.task.id == task_id), None)
+
+    def started_except(self, task_ids: Collection[int]) -> tuple[Task, ...]:
+        return tuple(entry.task for entry in self.entries if entry.task.id not in task_ids)
 
     def refused_short(self) -> tuple[Proof, ...]:
         refused = tuple(proof for entry in self.entries if entry.is_refused_short() for proof in entry.short())

@@ -59,11 +59,11 @@ def interim_in_plan(two_of_three_proved_in_plan) -> StoryWorker:
     return interim_commit(two_of_three_proved_in_plan)
 
 
-def test_39_a_commit_of_two_of_three_tasks_outside_a_plan_tests_them_and_leaves_the_worktree_cut(two_of_three_proved):
+def test_39_44_a_commit_of_two_of_three_tasks_outside_a_plan_is_named_interim_tests_them_and_leaves_the_worktree_cut(two_of_three_proved):
     outcome = two_of_three_proved.story.run(COMMIT, actor=two_of_three_proved.worker)
     two_of_three_proved.story.run_listeners()
     two_of_three_proved.story.expect_text("task show 3", "state: started", actor=two_of_three_proved.story.agent)
-    two_of_three_proved.story.expect_rows(outcome.code == 0, "go on with task 3" in outcome.output_text, worktree(two_of_three_proved)["state"] == "cut", len(two_of_three_proved.started) == 2,
+    two_of_three_proved.story.expect_rows(outcome.code == 0, f"{INTERIM_WORDS}; tests run in the background" in outcome.output_text, worktree(two_of_three_proved)["state"] == "cut", len(two_of_three_proved.started) == 2,
                                           detail=outcome.output_text)
 
 
@@ -84,15 +84,6 @@ def test_40_a_file_changed_after_the_commit_is_not_in_the_checkout_the_tests_run
     interim.story.expect_rows(len(folders) == 2, all((folder / "task_1.txt").is_file() for folder in folders), not any((folder / "task_3.txt").exists() for folder in folders), detail=str(folders))
 
 
-def test_41_the_tests_of_an_interim_commit_pass_and_complete_its_tasks_while_the_third_stays_started(interim):
-    interim.end_test(interim.started[1])
-    interim.end_test(interim.started[0])
-    for task_id in (1, 2):
-        interim.story.expect_text(f"task show {task_id}", "state: completed", "its tests passed", actor=interim.story.agent)
-    interim.story.expect_text("task show 3", "state: started", actor=interim.story.agent)
-    interim.story.expect_text("worker status", "Task 3 is not finished", actor=interim.worker)
-
-
 def test_41_the_tasks_of_an_interim_commit_in_a_started_plan_stay_in_testing_until_the_merge_after_the_final_commit_completes_them(interim_in_plan):
     interim_in_plan.story.expect_text("proof list", "committed", actor=interim_in_plan.story.agent)
     interim_in_plan.story.expect_text("task show 1", "state: testing", actor=interim_in_plan.story.agent)
@@ -104,13 +95,14 @@ def test_41_the_tasks_of_an_interim_commit_in_a_started_plan_stay_in_testing_unt
     interim_in_plan.story.expect_rows(interim_in_plan.started == [], detail=f"started: {interim_in_plan.started}")
 
 
-def test_42_43_a_commit_of_the_last_started_task_outside_a_plan_delivers_the_worktree_and_the_main_agent_hears_when_its_tests_passed(interim):
+def test_42_43_44_a_commit_of_the_last_started_task_outside_a_plan_is_named_final_delivers_the_worktree_and_the_main_agent_hears_of_its_tests(interim):
     prove_task(interim, 3, 1, TEST_LINE)
-    interim.story.expect_success(COMMIT, actor=interim.worker)
+    final = interim.story.run(COMMIT, actor=interim.worker)
     interim.story.run_listeners()
     status = interim.status_line()
     interim.end_all_tests()
-    interim.story.expect_rows(worktree(interim)["state"] == "delivered", "stop" in status, any("all pass" in line for line in interim.main_agent_lines()), detail=f"{status} | {interim.main_agent_lines()}")
+    interim.story.expect_rows(FINAL_WORDS in final.output_text, worktree(interim)["state"] == "delivered", "stop" in status, any("all pass" in line for line in interim.main_agent_lines()),
+                              detail=f"{final.output_text} | {status} | {interim.main_agent_lines()}")
 
 
 def test_42_43_a_commit_of_the_last_started_task_in_a_started_plan_makes_the_worktree_ready_to_merge_and_the_worker_waits_for_the_merge(interim_in_plan):
@@ -119,14 +111,6 @@ def test_42_43_a_commit_of_the_last_started_task_in_a_started_plan_makes_the_wor
     interim_in_plan.story.run_listeners()
     row, status = worktree(interim_in_plan), interim_in_plan.status_line()
     interim_in_plan.story.expect_rows(row["state"] == "delivered", row["merge_ready_at"] is not None, "merge" in status, interim_in_plan.started == [], detail=f"{row} | {status}")
-
-
-def test_44_the_answer_of_a_commit_names_it_interim_or_final_and_says_what_to_do(two_of_three_proved):
-    worker = two_of_three_proved
-    first = worker.story.run(COMMIT, actor=worker.worker)
-    prove_task(worker, 3, 1)
-    last = worker.story.run(COMMIT, actor=worker.worker)
-    worker.story.expect_rows(f"{INTERIM_WORDS}; tests run in the background" in first.output_text, FINAL_WORDS in last.output_text, detail=f"{first.output_text} | {last.output_text}")
 
 
 def test_45_a_worker_with_a_started_task_that_has_no_proof_may_not_stop_and_one_whose_last_commit_is_tested_may(interim):

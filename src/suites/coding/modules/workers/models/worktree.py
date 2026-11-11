@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from engine.actor.actor import Actor
@@ -49,6 +50,7 @@ class Worktree(Removable, EnvironmentScoped, Model):
     libraries_dropped_at: Timestamp | None = None
     task_count: int = 1
     commit_count: int = 0
+    commit_task_ids: str = ""
     route_reason: str = ""
     starts_program: bool = True
 
@@ -67,6 +69,12 @@ class Worktree(Removable, EnvironmentScoped, Model):
 
     def remove(self, timestamp: Timestamp, actor: Actor) -> "Worktree":
         return self.moved(WorktreeLifecycle.remove, removed_at=timestamp)
+
+    def committed(self, base_commit: str, task_ids: Sequence[int]) -> "Worktree":
+        return self.moved(WorktreeLifecycle.advance, base_commit=base_commit, commit_task_ids=",".join(str(task_id) for task_id in task_ids))
+
+    def commit_tasks(self) -> tuple[int, ...]:
+        return tuple(int(task_id) for task_id in self.commit_task_ids.split(",") if task_id)
 
     def merged_tasks(self) -> tuple[int, ...]:
         return tuple(int(task_id) for task_id in self.merged_task_ids.split(",") if task_id)

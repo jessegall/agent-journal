@@ -6,6 +6,7 @@ from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from suites.coding.modules.workers.commands.commit_worker_work.commit_worker_work import CommitWorkerWork
 from suites.coding.modules.workers.support.checkpoint_wait_text import CheckpointWaitText
@@ -85,23 +86,25 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
     def handle(self, command: CommitWorkerWork, context: Context) -> CommitOutcome:
         committed = self.worktrees.required_worker_worktree(context.actor.id)
         staging = self.staging.read(committed)
-        for ready in staging.ready:
-            self.differences.record(ready.id, command.differences, context)
+        tasks = tuple(task for task in self.commit_tasks(committed, staging) if task.id in committed.commit_tasks())
+        open_tasks = staging.started_except(committed.commit_tasks())
+        for task in tasks:
+            self.differences.record(task.id, command.differences, context)
         self.free_task.give_next(context.actor.id, context)
-        for ready in staging.ready:
-            self.repository.save_change(ready, ready.moved(TaskLifecycle.test), context)
-        tasks = self.commit_tasks(committed, staging)
-        worktree = self.repository.save_change(committed, self.moved_worktree(committed, staging, tasks, context), context)
+        for task in tasks:
+            if task.state is TaskState.STARTED:
+                self.repository.save_change(task, task.moved(TaskLifecycle.test), context)
+        worktree = self.repository.save_change(committed, self.moved_worktree(committed, open_tasks, tasks, context), context)
         submission = self.proof_queue.submit_ready(worktree, tasks, context)
         if submission is Submission.UNTESTED:
             self.results.finish(worktree, context)
-        return CommitOutcome(tasks, worktree, submission, self.next_step_text(tasks, staging.open_tasks, submission), staging.notes())
+        return CommitOutcome(tasks, worktree, submission, self.next_step_text(tasks, open_tasks, submission), staging.notes())
 
-    def moved_worktree(self, worktree: Worktree, staging: Staging, tasks: tuple[Task, ...], context: Context) -> Worktree:
-        if staging.is_final():
+    def moved_worktree(self, worktree: Worktree, open_tasks: tuple[Task, ...], tasks: tuple[Task, ...], context: Context) -> Worktree:
+        if not open_tasks:
             return worktree.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, logs_read_at=None, logs_output_id=None, tests_passed_at=None, returned_at=None,
                                   merge_ready_at=self.proof_queue.merge_ready_time(tasks[0], context), commit_count=worktree.commit_count + 1)
-        return worktree.moved(WorktreeLifecycle.advance, task_id=staging.open_tasks[0].id, commit_count=worktree.commit_count + 1)
+        return worktree.moved(WorktreeLifecycle.advance, task_id=open_tasks[0].id, commit_count=worktree.commit_count + 1)
 
     def next_step_text(self, tasks: tuple[Task, ...], open_tasks: tuple[Task, ...], submission: Submission) -> str:
         if not open_tasks:

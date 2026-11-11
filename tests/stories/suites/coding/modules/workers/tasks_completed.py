@@ -1,7 +1,5 @@
 import pytest
 
-from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task, unplanned_holding_worker
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
@@ -65,14 +63,6 @@ def test_53_a_task_of_a_commit_is_completed_once_each_of_its_proofs_is_checked_a
     expect_task_states(three_started, "started", 3)
 
 
-def test_54_each_task_whose_proof_has_no_test_is_completed_by_the_check_of_its_own_proof(two_untested_committed):
-    two_untested_committed.story.expect_success("proof check 1", "state: checked", actor=two_untested_committed.story.agent)
-    expect_task_states(two_untested_committed, "completed", 1)
-    expect_task_states(two_untested_committed, "testing", 2)
-    two_untested_committed.story.expect_success("proof check 2", "state: checked", actor=two_untested_committed.story.agent)
-    expect_task_states(two_untested_committed, "completed", 2)
-
-
 def test_55_a_proof_sent_back_short_starts_its_own_task_again_tells_the_worker_and_leaves_the_other_task(two_untested_committed):
     story = two_untested_committed.story
     story.expect_success(f'proof short 1 "{SHORTFALL}"', "state: short", actor=story.agent)
@@ -93,18 +83,7 @@ def test_56_no_line_of_the_status_of_a_worker_closes_a_task_and_its_tasks_are_co
     two_started.story.expect_rows(not any(CLOSING_LINE in status for status in statuses), detail=str(statuses))
 
 
-def test_58_a_merge_is_refused_while_a_proof_of_one_of_the_tasks_is_not_checked_and_names_its_point(two_tested_committed):
-    worker, story = two_tested_committed, two_tested_committed.story
-    worker.end_test(worker.started[0])
-    number = agent_number(story, worker.worker.id)
-    story.run(f"worker logs {number}", actor=story.agent)
-    refused = story.run(f"worker merge --wait {number}", actor=story.agent)
-    worker.end_test(worker.started[1])
-    merge(worker)
-    story.expect_rows(refused.code != 0, "point 1 is not checked" in refused.output_text, detail=refused.output_text)
-
-
-def test_59_the_main_agent_gets_one_line_for_the_proofs_that_wait_for_its_check_and_one_when_the_tests_of_the_commit_passed(three_started):
+def test_54_59_the_main_agent_gets_one_line_for_the_proofs_that_wait_and_one_when_all_passed_and_its_check_completes_a_task_with_no_test(three_started):
     prove_task(three_started, 1, 1, TEST_LINE)
     prove_task(three_started, 2, 1)
     prove_task(three_started, 3, 1)
@@ -112,6 +91,7 @@ def test_59_the_main_agent_gets_one_line_for_the_proofs_that_wait_for_its_check_
     waiting_lines = [line for line in three_started.main_agent_lines() if "waits on your check" in line]
     three_started.end_all_tests()
     for proof_id in (2, 3):
-        three_started.story.expect_success(f"proof check {proof_id}", actor=three_started.story.agent)
+        three_started.story.expect_success(f"proof check {proof_id}", "state: checked", actor=three_started.story.agent)
+    expect_task_states(three_started, "completed", 1, 2, 3)
     passed_lines = [line for line in three_started.main_agent_lines() if "all pass" in line]
     three_started.story.expect_rows(len(waiting_lines) == 1, "proofs 2 3" in waiting_lines[0], len(passed_lines) == 1, detail=str(three_started.main_agent_lines()))

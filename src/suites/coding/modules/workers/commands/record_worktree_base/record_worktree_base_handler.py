@@ -4,12 +4,12 @@ from engine.listener.event_rows import EventRows
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.commands.record_worktree_base.record_worktree_base import RecordWorktreeBase
-from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 
 
 class RecordWorktreeBaseHandler(Handler[RecordWorktreeBase, Worktree]):
-    """Moves a worktree's row to the base commit its hand-in stood on, after git has committed its work."""
+    """Moves a worktree's row to the base commit its commit stood on and records the tasks that commit took,
+    after git has committed its work."""
 
     command = RecordWorktreeBase
     disabled_scopes = [ActorScope]
@@ -19,4 +19,4 @@ class RecordWorktreeBaseHandler(Handler[RecordWorktreeBase, Worktree]):
 
     def handle(self, command: RecordWorktreeBase, context: Context) -> Worktree:
         worktree = self.rows.required(Worktree, command.worktree_id)
-        return self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, base_commit=command.base_commit), context)
+        return self.repository.save_change(worktree, worktree.committed(command.base_commit, command.task_ids), context)

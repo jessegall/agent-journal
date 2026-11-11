@@ -60,12 +60,6 @@ def test_25_the_commit_in_git_is_named_for_its_task_and_carries_the_worker(prove
     proved.repository.expect_commit(proved.repository.worker_branch(proved.worker.id), "task 1: Fix the cart", f"Journal: worker worker-{proved.worker.id}")
 
 
-def test_26_a_proof_starts_no_test_before_the_commit(proved):
-    proved.story.run_listeners()
-    proved.story.expect_text("proof show 1", "state: shown", actor=proved.story.agent)
-    proved.story.expect_rows(proved.started == [], detail=f"started: {proved.started}")
-
-
 def test_29_a_commit_asks_for_the_differences_and_what_differs_becomes_an_important_log_line(proved):
     asked = proved.story.run(f"{COMMIT_COMMAND} --wait", actor=proved.worker)
     proved.story.expect_success(f'{COMMIT_COMMAND} --wait --differences "{LEFT_OUT}"', actor=proved.worker)

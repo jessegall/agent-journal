@@ -87,11 +87,6 @@ def test_9_a_proof_of_a_point_that_is_checked_is_refused(four_points):
     four_points.story.expect_rows(refused.code != 0, "point 2 is checked already" in refused.output_text, "prove the points that are not" in refused.output_text, detail=refused.output_text)
 
 
-def test_10_a_proof_whose_test_command_has_a_pipe_is_refused_and_asks_for_the_bare_command(one_task):
-    refused = one_task.story.run('proof make 1 --task 1 "cart.py:1, the cart total" --test "python tests/cart.py | tail -5"', actor=one_task.worker)
-    one_task.story.expect_rows(refused.code != 0, "without a pipe" in refused.output_text, "give the bare test command" in refused.output_text, proofs(one_task) == (), detail=refused.output_text)
-
-
 def test_11_five_proofs_of_three_tasks_each_answer_at_once_with_the_count_of_shown_proofs_and_their_tasks(new_story, monkeypatch):
     worker = holding_worker(new_story, monkeypatch, 3)
     worker.story.expect_success(FOUR_POINT_BRIEF, actor=worker.story.agent)

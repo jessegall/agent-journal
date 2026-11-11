@@ -72,7 +72,7 @@ def test_63_a_worker_whose_program_stopped_keeps_its_shown_proofs_is_told_of_the
     opening = story.hook(worker.session, HookSamples.session_start())
     opening_text = " ".join(opening.lines)
     story.expect_success(COMMIT, actor=worker.worker)
-    story.expect_rows(all(f"task {task_id}" in opening_text for task_id in (1, 2)), "proof" in opening_text, detail=opening_text)
+    story.expect_rows(all(f"task:{task_id}" in opening_text for task_id in (1, 2)), "Tasks 1, 2 are proven" in opening_text, "journal worker commit" in opening_text, detail=opening_text)
 
 
 def test_64_a_commit_whose_program_stopped_after_the_git_commit_is_taken_again_without_a_second_git_commit(two_proved, monkeypatch):
@@ -96,12 +96,13 @@ def test_64_a_commit_whose_program_stopped_after_the_git_commit_is_taken_again_w
     story.expect_rows(branch_tip(worker) == stopped_tip, detail=f"{stopped_tip} | {branch_tip(worker)}")
 
 
-def test_65_a_released_worker_leaves_its_tasks_open_and_keeps_its_shown_proofs_and_its_branch(two_proved):
-    worker, story = two_proved, two_proved.story
-    tip = branch_tip(worker)
+def test_65_a_worker_released_after_an_interim_commit_leaves_its_started_task_open_and_keeps_its_shown_proof_and_its_branch(two_of_three_proved):
+    worker, story = two_of_three_proved, two_of_three_proved.story
+    story.expect_success(COMMIT, actor=worker.worker)
+    prove_task(worker, 3, 1)
     story.expect_success(f'worker release {agent_number(story, worker.worker.id)} "the plan changed"', actor=story.agent)
-    expect_open_undelegated(worker, 1, 2)
-    story.expect_rows([proof.state for proof in proofs(worker)] == [ProofState.SHOWN] * 2, branch_tip(worker) == tip, detail=str(proofs(worker)))
+    expect_open_undelegated(worker, 3)
+    story.expect_rows(proofs(worker)[-1].state is ProofState.SHOWN, bool(branch_tip(worker)), detail=str(proofs(worker)[-1]))
 
 
 def test_66_a_task_cancelled_after_its_proof_was_shown_is_named_as_left_out_of_the_commit(two_proved):

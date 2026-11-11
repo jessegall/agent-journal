@@ -6,7 +6,9 @@ from suites.coding.modules.workers.models.worktree import Worktree
 
 @dataclass(frozen=True)
 class RecordWorktreeBase(Command[Worktree]):
-    """Saves the commit of the base branch a worktree's work now stands on."""
+    """Saves the commit of the base branch a worktree's work now stands on and the tasks its newest git commit
+    took."""
 
     worktree_id: int
     base_commit: str
+    task_ids: tuple[int, ...]
