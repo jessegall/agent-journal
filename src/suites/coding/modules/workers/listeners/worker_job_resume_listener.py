@@ -14,8 +14,8 @@ from engine.event.updated import Updated
 
 class WorkerJobResumeListener(CommitListener[AgentEnded | Updated[Agent]]):
     """A worker that ends with a job still waiting, sent after its last stop, resumes for that job; one a
-    person or another agent stopped stays ended, with its job waiting. Recording the process of a start is no
-    reason to start again."""
+    person or another agent stopped stays ended, with its job waiting. Recording the process of a start, or that
+    a start failed, is no reason to start again."""
 
     name = "workers.worker-ended-with-job"
     disabled_scopes = [ActorScope]
@@ -25,8 +25,12 @@ class WorkerJobResumeListener(CommitListener[AgentEnded | Updated[Agent]]):
 
     def handle(self, event: AgentEnded | Updated[Agent], logged: LoggedEvent) -> None:
         worker = event.row
-        if isinstance(event, Updated) and event.old_row is not None and event.old_row.pid != worker.pid:
+        if isinstance(event, Updated) and event.old_row is not None and self.is_launch_record(event.old_row, worker):
             return
         ended_worker = worker.role == CodingHelperRole.WORKER and worker.ended_at is not None
         if ended_worker and not self.stop.is_final(worker, logged.actor_id):
             self.worker_resume.resume(worker, Actor(logged.actor_id, ActorType.AGENT))
+
+    @staticmethod
+    def is_launch_record(previous: Agent, worker: Agent) -> bool:
+        return previous.pid != worker.pid or previous.launch_failed_at != worker.launch_failed_at
