@@ -20,6 +20,16 @@ test("the row says Task and its number, with the title and the done count in the
     expect(element.querySelector("[data-agent-task]").getAttribute("aria-label")).toBe("Task 110: Task title 10");
 });
 
+test("a worker with two started tasks shows the number of each, with its title in the tooltip, and counts both as in hand", async () => {
+    const tasks = [{id: 110, title: "Add the tax", state: "started"}, {id: 111, title: "Print the receipt", state: "started"}, {id: 112, title: "Send it", state: "open"}];
+    const element = await card(worker(), {tasks});
+    const numbers = [...element.querySelectorAll("[data-agent-task]")];
+    expect(element.querySelector("[data-agent-tasks]").textContent.replace(/\s+/g, " ")).toContain("Tasks 110");
+    expect(numbers.map(labelOf)).toEqual(["110", "111"]);
+    expect(numbers.map((number) => number.getAttribute("aria-label"))).toEqual(["Task 110: Add the tax", "Task 111: Print the receipt"]);
+    expect(tip(element, "[data-agent-count]").querySelector("b").textContent).toBe("0 done, 2 in hand, 1 to go");
+});
+
 test("the far right says how many tasks are done, and its tooltip says what is done, in hand, to go and the pace", async () => {
     const element = await card(worker(), {tasks: tasksOf(4, "testing", 6)});
     expect(labelOf(element.querySelector("[data-agent-count]"))).toBe("4 of 6");

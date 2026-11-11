@@ -1,4 +1,4 @@
-// the task line of an agent's row: the task in hand, how many of the agent's tasks are done, and the counts its bar draws: done, in testing and all
+// the task line of an agent's row: the task in hand, every task it has started when there are several, how many of the agent's tasks are done, and the counts its bar draws: done, in testing and all
 
 const STAGES = {started: {words: "started"}, testing: {words: "being tested"}, blocked: {words: "blocked"}};
 
@@ -10,15 +10,18 @@ export function taskLine({tasks, inHand, perHour}) {
     const all = counted(tasks);
     const done = inState(all, "completed");
     const stage = STAGES[inHand?.state];
-    const left = all.length - done - (inHand && inHand.state !== "completed" ? 1 : 0);
+    const started = all.filter((task) => task.state === "started").map((task) => ({number: task.id, title: task.title}));
+    const inHandCount = Math.max(started.length, inHand && inHand.state !== "completed" ? 1 : 0);
+    const left = all.length - done - inHandCount;
     const finished = done === all.length;
     return {
         number: inHand.id,
         title: inHand.title,
+        started,
         plan: inHand.plan_id ?? 0,
         count: `${done} of ${all.length}`,
         taskTip: `${done} of its ${all.length} tasks done${stage ? `. This one is ${stage.words}.` : "."}`,
-        countTip: finished ? `All ${all.length} tasks done` : `${done} done, 1 in hand, ${left} to go`,
+        countTip: finished ? `All ${all.length} tasks done` : `${done} done, ${inHandCount} in hand, ${left} to go`,
         paceTip: !finished && perHour ? `About ${perHour} an hour.` : "",
         rate: !finished && perHour ? `${Math.round(perHour)}/hour` : "",
         bar: {total: all.length, done, testing: inState(all, "testing")},
