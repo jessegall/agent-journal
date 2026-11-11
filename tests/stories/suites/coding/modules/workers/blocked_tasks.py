@@ -3,6 +3,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
+from tests.stories.core.modules.tasks.support.holder_assignee_check import assert_holders_are_assignees, assert_pivot_equals_column
 from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_line
 
 
@@ -19,9 +20,12 @@ def test_a_worker_blocking_its_task_tells_the_main_agent_with_the_reason(new_sto
     expect_reply_allowed(stop)
     expect_reply_line(stop, notice)
     story.expect_text("task show 1", "state: blocked", "the build tool is missing")
+    assert_holders_are_assignees(story)
+    assert_pivot_equals_column(story)
 
 
 def test_a_main_agent_blocking_a_task_gets_no_line(new_story):
     story = new_story(fixture=StartedTaskBuilder)
     story.expect_success('task block 1 --reason "the build tool is missing"', actor=story.agent)
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "blocked task:1")
+    assert_holders_are_assignees(story)
