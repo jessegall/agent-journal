@@ -10,6 +10,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.providers import Providers
 from engine.setting.setting_values import SettingValues
+from engine.performance.timing import Timing
 from core.modules.skills.support.skill_files import SkillFiles
 from core.modules.tools.support.tools import Tools
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
@@ -29,8 +30,9 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
     command = PrepareWorktree
 
     def __init__(self, environment_names: EnvironmentNames, settings: SettingValues, git: WorktreeGit, libraries: LibraryFolders, commands: WorktreeCommands,
-                 skills: SkillFiles, home: JournalHome, managed: ManagedHooks, providers: Providers, instruction_files: WorkerInstructionFiles, tools: Tools) -> None:
-        self.instruction_files, self.tools = instruction_files, tools
+                 skills: SkillFiles, home: JournalHome, managed: ManagedHooks, providers: Providers, instruction_files: WorkerInstructionFiles, tools: Tools,
+                 timing: Timing) -> None:
+        self.instruction_files, self.tools, self.timing = instruction_files, tools, timing
         self.environment_names, self.settings, self.git, self.libraries, self.commands = environment_names, settings, git, libraries, commands
         self.skills = skills
         self.home, self.managed, self.providers = home, managed, providers
@@ -52,13 +54,22 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         links = (*self.settings.texts(LIBRARY_LINKS), *command.library_links)
         copies = (*self.settings.texts(LIBRARY_COPIES), *command.library_copies)
         links = (*links, *(name for name in self.git.dependency_folders(command.source) if name not in (*links, *copies) and not (Path(command.folder) / name).exists()))
+        self.timing.stamp("prepare_dependency_folders")
         self.libraries.check(command.source, (*links, *copies))
         self.libraries.place(command.source, command.folder, links, copies)
+        self.timing.stamp("prepare_libraries")
         self.place_program_hooks(command)
         rules = [entry.path.checked_class(DriverRule) for entry in self.providers.registry.rules]
         manager = HookManager(self.home.project_folder, self.managed, rules)
         for provider in self.providers.all():
             manager.import_hooks(type(provider), Path(command.folder))
-        self.libraries.exclude(command.folder, [*self.skills.place(Path(command.folder)), *self.tools.worktree_graph(command.source, command.folder)])
+        self.timing.stamp("prepare_hooks")
+        skill_files = self.skills.place(Path(command.folder))
+        self.timing.stamp("prepare_skills")
+        graph_files = self.tools.worktree_graph(command.source, command.folder)
+        self.timing.stamp("prepare_tool_graph")
+        self.libraries.exclude(command.folder, [*skill_files, *graph_files])
         self.instruction_files.write(command.folder, command.profile)
+        self.timing.stamp("prepare_instruction_files")
         self.commands.run(command.folder, self.git.head(command.folder), self.settings.texts(WORKTREE_COMMANDS), (*links, *copies), WORKTREE_COMMANDS_NAME)
+        self.timing.stamp("prepare_worktree_commands")

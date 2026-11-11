@@ -5,6 +5,7 @@ from engine.enums.actor_type import ActorType
 from dataclasses import replace
 import json
 from engine.command.bus import Bus
+from engine.performance.timing import Timing
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.listener.rows.event_rows import EventRows
@@ -61,8 +62,8 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission, libraries: LibraryFolders, release: StartedTaskRelease, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission, libraries: LibraryFolders, release: StartedTaskRelease, numbers: RowNumbers, timing: Timing) -> None:
+        self.numbers, self.timing = numbers, timing
         self.admission, self.libraries, self.release = admission, libraries, release
         self.rows, self.worktrees, self.repository, self.git, self.nudger = rows, worktrees, repository, git, nudger
         self.advance, self.bus, self.missing_agents = advance, bus, missing_agents
@@ -143,8 +144,11 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         extra_links = tuple(link for link in links if link not in configured)
         opened = self.bus.run(OpenKeptWorktree(worker.id, tasks[0].id), actor, environment_id=worker.environment_id)
         try:
+            self.timing.stamp("send_worktree_opened")
             start = self.git.start(environment.folder, opened, tuple(task.id for task in tasks))
+            self.timing.stamp("send_branch_start_found")
             self.git.cut(environment.folder, opened, start.point)
+            self.timing.stamp("send_worktree_cut")
             try:
                 self.bus.run(PrepareWorktree(opened.folder, environment.folder, environment.name, extra_links, command.library_copies, worker.profile), actor,
                              environment_id=worker.environment_id)
