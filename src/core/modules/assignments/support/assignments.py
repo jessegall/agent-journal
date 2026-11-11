@@ -17,6 +17,8 @@ from core.modules.assignments.errors.several_actors_error import SeveralActorsEr
 from core.modules.assignments.errors.unknown_actor_refusal import UnknownActorRefusal
 from core.modules.assignments.models.assignment import Assignment
 from core.modules.assignments.models.enums.kept_reason import KeptReason
+from core.modules.assignments.errors.parent_assignment_refusal import ParentAssignmentRefusal
+from core.modules.assignments.support.assignable_rows import AssignableRows
 from core.modules.assignments.support.cascade import Cascade
 from core.modules.assignments.support.cascade_walk import CascadeWalk
 
@@ -27,10 +29,12 @@ class Assignments:
     passes from its holder to the next in one change; a row of a model that several actors hold gains a
     holder. An assigned row also assigns the children its model declares: a child with no assignment inherits
     one, a child that inherited from the row's last assignment follows to the new one, and a child given by
-    hand or inherited from another row is left as it is unless the command overrides it. Every assignment is saved and deleted through the repository, so each is an event."""
+    hand or inherited from another row is left as it is unless the command overrides it. Unassigning a row
+    also removes the assignments inherited from it, each before the one it names, and leaves those given by
+    hand. A row can give up a hand-given assignment and inherit its parent's instead. Every assignment is saved and deleted through the repository, so each is an event."""
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, queries: Queries, repository: Repository, rows: AssignableRows) -> None:
+        self.queries, self.repository, self.rows = queries, repository, rows
 
     def assignments(self, row: Model) -> tuple[Assignment, ...]:
         return tuple(self.queries.query(Assignment).filter(subject_model=row.model_name, subject_id=row.id).oldest().all_rows())
@@ -99,8 +103,20 @@ class Assignments:
 
     def unassign(self, row: Assignable, context: Context, actor_id: int | None = None) -> tuple[Assignment, ...]:
         removed = tuple(assignment for assignment in self.assignments(row) if actor_id is None or assignment.actor_id == actor_id)
-        self.repository.delete_many_stored(removed, context)
+        for assignment in removed:
+            self.remove(assignment, context)
         return removed
+
+    def remove(self, assignment: Assignment, context: Context) -> None:
+        for inherited in self.queries.query(Assignment).filter(source_id=assignment.id).all_rows():
+            self.remove(inherited, context)
+        self.repository.delete_stored(assignment, context)
+
+    def inherit(self, row: Assignable, context: Context) -> Cascade:
+        source = next((assignment for parent in self.rows.parents(row) for assignment in self.assignments(parent)), None)
+        if source is None:
+            raise ParentAssignmentRefusal(row.model_name, row.id)
+        return self.child_cascade(row, source, None, CascadeWalk(context, override=True), Cascade())
 
     def require_working_actor(self, actor_id: int) -> None:
         actor = self.queries.query(ActorRecord).filter(id=actor_id).first()

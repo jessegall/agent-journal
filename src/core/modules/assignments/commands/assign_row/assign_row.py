@@ -6,10 +6,11 @@ from core.modules.assignments.support.cascade import Cascade
 
 @dataclass(frozen=True)
 class AssignRow(Command[Cascade]):
-    """Gives one row of an assignable model to an actor."""
+    """Gives one row of an assignable model to an actor, or lets it inherit the assignment of its parent."""
 
     subject_model: str
     subject_id: int
-    actor_id: int
+    actor_id: int | None = None
     cascade: bool = True
     override: bool = False
+    from_parent: bool = False
