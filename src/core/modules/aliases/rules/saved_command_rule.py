@@ -8,7 +8,6 @@ from engine.driver.nudge import Nudge
 from engine.driver.part import Part
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.shell_line import ShellLine
-from core.modules.aliases.models.alias import ARGS_MARK
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_MIXED, SAVED_COMMAND_PIPED, SAVED_COMMAND_SILENT, SAVED_COMMAND_HELPER, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD, SAVED_COMMAND_TIMEOUT
 from core.modules.drivers.support.suite_choice import SuiteChoice
@@ -66,11 +65,10 @@ class SavedCommandRule(DriverRule):
         category = part.classification.category
         if not category.is_long_running or set(ASKING_FLAGS) & set(part.arguments):
             return None
-        saved = [alias for alias in self.aliases.all_rows() if alias.category is category]
-        exact = next((alias for alias in saved if part.text.startswith(alias.line.replace(ARGS_MARK, "").strip())), None)
+        exact = self.aliases.first_beginning(part.text, category)
         if exact:
             return SAVED_COMMAND_DIRECT.nudge(name=exact.name)
-        if saved:
+        if self.aliases.of_category(category).exists():
             return SAVED_COMMAND_CHOICES.nudge(category=category.value)
         if role == HelperRole.HELPER:
             return SAVED_COMMAND_HELPER.nudge(category=category.value)

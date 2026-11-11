@@ -4,7 +4,10 @@ from engine.database.database import Database
 from engine.database.kept_rows import KeptRows
 from engine.model.tables import Tables
 from engine.query.query import Query
+from engine.enums.command_category import CommandCategory
 from core.modules.aliases.models.alias import Alias
+
+ALIAS_PAGE_ROWS = 50
 
 
 class AliasQuery(Query[Alias]):
@@ -19,3 +22,9 @@ class AliasQuery(Query[Alias]):
 
     def with_name(self, name: str) -> Self:
         return self.filter(name=name)
+
+    def of_category(self, category: CommandCategory) -> Self:
+        return self.filter(category=category)
+
+    def first_beginning(self, command: str, category: CommandCategory) -> Alias | None:
+        return next((alias for alias in self.of_category(category).oldest().all_rows(ALIAS_PAGE_ROWS) if alias.begins(command)), None)
