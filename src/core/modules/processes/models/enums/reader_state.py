@@ -31,3 +31,7 @@ class ReaderState(StrEnum):
                 return ReasonCode.UNREADABLE
             case ReaderState.NOT_NEEDED | ReaderState.SUITABLE:
                 return ReasonCode.NONE
+
+    @property
+    def is_settled(self) -> bool:
+        return self in (ReaderState.NOT_NEEDED, ReaderState.SUITABLE)
