@@ -7,6 +7,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
@@ -64,6 +65,10 @@ class ReadingFacts:
     def reader(self, part: ProcessPart) -> Reader | None:
         selected = ReaderSelection.choose(self.readers.all(), [part], self.readers.layers())
         return None if selected is None else selected.reader
+
+    def measured_reason(self, process: Process, part: ProcessPart) -> UnreadableReason | None:
+        """Why no reader can read what a part printed by its end, from measures only."""
+        return OutputFacts.measured_reason(self.output(process, part, ReadingMoment.END), self.cadences.for_process(process, self.clock.timestamp()).state())
 
     def reader_failed(self, process: Process, reader: Reader | None, moment: ReadingMoment) -> bool:
         return reader is not None and moment is ReadingMoment.END and ReaderRun.has_failed(reader, self.folder.reader_lines(process.id))

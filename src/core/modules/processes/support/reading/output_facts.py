@@ -2,6 +2,7 @@ import re
 from dataclasses import dataclass
 
 from engine.enums.command_category import CommandCategory
+from core.modules.processes.models.enums.cadence_state import CadenceState
 from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
 from core.modules.processes.support.reader_judge import ReaderJudge
 
@@ -55,3 +56,13 @@ class OutputFacts:
         if self.trailing_line_bytes > UNBROKEN_LINE_BYTES or self.carriage_return_share > CARRIAGE_RETURN_LIMIT:
             return UnreadableReason.SINGLE_LINE
         return None
+
+    @staticmethod
+    def measured_reason(output: "OutputFacts | None", cadence_state: CadenceState) -> UnreadableReason | None:
+        """Why no reader can read an output, from its measures and how the run prints: a prompt counts only once
+        the run stopped growing on it."""
+        if output is None:
+            return None
+        if output.unreadable_reason is not None:
+            return output.unreadable_reason
+        return UnreadableReason.INTERACTIVE if output.ends_on_prompt and cadence_state.has_no_growth else None
