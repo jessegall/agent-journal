@@ -52,7 +52,7 @@ def end_unanswered_visit(case: MergerCase) -> None:
     case.story.container.get(Bus).run(ReturnUnhandledMergerLines(), Actor.core(), environment_id=1)
 
 
-def test_an_ask_is_one_line_with_its_worker_topic_facts_wait_and_task_and_no_outcome_and_the_worker_is_told_the_due_time(asking):
+def test_an_ask_is_one_line_with_its_wait_task_and_due_time_and_the_same_ask_again_or_a_changed_setting_moves_nothing(asking):
     outcome = asking.post_question(topic=AskTopic.TOOL)
     line, wait = questions(asking.story)[0], waits_of(asking.story, asking.worker)[0]
     asking.story.expect_rows(len(questions(asking.story)) == 1, line.worker_id == asking.worker.id, line.topic is AskTopic.TOOL, line.facts_json is not None,
@@ -60,14 +60,10 @@ def test_an_ask_is_one_line_with_its_worker_topic_facts_wait_and_task_and_no_out
     asking.story.expect_rows(f"the merger has your question; an answer is due by {line.due_at.value.strftime(CLOCK_FORMAT)}, after that the main agent gets it" in outcome.output_text,
                              AskTopic.TOOL.waiting_work() in outcome.output_text, line.due_at.value - line.created_at.value == timedelta(minutes=10),
                              line.forward_at.value - line.created_at.value == timedelta(minutes=30), detail=outcome.output_text)
-
-
-def test_the_same_ask_twice_is_one_ask_and_a_changed_setting_moves_no_time_the_worker_was_told(asking):
-    asking.post_question()
-    due_at = questions(asking.story)[0].due_at
+    due_at = line.due_at
     asking.story.advance(timedelta(minutes=3))
     asking.story.expect_success(f"setting set {ANSWER_MINUTES} 25 --project", actor=asking.story.user or asking.story.agent)
-    asking.post_question()
+    asking.post_question(topic=AskTopic.TOOL)
     asking.story.expect_rows(len(questions(asking.story)) == 1, questions(asking.story)[0].due_at == due_at, len(waits_of(asking.story, asking.worker)) == 1, detail=str(questions(asking.story)))
 
 
@@ -83,31 +79,36 @@ def test_with_the_merger_off_the_ask_reaches_the_main_agent_once_and_is_recorded
     merger_disabled_worker.story.expect_rows(line.outcome is AskOutcome.FORWARDED, line.closed_at is not None, lines.count(f"merger-line:{line.id}") == 1, QUESTION in line.text, detail=lines)
 
 
-def test_two_asks_while_the_merger_runs_both_show_in_merger_next_and_no_second_merger_starts(case):
+def test_two_asks_while_the_merger_runs_are_read_in_one_visit_of_one_merger_and_both_answered_in_it(case):
     ask(case)
     ask(case, SECOND_QUESTION, AskTopic.TESTS)
     case.story.run_listeners()
     case.story.expect_text("merger next", QUESTION, SECOND_QUESTION, actor=case.merger)
     mergers = case.story.run("agent list --json --environment main", actor=case.story.agent).output_text.count('"profile": "journal-merger"')
     case.story.expect_rows(mergers == 1, detail=f"{mergers} mergers")
+    first, second = questions(case.story)
+    case.story.expect_rows([first.visit_count, second.visit_count] == [1, 1], first.visit_id == second.visit_id, detail=str(questions(case.story)))
+    case.story.expect_success(f'merger answer {first.id} "{ANSWER}"', actor=case.merger)
+    case.story.expect_success(f'merger answer {second.id} "Fill the fixture from the sample"', actor=case.merger)
+    case.story.expect_rows(all(line.outcome is AskOutcome.ANSWERED for line in questions(case.story)), detail=str(questions(case.story)))
 
 
-def test_a_merger_that_read_an_ask_and_did_nothing_gets_it_again_at_every_visit_and_each_read_is_counted(case):
-    apply_work_setting(case.story, VISITS_LIMIT, 5)
+def test_a_merger_that_read_an_ask_and_did_nothing_gets_it_again_and_after_the_second_reading_it_is_forwarded_at_once(case):
     ask(case)
     end_unanswered_visit(case)
     first = questions(case.story)[0]
     case.story.expect_rows(first.read_at is None, first.visit_count == 1, first.outcome is None, detail=str(first))
-    end_unanswered_visit(case)
-    second = questions(case.story)[0]
-    case.story.expect_rows(second.read_at is None, second.visit_count == 2, detail=str(second))
+    AskWatch()(case.story.container)
+    case.story.expect_rows(questions(case.story)[0].outcome is None, detail="one reading is under the limit of two")
     case.story.expect_text("merger next", QUESTION, "task 1", actor=case.merger)
+    case.story.container.get(Bus).run(ReturnUnhandledMergerLines(), Actor.core(), environment_id=1)
+    second = questions(case.story)[0]
+    case.story.expect_rows(second.visit_count == 2, second.outcome is AskOutcome.FORWARDED, detail=str(second))
 
 
 def test_the_mergers_answer_reaches_the_worker_ends_its_wait_and_a_second_answer_is_refused(case):
     ask(case)
     line = questions(case.story)[0]
-    case.story.expect_success("merger next", actor=case.merger)
     case.story.expect_success(f'merger answer {line.id} "{ANSWER}"', f"answer sent to worker {agent_number(case.story, case.worker.id)}", actor=case.merger)
     answered = questions(case.story)[0]
     case.story.expect_rows(answered.outcome is AskOutcome.ANSWERED, waits_of(case.story, case.worker)[0].state is not WaitState.OPEN, ANSWER in case.worker_messages(), detail=case.worker_messages())
@@ -115,27 +116,19 @@ def test_the_mergers_answer_reaches_the_worker_ends_its_wait_and_a_second_answer
     case.story.expect_text("task-log list --task 1", "ended as answered", actor=case.story.agent)
 
 
-def test_two_answers_in_one_visit_are_not_held_back_by_the_advice_limits(case):
-    ask(case)
-    ask(case, SECOND_QUESTION, AskTopic.TESTS)
-    first, second = questions(case.story)
-    case.story.expect_success("merger next", actor=case.merger)
-    case.story.expect_success(f'merger answer {first.id} "{ANSWER}"', actor=case.merger)
-    case.story.expect_success(f'merger answer {second.id} "Fill the fixture from the sample"', actor=case.merger)
-    case.story.expect_rows(all(line.outcome is AskOutcome.ANSWERED for line in questions(case.story)), detail=str(questions(case.story)))
-
-
 def test_only_a_line_that_is_a_workers_question_can_be_answered(case):
     expect_refused_with(case.story, f'merger answer 999 "{ANSWER}"', "line 999 is not a worker's question", actor=case.merger)
     expect_refused_with(case.story, f'merger answer 999 "{ANSWER}"', "only the merger runs this", actor=case.story.agent)
 
 
-def test_a_worker_that_asks_and_then_stops_keeps_its_ask_and_the_answer_wakes_it(case):
+def test_a_worker_that_asks_then_stops_then_works_again_keeps_its_ask_and_still_gets_the_answer(case):
     ask(case)
     case.story.expect_hook_allowed(worker_session(case.story, case.worker), HookSamples.stop())
     case.story.run_listeners()
     line = questions(case.story)[0]
     case.story.expect_rows(line.outcome is None, detail="the end of a turn closes no question")
+    case.story.hook(worker_session(case.story, case.worker), READ_OF_A_FILE)
+    case.story.expect_rows(waits_of(case.story, case.worker)[0].state is not WaitState.OPEN, questions(case.story)[0].outcome is None, detail="working ends the wait and leaves the question open")
     case.story.expect_success(f'merger answer {line.id} "{ANSWER}"', actor=case.merger)
     case.story.expect_rows(ANSWER in case.worker_messages(), questions(case.story)[0].outcome is AskOutcome.ANSWERED, detail=case.worker_messages())
 
@@ -151,8 +144,8 @@ def test_an_ask_about_a_cancelled_task_closes_as_moot_with_a_line_in_the_tasks_l
 
 
 def test_the_asks_of_a_released_worker_close_as_moot(case):
-    ask(case)
     ask(case, SECOND_QUESTION, AskTopic.TESTS)
+    ask(case)
     case.story.expect_success(f'worker release {agent_number(case.story, case.worker.id)} "the worker left"', actor=case.story.agent)
     case.story.run_listeners()
     case.story.expect_rows(all(line.outcome is AskOutcome.MOOT for line in questions(case.story)), detail=str(questions(case.story)))
@@ -189,15 +182,6 @@ def test_worker_status_names_the_open_ask_with_its_due_time_and_then_how_it_ende
     case.story.expect_absent("worker status", "open since", actor=case.worker)
 
 
-def test_a_worker_that_goes_on_working_after_asking_still_gets_its_answer(case):
-    ask(case)
-    case.story.hook(worker_session(case.story, case.worker), READ_OF_A_FILE)
-    line = questions(case.story)[0]
-    case.story.expect_rows(waits_of(case.story, case.worker)[0].state is not WaitState.OPEN, line.outcome is None, detail="working ends the wait and leaves the question open")
-    case.story.expect_success(f'merger answer {line.id} "{ANSWER}"', actor=case.merger)
-    case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.ANSWERED, ANSWER in case.worker_messages(), detail=case.worker_messages())
-
-
 def test_an_ask_made_with_the_merger_off_starts_no_merger_when_the_merger_is_switched_on_later(merger_disabled_worker, monkeypatch):
     merger_can_start(monkeypatch)
     story = merger_disabled_worker.story
@@ -208,13 +192,6 @@ def test_an_ask_made_with_the_merger_off_starts_no_merger_when_the_merger_is_swi
         AskWatch()(story.container)
         story.run_listeners()
         story.expect_rows(questions(story)[0].outcome is AskOutcome.FORWARDED, merger_agent(story) is None, detail="a question the main agent already has wakes no merger")
-
-
-def test_two_asks_made_close_together_are_read_in_one_visit_of_one_merger(case):
-    ask(case)
-    ask(case, SECOND_QUESTION, AskTopic.TESTS)
-    case.story.expect_text("merger next", QUESTION, SECOND_QUESTION, actor=case.merger)
-    case.story.expect_rows([line.visit_count for line in questions(case.story)] == [1, 1], len({line.visit_id for line in questions(case.story)}) == 1, detail=str(questions(case.story)))
 
 
 def test_a_person_retiring_a_worker_with_tasks_left_leaves_the_merger_one_line_and_closes_its_asks(case):

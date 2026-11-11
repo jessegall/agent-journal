@@ -53,16 +53,6 @@ def test_only_after_the_forward_time_the_journal_writes_the_open_questions_itsel
                            f"\\n{JOURNAL_LOOKING_QUESTION}" not in text, detail=text)
 
 
-def test_an_ask_the_merger_read_twice_without_an_outcome_is_forwarded_at_once(case):
-    ask(case)
-    end_unanswered_visit(case)
-    watch(case)
-    case.story.expect_rows(questions(case.story)[0].outcome is None, detail="one reading is under the limit of two")
-    end_unanswered_visit(case)
-    watch(case)
-    case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, detail=str(questions(case.story)[0]))
-
-
 def test_a_forwarded_ask_is_said_to_the_worker_with_its_wait_open_and_a_message_of_the_main_agent_ends_the_escalation(case):
     ask(case)
     case.story.advance(timedelta(minutes=31))
