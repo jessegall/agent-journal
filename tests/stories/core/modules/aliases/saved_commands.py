@@ -137,7 +137,3 @@ def test_an_alias_becomes_a_saved_command_by_its_category(new_story):
     story.expect_success('alias edit unit-tests --category "test run"', actor=story.agent)
     story.expect_text("alias show 1", "category: test run", actor=story.agent)
 
-
-def test_a_line_naming_a_worktree_is_not_saved(new_story):
-    story = new_story(fixture=BuilderStarted)
-    story.expect_refusal('alias add build-tree ".journal/worktrees/main/worker-1/build.sh" --category build', "cannot contain a temporary worktree path", actor=story.agent)

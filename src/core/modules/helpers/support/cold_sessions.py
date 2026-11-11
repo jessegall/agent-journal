@@ -26,7 +26,7 @@ class ColdSessions:
     """Says whether resuming an agent would be wasteful: its prompt cache has gone cold because it has not
     replied for longer than the cache lasts, and its context is large enough that writing it to the cache
     again costs more than starting over; such an agent gets a new program session under the same journal
-    agent, which keeps its number, memories, tasks and worktree. A limit of 0 turns the check off. The occupant
+    agent, which keeps its number, memories, tasks and checkout. A limit of 0 turns the check off. The occupant
     of a helper's profile decides whether a cold session is replaced: one that continues keeps it. An agent
     past the context limit starts over the same way, whatever its occupant. An agent whose current session replaced another and never
     started keeps that session: it is launched, not replaced again. A helper whose conversation is missing from

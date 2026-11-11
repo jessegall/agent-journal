@@ -15,7 +15,7 @@ from core.modules.assignments.support.assignments import Assignments
 
 class ClearDelegatedTasksHandler(Handler[ClearDelegatedTasks, None]):
     """Sets delegated_to to nothing on the open and started tasks assigned to the agent; those in testing stay with
-    its worktree, whose merge closes them."""
+    the agent until their work is taken in."""
 
     command = ClearDelegatedTasks
 
