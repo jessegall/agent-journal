@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.core.support.agent_labels import agent_number
 import json
 from datetime import timedelta
@@ -109,6 +110,7 @@ def test_delivery_holds_the_place_while_tests_and_the_merger_run_then_merge_free
         story.expect_rows(merger is None)
         repository.checkout(ENVIRONMENT_BRANCH)
         story.expect_success(f"worker logs {agent_number(story, first.id)}", actor=story.agent)
+        asked_for_merge(story, first)
         story.expect_success(f"worker merge --wait {agent_number(story, first.id)}", actor=story.agent)
     WorkerResumeRetry()(story.container)
     story.expect_rows(launches.count(second.id) == 2)

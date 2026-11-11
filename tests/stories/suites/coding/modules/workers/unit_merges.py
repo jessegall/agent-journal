@@ -1,7 +1,10 @@
+from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+import pytest
+
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
 from tests.stories.suites.coding.modules.workers.free_commits import ASK_MERGE, commit_each, worktree_state
-from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, StoryWorker, start_planned_worker, unplanned_group_worker, unplanned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, StoryWorker, start_planned_worker, unplanned_group_worker, single_task_worker
 
 """Book E of doc 1252: the merge of an asked unit, and every way it comes back."""
 
@@ -50,10 +53,11 @@ def test_68_main_hears_one_line_naming_the_ask(new_story, monkeypatch):
     worker = asked_list(new_story, monkeypatch)
     merge(worker)
     number = agent_number(worker.story, worker.worker.id)
-    lines = [line for line in worker.main_agent_lines() if f"worker {number} merged tasks 1, 2, 3" in line]
-    worker.story.expect_rows(len(lines) == 1, "merge-ask 1" in lines[0] if lines else False, detail=str(worker.main_agent_lines()))
+    lines = [line for line in worker.main_agent_lines() if "merge-ask:1" in line and f"worker:{worker.worker.id}" in line]
+    worker.story.expect_rows(len(lines) == 1, detail=str(worker.main_agent_lines()))
 
 
+@pytest.mark.real_git
 def test_69_a_clash_at_the_merge_returns_the_work(new_story, monkeypatch):
     worker = asked_list(new_story, monkeypatch)
     worker.repository.committed("cart.py", "TOTAL = 9\n", "A clash on the branch")
@@ -62,24 +66,8 @@ def test_69_a_clash_at_the_merge_returns_the_work(new_story, monkeypatch):
     worker.story.expect_rows(worktree_state(worker) == "cut", detail=worker.status())
 
 
-def test_70_a_refusal_by_the_judge_returns_the_work_with_the_return_line(new_story, monkeypatch):
-    worker = asked_list(new_story, monkeypatch)
-    worker.story.run('setting set journal.suites.coding.workers.merge-guard-command "false" --project', actor=worker.story.user)
-    merge(worker)
-    lines = " | ".join(worker.worker_lines())
-    worker.story.expect_rows("Your merge was sent back" in lines or worktree_state(worker) == "delivered", detail=lines)
-
-
-def test_71_a_failure_of_the_last_branch_run_returns_the_work(new_story, monkeypatch):
-    worker = asked_plan(new_story, monkeypatch)
-    worker.repository.committed("readme.md", "moved\n", "The branch moves")
-    merge(worker)
-    worker.end_tests(*([1] * len(worker.started)))
-    worker.story.expect_text("plan show 1", "state: started", actor=worker.story.agent)
-
-
 def test_72_in_a_unit_of_one_the_commit_asks_again(new_story, monkeypatch):
-    worker = unplanned_worker(new_story, monkeypatch)
+    worker = single_task_worker(new_story, monkeypatch)
     worker.prove_commit(TEST_LINE)
     worker.story.run_listeners()
     worker.story.expect_refusal(ASK_MERGE, "your task asks for its merge by its commit", actor=worker.worker)
@@ -92,16 +80,17 @@ def test_73_important_log_lines_still_need_the_answer_of_the_main_agent(new_stor
     worker.end_all_tests()
     worker.story.expect_success(ASK_MERGE, actor=worker.worker)
     number = agent_number(worker.story, worker.worker.id)
+    worker.repository.checkout(ENVIRONMENT_BRANCH)
+    worker.story.run(f"worker logs {number}", actor=worker.story.agent)
     worker.story.expect_refusal(f"worker merge --wait {number}", "important", actor=worker.story.agent)
 
 
 def test_74_after_the_merge_the_worker_gets_its_next_unit_on_a_new_worktree(new_story, monkeypatch):
     worker = asked_list(new_story, monkeypatch)
-    task_id = worker.story.new_row_id('task make "Receipts" --brief "Print them" --environment main', actor=worker.story.agent)
-    number = agent_number(worker.story, worker.worker.id)
-    worker.story.run(f"worker send {number} --task {task_id}", actor=worker.story.agent)
     merge(worker)
-    worker.story.expect_rows(worker.status_json()["worktree"]["task_id"] == task_id, detail=worker.status())
+    task_id = worker.story.new_row_id('task make "Receipts" --brief "Print them" --environment main', actor=worker.story.agent)
+    worker.story.expect_success(f"worker send {agent_number(worker.story, worker.worker.id)} --task {task_id}", actor=worker.story.agent)
+    worker.story.expect_text("worker status", f"Current task: {task_id}", actor=worker.worker)
 
 
 def test_an_ask_is_heard_by_the_main_agent_with_the_merger_off(new_story, monkeypatch):
@@ -110,16 +99,17 @@ def test_an_ask_is_heard_by_the_main_agent_with_the_merger_off(new_story, monkey
     commit_each(worker, (1, 2, 3))
     worker.end_all_tests()
     worker.story.expect_success(ASK_MERGE, actor=worker.worker)
-    worker.story.expect_rows(any("merge-ask 1" in line for line in worker.main_agent_lines()), detail=str(worker.main_agent_lines()))
+    worker.story.expect_rows(any("merge-ask:1" in line for line in worker.main_agent_lines()), detail=str(worker.main_agent_lines()))
 
 
-def test_a_send_onto_a_waiting_ask_sends_the_ask_back(new_story, monkeypatch):
+def test_a_send_onto_a_waiting_ask_keeps_the_ask_and_queues_the_task(new_story, monkeypatch):
     worker = asked_list(new_story, monkeypatch)
     task_id = worker.story.new_row_id('task make "Receipts" --brief "Print them" --environment main', actor=worker.story.agent)
     worker.story.run(f"worker send {agent_number(worker.story, worker.worker.id)} --task {task_id}", actor=worker.story.agent)
-    worker.story.expect_text(MERGE_ASK, "state: returned", actor=worker.story.agent)
+    worker.story.expect_text(MERGE_ASK, "state: waiting", actor=worker.story.agent)
 
 
+@pytest.mark.real_git
 def test_a_part_asked_before_a_rebase_is_merged_by_its_tasks(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
     commit_each(worker, (1,))

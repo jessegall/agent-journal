@@ -6,7 +6,7 @@ from suites.coding.support.shipped_profiles import WORKER_RULES
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
 from tests.stories.suites.coding.modules.workers.free_commits import ASK_MERGE
 from tests.stories.suites.coding.modules.workers.merge_asks import committed_list
-from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, unplanned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, single_task_worker
 
 """Book I of doc 1252: what stays, and the standing rules."""
 
@@ -14,7 +14,7 @@ SKILL = Path(__file__).resolve().parents[6] / "src/suites/coding/modules/workers
 
 
 def test_88_a_unit_of_one_merges_as_before(new_story, monkeypatch):
-    worker = unplanned_worker(new_story, monkeypatch)
+    worker = single_task_worker(new_story, monkeypatch)
     worker.prove_commit(TEST_LINE)
     worker.end_all_tests()
     merge(worker)
@@ -25,7 +25,7 @@ def test_91_the_merges_of_a_list_are_its_asks(new_story, monkeypatch):
     worker = committed_list(new_story, monkeypatch)
     worker.story.expect_success(ASK_MERGE, actor=worker.worker)
     merge(worker)
-    merged = [line for line in worker.main_agent_lines() if " merged " in line]
+    merged = [line for line in worker.main_agent_lines() if "merge-ask:" in line]
     worker.story.expect_rows(len(merged) == 1, detail=str(worker.main_agent_lines()))
 
 
@@ -38,5 +38,5 @@ def test_92_the_words_agree_with_the_behaviour(new_story):
 
 
 def test_89_and_90_a_commit_of_a_unit_of_one_keeps_its_checks(new_story, monkeypatch):
-    worker = unplanned_worker(new_story, monkeypatch)
-    worker.story.expect_refusal("worker commit --wait --differences none", "has no proof", actor=worker.worker)
+    worker = single_task_worker(new_story, monkeypatch)
+    worker.story.expect_refusal("worker commit --wait --differences none", "nothing is staged", actor=worker.worker)

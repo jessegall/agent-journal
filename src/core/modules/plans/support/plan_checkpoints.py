@@ -1,5 +1,7 @@
 from engine.command.context import Context
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
+from core.modules.plans.conditions.plan_tasks_condition import PlanTasksCondition
 from engine.repository.repository import Repository
 from core.modules.plans.models.checkpoint_pass import CheckpointPass
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
@@ -23,10 +25,14 @@ class PlanCheckpoints:
     passed with the same tasks passes at the merge with no new run, unless it is the plan's last window and the
     branch moved after the worker's commit."""
 
-    def __init__(self, queries: Queries, repository: Repository, moves: CheckpointBranchMoves) -> None:
-        self.queries, self.repository, self.moves = queries, repository, moves
+    def __init__(self, queries: Queries, repository: Repository, moves: CheckpointBranchMoves, kept: KeptRows) -> None:
+        self.queries, self.repository, self.moves, self.kept = queries, repository, moves, kept
 
     def windows(self, plan_id: int) -> CheckpointWindows:
+        plan_tasks = PlanTasksCondition(tuple([plan_id])).statement()
+        return self.kept.read("tasks", lambda: self.loaded_windows(plan_id), plan_tasks.sql, plan_tasks.parameters, name="plans.checkpoint_windows")
+
+    def loaded_windows(self, plan_id: int) -> CheckpointWindows:
         phases = tuple(self.queries.query(Phase).filter(plan_id=plan_id).ordered("position").all_rows())
         places = tuple(self.queries.query(PlanTask).filter(plan_id=plan_id).full_table(WINDOW_REASON).all_rows())
         return CheckpointWindows(phases, places)

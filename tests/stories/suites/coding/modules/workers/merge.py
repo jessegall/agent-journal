@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.core.support.agent_labels import agent_label
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.support.agent_conversations import AgentConversations
@@ -54,6 +55,7 @@ def test_a_merged_worker_whose_program_never_ended_ends_at_the_merge_and_is_not_
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_rows(story.container.get(Queries).query(Agent).find(worker.id).ended_at is None)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_rows(story.container.get(Queries).query(Agent).find(worker.id).ended_at is not None)
     story.advance(timedelta(minutes=10))
@@ -81,6 +83,7 @@ def test_a_worker_settles_a_clash_and_its_next_merge_goes_through(new_story):
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_success("worker-worktree show 1", "state: delivered")
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
 
@@ -103,6 +106,7 @@ def test_a_merge_while_the_checkout_is_on_another_branch_moves_nothing_reminds_e
     story.tick(MAIN_SESSION)
     story.expect_rows(story.run(main_lines).output_text.count(reminder) == 2)
     repository.checkout(ENVIRONMENT_BRANCH)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: completed")
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
@@ -162,6 +166,7 @@ def test_a_job_sent_to_a_merged_worker_opens_a_worktree_and_resumes_it(new_story
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET))
     story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Add the tax"', actor=story.agent)
@@ -351,6 +356,7 @@ def test_reading_one_task_does_not_mark_other_tasks_logs_as_read(new_story):
     story.expect_success(f'task log {task_id} "Second decision" --important', actor=worker)
     story.expect_success(f'proof make 1 --task {task_id} "tax.py:1, read the tax"', actor=worker)
     story.expect_success("worker commit --wait --differences none", actor=worker)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker logs {agent_number(story, worker.id)} --task {task_id}", actor=story.agent)
     worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first()
     story.expect_rows(worktree.logs_read_at is None)
@@ -365,5 +371,6 @@ def test_an_explained_merge_checks_the_rows_and_merges_nothing(checked_work):
     story.run(f"worker merge {agent_number(story, worker.id)} --explain", actor=story.agent)
     worktree = story.story_rows(Worktree, session_agent_id=worker.id)[-1]
     story.expect_rows(repository.tip(ENVIRONMENT_BRANCH) == tip, worktree.merged_at is None, worktree.removed_at is None, detail=str(worktree))
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_rows(repository.tip(ENVIRONMENT_BRANCH) != tip)

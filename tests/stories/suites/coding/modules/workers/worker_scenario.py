@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.core.support.agent_labels import agent_number
 import subprocess
 from datetime import timedelta
@@ -156,6 +157,7 @@ def test_a_worker_commits_three_tasks_one_after_the_other_each_tested_and_is_mer
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{agent_number(story, worker.id)} all pass", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     expect_states(story, task1="completed", task2="completed", task3="completed")
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")

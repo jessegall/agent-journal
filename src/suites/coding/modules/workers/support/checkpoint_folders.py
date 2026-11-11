@@ -2,6 +2,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
 from engine.errors.refusal import Refusal
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_reach import WorktreeReach
@@ -18,8 +19,8 @@ class CheckpointFolders:
     branch, owned by the worker merged last in the window, or by the main agent when no worker's work is in
     it, over the files the last merge changed."""
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, agents: AgentRows) -> None:
-        self.queries, self.worktrees, self.git = queries, worktrees, git
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, agents: AgentRows, kept: KeptRows) -> None:
+        self.queries, self.worktrees, self.git, self.kept = queries, worktrees, git, kept
         self.environments, self.agents = environments, agents
 
     def checkout(self, reach: CheckpointReach) -> str:
@@ -52,7 +53,7 @@ class CheckpointFolders:
         return merged[0].commit_before_merge if merged else ""
 
     def link(self, reach: CheckpointReach) -> WorktreeReach | None:
-        return self.queries.query(WorktreeReach).filter(reach_id=reach.id).first()
+        return self.kept.read("worktree_reaches", self.queries.query(WorktreeReach).filter(reach_id=reach.id).first, "reach_id = ?", [reach.id], name="workers.reach_link")
 
     def merged_worktrees(self, reach: CheckpointReach) -> tuple[Worktree, ...]:
         task_ids = set(reach.tasks())

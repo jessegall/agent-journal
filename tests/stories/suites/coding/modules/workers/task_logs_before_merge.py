@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
@@ -18,6 +19,7 @@ def test_merge_waits_for_the_main_agent_to_read_the_workers_logs(new_story):
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", f"journal worker logs {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", "task 1: Fix the cart", "outcome: its proofs are checked", "1 notes: Changed the cart", actor=story.agent)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
 
 
@@ -49,4 +51,5 @@ def test_logs_include_each_task_in_a_worker_batch(new_story):
     story.expect_success('task log 2 "Tax finished"', actor=worker)
     story.expect_success('proof make 1 --task 2 "tax.py:1"', actor=worker)
     story.expect_success("worker commit --wait --differences none", actor=worker)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", "task 1: Fix the cart", "1 notes: Cart finished", "task 2: Calculate tax", "1 notes: Tax finished", actor=story.agent)

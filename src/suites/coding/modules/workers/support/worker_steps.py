@@ -49,12 +49,12 @@ class WorkerSteps:
             return WorkerStep.CONFLICT
         if self.is_blocked(worker_round, worktree):
             return WorkerStep.BLOCKED
-        if self.is_delivered(worker_round):
-            return WorkerStep.WAIT
         if self.has_open_failure(worktree):
             return WorkerStep.FIX
         if self.is_unit_committed(worker_round, worktree):
-            return WorkerStep.WAIT if self.runs.holds_merge(worktree.id) else WorkerStep.MERGE_DUE
+            return WorkerStep.WAIT if self.runs.holds_merge(worktree.id) or self.proofs.tests_waiting(worktree.id) else WorkerStep.MERGE_DUE
+        if self.is_delivered(worker_round):
+            return WorkerStep.WAIT
         return self.working_step(worker_round)
 
     def is_unit_committed(self, worker_round: WorkerRound, worktree: Worktree) -> bool:

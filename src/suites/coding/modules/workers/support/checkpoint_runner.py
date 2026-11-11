@@ -47,7 +47,8 @@ class CheckpointRunner(CheckpointRuns):
         if self.results.is_started(reach):
             return
         committed = tuple(self.proofs.committed_proofs(reach.tasks()).oldest().all_rows())
-        has_tests = reach.source is not CheckpointReachSource.EARLY and self.has_tests(reach)
+        phase_commands = self.deferrals.run_commands(self.rows.required(Phase, reach.phase_id))
+        has_tests = reach.source is not CheckpointReachSource.EARLY and self.has_tests(reach, phase_commands)
         if not committed and not has_tests:
             super().start(reach, context)
             return
@@ -55,24 +56,22 @@ class CheckpointRunner(CheckpointRuns):
         if folder is None:
             return
         if has_tests:
-            self.start_tests(reach, folder, context)
+            self.start_tests(reach, folder, phase_commands, context)
         for proof in committed:
             self.repository.save_change(proof, proof.moved(ProofLifecycle.queue), context)
 
     def folder(self, environment: Environment, plan_id: int) -> str:
         return self.git.base_folder(environment, FOLDER_NAME.format(plan=plan_id))
 
-    def has_tests(self, reach: CheckpointReach) -> bool:
-        phase_commands = self.deferrals.run_commands(self.rows.required(Phase, reach.phase_id))
+    def has_tests(self, reach: CheckpointReach, phase_commands: tuple[str, ...]) -> bool:
         return self.folders.owner_id(reach) is not None and bool(phase_commands or self.is_selected_run_due(reach))
 
     def is_selected_run_due(self, reach: CheckpointReach) -> bool:
         picker, selected_command = self.settings.text(AFFECTED_TESTS_COMMAND).strip(), self.settings.text(PROJECT_TEST_COMMAND).strip()
         return bool(picker and selected_command and self.folders.compare_commit(reach))
 
-    def start_tests(self, reach: CheckpointReach, folder: str, context: Context) -> None:
+    def start_tests(self, reach: CheckpointReach, folder: str, phase_commands: tuple[str, ...], context: Context) -> None:
         owner_id = self.folders.required_owner_id(reach)
-        phase_commands = self.deferrals.run_commands(self.rows.required(Phase, reach.phase_id))
         tests = [CheckpointTest(reach_id=reach.id, owner_agent_id=owner_id, test_command=phase_command, state=AffectedTestState.TESTING, process_id=0) for phase_command in phase_commands]
         if self.is_selected_run_due(reach):
             picker, selected_command = self.settings.text(AFFECTED_TESTS_COMMAND).strip(), self.settings.text(PROJECT_TEST_COMMAND).strip()

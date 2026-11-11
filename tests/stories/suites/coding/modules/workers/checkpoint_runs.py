@@ -62,6 +62,10 @@ def commit_tasks(worker: StoryWorker, *test_lines: str) -> None:
 def merge(worker: StoryWorker) -> None:
     number = agent_number(worker.story, worker.worker.id)
     worker.repository.checkout(ENVIRONMENT_BRANCH)
+    for _ in range(3):
+        worker.end_all_tests()
+        worker.story.run_listeners()
+    worker.story.run('worker ask-merge "the committed work of the unit"', actor=worker.worker)
     worker.story.run(f"worker logs {number}", actor=worker.story.agent)
     worker.story.expect_success(f"worker merge --wait {number}", actor=worker.story.agent)
     worker.story.run_listeners()

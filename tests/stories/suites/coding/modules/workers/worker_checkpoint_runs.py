@@ -39,7 +39,8 @@ def test_28_the_run_starts_when_the_tasks_up_to_a_checkpoint_are_committed(runni
 
 def test_29_the_run_holds_what_a_checkpoint_holds(running_worker_run):
     lines = run_lines(running_worker_run)
-    running_worker_run.story.expect_rows(lines.count(BUILD_TEST) == 1, TEST_LINE in lines, SECOND_TEST_LINE in lines, detail=str(lines))
+    running_worker_run.story.expect_rows(lines.count(BUILD_TEST) == 1, TEST_LINE in lines, SECOND_TEST_LINE in lines,
+                                         detail=f"{lines} {rows(running_worker_run, REACHES)} {[(p.id, p.line, p.folder) for p in running_worker_run.started_processes()]}")
 
 
 def test_30_the_worker_goes_on_during_the_run(running_worker_run):
@@ -122,8 +123,7 @@ def test_39_a_run_stopped_by_the_time_limit_is_a_failure_with_the_reason(running
 
 def test_40_the_checkpoint_gate_stays_for_everyone_else(running_worker_run):
     worker = running_worker_run
-    other = worker.added_worker("worker dispatch --test-command python=pytest --model sonnet --fresh \"second\" 4")
-    other.story.expect_refusal("task start 4", "comes after checkpoint phase 1", actor=other.worker)
+    worker.story.expect_refusal('worker dispatch --test-command python=pytest --model sonnet --fresh "second" 4', "comes after checkpoint phase 1", actor=worker.story.agent)
 
 
 def test_41_a_shared_window_keeps_the_branch_run(new_story, monkeypatch):

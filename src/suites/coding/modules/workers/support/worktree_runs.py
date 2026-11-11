@@ -42,4 +42,6 @@ class WorktreeRuns:
     def reaches(self, links: tuple[WorktreeReach, ...]) -> tuple[CheckpointReach, ...]:
         if not links:
             return ()
-        return tuple(self.queries.query(CheckpointReach).matching(Among("id", tuple(link.reach_id for link in links))).all_rows())
+        reach_ids = tuple(link.reach_id for link in links)
+        return self.kept.read("checkpoint_reaches", lambda: tuple(self.queries.query(CheckpointReach).matching(Among("id", reach_ids)).all_rows()),
+                              f"id IN ({', '.join('?' for _ in reach_ids)})", list(reach_ids), name="workers.worktree_run_reaches")

@@ -64,7 +64,8 @@ SELECT worktree.session_agent_id AS agent_id, worktree.environment_id, worktree.
        count(tasks.id) AS task_count,
        count(CASE WHEN tasks.state = 'completed' THEN 1 END) AS completed_count
 FROM worker_worktrees AS worktree
-LEFT JOIN tasks ON (TASK_ACTOR_PLACE = worktree.session_agent_id OR tasks.holder_id = worktree.session_agent_id)
+LEFT JOIN tasks ON tasks.id IN (SELECT assignments.subject_id FROM assignments WHERE assignments.subject_model = 'task' AND assignments.actor_id = worktree.session_agent_id
+                                UNION SELECT held.id FROM tasks AS held WHERE held.holder_id = worktree.session_agent_id)
     AND (tasks.closed_at IS NULL OR tasks.closed_at >= coalesce(worktree.cut_at, worktree.created_at))
 WHERE worktree.id = (SELECT max(latest.id) FROM worker_worktrees AS latest WHERE latest.session_agent_id = worktree.session_agent_id)
 GROUP BY worktree.environment_id, worktree.id

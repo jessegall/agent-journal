@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
@@ -53,6 +54,7 @@ def test_a_worker_whose_delivered_work_is_merged_is_not_named_again(delivered_wo
     story.expect_rows(story.run(main_lines).output_text.count(reminder) == 1)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.advance(REMINDER_INTERVAL)
     story.tick(MAIN_SESSION)
@@ -112,6 +114,7 @@ def test_a_merged_worker_with_a_new_worktree_has_no_merge_due_block(new_story):
     expect_value(len(merge_block_rows(story, worker.id)), 1)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     expect_value(merge_block_rows(story, worker.id), [])
     story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Another job"', actor=story.agent)
@@ -132,6 +135,7 @@ def test_a_merge_block_left_by_an_older_server_is_closed_on_the_next_tick(new_st
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     with monkeypatch.context() as old_server:
         old_server.setattr(WorkerMergeBlockListener, "handle", lambda self, event, context: None)
+        asked_for_merge(story, worker)
         story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     expect_value(len(merge_block_rows(story, worker.id)), 1)
     story.tick(MAIN_SESSION)

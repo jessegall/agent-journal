@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
@@ -37,6 +38,7 @@ def test_a_person_dispatches_a_worker_that_starts_no_program_and_its_session_hoo
         story.expect_success("proof check 1", "state: checked", actor=story.agent)
         story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
         repository.checkout(ENVIRONMENT_BRANCH)
+        asked_for_merge(story, worker)
         story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
         story.expect_success(lines.TASK_DETAILS, "state: completed")
     finally:
