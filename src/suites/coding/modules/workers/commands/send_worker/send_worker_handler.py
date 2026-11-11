@@ -158,7 +158,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
 
     def tell_joined(self, worker_id: int, context: Context) -> None:
         for task_id in self.task_ids:
-            self.nudger.send(worker_id, WORKER_TASK_JOINS, WORKER_JOB_SOURCE, context, task=task_id)
+            self.nudger.send(worker_id, WORKER_TASK_JOINS, WORKER_TASK_JOINS.key, context, task=task_id)
 
     def handle(self, command: SendWorker, context: Context) -> Model:
         if command.test_commands:

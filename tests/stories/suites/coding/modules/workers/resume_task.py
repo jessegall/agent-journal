@@ -80,12 +80,12 @@ def test_a_task_sent_to_a_stopped_worker_resumes_it_once(new_story, monkeypatch,
             story.run_listeners()
         story.expect_rows(len(launcher.starts) == 1, launches == [worker.id], detail=str(launches))
         launch = launcher.starts[0]
-        story.expect_rows(launch["session"] == worker_session(story, worker))
+        story.expect_rows(launch["session"] == worker_session(story, worker), detail=launch["session"])
         story.expect_rows("--resume" in launch["command"] or "resume" in launch["command"])
         story.expect_rows(any(f"task overview {task_id}" in argument for argument in launch["command"]))
         job = story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id, source=WORKER_JOB_SOURCE).newest().first()
-        story.expect_rows(job.state is (AgentLineState.ENTERED if b"123456789" in answer else AgentLineState.WAITING))
-        story.expect_rows(story.row(Agent, worker.id).ended_at is None)
+        story.expect_rows(job.state is (AgentLineState.ENTERED if b"123456789" in answer else AgentLineState.WAITING), detail=str(job))
+        story.expect_rows(story.row(Agent, worker.id).ended_at is None, detail=str(story.row(Agent, worker.id)))
         if merged:
             story.expect_rows(len(reads) == 1, detail=str(reads))
     finally:

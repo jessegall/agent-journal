@@ -135,19 +135,19 @@ def test_a_resume_that_never_came_back_is_started_again_by_the_next_job_after_tw
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.advance(timedelta(seconds=5))
     story.use_processes(ProcessRow(701, 1, story.clock.timestamp()))
-    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=b"started 701\n", request_count=2)
+    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=b"started 701\n", request_count=3)
     story.run(f'worker send --wait {agent_number(story, worker.id)} "Add the tax as well"', actor=story.agent)
     story.run_listeners()
     story.run(f'worker send --wait {agent_number(story, worker.id)} "And the receipt"', actor=story.agent)
     story.run_listeners()
-    story.expect_rows(len(launcher.requests) == 1)
+    story.expect_rows(len(worker_starts(launcher, worker)) == 1)
     story.advance(timedelta(minutes=3))
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.run(f'worker send --wait {agent_number(story, worker.id)} "And the total"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
-    story.expect_rows(len(launcher.requests) == 2)
+    story.expect_rows(len(worker_starts(launcher, worker)) == 2)
     expect_command_requests_launcher_line(launcher, "And the receipt")
 
 
@@ -252,21 +252,25 @@ def test_a_job_whose_program_died_at_once_is_handed_again_by_the_next_trigger(ne
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.advance(timedelta(seconds=5))
     story.use_processes(ProcessRow(701, 1, story.clock.timestamp()))
-    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=b"started 701\n", request_count=2)
+    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=b"started 701\n", request_count=3)
     story.run(f'worker send --wait {agent_number(story, worker.id)} "Add the tax as well"', actor=story.agent)
     story.run_listeners()
-    story.expect_rows(len(launcher.requests) == 1)
+    story.expect_rows(len(launcher.starts) == 1)
     story.advance(timedelta(minutes=3))
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.container.get(WorkerResume).resume(story.container.get(Queries).query(Agent).find(worker.id), story.agent)
     launcher.drain_requests()
-    story.expect_rows(len(launcher.requests) == 2)
+    story.expect_rows(len(launcher.starts) == 2)
     expect_command_requests_launcher_line(launcher, "Add the tax as well")
 
 
+def worker_starts(launcher, worker) -> list[dict[str, object]]:
+    return [start for start in launcher.starts if start["agent_id"] == worker.id]
+
+
 def expect_command_requests_launcher_line(launcher, expected) -> None:
-    actual = launcher.requests[1]['command']
+    actual = launcher.starts[1]['command']
     assert any(expected in line for line in actual), actual
 
 

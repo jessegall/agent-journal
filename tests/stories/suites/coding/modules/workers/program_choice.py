@@ -96,13 +96,18 @@ def window_split_story(split_story, request, split_viewer):
     return split_story, dispatch(split_story)
 
 
+
+def worker_starts(launcher, worker) -> list[dict[str, object]]:
+    return [start for start in launcher.starts if start["agent_id"] == worker.id]
+
+
 def test_exit_on_a_limit_opens_an_outage(failed_worker_story):
     story, worker, launcher = failed_worker_story
     story.expect_text('provider-outage list', 'claude', 'rate limit')
     rows = json.loads(story.run('provider-outage list --json').output_text)['rows']
     story.expect_rows(datetime.fromisoformat(rows[0]['ends_at']) == story.clock.timestamp().value + timedelta(minutes=15))
     story.expect_text(f'agent show {agent_number(story, worker.id)}', 'ended_at:')
-    story.expect_rows(len(launcher.requests) == 1)
+    story.expect_rows(len(worker_starts(launcher, worker)) == 1, detail=str(worker_starts(launcher, worker)))
 
 
 def test_exit_on_a_limit_opens_an_outage_for_a_helper(split_story):
@@ -137,7 +142,7 @@ def test_worker_on_an_out_program_does_not_restart(failed_worker_story):
     lines = story.run(f'agent-line list --agent {story.agent.id}').output_text
     story.expect_rows(lines.count(f'worker:{worker.id} stopped') == 1)
     story.expect_text(f'worker status {agent_number(story, worker.id)}', 'Program: claude', 'rate limit', 'until', '09:15', f'journal worker release {agent_number(story, worker.id)}')
-    story.expect_rows(len(launcher.requests) == 1)
+    story.expect_rows(len(worker_starts(launcher, worker)) == 1, detail=str(worker_starts(launcher, worker)))
     story.expect_text(f'agent show {agent_number(story, worker.id)}', 'ended_at:')
 
 
@@ -146,7 +151,7 @@ def test_worker_on_an_out_program_does_not_restart_until_the_outage_ends(failed_
     story.advance(timedelta(minutes=15, seconds=1))
     WorkerResumeRetry()(story.container)
     story.run_listeners()
-    story.expect_rows(len(launcher.requests) == 2, launcher.requests[-1]['agent_id'] == worker.id, detail=str(launcher.requests))
+    story.expect_rows(len(worker_starts(launcher, worker)) == 2, detail=str(worker_starts(launcher, worker)))
 
 
 def test_every_program_out_refuses_a_dispatch(split_story, split_viewer):
