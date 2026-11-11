@@ -73,6 +73,12 @@ class ReadingCase:
     def unreadable_reason(self) -> UnreadableReason | None:
         if self.has_unreadable_mark:
             return UnreadableReason.DECLARED
+        return self.measured_unreadable_reason
+
+    @property
+    def measured_unreadable_reason(self) -> UnreadableReason | None:
+        """Why no reader can read this output, from its measures alone: sizes, newlines, NUL bytes, carriage returns
+        and a prompt the run stopped growing on, never the words it printed."""
         if self.output is None:
             return None
         if self.output.unreadable_reason is not None:

@@ -8,14 +8,17 @@ from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.enums.reader_action import ReaderAction
 from core.modules.processes.models.enums.reason_code import ReasonCode
+from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
+from core.modules.processes.models.unreadable_mark import UnreadableMark
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
-from core.modules.processes.support.process_nudges import (DRAFT_READY, READER_DRAFT, READER_FAILED, READER_MISSED, READER_PROGRESS_MISSING, READER_SUMMARY_MISSING, READER_WIDTH,
+from core.modules.processes.support.process_nudges import (DRAFT_READY, READER_DRAFT, READER_FAILED, UNREADABLE_BINARY, UNREADABLE_DECLARED, UNREADABLE_EMPTY,
+                                                          UNREADABLE_INTERACTIVE, UNREADABLE_LIFTED, UNREADABLE_SINGLE_LINE, READER_MISSED, READER_PROGRESS_MISSING, READER_SUMMARY_MISSING, READER_WIDTH,
                                                           SILENT_SAVED_FAILURE)
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_writers import ReaderWriters
@@ -28,6 +31,9 @@ MISS_NUDGES: dict[str, tuple[NudgeDeclaration, tuple[str, ...]]] = {"--lines pic
                                                                     "--summary found nothing": (READER_SUMMARY_MISSING, NAMED_FIELDS),
                                                                     "--progress found nothing": (READER_PROGRESS_MISSING, NAMED_FIELDS),
                                                                     "--progress found only at the end": (READER_PROGRESS_MISSING, NAMED_FIELDS)}
+MARK_NUDGES: dict[UnreadableReason, NudgeDeclaration] = {UnreadableReason.EMPTY: UNREADABLE_EMPTY, UnreadableReason.BINARY: UNREADABLE_BINARY,
+                                                     UnreadableReason.SINGLE_LINE: UNREADABLE_SINGLE_LINE, UnreadableReason.INTERACTIVE: UNREADABLE_INTERACTIVE,
+                                                     UnreadableReason.DECLARED: UNREADABLE_DECLARED}
 SHELL_TERMS = frozenset(("journal", "set", "for", "while", "until", "if", "case", "{", "(", "cd", "export", "time", "bash", "sh", "zsh"))
 
 
@@ -46,6 +52,14 @@ class ReadingNotices:
         if not self.writers.allows(Actor(process.session_agent_id, ActorType.AGENT)) or RunVisibility.select_visible_part(process, parts) is None:
             return failures
         return (*failures, *self.draft_nudges(process, output, parts), *self.reader_nudges(process, output, parts))
+
+    @staticmethod
+    def mark_nudges(process: Process, changes: tuple[UnreadableMark, ...]) -> tuple[Nudge, ...]:
+        """The one line about each mark made or lifted at the end of a run: a lifted mark names its command, a mark
+        the engine made names the output, and a declared mark names its command."""
+        return tuple(UNREADABLE_LIFTED.nudge(name=mark.words) if mark.lifted_at is not None
+                     else UNREADABLE_DECLARED.nudge(name=mark.words) if mark.reason is UnreadableReason.DECLARED
+                     else MARK_NUDGES[mark.reason].nudge(output=process.id) for mark in changes)
 
     @staticmethod
     def silent_failure_nudges(process: Process, output: Output | None, parts: tuple[ProcessPart, ...]) -> tuple[Nudge, ...]:
