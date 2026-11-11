@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from pathlib import Path
 
@@ -5,6 +6,7 @@ import pytest
 
 from engine.errors.refusal import Refusal
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import BUILD_TEST, REACHES, PASSES, checkpoint_worker, commit_tasks, merge, rows, run_lines
+from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story
 
@@ -33,14 +35,10 @@ def running_worker_run(new_story, monkeypatch) -> StoryWorker:
     return worker
 
 
-def test_28_29_the_run_starts_when_the_tasks_up_to_a_checkpoint_are_committed_and_holds_what_a_checkpoint_holds(running_worker_run):
-    lines, reaches = run_lines(running_worker_run), worker_reaches(running_worker_run)
-    running_worker_run.story.expect_rows(len(reaches) == 1, reaches[0]["state"] == "running", reaches[0]["task_ids"] == "1,2,3", detail=str(reaches))
-    running_worker_run.story.expect_rows(lines.count(BUILD_TEST) == 1, TEST_LINE in lines, SECOND_TEST_LINE in lines, detail=str(lines))
-
-
-def test_30_the_worker_goes_on_during_the_run(running_worker_run):
-    running_worker_run.story.expect_success("task start 4", actor=running_worker_run.worker)
+def fixed_task(worker: StoryWorker, task_id: int) -> None:
+    """The worker fixes the task its run failed: it changes the task's file and shows its proof again."""
+    worker.repository.changed(worker.worker.id, f"task_{task_id}_fix.txt", "fixed\n")
+    prove_task(worker, task_id, 1, TEST_LINE)
 
 
 def test_31_a_pass_says_nothing_to_anyone(running_worker_run):
@@ -51,43 +49,37 @@ def test_31_a_pass_says_nothing_to_anyone(running_worker_run):
                              detail=f"{worker.main_agent_lines()} / {worker.status()}")
 
 
-def test_32_a_failure_comes_back_as_work_to_fix(running_worker_run):
+def test_32_39_a_run_stopped_by_the_time_limit_fails_and_comes_back_as_work_to_fix(running_worker_run):
     worker = running_worker_run
-    worker.end_tests(1, 0, 0, 0)
+    worker.end_tests(124, 0, 0, 0)
     worker.end_all_tests()
+    worker.story.expect_rows(worker_reaches(worker)[0]["state"] == "failed", detail=str(worker_reaches(worker)))
     worker.story.expect_text("task show 3", "state: started", actor=worker.story.agent)
     worker.story.expect_rows("Point: fix" in worker.status(), detail=worker.status())
 
 
-@pytest.mark.real_git
-def test_33_only_what_failed_runs_again(running_worker_run):
+def test_28_29_30_34_a_run_holds_its_window_the_worker_goes_on_and_a_failure_in_a_later_phase_comes_back(running_worker_run):
     worker = running_worker_run
-    worker.end_tests(1, 0, 0, 0)
-    worker.end_all_tests()
-    started_count = len(worker.started)
-    prove_task(worker, 3, 1, TEST_LINE)
-    worker.story.run("worker commit --differences none", actor=worker.worker)
-    worker.story.run_listeners()
-    again = [process.line for process in worker.started_processes()[started_count:]]
-    worker.story.expect_rows(SECOND_TEST_LINE not in again, TEST_LINE in again, detail=str(again))
-
-
-def test_34_a_failure_while_the_worker_is_in_a_later_phase(running_worker_run):
-    worker = running_worker_run
-    worker.story.run("task start 4", actor=worker.worker)
+    lines, reaches = run_lines(worker), worker_reaches(worker)
+    worker.story.expect_rows(len(reaches) == 1, reaches[0]["state"] == "running", reaches[0]["task_ids"] == "1,2,3", detail=str(reaches))
+    worker.story.expect_rows(lines.count(BUILD_TEST) == 1, TEST_LINE in lines, SECOND_TEST_LINE in lines, detail=str(lines))
+    worker.story.expect_success("task start 4", actor=worker.worker)
     worker.end_tests(1, 0, 0, 0)
     worker.end_all_tests()
     worker.story.expect_rows("Point: fix" in worker.status(), detail=worker.status())
 
 
 @pytest.mark.real_git
-def test_35_two_runs_in_a_row(running_worker_run):
+def test_33_35_a_second_run_follows_the_failed_one_and_runs_only_what_failed(running_worker_run):
     worker = running_worker_run
     worker.end_tests(1, 0, 0, 0)
     worker.end_all_tests()
-    prove_task(worker, 3, 1, TEST_LINE)
-    worker.story.run("worker commit --differences none", actor=worker.worker)
+    started_count = len(worker.started)
+    fixed_task(worker, 3)
+    worker.story.run(COMMIT, actor=worker.worker)
     worker.story.run_listeners()
+    again = [process.line for process in worker.started_processes()[started_count:]]
+    worker.story.expect_rows(SECOND_TEST_LINE not in again, TEST_LINE in again, detail=str(again))
     worker.story.expect_rows([row["state"] for row in worker_reaches(worker)] == ["failed", "running"], detail=str(worker_reaches(worker)))
 
 
@@ -115,13 +107,6 @@ def test_38_a_run_that_cannot_start_does_not_block_the_worker(new_story, monkeyp
 
 def unstartable_checkout(git, worktree, commit):
     raise Refusal("git worktree failed", "no such commit")
-
-
-def test_39_a_run_stopped_by_the_time_limit_is_a_failure_with_the_reason(running_worker_run):
-    worker = running_worker_run
-    worker.end_tests(124, 0, 0, 0)
-    worker.end_all_tests()
-    worker.story.expect_rows(worker_reaches(worker)[0]["state"] == "failed", detail=str(worker_reaches(worker)))
 
 
 def test_40_the_checkpoint_gate_stays_for_everyone_else(running_worker_run):
@@ -153,20 +138,23 @@ def last_window_worker(new_story, monkeypatch) -> StoryWorker:
     return worker
 
 
+def branch_runs(worker: StoryWorker) -> list[int]:
+    return [row["phase_id"] for row in rows(worker, REACHES) if row["source"] == "merged"]
+
+
 def test_43_the_last_window_does_not_run_on_the_branch_when_the_branch_did_not_move(new_story, monkeypatch):
     worker = last_window_worker(new_story, monkeypatch)
-    started_count = len(worker.started)
     merge(worker)
-    worker.story.expect_rows(len(worker.started) == started_count, detail=str(run_lines(worker)))
+    worker.story.expect_rows(branch_runs(worker) == [], detail=str(rows(worker, REACHES)))
 
 
 @pytest.mark.real_git
 def test_43_the_last_window_runs_on_the_branch_when_the_branch_moved(new_story, monkeypatch):
     worker = last_window_worker(new_story, monkeypatch)
+    worker.repository.checkout(ENVIRONMENT_BRANCH)
     worker.repository.committed("readme.md", "moved\n", "The branch moves")
-    started_count = len(worker.started)
     merge(worker)
-    worker.story.expect_rows(len(worker.started) > started_count, detail=str(run_lines(worker)))
+    worker.story.expect_rows(branch_runs(worker) == [2], detail=str(rows(worker, REACHES)))
 
 
 def test_44_the_early_run_stays(new_story, monkeypatch):

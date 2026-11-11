@@ -10,7 +10,8 @@ from suites.coding.modules.workers.support.worker_run_window import WorkerRunWin
 class WorkerRunWindows:
     """Finds the checkpoint windows a worker's commit completes: each window, among those of the tasks the
     worktree committed, whose open tasks are all in the worker's unit and all committed. A window with an
-    open task of another actor gives none: its tests run on the branch once it is merged."""
+    open task of another actor gives none: its tests run on the branch once it is merged. The windows are read
+    fresh, since the commit that asks moved its tasks to testing in the same request."""
 
     def __init__(self, plans: TaskPlans, checkpoints: PlanCheckpoints, units: WorkUnits) -> None:
         self.plans, self.checkpoints, self.units = plans, checkpoints, units
@@ -19,7 +20,7 @@ class WorkerRunWindows:
         unit_ids = frozenset(self.units.unit(worktree.session_agent_id).task_ids)
         self.plans.prepare(worktree.commit_tasks())
         phases = [phase for phase in (self.plans.find_phase(task_id) for task_id in worktree.commit_tasks()) if phase is not None]
-        plan_windows = {plan_id: self.checkpoints.windows(plan_id) for plan_id in {phase.plan_id for phase in phases}}
+        plan_windows = {plan_id: self.checkpoints.written_windows(plan_id) for plan_id in {phase.plan_id for phase in phases}}
         checkpoints = {checkpoint.id: checkpoint for checkpoint in (plan_windows[phase.plan_id].window_checkpoint(phase.id) for phase in phases)}
         windows = (self.window(plan_windows[checkpoint.plan_id], checkpoint, unit_ids) for checkpoint in checkpoints.values())
         return tuple(window for window in windows if window is not None)

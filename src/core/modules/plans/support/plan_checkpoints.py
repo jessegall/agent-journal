@@ -32,6 +32,11 @@ class PlanCheckpoints:
         plan_tasks = PlanTasksCondition(tuple([plan_id])).statement()
         return self.kept.read("tasks", lambda: self.loaded_windows(plan_id), plan_tasks.sql, plan_tasks.parameters, name="plans.checkpoint_windows")
 
+    def written_windows(self, plan_id: int) -> CheckpointWindows:
+        plan_tasks = PlanTasksCondition(tuple([plan_id])).statement()
+        self.kept.update("tasks", lambda _kept: self.loaded_windows(plan_id), plan_tasks.sql, plan_tasks.parameters, name="plans.checkpoint_windows")
+        return self.windows(plan_id)
+
     def loaded_windows(self, plan_id: int) -> CheckpointWindows:
         phases = tuple(self.queries.query(Phase).filter(plan_id=plan_id).ordered("position").all_rows())
         places = tuple(self.queries.query(PlanTask).filter(plan_id=plan_id).full_table(WINDOW_REASON).all_rows())
