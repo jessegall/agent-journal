@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from pathlib import Path
 
 import pytest
@@ -32,15 +33,10 @@ def running_worker_run(new_story, monkeypatch) -> StoryWorker:
     return worker
 
 
-def test_28_the_run_starts_when_the_tasks_up_to_a_checkpoint_are_committed(running_worker_run):
-    reaches = worker_reaches(running_worker_run)
+def test_28_29_the_run_starts_when_the_tasks_up_to_a_checkpoint_are_committed_and_holds_what_a_checkpoint_holds(running_worker_run):
+    lines, reaches = run_lines(running_worker_run), worker_reaches(running_worker_run)
     running_worker_run.story.expect_rows(len(reaches) == 1, reaches[0]["state"] == "running", reaches[0]["task_ids"] == "1,2,3", detail=str(reaches))
-
-
-def test_29_the_run_holds_what_a_checkpoint_holds(running_worker_run):
-    lines = run_lines(running_worker_run)
-    running_worker_run.story.expect_rows(lines.count(BUILD_TEST) == 1, TEST_LINE in lines, SECOND_TEST_LINE in lines,
-                                         detail=f"{lines} {rows(running_worker_run, REACHES)} {[(p.id, p.line, p.folder) for p in running_worker_run.started_processes()]}")
+    running_worker_run.story.expect_rows(lines.count(BUILD_TEST) == 1, TEST_LINE in lines, SECOND_TEST_LINE in lines, detail=str(lines))
 
 
 def test_30_the_worker_goes_on_during_the_run(running_worker_run):
@@ -58,6 +54,7 @@ def test_31_a_pass_says_nothing_to_anyone(running_worker_run):
 def test_32_a_failure_comes_back_as_work_to_fix(running_worker_run):
     worker = running_worker_run
     worker.end_tests(1, 0, 0, 0)
+    worker.end_all_tests()
     worker.story.expect_text("task show 1", "state: started", actor=worker.story.agent)
     worker.story.expect_rows(worker.status().splitlines()[0].startswith("Fix"), detail=worker.status())
 
@@ -65,6 +62,7 @@ def test_32_a_failure_comes_back_as_work_to_fix(running_worker_run):
 def test_33_only_what_failed_runs_again(running_worker_run):
     worker = running_worker_run
     worker.end_tests(1, 0, 0, 0)
+    worker.end_all_tests()
     started_count = len(worker.started)
     prove_task(worker, 1, 1, TEST_LINE)
     worker.story.run("worker commit --differences none", actor=worker.worker)
@@ -77,12 +75,14 @@ def test_34_a_failure_while_the_worker_is_in_a_later_phase(running_worker_run):
     worker = running_worker_run
     worker.story.run("task start 4", actor=worker.worker)
     worker.end_tests(1, 0, 0, 0)
+    worker.end_all_tests()
     worker.story.expect_rows("Point: fix" in worker.status(), detail=worker.status())
 
 
 def test_35_two_runs_in_a_row(running_worker_run):
     worker = running_worker_run
     worker.end_tests(1, 0, 0, 0)
+    worker.end_all_tests()
     prove_task(worker, 1, 1, TEST_LINE)
     worker.story.run("worker commit --differences none", actor=worker.worker)
     worker.story.run_listeners()
@@ -104,7 +104,7 @@ def test_37_the_test_checkout_is_made_if_it_is_missing(running_worker_run):
 
 def test_38_a_run_that_cannot_start_does_not_block_the_worker(new_story, monkeypatch):
     worker = plan_worker(new_story, monkeypatch)
-    monkeypatch.setattr("suites.coding.modules.workers.support.worktree_git.WorktreeGit.commit_checkout", unstartable_checkout)
+    monkeypatch.setattr(type(worker.story.container.get(WorktreeGit)), "commit_checkout", unstartable_checkout)
     commit_tasks(worker, TEST_LINE, SECOND_TEST_LINE, TEST_LINE)
     worker.story.expect_rows(worker_reaches(worker)[0]["state"] == "failed", any("could not start" in line for line in worker.worker_lines()),
                              "state: testing" in worker.story.run("task show 1", actor=worker.story.agent).output_text, detail=str(worker.worker_lines()))
@@ -118,6 +118,7 @@ def unstartable_checkout(git, worktree, commit):
 def test_39_a_run_stopped_by_the_time_limit_is_a_failure_with_the_reason(running_worker_run):
     worker = running_worker_run
     worker.end_tests(124, 0, 0, 0)
+    worker.end_all_tests()
     worker.story.expect_rows(worker_reaches(worker)[0]["state"] == "failed", detail=str(worker_reaches(worker)))
 
 

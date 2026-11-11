@@ -13,6 +13,7 @@ from suites.coding.modules.workers.commands.return_checkpoint_tasks.return_check
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test_handler import RecordWorkerTestHandler
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.proof import Proof
+from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.checkpoint_failures import CheckpointFailures
 from suites.coding.modules.workers.support.checkpoint_folders import CheckpointFolders
@@ -25,6 +26,7 @@ from suites.coding.modules.workers.support.returned_tasks import ReturnedTasks
 from suites.coding.modules.workers.support.worker_nudges import CHECKPOINT_FAILURE_FALLBACK
 
 FAILURE_SOURCE = "workers.checkpoint-failure"
+WORKER_RUN_SHORTFALL = "the tests of its checkpoint failed on your commit: outputs {outputs}"
 
 
 class ReturnCheckpointTasksHandler(Handler[ReturnCheckpointTasks, tuple[ReturnedTasks, ...]]):
@@ -51,7 +53,7 @@ class ReturnCheckpointTasksHandler(Handler[ReturnCheckpointTasks, tuple[Returned
         failed = self.failures.read(reach, proofs, self.results.tests(reach))
         link = self.folders.link(reach)
         if link is not None:
-            self.return_worker_run(self.rows.required(Worktree, link.worktree_id), failed, context)
+            self.return_worker_run(self.rows.required(Worktree, link.worktree_id), failed, proofs, context)
             return ()
         tasks = self.rows.required_by_id(Task, failed.task_ids)
         worker_tasks = defaultdict[int, list[int]](list)
@@ -68,11 +70,14 @@ class ReturnCheckpointTasksHandler(Handler[ReturnCheckpointTasks, tuple[Returned
             self.inbox.send_nudge(CHECKPOINT_FAILURE_FALLBACK.nudge(phase=reach.phase_id, outputs=outputs, task=failed.fallback_task_id), FAILURE_SOURCE, context)
         return tuple(ReturnedTasks(worker_id, tuple(task_ids), failed.output_ids(task_ids)) for worker_id, task_ids in worker_tasks.items())
 
-    def return_worker_run(self, worktree: Worktree, failed: FailedRun, context: Context) -> None:
+    def return_worker_run(self, worktree: Worktree, failed: FailedRun, proofs: tuple[Proof, ...], context: Context) -> None:
         task_ids = sorted(failed.task_ids)
         if not task_ids:
             return
         outputs = ", ".join(str(output_id) for output_id in failed.output_ids(tuple(task_ids)))
+        for proof in proofs:
+            if proof.task_id in task_ids and proof.state is not ProofState.SHORT:
+                self.repository.save_change(proof, proof.moved(ProofLifecycle.short, shortfall=WORKER_RUN_SHORTFALL.format(outputs=outputs)), context)
         self.test_results.reopen_tasks(worktree, task_ids, outputs, context)
 
     def return_unmerged(self, short_proofs: list[Proof], context: Context) -> None:

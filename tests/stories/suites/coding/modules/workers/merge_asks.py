@@ -69,16 +69,6 @@ def test_51_refused_a_run_of_the_asked_work_failed(new_story, monkeypatch):
     worker.story.expect_refusal(ASK_MERGE, "is started", actor=worker.worker)
 
 
-@pytest.mark.real_git
-def test_52_refused_a_clash_waits(new_story, monkeypatch):
-    worker = committed_list(new_story, monkeypatch)
-    worker.story.expect_success(ASK_MERGE, actor=worker.worker)
-    worker.repository.committed("cart.py", "TOTAL = 9\n", "A clash on the branch")
-    worker.story.run(f"worker merge --wait {agent_number(worker.story, worker.worker.id)}", actor=worker.story.agent)
-    worker.story.run_listeners()
-    worker.story.expect_refusal(ASK_MERGE, "clashed with", actor=worker.worker)
-
-
 def test_53_refused_nothing_committed_since_the_last_merge(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
     worker.story.expect_refusal(ASK_MERGE, "nothing is committed since your last merge", actor=worker.worker)

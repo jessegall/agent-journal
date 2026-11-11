@@ -72,6 +72,7 @@ def test_the_later_merge_brings_only_the_rest(proven_worker):
     story.expect_success(f'proof make 1 --task {second_task} "receipt.py:1, the receipt story"', actor=worker)
     story.expect_success(COMMIT, actor=worker)
     story.expect_success("proof check 2", actor=story.agent)
+    asked_for_merge(story, worker)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     asked_for_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)

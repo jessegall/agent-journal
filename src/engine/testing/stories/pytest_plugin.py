@@ -139,10 +139,6 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
 @pytest.hookimpl(wrapper=True)
 def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[None]) -> Generator[None, pytest.TestReport, pytest.TestReport]:
     report = yield
-    failed_expectations = [message for steps in item.stash.get(STORY_RUNS, []) for message in steps.story.failed_expectations]
-    if report.when == "call" and failed_expectations:
-        report.outcome = "failed"
-        report.longrepr = "\n\n".join([f"{len(failed_expectations)} expectations failed:", *failed_expectations, str(report.longrepr or "")]).rstrip()
     if report.when == "call":
         item.stash[CALL_PASSED] = report.passed
     return report
@@ -166,6 +162,9 @@ def pytest_runtest_call(item: pytest.Item) -> Generator[None]:
     finally:
         for steps in item.stash[STORY_RUNS]:
             steps.finish_test()
+    failed_expectations = [message for steps in item.stash[STORY_RUNS] for message in steps.story.failed_expectations]
+    if failed_expectations:
+        pytest.fail("\n\n".join([f"{len(failed_expectations)} expectations failed:", *failed_expectations]), pytrace=False)
     budget = story_budget(item)
     for steps in item.stash[STORY_RUNS]:
         overrun = budget.overrun(steps.points, steps.cpu_seconds)

@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from dataclasses import dataclass
 
 import pytest
@@ -65,6 +66,7 @@ def failed_checkpoint(new_story, monkeypatch, output: str, *failing_lines: str) 
 def merge_again(worker: StoryWorker) -> None:
     """The main agent merges the task that was handed in again and answers the important line of its deferral."""
     number = agent_number(worker.story, worker.worker.id)
+    asked_for_merge(worker.story, worker.worker)
     worker.story.run(f"worker logs {number}", actor=worker.story.agent)
     worker.story.expect_success(f'worker merge --wait {number} --read-important "the merger deferred its failing test paths"', actor=worker.story.agent)
     worker.story.run_listeners()
