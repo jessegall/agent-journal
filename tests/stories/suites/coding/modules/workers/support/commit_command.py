@@ -1,2 +1,2 @@
-COMMIT_COMMAND = "worker deliver"
+COMMIT_COMMAND = "worker commit"
 COMMIT = f"{COMMIT_COMMAND} --wait --differences none"
