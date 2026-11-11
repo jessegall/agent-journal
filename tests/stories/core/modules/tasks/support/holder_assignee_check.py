@@ -2,7 +2,7 @@ import json
 
 from engine.testing.stories.story import Story
 
-HELD_BY_ITS_HOLDER = ("started", "testing", "blocked")
+HOLDER_STATES = ("started", "testing", "blocked")
 ROW_LIMIT = 200
 
 
@@ -24,7 +24,7 @@ def assert_holders_are_assignees(story: Story) -> None:
     assignees = task_assignees(story)
     for task in rows(story, "task list"):
         holder_id = task["holder_id"]
-        if task["state"] in HELD_BY_ITS_HOLDER and holder_id in agent_ids:
+        if task["state"] in HOLDER_STATES and holder_id in agent_ids:
             story.expect_rows(assignees.get(task["id"], []) == [holder_id], detail=f"task {task['id']} is held by {holder_id} and assigned to {assignees.get(task['id'], [])}")
 
 
