@@ -37,7 +37,7 @@ def ask(case: MergerCase, text: str = QUESTION, topic: AskTopic = AskTopic.TOOL)
     return outcome
 
 
-def visit_ends_with_nothing_done(case: MergerCase) -> None:
+def end_unanswered_visit(case: MergerCase) -> None:
     case.story.expect_success("merger next", actor=case.merger)
     case.story.container.get(Bus).run(ReturnUnhandledMergerLines(), Actor.core(), environment_id=1)
 
@@ -84,10 +84,10 @@ def test_two_asks_while_the_merger_runs_both_show_in_merger_next_and_no_second_m
 
 def test_a_merger_that_read_an_ask_and_did_nothing_gets_it_again_at_every_visit_and_each_read_is_counted(case):
     ask(case)
-    visit_ends_with_nothing_done(case)
+    end_unanswered_visit(case)
     first = questions(case.story)[0]
     case.story.expect_rows(first.read_at is None, first.visit_count == 1, first.outcome is None, detail=str(first))
-    visit_ends_with_nothing_done(case)
+    end_unanswered_visit(case)
     second = questions(case.story)[0]
     case.story.expect_rows(second.read_at is None, second.visit_count == 2, detail=str(second))
     case.story.expect_text("merger next", QUESTION, "task 1", actor=case.merger)
