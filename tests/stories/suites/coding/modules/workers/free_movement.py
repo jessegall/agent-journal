@@ -49,7 +49,7 @@ def test_18_a_task_after_a_checkpoint_that_has_not_passed_is_refused_and_a_task_
 def test_19_a_task_that_waits_on_an_open_task_is_refused_with_the_task_it_waits_for(one_task):
     one_task.story.expect_success("task depend 3 --on 2", actor=one_task.story.agent)
     refused = one_task.story.run("task start 3", actor=one_task.worker)
-    one_task.story.expect_rows(refused.code != 0, "task 3 waits on" in refused.output_text, "task 2" in refused.output_text, detail=refused.output_text)
+    one_task.story.expect_rows(refused.code != 0, "task 3 is blocked: waits on task 2" in refused.output_text, detail=refused.output_text)
 
 
 def test_20_71_a_worker_blocks_one_started_task_goes_on_with_another_and_the_main_agent_hears_who_can_unblock_it(two_tasks):
@@ -101,8 +101,11 @@ def test_23_a_task_that_waits_on_a_task_of_another_agent_is_listed_to_start_once
     story.expect_rows(receipts not in listed_while_waiting, receipts in startable_ids(worker), detail=f"{listed_while_waiting} | {startable_ids(worker)}")
 
 
-def test_62_a_task_one_worker_started_is_refused_to_another_worker_of_the_plan_with_the_worker_that_holds_it(one_task):
+def test_62_a_start_and_a_proof_of_a_task_one_worker_started_are_refused_to_another_worker_with_the_worker_that_holds_it(one_task):
     receipts = one_task.story.new_row_id('task make "Receipts" --environment main', actor=one_task.story.agent)
     second = one_task.added_worker(f"{DISPATCH.removesuffix(' 1')} {receipts}")
     refused = one_task.story.run("task start 1", actor=second.worker)
-    one_task.story.expect_rows(refused.code != 0, f"task 1 is held by worker {agent_number(one_task.story, one_task.worker.id)}" in refused.output_text, detail=refused.output_text)
+    refused_proof = prove_task(second, 1, 1)
+    holder_words = f"task 1 is held by worker {agent_number(one_task.story, one_task.worker.id)}"
+    one_task.story.expect_rows(refused.code != 0, holder_words in refused.output_text, refused_proof.code != 0, holder_words in refused_proof.output_text, proofs(one_task) == (),
+                               detail=f"{refused.output_text} | {refused_proof.output_text}")

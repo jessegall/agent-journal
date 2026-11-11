@@ -18,6 +18,7 @@ from engine.template.template_declaration import TemplateDeclaration
 
 from tests.unit.engine.samples.module_copy import items_module_copy
 from tests.unit.engine.samples.sync_sample import ItemsModule
+from tests.unit.engine.samples.unused_guard_sample import ShelfGuard
 
 ITEMS = "tests.unit.engine.samples.sync_sample:ItemsModule"
 ITEM_COUNT = "tests.unit.engine.samples.sync_sample:ItemCountModule"
@@ -39,7 +40,7 @@ def test_the_registry_after_a_sync_names_every_noun_handler_guard_and_listener(t
     registry = Registry.read(database)
     assert (registry.models["item"].module, registry.models["item"].model.text) == ("items", "tests.unit.engine.model.test_model:Item")
     assert {"engine.command.make_command:MakeCommand", "engine.command.move_command:MoveCommand"} <= set(registry.handlers)
-    assert [guard.name for guard in registry.guards][:2] == ["core.lifecycle", "items.paused-only"]
+    assert [guard.name for guard in registry.guards if guard.position >= 0][:2] == ["core.lifecycle", "items.paused-only"]
     module_actor = database.rows(Statement("SELECT id FROM actors WHERE type = 'module' AND name = 'item-count'"))[0]["id"]
     assert [(listener.name, listener.timing.value, listener.actor_id) for listener in registry.listeners if listener.name == "items.paused-count"] == [("items.paused-count", "commit", module_actor)]
     actors = [tuple(row) for row in database.rows(Statement("SELECT id, type, name FROM actors ORDER BY id"))]
@@ -96,3 +97,10 @@ def test_sync_removes_a_stale_cursor_so_caught_up_listeners_have_no_unhandled_ev
     cursors.advance_all(tuple(cursors.positions().keys() - {"items.removed"}), newest)
 
     assert not cursors.has_unhandled_events()
+
+
+def test_guards_that_run_first_take_the_places_before_the_lifecycle_guard_which_has_place_zero():
+    first = ModuleSync.guard_entries([ShelfGuard, ShelfGuard], -2)
+    later = ModuleSync.guard_entries([ShelfGuard], 1)
+    assert [entry.position for entry in first] == [-2, -1]
+    assert [(entry.name, entry.position) for entry in later] == [("shelves.weekdays-only", 1)]

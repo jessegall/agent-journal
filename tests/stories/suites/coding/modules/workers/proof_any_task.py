@@ -1,7 +1,6 @@
 import pytest
 
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH
 from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, proofs, prove_task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
 
@@ -42,9 +41,8 @@ def test_2_a_proof_of_a_task_the_worker_has_not_started_is_refused_with_the_line
     one_task.story.expect_rows(refused.code != 0, "task 2 is not started" in refused.output_text, "journal task start 2" in refused.output_text, proofs(one_task) == (), detail=refused.output_text)
 
 
-def test_3_a_proof_of_a_task_of_another_worker_is_refused(one_task):
+def test_3_a_proof_of_a_task_that_was_not_given_to_the_worker_is_refused(one_task):
     receipts = one_task.story.new_row_id('task make "Receipts" --environment main', actor=one_task.story.agent)
-    one_task.added_worker(f"{DISPATCH.removesuffix(' 1')} {receipts}")
     refused = prove_task(one_task, receipts, 1)
     one_task.story.expect_rows(refused.code != 0, f"task {receipts} is not yours" in refused.output_text, proofs(one_task) == (), detail=refused.output_text)
 

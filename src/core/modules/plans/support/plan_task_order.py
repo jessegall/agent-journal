@@ -19,7 +19,8 @@ class PlanTaskOrder:
     earliest phase of the plan that still has a task open, started or blocked, the agent's own started tasks
     not counted, and the plan's order comes before task numbers. So a plan given to one agent runs phase by
     phase, and the tests at a phase's end hold the next phase back. A reserved task can wait for its plan
-    to start."""
+    to start. The first placed task is the first by priority and place in its plan, whatever phase the plan
+    is at: for an agent that may start any of its tasks."""
 
     def __init__(self, queries: Queries, kept: KeptRows) -> None:
         self.queries, self.kept = queries, kept
@@ -28,6 +29,12 @@ class PlanTaskOrder:
         if not tasks:
             return None
         return self.earliest(tasks, self.task_rows(tasks), started_task_ids)
+
+    def first_placed(self, tasks: Sequence[Task]) -> Task | None:
+        if not tasks:
+            return None
+        positions = {row.task_id: row for row in self.task_rows(tasks)}
+        return min(tasks, key=lambda task: self.order(task, positions))
 
     def first_started_plan_task(self, tasks: Sequence[Task]) -> Task | None:
         if not tasks:

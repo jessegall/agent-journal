@@ -84,9 +84,6 @@ def run_operation_copy(story, operation):
 @pytest.fixture
 def worker_git_command(worker_command, name):
     story, repository, worker, _ = worker_command
-    if name is WorkerOperationName.NEXT:
-        task = story.new_row_id('task make "The next task" --brief "Add the receipt"', actor=story.agent)
-        story.expect_success(f"worker send {agent_number(story, worker.id)} --wait --task {task}", actor=story.agent)
     if name is WorkerOperationName.MERGE:
         story.expect_success(DELIVERY, actor=worker)
         story.expect_success("proof check 1", actor=story.agent)
@@ -95,7 +92,7 @@ def worker_git_command(worker_command, name):
     return worker_command
 
 
-@pytest.mark.parametrize(("name", "method"), [(WorkerOperationName.NEXT, "rebased_commit"), (WorkerOperationName.DELIVER, "rebased_commit"),
+@pytest.mark.parametrize(("name", "method"), [(WorkerOperationName.COMMIT, "rebased_commit"), (WorkerOperationName.DELIVER, "rebased_commit"),
                                                (WorkerOperationName.JOB, "sync"), (WorkerOperationName.MERGE, "merge")])
 @pytest.mark.real_git
 @pytest.mark.parametrize("queue_full", [False, True])

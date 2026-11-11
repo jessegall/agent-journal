@@ -3772,6 +3772,133 @@
       "title"
     ]
   },
+  "core.plans.checkpoint_pass.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "passed_at",
+      "phase_id",
+      "plan_id"
+    ]
+  },
+  "core.plans.checkpoint_pass.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "passed_at",
+      "phase_id",
+      "plan_id"
+    ]
+  },
+  "core.plans.checkpoint_pass.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "passed_at",
+      "phase_id",
+      "plan_id"
+    ]
+  },
+  "core.plans.checkpoint_reach.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "failed_task_ids",
+      "is_early",
+      "phase_id",
+      "plan_id",
+      "state",
+      "task_ids"
+    ]
+  },
+  "core.plans.checkpoint_reach.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "failed_task_ids",
+      "is_early",
+      "phase_id",
+      "plan_id",
+      "state",
+      "task_ids"
+    ]
+  },
+  "core.plans.checkpoint_reach.failed": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "failed_task_ids",
+      "is_early",
+      "phase_id",
+      "plan_id",
+      "state",
+      "task_ids"
+    ]
+  },
+  "core.plans.checkpoint_reach.passed": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "failed_task_ids",
+      "is_early",
+      "phase_id",
+      "plan_id",
+      "state",
+      "task_ids"
+    ]
+  },
+  "core.plans.checkpoint_reach.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "failed_task_ids",
+      "is_early",
+      "phase_id",
+      "plan_id",
+      "state",
+      "task_ids"
+    ]
+  },
   "core.plans.phase.created": {
     "forms": [
       "commit",
@@ -7621,6 +7748,51 @@
       "worktree_id"
     ]
   },
+  "suites.coding.workers.checkpoint_test.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "owner_agent_id",
+      "picker_command",
+      "process_id",
+      "reach_id",
+      "state",
+      "test_command"
+    ]
+  },
+  "suites.coding.workers.checkpoint_test.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "owner_agent_id",
+      "picker_command",
+      "process_id",
+      "reach_id",
+      "state",
+      "test_command"
+    ]
+  },
+  "suites.coding.workers.checkpoint_test.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "owner_agent_id",
+      "picker_command",
+      "process_id",
+      "reach_id",
+      "state",
+      "test_command"
+    ]
+  },
   "suites.coding.workers.merge_followup.created": {
     "forms": [
       "commit",
@@ -7897,7 +8069,76 @@
       "environment_id"
     ]
   },
+  "suites.coding.workers.phase_test_deferral.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "closed_at",
+      "creator_id",
+      "due_phase_id",
+      "environment_id",
+      "paths",
+      "phase_id",
+      "reason",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.phase_test_deferral.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "closed_at",
+      "creator_id",
+      "due_phase_id",
+      "environment_id",
+      "paths",
+      "phase_id",
+      "reason",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.phase_test_deferral.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "closed_at",
+      "creator_id",
+      "due_phase_id",
+      "environment_id",
+      "paths",
+      "phase_id",
+      "reason",
+      "worker_id"
+    ]
+  },
   "suites.coding.workers.proof.check": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "point",
+      "process_id",
+      "shortfall",
+      "state",
+      "task_id",
+      "test_command",
+      "text",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.proof.commit": {
     "forms": [
       "commit",
       "guard",
@@ -7952,6 +8193,42 @@
     ]
   },
   "suites.coding.workers.proof.queue": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "point",
+      "process_id",
+      "shortfall",
+      "state",
+      "task_id",
+      "test_command",
+      "text",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.proof.return_checked": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "point",
+      "process_id",
+      "shortfall",
+      "state",
+      "task_id",
+      "test_command",
+      "text",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.proof.return_short": {
     "forms": [
       "commit",
       "guard",
@@ -8479,6 +8756,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -8489,6 +8769,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",
@@ -8516,6 +8797,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -8526,6 +8810,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",
@@ -8553,6 +8838,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -8563,6 +8851,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",
@@ -8590,6 +8879,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -8600,6 +8892,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",
@@ -8627,6 +8920,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -8637,6 +8933,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",
@@ -8664,6 +8961,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -8674,6 +8974,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",
@@ -8701,6 +9002,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -8711,6 +9015,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",
@@ -8738,6 +9043,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -8748,6 +9056,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",
@@ -8775,6 +9084,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -8785,6 +9097,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",
@@ -8812,6 +9125,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -8822,6 +9138,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",
@@ -8849,6 +9166,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -8859,6 +9179,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",
@@ -8886,6 +9207,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -8896,6 +9220,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",
@@ -8923,6 +9248,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -8933,6 +9261,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",
@@ -8960,6 +9289,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -8970,6 +9302,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",
@@ -8997,6 +9330,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -9007,6 +9343,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",
@@ -9034,6 +9371,9 @@
       "branch",
       "commit_after_merge",
       "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
       "creator_id",
       "cut_at",
       "delivered_at",
@@ -9044,6 +9384,7 @@
       "library_links",
       "logs_output_id",
       "logs_read_at",
+      "merge_ready_at",
       "merged_at",
       "merged_task_ids",
       "new_agent_reason",

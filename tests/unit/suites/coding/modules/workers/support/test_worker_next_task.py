@@ -14,13 +14,14 @@ def task(task_id):
 READY = (task(1), task(2), task(3))
 
 
-def next_task(chosen=None, focused=None, ready=READY):
+def next_task(chosen=None, focused=None, ready=READY, waiting_ids=()):
     tasks = SimpleNamespace(ready_delegated=lambda worker_id: ready, started_tasks=lambda worker_id: ())
-    plan_order = SimpleNamespace(first=lambda tasks, started_ids: tasks[0] if tasks else None)
+    plan_order = SimpleNamespace(first_placed=lambda tasks: tasks[0] if tasks else None)
+    open_tasks = SimpleNamespace(startable_tasks=lambda ready, started_count: tuple(task for task in ready if task.id not in waiting_ids))
     choices = SimpleNamespace(find=lambda worker_id: chosen)
     picker = SimpleNamespace(first=lambda agent: focused)
     queries = SimpleNamespace(query=lambda model: SimpleNamespace(find=lambda agent_id: SimpleNamespace(id=agent_id)))
-    return WorkerNextTask(tasks, plan_order, choices, picker, queries)
+    return WorkerNextTask(tasks, plan_order, choices, picker, queries, open_tasks)
 
 
 @pytest.mark.parametrize("chosen, focused, first_id", [
@@ -37,6 +38,10 @@ def test_the_guidance_and_the_next_task_name_the_same_task(chosen, focused, firs
 
 def test_a_worker_with_one_ready_task_takes_it_without_a_read_of_its_focus():
     assert next_task(focused=task(9), ready=tuple([task(1)])).following(WORKER_ID).id == 1
+
+
+def test_a_task_the_worker_may_not_start_now_is_passed_over_also_when_the_focus_names_it():
+    assert next_task(focused=task(1), waiting_ids=(1, 2)).following(WORKER_ID).id == 3
 
 
 def test_a_worker_with_nothing_ready_takes_nothing():

@@ -12,6 +12,7 @@ class Guard(EventSubscriber[E]):
     is_confirmation: ClassVar[bool] = False
     is_safety: ClassVar[bool] = False
     runs_last: ClassVar[bool] = False
+    runs_first: ClassVar[bool] = False
 
     def check(self, event: E, context: Context) -> None:
         raise NotImplementedError(f"{type(self).__name__} states no check")

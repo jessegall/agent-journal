@@ -68,6 +68,7 @@ def test_a_queued_worker_command_runs_through_the_real_runner_and_cli(worker_run
     if command_name != "deliver":
         task_id = story.new_row_id('task make "The next cart change" --brief "Add the receipt"', actor=story.agent)
     if command_name == "next":
+        arguments = ["worker", "next"]
         story.expect_success(f"worker send {agent_number(story, worker.id)} --wait --task {task_id}", actor=story.agent)
     if command_name == "send":
         arguments = ["worker", "send", str(agent_number(story, worker.id)), "--task", str(task_id)]

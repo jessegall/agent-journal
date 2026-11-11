@@ -53,7 +53,7 @@ from engine.registry.mark_entry import MarkEntry
 from engine.registry.nudge_entry import NudgeEntry
 from engine.registry.window_entry import WindowEntry
 from engine.module.window_check import unavailable_reason
-from engine.module.module import ListenerClass, Module
+from engine.module.module import GuardClass, ListenerClass, Module
 from engine.module.button_slots import ButtonSlots
 from engine.module.inspector_slots import InspectorSlots
 from engine.module.driver_entries import DriverEntries
@@ -129,6 +129,8 @@ class ModuleSync:
 
     def registry(self, modules: tuple[type[Module], ...], rules: tuple[DriverRuleEntry, ...], actor_ids: dict[str, int]) -> Registry:
         guards = sorted((guard for module in modules for guard in module.guards), key=lambda guard: guard.runs_last)
+        first_guards = [guard for guard in guards if guard.runs_first]
+        later_guards = [guard for guard in guards if not guard.runs_first]
         listeners = [(module, listener) for module in modules for listener in module.listeners]
         suites = self.finder.suite_list()
         return Registry(
@@ -145,9 +147,9 @@ class ModuleSync:
             subcommands={subcommand_line(subcommand): DottedPath.class_path(subcommand) for module in modules for subcommand in module.subcommands},
             outward_lines=tuple(sorted(subcommand_line(subcommand) for module in modules for subcommand in module.subcommands if subcommand.outward)),
             background_lines=tuple(sorted(subcommand_line(subcommand) for module in modules for subcommand in module.subcommands if subcommand.background)),
-            guards=(GuardEntry(LifecycleGuard.name, EventPattern(LifecycleGuard.event), DottedPath.class_path(LifecycleGuard), 0, LifecycleGuard.short_flag),
-                    *(GuardEntry(guard.name, EventPattern(guard.event), DottedPath.class_path(guard), position, guard.short_flag, guard.is_confirmation)
-                      for position, guard in enumerate(guards, 1))),
+            guards=(*self.guard_entries(first_guards, -len(first_guards)),
+                    GuardEntry(LifecycleGuard.name, EventPattern(LifecycleGuard.event), DottedPath.class_path(LifecycleGuard), 0, LifecycleGuard.short_flag),
+                    *self.guard_entries(later_guards, 1)),
             listeners=tuple(ListenerEntry(listener.name, EventPattern(listener.event), self.timing(listener), DottedPath.class_path(listener), position,
                                           actor_ids[module.name]) for position, (module, listener) in enumerate(listeners, 1)),
             bindings={DottedPath.class_path(interface).text: DottedPath.class_path(implementation) for module in modules for interface, implementation in module.bindings.items()},
@@ -177,6 +179,11 @@ class ModuleSync:
             moves=tuple(MoveEntry(module.name, DottedPath.class_path(move), tuple(move.reads), tuple(move.drops), tuple(move.id_modules), tuple(move.references), tuple(move.setting_keys))
                         for module in modules for move in module.moves),
         )
+
+    @staticmethod
+    def guard_entries(guards: Sequence[GuardClass], first_position: int) -> tuple[GuardEntry, ...]:
+        return tuple(GuardEntry(guard.name, EventPattern(guard.event), DottedPath.class_path(guard), position, guard.short_flag, guard.is_confirmation)
+                     for position, guard in enumerate(guards, first_position))
 
     def windows(self, modules: tuple[type[Module], ...]) -> tuple[WindowEntry, ...]:
         shipped = set(self.finder.default_modules())
