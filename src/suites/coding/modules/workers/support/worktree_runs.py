@@ -22,8 +22,12 @@ class WorktreeRuns:
         return "; ".join(PASSED_TEXT.format(phase=link.phase_id, commit=link.commit_id) for link in links if link.reach_id in passed_ids)
 
     def holds_merge(self, worktree_id: int) -> bool:
-        newest = {reach.phase_id: reach for reach in sorted(self.reaches(self.links(worktree_id)), key=lambda reach: reach.id)}
-        return any(reach.state is not CheckpointState.PASSED for reach in newest.values())
+        return self.blocking_run(worktree_id) is not None
+
+    def blocking_run(self, worktree_id: int) -> tuple[WorktreeReach, CheckpointReach] | None:
+        links = {link.reach_id: link for link in self.links(worktree_id)}
+        newest = {reach.phase_id: reach for reach in sorted(self.reaches(tuple(links.values())), key=lambda reach: reach.id)}
+        return next(((links[reach.id], reach) for reach in newest.values() if reach.state is not CheckpointState.PASSED), None)
 
     def links(self, worktree_id: int) -> tuple[WorktreeReach, ...]:
         return tuple(self.queries.query(WorktreeReach).filter(worktree_id=worktree_id).all_rows())

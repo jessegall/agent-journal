@@ -52,6 +52,14 @@ class WorkUnit:
         return f"Your unit is tasks {', '.join(first_ids)} and {last_id}, sent to you together. Work all of them before you report."
 
     @property
+    def merge_name(self) -> str:
+        if self.plan is not None:
+            return f"plan {self.plan.id}"
+        if self.phase is not None:
+            return f"phase {self.phase.position} of plan {self.phase.plan_id}"
+        return f"tasks {', '.join(str(task_id) for task_id in self.task_ids)}"
+
+    @property
     def card_name(self) -> str:
         if self.plan is not None:
             return f"Plan {self.plan.id} · {self.plan.title}"
