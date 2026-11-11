@@ -7,6 +7,7 @@ from collections.abc import Mapping
 from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
 from engine.process.leftover_process import LeftoverProcess
 from core.modules.agents.support.launcher_service import LauncherService
+from core.modules.agents.support.program_transport import RUNNING_ANSWER
 
 ANSWER_LIMIT_SECONDS = 9
 ANSWER_BYTES = 32
@@ -15,7 +16,6 @@ STOP_FIELD = "stop"
 START_FIELD = "command"
 IDLE_FIELD = "quiet"
 RUNNING_FIELD = "running"
-RUNNING_ANSWER = b"running\n"
 REFUSED_TRIES = 3
 REFUSED_PAUSE_SECONDS = 0.1
 OWNER_LINK_ENDING = ".pid"
@@ -76,12 +76,17 @@ class LauncherLink:
 
     @property
     def has_running_owner(self) -> bool:
+        owner_pid = self.owner_pid
+        return owner_pid is not None and LeftoverProcess.is_running(owner_pid)
+
+    @property
+    def owner_pid(self) -> int | None:
         socket_path = self.home.socket(LAUNCHER_SOCKET)
         try:
             pid_text = os.readlink(socket_path.with_name(socket_path.name + OWNER_LINK_ENDING))
         except OSError:
-            return False
-        return pid_text.isdigit() and LeftoverProcess.is_running(int(pid_text))
+            return None
+        return int(pid_text) if pid_text.isdigit() else None
 
     def exchanged_after_start(self, request: Mapping[str, object], answer_bytes: int) -> bytes | None:
         try:

@@ -1,12 +1,9 @@
-import subprocess
-
-from engine.caller.process_table import PS_ENVIRONMENT, PS_TIMEOUT_SECONDS
+from engine.caller.process_table import ProcessTable
 from engine.process.leftover_process import LeftoverProcess
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.plugins.support.service_processes import ServiceProcesses
 
-COMMAND_LINES = ["ps", "-A", "-ww", "-o", "pid=,ppid=,command="]
 PROGRAM_POSITIONS = 2
 
 
@@ -34,6 +31,4 @@ class OrphanServices:
 
     @staticmethod
     def listed() -> list[tuple[int, int, list[str]]]:
-        listing = subprocess.run(COMMAND_LINES, capture_output=True, text=True, check=False, timeout=PS_TIMEOUT_SECONDS, env=PS_ENVIRONMENT).stdout
-        rows = [line.split() for line in listing.splitlines()]
-        return [(int(row[0]), int(row[1]), row[2:]) for row in rows if len(row) > 2]
+        return [(process.pid, process.parent_pid, list(process.command_parts)) for process in ProcessTable().commands()]

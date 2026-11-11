@@ -17,7 +17,7 @@ class StartAgentProgram(Command[Dispatch]):
     agent_id: int
     arguments: Sequence[str]
     folder: str
-    variables: Mapping[str, str] = field(default_factory=dict)
+    variables: Mapping[str, str] = field(default_factory=dict[str, str])
 
     @classmethod
     def launching(cls, agent_id: int, launch: LaunchCommand) -> "StartAgentProgram":

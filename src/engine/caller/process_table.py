@@ -5,12 +5,14 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from engine.time.timestamp import Timestamp
+from engine.caller.process_command import ProcessCommand
 from engine.caller.process_row import ProcessRow
 
 
 PS_TIMEOUT_SECONDS = 5
 PS_ENVIRONMENT = {"LC_ALL": "C", "PATH": "/bin:/usr/bin"}
 PS_LINE = ["ps", "-A", "-o", "pid=,ppid=,lstart="]
+COMMANDS_LINE = ["ps", "-A", "-ww", "-o", "pid=,ppid=,command="]
 LSTART_FORMAT = "%a %b %d %H:%M:%S %Y"
 PROC_FOLDER = Path("/proc")
 START_FIELD_INDEX = 19
@@ -29,13 +31,19 @@ def proc_row(stat_text: str, boot_seconds: float, tick_rate_hertz: int) -> Proce
     started_seconds = int(boot_seconds + int(fields[START_FIELD_INDEX]) / tick_rate_hertz)
     return ProcessRow(int(pid_text), int(fields[1]), Timestamp(datetime.fromtimestamp(started_seconds, timezone.utc)))
 class ProcessTable:
-    """The machine's running processes, read once: from ps on macOS, from /proc on Linux."""
+    """The machine's running processes, read once: from ps on macOS, from /proc on Linux; with their command
+    lines, from ps on both."""
 
     def rows(self) -> list[ProcessRow]:
         if sys.platform.startswith("linux"):
             return self.proc_rows()
         finished = subprocess.run(PS_LINE, capture_output=True, text=True, timeout=PS_TIMEOUT_SECONDS, env=PS_ENVIRONMENT)
         return ps_rows(finished.stdout)
+
+    def commands(self) -> list[ProcessCommand]:
+        listing = subprocess.run(COMMANDS_LINE, capture_output=True, text=True, check=False, timeout=PS_TIMEOUT_SECONDS, env=PS_ENVIRONMENT).stdout
+        lines = [line.split() for line in listing.splitlines()]
+        return [ProcessCommand(int(columns[0]), int(columns[1]), tuple(columns[2:])) for columns in lines if len(columns) > 2]
 
     def proc_rows(self) -> list[ProcessRow]:
         boot_line = next(line for line in FileAccess.shared().read(PROC_FOLDER / "stat").splitlines() if line.startswith("btime "))

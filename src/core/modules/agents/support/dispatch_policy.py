@@ -1,5 +1,4 @@
-from collections.abc import Generator
-from contextlib import contextmanager
+from contextlib import AbstractContextManager, nullcontext
 
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.enums.agent_session_state import AgentSessionState
@@ -13,9 +12,8 @@ class DispatchPolicy:
     calls an ended agent gone for good; a kept helper whose program ended still takes its own messages,
     because a message starts its program again."""
 
-    @contextmanager
-    def lock(self, session: str) -> Generator[bool]:
-        yield True
+    def lock(self, session: str) -> AbstractContextManager[bool]:
+        return nullcontext(True)
 
     def prepare(self, agent: Agent) -> AgentSessionState:
         return AgentSessionState.READY

@@ -46,12 +46,19 @@ class EndedAgentProgramListener(CommitListener[AgentEnded]):
     def stop_program(self, agent: Agent, later_events: list[LoggedEvent]) -> None:
         new_session = next((later for later in later_events if SESSION_FIELD in later.data), None)
         if new_session is not None:
-            self.program.stop_process(self.earlier_value(new_session, PID_FIELD, agent.pid), self.earlier_value(new_session, PROGRAM_FIELD, agent.program))
+            self.program.stop_process(self.earlier_pid(new_session, agent.pid), self.earlier_program(new_session, agent.program))
             if new_session.command == StartAgent.label():
                 self.program.request_stop(agent)
         elif agent.ended_at is not None and not any(PID_FIELD in later.data for later in later_events):
             self.program.stop(agent)
 
     @staticmethod
-    def earlier_value(changed: LoggedEvent, field: str, unchanged_value):
-        return changed.data[field][0] if field in changed.data else unchanged_value
+    def earlier_pid(changed: LoggedEvent, unchanged_pid: int | None) -> int | None:
+        if PID_FIELD not in changed.data:
+            return unchanged_pid
+        previous_pid = changed.data[PID_FIELD][0]
+        return int(str(previous_pid)) if previous_pid is not None else None
+
+    @staticmethod
+    def earlier_program(changed: LoggedEvent, unchanged_program: str) -> str:
+        return str(changed.data[PROGRAM_FIELD][0]) if PROGRAM_FIELD in changed.data else unchanged_program

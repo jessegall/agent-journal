@@ -4,7 +4,7 @@ from engine.driver.program_lockdown import ProgramLockdown
 from engine.errors.refusal import Refusal
 from engine.provider.launch_command import LaunchCommand
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.program_transport import ProgramTransport
+from core.modules.agents.support.program_transport import RUNNING_ANSWER, ProgramTransport
 from core.modules.environments.models.environment import Environment
 from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure import RecordAgentLaunchFailure
 from core.modules.agents.commands.record_agent_process.record_agent_process import RecordAgentProcess
@@ -14,7 +14,6 @@ from core.modules.agents.models.enums.launch_answer import LaunchAnswer
 from core.modules.agents.support.agent_label import AgentLabel
 
 FAILED_ANSWER = b"failed\n"
-RUNNING_ANSWER = b"running\n"
 LAUNCH_VARIABLE = "JOURNAL_LAUNCH"
 ROLE_VARIABLE = "JOURNAL_ROLE"
 

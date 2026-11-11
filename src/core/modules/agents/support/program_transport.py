@@ -1,5 +1,7 @@
 from collections.abc import Mapping
 
+RUNNING_ANSWER = b"running\n"
+
 
 class ProgramTransport:
     """The way the dispatcher reaches whatever runs the programs of agents: it sends a start, stops a program,
