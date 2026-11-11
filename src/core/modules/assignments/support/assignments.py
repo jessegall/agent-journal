@@ -33,7 +33,8 @@ class Assignments:
     also removes the assignments inherited from it, each before the one it names, and leaves those given by
     hand. A row can give up a hand-given assignment and inherit its parent's instead. A child made or
     linked after its parent was assigned inherits the parent's assignment when it has none, and a child whose
-    link to a parent is removed loses the assignment it inherited from that parent. Every assignment is saved and deleted through the repository, so each is an event."""
+    link to a parent is removed loses the assignment it inherited from that parent. An actor kept in a column
+    of the row is copied as it stands, also an agent that has ended, while that column still exists. Every assignment is saved and deleted through the repository, so each is an event."""
 
     def __init__(self, queries: Queries, repository: Repository, rows: AssignableRows) -> None:
         self.queries, self.repository, self.rows = queries, repository, rows
@@ -134,6 +135,15 @@ class Assignments:
         if source is None:
             raise ParentAssignmentRefusal(row.model_name, row.id)
         return self.child_cascade(row, source, None, CascadeWalk(context, override=True), Cascade())
+
+    def copy_actor(self, row: Assignable, actor_id: int | None, context: Context) -> None:
+        current = self.assignments(row)
+        if [assignment.actor_id for assignment in current] == [actor_id]:
+            return
+        for assignment in current:
+            self.remove(assignment, context)
+        if actor_id is not None and self.queries.query(ActorRecord).filter(id=actor_id).exists():
+            self.repository.save(Assignment(creator_id=context.actor.id, subject_model=row.model_name, subject_id=row.id, actor_id=actor_id), context)
 
     def require_working_actor(self, actor_id: int) -> None:
         actor = self.queries.query(ActorRecord).filter(id=actor_id).first()
