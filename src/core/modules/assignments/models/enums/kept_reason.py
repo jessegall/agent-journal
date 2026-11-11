@@ -6,3 +6,4 @@ class KeptReason(StrEnum):
 
     HAND_GIVEN = "given by hand"
     FOREIGN_SOURCE = "inherited from another row"
+    MODEL_RULE = "passed over by its model"

@@ -68,7 +68,9 @@ class Assignments:
     def cascaded(self, parent: Assignable, given: Assignment, previous: Assignment | None, walk: CascadeWalk, outcome: Cascade) -> Cascade:
         for children in parent.assigns:
             for child in self.child_rows(parent, children):
-                if not child.cascade_skips(given.actor_id):
+                if child.cascade_skips(given.actor_id):
+                    outcome = outcome.with_kept(child.model_name, child.id, KeptReason.MODEL_RULE)
+                else:
                     outcome = self.child_cascade(child, given, previous, walk, outcome)
         return outcome
 

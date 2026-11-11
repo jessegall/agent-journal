@@ -37,15 +37,15 @@ class AssignableCheck:
         return problems
 
     def loop_problems(self, models: Sequence[type[Assignable]]) -> list[str]:
-        loops = {self.loop_from(model, tuple([model])) for model in models}
+        loops = {self.loop_names(model, tuple([model])) for model in models}
         return [f"these models assign each other in a loop: {', '.join(loop)}" for loop in sorted(loops) if loop]
 
-    def loop_from(self, model: type[Assignable], path: tuple[type, ...]) -> tuple[str, ...]:
+    def loop_names(self, model: type[Assignable], path: tuple[type, ...]) -> tuple[str, ...]:
         for children in model.assigns:
             child = children.model
             if child in path:
                 return tuple(sorted(visited.__name__ for visited in path[path.index(child):]))
-            loop = self.loop_from(child, (*path, child)) if issubclass(child, Assignable) else ()
+            loop = self.loop_names(child, (*path, child)) if issubclass(child, Assignable) else ()
             if loop:
                 return loop
         return ()

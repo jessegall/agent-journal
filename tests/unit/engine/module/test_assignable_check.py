@@ -106,8 +106,8 @@ def test_a_many_actor_parent_with_a_one_actor_child_names_both():
 
 
 def test_a_loop_of_children_names_the_models():
-    found = problems(owner(Rack, Bin, Chain, Hook))
-    assert found.count("these models assign each other in a loop: Chain, Hook") == 1
+    problem_text = problems(owner(Rack, Bin, Chain, Hook))
+    assert problem_text.count("these models assign each other in a loop: Chain, Hook") == 1
 
 
 def test_a_valid_chain_has_no_problem():
