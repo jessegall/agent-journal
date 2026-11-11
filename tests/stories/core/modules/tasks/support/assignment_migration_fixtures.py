@@ -13,8 +13,8 @@ WORKER_START = "agent start s-2 claude worker --environment main"
 TASK_TITLES = ("Delegated and open", "Delegated and started", "Started with no delegation", "Delegated to a gone actor", "Nobody's")
 DELEGATED_TASKS = (1, 2)
 STARTED_TASKS = (2, 3)
-GONE_ACTOR_TASK = 4
-GONE_ACTOR_ID = 999_999
+MISSING_ACTOR_TASK = 4
+MISSING_ACTOR_ID = 999_999
 
 
 def worker(story: Story) -> Actor:
@@ -45,6 +45,6 @@ def run_task_assignments_migration(story: Story) -> None:
     database = story.container.get(Database)
     database.update(Statement("UPDATE tasks SET delegated_to = NULL"))
     database.update(Statement(f"UPDATE tasks SET delegated_to = {worker(story).id} WHERE id IN ({', '.join(str(task_id) for task_id in DELEGATED_TASKS)})"))
-    database.update(Statement(f"UPDATE tasks SET delegated_to = {GONE_ACTOR_ID} WHERE id = {GONE_ACTOR_TASK}"))
+    database.update(Statement(f"UPDATE tasks SET delegated_to = {MISSING_ACTOR_ID} WHERE id = {MISSING_ACTOR_TASK}"))
     for statement in TaskAssignmentsMigration.statements:
         database.update(Statement(statement))

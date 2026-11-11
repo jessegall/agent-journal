@@ -1,6 +1,6 @@
 import pytest
 
-from tests.stories.core.modules.tasks.support.assignment_migration_fixtures import DELEGATED_TASKS, GONE_ACTOR_TASK, TasksWithOldAssignments, run_task_assignments_migration, worker
+from tests.stories.core.modules.tasks.support.assignment_migration_fixtures import DELEGATED_TASKS, MISSING_ACTOR_TASK, TasksWithOldAssignments, run_task_assignments_migration, worker
 from tests.stories.core.modules.tasks.support.holder_assignee_check import assert_holders_are_assignees, assert_pivot_equals_column, task_assignees
 
 HELD_UNDELEGATED_TASK = 3
@@ -22,7 +22,7 @@ def test_every_task_with_delegated_to_has_the_same_assignee_in_the_pivot(upgrade
 
 def test_a_row_pointing_at_a_gone_actor_is_dropped_and_the_others_are_copied(upgraded):
     assignees = task_assignees(upgraded)
-    upgraded.expect_rows(GONE_ACTOR_TASK not in assignees, sorted(assignees) == list(DELEGATED_TASKS), detail=str(assignees))
+    upgraded.expect_rows(MISSING_ACTOR_TASK not in assignees, sorted(assignees) == list(DELEGATED_TASKS), detail=str(assignees))
 
 
 def test_the_migration_assigns_nothing_because_a_task_is_held(upgraded):
