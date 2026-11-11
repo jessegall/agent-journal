@@ -1,8 +1,8 @@
+from core.modules.plans.commands.assign_plan.assign_plan import AssignPlan
 from uuid import uuid4
 from suites.coding.modules.workers.commands.report_worker_route_fallback.report_worker_route_fallback import ReportWorkerRouteFallback
 import json
 
-from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -99,6 +99,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         except Exception:
             self.bus.run_with_context(CancelWorkerOpening(opened.worktree.id), context)
             raise
+        if command.plan_id is not None:
+            self.bus.run_with_context(AssignPlan(command.plan_id, opened.worker.id, command.phase_id), context)
         if command.test_commands:
             self.bus.run_with_context(NameWorkerTests(opened.worker.id, command.test_commands), context)
         if not command.sandboxed:
@@ -109,8 +111,9 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
 
     @staticmethod
     def check_unstarted(command: DispatchWorker, context: Context, environment: Environment) -> None:
-        if not command.starts_program and context.actor.type is not ActorType.USER and not environment.grants(context.actor.id):
-            raise Refusal("only a person dispatches a worker with no program", "an agent dispatches a worker without --no-program")
+        if command.starts_program or context.actor.is_person() or environment.grants(context.actor.id):
+            return
+        raise Refusal("only a person dispatches a worker with no program", "an agent dispatches a worker without --no-program")
 
     def check_idle(self, folder: str, request: WorkerRequest, tasks: list[Task], command: DispatchWorker) -> None:
         idle = self.available_workers.first(folder, request)

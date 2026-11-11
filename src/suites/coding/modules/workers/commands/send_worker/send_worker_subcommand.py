@@ -69,7 +69,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
                 self.policy.check_tasks(self.tasks.check_tasks(task_ids, caller.actor.id),
                                         WorkerRouteRequest(worker.program, caller.actor.type, self.flags.skipped_guards(arguments)))
         job = arguments.job or arguments.job_flag
-        command = SendWorker(arguments.worker_id, job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy), not arguments.no_sandbox, commands)
+        command = SendWorker(arguments.worker_id, job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy), not arguments.no_sandbox, commands, arguments.plan, arguments.phase)
         argv = ["worker", "send", str(arguments.worker_id.number), job]
         if arguments.plan is not None:
             argv.extend(("--plan", str(arguments.plan)))

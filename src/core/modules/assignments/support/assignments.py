@@ -182,8 +182,11 @@ class Assignments:
             return
         for assignment in current:
             self.remove(assignment, context)
-        if actor_id is not None and self.queries.query(ActorRecord).filter(id=actor_id).exists():
+        if actor_id is not None and self.actor_exists(actor_id):
             self.repository.save(Assignment(creator_id=context.actor.id, subject_model=row.model_name, subject_id=row.id, actor_id=actor_id), context)
+
+    def actor_exists(self, actor_id: int) -> bool:
+        return self.kept.read("actors", self.queries.query(ActorRecord).filter(id=actor_id).exists, "id = ?", [actor_id], name="assignments.actor_exists")
 
     def require_working_actor(self, actor_id: int) -> None:
         actor = self.queries.query(ActorRecord).filter(id=actor_id).first()

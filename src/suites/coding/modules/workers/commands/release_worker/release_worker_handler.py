@@ -1,3 +1,7 @@
+from core.modules.agents.support.agent_rows import AgentRows
+from engine.enums.agent_role import AgentRole
+from core.modules.plans.commands.assign_plan.assign_plan import AssignPlan
+from suites.coding.modules.workers.support.work_units import WorkUnits
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -23,8 +27,8 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
     runs_once = True
     command = ReleaseWorker
 
-    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, numbers: RowNumbers, units: WorkUnits, agents: AgentRows) -> None:
+        self.numbers, self.units, self.agents = numbers, units, agents
         self.worktrees, self.git, self.environments, self.bus = worktrees, git, environments, bus
 
     def handle(self, command: ReleaseWorker, context: Context) -> ReleaseOutcome:
@@ -32,6 +36,7 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
         if worktree is None:
             raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has no worktree out", "journal worker-worktree list shows the worktrees")
         folder = self.environments.find(worktree.environment_id).folder
+        self.unassign_plan(worktree, context)
         if worktree.state is WorktreeState.NEW:
             unmerged = self.git.remove(folder, worktree)
             self.bus.run_with_context(CancelWorkerOpening(worktree.id), context)
@@ -40,6 +45,13 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
         unmerged = self.git.remove(folder, abandoned)
         removed = self.bus.run_with_context(RecordWorktreeRemoval(abandoned.id), context)
         return ReleaseOutcome(removed, removed.branch if unmerged else "")
+
+    def unassign_plan(self, worktree: Worktree, context: Context) -> None:
+        plan = self.units.unit(worktree.session_agent_id).plan
+        if plan is None or worktree.commit_count:
+            return
+        if self.agents.running(AgentRole.MAIN):
+            self.bus.run_with_context(AssignPlan(plan.id), context)
 
     def abandoned(self, worktree: Worktree, command: ReleaseWorker, context: Context) -> Worktree:
         if worktree.state is WorktreeState.ABANDONED:

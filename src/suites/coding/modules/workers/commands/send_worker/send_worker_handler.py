@@ -1,3 +1,4 @@
+from core.modules.plans.commands.record_plan_agent.record_plan_agent import RecordPlanAgent
 from collections.abc import Sequence
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -157,6 +158,8 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
     def handle(self, command: SendWorker, context: Context) -> Model:
         if command.test_commands:
             self.bus.run_with_context(NameWorkerTests(command.worker_id, command.test_commands), context)
+        if command.plan_id is not None and command.phase_id is None:
+            self.bus.run_with_context(RecordPlanAgent(command.plan_id, command.worker_id), context)
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None and self.task_ids:
             return self.kept_tasks.waiting(self.rows.required(Agent, command.worker_id), self.task_ids, context)

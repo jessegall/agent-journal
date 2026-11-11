@@ -103,6 +103,7 @@ PLAN_COMMANDS = (ApprovePlan, BlockPlan, CancelPlan, ClosePlan, ReturnPlan, Star
 
 from core.modules.plans.support.plan_inspector import PLAN_INSPECTOR
 from core.modules.plans.commands.assign_plan.assign_plan_handler import AssignPlanHandler
+from core.modules.plans.commands.record_plan_agent.record_plan_agent_handler import RecordPlanAgentHandler
 from core.modules.plans.commands.assign_plan.assign_plan_subcommand import AssignPlanSubcommand
 from engine.viewer.skeleton_part import SkeletonPart
 from engine.enums.window_place import WindowPlace
@@ -132,7 +133,7 @@ class PlansModule(Module):
     models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]), ModelDeclaration(PlanContextRead, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PlanWait, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(CheckpointReach, commands=tuple([FailCheckpoint]), excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(CheckpointPass, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration, CheckpointsMigration]
-    handlers = [CheckPlanHandler, RecordCheckpointsHandler, StartCheckpointRunHandler, WaitPlanHandler, AssignPlanHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
+    handlers = [CheckPlanHandler, RecordCheckpointsHandler, StartCheckpointRunHandler, WaitPlanHandler, AssignPlanHandler, RecordPlanAgentHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
     moves = [PlansMove]
     subcommands = [CheckPlanSubcommand, WaitPlanSubcommand, AssignPlanSubcommand, ChoosePlanFocusSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand]

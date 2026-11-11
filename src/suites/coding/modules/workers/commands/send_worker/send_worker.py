@@ -16,3 +16,5 @@ class SendWorker(Command[AgentLine], TasksChangedTogether):
     library_copies: tuple[str, ...] = ()
     sandboxed: bool = True
     test_commands: tuple[TestCommandEntry, ...] = ()
+    plan_id: int | None = None
+    phase_id: int | None = None

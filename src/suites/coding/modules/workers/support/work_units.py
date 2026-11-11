@@ -4,8 +4,11 @@ from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_assignee import PlanAssignee
 from core.modules.plans.support.task_plans import TaskPlans
+from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
+from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.support.work_unit import WorkUnit
 
 
@@ -14,8 +17,13 @@ class WorkUnits:
     is, or else the one phase all of them belong to. The one reader of a worker's plan, so the move of plan
     assignment to the assignments table changes only here. Counts are counted, never read row by row."""
 
-    def __init__(self, tasks: TaskQuery, plans: TaskPlans) -> None:
-        self.tasks, self.plans = tasks, plans
+    def __init__(self, tasks: TaskQuery, plans: TaskPlans, agents: AgentRows) -> None:
+        self.tasks, self.plans, self.agents = tasks, plans, agents
+
+    def plan_worker(self, plan: Plan) -> Agent | None:
+        agent_id = PlanAssignee.agent_id(plan)
+        agent = self.agents.find(agent_id) if agent_id is not None else None
+        return agent if agent is not None and agent.role == CodingHelperRole.WORKER and agent.retired_at is None else None
 
     def unit(self, worker_id: int) -> WorkUnit:
         open_work = self.tasks.assignee_tasks(worker_id).unclosed()
