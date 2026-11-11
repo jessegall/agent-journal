@@ -45,13 +45,19 @@ async function run(line, change = null) {
 
 const preview = ref(null);
 const guide = ref(false);
+const checking = ref(false);
 
 // an install shows everything the plugin would run first, and goes ahead only from there
 async function showPreview() {
     if (!source.value.trim()) return;
     const key = "preview";
     context.state["preview.source"] = source.value.trim();
-    await context.reload(key);
+    checking.value = true;
+    try {
+        await context.reload(key);
+    } finally {
+        checking.value = false;
+    }
     const prop = context.props[key];
     refusal.value = prop.failure.value;
     preview.value = prop.failure.value ? null : prop.data.value;
@@ -155,15 +161,15 @@ async function showRecord(row) {
             <form class="install" data-plugin-install-form @submit.prevent="showPreview">
                 <TextInput v-model="source" icon="download" placeholder="Install a plugin from owner/repo, a GitHub link or a folder" aria-label="Install a plugin from">
                     <template #end>
-                        <Btn variant="primary" small type="submit" :disabled="!source.trim()">Check before installing</Btn>
+                        <Btn variant="primary" small type="submit" :busy="checking" :disabled="!source.trim()" data-plugin-check>Check</Btn>
                     </template>
                 </TextInput>
             </form>
         </div>
         <div class="body">
             <p class="lead">
-                A plugin runs as you, with your files and your network. Check before installing shows every command it would run before
-                anything runs, and it installs at that exact commit.
+                A plugin runs as you, with your files and your network. Check shows every command it would run before anything runs, and
+                it installs at that exact commit.
             </p>
             <template v-if="refusal">
                 <p class="plugin-fault" role="alert" data-plugin-refusal>{{ refusal }}</p>

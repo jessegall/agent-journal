@@ -18,7 +18,7 @@ const PLUGIN = {id: 1, name: "sins", title: "Sins", release: "1.0", enabled: tru
 
 const PREVIEW = {name: "sins", title: "Sins", version: "1.0", source: "owner/repo", rows: [{type: "setup", label: "packages", command: "npm install"}]};
 
-async function drawn(refuse = false) {
+async function drawn(refuse = false, previewAnswered = null) {
     const ran = [];
     const window = pluginWindowContext({"plugin list": page([PLUGIN])});
     window.read = async (line) => {
@@ -27,6 +27,7 @@ async function drawn(refuse = false) {
         if (line === "plugin services") return page([ran.some((each) => each[2] === "stop") ? {id: "sins a", plugin: "sins", service: "a", running: false, pid: null} : {id: "sins a", plugin: "sins", service: "a", running: true, pid: 12}, {id: "sins b", plugin: "sins", service: "b", running: false, pid: null}]);
         if (line === "plugin list" || line === "plugin events") return page([PLUGIN]);
         line = line.split(" ");
+        if (line[1] === "preview" && previewAnswered) await previewAnswered;
         if (line[1] === "preview") return refuse ? {ok: false, error: "no such plugin"} : {ok: true, value: PREVIEW};
         if (line[1] === "service-log") return {ok: true, value: {text: "watcher started\nwatching 3 folders"}};
         if (line[1] === "latest") return {ok: true, value: {line: "sins: v2 is newer than 1.0", is_newer: true}};
@@ -47,6 +48,22 @@ const type = async (input, text) => {
     input.dispatchEvent(new Event("input"));
     await settle();
 };
+
+test("the Check button says Check and shows its spinner until the check answers", async () => {
+    let answer;
+    const previewAnswered = new Promise((resolve) => { answer = resolve; });
+    const {element} = await drawn(false, previewAnswered);
+    const form = element.querySelector("[data-plugin-install-form]");
+    const button = form.querySelector("[data-plugin-check]");
+    expect(button.textContent.trim()).toBe("Check");
+    await type(form.querySelector("input"), "owner/repo");
+    form.dispatchEvent(new Event("submit", {cancelable: true}));
+    await settle();
+    expect(button.getAttribute("aria-busy")).toBe("true");
+    answer();
+    await settle();
+    expect(button.getAttribute("aria-busy")).toBe("false");
+});
 
 test("a plugin shows everything it would run, and installs only from there", async () => {
     const {element, ran} = await drawn();
