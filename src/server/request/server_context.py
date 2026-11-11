@@ -13,6 +13,7 @@ from server.viewer.viewer_endpoint import ViewerEndpoint
 from server.request.request_log import RequestLog
 
 HOOK_LIMIT_SECONDS = 3.5
+STOP_LIMIT_SECONDS = 20.0
 AGENT_HOOK_LIMIT_SECONDS = 45.0
 
 
