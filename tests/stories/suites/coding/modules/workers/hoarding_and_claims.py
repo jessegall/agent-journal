@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from datetime import timedelta
 
 from suites.coding.modules.workers.models.merger_line import MergerLine
@@ -87,6 +88,7 @@ def test_72_an_interim_commit_takes_the_files_of_a_task_that_is_not_proved_and_t
     prove_task(worker, 2, 1)
     story.run(COMMIT, actor=worker.worker)
     story.run("proof check 2", actor=story.agent)
+    asked_for_merge(story, worker.worker)
     merged = merge_outcome(worker)
     story.expect_rows(interim.code == 0, "go on with task 2" in interim.output_text, refused_merge.code != 0, merged.code == 0,
                       detail=f"{interim.output_text} | {refused_merge.output_text} | {merged.output_text}")

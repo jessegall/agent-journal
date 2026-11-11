@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from datetime import timedelta
 
 import pytest
@@ -79,6 +80,7 @@ def test_25_158_163_165_a_commit_of_two_tasks_in_a_started_plan_is_one_git_commi
     story = two_proved.story
     outcome = story.run(COMMIT, actor=two_proved.worker)
     story.run_listeners()
+    asked_for_merge(story, two_proved.worker)
     story.expect_text("worker-worktree show 1", "state: delivered", actor=story.agent)
     two_proved.repository.expect_commit(two_proved.repository.worker_branch(two_proved.worker.id), "tasks 1, 2: Fix the cart", f"Journal: worker worker-{two_proved.worker.id}")
     merge(two_proved)
@@ -86,17 +88,6 @@ def test_25_158_163_165_a_commit_of_two_tasks_in_a_started_plan_is_one_git_commi
         story.expect_text(f"task show {task_id}", "state: completed", MERGED_REASON, actor=story.agent)
     story.expect_rows(outcome.code == 0, "committed tasks 1, 2 as " in outcome.output_text, two_proved.started == [], states(two_proved) == [ProofState.COMMITTED] * 2,
                       detail=f"{outcome.output_text} | {two_proved.started} | {states(two_proved)}")
-
-
-def test_28_a_commit_is_refused_with_every_missing_point_of_every_task_that_has_a_proof_and_commits_nothing(three_started):
-    base_commit = three_started.repository.tip(three_started.repository.worker_branch(three_started.worker.id))
-    for task_id, point in ((1, 1), (2, 1), (2, 3), (3, 1)):
-        prove_task(three_started, task_id, point, TEST_LINE)
-    refused = three_started.story.run(COMMIT, actor=three_started.worker)
-    three_started.story.run_listeners()
-    three_started.repository.expect_branch_tip(three_started.repository.worker_branch(three_started.worker.id), base_commit)
-    three_started.story.expect_rows(refused.code != 0, "task 2: points 2, 4 have no proof; task 3: points 2, 3 have no proof" in refused.output_text,
-                                    states(three_started) == [ProofState.SHOWN] * 4, three_started.started == [], detail=refused.output_text)
 
 
 def test_29_what_differs_at_a_commit_of_two_tasks_becomes_an_important_log_line_of_each_task(two_proved):

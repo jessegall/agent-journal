@@ -145,7 +145,8 @@ def test_a_worker_commits_three_tasks_one_after_the_other_each_tested_and_is_mer
 
     # the last task: its commit leaves no started task, so it hands the worktree in and runs its test
     proved(story, repository, worker, "receipt.py", "RECEIPT = 1\n", 3)
-    story.expect_text(COMMIT, "your work is handed in", actor=worker)
+    story.expect_text(COMMIT, "Every task of your unit is committed", actor=worker)
+    asked_for_merge(story, worker)
     story.run_listeners()
     expect_states(story, task1="completed", task2="completed", task3="testing")
     expect_marks_text(story, "handed in")

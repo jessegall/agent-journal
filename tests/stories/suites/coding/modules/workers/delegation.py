@@ -195,6 +195,7 @@ def test_the_last_delivery_delivers_the_worktree_and_the_merge_closes_every_task
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
     story.expect_success('proof make 1 --task 2 "cart.py:1, the second story"', actor=worker)
     story.run("worker commit --wait --differences none", actor=worker)
+    asked_for_merge(story, worker)
     story.expect_text("worker-worktree show 1", "state: delivered", actor=story.agent)
     story.expect_text("task show 1", "state: testing", actor=story.agent)
     story.expect_text("task show 2", "state: testing", actor=story.agent)
