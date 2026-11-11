@@ -9,6 +9,8 @@ HOT_QUERIES = ("SELECT * FROM processes WHERE state IN ('running', 'background')
                "SELECT * FROM processes WHERE environment_id = 1 ORDER BY id DESC",
                "SELECT * FROM outputs WHERE state = 'kept' AND ended_at > '' ORDER BY ended_at LIMIT 1",
                "SELECT * FROM tasks WHERE delegated_to = 1 AND state = 'open'",
+               "SELECT * FROM tasks WHERE state = 'open' AND id IN (SELECT subject_id FROM assignments WHERE subject_model = 'task' AND actor_id IN (1))",
+               "SELECT * FROM tasks WHERE state = 'open' AND id NOT IN (SELECT subject_id FROM assignments WHERE subject_model = 'task')",
                "SELECT * FROM dock_items WHERE type = 'run' ORDER BY id",
                "SELECT * FROM dock_items WHERE target_model = 'process' AND target_id = 1",
                "SELECT * FROM agent_lines WHERE state = 'waiting' AND source IN ('a', 'b') ORDER BY id")
@@ -33,3 +35,7 @@ def test_the_oldest_ended_output_is_read_with_no_sort(new_story):
 def expect_absent_query_plan(new_story, query: str, expected) -> None:
     actual = query_plan(new_story, query)
     assert expected not in actual, actual
+
+
+def test_the_open_tasks_assigned_to_an_actor_are_read_through_the_index_on_the_actor(new_story):
+    expect_value_with(query_plan(new_story, HOT_QUERIES[4]), "assignments_actor")
