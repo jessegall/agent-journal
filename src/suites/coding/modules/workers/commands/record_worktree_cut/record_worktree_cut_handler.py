@@ -19,6 +19,7 @@ from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSo
 from core.modules.messages.support.work_sources import WorkSources
 from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.support.worker_assignments import WorkerAssignments
+from core.modules.assignments.support.assignments import Assignments
 
 
 class RecordWorktreeCutHandler(Handler[RecordWorktreeCut, Worktree]):
@@ -26,11 +27,12 @@ class RecordWorktreeCutHandler(Handler[RecordWorktreeCut, Worktree]):
 
     command = RecordWorktreeCut
 
-    def __init__(self, rows: EventRows, queries: Queries, repository: Repository, bus: Bus, sources: WorkSources, scopes: Scopes, waits: DependencyWaits, assignments: WorkerAssignments) -> None:
+    def __init__(self, rows: EventRows, queries: Queries, repository: Repository, bus: Bus, sources: WorkSources, scopes: Scopes, waits: DependencyWaits, assignments: WorkerAssignments,
+                 task_assignments: Assignments) -> None:
         self.rows, self.queries, self.repository, self.bus = rows, queries, repository, bus
         self.sources, self.scopes = sources, scopes
         self.waits = waits
-        self.assignments = assignments
+        self.assignments, self.task_assignments = assignments, task_assignments
 
     def handle(self, command: RecordWorktreeCut, context: Context) -> Worktree:
         worktree = self.rows.required(Worktree, command.worktree_id)
@@ -44,6 +46,7 @@ class RecordWorktreeCutHandler(Handler[RecordWorktreeCut, Worktree]):
                                                       source_version=assigned.source.version, source_unavailable=assigned.source.unavailable, started_at=context.timestamp), context)
                 self.sources.use_copy(assigned.source, replace(context, environment_id=worktree.environment_id))
         tasks = self.queries.query(Task).find_many(command.task_ids)
+        self.task_assignments.keep_rows(Task, command.task_ids)
         for task in tasks:
             self.repository.update(task, context, delegated_to=worktree.session_agent_id)
         self.waits.update_tasks(command.task_ids, context)
