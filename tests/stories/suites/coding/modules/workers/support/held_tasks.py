@@ -1,7 +1,7 @@
 from engine.query.queries import Queries
 from engine.testing.expectations.line_outcome import LineOutcome
 from suites.coding.modules.workers.models.proof import Proof
-from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, StoryWorker, approve_plan, dispatched_story_worker, file_proof_line, planned_story
+from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, StoryWorker, approve_plan, dispatched_story_worker, file_proof_line, planned_story, unplanned_worker
 
 # The tasks of phase Build in the order a worker starts them: task 4 is the one task of phase Ship.
 BUILD_TASK_IDS = (1, 2, 3, 5, 6, 7)
@@ -18,6 +18,13 @@ def holding_worker(new_story, monkeypatch, count: int, build_task_count: int = P
     worker = dispatched_story_worker(story, PHASE_DISPATCH, monkeypatch)
     for task_id in BUILD_TASK_IDS[1:count]:
         worker.story.run(f"task start {task_id}", actor=worker.worker)
+    return worker
+
+
+def unplanned_holding_worker(new_story, monkeypatch) -> StoryWorker:
+    """A worker that holds tasks 1 and 2 started, neither of them in a plan."""
+    worker = unplanned_worker(new_story, monkeypatch)
+    worker.story.run("task start 2", actor=worker.worker)
     return worker
 
 
