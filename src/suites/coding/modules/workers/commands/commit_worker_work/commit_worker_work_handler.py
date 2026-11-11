@@ -20,7 +20,7 @@ from suites.coding.modules.workers.support.commit_outcome import CommitOutcome
 from suites.coding.modules.workers.support.commit_subject import CommitSubject
 from suites.coding.modules.workers.support.staging import Staging
 from suites.coding.modules.workers.support.worker_staging import WorkerStaging
-from suites.coding.modules.workers.support.delivery_differences import DeliveryDifferences
+from suites.coding.modules.workers.support.commit_differences import CommitDifferences
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test_handler import RecordWorkerTestHandler
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
@@ -57,7 +57,7 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, results: RecordWorkerTestHandler,
-                 differences: DeliveryDifferences, free_task: WorkerFreeTask, guidance: WorkerGuidance, staging: WorkerStaging, wait_text: CheckpointWaitText, bus: Bus, numbers: RowNumbers,
+                 differences: CommitDifferences, free_task: WorkerFreeTask, guidance: WorkerGuidance, staging: WorkerStaging, wait_text: CheckpointWaitText, bus: Bus, numbers: RowNumbers,
                  compaction: WorkerCompaction) -> None:
         self.wait_text, self.bus, self.numbers, self.compaction = wait_text, bus, numbers, compaction
         self.rows, self.worktrees, self.proof_queue, self.repository, self.task_commit = rows, worktrees, proof_queue, repository, task_commit

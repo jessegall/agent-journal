@@ -16,20 +16,21 @@ WORKER_OPERATION_JOB = NudgeDeclaration("workers.operation_job", NudgeType.STEER
     'worker:{worker} has the job: output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_PAUSED = NudgeDeclaration("workers.operation_paused", NudgeType.STEERING,
     'worker:{worker} is paused, so the job waits until it is resumed', turn_limited=False, wakes_agent=True)
-WORKER_OPERATION_DELIVERED = NudgeDeclaration("workers.operation_delivered", NudgeType.STEERING,
-    'worker:{worker} handed in its task: output {output}', turn_limited=False, wakes_agent=True)
+WORKER_OPERATION_COMMITTED = NudgeDeclaration("workers.operation_committed", NudgeType.STEERING,
+    'worker:{worker} committed its work: output {output}', turn_limited=False, wakes_agent=True)
+WORKER_OPERATION_STARTED = NudgeDeclaration("workers.operation_started", NudgeType.STEERING,
+    'worker:{worker} started its next task: output {output}', turn_limited=False, wakes_agent=True)
 
 
 class WorkerOperationName(StrEnum):
     NEXT = "next"
-    DELIVER = "deliver"
     COMMIT = "commit"
     JOB = "send"
     MERGE = "merge"
 
     @property
     def is_handoff(self) -> bool:
-        return self in (self.NEXT, self.DELIVER, self.COMMIT)
+        return self is self.COMMIT
 
     def finished_nudge(self, worker_number: int, process_id: int) -> Nudge:
         match self:
@@ -37,5 +38,7 @@ class WorkerOperationName(StrEnum):
                 return WORKER_OPERATION_MERGED.nudge(worker=worker_number, output=process_id)
             case self.JOB:
                 return WORKER_OPERATION_JOB.nudge(worker=worker_number, output=process_id)
-            case self.NEXT | self.DELIVER | self.COMMIT:
-                return WORKER_OPERATION_DELIVERED.nudge(worker=worker_number, output=process_id)
+            case self.NEXT:
+                return WORKER_OPERATION_STARTED.nudge(worker=worker_number, output=process_id)
+            case self.COMMIT:
+                return WORKER_OPERATION_COMMITTED.nudge(worker=worker_number, output=process_id)

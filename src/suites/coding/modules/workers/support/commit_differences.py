@@ -23,8 +23,8 @@ def is_none_answer(differences: str) -> bool:
     return differences.lower() == NONE_ANSWER
 
 
-class DeliveryDifferences:
-    """What a worker says at a hand-in about how its work differs from the task: anything but none is a log line the
+class CommitDifferences:
+    """What a worker says at a commit about how its work differs from the task: anything but none is a log line the
     main agent must read."""
 
     def __init__(self, bus: Bus) -> None:

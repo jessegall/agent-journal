@@ -60,3 +60,8 @@ def test_76e_the_workers_skill_keeps_what_happens_after_an_ask_and_the_merger_ke
     assert all(command in skill_text("journal-merger") for command in MERGER_COMMANDS)
     assert all(command in merger_profile.body for command in MERGER_COMMANDS)
 
+
+def test_204_the_old_name_worker_deliver_answers_with_the_command_that_took_its_place(new_story, monkeypatch):
+    worker = unplanned_worker(new_story, monkeypatch)
+    refused = worker.story.run("worker deliver --wait --differences none", actor=worker.worker)
+    worker.story.expect_rows(refused.code != 0, "journal worker deliver is gone: use journal worker commit" in refused.output_text, detail=refused.output_text)

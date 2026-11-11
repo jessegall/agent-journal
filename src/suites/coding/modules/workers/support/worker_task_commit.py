@@ -12,7 +12,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.commit_subject import CommitSubject
 from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
-from suites.coding.modules.workers.support.delivery_differences import is_none_answer
+from suites.coding.modules.workers.support.commit_differences import is_none_answer
 from suites.coding.modules.workers.support.worktree_changes import WorktreeChanges
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.protected_folders import ProtectedFolders
