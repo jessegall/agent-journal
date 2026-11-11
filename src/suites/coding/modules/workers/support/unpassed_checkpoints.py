@@ -4,6 +4,7 @@ from core.modules.plans.conditions.plan_tasks_condition import PlanTasksConditio
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.support.task_plans import TaskPlans
 from engine.database.kept_rows import KeptRows
+from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 
 
@@ -31,6 +32,9 @@ class UnpassedCheckpoints:
 
     def first_unpassed(self, plan_id: int) -> PlanTask | None:
         condition = PlanTasksCondition(tuple([plan_id])).statement()
-        places = self.kept.read("tasks", lambda: tuple(self.queries.query(PlanTask).filter(plan_id=plan_id, checkpoint=True).all_rows()), condition.sql, condition.parameters,
-                                name="workers.checkpoint_places")
-        return min((place for place in places if place.is_untested_checkpoint), key=lambda place: place.phase_position, default=None)
+        return self.kept.read("tasks", lambda: self.loaded_first_unpassed(plan_id), condition.sql, condition.parameters, name="workers.first_unpassed_checkpoint")
+
+    def loaded_first_unpassed(self, plan_id: int) -> PlanTask | None:
+        checkpoints = self.queries.query(PlanTask).filter(plan_id=plan_id, checkpoint=True).ordered("phase_position")
+        first_places = (checkpoints.matching(IsNull("closed_at")).first(), checkpoints.filter(checkpoint_passed=False).first())
+        return min((place for place in first_places if place is not None), key=lambda place: place.phase_position, default=None)
