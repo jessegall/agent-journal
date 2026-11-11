@@ -4,7 +4,9 @@ from typing import Self
 from engine.database.database import Database
 from engine.model.tables import Tables
 from engine.query.conditions.among import Among
+from engine.query.conditions.greater import Greater
 from engine.query.query import Query
+from engine.time.timestamp import Timestamp
 from core.modules.processes.models.unreadable_mark import UnreadableMark
 
 
@@ -19,3 +21,6 @@ class UnreadableMarkQuery(Query[UnreadableMark]):
 
     def standing(self) -> Self:
         return self.filter(lifted_at=None)
+
+    def made_after(self, timestamp: Timestamp) -> Self:
+        return self.matching(Greater("created_at", timestamp.text))

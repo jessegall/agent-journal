@@ -1,13 +1,19 @@
 from collections import defaultdict
 from collections.abc import Sequence
 
+from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
+from engine.query.conditions.among import Among
 from engine.query.queries import Queries
+from core.modules.actors.models.actor_record import ActorRecord
+from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
+from core.modules.processes.queries.unreadable_mark_query import UnreadableMarkQuery
+from engine.time.timestamp import Timestamp
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_rows import ReaderRows
 
@@ -22,8 +28,9 @@ class CatalogueAudit:
     agents that may not write readers whose end was decided without a proper reader since the main agent last heard
     the audit. Only a main agent writes readers."""
 
-    def __init__(self, reader_rows: ReaderRows, judge: ReaderJudge, decisions: ReadingDecisionQuery, queries: Queries, outputs: OutputQuery) -> None:
-        self.reader_rows, self.judge, self.decisions, self.queries, self.outputs = reader_rows, judge, decisions, queries, outputs
+    def __init__(self, reader_rows: ReaderRows, judge: ReaderJudge, decisions: ReadingDecisionQuery, queries: Queries, outputs: OutputQuery,
+                 marks: UnreadableMarkQuery) -> None:
+        self.reader_rows, self.judge, self.decisions, self.queries, self.outputs, self.marks = reader_rows, judge, decisions, queries, outputs, marks
 
     def fields_missing_count(self) -> int:
         readers = self.reader_rows.all()
@@ -34,10 +41,22 @@ class CatalogueAudit:
         categories = {CommandCategory.CHECK, *(part.category for part in samples)}
         return any(self.judge.fields_missing(reader, category) for category in categories)
 
-    def missing_reader_decisions(self, main_agent_id: int, main_agent_ids: Sequence[int]) -> int:
-        decisions = self.decisions.lacking_a_reader_at_end().of_runs_outside(main_agent_ids)
-        last_audit = self.queries.query(AgentLine).filter(session_agent_id=main_agent_id, source=AUDIT_SOURCE).newest().first()
-        return (decisions.since(last_audit.creation_timestamp()) if last_audit is not None else decisions).count()
+    def last_audit_at(self, main_agent: Agent) -> Timestamp:
+        """When the main agent was last told the audit, or when it started, before its first audit line."""
+        last_audit = self.queries.query(AgentLine).filter(session_agent_id=main_agent.id, source=AUDIT_SOURCE).newest().first()
+        return last_audit.creation_timestamp() if last_audit is not None else main_agent.creation_timestamp()
+
+    def missing_reader_decisions(self, last_audit_at: Timestamp, main_agent_ids: Sequence[int]) -> int:
+        return self.decisions.lacking_a_reader_at_end().of_runs_outside(main_agent_ids).since(last_audit_at).count()
+
+    def agent_marks_count(self, last_audit_at: Timestamp) -> int:
+        """How many commands agents marked unreadable since the main agent last heard the audit; marks of the
+        engine and of a person are not counted."""
+        creators = [mark.creator_id for mark in self.marks.made_after(last_audit_at).standing().descending("created_at", "id").limited(RECENT_OUTPUTS)]
+        if not creators:
+            return 0
+        agents = {actor.id for actor in self.queries.query(ActorRecord).matching(Among("id", sorted(set(creators)))).filter(type=ActorType.AGENT).all_rows()}
+        return sum(creator in agents for creator in creators)
 
     def readers_needing_repair(self) -> tuple[Reader, ...]:
         """The readers whose last outputs with lines, three of them, each had no line the reader kept."""

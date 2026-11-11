@@ -1,7 +1,9 @@
 from engine.actor.actor import Actor
 from engine.enums.command_category import CommandCategory
+from engine.testing.examples.hook_samples import HookSamples
+from tests.stories.core.modules.processes.support.cadence_probe import kept_lines
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
-from tests.stories.core.modules.processes.support.reading_scenarios import STEPS, ended_after_a_while, heard
+from tests.stories.core.modules.processes.support.reading_scenarios import LONG_RUN, STEPS, ended_after_a_while, heard
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 
 SPINNER = "\r[###] working" * 1000
@@ -45,3 +47,18 @@ def test_a_person_marks_a_runs_command_from_its_card_so_its_agent_is_asked_no_re
     story.expect_rows("command make serve was marked unreadable" in marked, f"output {quiet.id} ended" in after_mark, "no reader reads" not in after_mark,
                       "command make serve prints readable lines again: asks resume" in resumed, detail=f"{marked}\n{after_mark}\n{resumed}")
     story.expect_text("unreadable-mark show 1", f"creator_id: {story.user.id}", f"lifter_id: {story.user.id}", actor=story.user)
+
+
+def test_the_main_agent_hears_once_how_many_commands_agents_marked_unreadable(new_story):
+    story = new_story(fixture=UserBuilder)
+    story.hook("s-1", HookSamples.session_start())
+    story.run_listeners()
+    story.advance(LONG_RUN)
+    for words in ("make watch", "make serve", "npm run dev"):
+        story.expect_success(f'reader unreadable "{words}" --reason "it only redraws one line"', actor=story.agent)
+    for _ in range(2):
+        story.advance(LONG_RUN)
+        story.hook("s-1", HookSamples.session_start())
+        story.run_listeners()
+    lines = kept_lines(story, actor=story.user)
+    story.expect_rows(lines.count("3 commands are marked unreadable by agents: look at them in the viewer") == 1, detail=lines)

@@ -4,13 +4,13 @@ from engine.query.queries import Queries
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from engine.driver.nudger import Nudger
 from core.modules.processes.commands.send_readers_notice.send_readers_notice import SendReadersNotice
-from core.modules.processes.support.process_nudges import READ_ONLY_MISSING_NOTICE, READERS_MISSING_FIELDS, READERS_NEED_REPAIR
+from core.modules.processes.support.process_nudges import READ_ONLY_MISSING_NOTICE, READERS_MISSING_FIELDS, READERS_NEED_REPAIR, UNREADABLE_AUDIT
 from core.modules.processes.support.reading.catalogue_audit import AUDIT_SOURCE, REPAIR_AFTER_OUTPUTS, CatalogueAudit
 
 
 class SendReadersNoticeHandler(Handler[SendReadersNotice, None]):
     """Tells each main agent, without blocking it, what the reader audit finds: the readers that lack required
-    fields, the readers that picked no line of their last outputs, and the commands of read-only helpers that ended
+    fields, the readers that picked no line of their last outputs, the commands agents marked unreadable, and the commands of read-only helpers that ended
     without a proper reader."""
 
     command = SendReadersNotice
@@ -23,10 +23,14 @@ class SendReadersNoticeHandler(Handler[SendReadersNotice, None]):
         broken = self.audit.readers_needing_repair()
         mains = MainAgentFinder.rows(self.queries)
         for agent in mains:
-            missing_readers = self.audit.missing_reader_decisions(agent.id, [main.id for main in mains])
+            last_audit_at = self.audit.last_audit_at(agent)
+            missing_readers = self.audit.missing_reader_decisions(last_audit_at, [main.id for main in mains])
+            agent_marks = self.audit.agent_marks_count(last_audit_at)
             if fields_missing:
                 self.nudger.send(agent.id, READERS_MISSING_FIELDS, AUDIT_SOURCE, context, count=fields_missing)
             for reader in broken:
                 self.nudger.send(agent.id, READERS_NEED_REPAIR, AUDIT_SOURCE, context, reader=reader.name, count=REPAIR_AFTER_OUTPUTS)
+            if agent_marks:
+                self.nudger.send(agent.id, UNREADABLE_AUDIT, AUDIT_SOURCE, context, count=agent_marks)
             if missing_readers:
                 self.nudger.send(agent.id, READ_ONLY_MISSING_NOTICE, AUDIT_SOURCE, context, count=missing_readers)
