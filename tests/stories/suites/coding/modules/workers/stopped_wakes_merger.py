@@ -8,7 +8,7 @@ from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON, ended, main_agent_lines, missing_program, running_worker, two_task_worker, worker_story  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
 
-STUCK = 'wait stuck "the build tool is missing"'
+HELP_REQUEST_LINE = 'wait stuck "the build tool is missing"'
 
 
 def merger_lines(story) -> tuple[MergerLine, ...]:
@@ -20,7 +20,7 @@ def stop_as_resumed(story) -> None:
 
 
 def stop_after_asking_for_help(story) -> None:
-    story.expect_success(STUCK, actor=story.worker)
+    story.expect_success(HELP_REQUEST_LINE, actor=story.worker)
     ended(story)
 
 
