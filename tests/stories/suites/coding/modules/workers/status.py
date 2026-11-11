@@ -86,3 +86,12 @@ def test_a_refused_status_read_does_not_release_the_compaction_block(worker_batc
     story.expect_success("worker status", actor=worker)
     story.expect_hook_allowed(session, HookSamples.shell("journal worker status", ShellPart("journal", CommandCategory.JOURNAL, ["worker", "status"], subcommand="worker")))
     story.expect_hook_allowed(session, HookSamples.edit("src/cart.py"))
+
+
+def test_557_the_status_of_a_worker_carries_the_standing_the_standing_command_prints(worker_batch):
+    story, _, worker = worker_batch
+    number = agent_number(story, worker.id)
+    standing = json.loads(story.run(f"agent standing {number} --json --environment main", actor=story.agent).output_text)
+    status = json.loads(story.run(f"worker status {number} --json", actor=story.agent).output_text)
+    story.expect_rows(status["standing"] == standing["standing"], detail=f"{standing} | {status}")
+    story.expect_text(f"worker status {number}", f"Standing: {standing['standing']}", actor=story.agent)

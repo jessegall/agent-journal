@@ -79,13 +79,16 @@ class AgentDispatcher:
             self.end_row(agent, context)
 
     def standing(self, agent: Agent) -> Standing:
+        stage = self.stage(agent)
+        return Standing(stage, self.end_reason(agent) if stage is StandingState.ENDED else None)
+
+    def stage(self, agent: Agent) -> StandingState:
         if self.has_program(agent):
-            return Standing(StandingState.RUNNING)
-        if agent.launch_failed_at is not None:
-            return Standing(StandingState.FAILED)
-        if agent.ended_at is not None:
-            return Standing(StandingState.ENDED, self.end_reason(agent))
-        return Standing(StandingState.STARTING if agent.launched_at is not None else StandingState.UNSTARTED)
+            return StandingState.RUNNING
+        recorded = agent.standing
+        if recorded is not StandingState.RUNNING or agent.is_main:
+            return recorded
+        return StandingState.STARTING if agent.launched_at is not None else StandingState.UNSTARTED
 
     def reconcile(self, context: Context) -> None:
         for agent in self.wrongly_ended_agents():

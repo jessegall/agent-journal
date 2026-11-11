@@ -9,6 +9,8 @@ import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
 
 const IN_HAND_STATES = new Set(["started", "testing", "blocked"]);
 const FALLBACK_TITLES = {helper: "Helper", reviewer: "Reviewer", main: "Main agent"};
+// the words for the standing the server works out for an agent's program
+const STANDING_WORDS = {running: "Working", starting: "Starting", stopping: "Stopping", ended: "Idle: its process has stopped", failed: "Could not start", never_started: "Not started"};
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
 const emit = defineEmits(["toggle"]);
 const now = useNow();
@@ -46,7 +48,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
 const statusWords = computed(() => {
     if (retired.value) return "Retired";
     if (dotState.value === "blocked" || dotState.value === "waiting") return workStatus.value || (dotState.value === "blocked" ? "Blocked" : "Waiting");
-    return props.row.ended_at ? "Idle: its process has stopped" : "Working";
+    return STANDING_WORDS[props.row.standing];
 });
 const statusAt = computed(() => {
     if (retired.value) return props.row.retired_at;

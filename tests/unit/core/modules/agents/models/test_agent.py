@@ -22,3 +22,13 @@ def test_a_helper_with_a_profile_is_kept_until_it_is_retired_and_no_other_role_i
     assert not helper.retired(moment, "its job is done", 1).is_kept_helper
     assert not Agent(id=42, creator_id=1, session="s-3", program="claude", role="helper").is_kept_helper
     assert not Agent(id=43, creator_id=1, session="s-4", program="claude", role="worker", profile="journal-worker").is_kept_helper
+
+
+def test_the_standing_a_row_records_is_read_without_a_launcher():
+    moment = Timestamp.parsed("2026-01-01T00:00:00+00:00")
+    helper = Agent(id=44, creator_id=1, session="s-5", program="claude", role="helper", number=4)
+    recorded = [row.standing.value for row in (
+        helper, Agent(id=45, creator_id=1, session="s-6", program="claude", role="helper", number=5, launched_at=moment),
+        Agent(id=46, creator_id=1, session="s-7", program="claude", role="helper", number=6, pid=700), agent("main", 1),
+        agent("helper", 7, moment), Agent(id=47, creator_id=1, session="s-8", program="claude", role="helper", number=8, ended_at=moment, launch_failed_at=moment))]
+    assert recorded == ["never_started", "running", "running", "running", "ended", "failed"]

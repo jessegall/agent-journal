@@ -32,7 +32,8 @@ from core.modules.usage.models.enums.agent_list_state import AgentListState
 
 
 class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterOptions]):
-    """Reads the agents list in creation order, with its filters applied in SQLite."""
+    """Reads the agents list in creation order, with its filters applied in SQLite and, for each agent on the
+    page, the standing its row records."""
 
     cli_name = "agent"
     name = "cards"
@@ -110,7 +111,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         statuses = self.usage.statuses(page.rows)
         account = self.usage.files.plan_windows(statuses)
         sandboxes = self.usage.sandbox.sandboxed_among(tuple(agents.values()))
-        return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED),
+        return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED), standing=agents[row.id].standing.value,
                                            resume_reason=self.resume_reason(agents[row.id], *locations[row.id]) if row.id in idle else None,
                                            facts=self.usage.facts(row, policy, titles, pending.get(row.id), statuses[row.session], account, sandboxes[row.id]).json(),
                                            job_command=job_commands.get(row.role, ()),

@@ -33,11 +33,12 @@ class Output:
         self.write(self.confirmation if is_confirmed else "\n".join(f"{column}: {value}" for column, value in values.items() if value not in (None, {}, "")), values)
 
     def page(self, page: Page[object], columns: Sequence[str] = ()) -> None:
-        lines = ["  ".join(str(value) for column, value in self.values(record).items() if (column in columns if columns else column not in LIST_HIDDEN_COLUMNS) and is_shown(value))
-                 for record in page.rows]
+        rows = [{**self.values(record), **self.listed_properties(record)} for record in page.rows]
+        lines = ["  ".join(str(value) for column, value in row.items() if (column in columns if columns else column not in LIST_HIDDEN_COLUMNS) and is_shown(value))
+                 for row in rows]
         if not page.is_last:
             lines.append(f"page {page.number}, {len(page.rows)} of {page.total} rows: --page {page.number + 1} for the next")
-        listing = {"rows": [self.values(record) for record in page.rows], "page": page.number, "size": page.size, "total": page.total}
+        listing = {"rows": rows, "page": page.number, "size": page.size, "total": page.total}
         self.write("\n".join(lines) if lines else "nothing found", listing)
 
     def refusal(self, refusal: Refusal) -> None:
@@ -60,6 +61,9 @@ class Output:
 
     def properties(self, record: object) -> dict[str, object]:
         return {name: self.json_value(getattr(record, name)) for name in type(record).shown_properties} if isinstance(record, Model) else {}
+
+    def listed_properties(self, record: object) -> dict[str, object]:
+        return {name: self.json_value(getattr(record, name)) for name in type(record).listed_properties} if isinstance(record, Model) else {}
 
     def json_value(self, value: object) -> object:
         if isinstance(value, bool):

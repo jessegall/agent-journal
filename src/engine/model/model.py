@@ -28,6 +28,7 @@ class Model:
     shared_rows: ClassVar[bool] = False
     numbered: ClassVar[bool] = False
     shown_properties: ClassVar[Sequence[str]] = ()
+    listed_properties: ClassVar[Sequence[str]] = ()
     change_names: ClassVar[Sequence[str]] = ()
     event_forms: ClassVar[tuple[EventForm, ...]] = tuple(EventForm)
     events_expire: ClassVar[bool] = False
