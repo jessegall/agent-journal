@@ -116,6 +116,10 @@ class StoryWorker:
         test_flag = f' --test "{file_proof_line(test_line)}"' if test_line else ""
         return self.story.run(f'proof make {point} --task {self.current_task()} "cart.py:1, the cart total"{test_flag}', actor=self.worker)
 
+    def prove_commit(self, test_line: str = "") -> LineOutcome:
+        self.prove(test_line)
+        return self.story.run("worker commit --wait --differences none", actor=self.worker)
+
     def prove_advance(self, test_line: str = "") -> LineOutcome:
         self.prove(test_line)
         return self.story.run("worker next --wait --differences none", actor=self.worker)
