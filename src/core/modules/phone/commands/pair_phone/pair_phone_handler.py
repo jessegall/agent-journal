@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from engine.actor.person_check import PersonCheck
+from engine.command.person_check import PersonCheck
 from engine.time.clock import Clock
 from engine.command.context import Context
 from engine.command.handler import Handler

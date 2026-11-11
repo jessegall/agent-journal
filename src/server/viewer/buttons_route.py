@@ -1,6 +1,6 @@
 from engine.database.database import Database
 from engine.environment.environment_names import EnvironmentNames
-from engine.container.journal_container import synced_container
+from engine.module.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from engine.registry.registry import Registry

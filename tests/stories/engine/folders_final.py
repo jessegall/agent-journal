@@ -17,7 +17,7 @@ MODULE_STAND_INS = {
     "src/core/modules/tasks/testing": ["story_task_brief_requirement.py"],
 }
 AREA_MARKER_ENDING = "_area.py"
-KIT_FOLDERS = ["examples", "expectations", "fakes", "runs", "seeds", "stories", "templates"]
+KIT_FOLDERS = ["cache", "examples", "expectations", "fakes", "runs", "seeds", "stories", "templates"]
 SCANNED_TOPS = ["src/core", "src/engine", "src/suites", "src/tunnels", "src/install", "src/server"]
 
 

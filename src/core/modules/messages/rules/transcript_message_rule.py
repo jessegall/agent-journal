@@ -43,10 +43,10 @@ class TranscriptMessageRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         provider = self.providers.provider(hook.event.program)
         path = self.session_file(hook, provider)
-        rows = self.transcripts.read_ready(provider, path, self.settings.seconds(TRANSCRIPT_WAIT_SECONDS).subtracted_from(hook.timestamp)) if path is not None else []
+        rows = self.transcripts.read_ready(provider, path, self.settings.seconds(TRANSCRIPT_WAIT_SECONDS).deducted(hook.timestamp)) if path is not None else []
         if not rows:
             return RuleAnswer.allowed()
-        earliest_at = max(self.settings.minutes(TRANSCRIPT_OLDEST_MINUTES).subtracted_from(hook.timestamp), self.queries.query(Agent).find(hook.agent_id).creation_timestamp())
+        earliest_at = max(self.settings.minutes(TRANSCRIPT_OLDEST_MINUTES).deducted(hook.timestamp), self.queries.query(Agent).find(hook.agent_id).creation_timestamp())
         return RuleAnswer.allowed().running(*(command for row in rows if row.created_at >= earliest_at for command in self.commands(hook, row)))
 
     def session_file(self, hook: AgentHook, provider: Provider) -> Path | None:
@@ -55,7 +55,7 @@ class TranscriptMessageRule(DriverRule):
         return provider.transcript(Path(self.queries.query(Environment).find(hook.environment_id).folder), hook.event.session)
 
     def commands(self, hook: AgentHook, row: TranscriptEntry) -> list[Command[object]]:
-        cutoff_at = self.settings.seconds(TRANSCRIPT_LOOKBACK_SECONDS).subtracted_from(row.created_at)
+        cutoff_at = self.settings.seconds(TRANSCRIPT_LOOKBACK_SECONDS).deducted(row.created_at)
         if row.is_prompt:
             has_hook = self.hook_calls.has_call_after(hook.agent_id, HookEventName.PROMPT, HookCall.summarize(row.text), cutoff_at)
             return [] if has_hook else [RecordMissingPrompt(row.text), RecordTypedPrompt(row.text.strip())]

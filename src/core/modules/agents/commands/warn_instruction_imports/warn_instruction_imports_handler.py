@@ -23,5 +23,5 @@ class WarnInstructionImportsHandler(Handler[WarnInstructionImports, None]):
         for fault in self.imports.faults():
             arguments = (*COMMAND_NAME_PARTS, fault.file, fault.imported)
             approval = UserApprovalRefusal(InstructionImportQuestion.text(fault.file, fault.imported), arguments,
-                                           why=f"{fault.file} imports {fault.imported}, which puts the same text into the agent's context twice.")
+                                           request_reason=f"{fault.file} imports {fault.imported}, which puts the same text into the agent's context twice.")
             self.bus.dispatch(RequestUserApproval(approval, arguments, command.agent_id), context)

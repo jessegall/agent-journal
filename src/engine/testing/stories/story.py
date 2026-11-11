@@ -27,7 +27,7 @@ from engine.driver.hook_event import HookEvent
 from engine.driver.hook_reply import HookReply
 from engine.driver.hook_route import HookRoute
 from engine.command.script_policy import ScriptPolicy
-from engine.container.journal_container import synced_container
+from engine.module.journal_container import synced_container
 from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.hosting.hosting import Hosting
 from engine.journal.journal_home import JournalHome

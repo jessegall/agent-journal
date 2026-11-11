@@ -15,7 +15,7 @@ from core.modules.memories.support.mark_tracker import MarkTracker
 from core.modules.memories.support.memory_settings import MARK_SPACING_TOKENS_SETTING, MARK_TOOL_USES_SETTING, MARKS_SETTING
 from core.modules.memories.commands.open_memory_mark.open_memory_mark import OpenMemoryMark
 from engine.setting.setting_values import SettingValues
-from engine.enums.role_group import RoleGroup
+from engine.agent.enums.role_group import RoleGroup
 
 
 

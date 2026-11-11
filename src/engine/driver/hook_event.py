@@ -97,10 +97,10 @@ class HookEvent:
 
     @property
     def is_check_required(self) -> bool:
-        return self.requires_check(self.role)
+        return self.is_checked_role(self.role)
 
     @staticmethod
-    def requires_check(role: str) -> bool:
+    def is_checked_role(role: str) -> bool:
         return role not in ("", AgentRole.MAIN)
 
     @property

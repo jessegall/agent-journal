@@ -5,7 +5,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.helper_type.helper_type import HelperType
-from engine.driver.suite import Suite
+from engine.module.suite import Suite
 from engine.module.module import Module
 from engine.profile.agent_profile import AgentProfile
 from suites.coding.coding_suite import CodingSuite

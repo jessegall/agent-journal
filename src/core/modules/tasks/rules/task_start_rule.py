@@ -1,4 +1,4 @@
-from engine.enums.role_group import RoleGroup
+from engine.agent.enums.role_group import RoleGroup
 from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule

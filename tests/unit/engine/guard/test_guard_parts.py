@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from engine.event.change import Change
 from engine.command.context import Context
 from engine.container.container import Container
-from engine.guard.change_filter import ChangeFilter
+from engine.listener.change_filter import ChangeFilter
 from engine.guard.guard_switches import GuardSwitches
 from engine.model.model import Model
 from engine.time.timestamp import Timestamp

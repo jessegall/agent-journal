@@ -1,4 +1,4 @@
-from engine.driver.suite import Suite
+from engine.module.suite import Suite
 
 
 class AcmeSuite(Suite):

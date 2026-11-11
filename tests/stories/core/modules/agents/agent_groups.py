@@ -2,7 +2,7 @@ import json
 
 from engine.agent.agent_group import AgentGroup
 from engine.agent.agent_group_book import AgentGroupBook
-from engine.registry.agent_group_entry import AgentGroupEntry
+from engine.agent.agent_group_entry import AgentGroupEntry
 from engine.registry.registry import Registry
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value

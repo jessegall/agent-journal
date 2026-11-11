@@ -6,7 +6,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.enums.refusal_style import RefusalStyle
 from engine.driver.driver_rule import DriverRule
 from engine.enums.tool_type import ToolType
-from engine.enums.hook_effect import HookEffect
+from engine.provider.enums.hook_effect import HookEffect
 from engine.provider.managed_hook import ManagedHook
 
 

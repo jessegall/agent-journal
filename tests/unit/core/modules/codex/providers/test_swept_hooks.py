@@ -3,7 +3,7 @@ from engine.private.private_folder import PrivateFolder
 from engine.private.server_keys import ServerKeys
 from engine.provider.hook_manager import HookManager
 from engine.enums.hook_trust import HookTrust
-from engine.enums.hook_effect import HookEffect
+from engine.provider.enums.hook_effect import HookEffect
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.program_folders import ProgramFolders
 from engine.provider.program_hooks import ProgramHooks

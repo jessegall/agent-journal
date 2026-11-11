@@ -135,7 +135,7 @@ class ShellLine:
         return any(part.text.strip("() ") == command or part.text.strip("() ").startswith(f"{command} ") for part in self.parts)
 
     def has_part_naming(self, names: Sequence[str]) -> bool:
-        return any(part.contains_any(names) for part in self.parts)
+        return any(part.includes_name(names) for part in self.parts)
 
     def is_permitted_line(self, action: str) -> bool:
         return action == self._source_line

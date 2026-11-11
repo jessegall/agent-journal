@@ -5,9 +5,10 @@ import time
 from pathlib import Path
 
 from engine.module.code_fingerprint import CORE_FOLDER
+from engine.module.python_source_folders import python_source_folders
 from engine.module.source_hash import SourceHash
 from engine.testing.seeds.base_seed_switch import BaseSeedSwitch
-from engine.testing.templates.folder_stat import FolderStat
+from engine.testing.cache.folder_stat import FolderStat
 
 CACHE_FOLDER = Path.home() / ".cache" / "agent-journal" / "story-templates"
 UNUSED_FOLDER_SECONDS = 24 * 3600
@@ -15,12 +16,7 @@ PRUNE_INTERVAL_SECONDS = 3600
 PRUNED_STAMP = ".pruned"
 LEASE_PREFIX = ".in-use-"
 CACHE_LIMIT_BYTES = 3 * 1024 ** 3
-UNTEMPLATED_FOLDERS = frozenset(("viewer", "__pycache__"))
 HASH_CHARACTERS = 16
-
-
-def python_source_folders() -> tuple[Path, ...]:
-    return tuple(sorted(folder for folder in CORE_FOLDER.parent.iterdir() if folder.is_dir() and folder.name not in UNTEMPLATED_FOLDERS))
 
 
 class TemplateCache:

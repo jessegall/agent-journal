@@ -1,5 +1,5 @@
 from engine.driver.driver import Driver
-from engine.driver.suite import Suite
+from engine.module.suite import Suite
 
 
 # @righteous architecture_drivers_driver_piece_without_a_name

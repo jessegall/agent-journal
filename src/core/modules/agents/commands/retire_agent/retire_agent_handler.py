@@ -33,7 +33,7 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
         if block:
             raise Refusal(block)
         if actor.is_agent():
-            raise UserApprovalRefusal(f"Retire {AgentLabel.from_agent(agent).text}{self.parent_text(agent)}?", command=command, why=command.reason.strip())
+            raise UserApprovalRefusal(f"Retire {AgentLabel.from_agent(agent).text}{self.parent_text(agent)}?", command=command, request_reason=command.reason.strip())
         if roster is not None:
             roster.release(agent, actor)
 

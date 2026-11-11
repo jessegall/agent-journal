@@ -7,7 +7,7 @@ from engine.log.exception_sink import ExceptionSink
 from engine.database.database import Database
 from engine.log.error_log import ErrorLog
 from engine.log.system_log_writer import SystemLogWriter
-from engine.container.journal_container import synced_database_container
+from engine.module.journal_container import synced_database_container
 from engine.journal.journal_home import JournalHome
 from engine.listener.round_yield import RoundYield
 from server.hook.queue_round_yield import QueueRoundYield

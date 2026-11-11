@@ -1,4 +1,4 @@
-from engine.testing.templates.template_cache import TemplateCache
+from engine.testing.cache.template_cache import TemplateCache
 from engine.testing.templates.template_databases import TemplateDatabases
 from tests.stories.engine.setting.support.setting_samples import PATH
 from tests.stories.core.support.fixtures import UserJoined

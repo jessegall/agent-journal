@@ -15,7 +15,7 @@ import time
 from pathlib import Path
 import sys
 import pytest
-from engine.testing.templates.template_cache import TemplateCache
+from engine.testing.cache.template_cache import TemplateCache
 from engine.testing.templates.template_databases import TemplateDatabases
 from tests.stories.core.support.fixtures import UserJoined
 

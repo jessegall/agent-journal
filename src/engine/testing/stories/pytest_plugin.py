@@ -13,7 +13,7 @@ from engine.module.source_hash import SourceHash
 
 from engine.registry.lazy_loading import LazyLoading
 from engine.testing.runs.heavy_run_gate import HeavyRunGate
-from engine.testing.templates.template_cache import python_source_folders
+from engine.module.python_source_folders import python_source_folders
 from engine.testing.runs.run_cpu import RunCpu
 from engine.testing.runs.run_size import RunSize
 from engine.testing.runs.full_run_record import FullRunRecord
@@ -24,7 +24,7 @@ from engine.testing.stories.story_body import StoryBody
 from engine.testing.stories.story_overlap import StoryOverlap
 from engine.testing.stories.story_steps import StorySteps
 from engine.testing.stories.story_budget import BUDGET_MARKER, CPU_SECONDS_BUDGET, POINTS_BUDGET, StoryBudget
-from engine.testing.templates.template_cache import TemplateCache
+from engine.testing.cache.template_cache import TemplateCache
 from engine.testing.templates.temp_folders import TempFolders
 from engine.testing.templates.template_databases import TemplateDatabases
 

@@ -6,7 +6,7 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.text.text_digest import TextDigest
 from engine.time.timestamp import Timestamp
-from engine.actor.person_check import PersonCheck
+from engine.command.person_check import PersonCheck
 from core.modules.sharing.commands.accept_share_link.accept_share_link import AcceptShareLink
 from core.modules.sharing.commands.make_share_link.make_share_link_handler import LINK_PATH, TOKEN_BYTES
 from core.modules.sharing.commands.support.share_invitation import ShareInvitation

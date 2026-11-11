@@ -1,5 +1,5 @@
 from engine.driver.foreign_answer import ForeignAnswer
-from engine.enums.foreign_outcome import ForeignOutcome
+from engine.driver.enums.foreign_outcome import ForeignOutcome
 from engine.database.database import Database
 from engine.model.tables import Tables
 from engine.query.query import Query

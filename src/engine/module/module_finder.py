@@ -7,7 +7,7 @@ from engine.dotted_path.errors.dotted_path_error import DottedPathError
 
 from engine.journal.journal_home import JournalHome
 from engine.dotted_path.dotted_path import DottedPath
-from engine.driver.suite import Suite
+from engine.module.suite import Suite
 from engine.module.module import Module
 from engine.module.errors.module_error import ModuleError
 from engine.module.suite_list import SuiteList

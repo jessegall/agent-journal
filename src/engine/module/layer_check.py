@@ -2,6 +2,7 @@ import ast
 from collections import defaultdict
 from collections.abc import Iterator, Sequence
 from pathlib import Path
+from engine.map.code_map import SKIPPED_FOLDERS
 
 from engine.file.file_access import FileAccess
 from engine.module.layer import Layer
@@ -11,7 +12,6 @@ from engine.module.module import Module
 from engine.module.errors.module_error import ModuleError
 from engine.module.module_order import ModuleOrder
 
-SKIPPED_FOLDERS = {"__pycache__", "node_modules"}
 DECLARATION_FILE_ENDINGS = ("module", "suite")
 
 

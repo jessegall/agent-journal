@@ -40,6 +40,6 @@ class RequestSettingHandler(Handler[RequestSetting, ApprovalRequest]):
         if command.project:
             arguments = (*arguments, "--project")
         arguments = (*arguments, "--expected-revision", self.revision.current(entry.key))
-        approval = self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(f"Change {entry.title}?\n{details}", arguments, why=command.reason.strip()), arguments), context)
+        approval = self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(f"Change {entry.title}?\n{details}", arguments, request_reason=command.reason.strip()), arguments), context)
         assert isinstance(approval, ApprovalRequest)
         return approval

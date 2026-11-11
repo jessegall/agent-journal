@@ -83,7 +83,7 @@ from core.modules.drivers.migrations.m035_helper_job_review_plan import HelperJo
 from core.modules.drivers.migrations.m037_agent_line_nudge import AgentLineNudgeMigration
 from core.modules.drivers.migrations.m030_hook_call_partial_indexes import HookCallPartialIndexesMigration
 from core.modules.drivers.models.refusal_skip import RefusalSkip
-from engine.guard.change_filter import ChangeFilter
+from engine.listener.change_filter import ChangeFilter
 from engine.driver.hook_route import HookRoute
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module

@@ -28,7 +28,7 @@ class SecretApprovalListener(CommitListener[Changed[Secret]]):
                 continue
             arguments = ("secret", "allow", str(secret.id), program)
             approval = UserApprovalRefusal(f"Allow {program} to use the secret {secret.title}?", arguments,
-                                           why=f"The secret was proposed for {program}; it can use the secret once you allow it.")
+                                           request_reason=f"The secret was proposed for {program}; it can use the secret once you allow it.")
             self.bus.run(RequestUserApproval(approval, arguments, logged.actor_id), actor,
                          cause_id=logged.id, environment_id=logged.environment_id)
         for program in secret.programs:

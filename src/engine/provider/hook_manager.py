@@ -5,7 +5,7 @@ from pathlib import Path
 
 from engine.git.hook_files_git import HookFilesGit
 from engine.provider.hook_tool_rule import HookToolRule
-from engine.enums.hook_effect import HookEffect
+from engine.provider.enums.hook_effect import HookEffect
 from engine.provider.managed_hook import ManagedHook
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.program_hooks import ProgramHooks

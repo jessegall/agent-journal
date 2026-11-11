@@ -5,8 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from engine.testing.templates.template_cache import UNUSED_FOLDER_SECONDS, TemplateCache
-import engine.testing.templates.template_cache as template_cache
+from engine.testing.cache.template_cache import UNUSED_FOLDER_SECONDS, TemplateCache
+import engine.testing.cache.template_cache as template_cache
 
 
 def sample_cache(tmp_path, monkeypatch):
@@ -58,7 +58,7 @@ def test_a_code_change_removes_a_folder_unused_for_a_day(tmp_path, monkeypatch):
 FOLDER_SCRIPT = """
 import sys
 from pathlib import Path
-import engine.testing.templates.template_cache as cache
+import engine.testing.cache.template_cache as cache
 cache.CORE_FOLDER = Path(sys.argv[1]) / "src" / "core"
 print(cache.TemplateCache(Path(sys.argv[2])).folder())
 """

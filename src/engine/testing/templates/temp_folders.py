@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 
 from engine.process.process_ids import ProcessIds
-from engine.testing.templates.folder_stat import FolderStat
+from engine.testing.cache.folder_stat import FolderStat
 
 USER_FOLDER_LIMIT_BYTES = 2 * 1024 ** 3
 KEPT_FAILED_RUNS = 3

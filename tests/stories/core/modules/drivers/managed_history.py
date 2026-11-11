@@ -2,7 +2,7 @@ from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.provider.managed_hook import ManagedHook
 from core.modules.drivers.conditions.foreign_hook import ForeignHook
-from engine.enums.foreign_outcome import ForeignOutcome
+from engine.driver.enums.foreign_outcome import ForeignOutcome
 from core.modules.drivers.queries.managed_hook_history_query import ManagedHookHistoryQuery
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import LeadStarted

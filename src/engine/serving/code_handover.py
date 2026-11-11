@@ -13,6 +13,7 @@ from engine.serving.update_steps import FAILED, FINISHED, HANDOVER, PROOF, SERVI
 from engine.serving.server_files import ServerFiles
 from engine.serving.server_limits import PROOF_LIMIT_SECONDS
 from engine.serving.launcher_replacement import LauncherReplacement
+from engine.time.polled_wait import PolledWait
 
 TAKEOVER_LIMIT_SECONDS = 90
 PID_POLL_SECONDS = 0.02
@@ -85,8 +86,5 @@ class CodeHandover:
             connection.close()
 
     def wait_new_server(self, running_pid: str) -> None:
-        deadline = time.monotonic() + TAKEOVER_LIMIT_SECONDS
-        while self.server_pid() == running_pid:
-            if time.monotonic() >= deadline:
-                raise Refusal("the new server did not take over", f"read {self.files.log}")
-            time.sleep(PID_POLL_SECONDS)
+        if not PolledWait(TAKEOVER_LIMIT_SECONDS, PID_POLL_SECONDS).until(lambda: self.server_pid() != running_pid):
+            raise Refusal("the new server did not take over", f"read {self.files.log}")

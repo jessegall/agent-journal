@@ -1,7 +1,7 @@
 import sqlite3
 
 from engine.database.database import Database
-from engine.container.journal_container import synced_container
+from engine.module.journal_container import synced_container
 from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from engine.testing.expectations.expect_row import expect_row

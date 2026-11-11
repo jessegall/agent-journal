@@ -1,4 +1,4 @@
-from engine.testing.templates.template_cache import python_source_folders
+from engine.module.python_source_folders import python_source_folders
 from types import SimpleNamespace
 
 import pytest
@@ -6,7 +6,7 @@ import pytest
 from engine.testing.stories import pytest_plugin
 from engine.testing.stories.pytest_plugin import GATE_LOCK_VARIABLE, TEMPLATE_FOLDER_VARIABLE, chooses_template_folder, run_template_folder
 from engine.testing.runs.run_size import RunSize
-from engine.testing.templates.template_cache import TemplateCache
+from engine.testing.cache.template_cache import TemplateCache
 
 
 def run_config(*args, **options):

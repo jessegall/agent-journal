@@ -14,7 +14,7 @@ from engine.driver.hook_reply import HookReply
 from engine.driver.hook_route import HookRoute
 from engine.provider.providers import Providers
 from engine.provider.transcript_entries import TranscriptEntries
-from engine.container.journal_container import synced_database_container
+from engine.module.journal_container import synced_database_container
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
 from engine.registry.registry import Registry

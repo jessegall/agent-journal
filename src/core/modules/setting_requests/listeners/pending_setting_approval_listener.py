@@ -31,6 +31,6 @@ class PendingSettingApprovalListener(CommitListener[RegistrySynced]):
             question = questions[request.question_id]
             arguments = ("question", "answer", str(question.id), "--answer", APPROVE_OPTION)
             refused = ("question", "answer", str(question.id), "--answer", REFUSE_OPTION)
-            approval = UserApprovalRefusal(question.text, arguments, refused, source_version=question.version, why=question.context or "An agent asked this before the upgrade and has not had an answer.")
+            approval = UserApprovalRefusal(question.text, arguments, refused, source_version=question.version, request_reason=question.context or "An agent asked this before the upgrade and has not had an answer.")
             self.bus.run(RequestUserApproval(approval, arguments, request.creator_id), self.actors.actor("journal.core.setting-requests"),
                          cause_id=logged.id, environment_id=request.environment_id)

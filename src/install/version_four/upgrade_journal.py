@@ -9,7 +9,7 @@ from engine.event.event_log import EventLog
 from engine.time.clock import Clock
 from engine.container.container import Container
 from engine.database.database import Database
-from engine.container.journal_container import sync_modules, synced_container
+from engine.module.journal_container import sync_modules, synced_container
 from engine.journal.journal_home import JournalHome
 from engine.registry.registry import Registry
 from engine.upgrade.move_map import MoveMap

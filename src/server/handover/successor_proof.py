@@ -5,7 +5,7 @@ from pathlib import Path
 
 from engine.time.clock import Clock
 from engine.database.database import Database
-from engine.container.journal_container import opened_container, sync_modules
+from engine.module.journal_container import opened_container, sync_modules
 from engine.journal.journal_home import JournalHome
 from engine.module.module_sync import ModuleSync
 from server.tick.server_backup import ServerBackup

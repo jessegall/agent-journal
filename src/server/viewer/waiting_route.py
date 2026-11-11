@@ -1,5 +1,5 @@
 from engine.database.database import Database
-from engine.container.journal_container import synced_container
+from engine.module.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from engine.query.queries import Queries
 from core.modules.questions.models.enums.question_state import QuestionState

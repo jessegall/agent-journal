@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from engine.actor.person_check import PersonCheck
+from engine.command.person_check import PersonCheck
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal

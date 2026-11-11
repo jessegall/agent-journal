@@ -57,7 +57,7 @@ def test_an_agent_that_retires_an_agent_asks_a_person_with_its_reason(asking_age
     command = RetireAgent(HELPER_ID, REASON)
     with pytest.raises(UserApprovalRefusal) as approval_request:
         retiring.prepare(command, Actor(asking_agent_id, ActorType.AGENT))
-    assert (approval_request.value.command, approval_request.value.why) == (command, REASON)
+    assert (approval_request.value.command, approval_request.value.request_reason) == (command, REASON)
     assert "helper 4" in str(approval_request.value)
     assert stored.saved == []
 

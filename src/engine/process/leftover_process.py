@@ -2,9 +2,9 @@ import os
 from pathlib import Path
 import signal
 import subprocess
-import time
 
 from engine.caller.process_table import PS_ENVIRONMENT, PS_TIMEOUT_SECONDS
+from engine.time.polled_wait import PolledWait
 
 STOP_LIMIT_SECONDS = 5
 POLL_SECONDS = 0.05
@@ -21,10 +21,7 @@ class LeftoverProcess:
         if not cls.runs_program(pid, program):
             return True
         cls.signal(pid, signal.SIGTERM)
-        deadline = time.monotonic() + STOP_LIMIT_SECONDS
-        while cls.is_running(pid) and time.monotonic() < deadline:
-            time.sleep(POLL_SECONDS)
-        if not cls.is_running(pid):
+        if PolledWait(STOP_LIMIT_SECONDS, POLL_SECONDS).until(lambda: not cls.is_running(pid)):
             return True
         cls.signal(pid, signal.SIGKILL)
         return False

@@ -1,4 +1,4 @@
-from engine.driver.suite import Suite
+from engine.module.suite import Suite
 from engine.helper_type.helper_type import HelperType
 from engine.journal.journal_home import JournalHome
 from engine.module.module import Module

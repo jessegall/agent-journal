@@ -66,7 +66,7 @@ def test_335_the_first_moved_error_sits_in_the_engine_unchanged_and_every_site_t
 
 def test_337_each_of_the_eleven_errors_and_refusals_sits_in_the_engine_and_no_file_names_the_old_place(new_story):
     story = new_story()
-    missing = [name for name in MOVED_ERRORS if not (SOURCE_FOLDER / "engine" / "errors" / f"{name}.py").is_file()]
+    missing = [name for name in MOVED_ERRORS if not list((SOURCE_FOLDER / "engine").rglob(f"errors/{name}.py"))]
     twins = [name for name in MOVED_ERRORS if (SOURCE_FOLDER / "core" / "base" / f"{name}.py").exists()]
     refusal_importers = [path for path, text in source_texts().items() if path.startswith("src/core/modules/") and "from engine.errors.refusal import Refusal" in text]
     story.expect_rows(not missing, not twins, files_naming_the_old_place(MOVED_ERRORS) == [], len(refusal_importers) > 300, detail=f"{missing} {twins} {len(refusal_importers)}")

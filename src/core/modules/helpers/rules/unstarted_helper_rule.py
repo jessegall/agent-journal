@@ -5,7 +5,7 @@ from engine.driver.interval import Interval
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.span_queries import SpanQueries
 from engine.enums.helper_role import HelperRole
-from engine.enums.role_group import RoleGroup
+from engine.agent.enums.role_group import RoleGroup
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure import RecordAgentLaunchFailure
 from core.modules.agents.models.agent import Agent

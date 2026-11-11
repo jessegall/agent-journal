@@ -125,4 +125,4 @@ class StoryOverlap:
     @staticmethod
     def empty_fixture_lines(fixtures: Sequence[type[StoryFixture]]) -> list[str]:
         return [f"fixture adds no step to {fixture.parent.__name__} that it builds on, remove it or give it a step: {fixture.__module__}.{fixture.__name__}"
-                for fixture in fixtures if fixture.parent is not None and not fixture.has_own_steps()]
+                for fixture in fixtures if fixture.parent is not None and not fixture.has_steps()]

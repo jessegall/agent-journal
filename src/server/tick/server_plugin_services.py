@@ -1,5 +1,5 @@
 from engine.database.database import Database
-from engine.container.journal_container import synced_container
+from engine.module.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from core.modules.plugins.commands.support.plugin_health_check import PluginHealthCheck
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound

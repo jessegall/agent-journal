@@ -50,4 +50,4 @@ class HookSender:
 
     @property
     def needs_check(self) -> bool:
-        return HookEvent.requires_check(self.role)
+        return HookEvent.is_checked_role(self.role)

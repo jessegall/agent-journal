@@ -4,7 +4,7 @@ from pathlib import Path
 from engine.container.container import Container
 from engine.database.database import Database
 from engine.database.statement import Statement
-from engine.container.journal_container import opened_container
+from engine.module.journal_container import opened_container
 from engine.journal.journal_home import JournalHome
 from engine.module.module_sync import ModuleSync
 

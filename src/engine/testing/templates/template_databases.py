@@ -10,7 +10,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from engine.time.clock import Clock
 from engine.database.database import Database
-from engine.container.journal_container import opened_container
+from engine.module.journal_container import opened_container
 from engine.journal.journal_home import JournalHome
 from engine.module.code_fingerprint import CORE_FOLDER
 from engine.module.module_sync import ModuleSync

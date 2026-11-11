@@ -1,7 +1,7 @@
 from dataclasses import asdict
 
 from engine.database.database import Database
-from engine.container.journal_container import synced_container
+from engine.module.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from engine.registry.registry import Registry
 

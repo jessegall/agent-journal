@@ -11,7 +11,7 @@ from engine.database.database import BUSY_TIMEOUT_SECONDS, Database
 from engine.database.reported_findings import ReportedFindings
 from engine.database.request_watch import RequestWatch
 from engine.time.deadline import Deadline
-from engine.container.journal_container import opened_container, synced_container
+from engine.module.journal_container import opened_container, synced_container
 from engine.journal.journal_home import JournalHome
 from engine.cli.caller_stream import CallerStream
 from engine.command.script_policy import ScriptPolicy

@@ -3,7 +3,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.journal.journal_home import JournalHome
-from engine.enums.role_group import RoleGroup
+from engine.agent.enums.role_group import RoleGroup
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from engine.driver.search_category import CODE, SearchCategory
 from engine.setting.setting_values import SettingValues

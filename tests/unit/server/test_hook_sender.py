@@ -13,7 +13,7 @@ def test_raw_and_prepared_hooks_have_the_same_queue_owner_and_requirements(role)
     assert prepared.owner == raw.owner == "session-42"
     assert prepared.priority == raw.priority
     assert prepared.limit_seconds == raw.limit_seconds
-    assert prepared.needs_check == raw.needs_check == HookEvent.requires_check(role)
+    assert prepared.needs_check == raw.needs_check == HookEvent.is_checked_role(role)
     assert prepared.priority is (QueuePriority.AGENT_HOOK if role in ("worker", "helper") else QueuePriority.MAIN_AGENT_HOOK)
     assert prepared.limit_seconds == (45 if role in ("worker", "helper") else 3.5)
 
