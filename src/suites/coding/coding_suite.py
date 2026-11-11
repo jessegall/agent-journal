@@ -6,6 +6,10 @@ from engine.viewer.layout_shape import split, tabs
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from suites.coding.support.next_task import NextTask
 from engine.agent.agent_policy import AgentPolicy
+from suites.coding.coding_module import CodingModule
+from suites.coding.modules.checks.checks_module import ChecksModule
+from suites.coding.modules.workers.workers_module import WorkersModule
+from suites.coding.support.coding_suite_name import CODING_SUITE_NAME
 
 AGENT_WORK_TABS = ("coding.terminal", "coding.file-feed", "tasks.tasks", "drivers.hook-calls", "agents.helpers")
 
@@ -16,7 +20,8 @@ class CodingSuite(Suite):
     tasks, plans, agents, questions and their activity and file edits, a phone layout, and version 4's
     layout presets."""
 
-    name = "coding"
+    name = CODING_SUITE_NAME
+    modules = [CodingModule, WorkersModule, ChecksModule]
     task_assigner = NextTask
     agent_policy = AgentPolicy(
         job_roles=tuple(["worker"]),
