@@ -73,7 +73,7 @@ class ClerkDriver(Driver):
     """Drives the sample's clerk."""
 
     name = "coding.clerk"
-    suite = CodingSuite
+    suite_name = CodingSuite.name
     role = "clerk"
     rules = [ClerkRule]
 

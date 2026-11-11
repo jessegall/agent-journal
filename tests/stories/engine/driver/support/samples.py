@@ -328,7 +328,7 @@ class Lead(Driver):
     """Drives the sample suite's main agent."""
 
     name = LEAD
-    suite = SampleSuite
+    suite_name = SampleSuite.name
     role = AgentRole.MAIN
     rules = [RemovalRule, StopLine, StopRefusal, ShellRewrite, SecondShellRewrite, NumberedRewrite, ForegroundRun]
     guards = [LeadLockGuard]
@@ -348,7 +348,7 @@ class ControlLead(Driver):
     """Drives the control suite's main agent, with no rules of its own."""
 
     name = "control.lead"
-    suite = ControlSuite
+    suite_name = ControlSuite.name
     role = AgentRole.MAIN
     opening_lines = ["You are the control lead"]
 

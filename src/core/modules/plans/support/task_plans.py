@@ -9,6 +9,8 @@ from core.modules.plans.models.phase_task import PhaseTask
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 
+PLACE_PAGE_ROWS = 50
+
 
 class TaskPlans:
     """Shares a task's phase membership and finds its phase and plan."""
@@ -33,7 +35,7 @@ class TaskPlans:
         distinct_ids = list(dict.fromkeys(task_ids))
         if not distinct_ids:
             return
-        rows = self.kept.read("phase_tasks", lambda: tuple(self.queries.query(PhaseTask).matching(Among("task_id", distinct_ids)).all_rows()),
+        rows = self.kept.read("phase_tasks", lambda: tuple(self.queries.query(PhaseTask).matching(Among("task_id", distinct_ids)).all_rows(PLACE_PAGE_ROWS)),
                               f"task_id IN ({', '.join('?' for _ in distinct_ids)})", distinct_ids, name="plans.task_phases")
         places = {place.task_id: place for place in rows}
         for task_id in distinct_ids:

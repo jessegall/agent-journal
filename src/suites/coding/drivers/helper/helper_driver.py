@@ -8,7 +8,7 @@ class HelperDriver(Driver):
     """Drives a helper the coding suite's agents start, which reads and reports."""
 
     name = "coding.helper"
-    suite = CodingSuite
+    suite_name = CodingSuite.name
     role = CodingHelperRole.HELPER
     rules = []
     opening_lines = [CONTEXT_LINE]

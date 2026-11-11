@@ -4,5 +4,5 @@ from tests.stories.core.modules.profiles.support.notes_suite import NotesSuite
 
 class NotesDriver(Driver):
     name = "notes.reader"
-    suite = NotesSuite
+    suite_name = NotesSuite.name
     role = "reader"

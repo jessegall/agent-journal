@@ -7,6 +7,6 @@ class MainDriver(Driver):
     """Drives the coding suite's main agent: what it may do comes from its workflow controls, not from a mode."""
 
     name = "coding.main"
-    suite = CodingSuite
+    suite_name = CodingSuite.name
     role = AgentRole.MAIN
     opening_lines = ["You are the main agent: what you may do is set by the work controls of this environment; read them with journal setting show"]
