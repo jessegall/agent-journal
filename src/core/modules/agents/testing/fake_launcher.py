@@ -4,7 +4,7 @@ import threading
 from pathlib import Path
 
 from engine.types.type_guards import is_mapping
-from core.modules.agents.support.launcher_link import STOP_FIELD, STOPPED_ANSWER
+from core.modules.agents.support.launcher_link import START_FIELD, STOP_FIELD, STOPPED_ANSWER
 
 ACCEPT_TIMEOUT_SECONDS = 10
 
@@ -63,7 +63,7 @@ class FakeLauncher:
 
     @property
     def starts(self) -> list[dict[str, object]]:
-        return [request for request in self.requests if STOP_FIELD not in request]
+        return [request for request in self.requests if START_FIELD in request]
 
     def expect_started(self, agent_id: int, session: str, folder: Path) -> None:
         self.drain_requests()

@@ -35,6 +35,7 @@ RECENT_END_SECONDS = 600
 OPENED_ROW_TEXT = "was ended while its program runs: its row is open again"
 ENDED_ROW_TEXT = "was open while no program of it runs: its row has ended"
 FINISHED_REASON = "its program ended"
+LAUNCHER_PROGRAM_TEXT = "has no recorded process any more, but the launcher has its program: its row stays open"
 DEFERRED_END_TEXT = "said its session ended while the launcher still has its program: its row ends when the program has gone"
 
 
@@ -97,6 +98,12 @@ class AgentDispatcher:
             self.record(agent, DEFERRED_END_TEXT)
             return agent
         return self.end_row(agent, context)
+
+    def end_lost_process(self, agent: Agent, context: Context) -> Agent:
+        if self.transport.has_program(agent.terminal_id):
+            self.record(agent, LAUNCHER_PROGRAM_TEXT)
+            return agent
+        return self.end_row(self.record_launch(agent, ProgramProcess(None, None), context), context)
 
     def end_row(self, agent: Agent, context: Context) -> Agent:
         return self.repository.save_change(agent, agent.ended(context.timestamp, self.policy.agent_policy()), context)
