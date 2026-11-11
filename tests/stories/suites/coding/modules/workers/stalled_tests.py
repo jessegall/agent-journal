@@ -7,6 +7,7 @@ from suites.coding.modules.workers.ticks.stalled_worker_test_runs import Stalled
 from suites.coding.modules.workers.ticks.unlaunched_worker_test_runs import UnlaunchedWorkerTestRuns
 from suites.coding.modules.workers.workers_module import WorkersModule
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, recording_launch
 
@@ -29,7 +30,7 @@ def test_a_queued_test_a_server_update_left_behind_is_started_by_the_tick(two_ta
     story, worker, _ = two_tasks
     with monkeypatch.context() as stopped_server:
         stopped_server.setattr(WorkerTestListener, "start_next", lambda listener, logged: None)
-        story.expect_text("worker next --wait --differences none", "are queued", actor=worker)
+        story.expect_text(COMMIT, "its tests are queued", actor=worker)
     story.expect_text("proof show 1 --environment main", "state: queued")
     StalledWorkerTestRuns()(story.container)
     story.expect_text("proof show 1", "state: running", actor=story.agent)
@@ -38,7 +39,8 @@ def test_a_queued_test_a_server_update_left_behind_is_started_by_the_tick(two_ta
 def test_a_proof_with_a_test_the_main_agent_checked_needs_no_run_and_the_worker_goes_on(two_tasks):
     story, worker, started = two_tasks
     story.expect_success("proof check 1", actor=story.agent)
-    story.expect_success("worker next --wait --differences none", actor=worker)
+    story.expect_success("task start 2", actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     story.run_listeners()
     story.expect_rows(started == [])
     story.expect_text("task show 1", "state: completed", actor=story.agent)
@@ -48,7 +50,7 @@ def test_a_proof_with_a_test_the_main_agent_checked_needs_no_run_and_the_worker_
 @pytest.fixture
 def edited_proof(two_tasks):
     story, worker, started = two_tasks
-    story.expect_success("worker next --wait --differences none", actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     story.run_listeners()
     story.expect_success('proof short 1 "the total is missing"', actor=story.agent)
     story.expect_success('proof edit 1 --task 1 "cart.py:1, the cart story and the total" --test "python tests/cart.py"', actor=worker)
@@ -56,9 +58,12 @@ def edited_proof(two_tasks):
     return story, worker, started
 
 
-def test_the_tick_queues_a_test_a_proof_edit_left_behind(edited_proof):
-    story, _, _ = edited_proof
+def test_the_tick_starts_no_test_of_a_proof_shown_again_after_it_was_sent_back_and_the_next_commit_does(edited_proof):
+    story, worker, _ = edited_proof
     StalledWorkerTestRuns()(story.container)
+    story.expect_text("proof show 1", "state: shown", actor=story.agent)
+    story.expect_success(COMMIT, actor=worker)
+    story.run_listeners()
     story.expect_text("proof show 1", "state: running", actor=story.agent)
 
 
@@ -70,7 +75,8 @@ def test_with_nothing_to_run_and_a_proof_left_to_check_the_worker_goes_on(new_st
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, read by hand"', actor=worker)
-    story.expect_success("worker next --wait --differences none", actor=worker)
+    story.expect_success("task start 2", actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     story.expect_text("task show 1", "state: testing", actor=story.agent)
     story.expect_text("task show 2", "state: started", actor=story.agent)
 

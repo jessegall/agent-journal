@@ -1,6 +1,7 @@
 import pytest
 
 from engine.testing.expectations.expect_reply import expect_absent_reply_refusal, expect_reply_allowed, expect_reply_refusal
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_ALIAS, TEST_LINE, shell_test_part, start_planned_worker, unplanned_worker
 
 FLAG = "No test runs left"
@@ -39,5 +40,5 @@ def proved_without_test(excludes_plan):
 
 def test_outside_a_plan_a_proof_with_no_test_waits_on_the_main_agent(proved_without_test):
     excludes_plan = proved_without_test
-    excludes_plan.story.run("worker next --wait --differences none", actor=excludes_plan.worker)
+    excludes_plan.story.run(COMMIT, actor=excludes_plan.worker)
     excludes_plan.story.expect_text("proof show 1", "state: shown", actor=excludes_plan.story.agent)

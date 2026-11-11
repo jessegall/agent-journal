@@ -2,6 +2,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from tests.stories.support.story_checks import expect_value
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker, unplanned_worker
 
 
@@ -37,7 +38,7 @@ def test_a_failed_selected_test_is_a_failure_and_a_task_outside_a_plan_holds_not
     external.story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main')
     external.story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest -q" --environment main')
     external.edit_prove(TEST_LINE)
-    external.story.expect_success("worker next --wait --differences none", actor=external.worker)
+    external.story.expect_success(COMMIT, actor=external.worker)
     external.end_test(external.started[0])
     external.story.container.get(OutputFolder).write_output(external.started[1], 1, "tests/other.py\n")
     external.end_test(external.started[1])
