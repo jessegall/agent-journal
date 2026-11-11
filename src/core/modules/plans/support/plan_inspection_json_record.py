@@ -18,3 +18,4 @@ class PlanInspectionJsonRecord(TypedDict):
     delegated: object
     agents: object
     phases: object
+    checkpoint_lines: object

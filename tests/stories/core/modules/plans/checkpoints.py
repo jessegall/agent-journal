@@ -11,6 +11,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.core.support.plan_steps import ready_plan
+from tests.stories.server.support.server_client import server_story
 
 REACHES = "checkpoint-reach list --json --oldest --environment main"
 PASSES = "checkpoint-pass list --json --oldest --environment main"
@@ -283,3 +284,13 @@ def test_198_a_test_command_an_older_journal_stored_on_a_phase_that_is_no_checkp
     story.container.get(Database).update(Statement("UPDATE phases SET test_command = ? WHERE id = 1", [PHASE_TEST]))
     story.expect_text("phase show 1 --environment main", PHASE_TEST, actor=story.user)
     story.expect_text(OUTLINE, UNRUN_WORDS, actor=story.user)
+
+
+def test_190_the_plan_view_gets_a_line_on_how_each_checkpoint_stands_and_on_a_test_that_is_not_run(new_story):
+    story = new_story(fixture=ReachedCheckpoint)
+    story.container.get(Database).update(Statement("UPDATE phases SET test_command = ? WHERE id = 1", [PHASE_TEST]))
+    with server_story(story) as server:
+        cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+        inspected = server.viewer_line_value(cookie, {"window": "plans.plans", "line": ["plan", "inspect", "1"], "environment": "main"})
+    lines = inspected["checkpoint_lines"]
+    story.expect_rows("checkpoint of phase 3: running" in lines, "checkpoint of phase 5: waits for tasks 4, 5" in lines, "test of phase 1 not run: this phase is not a checkpoint" in lines, detail=str(lines))

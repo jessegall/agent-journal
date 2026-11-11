@@ -11,3 +11,4 @@ class PlanOutlineJsonRecord(TypedDict):
     delegated: bool
     agents: list[PlanAgentJsonRecord]
     phases: list[Mapping[str, object]]
+    checkpoint_lines: list[str]

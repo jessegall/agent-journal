@@ -29,4 +29,5 @@ class PlanOutline:
 
     def json(self) -> PlanOutlineJsonRecord:
         agents = self.agents()
-        return {"plan_id": self.plan_id, "delegated": bool(agents), "agents": [agent.json() for agent in agents], "phases": [phase.json() for phase in self.phases]}
+        return {"plan_id": self.plan_id, "delegated": bool(agents), "agents": [agent.json() for agent in agents], "phases": [phase.json() for phase in self.phases],
+                "checkpoint_lines": list(self.checkpoint_lines)}
