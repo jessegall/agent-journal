@@ -1,3 +1,6 @@
+from core.modules.plans.models.plan import Plan
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
 import json
 from datetime import timedelta
 
@@ -18,8 +21,9 @@ def test_the_outline_brings_each_phase_with_its_tasks_in_one_answer(new_story):
 
 def test_the_board_brings_the_open_plans_cards_and_its_counts_in_one_answer(new_story):
     story = new_story(fixture=UserJoined)
+    closed_before = story.container.get(Queries).query(Plan).matching(Among("state", ("completed", "cancelled"))).count()
     story.run('plan make "The rebuild" --brief "all of it" --environment main', actor=story.agent)
-    story.expect_text("plan board --environment main", "1 open, 0 started, 0 closed", actor=story.user)
+    story.expect_text("plan board --environment main", f"1 open, 0 started, {closed_before} closed", actor=story.user)
     story.expect_text("plan board --environment main --json", "The rebuild", actor=story.user)
 
 

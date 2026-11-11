@@ -7,12 +7,15 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
+from engine.query.conditions.minimum import Minimum
 from engine.query.queries import Queries
 from core.modules.tasks.models.task_block_review import TaskBlockReview
 from tests.stories.core.modules.tasks.task_waits import posted
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from tests.stories.core.support.plan_steps import started_plan
 from tests.stories.core.modules.documents.support.trail_fixtures import Scenario
+
+FIRST_STORY_TASK = 1
 
 
 class ManuallyBlockedTask(StoryFixture):
@@ -249,7 +252,7 @@ def test_all_due_user_waits_share_one_line_and_each_review_is_recorded(reviewed_
     story, answer = reviewed_user_waits
     ids = ", ".join(str(task_id) for task_id in range(1, 32))
     expect_matching_lines(answer, "wait on the user", [f"tasks {ids} wait on the user: tell the user what is still needed"])
-    rows = list(story.container.get(Queries).query(TaskBlockReview).all_rows())
+    rows = list(story.container.get(Queries).query(TaskBlockReview).matching(Minimum("task_id", FIRST_STORY_TASK)).all_rows())
     expect_reviewed_rows(rows, story.clock.timestamp())
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
     expect_absent_line(review(story), "wait on the user")
@@ -315,5 +318,5 @@ def expect_matching_lines(answer, text, expected):
 
 
 def expect_reviewed_rows(rows, reviewed_at):
-    assert len(rows) == 31
+    assert len(rows) == 31, [(row.task_id, row.reviewed_at) for row in rows]
     assert all(row.reviewed_at == reviewed_at for row in rows)

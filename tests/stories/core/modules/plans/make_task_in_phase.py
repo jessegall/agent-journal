@@ -1,3 +1,4 @@
+from core.modules.tasks.models.task import Task
 import json
 
 from tests.stories.core.support.fixtures import ThreeTasksPhase, PhasesPlan
@@ -15,14 +16,14 @@ def test_a_new_task_is_appended_to_its_phase_in_one_command(new_story):
 def test_a_missing_phase_refuses_the_command_without_leaving_a_task(new_story):
     story = new_story(fixture=PhasesPlan)
     story.expect_refusal('task make "Unplaced" --phase 999 --environment main', "phase 999")
-    story.expect_success("task list", "nothing found")
+    story.expect_rows(story.story_rows(Task) == ())
 
 
 def test_a_cancelled_plan_refuses_a_new_task_in_its_phase(new_story):
     story = new_story(fixture=PhasesPlan)
     story.run('plan cancel 1 --reason "Replaced"')
     story.expect_refusal('task make "Too late" --phase 1 --environment main', "plan 1 is cancelled")
-    story.expect_success("task list", "nothing found")
+    story.expect_rows(story.story_rows(Task) == ())
 
 
 def test_a_completed_plan_refuses_a_new_task_in_its_phase(new_story):
@@ -31,7 +32,7 @@ def test_a_completed_plan_refuses_a_new_task_in_its_phase(new_story):
     story.run("plan approve 1 --environment main", actor=story.user)
     story.run("plan close 1")
     story.expect_refusal('task make "Too late" --phase 1 --environment main', "plan 1 is completed")
-    story.expect_success("task list", "nothing found")
+    story.expect_rows(story.story_rows(Task) == ())
 
 
 def expect_title_task_tasks(text, outline) -> None:

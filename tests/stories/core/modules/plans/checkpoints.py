@@ -1,3 +1,4 @@
+from core.modules.plans.models.phase import Phase
 import json
 
 import pytest
@@ -276,7 +277,7 @@ def test_197_a_test_command_on_a_phase_that_is_no_checkpoint_is_refused_and_a_ch
     story.expect_success('phase make --plan 1 "Build"')
     story.expect_refusal(f'phase edit 1 --test-command "{PHASE_TEST}"', CHECKPOINT_ONLY_WORDS)
     story.expect_success(f'phase make --plan 1 "Check" --checkpoint --test "{PHASE_TEST}"')
-    story.expect_rows([row["test_command"] for row in rows(story, "phase list --json --oldest --environment main")] == ["", PHASE_TEST])
+    story.expect_rows([phase.test_command for phase in story.story_rows(Phase)] == ["", PHASE_TEST])
 
 
 def test_198_a_test_command_an_older_journal_stored_on_a_phase_that_is_no_checkpoint_is_kept_and_shown_as_not_run(new_story):

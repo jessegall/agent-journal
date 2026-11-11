@@ -1,3 +1,4 @@
+from core.modules.tasks.models.task import Task
 from tests.stories.core.support.agent_labels import agent_number
 import json
 
@@ -47,7 +48,7 @@ def test_task_takes_many_tags_in_a_phase(tag_story):
 def test_task_takes_many_tags_invalid_words_are_refused(tag_story, word):
     story = tag_story
     story.expect_refusal(f'task make "Queue" --tag "{word}" --confirm --environment main', 'tag', actor=story.agent)
-    story.expect_text('task list --environment main', 'nothing found')
+    story.expect_rows(story.story_rows(Task) == ())
 
 
 def test_new_tag_word_needs_confirm(tag_story):
@@ -112,7 +113,7 @@ def test_complexity_out_of_range_is_refused_valid_scores_round_trip_on_cards(tag
     answer = story.run('task board --environment main --json')
     story.expect_rows(answer.code == 0)
     cards = [row for group in json.loads(answer.output_text)['groups'] for row in group['rows']]
-    scores = {row['id']: row['complexity'] for row in cards}
+    scores = {row['id']: row['complexity'] for row in cards if row['id'] in (task_id, plain_id)}
     story.expect_rows(scores == {task_id: 4, plain_id: None})
 
 

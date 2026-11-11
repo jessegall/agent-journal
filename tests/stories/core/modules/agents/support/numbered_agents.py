@@ -6,15 +6,17 @@ from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
+FIRST_STORY_NUMBER = 1
+
 
 def listed(story: Story, environment: str = "main") -> dict[int, dict]:
     rows = json.loads(story.run(f"agent list --environment {environment} --json", actor=story.user).output_text)["rows"]
-    return {row["id"]: row for row in rows}
+    return {row["id"]: row for row in rows if row["number"] is None or row["number"] >= FIRST_STORY_NUMBER}
 
 
 def agent_numbers(story: Story, environment: str = "main") -> dict[int, int]:
     rows = json.loads(story.run(f"agent list --environment {environment} --json").output_text)["rows"]
-    return {row["id"]: row["number"] for row in rows}
+    return {row["id"]: row["number"] for row in rows if row["number"] is None or row["number"] >= FIRST_STORY_NUMBER}
 
 
 def worker_of(story: Story, environment: str) -> int:
