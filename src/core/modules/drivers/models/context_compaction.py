@@ -6,9 +6,9 @@ from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.enums.compaction_reason import CompactionReason
 from core.modules.drivers.models.enums.compaction_state import CompactionState
 from core.modules.drivers.models.enums.context_change import ContextChange
+from core.modules.settings.support.context_reading import PERCENT_FULL
 
 RETRY_SECONDS = 180
-PERCENT_FULL = 100
 
 
 @dataclass(frozen=True, kw_only=True)

@@ -26,7 +26,7 @@ class WorkerLaunch:
             scopes=SimpleNamespace(row_scope=lambda row: nullcontext()), reports=SimpleNamespace(), routes=SimpleNamespace(listed=lambda: []), rows=SimpleNamespace(),
             admission=SimpleNamespace(resume_reasons=lambda role, profile: [], model_reasons=lambda role, profile, program, model: []), started_work=SimpleNamespace(),
             cold=SimpleNamespace(replaced_silent=self.replaced_silent, is_silent=lambda worker: True), instruction_files=SimpleNamespace(refresh=lambda worktree: None),
-            compaction=SimpleNamespace(line=lambda worker: None), conversations=SimpleNamespace(exists=lambda worker: False), lockdown=SimpleNamespace(lockdown=lambda program: SimpleNamespace(is_active=locked_down)))
+            compaction=SimpleNamespace(start_record=lambda worker: None), conversations=SimpleNamespace(exists=lambda worker: False), lockdown=SimpleNamespace(lockdown=lambda program: SimpleNamespace(is_active=locked_down)))
 
     def replaced_silent(self, worker) -> SimpleNamespace:
         self.replaced.append(worker.session)

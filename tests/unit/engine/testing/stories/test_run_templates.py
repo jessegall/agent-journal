@@ -15,7 +15,9 @@ def run_config(*args, **options):
 
 @pytest.fixture
 def first_process(monkeypatch):
-    monkeypatch.delenv(TEMPLATE_FOLDER_VARIABLE, raising=False)
+    """The variable is set and then deleted, so the folder a test chooses is taken out again when the test ends."""
+    monkeypatch.setenv(TEMPLATE_FOLDER_VARIABLE, "")
+    monkeypatch.delenv(TEMPLATE_FOLDER_VARIABLE)
     return monkeypatch
 
 

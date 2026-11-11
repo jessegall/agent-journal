@@ -17,51 +17,7 @@ ALLOWED_CLASS_FILES = {
     "CompactionNotices": "src/core/modules/drivers/support/compaction_notices.py",
     "RecordedContextChangeRequests": "src/core/modules/drivers/bindings/recorded_context_change_requests.py",
 }
-SAMPLE = '''class ContextCompaction:
-    def __init__(self, session_agent_id: int) -> None:
-        self.session_agent_id = session_agent_id
-
-
-class ContextCompactionNotice:
-    def __init__(self, compaction_id: int) -> None:
-        self.compaction_id = compaction_id
-
-
-class ContextCompactions:
-    def request(self, agent_id: int) -> ContextCompaction:
-        # @righteous architecture_compactions_row_built_outside_the_compactions
-        return ContextCompaction(agent_id)
-
-
-class CompactionNotices:
-    def report(self, compaction_id: int) -> ContextCompactionNotice:
-        # @righteous architecture_compactions_notice_built_outside_the_notices
-        return ContextCompactionNotice(compaction_id)
-
-
-class RecordedContextChangeRequests:
-    def __init__(self, compactions: ContextCompactions) -> None:
-        self.compactions = compactions
-
-    def record(self, agent_id: int) -> None:
-        # @righteous architecture_compactions_request_recorded_outside_the_control
-        self.compactions.request(agent_id)
-
-
-class IdleAgentCompactor:
-    def __init__(self, compactions: ContextCompactions) -> None:
-        self.compactions = compactions
-
-    def compact(self, agent_id: int) -> ContextCompaction:
-        # @sin architecture_compactions_request_recorded_outside_the_control
-        self.compactions.request(agent_id)
-        # @sin architecture_compactions_row_built_outside_the_compactions
-        return ContextCompaction(agent_id)
-
-    def report(self, compaction_id: int) -> ContextCompactionNotice:
-        # @sin architecture_compactions_notice_built_outside_the_notices
-        return ContextCompactionNotice(compaction_id)
-'''
+SAMPLE = CUSTOM / "samples" / "compactions" / "idle_agent_compactor.py"
 
 
 @pytest.mark.parametrize("rule", RULES)
@@ -82,7 +38,7 @@ def test_each_detector_fires_outside_the_allowed_class_and_stays_silent_inside_i
     for name in RULES:
         shutil.copyfile(CUSTOM / f"{name}.json", custom / f"{name}.json")
     shutil.copytree(CUSTOM / "skills" / "drivers-architecture", custom / "skills" / "drivers-architecture")
-    (custom / "samples" / "idle_agent_compactor.py").write_text(SAMPLE)
+    shutil.copyfile(SAMPLE, custom / "samples" / "idle_agent_compactor.py")
     plugin = Path(".journal/plugins/code-commandments/bin/commandments-release")
     executable = next((str(folder / plugin) for folder in (ROOT, *ROOT.parents) if (folder / plugin).is_file()), None)
     if executable is None:

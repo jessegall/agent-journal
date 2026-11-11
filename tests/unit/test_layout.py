@@ -62,8 +62,12 @@ def test_server_hook_folder():
 
 
 def test_helper_folder_tests():
-    tests = sorted(str(path.relative_to(ROOT)) for path in (ROOT / "tests").rglob("test_*.py") if HELPER_FOLDERS & set(path.relative_to(ROOT).parts))
+    tests = sorted(str(path.relative_to(ROOT)) for path in (ROOT / "tests").rglob("test_*.py") if HELPER_FOLDERS & set(path.relative_to(ROOT).parts) and not mirrors_source_folder(path))
     assert tests == [], f"these tests sit in a helper folder, where pytest should not have to look: {tests}"
+
+
+def mirrors_source_folder(path: Path) -> bool:
+    return path.is_relative_to(UNIT_TESTS) and (SOURCE / path.parent.relative_to(UNIT_TESTS)).is_dir()
 
 
 def test_script_test_folder():
