@@ -4,7 +4,6 @@ from core.modules.agents.models.agent import Agent
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, StartedHelper, helper_agent
 from tests.stories.core.modules.helpers.lifetime_reviewers import launches
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
@@ -24,7 +23,7 @@ def approval_requests(story) -> list[ApprovalRequest]:
 
 
 def helper_rows(story) -> list[Agent]:
-    return sorted(story.container.get(Queries).query(Agent).filter(role="helper").all_rows(), key=lambda helper: helper.id)
+    return list(story.story_rows(Agent, role="helper"))
 
 
 def test_the_main_agent_that_retires_its_helper_asks_a_person_and_the_helper_stays_when_the_person_refuses(ended):

@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from engine.database.database import Database
+from engine.time.timestamp import Timestamp
 from engine.environment.environment_names import EnvironmentNames
 from engine.testing.seeds.seed import Seed
 from engine.testing.seeds.seeder import Seeder
@@ -7,6 +10,7 @@ from tests.stories.core.support.seeds.project_seeds import (PHASES_IN_A_PLAN, PL
                                                             MessageSeed, PersonSeed, PhaseSeed, PhaseTaskSeed, PlanSeed, TaskAssignmentSeed, TaskLogSeed, TaskSeed)
 
 SEEDED_AGENTS = 80
+SEEDED_DAYS_AGO = 30
 SEEDED_TASKS = 800
 BASE_SEEDS: tuple[tuple[type[Seed], int], ...] = (
     (AgentActorSeed, SEEDED_AGENTS),
@@ -25,13 +29,14 @@ BASE_SEEDS: tuple[tuple[type[Seed], int], ...] = (
 )
 
 """The base seed lies under every story: the rows of a project that has run for months, sized at about a tenth of
-the journal this code is written with. A seed is added by one line here; the order matters where a seed points
+the journal this code is written with, all of it a month old. A seed is added by one line here; the order matters where a seed points
 at the rows of another."""
 
 
 def fill_base_seed(story: Story, environment: str) -> None:
     environment_id = story.container.get(EnvironmentNames).environment_id(environment)
-    seeder = Seeder(story.container.get(Database), story.clock.timestamp().text, environment_id)
+    seeded_at = Timestamp(story.clock.timestamp().value - timedelta(days=SEEDED_DAYS_AGO))
+    seeder = Seeder(story.container.get(Database), seeded_at.text, environment_id)
     with seeder.filling():
         for seed, count in BASE_SEEDS:
             seeder.seed(seed(), count)

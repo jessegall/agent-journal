@@ -5,6 +5,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.agents.agent_driver import CODEX_MODEL, DRIVER
+from tests.stories.core.modules.agents.support.numbered_agents import FIRST_STORY_NUMBER
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, helper_agent
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
@@ -23,8 +24,16 @@ def cards(person, *flags: str, environment: str = "main") -> dict:
     return person.server.viewer_line_value(person.cookie, {"window": WINDOW, "environment": environment, "line": ["agent", "cards", "--include-main", *flags, "--json"]})
 
 
+def own_cards(person, *flags: str, environment: str = "main") -> list[dict]:
+    found, page = [], 1
+    while rows := cards(person, *flags, "--page", str(page), environment=environment)["rows"]:
+        found += [row for row in rows if row["number"] >= FIRST_STORY_NUMBER]
+        page += 1
+    return found
+
+
 def card(person, number: int) -> dict:
-    return next(row for row in cards(person, "--show", "all")["rows"] if row["number"] == number)
+    return next(row for row in own_cards(person, "--show", "all") if row["number"] == number)
 
 
 def viewer_retirement(person, helper) -> None:
@@ -36,7 +45,8 @@ def test_the_agents_list_gives_each_agent_its_number_role_driver_state_sessions_
     ended.expect_success(f'memory make "{MEMORY_TEXT}" --weight 5', actor=Actor(helper.id, ActorType.AGENT))
     with viewer_client(ended) as person:
         main_card, helper_card = card(person, 1), card(person, helper.number)
-    listed = json.loads(ended.run("agent cards --include-main --show all --environment main --json", actor=ended.user).output_text)["rows"]
+    every_card = json.loads(ended.run("agent cards --include-main --show all --environment main --limit 100 --json", actor=ended.user).output_text)["rows"]
+    listed = [row for row in every_card if row["number"] >= FIRST_STORY_NUMBER]
     ended.expect_rows(main_card["role"] == "main", main_card["state"] == "running", main_card["session_count"] == 1, detail=str(main_card))
     ended.expect_rows(helper_card["role"] == "helper", (helper_card["program"], helper_card["program_model"]) == (helper.program, helper.program_model),
                       helper_card["state"] == "idle", helper_card["session_count"] == 1, helper_card["memory_count"] == 1, detail=str(helper_card))
@@ -66,7 +76,7 @@ def test_a_person_who_switches_to_a_new_environment_reads_an_empty_list_and_late
     ended.expect_success("agent start s-20 claude main --environment staging")
     ended.expect_success("agent start s-21 claude worker --environment staging")
     with viewer_client(ended) as person:
-        staging, main = cards(person, "--show", "all", environment="staging")["rows"], cards(person, "--show", "all")["rows"]
+        staging, main = own_cards(person, "--show", "all", environment="staging"), own_cards(person, "--show", "all")
     ended.expect_rows(sorted((row["number"], row["role"]) for row in staging) == [(1, "main"), (2, "worker")], [row["role"] for row in main if row["number"] == 2] == ["helper"],
                       new_environment["rows"] == [], new_environment["total"] == 0, detail=f"{new_environment} / {staging} / {main}")
 
@@ -78,7 +88,7 @@ def test_the_list_pages_and_leaves_a_retired_agent_out_until_the_person_asks_and
     with viewer_client(ended) as person:
         viewer_retirement(person, helper)
         first_page, second_page = cards(person, "--show", "idle", "--limit", "2"), cards(person, "--show", "idle", "--limit", "2", "--page", "2")
-        retired = cards(person, "--show", "retired")["rows"]
+        retired = own_cards(person, "--show", "retired")
         retired_card = card(person, helper.number)
     listed = [row["number"] for row in (*first_page["rows"], *second_page["rows"])]
     ended.expect_rows(len(first_page["rows"]) == 2, first_page["total"] == 3, len(listed) == len(set(listed)) == 3, helper.number not in listed, detail=str(listed))

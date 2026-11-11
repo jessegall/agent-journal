@@ -1,3 +1,4 @@
+from core.modules.plans.models.phase_task import PhaseTask
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import ThreeTasksPhase, TasksPlan
 from tests.stories.core.modules.plans.phases import plan_with_three_phases
@@ -23,7 +24,7 @@ def test_deleting_a_task_removes_its_place_first(new_story):
     story = plan_with_tasks(new_story)
     story.run(lines.FIRST_TASK_PLACE)
     story.expect_text(lines.TASK_DELETION, "task:1")
-    story.expect_success("phase-task list", "nothing found")
+    story.expect_rows(story.story_rows(PhaseTask) == ())
 
 
 def test_a_task_moved_out_of_the_middle_of_a_phase_closes_its_place_and_the_next_task_takes_the_end(new_story):

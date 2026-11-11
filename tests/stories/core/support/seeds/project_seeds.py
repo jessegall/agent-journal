@@ -11,7 +11,7 @@ PLAN_SIZES = (90, 50, 5, 40, 20, 12, 90, 50, 5, 30, 8, 3)
 PHASES_IN_A_PLAN = 6
 PLAN_STARTS = (0, *accumulate(PLAN_SIZES))
 PLACED_TASKS = PLAN_STARTS[-1]
-TASK_STATES = ("completed",) * 17 + ("cancelled", "cancelled", "open")
+TASK_STATES = ("completed",) * 18 + ("cancelled", "cancelled")
 MESSAGE_TYPES = ("user", "agent", "agent", "journal")
 HOOKS = ("pre_tool_use", "post_tool_use", "stop", "prompt")
 EVENT_NAMES = (("task.update", "tasks"), ("message.create", "messages"), ("agent.update", "agents"), ("task.create", "tasks"))
@@ -69,7 +69,8 @@ class PhaseSeed(Seed):
 
 
 class TaskSeed(Seed):
-    """A task assigned to a seeded agent: most are completed, some cancelled, a few still open with that agent."""
+    """A finished task assigned to a seeded agent: most are completed, some cancelled. The work still open in an
+    environment is the story's own, so a story that looks at the open work of its environment sees only its own."""
 
     table = "tasks"
 
@@ -77,7 +78,7 @@ class TaskSeed(Seed):
         state = TASK_STATES[index % len(TASK_STATES)]
         return {"environment_id": facts.environment_id, "creator_id": CORE_ACTOR_ID, "title": f"Seeded task {index + 1}", "brief": "A task of the seed; done when it is done.",
                 "state": state, "delegated_to": facts.row_id("agents", index), "outcome": "done" if state == "completed" else "",
-                "reason": "no longer needed" if state == "cancelled" else "", "closed_at": None if state == "open" else facts.timestamp, "complexity": index % 5 + 1}
+                "reason": "no longer needed" if state == "cancelled" else "", "closed_at": facts.timestamp, "complexity": index % 5 + 1}
 
 
 class TaskAssignmentSeed(Seed):
