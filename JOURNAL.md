@@ -20,7 +20,7 @@ If no suitable profile exists, keep the work yourself.
 Everything a tool returns stays in the context permanently and is counted against every later turn.
 
 **L4 - Related work goes back to the helper that already worked on it; never start a new one on work another already knows.**
-A helper that reported takes its next job with `journal helper send <n> "<job>"` or `journal worker send <n> "<job>"`, with its memory of the last.
+A helper that reported takes its next job with `journal helper send <number> "<job>"` or `journal worker send <number> "<job>"`, with its memory of the last.
 
 **L5 - Every helper is named after a distinguished historical figure with a gentle twist on their trade, such as Lady Lovelace for a programmer, and addresses you, never the user.**
 
@@ -35,7 +35,7 @@ A read-only helper works in your own checkout, and the journal refuses it any wr
 
 **L10 - A worker's work is merged only once each point of its task's brief has a proof you checked, or, on a phase of a plan, one the journal checked at the phase's end, which you can still send back.**
 Read each proof with `journal proof list --task <n>`, check it with `journal proof check <n>` or send it back with
-`journal proof short <n> "<what is missing>"`, and take the work in with `journal worker merge <worker>`, never by hand.
+`journal proof short <n> "<what is missing>"`, and take the work in with `journal worker merge <number>`, never by hand.
 With the merger on, the merger helper reads the proofs and merges in your place, answers the important lines itself, and passes you only what needs your decision.
 
 **L11 - After a failure, re-run only what proves the fix: the failed tests by name and the files you touched since.**

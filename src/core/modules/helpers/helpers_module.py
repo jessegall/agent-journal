@@ -37,6 +37,7 @@ from core.modules.helpers.listeners.helper_program_listener import HelperProgram
 from core.modules.helpers.commands.record_program_exit.record_program_exit_handler import RecordProgramExitHandler
 from core.modules.helpers.commands.record_program_exit.record_program_exit_subcommand import RecordProgramExitSubcommand
 from core.modules.helpers.listeners.helper_resume_listener import HelperResumeListener
+from core.modules.helpers.listeners.messaged_helper_listener import MessagedHelperListener
 from core.modules.helpers.listeners.new_main_helpers_listener import NewMainHelpersListener
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
@@ -88,5 +89,5 @@ class HelpersModule(Module):
     nudges = HELPER_NUDGES
     skills = [SkillDeclaration("journal-helpers", "Start a helper for a bounded read, send it more, stop it, and read its report; read it before the first helper command of a session", keywords=["helper start"])]
     subcommands = [ChangeAgentDriverSubcommand, HelperLifetimesSubcommand, GrantHelperSubcommand, RunGrantedCommandSubcommand, ColdSessionsSubcommand, SetUsageLimitSubcommand, AgentMixSubcommand, StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand, MakeProviderOutageSubcommand, EndProviderOutagesSubcommand]
-    listeners = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, HelperEndedListener, HelperJobMarkListener, HelperJobSourceListener, DeletedHelperSourceListener, ProviderOutageMarkListener]
+    listeners = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, MessagedHelperListener, HelperEndedListener, HelperJobMarkListener, HelperJobSourceListener, DeletedHelperSourceListener, ProviderOutageMarkListener]
     driver_rules = [UnstartedHelperRule, HelperReportRule, HelperSkillReadRule]

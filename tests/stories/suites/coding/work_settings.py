@@ -6,6 +6,8 @@ from tests.stories.support.story_checks import expect_value
 AUTO = "journal.suites.coding.auto-mode"
 CONTINUE_SETTING = "journal.suites.coding.continue-while-delegatable"
 MERGER = "journal.suites.coding.workers.merger-on"
+COLD_MINUTES = "journal.core.helpers.cold-session-minutes"
+COLD_PERCENT = "journal.core.helpers.cold-session-context-percent"
 REVISION_PREFIX = "revision: "
 
 
@@ -53,9 +55,17 @@ def test_s45_an_agent_cannot_apply_a_preset_or_a_change_and_nothing_changes(new_
     story.expect_text("work-settings show --environment main", "workflow: builder", actor=story.agent)
 
 
-def test_the_work_settings_badge_the_context_size_as_the_capped_amount(new_story):
-    story = new_story(fixture=UserBuilder)
+def shown_fields(story) -> dict[str, dict[str, object]]:
     shown = json.loads(story.run("work-settings show --environment main --json", story.user).output_text)
-    badges = {row["key"]: row["badge"] for row in shown["fields"]}
-    expect_value(badges["journal.core.helpers.context-limit-tokens"], "Capped amount")
-    expect_value(badges["journal.core.helpers.context-limit-on"], "")
+    return {row["key"]: row for row in shown["fields"]}
+
+
+def test_the_work_settings_badge_the_context_size_and_a_person_sets_when_a_stopped_agent_starts_a_new_session(new_story):
+    story = new_story(fixture=UserBuilder)
+    fields = shown_fields(story)
+    expect_value(fields["journal.core.helpers.context-limit-tokens"]["badge"], "Capped amount")
+    expect_value(fields["journal.core.helpers.context-limit-on"]["badge"], "")
+    expect_value((fields[COLD_MINUTES]["value"], fields[COLD_PERCENT]["value"]), (55, 20))
+    story.expect_success(f"work-settings apply --revision {revision(story, story.user)} --environment main {COLD_MINUTES}=10 {COLD_PERCENT}=5", actor=story.user)
+    fields = shown_fields(story)
+    expect_value((fields[COLD_MINUTES]["value"], fields[COLD_PERCENT]["value"]), (10, 5))

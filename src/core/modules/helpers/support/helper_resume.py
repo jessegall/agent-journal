@@ -21,21 +21,24 @@ class HelperResume:
     """Starts an ended helper's session again in its folder, with a job as its brief, or a new session when
     its old one has gone cold and its profile replaces a cold session. A helper whose profile replaces its
     session at each launch continues here like one that keeps it: a job that is open never changes session
-    for that reason. A new session gets the whole brief of the open job, since it has read none of it. When the launcher cannot start it, its open job ends, so the next job sent to
-    the helper starts the session the helper has now."""
+    for that reason. A new session gets the whole brief of the open job, since it has read none of it. When
+    the launcher cannot start it, its open job ends, so the next job sent to the helper starts the session the
+    helper has now."""
 
     def __init__(self, launcher: AgentLauncher, commands: HelperCommand, environments: EnvironmentRows, kept: KeptHelpers, cold: ColdSessions, conversations: AgentConversations, jobs: HelperJobRows, bus: Bus, profiles: ProfileFiles) -> None:
         self.launcher, self.commands, self.environments = launcher, commands, environments
         self.kept, self.cold, self.conversations = kept, cold, conversations
         self.jobs, self.bus, self.profiles = jobs, bus, profiles
 
-    def resume(self, helper: Agent, job: str) -> None:
+    def resume(self, helper: Agent, job: str) -> LaunchAnswer:
         if helper.paused_at is not None or not self.kept.program_state(helper).is_ready:
-            return
+            return LaunchAnswer.SKIPPED
         current = self.cold.replaced(helper, self.profiles.effective(helper.profile).occupant.continuation)
         command = self.commands.resumed(current, job) if self.conversations.exists(current) else self.restarted(current, job)
-        if self.launcher.hand(current, self.environments.find(helper.environment_id), command) is LaunchAnswer.FAILED:
+        answer = self.launcher.hand(current, self.environments.find(helper.environment_id), command)
+        if answer is LaunchAnswer.FAILED:
             self.end_open_job(current)
+        return answer
 
     def restarted(self, helper: Agent, job: str) -> LaunchCommand:
         open_job = self.jobs.open_job(helper.id)

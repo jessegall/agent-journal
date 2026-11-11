@@ -1,9 +1,9 @@
 from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
-from engine.enums.actor_type import ActorType
-from engine.enums.agent_role import AgentRole
 from engine.command.context import Context
 from engine.command.handler import Handler
+from engine.errors.refusal import Refusal
+from core.modules.agents.support.agent_label import AgentLabel
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
@@ -29,9 +29,11 @@ class SendAgentMessageHandler(Handler[SendAgentMessage, Message]):
 
     def handle(self, command: SendAgentMessage, context: Context) -> Message:
         receiver = self.agents.find(command.recipient_agent_id)
+        if receiver.retired_at is not None:
+            raise Refusal(f"{AgentLabel.from_agent(receiver).text} is retired, for good", "message an agent that is not retired")
         self.routes.check(context.actor, receiver)
-        sender_id = context.actor.id if context.actor.type is ActorType.AGENT else None
-        message = self.repository.save(Message(session_agent_id=sender_id, target_agent_id=None if receiver.role == AgentRole.MAIN else receiver.id, creator_id=context.actor.id,
+        sender_id = context.actor.id if context.actor.is_agent() else None
+        message = self.repository.save(Message(session_agent_id=sender_id, target_agent_id=None if receiver.is_main else receiver.id, creator_id=context.actor.id,
                                                type=MessageType.AGENT, text=command.text, is_chat_visible=False), context)
         if command.notifies:
             self.nudger.send(self.receivers.message_receiver(command.recipient_agent_id).id, PARENT_REPORT, PARENT_REPORT_SOURCE, context, agent=self.sender_number(message), message=message.id)
