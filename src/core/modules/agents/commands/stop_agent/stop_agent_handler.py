@@ -1,6 +1,5 @@
 
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.query.queries import Queries
@@ -8,7 +7,6 @@ from engine.errors.refusal import Refusal
 from core.modules.agents.commands.stop_agent.stop_agent import StopAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_program import AgentProgram
-from engine.tasks.clear_delegated_tasks import ClearDelegatedTasks
 from core.modules.agents.models.enums.stop_reason import StopReason
 from core.modules.agents.support.agent_dispatcher import AgentDispatcher
 from core.modules.agents.support.agent_sessions import AgentSessions
@@ -23,8 +21,8 @@ class StopAgentHandler(Handler[StopAgent, Agent]):
 
     command = StopAgent
 
-    def __init__(self, queries: Queries, bus: Bus, program: AgentProgram, dispatcher: AgentDispatcher, sessions: AgentSessions) -> None:
-        self.queries, self.bus, self.program, self.dispatcher, self.sessions = queries, bus, program, dispatcher, sessions
+    def __init__(self, queries: Queries, program: AgentProgram, dispatcher: AgentDispatcher, sessions: AgentSessions) -> None:
+        self.queries, self.program, self.dispatcher, self.sessions = queries, program, dispatcher, sessions
 
     def prepare(self, command: StopAgent, actor: Actor) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
@@ -32,7 +30,6 @@ class StopAgentHandler(Handler[StopAgent, Agent]):
             raise Refusal(f"{AgentLabel.from_agent(agent).text} has ended already")
         if agent.pid is None and not self.program.stop(agent) and not agent.is_main:
             raise Refusal(f"the journal does not know the process of {AgentLabel.from_agent(agent).text}", "stop it in its own terminal")
-        self.bus.run(ClearDelegatedTasks(agent.id), actor, environment_id=agent.environment_id)
         if agent.pid is not None:
             self.program.stop(agent)
 

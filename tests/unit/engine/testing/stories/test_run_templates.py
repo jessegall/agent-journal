@@ -1,3 +1,4 @@
+import os
 from engine.module.python_source_folders import python_source_folders
 from types import SimpleNamespace
 
@@ -7,6 +8,7 @@ from engine.testing.stories import pytest_plugin
 from engine.testing.stories.pytest_plugin import GATE_LOCK_VARIABLE, TEMPLATE_FOLDER_VARIABLE, chooses_template_folder, run_template_folder
 from engine.testing.runs.run_size import RunSize
 from engine.testing.cache.template_cache import TemplateCache
+from engine.module.code_fingerprint import PINNED_CODE_VARIABLE
 
 
 def run_config(*args, **options):
@@ -15,9 +17,11 @@ def run_config(*args, **options):
 
 @pytest.fixture
 def first_process(monkeypatch):
-    """The variable is set and then deleted, so the folder a test chooses is taken out again when the test ends."""
-    monkeypatch.setenv(TEMPLATE_FOLDER_VARIABLE, "")
-    monkeypatch.delenv(TEMPLATE_FOLDER_VARIABLE)
+    """The variables are set and then deleted, so the folder and code text a test chooses are taken out again when
+    the test ends."""
+    for variable in (TEMPLATE_FOLDER_VARIABLE, PINNED_CODE_VARIABLE):
+        monkeypatch.setenv(variable, "")
+        monkeypatch.delenv(variable)
     return monkeypatch
 
 
@@ -70,3 +74,16 @@ def test_folder_choice_ignores_code_change(first_process, tmp_path):
 
 def test_the_viewer_is_no_part_of_a_template_key_or_of_the_pinned_code():
     assert "viewer" not in [folder.name for folder in python_source_folders()]
+
+
+@pytest.fixture
+def found_variables():
+    return os.environ.get(TEMPLATE_FOLDER_VARIABLE), os.environ.get(PINNED_CODE_VARIABLE)
+
+
+def test_a_test_using_the_first_process_leaves_the_variables_as_it_found_them(found_variables, first_process, tmp_path):
+    first_process.setattr(TemplateCache, "folder", lambda *_: tmp_path)
+    run_template_folder()
+    pytest_plugin.pinned_code_text()
+    first_process.undo()
+    assert (os.environ.get(TEMPLATE_FOLDER_VARIABLE), os.environ.get(PINNED_CODE_VARIABLE)) == found_variables

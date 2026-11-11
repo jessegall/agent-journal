@@ -49,6 +49,7 @@ from core.modules.tasks.commands.wait_task.wait_task_subcommand import WaitTaskS
 from core.modules.tasks.listeners.auto_next_task_listener import AutoNextTaskListener
 from core.modules.tasks.listeners.task_dependency_wait_listener import TaskDependencyWaitListener
 from core.modules.tasks.listeners.task_wait_listener import TaskWaitListener
+from core.modules.tasks.listeners.stopped_agent_tasks_listener import StoppedAgentTasksListener
 from core.modules.tasks.listeners.waiting_task_listener import WaitingTaskListener
 from core.modules.tasks.listeners.task_rows_listener import TaskRowsListener
 from core.modules.tasks.migrations.m004_task_waits import TaskWaitsTableMigration
@@ -164,7 +165,7 @@ class TasksModule(Module):
     moves = [TasksMove]
     guards = [TaskTagAccessGuard, TaskTagWordGuard, TaskEditAccessGuard, VisibleDependencyGuard, NoDependencyLoopGuard, DependenciesClosedGuard, UserWaitGuard, ReservedTaskGuard]
     views = [TaskTagWord, OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow, TaskBlockReview]
-    listeners = [TaskAssignmentCopyListener, TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener]
+    listeners = [TaskAssignmentCopyListener, TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener, StoppedAgentTasksListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
     driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, AutoModeTaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
