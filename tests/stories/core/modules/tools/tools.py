@@ -97,12 +97,13 @@ def test_a_new_worktree_gets_a_copy_of_the_graph_only_while_graphify_is_on(new_s
     (source / "graphify-out").mkdir(parents=True)
     (source / "graphify-out/graph.json").write_text("graph")
     (source / "graphify-out/.journal-running").write_text("1")
+    (source / "graphify-out/.rebuild.lock").write_text("1")
     target.mkdir()
     tools = story.container.get(Tools)
     story.expect_rows(tools.worktree_graph(str(source), str(target)) == [], not (target / "graphify-out").exists())
     story.expect_success("tool on graphify", actor=story.user)
     story.expect_rows(tools.worktree_graph(str(source), str(target)) == ["graphify-out"], (target / "graphify-out/graph.json").read_text() == "graph",
-                      not (target / "graphify-out/.journal-running").exists())
+                      not (target / "graphify-out/.journal-running").exists(), not (target / "graphify-out/.rebuild.lock").exists())
 
 
 def test_a_removed_worktree_folder_is_not_made_again_for_the_graph(new_story, tmp_path):

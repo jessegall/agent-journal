@@ -9,7 +9,7 @@ from engine.time.clock import Clock
 from engine.git.hook_files_git import GIT_LIMIT_SECONDS
 from engine.errors.refusal import Refusal
 from engine.setting.setting_values import SettingValues
-from core.modules.tools.support.graph_files import FAILED_FILE, RUNNING_FILE, GraphFiles
+from core.modules.tools.support.graph_files import FAILED_FILE, REBUILD_LOCK_FILE, RUNNING_FILE, GraphFiles
 from core.modules.tools.support.graph_status import GraphStatus
 from core.modules.tools.models.enums.tool_setting import ToolSetting
 
@@ -109,7 +109,7 @@ class GraphifyTool:
     def copy_graph(source: Path, target: Path) -> None:
         graph = GraphFiles(source).output
         if graph.is_dir():
-            shutil.copytree(graph, GraphFiles(target).output, ignore=shutil.ignore_patterns(RUNNING_FILE, FAILED_FILE), dirs_exist_ok=True)
+            shutil.copytree(graph, GraphFiles(target).output, ignore=shutil.ignore_patterns(RUNNING_FILE, FAILED_FILE, REBUILD_LOCK_FILE), dirs_exist_ok=True)
 
     @staticmethod
     def checked_folder(folder: Path) -> None:
