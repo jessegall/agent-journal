@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+QUESTION_START = "What: "
 
 @dataclass(frozen=True)
 class MainAgentQuestion:
@@ -15,5 +16,5 @@ class MainAgentQuestion:
 
     def text(self) -> str:
         options = " ".join(f"{number}) {option}" for number, option in enumerate(self.options, start=1))
-        parts = [f"What: {self.problem}", f"Tried: {self.tried}", f"Options: {options}", f"Recommendation: {self.recommendation}"]
+        parts = [f"{QUESTION_START}{self.problem}", f"Tried: {self.tried}", f"Options: {options}", f"Recommendation: {self.recommendation}"]
         return "\n".join([*parts, *self.facts])

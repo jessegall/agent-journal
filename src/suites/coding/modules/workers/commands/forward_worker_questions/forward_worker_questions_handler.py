@@ -15,8 +15,9 @@ from suites.coding.modules.workers.support.worker_questions import WorkerQuestio
 OPTIONS = ("answer the worker", "change the plan", "release the worker")
 RECOMMENDATION = "read the worker's facts first"
 FORWARDED_TEXT = "the main agent has it now and answers you"
-GONE_WORKER_REASON = "the worker has no worktree any more"
+MISSING_WORKTREE_REASON = "the worker has no worktree any more"
 
+JOURNAL_QUESTION_START = "the journal passes on: "
 
 class ForwardWorkerQuestionsHandler(Handler[ForwardWorkerQuestions, None]):
     """Writes the open questions of one worker to the main agent as one message and records each as forwarded.
@@ -36,7 +37,7 @@ class ForwardWorkerQuestionsHandler(Handler[ForwardWorkerQuestions, None]):
         if not lines:
             return
         if self.escalations.worktrees.worker_worktree(command.worker_id) is None:
-            self.questions.close_worker_lines(command.worker_id, GONE_WORKER_REASON, context)
+            self.questions.close_worker_lines(command.worker_id, MISSING_WORKTREE_REASON, context)
             return
         if not self.escalations.is_open(command.worker_id):
             self.bus.dispatch(SendMergerReport(self.question(command.worker_id, lines).text()), context)
@@ -47,4 +48,4 @@ class ForwardWorkerQuestionsHandler(Handler[ForwardWorkerQuestions, None]):
         worker = AgentLabel.from_row_id(worker_id, self.numbers, "worker").text
         visits = max(line.visit_count for line in lines)
         quoted = tuple(f"> {text}" for line in lines for text in line.text.splitlines())
-        return MainAgentQuestion(f"the journal passes on: {worker} has {len(lines)} unanswered question(s)", f"the merger read it {visits} times and settled nothing", OPTIONS, RECOMMENDATION, quoted)
+        return MainAgentQuestion(f"{JOURNAL_QUESTION_START}{worker} has {len(lines)} unanswered question(s)", f"the merger read it {visits} times and settled nothing", OPTIONS, RECOMMENDATION, quoted)

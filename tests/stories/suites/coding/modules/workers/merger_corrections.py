@@ -7,6 +7,7 @@ from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from tests.stories.core.support.agent_labels import agent_number
+from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.checkpoint_failures import end_run, expect_returned, print_output
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import CART_COMMAND, PASSES, REACHES, commit_tasks, merge, rows, run_lines
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
@@ -147,12 +148,13 @@ def test_100_a_deferral_past_the_most_deferrals_of_one_checkpoint_is_refused_wit
     later_stories_failed.story.expect_rows(first.code == 0, second.code != 0, "1 of 1 deferrals are used for phase 1" in second.output_text, detail=second.output_text)
 
 
-def test_103_a_deferral_settles_the_question_of_the_worker_as_fixed(later_stories_failed):
+def test_103_153_a_deferral_settles_the_question_of_the_worker_as_fixed_and_the_worker_card_lists_it_with_its_time(later_stories_failed):
     story = later_stories_failed.story
     asked = [row for row in rows(later_stories_failed.worker, "merger-line list --json --oldest --limit 20 --environment main") if row["topic"]]
     outcome = later_stories_failed.defer(flags=f" --ask {asked[-1]['id']}")
     settled = next(row for row in rows(later_stories_failed.worker, "merger-line list --json --oldest --limit 20 --environment main") if row["id"] == asked[-1]["id"])
-    story.expect_rows(outcome.code == 0, settled["outcome"] == "fixed", detail=f"{outcome.output_text} | {settled}")
+    status = story.run("worker status --json", actor=later_stories_failed.worker.worker).output_text
+    story.expect_rows(outcome.code == 0, settled["outcome"] == "fixed", f"ask {settled['id']} was " in status, " at 09:00" in status, detail=f"{outcome.output_text} | {settled} | {status}")
 
 
 def test_106_a_deferral_is_refused_when_the_own_test_of_the_checkpoint_did_not_fail(new_story, monkeypatch):
@@ -166,6 +168,14 @@ def test_97_101_107_a_deferred_path_a_path_that_passed_and_a_word_that_is_no_tes
     deferred.story.expect_rows(repeated.code != 0, f"{LATER_STORIES} is already deferred" in repeated.output_text, "tests/build.py did not fail in the own test of phase 1" in passed.output_text,
                                "tests/stories did not fail in the own test of phase 1" in folder.output_text, len(rows(deferred.worker, DEFERRALS)) == 1,
                                detail=f"{repeated.output_text} | {passed.output_text} | {folder.output_text}")
+
+
+def test_153_the_plan_shows_an_open_deferral_on_its_checkpoint_phase_until_it_is_closed(deferred):
+    with server_story(deferred.story) as server:
+        cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+        inspected = server.viewer_line_value(cookie, {"window": "plans.plans", "line": ["plan", "inspect", "1"], "environment": "main"})
+    lines = inspected["checkpoint_lines"]
+    deferred.story.expect_rows(f"phase 1: own test deferred: {LATER_STORIES}, until the checkpoint of phase 2" in lines, detail=str(lines))
 
 
 def test_105_only_the_merger_defers_a_test(later_stories_failed):

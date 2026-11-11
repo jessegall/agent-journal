@@ -24,13 +24,15 @@ from suites.coding.modules.workers.support.ask_deadline import AskDeadline
 from suites.coding.modules.workers.support.worker_settings import QUESTION_ANSWER_MINUTES, QUESTION_FORWARD_MINUTES
 
 
+CLOSED_LINE_COUNT = 10
+
 
 class WorkerQuestions:
     """The questions workers asked the merger and how each ended. A question is a merger line with a
     worker; it is open until it gets one outcome, and this is the one place that gives it. Closing a
     question ends the wait the worker opened for it, writes a line in the log of its task and, unless the
-    worker is gone, sends the worker the outcome as a message of the journal, which wakes it. A forwarded question keeps
-    the wait open, since the main agent still answers it."""
+    worker is gone, sends the worker the outcome as a message of the journal, which wakes it. A forwarded
+    question keeps the wait open, since the main agent still answers it."""
 
     def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, numbers: RowNumbers) -> None:
         self.queries, self.repository, self.bus, self.settings, self.numbers = queries, repository, bus, settings, numbers
@@ -70,8 +72,8 @@ class WorkerQuestions:
 
     def status_lines(self, worker_id: int) -> tuple[str, ...]:
         open_texts = tuple(line.status_text() for line in self.worker_lines(worker_id))
-        newest_closed = self.queries.query(MergerLine).filter(worker_id=worker_id).matching(HasValue("outcome")).matching(HasValue("topic")).newest().first()
-        return open_texts if newest_closed is None else (*open_texts, newest_closed.status_text())
+        closed = self.queries.query(MergerLine).filter(worker_id=worker_id).matching(HasValue("outcome")).matching(HasValue("topic")).newest().limited(CLOSED_LINE_COUNT)
+        return (*open_texts, *(line.status_text() for line in closed))
 
     def due_workers(self, visits_limit: int, timestamp: Timestamp) -> tuple[int, ...]:
         return tuple(dict.fromkeys(line.worker_id for line in self.open_lines() if AskDeadline.from_line(line, visits_limit).is_forward_due(timestamp)))

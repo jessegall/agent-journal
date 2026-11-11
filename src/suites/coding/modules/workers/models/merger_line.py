@@ -47,7 +47,8 @@ class MergerLine(EnvironmentScoped, Model):
 
     def status_text(self) -> str:
         if self.outcome is not None:
-            return f"ask {self.id} was {self.outcome.description()}"
+            ended = "" if self.closed_at is None else f" at {self.closed_at.value.strftime(CLOCK_FORMAT)}"
+            return f"ask {self.id} was {self.outcome.description()}{ended}"
         created = self.creation_timestamp().value.strftime(CLOCK_FORMAT)
         due = f", answer due {self.due_at.value.strftime(CLOCK_FORMAT)}" if self.due_at is not None else ""
         return f"ask {self.id} open since {created}{due}, with the merger"

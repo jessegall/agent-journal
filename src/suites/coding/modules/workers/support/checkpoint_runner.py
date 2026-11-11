@@ -45,6 +45,9 @@ class CheckpointRunner(CheckpointRuns):
         self.proofs, self.git, self.worktrees = proofs, git, worktrees
         self.environments, self.settings, self.agents, self.rows = environments, settings, agents, rows
 
+    def notes(self, phases: tuple[Phase, ...]) -> tuple[str, ...]:
+        return self.deferrals.notes(phases)
+
     def start(self, reach: CheckpointReach, context: Context) -> None:
         if self.results.is_started(reach):
             return

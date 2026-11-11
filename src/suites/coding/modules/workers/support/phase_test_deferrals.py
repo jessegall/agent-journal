@@ -1,5 +1,6 @@
 from engine.command.context import Context
 from engine.listener.event_rows import EventRows
+from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
@@ -7,6 +8,8 @@ from core.modules.plans.models.phase import Phase
 from suites.coding.modules.workers.models.phase_test_deferral import PhaseTestDeferral
 from suites.coding.modules.workers.support.own_test import OwnTest
 from suites.coding.modules.workers.support.own_test_command import OwnTestCommand
+
+DEFERRED_LINE = "phase {phase}: own test deferred: {paths}, until the checkpoint of phase {due}"
 
 
 class PhaseTestDeferrals:
@@ -26,6 +29,10 @@ class PhaseTestDeferrals:
 
     def due(self, phase_id: int) -> tuple[PhaseTestDeferral, ...]:
         return tuple(self.queries.query(PhaseTestDeferral).filter(due_phase_id=phase_id).matching(IsNull("closed_at")).oldest().all_rows())
+
+    def notes(self, phases: tuple[Phase, ...]) -> tuple[str, ...]:
+        deferrals = self.queries.query(PhaseTestDeferral).matching(Among("phase_id", [phase.id for phase in phases])).matching(IsNull("closed_at")).oldest().all_rows()
+        return tuple(DEFERRED_LINE.format(phase=deferral.phase_id, paths=deferral.paths, due=deferral.due_phase_id) for deferral in deferrals)
 
     def run_commands(self, phase: Phase) -> tuple[str, ...]:
         due = self.due(phase.id)
