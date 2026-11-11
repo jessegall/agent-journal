@@ -1,7 +1,7 @@
+from engine.testing.runs.run_size import TEST_NAME_SEPARATOR
 from dataclasses import dataclass
 
 FAILED_MARK = "FAILED "
-TEST_NAME_SEPARATOR = "::"
 
 
 @dataclass(frozen=True)
