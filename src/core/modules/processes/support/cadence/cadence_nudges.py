@@ -1,9 +1,8 @@
-from core.modules.processes.errors.notice_without_declaration_error import NoticeWithoutDeclarationError
 from core.modules.processes.models.enums.notice_kind import NoticeKind
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.cadence.cadence_notice import CadenceNotice
-from core.modules.processes.support.process_nudges import RUN_SPARSE, SILENT_RUN, SILENT_SAVED_PACKAGES, SILENT_SAVED_RUN, STALLED_RUN
+from core.modules.processes.support.process_nudges import RUN_FROZEN, RUN_SPARSE, SILENT_RUN, SILENT_SAVED_PACKAGES, SILENT_SAVED_RUN, STALLED_RUN
 from core.modules.processes.support.streaming_hints import StreamingHints
 
 
@@ -13,7 +12,7 @@ class CadenceNudges:
     or of the command goes into a notice."""
 
     @staticmethod
-    def notice(kind: NoticeKind, process: Process, part: ProcessPart, seconds: int) -> CadenceNotice:
+    def notice(kind: NoticeKind, process: Process, part: ProcessPart, seconds: int, limit: int) -> CadenceNotice:
         command = part.command or part.text
         hint = StreamingHints.hint(command)
         match kind:
@@ -27,4 +26,4 @@ class CadenceNudges:
             case NoticeKind.SPARSE:
                 return CadenceNotice(RUN_SPARSE, {"output": process.id, "seconds": seconds, "hint": hint})
             case NoticeKind.FROZEN:
-                raise NoticeWithoutDeclarationError.of(kind)
+                return CadenceNotice(RUN_FROZEN, {"output": process.id, "seconds": seconds, "limit": limit})

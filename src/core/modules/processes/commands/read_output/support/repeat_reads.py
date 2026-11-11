@@ -8,7 +8,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.context_resets import ContextResets
 from core.modules.processes.commands.read_output.read_output import ReadOutput
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.held_runs import LOOKED_MARK
+from core.modules.processes.support.cadence.run_silences import LOOKED_MARK
 from core.modules.processes.support.output_folder import OutputFolder
 
 POLL_ADVICE = {

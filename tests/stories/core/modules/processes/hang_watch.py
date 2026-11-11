@@ -81,7 +81,7 @@ def test_a_run_with_no_process_tree_is_left_alone(new_story):
     started_tree(story, None)
     story.advance(timedelta(seconds=HANG_SECONDS + 30))
     watch_tick(story)
-    story.expect_text("process show 1", "state: background", actor=story.agent)
+    story.expect_text("process card 1 --json", '"state": "background"', actor=story.agent)
 
 
 def expect_looks(story: Story, asked: int) -> None:
@@ -136,3 +136,16 @@ def test_one_listing_of_the_processes_serves_every_run_of_a_tick(new_story):
     tree.listings = 0
     watch_tick(story)
     story.expect_rows(tree.listings == 1)
+
+
+def test_a_quiet_run_its_agent_read_is_kept_past_the_hang_time_and_stopped_once_it_goes_unread_that_long(new_story):
+    story = new_story(fixture=ActiveBuild)
+    started_tree(story, 12.0)
+    story.advance(timedelta(seconds=200))
+    story.run("output read 1 --summary", actor=story.agent)
+    story.advance(timedelta(seconds=150))
+    watch_tick(story)
+    story.expect_text("process show 1", "state: background", actor=story.agent)
+    story.advance(timedelta(seconds=HANG_SECONDS))
+    watch_tick(story)
+    story.expect_text("process show 1", "state: stopped", actor=story.agent)

@@ -6,6 +6,7 @@ from engine.container.container import Container
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
 from engine.time.clock import Clock
+from engine.time.timestamp import Timestamp
 from core.modules.processes.commands.warn_cadence.warn_cadence import WarnCadence
 from core.modules.processes.models.enums.cadence_state import CadenceState
 from core.modules.processes.models.enums.notice_kind import NoticeKind
@@ -17,24 +18,28 @@ from core.modules.processes.support.cadence.cadence_log import CadenceLog
 from core.modules.processes.support.cadence.judged_runs import JudgedRuns
 from core.modules.processes.support.cadence.run_cadence import RunCadence
 from core.modules.processes.support.cadence.run_notices import RunNotices
+from core.modules.processes.support.cadence.run_silences import RunSilences
+from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.ticks.hang_watch import CPU_FILE, HangWatch
 
 
 class CadenceWatch:
     """Keeps, for each judged run, the times the output of its running part last grew, judges how the run prints,
-    and tells its agent once in a while when it prints nothing, stopped printing or prints too seldom. A run
-    whose folder cannot be read is written to the system log and the others go on."""
+    and tells its agent once in a while when it prints nothing, stopped printing, prints too seldom, or seems
+    stuck before the hang watch stops it. A run whose folder cannot be read is written to the system log and
+    the others go on."""
 
     def __call__(self, container: Container) -> bool:
-        now = container.get(Clock).timestamp().value.timestamp()
-        changed = [self.watched(container, process, parts, now) for process, parts in container.get(JudgedRuns).running()]
+        current = container.get(Clock).timestamp()
+        changed = [self.watched(container, process, parts, current) for process, parts in container.get(JudgedRuns).running()]
         return any(changed)
 
     @staticmethod
     def running_part(parts: Sequence[ProcessPart]) -> ProcessPart:
         return next((part for part in parts if part.state is PartState.RUNNING), parts[-1])
 
-    def watched(self, container: Container, process: Process, parts: Sequence[ProcessPart], now: float) -> bool:
-        log = container.get(CadenceLog)
+    def watched(self, container: Container, process: Process, parts: Sequence[ProcessPart], current: Timestamp) -> bool:
+        log, now = container.get(CadenceLog), current.value.timestamp()
         part = self.running_part(parts)
         try:
             before = log.growths(process.id)
@@ -42,7 +47,10 @@ class CadenceWatch:
         except OSError as error:
             container.get(SystemLogWriter).write(LogLevel.WARNING, f"cadence watch: output {process.id} could not be read: {error}")
             return False
-        self.judged(container, process, part, RunCadence(self.age(process, now), now, growths, CadenceLimitsReader.limits(container, process.environment_id)))
+        hang = HangWatch.limits(container, process.environment_id).hang
+        cadence = RunCadence(self.age(process, now), now, growths, CadenceLimitsReader.limits(container, process.environment_id))
+        self.judged(container, process, part, cadence, hang)
+        self.frozen(container, process, part, current, hang)
         return growths != before
 
     @staticmethod
@@ -50,18 +58,32 @@ class CadenceWatch:
         started = process.started_at or process.creation_timestamp()
         return now - started.value.timestamp()
 
-    def judged(self, container: Container, process: Process, part: ProcessPart, cadence: RunCadence) -> None:
+    def judged(self, container: Container, process: Process, part: ProcessPart, cadence: RunCadence, hang: int) -> None:
         notices = container.get(RunNotices)
         state = cadence.state()
         kind = NoticeKind.of(state)
         if kind is None:
             notices.cleared(process.id)
             return
-        if not notices.allowed(process.id, kind, cadence.now):
+        self.warned(container, process, part, kind, self.seconds(state, cadence), hang, cadence.now)
+
+    def frozen(self, container: Container, process: Process, part: ProcessPart, current: Timestamp, hang: int) -> None:
+        recorded = container.get(OutputFolder).text(process.id, CPU_FILE).split()
+        if len(recorded) != 2:
             return
-        notices.recorded(process.id, kind, cadence.now)
-        command = WarnCadence(process.id, part.position, kind, self.seconds(state, cadence))
-        container.get(Bus).run(command, Actor.core(), environment_id=process.environment_id)
+        now = current.value.timestamp()
+        silence = container.get(RunSilences).seconds(process, current)
+        if silence < hang // 2 or now - float(recorded[1]) < hang // 2:
+            return
+        self.warned(container, process, part, NoticeKind.FROZEN, silence, hang, now)
+
+    @staticmethod
+    def warned(container: Container, process: Process, part: ProcessPart, kind: NoticeKind, seconds: int, hang: int, now: float) -> None:
+        notices = container.get(RunNotices)
+        if not notices.allowed(process.id, kind, now):
+            return
+        notices.recorded(process.id, kind, now)
+        container.get(Bus).run(WarnCadence(process.id, part.position, kind, seconds, hang), Actor.core(), environment_id=process.environment_id)
 
     @staticmethod
     def seconds(state: CadenceState, cadence: RunCadence) -> int:

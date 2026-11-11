@@ -57,7 +57,7 @@ class HangWatch:
         silent = container.get(RunSilences).seconds(process, current)
         if moved:
             return self.looked(container, process, silent, now, limits)
-        seconds = min(int(now - float(recorded[1])), silent)
+        seconds = min(int(now - float(recorded[1])), container.get(RunSilences).unread_seconds(process, current))
         if seconds < limits.hang:
             return False
         self.stop(container, process, seconds)

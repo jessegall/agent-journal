@@ -8,7 +8,6 @@ from core.modules.processes.support.cadence.run_silences import RunSilences
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.ticks.hang_watch import CPU_FILE
 
-LOOKED_MARK = "looked"
 
 
 class HeldRuns:
@@ -27,9 +26,7 @@ class HeldRuns:
         return None
 
     def silent_seconds(self, process: Process, timestamp: Timestamp) -> int:
-        printed = self.silences.seconds(process, timestamp)
-        looked = self.folder.read_mark(process.id, LOOKED_MARK)
-        return min(printed, int(Timestamp.parsed(looked).elapsed_seconds(timestamp))) if looked else printed
+        return self.silences.unread_seconds(process, timestamp)
 
     def processor(self, process: Process, timestamp: Timestamp, silent: int) -> str:
         recorded = self.folder.text(process.id, CPU_FILE).split()
