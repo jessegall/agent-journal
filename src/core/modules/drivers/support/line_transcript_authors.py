@@ -1,6 +1,6 @@
 from engine.provider.transcript_author import JOURNAL_AUTHOR
 from engine.provider.transcript_row import TranscriptRow
-from engine.database.database import READ_LIMIT_ROWS
+from engine.query.conditions.text_overlap import TextOverlap
 from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
@@ -19,9 +19,7 @@ class LineTranscriptAuthors(TranscriptAuthors):
         self.queries, self.kept = queries, kept
 
     def sender(self, agent: Agent, row: TranscriptRow) -> str:
-        lines = self.kept.read("agent_lines", lambda: tuple(self.queries.query(AgentLine).filter(session_agent_id=agent.id).oldest().all_rows(READ_LIMIT_ROWS)),
-                               "session_agent_id = ?", [agent.id], name="drivers.transcript_lines")
-        line = next((candidate for candidate in lines if candidate.text and (candidate.text in row.text or row.text in candidate.text)), None)
+        line = self.queries.query(AgentLine).filter(session_agent_id=agent.id).matching(TextOverlap("text", row.text)).oldest().first()
         if line is None:
             return JOURNAL_AUTHOR
         return MAIN_AGENT_AUTHOR if self.is_agent(line.creator_id) else JOURNAL_AUTHOR
