@@ -29,7 +29,7 @@ from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.engine.driver.support.samples import SAMPLES
 from engine.testing.expectations.expect_reply import expect_absent_reply_line, expect_absent_reply_refusal, expect_reply_line
 from engine.testing.expectations.expect_row import expect_row
-from tests.stories.support.story_checks import expect_lines_2, expect_lines_3, expect_refusal_hook, expect_value_with
+from tests.stories.support.story_checks import expect_lines_2, expect_lines_3, expect_refusal_hook
 
 
 READ_MESSAGE_HOOK = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
@@ -355,11 +355,12 @@ def test_reading_a_message_shows_only_its_text_and_marks_it_read(new_story):
     story.expect_text("message show 1", "read_at: 2026", actor=story.user)
 
 
-def test_each_new_message_read_in_one_turn_tells_the_agent_how_to_act(new_story):
+def test_each_new_message_read_in_one_turn_tells_the_agent_how_to_act_and_names_a_memory_as_a_choice(new_story):
     story = new_story(SAMPLES, fixture=ReadCartMessage)
     post_message(story, "And the checkout")
     reply = story.hook("s-1", HookSamples.shell("journal message read 2", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "2"], subcommand="message")).with_fields(event="post_tool_use"))
     expect_startswith_lines_reply(READ_NUDGE_START, reply)
+    expect_line_with_parts([READ_NUDGE_START, "a memory worth keeping"], reply)
 
 
 def test_the_agent_cannot_show_a_message_it_has_not_read_and_is_told_to_read_it(new_story):
@@ -697,6 +698,11 @@ def expect_lines_without_line(lines, number, expected) -> None:
 def expect_output_4(story, text, expected) -> None:
     actual = story.run(text, actor=story.user).output_text.splitlines()
     assert actual == expected, actual
+
+
+def expect_line_with_parts(parts, reply) -> None:
+    actual = any((all(part in line for part in parts) for line in reply.lines))
+    assert actual, reply.lines
 
 
 def expect_startswith_lines_reply(item, reply) -> None:

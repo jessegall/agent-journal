@@ -64,7 +64,7 @@ def test_f1_a_line_that_never_starts_fails_after_ten_minutes_and_the_person_and_
     expect_compaction_count(limited, 0)
     lines = main_agent_lines(limited)
     limited.expect_rows(states(limited) == [CompactionState.FAILED], notice_count(limited, CompactionNoticeType.UNSTARTED) == 1,
-                        lines.count(f"context-compaction:1 of agent:{agent_number(limited, limited.agent.id)}: unstarted") == 1, detail=f"{states(limited)} {lines}")
+                        lines.count(f"context-compaction-notice:1 of agent:{agent_number(limited, limited.agent.id)}") == 1, detail=f"{states(limited)} {lines}")
 
 
 def test_f9_after_a_request_that_failed_a_person_sends_the_compaction_by_hand_and_it_takes_the_place_of_the_failed_row(limited):
