@@ -2,7 +2,8 @@ from engine.container.container import Container
 from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.registry import Registry
 from core.modules.drivers.support.suite_choice import SuiteChoice
-from core.modules.tasks.support.task_assigner import TaskAssigner
+from engine.module.task_assigner import TaskAssigner
+from core.modules.tasks.models.task import Task
 
 
 class SuiteTaskAssigners:
@@ -12,7 +13,7 @@ class SuiteTaskAssigners:
     def __init__(self, suites: SuiteChoice, registry: Registry, container: Container) -> None:
         self.suites, self.registry, self.container = suites, registry, container
 
-    def assigner(self) -> TaskAssigner | None:
+    def assigner(self) -> TaskAssigner[Task] | None:
         running = self.suites.suite()
         names = self.registry.ancestors(running) if running is not None else ()
         entries = (self.registry.suite(name) for name in names)

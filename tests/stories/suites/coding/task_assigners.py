@@ -3,6 +3,7 @@ from dataclasses import replace
 
 from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.registry import Registry
+from engine.module.task_assigner import TaskAssigner
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners
@@ -10,7 +11,7 @@ from suites.coding.support.next_task import NextTask
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
-class SecondAssigner:
+class SecondAssigner(TaskAssigner[Task]):
     """A task assigner of another suite: it hands out nothing by itself."""
 
     def exceeds_context_limit(self, agent_id: int) -> bool:

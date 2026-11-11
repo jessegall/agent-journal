@@ -1,0 +1,22 @@
+from abc import ABC, abstractmethod
+
+
+class TaskAssigner[Row](ABC):
+    """The base of what a suite names to hand out tasks: whether it hands them out by itself now, whether it gives an
+    agent none for the moment, whether an agent may stop with tasks in hand, the task that goes before all others,
+    and the task an agent with empty hands is given. Row is the task model of the module that holds tasks."""
+
+    @abstractmethod
+    def is_automatic(self) -> bool: ...
+
+    @abstractmethod
+    def exceeds_context_limit(self, agent_id: int) -> bool: ...
+
+    @abstractmethod
+    def allows_stop_with_tasks(self, agent_id: int) -> bool: ...
+
+    @abstractmethod
+    def urgent(self, excluded_id: int | None = None) -> Row | None: ...
+
+    @abstractmethod
+    def following(self, agent_id: int, excluded_id: int | None = None) -> Row | None: ...

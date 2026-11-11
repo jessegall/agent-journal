@@ -9,6 +9,9 @@ from engine.registry.driver_entry import DriverEntry
 from engine.registry.driver_rule_entry import DriverRuleEntry
 from engine.registry.overlay_entry import OverlayEntry
 from engine.registry.suite_entry import SuiteEntry
+from engine.module.errors.module_error import ModuleError
+from engine.module.suite import Suite
+from engine.module.task_assigner import TaskAssigner
 
 DRIVERS_MODULE = "journal.core.drivers"
 
@@ -21,8 +24,16 @@ class DriverEntries:
         return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), {str(role): driver for role, driver in suite.defaults.items()}, suite.complete_control, tuple(suite.included_overlays),
                                       tuple(suite.windows), dict(suite.layouts), {page: tuple(presets) for page, presets in suite.presets.items()},
                                       suite.agent_policy,
-                                      DottedPath.class_path(suite.task_assigner).text if suite.task_assigner else "", shipped=module in shipped_modules)
+                                      self.task_assigner_path(suite), shipped=module in shipped_modules)
                      for module in modules for suite in suites.module_suites(module))
+
+    @staticmethod
+    def task_assigner_path(suite: type[Suite]) -> str:
+        if suite.task_assigner is None:
+            return ""
+        if not (isinstance(suite.task_assigner, type) and issubclass(suite.task_assigner, TaskAssigner)):
+            raise ModuleError(f"the task assigner of suite {suite.name} does not extend TaskAssigner")
+        return DottedPath.class_path(suite.task_assigner).text
 
     def drivers(self, modules: Sequence[type[Module]]) -> tuple[DriverEntry, ...]:
         return tuple(DriverEntry(driver.name, DottedPath.class_path(driver), module.name, driver.suite_name, driver.role, tuple(driver.opening_lines),

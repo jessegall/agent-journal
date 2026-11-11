@@ -1,3 +1,4 @@
+from engine.module.task_assigner import TaskAssigner
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.plans.support.focus.focused_plan_tasks import FocusedPlanTasks
@@ -12,7 +13,7 @@ from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
 
-class NextTask:
+class NextTask(TaskAssigner[Task]):
     """The coding suite's task assigner: an agent with empty hands is given the task it was told to take next,
     else a task above high outside any plan, else the next task of its plan focus (a ready task of that plan
     or an open task the plan waits on), else the next task of the oldest started plan, else the most urgent
