@@ -19,7 +19,7 @@ class WorkerStepText:
 
 
 STEP_TEXTS = {
-    WorkerStep.BUILD: WorkerStepText("Task {task} is not finished{missing}.", "prove each point of its brief with journal proof make, then journal worker commit", "{open_tasks} started, own test runs available: {runs}"),
+    WorkerStep.BUILD: WorkerStepText("Task {task} is not finished{missing}.", "prove each point of its brief with journal proof make, then journal worker commit", "{open_tasks} started{unit_open}, own test runs available: {runs}"),
     WorkerStep.COMMIT: WorkerStepText("{proven} proven.", "{commit}", "{commit_tests}"),
     WorkerStep.WAIT: WorkerStepText("{waiting}", "stop", "you are woken when its tests end, and started on your next task when it is merged"),
     WorkerStep.FIX: WorkerStepText("The tests of {label} failed.", "fix the failing tests, show the proof again with journal proof make and run journal worker commit, running tests freely until then", "the next commit reruns only what failed"),

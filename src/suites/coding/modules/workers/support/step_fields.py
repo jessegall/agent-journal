@@ -14,3 +14,4 @@ class StepFields(TypedDict):
     commit: str
     commit_tests: str
     missing: str
+    unit_open: str

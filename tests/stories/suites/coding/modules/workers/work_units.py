@@ -27,3 +27,11 @@ def test_a_unit_counts_what_is_not_committed_and_is_committed_once_every_task_is
     worker.prove_commit()
     after_one = unit_of(worker)
     worker.story.expect_rows(after_one.uncommitted_count == 2, not after_one.is_committed, detail=str(after_one))
+
+
+def test_the_status_of_a_plan_worker_opens_with_its_unit_and_its_build_line_names_what_is_left(new_story, monkeypatch):
+    worker = start_planned_worker(new_story, monkeypatch)
+    status = worker.status()
+    name_line = unit_of(worker).name_line
+    worker.story.expect_rows(status.splitlines()[1] == "Unit: plan 1, Rebuild the cart. 4 of 4 tasks left; nothing merged yet.", "4 left in your unit" in status,
+                             name_line == "Your unit is plan 1, Rebuild the cart: 4 tasks. Work all of it before you report.", detail=f"{status} / {name_line}")

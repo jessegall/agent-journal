@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.support.work_units import WorkUnits
 from suites.coding.support.worker_test_rule import WORKER_TEST_RULE
 from pathlib import Path
 
@@ -29,8 +30,9 @@ WORK_STEPS = ("Read journal worker status first: it says where you are and what 
 class WorkerCommand:
     """Builds fresh and resumed worker launch commands through their providers."""
 
-    def __init__(self, providers: Providers, servers: ServerConfigs, libraries: LibraryFolders, helpers: HelperCommand, profiles: ProfileFiles, types: HelperTypeBook, session_lines: NewSessionLine) -> None:
-        self.session_lines = session_lines
+    def __init__(self, providers: Providers, servers: ServerConfigs, libraries: LibraryFolders, helpers: HelperCommand, profiles: ProfileFiles, types: HelperTypeBook, session_lines: NewSessionLine,
+                 units: WorkUnits) -> None:
+        self.session_lines, self.units = session_lines, units
         self.providers, self.servers, self.libraries, self.helpers = providers, servers, libraries, helpers
         self.profiles, self.types = profiles, types
 
@@ -45,7 +47,7 @@ class WorkerCommand:
         profile = self.profiles.effective(worker.profile or self.types.find(worker.role).default_profile)
         session_line = self.session_lines.line(worker)
         identity = f"You are {AgentLabel.from_agent(worker).text}." if session_line is None else f"You are {AgentLabel.from_agent(worker).text}.\n{session_line}"
-        brief = (f"{identity}\n{profile.body}\n\nYour task is {task.id}, {task.title}.\n{task.brief}\n{job}\n"
+        brief = (f"{identity}\n{profile.body}\n\n{self.task_line(worker, task)}\n{task.brief}\n{job}\n"
                  f"Load these skills before your first write:\n{reads}\n"
                  f"Run journal overview, then journal task overview {worktree.task_id} before changing project files. Load the architectural skills required by the files you change in {skills}.\n"
                  f"{WORKER_TEST_RULE}\n"
@@ -54,10 +56,18 @@ class WorkerCommand:
 
     def resumed(self, worker: Agent, worktree: Worktree, environment: Environment, job: str) -> LaunchCommand:
         return self.launched(worker, worktree, environment, ResumedSession(worker.session),
-                             f"{job}\nRead journal task overview {worktree.task_id} before changing project files.\n{WORK_STEPS}")
+                             f"{self.unit_prefix(worker)}{job}\nRead journal task overview {worktree.task_id} before changing project files.\n{WORK_STEPS}")
 
     def compacting(self, worker: Agent, worktree: Worktree, environment: Environment, line: str) -> LaunchCommand:
-        return self.launched(worker, worktree, environment, ResumedSession(worker.session), line)
+        return self.launched(worker, worktree, environment, ResumedSession(worker.session), f"{self.unit_prefix(worker)}{line}")
+
+    def task_line(self, worker: Agent, task: Task) -> str:
+        name_line = self.units.unit(worker.id).name_line
+        return f"{name_line} Your first task is {task.id}, {task.title}." if name_line else f"Your task is {task.id}, {task.title}."
+
+    def unit_prefix(self, worker: Agent) -> str:
+        name_line = self.units.unit(worker.id).name_line
+        return f"{name_line}\n" if name_line else ""
 
     def launched(self, worker: Agent, worktree: Worktree, environment: Environment, session: SessionStart, brief: str) -> LaunchCommand:
         if not worker.program_model.strip():

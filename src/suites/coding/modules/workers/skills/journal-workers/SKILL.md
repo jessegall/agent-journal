@@ -30,7 +30,7 @@ stays kept on the same agent number and session until retired.
   `.venv` into its worktree and `--library-copy <folder>` copies it. `--program <program>` names the agent program.
 - `journal worker dispatch --plan <plan> [--phase <phase>] --tier strongest` hands a worker the available tasks of an approved or
   started plan, or of one phase of it, in the plan's order. Use `journal worker send <number> --plan <plan> [--phase <phase>]`
-  to give the same work to a kept worker. The plan shows as delegated, and its tests run at the checkpoints of the plan.
+  to give the same work to a kept worker. The plan is assigned to the worker and shows so on the plan and on the agent. A dispatch or send of several tasks is one unit in the same way. Its tests run at the checkpoints of the plan.
   Completed, started and already assigned tasks are left alone.
 - Any blocked task can go to a worker, alone, in a phase or in a whole plan: it stays assigned while it waits, and the
   worker takes it when it opens, sent to it at once when the worker is idle. A new worker given only blocked tasks is made and not started; it starts by itself when one of them opens.
