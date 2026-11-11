@@ -1,4 +1,4 @@
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
 

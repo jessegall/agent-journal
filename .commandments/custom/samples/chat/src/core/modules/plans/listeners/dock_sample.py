@@ -1,6 +1,6 @@
 from core.modules.plans.models.enums.plan_dock_type import PlanDockType
 from engine.command.bus import Bus
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.models.dock_item import DockItem
 

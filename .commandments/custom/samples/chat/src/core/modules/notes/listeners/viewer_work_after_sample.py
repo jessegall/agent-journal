@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.event.change import Change
 from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
-from engine.listener.commit_listener import CommitListener
+from engine.listener.commit.commit_listener import CommitListener
 from engine.listener.save_listener import SaveListener
 from engine.model.model import Model
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
