@@ -1,3 +1,4 @@
+from core.modules.tasks.models.support.views import TASK_ACTOR_SQL
 WORKER_WORK_REVIEW_SELECT = """
 SELECT worktree.session_agent_id AS agent_id, worktree.environment_id,
        CASE
@@ -45,7 +46,7 @@ SELECT worktree.session_agent_id AS agent_id, worktree.environment_id,
                THEN 'proof check'
            WHEN worktree.state = 'delivered' THEN 'merge'
            WHEN worktree.state = 'cut' AND NOT EXISTS (
-               SELECT 1 FROM tasks WHERE tasks.delegated_to = worktree.session_agent_id AND tasks.state IN ('open', 'started', 'testing', 'blocked'))
+               SELECT 1 FROM tasks WHERE TASK_ACTOR_PLACE = worktree.session_agent_id AND tasks.state IN ('open', 'started', 'testing', 'blocked'))
                THEN 'a job'
            WHEN agents.ended_at IS NOT NULL THEN 'a job'
            ELSE ''
@@ -54,7 +55,7 @@ FROM worker_worktrees AS worktree
 JOIN agents ON agents.id = worktree.session_agent_id
 WHERE worktree.removed_at IS NULL
   AND worktree.id = (SELECT max(latest.id) FROM worker_worktrees AS latest WHERE latest.session_agent_id = worktree.session_agent_id)
-"""
+""".replace("TASK_ACTOR_PLACE", TASK_ACTOR_SQL)
 
 WORKER_PROGRESS_SELECT = """
 SELECT worktree.session_agent_id AS agent_id, worktree.environment_id, worktree.branch, worktree.task_id,
@@ -63,8 +64,8 @@ SELECT worktree.session_agent_id AS agent_id, worktree.environment_id, worktree.
        count(tasks.id) AS task_count,
        count(CASE WHEN tasks.state = 'completed' THEN 1 END) AS completed_count
 FROM worker_worktrees AS worktree
-LEFT JOIN tasks ON (tasks.delegated_to = worktree.session_agent_id OR tasks.holder_id = worktree.session_agent_id)
+LEFT JOIN tasks ON (TASK_ACTOR_PLACE = worktree.session_agent_id OR tasks.holder_id = worktree.session_agent_id)
     AND (tasks.closed_at IS NULL OR tasks.closed_at >= coalesce(worktree.cut_at, worktree.created_at))
 WHERE worktree.id = (SELECT max(latest.id) FROM worker_worktrees AS latest WHERE latest.session_agent_id = worktree.session_agent_id)
 GROUP BY worktree.environment_id, worktree.id
-"""
+""".replace("TASK_ACTOR_PLACE", TASK_ACTOR_SQL)
