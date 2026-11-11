@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from core.modules.assignments.models.assignment import Assignment
+from core.modules.assignments.support.cascade import Cascade
 
 
 @dataclass(frozen=True)
-class AssignRow(Command[tuple[Assignment, ...]]):
+class AssignRow(Command[Cascade]):
     """Gives one row of an assignable model to an actor."""
 
     subject_model: str

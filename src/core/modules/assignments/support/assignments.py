@@ -1,7 +1,10 @@
+from dataclasses import replace
+
 from engine.command.context import Context
 from engine.enums.actor_count import ActorCount
 from engine.enums.actor_type import ActorType
 from engine.model.assignable import Assignable
+from engine.model.children import Children
 from engine.model.model import Model
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
@@ -13,13 +16,18 @@ from core.modules.assignments.errors.repeated_assignment_refusal import Repeated
 from core.modules.assignments.errors.several_actors_error import SeveralActorsError
 from core.modules.assignments.errors.unknown_actor_refusal import UnknownActorRefusal
 from core.modules.assignments.models.assignment import Assignment
+from core.modules.assignments.models.enums.kept_reason import KeptReason
+from core.modules.assignments.support.cascade import Cascade
+from core.modules.assignments.support.cascade_walk import CascadeWalk
 
 
 class Assignments:
     """Gives rows of assignable models to actors and reads who holds a row. It is the one place that writes the
     assignments table. Only a person or an agent that has not ended can be given a row. A row of a model that one actor holds
     passes from its holder to the next in one change; a row of a model that several actors hold gains a
-    holder. Every assignment is saved and deleted through the repository, so each is an event."""
+    holder. An assigned row also assigns the children its model declares: a child with no assignment inherits
+    one, a child that inherited from the row's last assignment follows to the new one, and a child given by
+    hand or inherited from another row is left as it is unless the command overrides it. Every assignment is saved and deleted through the repository, so each is an event."""
 
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository
@@ -35,16 +43,59 @@ class Assignments:
             raise SeveralActorsError(type(row).__name__)
         return next(iter(self.actors(row)), None)
 
-    def assign(self, row: Assignable, actor_id: int, context: Context, *, cascade: bool = True, override: bool = False) -> None:
+    def assign(self, row: Assignable, actor_id: int, context: Context, *, cascade: bool = True, override: bool = False) -> Cascade:
         self.require_working_actor(actor_id)
         current = self.assignments(row)
         if any(assignment.actor_id == actor_id for assignment in current):
             if row.takes_actors is ActorCount.SEVERAL:
                 raise RepeatedAssignmentRefusal(row.model_name, row.id, actor_id)
-            return
-        if row.takes_actors is ActorCount.SINGLE:
-            self.repository.delete_many_stored(current, context)
-        self.repository.save(Assignment(creator_id=context.actor.id, subject_model=row.model_name, subject_id=row.id, actor_id=actor_id), context)
+            return Cascade()
+        replaced = current if row.takes_actors is ActorCount.SINGLE else ()
+        given = self.repository.save(Assignment(creator_id=context.actor.id, subject_model=row.model_name, subject_id=row.id, actor_id=actor_id), context)
+        outcome = Cascade().with_assigned(row.model_name)
+        for previous in replaced or (None,):
+            outcome = self.cascaded(row, given, previous, CascadeWalk(context, override), outcome) if cascade else outcome
+        for previous in replaced:
+            self.release(previous, context)
+        return outcome
+
+    def cascaded(self, parent: Assignable, given: Assignment, previous: Assignment | None, walk: CascadeWalk, outcome: Cascade) -> Cascade:
+        for children in parent.assigns:
+            for child in self.child_rows(parent, children):
+                if not child.cascade_skips(given.actor_id):
+                    outcome = self.child_cascade(child, given, previous, walk, outcome)
+        return outcome
+
+    def child_cascade(self, child: Assignable, given: Assignment, previous: Assignment | None, walk: CascadeWalk, outcome: Cascade) -> Cascade:
+        current = self.assignments(child)
+        inherited = tuple(assignment for assignment in current if previous is not None and assignment.source_id == previous.id)
+        if current and not inherited and not walk.override:
+            reason = KeptReason.HAND_GIVEN if any(assignment.source_id is None for assignment in current) else KeptReason.INHERITED_ELSEWHERE
+            return outcome.with_kept(child.model_name, child.id, reason)
+        replaced = inherited or current
+        kept_row = next((assignment for assignment in replaced if assignment.actor_id == given.actor_id), None)
+        if kept_row is not None:
+            self.repository.save(replace(kept_row, source_id=given.id), walk.context)
+            return outcome
+        inherited_row = self.repository.save(Assignment(creator_id=walk.context.actor.id, subject_model=child.model_name, subject_id=child.id, actor_id=given.actor_id, source_id=given.id), walk.context)
+        outcome = outcome.with_assigned(child.model_name)
+        deeper = walk.deeper(child.model_name)
+        for former in replaced or (None,):
+            outcome = self.cascaded(child, inherited_row, former, deeper, outcome)
+        for former in replaced:
+            self.release(former, walk.context)
+        return outcome
+
+    def child_rows(self, parent: Assignable, children: Children) -> tuple[Assignable, ...]:
+        if children.link_model is None or children.link_column is None:
+            return tuple(self.queries.query(children.model).filter(**{children.column: parent.id}).all_rows())
+        links = self.queries.query(children.link_model).filter(**{children.column: parent.id}).all_rows()
+        return tuple(self.queries.query(children.model).find_many([getattr(link, children.link_column) for link in links]))
+
+    def release(self, assignment: Assignment, context: Context) -> None:
+        for dependent in self.queries.query(Assignment).filter(source_id=assignment.id).all_rows():
+            self.repository.save(replace(dependent, source_id=None), context)
+        self.repository.delete_stored(assignment, context)
 
     def unassign(self, row: Assignable, context: Context, actor_id: int | None = None) -> tuple[Assignment, ...]:
         removed = tuple(assignment for assignment in self.assignments(row) if actor_id is None or assignment.actor_id == actor_id)

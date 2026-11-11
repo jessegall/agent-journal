@@ -1,12 +1,13 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
+from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from core.modules.assignments.commands.assign_row.assign_row import AssignRow
-from core.modules.assignments.models.assignment import Assignment
+from core.modules.assignments.support.cascade import Cascade
 
 
-class AssignRowSubcommand(Subcommand[AssignRow, tuple[Assignment, ...]]):
+class AssignRowSubcommand(Subcommand[AssignRow, Cascade]):
     """`journal assign <model> <id> --to <actor>`: gives one row to a person or an agent."""
 
     cli_name = "assign"
@@ -19,6 +20,10 @@ class AssignRowSubcommand(Subcommand[AssignRow, tuple[Assignment, ...]]):
         parser.add_argument("--to", type=int, dest="actor_id", required=True)
         parser.add_argument("--no-cascade", action="store_false", dest="cascade")
         parser.add_argument("--override", action="store_true")
+
+    def write_output(self, value: object, output: Output) -> None:
+        if isinstance(value, Cascade):
+            output.write(value.text, {"assigned": value.counts(), "kept": [{"model": row.model_name, "id": row.row_id, "reason": row.reason.value} for row in value.kept_rows]})
 
     def command(self, arguments: Namespace, caller: Caller) -> AssignRow:
         return AssignRow(arguments.subject_model, arguments.subject_id, arguments.actor_id, arguments.cascade, arguments.override)
