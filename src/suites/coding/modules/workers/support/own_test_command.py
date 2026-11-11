@@ -31,5 +31,9 @@ class OwnTestCommand:
             raise Refusal("the test command would be left with no path", "a deferral leaves at least one path to run")
         return OwnTestCommand(tuple(word for word in self.parts if word not in paths))
 
+    def with_paths(self, paths: tuple[str, ...]) -> "OwnTestCommand":
+        command_paths = self.paths()
+        return OwnTestCommand((*(part for part in self.parts if part not in command_paths), *paths))
+
     def text(self) -> str:
         return shlex.join(self.parts)

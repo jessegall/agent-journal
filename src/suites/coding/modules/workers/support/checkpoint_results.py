@@ -15,6 +15,7 @@ from suites.coding.modules.workers.models.checkpoint_test import RUNNING_STATES,
 from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES, ProofState
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.checkpoint_failures import CheckpointFailures
+from suites.coding.modules.workers.support.phase_test_deferrals import PhaseTestDeferrals
 
 
 class CheckpointResults:
@@ -23,8 +24,8 @@ class CheckpointResults:
     the phases after it; otherwise it is failed with the tasks its failures belong to. A run with no test
     passes at once. A result that comes in for a cancelled plan ends no run."""
 
-    def __init__(self, proofs: ProofQuery, queries: Queries, repository: Repository, bus: Bus, checkpoints: PlanCheckpoints, plans: TaskPlans, rows: EventRows, failures: CheckpointFailures) -> None:
-        self.failures = failures
+    def __init__(self, proofs: ProofQuery, queries: Queries, repository: Repository, bus: Bus, checkpoints: PlanCheckpoints, plans: TaskPlans, rows: EventRows, failures: CheckpointFailures, deferrals: PhaseTestDeferrals) -> None:
+        self.failures, self.deferrals = failures, deferrals
         self.proofs, self.queries, self.repository, self.bus = proofs, queries, repository, bus
         self.checkpoints, self.plans, self.rows = checkpoints, plans, rows
 
@@ -46,6 +47,8 @@ class CheckpointResults:
         if failed_task_ids:
             self.bus.dispatch(FailCheckpoint(reach.id, failed_task_ids=",".join(str(task_id) for task_id in failed_task_ids)), context)
             return
+        if not reach.is_early:
+            self.deferrals.close_due(reach.phase_id, context)
         self.repository.save_change(reach, reach.moved(CheckpointLifecycle.passed), context)
 
     def is_started(self, reach: CheckpointReach) -> bool:

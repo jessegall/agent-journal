@@ -25,3 +25,7 @@ def test_taking_out_a_word_that_is_no_path_of_the_command_or_every_path_is_refus
     with pytest.raises(Refusal) as refusal:
         OwnTestCommand.parse(COMMAND).without(paths)
     assert words in refusal.value.reason
+
+
+def test_a_command_cut_down_to_other_paths_keeps_its_program_and_options():
+    assert OwnTestCommand.parse(COMMAND).with_paths(tuple(["tests/stories/compaction_never_twice.py"])).text() == "pytest -q --maxfail 3 tests/stories/compaction_never_twice.py"
