@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from core.modules.plans.models.checkpoint_reach import CheckpointReach
 from core.modules.plans.models.enums.checkpoint_state import CheckpointState
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.plan_task import PlanTask
@@ -43,21 +44,26 @@ class CheckpointWindows:
     def unfinished_ids(self, checkpoint: Phase) -> tuple[int, ...]:
         return tuple(place.task_id for place in self.window(checkpoint) if place.state not in FINISHED_STATES)
 
-    def status(self, checkpoint: Phase, newest_state: CheckpointState | None, is_passed: bool) -> str:
+    def testing_ids(self, checkpoint: Phase) -> tuple[int, ...]:
+        return tuple(place.task_id for place in self.window(checkpoint) if place.state is TaskState.TESTING)
+
+    def status(self, checkpoint: Phase, newest: CheckpointReach | None, is_passed: bool) -> str:
+        if newest is not None and newest.state is CheckpointState.RUNNING:
+            return "running"
+        if newest is not None and newest.state is CheckpointState.FAILED and newest.failed_tasks():
+            return f"failed: tasks {', '.join(map(str, newest.failed_tasks()))}"
         unfinished = self.unfinished_ids(checkpoint)
         if unfinished:
             return f"waits for tasks {', '.join(map(str, unfinished))}"
-        if newest_state is CheckpointState.RUNNING:
-            return "running"
-        if newest_state is CheckpointState.FAILED:
+        if newest is not None and newest.state is CheckpointState.FAILED:
             return "failed"
         return "passed" if is_passed else "reached"
 
-    def status_lines(self, newest_states: Mapping[int, CheckpointState], passed_phase_ids: frozenset[int]) -> tuple[str, ...]:
+    def status_lines(self, newest: Mapping[int, CheckpointReach], passed_phase_ids: frozenset[int]) -> tuple[str, ...]:
         if not self.phases:
             return ()
         checkpoints = self.checkpoint_phases()
-        lines = [STATUS_LINE.format(phase=phase.id, status=self.status(phase, newest_states.get(phase.id), phase.id in passed_phase_ids)) for phase in checkpoints]
+        lines = [STATUS_LINE.format(phase=phase.id, status=self.status(phase, newest.get(phase.id), phase.id in passed_phase_ids)) for phase in checkpoints]
         gate = next((phase for phase in checkpoints if phase.checkpoint and phase.id not in passed_phase_ids and self.window(phase)), None)
         if gate is None:
             return tuple(lines)

@@ -100,6 +100,9 @@ from core.modules.plans.commands.assign_plan.assign_plan_subcommand import Assig
 from engine.viewer.skeleton_part import SkeletonPart
 from engine.enums.window_place import WindowPlace
 from core.modules.plans.commands.record_checkpoints.record_checkpoints_handler import RecordCheckpointsHandler
+from core.modules.plans.commands.fail_checkpoint.fail_checkpoint import FailCheckpoint
+from core.modules.plans.commands.check_plan.check_plan_handler import CheckPlanHandler
+from core.modules.plans.commands.check_plan.check_plan_subcommand import CheckPlanSubcommand
 from core.modules.plans.guards.checkpoint_run_guard import CheckpointRunGuard
 from core.modules.plans.listeners.checkpoint_pass_listener import CheckpointPassListener
 from core.modules.plans.listeners.checkpoint_reach_listener import CheckpointReachListener
@@ -120,11 +123,11 @@ class PlansModule(Module):
     skills = [SkillDeclaration("journal-plans", "Build and follow a plan of ordered tasks; read it before the first plan command of a session, or when the user asks for a plan or a roadmap", keywords=("plan", "plans", "roadmap", "phases"), commands=("plan", "phase")),
               SkillDeclaration("journal-planning", "Build a thorough plan with real steps in each phase, one task per step, and a brief each worker can carry out alone; read it before you make a plan or a phase", keywords=("plan", "phases"), commands=("plan make", "phase make"))]
     models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]), ModelDeclaration(PlanContextRead, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PlanWait, excluded_subcommands=ALL_SUBCOMMANDS),
-              ModelDeclaration(CheckpointReach, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(CheckpointPass, excluded_subcommands=["make", "edit", "delete"])]
+              ModelDeclaration(CheckpointReach, commands=tuple([FailCheckpoint]), excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(CheckpointPass, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration, CheckpointsMigration]
-    handlers = [RecordCheckpointsHandler, WaitPlanHandler, AssignPlanHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
+    handlers = [CheckPlanHandler, RecordCheckpointsHandler, WaitPlanHandler, AssignPlanHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
     moves = [PlansMove]
-    subcommands = [WaitPlanSubcommand, AssignPlanSubcommand, ChoosePlanFocusSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
+    subcommands = [CheckPlanSubcommand, WaitPlanSubcommand, AssignPlanSubcommand, ChoosePlanFocusSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand]
     views = [PlanTask, PlanProgress, PlanCard, PlanOutlineTask, PlanEventRow]
     guards = [CheckpointRunGuard, PhasePositionGuard, PlanCloseGuard, OneTaskPhaseGuard, UnorderedTasksGuard]

@@ -10,6 +10,7 @@ class CheckpointsMigration(Migration):
         "CREATE TABLE checkpoint_reaches (id INTEGER PRIMARY KEY, environment_id INTEGER NOT NULL REFERENCES environments(id) ON DELETE RESTRICT,"
         " creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT, plan_id INTEGER NOT NULL REFERENCES plans(id) ON DELETE CASCADE,"
         " phase_id INTEGER NOT NULL REFERENCES phases(id) ON DELETE CASCADE, task_ids TEXT NOT NULL, state TEXT NOT NULL DEFAULT 'running',"
+        " is_early INTEGER NOT NULL DEFAULT 0 CHECK (is_early IN (0, 1)), failed_task_ids TEXT NOT NULL DEFAULT '',"
         " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)),"
         " created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT",
         "CREATE INDEX checkpoint_reaches_phase ON checkpoint_reaches (plan_id, phase_id, id)",

@@ -219,3 +219,27 @@ def test_191_a_task_added_to_a_window_after_its_run_started_is_not_in_that_run_a
     pass_reach(story, 1)
     close(story, added_id)
     story.expect_rows(reaches(story) == [(3, "1,2,3"), (3, f"1,2,{added_id},3")], detail=str(reaches(story)))
+
+
+def test_187_the_main_agent_has_a_task_in_testing_run_early_and_the_early_pass_opens_no_phase(new_story):
+    story = new_story(fixture=WindowsPlan)
+    story.run(lines.TASK_START, actor=story.agent)
+    story.run("task test 1", actor=story.agent)
+    story.expect_success("plan check 1 --environment main", "checkpoint of phase 3: the tests of tasks 1 run early", actor=story.agent)
+    reach = rows(story, REACHES)[0]
+    story.expect_rows((reach["phase_id"], reach["task_ids"], reach["is_early"]) == (3, "1", True), detail=str(reach))
+    pass_reach(story, 1)
+    story.expect_rows(rows(story, PASSES) == [], detail="an early run opens no phase")
+
+
+def test_188_a_plan_check_with_no_task_in_testing_says_so_and_saves_no_reach(new_story):
+    story = new_story(fixture=WindowsPlan)
+    story.expect_success("plan check 1 --environment main", "nothing to run: no task of the window is committed", actor=story.agent)
+    story.expect_rows(reaches(story) == [], detail=str(reaches(story)))
+
+
+def test_190_a_failed_run_names_its_tasks_and_the_progress_of_a_plan_names_each_checkpoint(new_story):
+    story = new_story(fixture=FirstOfTwoReached)
+    story.expect_success("checkpoint-reach failed 1 --failed-task-ids 1", actor=Actor.core())
+    story.expect_text(OUTLINE, "checkpoint of phase 1: failed: tasks 1", actor=story.user)
+    story.expect_text("plan progress 1 --environment main", "checkpoint of phase 1: failed: tasks 1", "checkpoint of phase 2: waits for tasks 2", actor=story.user)

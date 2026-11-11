@@ -20,7 +20,7 @@ PASS_SOURCE = "plans.checkpoint-passed"
 class CheckpointPassListener(SaveListener[Moved[CheckpointReach]]):
     """A reach whose tests passed opens the phases after its checkpoint: the pass is saved with it, each task
     of the run gets a log line, the main agent is told once for the checkpoint, and tasks completed in the
-    window since the run started get a run of their own."""
+    window since the run started get a run of their own. An early run opens no phase and tells nobody."""
 
     name = "plans.checkpoint-pass"
     moves = tuple([CheckpointLifecycle.passed])
@@ -31,7 +31,7 @@ class CheckpointPassListener(SaveListener[Moved[CheckpointReach]]):
 
     def handle(self, event: Moved[CheckpointReach], context: Context) -> None:
         reach = event.row
-        if self.checkpoints.save_pass(reach.plan_id, reach.phase_id, context):
+        if not reach.is_early and self.checkpoints.save_pass(reach.plan_id, reach.phase_id, context):
             phase = self.rows.required(Phase, reach.phase_id)
             self.main_agents.send(self.rows.required(Plan, reach.plan_id), CHECKPOINT_FINISHED, PASS_SOURCE, context, phase=phase.title)
         for task_id in reach.tasks():
