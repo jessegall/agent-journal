@@ -25,6 +25,9 @@ class CheckpointWindows:
     def checkpoint_phases(self) -> tuple[Phase, ...]:
         return tuple(phase for phase in self.phases if phase.checkpoint or phase.id == self.phases[-1].id)
 
+    def is_end_passed(self, passed_phase_ids: frozenset[int]) -> bool:
+        return not self.phases or self.phases[-1].id in passed_phase_ids
+
     def window_checkpoint(self, phase_id: int) -> Phase:
         position = next(phase.position for phase in self.phases if phase.id == phase_id)
         return next(phase for phase in self.checkpoint_phases() if phase.position >= position)

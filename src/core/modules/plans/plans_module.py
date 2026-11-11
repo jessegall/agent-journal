@@ -31,6 +31,10 @@ from core.modules.plans.listeners.cancel_open_plan_tasks_listener import CancelO
 from core.modules.plans.listeners.phase_renumbering_listener import PhaseRenumberingListener
 from core.modules.plans.listeners.forget_place_listener import ForgetPlaceListener
 from core.modules.plans.listeners.finished_plan_listener import FinishedPlanListener
+from core.modules.plans.listeners.passed_plan_listener import PassedPlanListener
+from core.modules.plans.listeners.checkpoint_run_listener import CheckpointRunListener
+from core.modules.plans.commands.start_checkpoint_run.start_checkpoint_run_handler import StartCheckpointRunHandler
+from core.modules.plans.listeners.finished_plan_line_listener import FinishedPlanLineListener
 from core.modules.plans.listeners.task_plan_rows_listener import TaskPlanRowsListener
 from core.modules.plans.migrations.m002_paused_plans_blocked import PausedPlansBlockedMigration
 from core.modules.plans.migrations.m001_plans import PlansTablesMigration
@@ -121,11 +125,11 @@ class PlansModule(Module):
     bindings = {PlanAuthors: PlanRowAuthors}
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers", "journal.core.messages"]
     skills = [SkillDeclaration("journal-plans", "Build and follow a plan of ordered tasks; read it before the first plan command of a session, or when the user asks for a plan or a roadmap", keywords=("plan", "plans", "roadmap", "phases"), commands=("plan", "phase")),
-              SkillDeclaration("journal-planning", "Build a thorough plan with real steps in each phase, one task per step, and a brief each worker can carry out alone; read it before you make a plan or a phase", keywords=("plan", "phases"), commands=("plan make", "phase make"))]
+              SkillDeclaration("journal-planning", "Build a thorough plan with real steps in each phase, one task per step, and a brief that can be carried out alone; read it before you make a plan or a phase", keywords=("plan", "phases"), commands=("plan make", "phase make"))]
     models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]), ModelDeclaration(PlanContextRead, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PlanWait, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(CheckpointReach, commands=tuple([FailCheckpoint]), excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(CheckpointPass, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration, CheckpointsMigration]
-    handlers = [CheckPlanHandler, RecordCheckpointsHandler, WaitPlanHandler, AssignPlanHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
+    handlers = [CheckPlanHandler, RecordCheckpointsHandler, StartCheckpointRunHandler, WaitPlanHandler, AssignPlanHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
     moves = [PlansMove]
     subcommands = [CheckPlanSubcommand, WaitPlanSubcommand, AssignPlanSubcommand, ChoosePlanFocusSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand]
@@ -133,7 +137,7 @@ class PlansModule(Module):
     guards = [CheckpointRunGuard, PhasePositionGuard, PlanCloseGuard, OneTaskPhaseGuard, UnorderedTasksGuard]
     step_conditions = [PlanBriefSet, PlanHasPhases, PlanPhasesHaveTasks, PlanTasksOrdered]
     listeners = [CheckpointReachListener, StartedPlanCheckpointsListener, CheckpointPassListener, PlanWaitListener, TaskPlanRowsListener, ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
-                 FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener, ReadyPlanSyncListener]
+                 FinishedPlanListener, PassedPlanListener, CheckpointRunListener, FinishedPlanLineListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener, ReadyPlanSyncListener]
     marks = PLAN_MARKS
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule, PlanContextRule, PlanFocusRule]

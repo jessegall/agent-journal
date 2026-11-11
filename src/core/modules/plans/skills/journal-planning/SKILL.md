@@ -1,6 +1,6 @@
 ---
 name: journal-planning
-description: Build a thorough plan with real steps in each phase, one task per step, and a brief each worker can carry out alone; read it before you make a plan or a phase
+description: Build a thorough plan with real steps in each phase, one task per step, and a brief that can be carried out alone; read it before you make a plan or a phase
 ---
 
 # Planning a plan thoroughly

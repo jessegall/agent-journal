@@ -3,6 +3,7 @@ import json
 import pytest
 
 from engine.actor.actor import Actor
+from core.modules.plans.commands.start_checkpoint_run.start_checkpoint_run_handler import StartCheckpointRunHandler
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support import story_lines as lines
@@ -114,6 +115,13 @@ class TwoCheckpointsPlan(StoryFixture):
         plan_of_phases(story, ("Build", True, 1), ("Check", True, 1))
 
 
+
+
+@pytest.fixture(autouse=True)
+def held_runs(monkeypatch) -> None:
+    """The stories of this file end the run of a reach themselves, as a suite that runs tests does: the journal
+    starts no run."""
+    monkeypatch.setattr(StartCheckpointRunHandler, "handle", lambda handler, command, context: None)
 
 
 def rows(story: Story, line: str) -> list[dict[str, object]]:

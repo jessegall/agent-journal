@@ -11,10 +11,10 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.environments.models.environment import Environment
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
-from core.modules.plans.models.enums.checkpoint_state import CheckpointState
 from core.modules.plans.models.phase import Phase
-from core.modules.plans.support.plan_checkpoints import PlanCheckpoints
 from core.modules.processes.commands.start_process.start_process import StartProcess
+from core.modules.plans.support.checkpoint_runs import CheckpointRuns
+from suites.coding.modules.workers.support.checkpoint_results import CheckpointResults
 from suites.coding.modules.workers.models.affected_test import AffectedTestState
 from suites.coding.modules.workers.models.checkpoint_test import CheckpointTest
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
@@ -28,49 +28,54 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 FOLDER_NAME = "plan-{plan}"
 
 
-class CheckpointRunner:
+class CheckpointRunner(CheckpointRuns):
     """Starts the tests of a reached checkpoint in the background runner proof tests use, on a checkout of the
     head of the environment's branch that moves nobody's checkout: each committed proof of the window by its
     own command, the checkpoint's own test and the selected run over the files the window changed. An early
-    run starts only the committed proofs. One run of a plan goes at a time: a reach waits while an older reach
-    of its plan runs. The own test and the selected run are owned by the worker merged last in the window, or
-    by the main agent when no worker's work is in it; with neither, they are not run."""
+    run starts only the committed proofs. A reach whose tests were started is not started again. The own
+    test and the selected run are owned by the worker merged last in the window, or by the main agent when no
+    worker's work is in it; with neither, they are not run. A run with no test passes at once, as the core's
+    runs do."""
 
     def __init__(self, proofs: ProofQuery, repository: Repository, bus: Bus, git: WorktreeGit, worktrees: WorktreeQuery, environments: EnvironmentRows,
-                 settings: SettingValues, agents: AgentRows, rows: EventRows, checkpoints: PlanCheckpoints) -> None:
-        self.proofs, self.repository, self.bus, self.git, self.worktrees = proofs, repository, bus, git, worktrees
-        self.environments, self.settings, self.agents, self.rows, self.checkpoints = environments, settings, agents, rows, checkpoints
+                 settings: SettingValues, agents: AgentRows, rows: EventRows, results: CheckpointResults) -> None:
+        self.results = results
+        super().__init__(repository, bus)
+        self.proofs, self.git, self.worktrees = proofs, git, worktrees
+        self.environments, self.settings, self.agents, self.rows = environments, settings, agents, rows
 
     def start(self, reach: CheckpointReach, context: Context) -> None:
-        if self.is_waiting(reach):
+        if self.results.is_started(reach):
             return
         committed = tuple(self.proofs.committed_proofs(reach.tasks()).oldest().all_rows())
-        if not reach.is_early:
-            self.start_tests(reach, context)
+        test_count = 0 if reach.is_early else self.start_tests(reach, context)
         for proof in committed:
             self.repository.save_change(proof, proof.moved(ProofLifecycle.queue), context)
-
-    def is_waiting(self, reach: CheckpointReach) -> bool:
-        return any(row.state is CheckpointState.RUNNING and row.id < reach.id for row in self.checkpoints.reaches(reach.plan_id))
+        if not committed and not test_count:
+            super().start(reach, context)
 
     def folder(self, environment: Environment, plan_id: int) -> str:
         return self.git.base_folder(environment, FOLDER_NAME.format(plan=plan_id))
 
-    def start_tests(self, reach: CheckpointReach, context: Context) -> None:
-        environment = self.environments.find(reach.environment_id)
-        folder = self.git.base_checkout(environment, FOLDER_NAME.format(plan=reach.plan_id))
+    def start_tests(self, reach: CheckpointReach, context: Context) -> int:
         merged = self.merged_worktrees(reach)
         owner_id = self.owner_id(merged)
-        if owner_id is None:
-            return
         phase_command = OwnTest(self.rows.required(Phase, reach.phase_id).test_command).command
-        if phase_command:
-            self.start_test(CheckpointTest(reach_id=reach.id, owner_agent_id=owner_id, test_command=phase_command, state=AffectedTestState.TESTING, process_id=0), folder, context)
         picker, selected_command = self.settings.text(AFFECTED_TESTS_COMMAND).strip(), self.settings.text(PROJECT_TEST_COMMAND).strip()
-        if picker and selected_command and merged:
+        is_selected_run_due = bool(picker and selected_command and merged)
+        if owner_id is None or not (phase_command or is_selected_run_due):
+            return 0
+        folder = self.git.base_checkout(self.environments.find(reach.environment_id), FOLDER_NAME.format(plan=reach.plan_id))
+        tests = list[CheckpointTest]()
+        if phase_command:
+            tests.append(CheckpointTest(reach_id=reach.id, owner_agent_id=owner_id, test_command=phase_command, state=AffectedTestState.TESTING, process_id=0))
+        if is_selected_run_due:
             files = [change.relative for change in self.git.file_changes(folder, merged[0].commit_before_merge)]
-            self.start_test(CheckpointTest(reach_id=reach.id, owner_agent_id=owner_id, picker_command=shlex.join([*shlex.split(picker), *files]), test_command=selected_command,
-                                           state=AffectedTestState.PICKING, process_id=0), folder, context)
+            tests.append(CheckpointTest(reach_id=reach.id, owner_agent_id=owner_id, picker_command=shlex.join([*shlex.split(picker), *files]), test_command=selected_command,
+                                        state=AffectedTestState.PICKING, process_id=0))
+        for test in tests:
+            self.start_test(test, folder, context)
+        return len(tests)
 
     def start_test(self, test: CheckpointTest, folder: str, context: Context) -> None:
         start = StartProcess.single_part(test.owner_agent_id, test.picker_command or test.test_command, folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)

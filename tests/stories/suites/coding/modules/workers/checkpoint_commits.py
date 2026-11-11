@@ -72,20 +72,16 @@ def test_160_a_commit_of_a_task_in_no_plan_starts_its_test_as_before(new_story, 
     worker.story.expect_rows(len(worker.started) == 1, COMMITTED not in proof_states(worker).values(), detail=f"started: {worker.started}, proofs: {proof_states(worker)}")
 
 
-def test_161_a_proof_with_a_test_waits_as_committed_and_one_with_no_test_waits_for_the_main_agents_check(committed_worker):
-    states = proof_states(committed_worker)
-    committed_worker.story.expect_rows(states[1] == COMMITTED, states[3] == COMMITTED, states[2] != COMMITTED, detail=str(states))
-
-
 def test_162_a_commit_with_a_missing_proof_is_refused_in_a_started_plan_as_outside_one(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
     outcome = worker.story.run("worker next --wait --differences none", actor=worker.worker)
     worker.story.expect_rows(outcome.code != 0, "proof" in outcome.output_text, proof_states(worker) == {}, detail=outcome.output_text)
 
 
-def test_159_163_a_final_commit_makes_the_worktree_ready_to_merge_and_the_status_names_the_merge_and_the_checkpoint(committed_worker):
-    row, status = worktree_row(committed_worker), committed_worker.status()
+def test_159_161_163_a_final_commit_commits_the_proofs_with_a_test_and_makes_the_worktree_ready_to_merge(committed_worker):
+    row, status, states = worktree_row(committed_worker), committed_worker.status(), proof_states(committed_worker)
     committed_worker.story.expect_rows(row.get("merge_ready_at") is not None, MERGE_WAIT_WORDS in status, CHECKPOINT_WORDS in status, detail=f"{row} | {status}")
+    committed_worker.story.expect_rows(states[1] == COMMITTED, states[3] == COMMITTED, states[2] != COMMITTED, detail=str(states))
 
 
 def test_163_a_final_commit_in_a_started_plan_with_the_merger_on_says_the_committed_work_can_be_merged(group_worker):

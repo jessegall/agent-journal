@@ -15,7 +15,8 @@ WINDOW_REASON = "The checkpoints of one plan are worked out from every task of t
 class PlanCheckpoints:
     """Reads the checkpoints of a plan and records what happens at them. A window that is reached gets a reach
     for its run, one at a time, with the completed tasks it had then; a reached window with no completed task
-    has nothing to run and passes at once. The core runs no test: a suite ends the run of a reach."""
+    has nothing to run and passes at once. The core runs no test: a suite ends the run of a reach. The last
+    phase of a plan is always a checkpoint, so a plan is over once that one has passed."""
 
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository
@@ -34,6 +35,9 @@ class PlanCheckpoints:
 
     def passed_phase_ids(self, plan_id: int) -> frozenset[int]:
         return frozenset(passed.phase_id for passed in self.queries.query(CheckpointPass).filter(plan_id=plan_id).all_rows())
+
+    def is_end_passed(self, plan_id: int) -> bool:
+        return self.windows(plan_id).is_end_passed(self.passed_phase_ids(plan_id))
 
     def record(self, plan_id: int, context: Context) -> None:
         windows = self.windows(plan_id)

@@ -12,7 +12,7 @@ from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.plan_progress import PlanProgress
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.support.focus.plan_focus import PlanFocus
-from core.modules.plans.support.plan_nudges import CHECKPOINT_REACHED, PHASE_FINISHED, PLAN_FINISHED, PLAN_STALLED
+from core.modules.plans.support.plan_nudges import CHECKPOINT_REACHED, PHASE_FINISHED, PLAN_STALLED
 from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES, TaskState
 from core.modules.tasks.models.task import Task
 
@@ -21,9 +21,9 @@ ACTIVE_STATES = (TaskState.STARTED, TaskState.TESTING)
 
 
 class PlanTaskLineRule(DriverRule):
-    """A task the main agent has ended tells it the phase or plan that ended, and a plan with nothing left that
-    can start, with each task the plan waits on and who has it or what it waits on; the task now in hand is
-    named by the return line of the tasks module, never twice."""
+    """A task the main agent has ended tells it the phase that ended, and a plan with nothing left that can
+    start, with each task the plan waits on and who has it or what it waits on; the task now in hand is named
+    by the return line of the tasks module, never twice. The end of a plan is told when the plan closes."""
 
     name = "plans.task-end-lines"
     hook = HookEventName.POST_TOOL_USE
@@ -47,7 +47,7 @@ class PlanTaskLineRule(DriverRule):
             return []
         progress = self.queries.query(PlanProgress).find(place.plan_id)
         if progress.completed_count >= progress.task_count:
-            return [PLAN_FINISHED.nudge(plan=place.plan_id)]
+            return []
         nudges = self.phase_nudges(place)
         blocked_count = self.queries.query(PlanTask).filter(plan_id=place.plan_id).matching(Among("state", BLOCKED_STATES)).count()
         if not blocked_count or self.queries.query(PlanTask).filter(plan_id=place.plan_id).matching(Among("state", ACTIVE_STATES)).exists():

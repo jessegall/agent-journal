@@ -182,7 +182,8 @@ def test_184_a_task_added_to_the_window_while_its_run_goes_is_not_in_that_run(ru
 def test_189_the_run_of_a_second_checkpoint_waits_for_the_run_of_the_first_to_end(running_checkpoint):
     worker, story = running_checkpoint, running_checkpoint.story
     story.expect_success(f'phase edit 2 --test-command "{SHIP_TEST}"', actor=story.user)
-    story.run('task close 4 --outcome "nothing to release"', actor=story.agent)
+    story.run("task start 4", actor=story.agent)
+    story.expect_success('task close 4 --outcome "nothing to release"', actor=story.agent)
     story.run_listeners()
     waiting_lines = run_lines(worker)
     worker.end_all_tests()

@@ -4,6 +4,9 @@ from engine.model.model import Model
 from suites.coding.modules.workers.models.affected_test import AffectedTestState
 
 
+RUNNING_STATES = (AffectedTestState.PICKING, AffectedTestState.TESTING)
+
+
 @dataclass(frozen=True, kw_only=True)
 class CheckpointTest(Model):
     """A test the run of a reached checkpoint makes beside the proofs of its window: the checkpoint's own

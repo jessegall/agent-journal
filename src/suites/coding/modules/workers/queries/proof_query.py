@@ -38,6 +38,9 @@ class ProofQuery(Query[Proof]):
     def waiting_proofs(self, worktree_id: int) -> Self:
         return self.worktree_proofs(worktree_id).filter(state=ProofState.SHOWN)
 
+    def task_proofs(self, task_ids: Sequence[int]) -> tuple[Proof, ...]:
+        return tuple(self.matching(Among("task_id", task_ids)).oldest().all_rows())
+
     def committed_proofs(self, task_ids: Sequence[int]) -> Self:
         return self.filter(state=ProofState.COMMITTED).matching(Among("task_id", task_ids))
 

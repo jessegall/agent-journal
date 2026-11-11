@@ -42,3 +42,12 @@ def test_a_window_lists_its_tasks_in_the_order_of_their_phases_and_places():
     phases = (phase(1), phase(2, True))
     plan = CheckpointWindows(phases, (place(9, 2), place(4, 1), place(7, 1), place(2, 2)))
     assert tuple(task.task_id for task in plan.window(phases[1])) == (4, 7, 2, 9)
+
+
+@pytest.mark.parametrize("passed_phase_ids, expected", [((), False), (tuple([3]), False), (tuple([5]), True), ((3, 5), True)])
+def test_a_plan_is_over_only_once_the_checkpoint_of_its_last_phase_has_passed(passed_phase_ids, expected):
+    assert windows(tuple([3])).is_end_passed(frozenset(passed_phase_ids)) is expected
+
+
+def test_a_plan_with_no_phase_has_no_checkpoint_to_wait_for():
+    assert CheckpointWindows((), ()).is_end_passed(frozenset()) is True

@@ -19,6 +19,7 @@ from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import Proo
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.support.checkpoint_results import CheckpointResults
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
@@ -36,13 +37,14 @@ LINE_SOURCE = "workers"
 
 
 class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
-    """Records test results and asks for remaining proof checks before recommending a merge."""
+    """Records test results and asks for remaining proof checks before recommending a merge. A proof of a
+    merged worktree or of a task of a started plan was run by a checkpoint: its result goes to that run."""
 
     command = RecordWorkerTest
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MergerInbox, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger, rows: EventRows, phases: WorkerPhases, failures: WorkerTestFailures, settings: SettingValues, next_task: WorkerNextTask, guidance: WorkerGuidance, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MergerInbox, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger, rows: EventRows, phases: WorkerPhases, failures: WorkerTestFailures, settings: SettingValues, next_task: WorkerNextTask, guidance: WorkerGuidance, numbers: RowNumbers, checkpoint_results: CheckpointResults) -> None:
+        self.numbers, self.checkpoint_results = numbers, checkpoint_results
         self.next_task, self.guidance = next_task, guidance
         self.failures, self.settings = failures, settings
         self.queries, self.repository, self.main_agent_line, self.tasks, self.advance, self.nudger = queries, repository, main_agent_line, tasks, advance, nudger
@@ -52,6 +54,9 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         proof = self.rows.required(Proof, command.proof_id)
         self.repository.save_change(proof, proof.moved(ProofLifecycle.check) if command.passed else proof.moved(ProofLifecycle.short, shortfall=command.output_note), context)
         worktree = self.rows.required(Worktree, proof.worktree_id)
+        if worktree.merged_at is not None or self.phases.plans.is_started_plan(proof.task_id):
+            self.checkpoint_results.record(proof.task_id, context)
+            return
         self.finish(worktree, context)
 
     def finish(self, worktree: Worktree, context: Context) -> None:

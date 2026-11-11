@@ -5,11 +5,8 @@ from engine.listener.commit_listener import CommitListener
 from engine.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process
-from suites.coding.modules.workers.models.affected_test import AffectedTestState
-from suites.coding.modules.workers.models.checkpoint_test import CheckpointTest
+from suites.coding.modules.workers.models.checkpoint_test import RUNNING_STATES, CheckpointTest
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
-
-RUNNING_STATES = (AffectedTestState.PICKING, AffectedTestState.TESTING)
 
 
 class CheckpointTestListener(CommitListener[Created[CheckpointTest] | Updated[CheckpointTest]]):
