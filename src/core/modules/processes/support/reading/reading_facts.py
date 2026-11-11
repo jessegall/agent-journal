@@ -20,6 +20,7 @@ from core.modules.processes.support.reader_judgement import ReaderJudgement
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.reader_writers import ReaderWriters
+from core.modules.processes.support.cadence.run_cadences import RunCadences
 from core.modules.processes.support.reading.escalation_counter import EscalationCounter
 from core.modules.processes.support.reading.escalation_resets import EscalationResets
 from core.modules.processes.support.reading.output_facts import SAMPLE_BYTES, OutputFacts
@@ -31,12 +32,13 @@ from core.modules.processes.support.silent_start_runs import SilentStartRuns
 class ReadingFacts:
     """Gathers the facts of one part of a run into a ReadingCase, and decides nothing: the command, the run, its
     reader and that reader's judgement, its output, the history of its command and the policy of the agent's
-    role. It is the one builder of a ReadingCase."""
+    role, and how the run prints. It is the one builder of a ReadingCase."""
 
     def __init__(self, readers: ReaderRows, judge: ReaderJudge, writers: ReaderWriters, requests: ReaderRequestQuery, counter: EscalationCounter,
-                 resets: EscalationResets, folder: OutputFolder, settings: ProcessSettings, suites: SuiteChoice, rows: EventRows, clock: Clock) -> None:
+                 resets: EscalationResets, folder: OutputFolder, settings: ProcessSettings, suites: SuiteChoice, rows: EventRows, clock: Clock,
+                 cadences: RunCadences) -> None:
         self.readers, self.judge, self.writers, self.requests, self.counter = readers, judge, writers, requests, counter
-        self.resets, self.folder, self.settings, self.suites, self.rows, self.clock = resets, folder, settings, suites, rows, clock
+        self.resets, self.folder, self.settings, self.suites, self.rows, self.clock, self.cadences = resets, folder, settings, suites, rows, clock, cadences
 
     def case_for(self, process: Process, part: ProcessPart, moment: ReadingMoment) -> ReadingCase:
         agent = self.rows.required(Agent, process.session_agent_id)
@@ -47,6 +49,7 @@ class ReadingFacts:
         return ReadingCase(command_key=command_key, category=part.category, classification_known=part.category is not CommandCategory.UNKNOWN,
                            has_asking_flag=ReaderDemands.asks_about_itself(command), output_hidden=part.piped, is_saved_command=bool(part.saved_command),
                            is_plugin_run=bool(process.plugin), moment=moment, age_seconds=self.age_seconds(process), run_state=process.state,
+                           cadence_state=self.cadences.for_process(process, self.clock.timestamp()).state(),
                            exit_code=part.exit_code, reader_layer=self.layer(reader), reader_judgement=self.judgement(process, part, reader),
                            reader_is_default=reader is not None and reader.is_default, draft_fits=False, output=self.output(process, part, moment),
                            runs_without_change=self.counter.runs_without_change(command_key),

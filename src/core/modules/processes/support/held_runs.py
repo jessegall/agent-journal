@@ -4,18 +4,18 @@ from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.held_run import HeldRun
 from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.cadence.run_silences import RunSilences
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.ticks.hang_watch import CPU_FILE
 
-LOOKED_MARK = "looked"
 
 
 class HeldRuns:
     """Finds the run of an agent that printed nothing for the hang time since its last output or the last time
     the agent read it. The processor time is told from the file the hang watch keeps in the run's folder."""
 
-    def __init__(self, processes: ProcessQuery, folder: OutputFolder, settings: ProcessSettings) -> None:
-        self.processes, self.folder, self.settings = processes, folder, settings
+    def __init__(self, processes: ProcessQuery, folder: OutputFolder, settings: ProcessSettings, silences: RunSilences) -> None:
+        self.processes, self.folder, self.settings, self.silences = processes, folder, settings, silences
 
     def found(self, agent_id: int, timestamp: Timestamp) -> HeldRun | None:
         limit = self.settings.integer(ProcessSetting.HANG_SECONDS)
@@ -26,9 +26,7 @@ class HeldRuns:
         return None
 
     def silent_seconds(self, process: Process, timestamp: Timestamp) -> int:
-        printed = self.folder.run_silent_seconds(process.id, timestamp) if self.folder.total_bytes(process.id) else int(process.creation_timestamp().elapsed_seconds(timestamp))
-        looked = self.folder.read_mark(process.id, LOOKED_MARK)
-        return min(printed, int(Timestamp.parsed(looked).elapsed_seconds(timestamp))) if looked else printed
+        return self.silences.unread_seconds(process, timestamp)
 
     def processor(self, process: Process, timestamp: Timestamp, silent: int) -> str:
         recorded = self.folder.text(process.id, CPU_FILE).split()

@@ -13,6 +13,7 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.group_cpu_time import GroupCpuTime
 from core.modules.processes.support.look_asks import LookAsks
 from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.cadence.run_silences import RunSilences
 from core.modules.processes.support.process_settings import ProcessSettings
 
 CPU_FILE = "cpu"
@@ -53,10 +54,10 @@ class HangWatch:
         moved = len(recorded) != 2 or float(recorded[0]) != cpu
         if moved:
             folder.write(process.id, CPU_FILE, f"{cpu} {now}")
-        silent = folder.run_silent_seconds(process.id, current) if folder.total_bytes(process.id) else int(process.creation_timestamp().elapsed_seconds(current))
+        silent = container.get(RunSilences).seconds(process, current)
         if moved:
             return self.looked(container, process, silent, now, limits)
-        seconds = min(int(now - float(recorded[1])), silent)
+        seconds = min(int(now - float(recorded[1])), container.get(RunSilences).unread_seconds(process, current))
         if seconds < limits.hang:
             return False
         self.stop(container, process, seconds)

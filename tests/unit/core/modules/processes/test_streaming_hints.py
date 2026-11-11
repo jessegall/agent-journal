@@ -4,13 +4,14 @@ from engine.enums.command_category import CommandCategory
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.silent_runs import SilentRuns
 from engine.driver.nudge_declaration import LONGEST_FIELD_CHARACTERS
-from core.modules.processes.support.streaming_hints import GENERAL_HINT, STREAMING_HINTS, StreamingHints
+from core.modules.processes.support.streaming_hints import GENERAL_HINT, SERIAL_PACKAGES_HINT, STREAMING_HINTS, StreamingHints
 
 
 @pytest.mark.parametrize("command,hint_part", [
     ("npx vitest run", "--reporter=verbose"),
     ("npm test -- --watch=false | head", GENERAL_HINT),
-    ("CI=1 go test ./...", "go test with -v"),
+    ("CI=1 go test ./...", "go test -p 1"),
+    ("go test ./internal/a", "go test with -v"),
     ("./gradlew build", "--console=plain"),
     ("cargo test", "--no-capture"),
     ("vendor/bin/phpunit", "--testdox"),
@@ -26,6 +27,7 @@ def test_a_command_gets_the_hint_of_its_tool(command, hint_part):
 def test_every_hint_fits_a_nudge_field_whole():
     assert [hint for _, hint in STREAMING_HINTS if len(hint) > LONGEST_FIELD_CHARACTERS] == []
     assert len(GENERAL_HINT) <= LONGEST_FIELD_CHARACTERS
+    assert len(SERIAL_PACKAGES_HINT) <= LONGEST_FIELD_CHARACTERS
 
 
 @pytest.mark.parametrize("category,program,is_watched", [
@@ -50,3 +52,13 @@ def test_tests_builds_and_python_are_watched_for_silence(category, program, is_w
 ])
 def test_go_test_over_several_packages_holds_back_the_output_of_each(command, is_delayed):
     assert StreamingHints.is_serial_packages_run(command) is is_delayed
+
+
+def test_an_unknown_tool_gets_the_general_hint():
+    assert StreamingHints.hint("frobnicate --all") == GENERAL_HINT
+
+
+def test_the_text_of_a_command_never_comes_into_a_hint():
+    command = "custom-tool {output}\nrm -rf /tmp/x"
+    hint = StreamingHints.hint(command)
+    assert "{output}" not in hint and "rm -rf" not in hint and "\n" not in hint

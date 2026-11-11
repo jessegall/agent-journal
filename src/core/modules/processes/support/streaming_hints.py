@@ -6,6 +6,7 @@ TEST_COMMAND_PATTERN = re.compile(r"\bgo test\b([^|;&]*)")
 SERIAL_PACKAGES_PATTERN = re.compile(r"(^|\s)-p[= ]1(\s|$)")
 
 GENERAL_HINT = "make it print its steps as it goes; stdbuf -oL makes a C program write each line"
+SERIAL_PACKAGES_HINT = "run one package at a time, or go test -p 1, so each package prints as it runs"
 
 # the commands of each tool, as a reader writes them, and how the tool prints while it runs, as report 1180 lists with its source
 STREAMING_HINTS = (
@@ -34,10 +35,13 @@ STREAMING_HINTS = (
 
 
 class StreamingHints:
-    """What tells a quiet command to print while it runs: the hint of its tool, else the general one."""
+    """What tells a quiet command to print while it runs: the hint of its tool, else the general one. go test over
+    several packages holds back each package's output until it is done, so it gets the hint to run them one by one."""
 
     @staticmethod
     def hint(command: str) -> str:
+        if StreamingHints.is_serial_packages_run(command):
+            return SERIAL_PACKAGES_HINT
         return next((hint for patterns, hint in STREAMING_HINTS if ReaderSelection.matches(patterns, command)), GENERAL_HINT)
 
     @staticmethod

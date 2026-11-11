@@ -42,9 +42,10 @@ def test_carriage_returns_in_more_than_half_the_bytes_make_one_line():
     assert facts(b"\r\r\ra\n").unreadable_reason is UnreadableReason.SINGLE_LINE
 
 
-def test_an_output_that_ends_on_a_prompt_is_interactive():
-    assert facts(b"Installing\nProceed (y/n)?", exit_code=None).unreadable_reason is UnreadableReason.INTERACTIVE
-    assert facts(b"Installing\nProceed (y/n)?\n", exit_code=None).unreadable_reason is None
+def test_an_output_that_ends_on_a_prompt_is_noted_and_is_no_reason_alone():
+    waiting = facts(b"Installing\nProceed (y/n)?", exit_code=None)
+    assert (waiting.ends_on_prompt, waiting.unreadable_reason) == (True, None)
+    assert not facts(b"Installing\nProceed (y/n)?\n", exit_code=None).ends_on_prompt
 
 
 def test_a_rejected_command_is_noted():

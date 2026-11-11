@@ -17,7 +17,8 @@ PROMPT_TAIL_BYTES = 200
 class OutputFacts:
     """What one part of a run printed, measured once for judging: its size, its lines, how much of its first
     64 KB is text, whether it ends on a prompt, and whether the run was rejected, crashed at its start or was
-    cut short. The thresholds come from report 1325; an unbroken line counts only after the last newline."""
+    cut short. The thresholds come from report 1325; an unbroken line counts only after the last newline. A
+    prompt alone is no reason: the case adds the cadence to it."""
 
     byte_count: int
     line_count: int
@@ -53,6 +54,4 @@ class OutputFacts:
             return UnreadableReason.BINARY
         if self.trailing_line_bytes > UNBROKEN_LINE_BYTES or self.carriage_return_share > CARRIAGE_RETURN_LIMIT:
             return UnreadableReason.SINGLE_LINE
-        if self.ends_on_prompt:
-            return UnreadableReason.INTERACTIVE
         return None
