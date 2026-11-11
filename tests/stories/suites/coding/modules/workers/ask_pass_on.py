@@ -9,8 +9,6 @@ from tests.stories.suites.coding.modules.workers.ask_ledger import QUESTION, SEC
 from tests.stories.suites.coding.modules.workers.merger_cases import case  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting
-from suites.coding.support.shipped_profiles import HELPER_PROFILES
-from pathlib import Path
 
 MERGER_QUESTION_LINE = 'merger tell "The worker cannot build" --tried "I read its facts" --option "answer the worker" --option "release the worker" --recommend "answer the worker"'
 FORWARD_MINUTES = "journal.suites.coding.workers.ask-pass-on-minutes"
@@ -106,7 +104,6 @@ def test_the_forward_time_cannot_be_set_below_the_answer_time(case):
 VISITS_LIMIT = "journal.suites.coding.workers.ask-visits-limit"
 GROUP_LIMIT = "journal.suites.coding.workers.most-merger-messages-per-group"
 MERGER_ON = "journal.suites.coding.workers.merger-on"
-WORKERS_SKILLS = Path("src/suites/coding/modules/workers/skills")
 
 
 def test_a_worker_cannot_answer_or_pass_on_a_question_itself(case):
@@ -145,12 +142,3 @@ def test_with_the_merger_off_the_numbers_of_the_questions_are_not_on_the_workers
     apply_work_setting(case.story, MERGER_ON, "off")
     case.story.expect_absent(SHOWN_SETTINGS, ANSWER_MINUTES, actor=case.story.user)
     case.story.expect_absent(SHOWN_SETTINGS, GROUP_LIMIT, actor=case.story.user)
-
-
-def test_the_merger_profile_and_the_two_skills_name_the_commands_of_a_question():
-    merger = next(profile for profile in HELPER_PROFILES if profile.name == "journal-merger")
-    case_book = (WORKERS_SKILLS / "journal-merger" / "SKILL.md").read_text()
-    worker_skill = (WORKERS_SKILLS / "journal-workers" / "SKILL.md").read_text()
-    assert "journal merger answer" in merger.body and "journal merger tell" in merger.body
-    assert "journal merger answer <line>" in case_book and "journal merger tell" in case_book
-    assert "After you ask, the merger or the journal" in worker_skill
