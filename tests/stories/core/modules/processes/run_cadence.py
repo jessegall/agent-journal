@@ -4,10 +4,11 @@ from engine.enums.command_category import CommandCategory
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.testing.examples.hook_samples import HookSamples
+from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.modules.processes.support.cadence_probe import (TICK, TOOL_USE, HelperBesideWorker, agent_run, cadence_lines, cadence_tick,
                                                                        expect_told, has_cadence_record, kept_lines, owned_run, printed, running_run,
-                                                                       side_run, ticks, told, waiting_run, worker_agent)
+                                                                       side_run, tick_named, ticks, told, waiting_run, worker_agent)
 from tests.stories.core.modules.processes.background import SavedBuildMoved, SilentVitestRun, expect_streaming_line, expect_without_hint
 from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS, ActiveBuild, expect_looks, started_tree, watch_tick
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
@@ -248,3 +249,16 @@ def test_a_run_another_agent_owns_tells_the_agent_of_its_session(new_story):
     ticks(story, 30)
     expect_told(story, MAIN, f"output {process.id} printed nothing for 30 seconds")
     story.expect_rows(cadence_lines(told(story, worker.session)) == [])
+
+
+def test_a_long_script_of_no_known_type_is_told_to_print_its_steps_and_its_card_shows_the_progress_of_its_new_reader(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "zsh tools/move.sh")
+    titled(story, process, "Moving the files")
+    ticks(story, 30)
+    expect_told(story, MAIN, f"output {process.id} printed nothing for 30 seconds, so its output is not streaming: make it print its steps")
+    story.expect_success('reader add move-files --commands "zsh tools/move.sh*" --lines "moved" --progress "\\[([0-9]+)/([0-9]+)\\]"', actor=story.agent)
+    printed(story, process, "[3/17] moved a.txt\n")
+    tick_named(story, "read running outputs")
+    story.expect_text(f"output show {process.id}", "progress: 17", actor=story.agent)
+    expect_marks_text(story, "Moving the files")
