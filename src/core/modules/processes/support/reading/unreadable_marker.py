@@ -38,7 +38,7 @@ class UnreadableMarker:
         mark = self.marks.marked(command_key)
         if mark is None and reason is not None and earlier_reason is reason:
             return tuple([self.marks.mark(CORE_ACTOR_ID, command_key, reason, "", context)])
-        if mark is not None and reason is None and earlier_reason is None and previous[0].creation_timestamp() > mark.creation_timestamp():
+        if mark is not None and reason is None and earlier_reason is None and previous[0].creation_timestamp() >= mark.creation_timestamp():
             return tuple([self.marks.lift(mark.words, CORE_ACTOR_ID, context)])
         return ()
 
