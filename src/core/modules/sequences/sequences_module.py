@@ -1,3 +1,4 @@
+from core.modules.sequences.migrations.m009_environment_index import SequenceRunsEnvironmentIndexMigration
 from core.modules.sequences.migrations.m008_sequence_session import SequenceSessionMigration
 from core.modules.sequences.migrations.m007_open_run_order_index import OpenRunOrderIndexMigration
 from engine.skill.skill_declaration import SkillDeclaration
@@ -72,7 +73,7 @@ class SequencesModule(Module):
     skills = [SkillDeclaration("journal-sequences", "Follow a sequence of steps one at a time; read it when a sequence is run or written", keywords=("sequence", "sequences"), commands=["sequence"])]
     library_shares = [SequenceLibraryShare]
     models = [ModelDeclaration(Sequence, query=SequenceQuery, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=RUN_BUILT)]
-    migrations = [SequenceSessionMigration, OpenRunOrderIndexMigration, SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration, CloseLegacyStepBlocksMigration, RunSubjectMigration, OpenRunSubjectIndexMigration]
+    migrations = [SequenceSessionMigration, OpenRunOrderIndexMigration, SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration, CloseLegacyStepBlocksMigration, RunSubjectMigration, OpenRunSubjectIndexMigration, SequenceRunsEnvironmentIndexMigration]
     moves = [SequencesMove]
     handlers = [MakeSequenceHandler, MoveSequenceRunHandler, SaveStandardSequencesHandler]
     guards = [StandardSequenceGuard, StepConditionNameGuard, PlanBeingBuiltGuard]

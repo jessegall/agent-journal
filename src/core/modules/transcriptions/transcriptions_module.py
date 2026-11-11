@@ -1,3 +1,4 @@
+from core.modules.transcriptions.migrations.m002_environment_index import TranscriptionsEnvironmentIndexMigration
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_search import WindowSearch
@@ -33,7 +34,7 @@ class TranscriptionsModule(Module):
     skills = [SkillDeclaration("journal-transcriptions", "Turn a transcript into summaries, notes, documents, tasks or plans linked back to it; read it when a transcription arrives or is edited",
                                keywords=("transcription", "transcriptions", "transcript"), commands=["transcription"], types=["main"])]
     models = [ModelDeclaration(Transcription)]
-    migrations = [TranscriptionsTableMigration]
+    migrations = [TranscriptionsTableMigration, TranscriptionsEnvironmentIndexMigration]
     handlers = [AddTranscriptionLinkHandler, RequestTranscriptionFetchHandler]
     subcommands = [AddTranscriptionLinkSubcommand, RequestTranscriptionFetchSubcommand, TranscriptionSourcesSubcommand]
     nudges = TRANSCRIPTION_NUDGES

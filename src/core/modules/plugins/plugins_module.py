@@ -1,3 +1,4 @@
+from core.modules.plugins.migrations.m010_environment_index import PluginRowsEnvironmentIndexMigration
 from core.modules.plugins.commands.send_plugin_step_line.send_plugin_step_line_handler import SendPluginStepLineHandler
 from core.modules.plugins.commands.log_plugin_line.log_plugin_line_handler import LogPluginLineHandler
 from core.modules.plugins.commands.log_plugin_line.log_plugin_line_subcommand import LogPluginLineSubcommand
@@ -131,7 +132,7 @@ class PluginsModule(Module):
                                        WindowKey("dashboard", "plugin dashboard {plugin}", tab="dashboard"),
                                        WindowKey("dashboard-poll", "plugin dashboard {plugin}", tab="dashboard-poll", reload_seconds=60)],
                                  runs=["plugin service", "plugin upgrade", "plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]
-    migrations = [PlainColumnNamesMigration, PluginConfigMigration, PluginOutputEnvironmentMigration, PluginEventDeliveriesMigration, PluginSessionMigration, PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration, PluginSettingEnvironmentsMigration]
+    migrations = [PlainColumnNamesMigration, PluginConfigMigration, PluginOutputEnvironmentMigration, PluginEventDeliveriesMigration, PluginSessionMigration, PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration, PluginSettingEnvironmentsMigration, PluginRowsEnvironmentIndexMigration]
     handlers = [ChangePluginServiceHandler, LogPluginLineHandler, RefreshPluginConfigHandler, PrunePluginDeliveriesHandler, RunPluginCommandHandler, SendPluginStepLineHandler, DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,
                 RecordPluginFaultHandler, ClearPluginFaultsHandler, AddPluginOutputHandler,
                 ClearPluginQueueFileHandler]

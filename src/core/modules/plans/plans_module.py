@@ -1,3 +1,4 @@
+from core.modules.plans.migrations.m012_environment_index import PlanContextReadsEnvironmentIndexMigration
 from engine.skill.skill_declaration import SkillDeclaration
 from engine.module.model_declaration import ALL_SUBCOMMANDS
 from core.modules.plans.migrations.m008_plan_context_reads import PlanContextReadsMigration
@@ -133,7 +134,7 @@ class PlansModule(Module):
               SkillDeclaration("journal-planning", "Build a thorough plan with real steps in each phase, one task per step, and a brief that can be carried out alone; read it before you make a plan or a phase", keywords=("plan", "phases"), commands=("plan make", "phase make"))]
     models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]), ModelDeclaration(PlanContextRead, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PlanWait, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(CheckpointReach, commands=tuple([FailCheckpoint]), excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(CheckpointPass, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration, CheckpointsMigration, CheckpointReachSourceMigration]
+    migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration, CheckpointsMigration, CheckpointReachSourceMigration, PlanContextReadsEnvironmentIndexMigration]
     handlers = [CheckPlanHandler, RecordCheckpointsHandler, StartCheckpointRunHandler, WaitPlanHandler, AssignPlanHandler, RecordPlanAgentHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
     moves = [PlansMove]
     subcommands = [CheckPlanSubcommand, WaitPlanSubcommand, AssignPlanSubcommand, ChoosePlanFocusSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
