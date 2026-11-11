@@ -733,3 +733,25 @@ def expect_terminal_lines(typing, expected) -> None:
 def expect_value_7(text, story, text_2, text_3, text_4) -> None:
     actual = text in story.run(text_2, actor=story.user).output_text or text_3 not in story.run(text_4, actor=story.user).output_text
     assert actual, actual
+
+
+def test_a_message_is_typed_at_once_to_an_agent_back_from_a_compaction_a_person_started(new_story):
+    story = delivery_story(new_story)
+    typing = KeptTyping()
+    story.container.bind(TerminalTyping, typing)
+    story.hook("s-1", HookSamples.sample("compact").with_fields(accepts_lines=False).with_raw({"trigger": "manual"}))
+    story.hook("s-1", HookSamples.session_start().with_raw({"source": "compact"}))
+    post_message(story, "Are you back")
+    story.run_listeners()
+    expect_terminal_lines(typing, ["[journal] your context was compacted: read the overview and go on with your work", "[journal] new message 1"])
+
+
+def test_after_an_automatic_compaction_the_turn_goes_on_and_no_line_is_typed(new_story):
+    story = delivery_story(new_story)
+    typing = KeptTyping()
+    story.container.bind(TerminalTyping, typing)
+    story.hook("s-1", HookSamples.sample("compact").with_fields(accepts_lines=False).with_raw({"trigger": "auto"}))
+    story.hook("s-1", HookSamples.session_start().with_raw({"source": "compact"}))
+    post_message(story, "Are you back")
+    story.run_listeners()
+    expect_terminal_lines(typing, [])

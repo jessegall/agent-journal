@@ -32,7 +32,9 @@ COMPACTION_LIMIT_SECONDS = 600
 
 
 class HookCallQuery(Query[HookCall]):
-    """Reads hook calls, with the questions the drivers module's rules ask of an agent's recent hooks."""
+    """Reads hook calls, with the questions the drivers module's rules ask of an agent's recent hooks. An agent is
+    between turns when its last turn hook ended the turn, it was interrupted, or it came back from a compaction a
+    person or the journal started, which leaves it at an empty prompt; an automatic compaction goes on with its turn."""
 
     def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:
         super().__init__(database, tables, HookCall)
@@ -118,9 +120,16 @@ class HookCallQuery(Query[HookCall]):
         return call.creation_timestamp().elapsed_seconds(checked_at) >= IDLE_LIMIT_SECONDS or self.is_between_turns(agent_id)
 
     def is_between_turns(self, agent_id: int) -> bool:
-        """The agent's last turn hook ended its turn or it was interrupted; an agent in a turn is never between turns, however long it is silent."""
         call = self.latest_turn_call(agent_id)
-        return call is not None and ((call.hook in IDLE_HOOKS and call.answer == HookAnswer.ALLOWED and not call.is_compaction_start) or call.is_interrupted)
+        if call is None:
+            return False
+        if call.is_compaction_start:
+            return call.answer == HookAnswer.ALLOWED and self.is_after_manual_compaction(agent_id)
+        return (call.hook in IDLE_HOOKS and call.answer == HookAnswer.ALLOWED) or call.is_interrupted
+
+    def is_after_manual_compaction(self, agent_id: int) -> bool:
+        compaction = self.latest_compaction(agent_id)
+        return compaction is not None and compaction.is_manual_compaction
 
     def is_compacting(self, agent_id: int, checked_at: Timestamp) -> bool:
         call = self.kept.read_newest(self.table.name, self.agent(agent_id).matching(Among("hook", (*TURN_HOOKS, HookEventName.COMPACT))).newest().first,
