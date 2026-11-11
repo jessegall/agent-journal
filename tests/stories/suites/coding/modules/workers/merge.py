@@ -356,3 +356,14 @@ def test_reading_one_task_does_not_mark_other_tasks_logs_as_read(new_story):
     story.expect_rows(worktree.logs_read_at is None)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_rows(story.container.get(Queries).query(Worktree).find(worktree.id).logs_read_at is not None)
+
+
+def test_an_explained_merge_checks_the_rows_and_merges_nothing(checked_work):
+    story, repository, worker = checked_work
+    repository.checkout(ENVIRONMENT_BRANCH)
+    tip = repository.tip(ENVIRONMENT_BRANCH)
+    story.run(f"worker merge {agent_number(story, worker.id)} --explain", actor=story.agent)
+    worktree = story.story_rows(Worktree, session_agent_id=worker.id)[-1]
+    story.expect_rows(repository.tip(ENVIRONMENT_BRANCH) == tip, worktree.merged_at is None, worktree.removed_at is None, detail=str(worktree))
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_rows(repository.tip(ENVIRONMENT_BRANCH) != tip)

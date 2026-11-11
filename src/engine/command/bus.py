@@ -70,10 +70,17 @@ class Bus:
         handler, explanation = self.handler(command), Explanation()
         try:
             with self.scopes.command_scope(handler.disabled_scopes, actor, environment_id), self.database.transaction():
-                handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, None, self.scopes.environment_id or environment_id, explanation))
+                self.explained(handler, command, Context(actor, self.clock.timestamp(), command, skipped_guards, None, self.scopes.environment_id or environment_id, explanation))
                 raise ExplanationRollbackError()
         except ExplanationRollbackError:
             return explanation
+
+    @staticmethod
+    def explained(handler: Handler[Command[object], object], command: Command[object], context: Context) -> None:
+        if handler.runs_once:
+            handler.check_rows(command, context.actor)
+            return
+        handler.handle(command, context)
 
     def dispatch(self, command: Command[R], context: Context) -> R:
         if not self.database.has_transaction and (command.lock or not self.database.nested):
