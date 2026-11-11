@@ -1,6 +1,7 @@
 from enum import Enum
 
 from engine.enums.setting_type import SettingType
+from engine.setting.number_rule import NumberRule
 from engine.setting.setting_value import SettingValue
 
 
@@ -30,6 +31,13 @@ class ProcessSetting(Enum):
                                 SettingType.NUMBER, default=300)
     LOOK_SECONDS = SettingValue("look-seconds", "Seconds before an agent is asked to look", "Seconds a test run prints nothing while it uses processor time before its agent is asked to read its output.",
                                 SettingType.NUMBER, default=900)
+    FIRST_OUTPUT_SECONDS = SettingValue("first-output-seconds", "Seconds before a silent run is reported", "Seconds a run may print nothing before its agent is told.",
+                                        SettingType.NUMBER, default=30, rule=NumberRule(1))
+    STOPPED_WRITING_SECONDS = SettingValue("stopped-writing-seconds", "Seconds before a run that stopped printing is reported",
+                                           "Seconds a run that printed may stay silent before its agent is told.", SettingType.NUMBER, default=120, rule=NumberRule(1))
+    SPARSE_SECONDS = SettingValue("sparse-seconds", "Seconds between lines of a sparse run",
+                                  "Average seconds between prints, over the last five, from which a run counts as printing too little.", SettingType.NUMBER, default=30,
+                                  rule=NumberRule(1))
     RUN_BATCH_SIZE =SettingValue("run-batch-size", "Runs at once", "How many queued runs go at once on this machine; the others wait for a spot. Reads and edits never wait.",
                                   SettingType.NUMBER, default=2)
     MAIN_RUNS_USE_SLOTS = SettingValue("main-runs-take-slots", "Main agent runs take spots", "When on, the main agent's runs count against the runs at once, so fewer queued runs start; none is ever stopped.",
