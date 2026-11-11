@@ -57,6 +57,9 @@ stays kept on the same agent number and session until retired.
   tasks. A dispatch is refused when a compatible idle worker can take those tasks. Use `--fresh "<why>"` on dispatch
   only when a separate session is needed; its reason stays with the new worktree.
 - `journal worker merge <number> --up-to <task or commit>` takes in the worker's handed-in tasks up to that point while it goes on with its next ones; their proofs must be checked first, and its later merge brings only the rest.
+- `journal worker dispatch --take-over <number> --tier <tier>` starts a fresh worker, on its profile as it is now, in
+  the place of a stopped worker: it takes over that worker's open worktree with its commits, proofs and files, the tasks
+  it held and its plan, and goes on where it stopped. Then ask the person to retire the stopped worker.
 - `journal agent retire <number> --reason "<why>"` asks the person to retire a stopped worker for good; the worker
   is kept until the person agrees, since an agent is never retired by an agent. A retired worker retains its history and transcript but
   can never resume or receive another job. Dirty files or unmerged work prevent retirement; settle

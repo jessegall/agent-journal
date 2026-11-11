@@ -11,6 +11,11 @@ from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
 from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from engine.subcommand.output import Output
+from engine.cli.agent_number import AgentNumber
+from engine.scope.scopes import Scopes
+from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_rows import AgentRows
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
 from suites.coding.modules.workers.support.test_command_entry import TEST_COMMAND_EXAMPLE, TestCommandEntry
 from suites.coding.modules.workers.support.plan_worker_tasks import PlanWorkerTasks
@@ -18,23 +23,24 @@ from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 
 
 class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
-    """`journal worker dispatch (<task> [<task> ...] | --plan <plan> [--phase <phase>]) [--model <model> |
-    --tier <tier>] [--profile <profile>] [--name <name>] [--no-sandbox] [--library-link <folder>]
-    [--library-copy <folder>]`: a worker for the tasks, or for the open tasks of a plan or of one of its
-    phases, which it takes one by one."""
+    """`journal worker dispatch (<task> [<task> ...] | --plan <plan> [--phase <phase>] | --take-over <worker>)
+    [--model <model> | --tier <tier>] [--profile <profile>] [--name <name>] [--no-sandbox] [--library-link
+    <folder>] [--library-copy <folder>]`: a worker for the tasks, for the open tasks of a plan or of one of
+    its phases, which it takes one by one, or in the place of a stopped worker, in its open worktree."""
 
     cli_name = "worker"
     name = "dispatch"
     outward = True
     background = True
 
-    def __init__(self, home: JournalHome, plan_tasks: PlanWorkerTasks) -> None:
-        self.home, self.plan_tasks = home, plan_tasks
+    def __init__(self, home: JournalHome, plan_tasks: PlanWorkerTasks, agents: AgentRows, worktrees: WorktreeQuery, scopes: Scopes) -> None:
+        self.home, self.plan_tasks, self.agents, self.worktrees, self.scopes = home, plan_tasks, agents, worktrees, scopes
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("task_ids", type=int, nargs="*")
         parser.add_argument("--plan", type=int, default=None, help="hand the worker the open tasks of this plan, in its order, instead of listed tasks")
         parser.add_argument("--phase", type=int, default=None, help="with --plan, only the tasks of this phase")
+        parser.add_argument("--take-over", type=AgentNumber, default=None, help="a stopped worker whose open worktree, tasks and plan the new worker takes over")
         parser.add_argument("--library-link", action="append", default=[], help="a folder of the environment to link into the worktree")
         parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into the worktree")
         parser.add_argument("--program", default="", help="the agent program the worker runs; the dispatching agent's own when not commands")
@@ -51,11 +57,23 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
     def command(self, arguments: Namespace, caller: Caller) -> DispatchWorker:
         if arguments.session and not arguments.no_program:
             raise Refusal("--session is the session of a program that is not started", "add --no-program")
-        task_ids = self.picked(arguments)
+        taken_from = self.stopped_worker(arguments, caller)
+        task_ids = self.taken_over_tasks(taken_from) if taken_from is not None else self.picked(arguments)
         commands = TestCommandEntry.parsed(arguments.test_command)
         if not commands and caller.actor.type is ActorType.AGENT:
             raise Refusal("a worker gets the test commands it may run", TEST_COMMAND_EXAMPLE)
-        return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], arguments.model, arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program, sandboxed=not arguments.no_sandbox, test_commands=commands)
+        return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], arguments.model, arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program, sandboxed=not arguments.no_sandbox, test_commands=commands, taken_from=taken_from.id if taken_from is not None else None)
+
+    def stopped_worker(self, arguments: Namespace, caller: Caller) -> Agent | None:
+        if arguments.take_over is None:
+            return None
+        if arguments.task_ids or arguments.plan is not None:
+            raise Refusal("a worker that takes over goes on with the stopped worker's tasks", "drop the task numbers and --plan")
+        with self.scopes.opened(caller.read_actor_id, caller.environment_id):
+            return self.agents.find(arguments.take_over)
+
+    def taken_over_tasks(self, stopped: Agent) -> tuple[int, ...]:
+        return (self.worktrees.required_worker_worktree(stopped.id).task_id,)
 
     def picked(self, arguments: Namespace) -> tuple[int, ...]:
         if arguments.plan is None:

@@ -19,6 +19,8 @@ class WorktreeLifecycle(Lifecycle):
     merge = Move("merge", [WorktreeState.DELIVERED], WorktreeState.MERGED)
     change_cut_libraries = Move("change_cut_libraries", [WorktreeState.CUT], WorktreeState.CUT)
     change_delivered_libraries = Move("change_delivered_libraries", [WorktreeState.DELIVERED], WorktreeState.DELIVERED)
+    take_over_cut = Move("take_over_cut", [WorktreeState.CUT], WorktreeState.CUT)
+    take_over_delivered = Move("take_over_delivered", [WorktreeState.DELIVERED], WorktreeState.DELIVERED)
     fail = Move("fail", [WorktreeState.CUT], WorktreeState.FAILED)
     abandon = Move("abandon", (WorktreeState.CUT, WorktreeState.DELIVERED), WorktreeState.ABANDONED)
     remove = Move("remove", (WorktreeState.MERGED, WorktreeState.ABANDONED), WorktreeState.REMOVED)

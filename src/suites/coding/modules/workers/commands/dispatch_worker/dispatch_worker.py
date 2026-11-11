@@ -14,7 +14,7 @@ class DispatchWorker(Command[WorkerLaunch]):
     program commands or else the dispatching agent's own, on the model commands; more tasks may be
     delegated to it, which it takes after the first. Its profile and given name show on its card. A person
     may give it the session of a program that is not started, so the hooks of that session are the
-    worker's."""
+    worker's. A worker that takes another's place goes on in the stopped worker's open worktree instead."""
 
     lock = False
 
@@ -34,3 +34,4 @@ class DispatchWorker(Command[WorkerLaunch]):
     starts_program: bool = True
     sandboxed: bool = True
     test_commands: tuple[TestCommandEntry, ...] = ()
+    taken_from: int | None = None
