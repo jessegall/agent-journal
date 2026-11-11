@@ -10,7 +10,7 @@ from core.modules.agents.models.agent import AGENTS_TABLE, PID_FIELD, Agent
 
 SESSION_FIELD = "session"
 PROGRAM_FIELD = "program"
-from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
+from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from core.modules.agents.support.agent_program import AgentProgram
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 
@@ -29,13 +29,13 @@ class EndedAgentProgramListener(CommitListener[AgentEnded]):
     run_order = PROGRAM_STOP_RUN_ORDER
     disabled_scopes = [ActorScope]
 
-    def __init__(self, program: AgentProgram, log: EventLog, sessions: AgentLaunchGuard) -> None:
-        self.program, self.log, self.sessions = program, log, sessions
+    def __init__(self, program: AgentProgram, log: EventLog, policy: DispatchPolicy) -> None:
+        self.program, self.log, self.policy = program, log, policy
 
     def handle(self, event: AgentEnded, logged: LoggedEvent) -> None:
         if not self.needs_stop(event.row, logged):
             return
-        with self.sessions.lock(event.row.session) as available:
+        with self.policy.lock(event.row.session) as available:
             if available:
                 self.stop_program(event.row, self.log.row_events_past(RowHistory(AGENTS_TABLE, event.row.id), logged.id))
 

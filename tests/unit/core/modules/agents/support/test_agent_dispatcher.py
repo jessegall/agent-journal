@@ -16,6 +16,8 @@ from core.modules.agents.support.agent_dispatcher import ENDED_ROW_TEXT, OPENED_
 from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from core.modules.agents.support.agent_program import AgentProgram
+from core.modules.agents.support.agent_stops import AgentStops
+from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.agents.support.program_exit import ProgramExit
 from core.modules.agents.testing.fake_launcher import FakeLauncher
@@ -88,7 +90,7 @@ class Parts:
             launcher, program, link, providers, self.repository, POLICY, SimpleNamespace(running=lambda: open_agents),
             SimpleNamespace(current=lambda agent_id: SimpleNamespace(end_reason=end_reason)), SimpleNamespace(find=lambda environment_id: SimpleNamespace(id=1, name="main")),
             SimpleNamespace(query=lambda model: FakeAgentQuery(recently_ended)), SimpleNamespace(timestamp=lambda: NOW),
-            SimpleNamespace(write=lambda level, text: self.log_lines.append(text)))
+            SimpleNamespace(write=lambda level, text: self.log_lines.append(text)), DispatchPolicy(AgentLaunchGuard(), AgentStops()))
 
     def launcher(self, *answers: bytes) -> FakeLauncher:
         return FakeLauncher.listening(self.folder / "launcher", request_count=len(answers), answers=answers)

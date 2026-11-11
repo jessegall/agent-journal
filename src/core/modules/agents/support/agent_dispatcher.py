@@ -23,6 +23,7 @@ from core.modules.agents.support.agent_program import AgentProgram
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.agent_sessions import AgentSessions
 from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy
+from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.agents.support.program_exit import ProgramExit
 from core.modules.agents.support.standing import Standing
@@ -35,15 +36,17 @@ FINISHED_REASON = "its program ended"
 
 
 class AgentDispatcher:
-    """Owns the life of an agent's program: it starts it, says whether it runs, and ends it, and it is the one
-    place that writes the end of an agent's row. The standing is worked out from the launcher, the recorded
-    process of an open row and the row, each read once. A stop ends the row only after the program is gone.
-    One round of reconcile opens a row that ended while its program runs and ends an open row whose started
+    """Owns the life of an agent's program: it starts it, says whether it runs, and ends it, and it is the
+    one place that writes the end of an agent's row. The standing is worked out from the launcher, the
+    recorded process of an open row and the row, each read once. A stop leaves a program alone while a start
+    of its session has the lock of the suite's policy, and ends the row only after the program is gone. One
+    round of reconcile opens a row that ended while its program runs and ends an open row whose started
     program is gone, and writes each correction to the system log."""
 
     def __init__(self, launcher: AgentLauncher, program: AgentProgram, link: LauncherLink, providers: Providers, repository: Repository,
                  policy: CurrentAgentPolicy, agents: AgentRows, sessions: AgentSessions, environments: EnvironmentRows, queries: Queries, clock: Clock,
-                 system_log: SystemLogWriter) -> None:
+                 system_log: SystemLogWriter, dispatch_policy: DispatchPolicy) -> None:
+        self.dispatch_policy = dispatch_policy
         self.launcher, self.program, self.link, self.providers, self.repository, self.policy = launcher, program, link, providers, repository, policy
         self.agents, self.sessions, self.environments, self.queries, self.clock, self.system_log = agents, sessions, environments, queries, clock, system_log
 
@@ -51,7 +54,9 @@ class AgentDispatcher:
         return self.launcher.hand(agent, self.environments.find(agent.environment_id), command).dispatch
 
     def stop(self, agent: Agent, reason: StopReason, context: Context) -> Stopped:
-        self.program.stop(agent)
+        with self.dispatch_policy.lock(agent.session) as available:
+            if available:
+                self.program.stop(agent)
         if self.has_program(agent):
             return Stopped.PROGRAM_RUNNING
         if agent.ended_at is None:

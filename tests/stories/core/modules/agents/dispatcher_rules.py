@@ -5,10 +5,13 @@ import pytest
 from engine.caller.process_table import ProcessTable
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.dispatch_policy import DispatchPolicy
+from core.modules.agents.support.receivers import Receivers
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.helpers.support.helper_resume import HelperResume
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, StartedHelper, helper_agent, resumable_session
 from tests.stories.core.modules.helpers.helper_reports import LINES
+from tests.stories.core.modules.agents.support.strict_policy import STRICT_POLICY, StrictPolicy
 from tests.stories.core.support.agent_labels import agent_number
 
 PROGRAM_RUNS = b"running\n"
@@ -85,3 +88,12 @@ def test_557_the_standing_of_an_agent_reads_the_same_in_its_own_command_in_the_l
     story.expect_success(f'agent stop {number} --environment main', actor=story.user)
     story.expect_text(f"agent show {number} --environment main", "standing: ended", "reason: stopped by a person", actor=story.user)
     story.expect_rows("standing: ended" in standing(story), "reason: stopped by a person" in standing(story), detail=standing(story))
+
+
+def test_554_a_suite_binds_its_own_policy_which_decides_that_an_ended_agent_is_not_gone_for_good_and_starts_no_program(new_story):
+    story = new_story(STRICT_POLICY, fixture=EndedHelper)
+    asked = launcher(story, request_count=0)
+    policy, helper = story.container.get(DispatchPolicy), helper_agent(story)
+    with policy.lock(helper.session) as available:
+        story.expect_rows(isinstance(policy, StrictPolicy), not available, policy.is_wanted(helper), detail=f"the bound policy is {type(policy).__name__}")
+    story.expect_rows(story.container.get(Receivers).receiver(helper.id).id == helper.id, asked.requests == [], detail=str(asked.requests))
