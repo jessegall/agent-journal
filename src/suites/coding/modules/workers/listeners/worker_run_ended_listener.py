@@ -18,6 +18,7 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
 from engine.driver.nudger import Nudger
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
+from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RUN_ENDED
@@ -68,8 +69,11 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
                 return WORKER_OPERATION_NEXT.nudge(task=task.id, output=process.id)
             if self.proof_queue.tests_pending(worktree):
                 return WORKER_OPERATION_TESTS.nudge(task=task.id, output=process.id)
-        if operation.name is WorkerOperationName.MERGE and worktree is not None and not self.worktrees.merged_since(operation.worker_id, process.creation_timestamp()):
+        if operation.name is WorkerOperationName.MERGE and self.is_unmerged(worktree, process):
             return WORKER_OPERATION_CONFLICT.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, operation.worker_id), output=process.id)
         if operation.name is WorkerOperationName.JOB and self.agents.find(operation.worker_id).paused_at is not None:
             return WORKER_OPERATION_PAUSED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, operation.worker_id))
         return operation.name.finished_nudge(self.numbers.number(AGENT_MODEL_NAME, operation.worker_id), process.id)
+
+    def is_unmerged(self, worktree: Worktree | None, process: Process) -> bool:
+        return worktree is not None and not self.worktrees.has_merge(worktree.session_agent_id, process.creation_timestamp())

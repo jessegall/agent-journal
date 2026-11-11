@@ -67,6 +67,9 @@ class Worktree(Removable, EnvironmentScoped, Model):
     def remove(self, timestamp: Timestamp, actor: Actor) -> "Worktree":
         return self.moved(WorktreeLifecycle.remove, removed_at=timestamp)
 
+    def merged_tasks(self) -> tuple[int, ...]:
+        return tuple(int(task_id) for task_id in self.merged_task_ids.split(",") if task_id)
+
     @property
     def is_merge_ready(self) -> bool:
         return self.state is WorktreeState.DELIVERED and self.merge_ready_at is not None and self.returned_at is None

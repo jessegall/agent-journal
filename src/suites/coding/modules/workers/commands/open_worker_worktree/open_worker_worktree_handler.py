@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from suites.coding.modules.workers.support.worktree_git import WORKTREES_FOLDER
+
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -14,7 +16,6 @@ from suites.coding.modules.workers.support.opened_worker import OpenedWorker
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.support.worker_opening_rows import WorkerOpeningRows
 
-WORKTREES_FOLDER = Path(".journal") / "worktrees"
 
 
 class OpenWorkerWorktreeHandler(Handler[OpenWorkerWorktree, OpenedWorker]):

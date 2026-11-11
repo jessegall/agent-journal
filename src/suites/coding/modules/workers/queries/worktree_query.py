@@ -10,7 +10,7 @@ from engine.query.conditions.minimum import Minimum
 from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.support.replaced_rows import replaced_rows
+from suites.coding.modules.workers.queries.replaced_rows import replaced_rows
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
 
@@ -48,13 +48,13 @@ class WorktreeQuery(Query[Worktree]):
     def worker_worktrees(self, agent_id: int) -> tuple[Worktree, ...]:
         return tuple(self.with_removed().filter(session_agent_id=agent_id).oldest().all_rows())
 
-    def merged_since(self, agent_id: int, since: Timestamp) -> bool:
-        return self.with_removed().filter(session_agent_id=agent_id).matching(Minimum("merged_at", since.text)).exists()
+    def has_merge(self, agent_id: int, earliest_at: Timestamp) -> bool:
+        return self.with_removed().filter(session_agent_id=agent_id).matching(Minimum("merged_at", earliest_at.text)).exists()
 
     def open_worktrees(self) -> list[Worktree]:
         return list(self.kept.scoped_read(self.table.name, lambda: tuple(self.oldest().all_rows()), "removed_at IS NULL", name="workers.open_worktrees"))
 
-    def in_folders(self, folders: Sequence[str]) -> tuple[Worktree, ...]:
+    def folder_worktrees(self, folders: Sequence[str]) -> tuple[Worktree, ...]:
         return tuple(self.with_removed().matching(Among("folder", folders)).oldest().all_rows())
 
     def all_worktrees(self) -> tuple[Worktree, ...]:

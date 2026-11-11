@@ -36,13 +36,13 @@ class WorkerCheckouts(AgentProjectCheckouts):
         return self.checkout(agent.parent_id) if agent.parent_id is not None else super().checkout(agent_id)
 
     def file_checkout(self, agent_id: int, path: Path) -> Checkout:
-        containing = self.worktrees.in_folders(self.folders_holding(path))
+        containing = self.worktrees.folder_worktrees(self.parent_folders(path))
         if not containing:
             return self.checkout(agent_id)
         deepest = max(containing, key=lambda worktree: (len(Path(worktree.folder).resolve().parts), worktree.removed_at is None, worktree.id))
         return self.worktree_checkout(deepest, self.queries.query(Agent).find(agent_id))
 
-    def folders_holding(self, path: Path) -> tuple[str, ...]:
+    def parent_folders(self, path: Path) -> tuple[str, ...]:
         real = path.parent.resolve() / path.name
         spellings = [path.absolute(), real]
         for environment in self.environments.all():

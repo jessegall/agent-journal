@@ -1,7 +1,7 @@
 from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
-from suites.coding.modules.workers.support.replaced_rows import replaced_rows
+from suites.coding.modules.workers.queries.replaced_rows import replaced_rows
 
 
 class AffectedTestRows:

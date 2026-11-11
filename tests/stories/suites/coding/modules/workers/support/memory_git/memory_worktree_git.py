@@ -5,6 +5,7 @@ from pathlib import Path, PurePosixPath
 
 from engine.errors.refusal import Refusal
 from engine.enums.file_status import FileStatus
+from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
 from suites.coding.modules.workers.support.worker_folder_runs import WorkerFolderRuns
@@ -29,6 +30,13 @@ class MemoryWorktreeGit(WorktreeGit):
 
     def test_checkout(self, worktree: Worktree) -> str:
         return worktree.folder
+
+    def base_checkout(self, environment: Environment, name: str) -> str:
+        return environment.folder
+
+    @staticmethod
+    def base_folder(environment: Environment, name: str) -> str:
+        return environment.folder
 
     def folder_files(self, folder: str | Path) -> MemoryFolder:
         return MemoryFolder(self.history.root, Path(folder))

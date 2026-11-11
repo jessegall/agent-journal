@@ -17,6 +17,8 @@ BUILD_TEST = "python tests/build.py"
 SHIP_TEST = "python tests/ship.py"
 CHECKPOINT_FLAG = " --checkpoint"
 PICKER = "python3 pick.py"
+CART_COMMAND = "pytest tests/cart.py"
+TOTALS_COMMAND = "pytest tests/totals.py"
 OUTLINE = "plan outline 1 --environment main"
 WAITING_PHASE_WORDS = "waits for the tests of phase 1"
 PASSED_LOG = "tests passed at checkpoint phase 1"
@@ -91,6 +93,7 @@ def ended_plan(new_story, monkeypatch) -> StoryWorker:
     return worker
 
 
+@pytest.mark.real_git
 def test_172_the_journal_starts_the_run_itself_on_the_head_of_the_base_branch_and_moves_no_checkout(running_checkpoint):
     worker, repository = running_checkpoint, running_checkpoint.repository
     folders = {process.folder for process in worker.started_processes()}
@@ -129,7 +132,7 @@ def test_175_the_run_makes_the_selected_run_over_the_files_changed_in_the_window
 def test_176_a_proof_with_no_test_is_not_run_and_the_main_agent_has_its_one_line(running_checkpoint):
     worker = running_checkpoint
     lines = [line for line in worker.main_agent_lines() if UNTESTED_LINE in line]
-    worker.story.expect_rows(len(worker.started) == 3, proofs_by_task(worker)[2]["state"] == "checked", len(lines) == 1, detail=f"{run_lines(worker)}, {worker.main_agent_lines()}")
+    worker.story.expect_rows(sorted(run_lines(worker)) == sorted([BUILD_TEST, CART_COMMAND, TOTALS_COMMAND]), len(lines) == 1, detail=f"{run_lines(worker)}, {worker.main_agent_lines()}")
 
 
 def test_177_a_pass_checks_the_proofs_logs_on_each_task_of_the_window_and_tells_the_main_agent_once(running_checkpoint):
@@ -198,7 +201,7 @@ def test_193_a_plan_cancelled_while_a_run_goes_stops_the_run_and_tells_the_main_
     story.expect_rows(states == {ProcessState.STOPPED}, PASSED_LINE not in lines, "failed" not in lines, detail=f"{states}, {lines}")
 
 
-def test_194_a_run_whose_tests_a_server_update_left_queued_is_started_by_the_sweep_of_waiting_tests(committed_window, monkeypatch):
+def test_194_the_proof_tests_of_a_run_a_server_update_left_queued_are_started_by_the_sweep_of_waiting_tests(committed_window, monkeypatch):
     worker = committed_window
     with monkeypatch.context() as stopped_server:
         stopped_server.setattr(WorkerTestListener, "start_next", lambda listener, logged: None)
@@ -206,4 +209,4 @@ def test_194_a_run_whose_tests_a_server_update_left_queued_is_started_by_the_swe
     unstarted_count = len(worker.started)
     StalledWorkerTestRuns()(worker.story.container)
     worker.story.run_listeners()
-    worker.story.expect_rows(unstarted_count == 0, len(worker.started) == 3, rows(worker, REACHES)[0]["state"] == "running", detail=f"{unstarted_count}, {run_lines(worker)}")
+    worker.story.expect_rows(unstarted_count == 1, len(worker.started) == 3, rows(worker, REACHES)[0]["state"] == "running", detail=f"{unstarted_count}, {run_lines(worker)}")

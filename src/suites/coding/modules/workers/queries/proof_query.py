@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import Self
 
 from engine.database.database import Database
@@ -7,7 +8,7 @@ from engine.query.conditions.among import Among
 from engine.query.query import Query
 from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES, ProofState
 from suites.coding.modules.workers.models.proof import Proof
-from suites.coding.modules.workers.support.replaced_rows import replaced_rows
+from suites.coding.modules.workers.queries.replaced_rows import replaced_rows
 from suites.coding.modules.workers.conditions.proof_task_testing import ProofTaskTesting
 
 
@@ -36,6 +37,9 @@ class ProofQuery(Query[Proof]):
 
     def waiting_proofs(self, worktree_id: int) -> Self:
         return self.worktree_proofs(worktree_id).filter(state=ProofState.SHOWN)
+
+    def committed_proofs(self, task_ids: Sequence[int]) -> Self:
+        return self.filter(state=ProofState.COMMITTED).matching(Among("task_id", task_ids))
 
     def delivered_proofs(self, worktree_id: int) -> Self:
         return self.waiting_proofs(worktree_id).matching(ProofTaskTesting())

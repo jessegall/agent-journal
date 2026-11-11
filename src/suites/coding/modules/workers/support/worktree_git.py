@@ -13,6 +13,7 @@ from pathlib import Path, PurePosixPath
 from engine.file.conflict_files import ConflictFiles
 from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from engine.errors.refusal import Refusal
+from core.modules.environments.models.environment import Environment
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.worktree import Worktree
 from engine.enums.file_status import FileStatus
@@ -22,6 +23,7 @@ from suites.coding.modules.workers.support.worktree_file_change import WorktreeF
 from suites.coding.modules.workers.support.worktree_start import WorktreeStart
 from suites.coding.modules.workers.support.worker_folder_runs import WorkerFolderRuns
 
+WORKTREES_FOLDER = Path(".journal") / "worktrees"
 GIT_LIMIT_SECONDS = 60
 CHECKOUT_LIMIT_SECONDS = 300
 BUILD_LIMIT_SECONDS = 300
@@ -50,7 +52,8 @@ PUBLISHED_FOLDERS = (".claude", ".agents")
 class WorktreeGit:
     """Runs timed Git operations on worker branches and worktrees. Every worktree of a project shares one
     stash stack, so a worktree finds its stash by its own message, and a lock holds the stack during a push or
-    a drop."""
+    a drop. Tests run in a detached checkout of their own, of a worktree's commit or of the head of the
+    environment's branch, so no checkout anybody works in is moved."""
 
     def __init__(self, runs: WorkerFolderRuns) -> None:
         self.runs = runs
@@ -94,18 +97,27 @@ class WorktreeGit:
         return self.checked(folder, GIT_LIMIT_SECONDS, "merge-base", base_branch, branch).stdout.strip()
 
     def test_checkout(self, worktree: Worktree) -> str:
-        folder = self.test_folder(worktree)
         commit = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "HEAD").stdout.strip()
-        libraries = self.library_names(worktree)
+        return self.detached_checkout(worktree.folder, self.test_folder(worktree), commit, self.library_names(worktree))
+
+    def base_checkout(self, environment: Environment, name: str) -> str:
+        commit = self.tip(environment.folder, environment.branch)
+        return self.detached_checkout(environment.folder, self.base_folder(environment, name), commit, self.dependency_folders(environment.folder))
+
+    @staticmethod
+    def base_folder(environment: Environment, name: str) -> str:
+        return str(Path(environment.folder) / WORKTREES_FOLDER / f"{environment.name}-tests" / name)
+
+    def detached_checkout(self, source: str, folder: str, commit: str, libraries: tuple[str, ...]) -> str:
         if not Path(folder, ".git").exists():
             Path(folder).parent.mkdir(parents=True, exist_ok=True)
-            self.checked(worktree.folder, CHECKOUT_LIMIT_SECONDS, "worktree", "add", "--detach", folder, commit)
+            self.checked(source, CHECKOUT_LIMIT_SECONDS, "worktree", "add", "--detach", folder, commit)
         else:
             self.checked(folder, CHECKOUT_LIMIT_SECONDS, "reset", "--hard", commit)
             self.checked(folder, GIT_LIMIT_SECONDS, "clean", "-fd", *(flag for name in libraries for flag in ("-e", name)))
         for name in libraries:
             if not Path(folder, name).exists():
-                Path(folder, name).symlink_to(Path(worktree.folder, name).resolve(), target_is_directory=True)
+                Path(folder, name).symlink_to(Path(source, name).resolve(), target_is_directory=True)
         return folder
 
     @staticmethod
@@ -253,16 +265,16 @@ class WorktreeGit:
 
     @contextmanager
     def without_instruction_files(self, folder: str) -> Generator[None]:
-        written = [line[len(SKIP_WORKTREE_MARK):] for line in self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "--", *INSTRUCTION_FILES).stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
-        kept = {name: self.git_folder(folder) / f"{name}.kept" for name in written}
-        for name in written:
+        skipped_names = [line[len(SKIP_WORKTREE_MARK):] for line in self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "--", *INSTRUCTION_FILES).stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
+        kept = {name: self.git_folder(folder) / f"{name}.kept" for name in skipped_names}
+        for name in skipped_names:
             FileAccess.shared().replace(Path(folder) / name, kept[name])
             self.checked(folder, GIT_LIMIT_SECONDS, "update-index", "--no-skip-worktree", "--", name)
             self.checked(folder, GIT_LIMIT_SECONDS, "restore", "--", name)
         try:
             yield
         finally:
-            for name in written:
+            for name in skipped_names:
                 FileAccess.shared().replace(kept[name], Path(folder) / name)
                 self.git(folder, GIT_LIMIT_SECONDS, "update-index", "--skip-worktree", "--", name)
 

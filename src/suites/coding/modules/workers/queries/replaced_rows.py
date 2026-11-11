@@ -1,3 +1,5 @@
+"""Gives a kept list of rows without the row of one id, with the present rows in its place, in id order."""
+
 from collections.abc import Sequence
 from typing import TypeVar
 
@@ -7,5 +9,4 @@ M = TypeVar("M", bound=Model)
 
 
 def replaced_rows(rows: Sequence[M], row_id: int, present: Sequence[M]) -> tuple[M, ...]:
-    """The rows without the one with this id, and the present ones in its place, in id order."""
     return tuple(sorted([row for row in rows if row.id != row_id] + list(present), key=lambda row: row.id))
