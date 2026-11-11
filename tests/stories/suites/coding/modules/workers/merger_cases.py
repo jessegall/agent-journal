@@ -62,6 +62,10 @@ class MergerCase:
         self.story.run_listeners()
         return self.story.run(f"agent-line list --agent {self.worker.id}").output_text
 
+    def worker_messages(self) -> str:
+        self.story.run_listeners()
+        return "\n".join(message.text for message in self.story.container.get(Queries).query(Message).filter(target_agent_id=self.worker.id).oldest().all_rows())
+
     def main_messages(self) -> tuple[Message, ...]:
         return tuple(self.story.container.get(Queries).query(Message).filter(session_agent_id=self.merger.id).all_rows())
 

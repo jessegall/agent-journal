@@ -40,7 +40,7 @@ class WorkerAskFactsQuery:
             return None
         later_phase_ids = [row.id for row in self.queries.query(Phase).filter(plan_id=phase.plan_id).matching(Minimum("position", phase.position)).all_rows()]
         task_ids = [place.task_id for place in self.queries.query(PhaseTask).matching(Among("phase_id", later_phase_ids)).all_rows()]
-        tasks = self.queries.query(Task).matching(Among("id", task_ids)).matching(Among("state", UNFINISHED_STATES)).oldest().all_rows()
+        tasks = [task for task in self.queries.query(Task).find_many(sorted(task_ids)) if task.state in UNFINISHED_STATES]
         blockers: dict[int, list[int]] = {task.id: [] for task in tasks}
         for dependency in self.queries.query(OpenDependency).matching(Among("task_id", list(blockers))).all_rows():
             blockers[dependency.task_id].append(dependency.dependency_id)

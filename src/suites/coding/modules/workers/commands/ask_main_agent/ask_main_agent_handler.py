@@ -44,8 +44,8 @@ class AskMainAgentHandler(Handler[AskMainAgent, None]):
                 self.questions.close(line, AskOutcome.FORWARDED, FORWARDED_TEXT, context)
 
     def refuse_repeated(self, worker_id: int) -> None:
-        line = self.escalations.forwarded_line(worker_id)
-        if line is not None and line.closed_at is not None and self.escalations.is_open(worker_id):
+        line = self.escalations.open_line(worker_id)
+        if line is not None and line.closed_at is not None:
             worker = AgentLabel.from_row_id(worker_id, self.numbers, "worker").text
             raise Refusal(f"{worker} is with the main agent since {line.closed_at.value.strftime(CLOCK_FORMAT)} (line {line.id}): you need not tell it again")
 

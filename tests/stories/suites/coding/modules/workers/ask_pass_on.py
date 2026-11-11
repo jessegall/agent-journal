@@ -38,7 +38,7 @@ def test_a_forwarded_ask_is_said_to_the_worker_and_leaves_its_wait_open_so_it_ma
     ask(case)
     case.story.advance(timedelta(minutes=31))
     watch(case)
-    case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, waits_of(case.story, case.worker)[0].state is WaitState.OPEN, FORWARDED_LINE in case.worker_lines(), detail=case.worker_lines())
+    case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, waits_of(case.story, case.worker)[0].state is WaitState.OPEN, FORWARDED_LINE in case.worker_messages(), detail=case.worker_messages())
 
 
 def test_only_after_the_forward_time_the_journal_writes_the_question_itself_even_while_the_merger_reads(case):
@@ -78,7 +78,7 @@ def test_a_message_of_the_main_agent_to_the_worker_ends_the_escalation_so_a_late
     case.story.advance(timedelta(minutes=31))
     watch(case)
     case.story.expect_success(f'message send "Use the compiler in tools/bin" --to agent:{agent_number(case.story, case.worker.id)}', actor=case.story.agent)
-    case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, "Use the compiler in tools/bin" in case.worker_lines(), detail=case.worker_lines())
+    case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, "Use the compiler in tools/bin" in case.worker_messages(), detail=case.worker_messages())
     ask(case, SECOND_QUESTION, AskTopic.TESTS)
     case.story.advance(timedelta(minutes=31))
     watch(case)
@@ -95,10 +95,10 @@ def test_the_sixth_ask_of_a_group_is_saved_and_forwarded_with_its_own_words_and_
 
 
 def test_the_forward_time_cannot_be_set_below_the_answer_time(case):
-    expect_refused_with(case.story, f"setting set {FORWARD_MINUTES} 5 --project", "after 5 minutes", "before the 10 minutes", actor=case.story.agent)
-    expect_refused_with(case.story, f"setting set {ANSWER_MINUTES} 45 --project", "after 30 minutes", "before the 45 minutes", actor=case.story.agent)
-    case.story.expect_success(f"setting set {FORWARD_MINUTES} 60 --project", actor=case.story.agent)
-    case.story.expect_success(f"setting set {ANSWER_MINUTES} 45 --project", actor=case.story.agent)
+    expect_refused_with(case.story, f"setting set {FORWARD_MINUTES} 5 --project", "after 5 minutes", "before the 10 minutes", actor=case.story.user)
+    expect_refused_with(case.story, f"setting set {ANSWER_MINUTES} 45 --project", "after 30 minutes", "before the 45 minutes", actor=case.story.user)
+    case.story.expect_success(f"setting set {FORWARD_MINUTES} 60 --project", actor=case.story.user)
+    case.story.expect_success(f"setting set {ANSWER_MINUTES} 45 --project", actor=case.story.user)
 
 
 VISITS_LIMIT = "journal.suites.coding.workers.ask-visits-limit"

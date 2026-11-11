@@ -1,6 +1,7 @@
 from dataclasses import replace
 from datetime import timedelta
 
+from engine.actor.actor import Actor
 from engine.cli.row_numbers import RowNumbers
 from engine.command.bus import Bus
 from engine.command.context import Context
@@ -28,7 +29,7 @@ class WorkerQuestions:
     """The questions workers asked the merger and how each ended. A question is a merger line with a
     worker; it is open until it gets one outcome, and this is the one place that gives it. Closing a
     question ends the wait the worker opened for it, writes a line in the log of its task and, unless the
-    worker is gone, sends the worker the outcome as a message, which wakes it. A forwarded question keeps
+    worker is gone, sends the worker the outcome as a message of the journal, which wakes it. A forwarded question keeps
     the wait open, since the main agent still answers it."""
 
     def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, numbers: RowNumbers) -> None:
@@ -56,7 +57,7 @@ class WorkerQuestions:
 
     def close(self, line: MergerLine, outcome: AskOutcome, text: str, context: Context) -> None:
         closed = self.record(line, outcome, text, context)
-        self.bus.dispatch(SendAgentMessage(closed.worker_id, outcome.worker_line(text), is_counted=True), context)
+        self.bus.dispatch(SendAgentMessage(closed.worker_id, outcome.worker_line(text), is_counted=True), replace(context, actor=Actor.core()))
 
     def close_oldest(self, worker_id: int, outcome: AskOutcome, text: str, context: Context) -> None:
         lines = self.worker_lines(worker_id)
