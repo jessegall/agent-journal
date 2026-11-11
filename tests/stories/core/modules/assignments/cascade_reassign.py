@@ -2,7 +2,7 @@ import pytest
 
 from tests.stories.core.modules.assignments.support.assignable_chain import CHAIN
 from tests.stories.core.modules.assignments.support.assignment_fixtures import YardWithBays, chain_worker, parcel_ids
-from tests.stories.core.modules.assignments.support.assignment_reads import actors_by_row, assigned, assignment_of
+from tests.stories.core.modules.assignments.support.assignment_reads import row_actors, assigned, assignment_of
 
 HAND_GIVEN_PARCEL = 2
 INHERIT = f"assign parcel {HAND_GIVEN_PARCEL} --from-parent --environment main"
@@ -25,8 +25,8 @@ def test_assigning_the_yard_to_x_moves_inherited_rows_and_keeps_the_parcel_given
     second_id, third_id = chain_worker(shared_yard, 2).id, chain_worker(shared_yard, 3).id
     summary = assigned(shared_yard, "yard 1", third_id)
     expected = {parcel_id: third_id for parcel_id in (*parcel_ids(1), *parcel_ids(2))} | {HAND_GIVEN_PARCEL: second_id}
-    shared_yard.expect_rows(actors_by_row(shared_yard, "yard") == {1: third_id}, actors_by_row(shared_yard, "bay") == {1: third_id, 2: third_id},
-                            actors_by_row(shared_yard, "parcel") == expected, "kept 1 parcel (given by hand)" in summary, detail=summary)
+    shared_yard.expect_rows(row_actors(shared_yard, "yard") == {1: third_id}, row_actors(shared_yard, "bay") == {1: third_id, 2: third_id},
+                            row_actors(shared_yard, "parcel") == expected, "kept 1 parcel (given by hand)" in summary, detail=summary)
 
 
 def test_override_takes_the_hand_given_parcel_too_and_it_is_inherited_again(shared_yard):
@@ -44,7 +44,7 @@ def test_from_parent_gives_a_parcel_back_to_its_bays_actor(shared_yard):
 
 def test_from_parent_on_a_row_with_no_parent_assignment_is_refused(yard):
     yard.expect_refusal(INHERIT, f"parcel {HAND_GIVEN_PARCEL} has no assigned parent to inherit from", actor=yard.user)
-    yard.expect_rows(actors_by_row(yard, "parcel") == {}, detail=str(actors_by_row(yard, "parcel")))
+    yard.expect_rows(row_actors(yard, "parcel") == {}, detail=str(row_actors(yard, "parcel")))
 
 
 def test_a_parcel_inherited_from_something_else_is_kept(yard):
@@ -52,4 +52,4 @@ def test_a_parcel_inherited_from_something_else_is_kept(yard):
     assigned(yard, "bay 1", second_id)
     summary = assigned(yard, "yard 1", first_id)
     expected = {parcel_id: second_id for parcel_id in parcel_ids(1)} | {parcel_id: first_id for parcel_id in parcel_ids(2)}
-    yard.expect_rows(actors_by_row(yard, "bay") == {1: second_id, 2: first_id}, actors_by_row(yard, "parcel") == expected, "kept 1 bay (given by hand)" in summary, detail=summary)
+    yard.expect_rows(row_actors(yard, "bay") == {1: second_id, 2: first_id}, row_actors(yard, "parcel") == expected, "kept 1 bay (given by hand)" in summary, detail=summary)

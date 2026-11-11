@@ -10,7 +10,7 @@ def assignment_rows(story: Story) -> list[dict]:
     return json.loads(story.run(ASSIGNMENTS, actor=story.user).output_text)["rows"]
 
 
-def actors_by_row(story: Story, model: str) -> dict[int, int]:
+def row_actors(story: Story, model: str) -> dict[int, int]:
     """The actor of each assigned row of a model that one actor holds, by the row's id."""
     return {row["subject_id"]: row["actor_id"] for row in assignment_rows(story) if row["subject_model"] == model}
 
@@ -19,7 +19,7 @@ def assignment_of(story: Story, model: str, row_id: int) -> dict:
     return next(row for row in assignment_rows(story) if row["subject_model"] == model and row["subject_id"] == row_id)
 
 
-def events_named(story: Story, name: str) -> list[dict]:
+def logged_events(story: Story, name: str) -> list[dict]:
     rows = json.loads(story.run(EVENTS, actor=story.user).output_text)["rows"]
     return sorted((row for row in rows if row["event"] == name), key=lambda row: row["id"])
 
