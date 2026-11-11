@@ -17,11 +17,12 @@ STOP_REQUIREMENT_COMMANDS = ("memory", "message", "wait", "refusal", "agent-bloc
 
 
 class ContextHardStopRule(DriverRule):
-    """An agent whose context has passed the second limit may run no more tools, so it stops, whatever task it
-    holds, and its context is compacted at once: the compaction is typed once. A shell line made only of the journal commands a stop can be refused for still runs, such as
-    reading a message or weighing the memories, and so does the watch of an output: without them the agent could
-    neither run a tool nor stop. While a typed compaction has not started, this rule types no second one: a tool
-    use shows the agent is in a turn, so the typed line still waits in the program."""
+    """An agent whose context has passed the second limit may run no more tools, so it stops, whatever
+    task it holds, and its context is compacted at once: the compaction is typed once. A shell line made
+    only of the journal commands a stop can be refused for still runs, such as reading a message or
+    weighing the memories, and so does the watch of an output: without them the agent could neither run a
+    tool nor stop. While a typed compaction has not started, this rule types no second one: a tool use
+    shows the agent is in a turn, so the typed line still waits in the program."""
 
     name = "workers.context-limit-hard-stop"
     hook = HookEventName.PRE_TOOL_USE
@@ -35,7 +36,7 @@ class ContextHardStopRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        is_stop_requirement = tool is not None and tool.shell is not None and tool.shell.has_only_journal_commands(*STOP_REQUIREMENT_COMMANDS)
+        is_stop_requirement = tool is not None and tool.shell is not None and tool.shell.is_journal_command_line(*STOP_REQUIREMENT_COMMANDS)
         if is_stop_requirement or self.watch_call.is_watch(hook) or not self.limit_check.exceeds_hard_limit(hook.agent_id):
             return RuleAnswer.allowed()
         refusal = RuleAnswer.refused(CONTEXT_HARD_STOP.nudge())

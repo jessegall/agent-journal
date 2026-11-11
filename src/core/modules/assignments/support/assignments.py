@@ -24,17 +24,19 @@ from core.modules.assignments.support.cascade_walk import CascadeWalk
 
 
 class Assignments:
-    """Gives rows of assignable models to actors and reads who holds a row. It is the one place that writes the
-    assignments table. Only a person or an agent that has not ended can be given a row. A row of a model that one actor holds
-    passes from its holder to the next in one change; a row of a model that several actors hold gains a
-    holder. An assigned row also assigns the children its model declares: a child with no assignment inherits
-    one, a child that inherited from the row's last assignment follows to the new one, and a child given by
-    hand or inherited from another row is left as it is unless the command overrides it. Unassigning a row
-    also removes the assignments inherited from it, each before the one it names, and leaves those given by
-    hand. A row can give up a hand-given assignment and inherit its parent's instead. A child made or
-    linked after its parent was assigned inherits the parent's assignment when it has none, and a child whose
-    link to a parent is removed loses the assignment it inherited from that parent. An actor kept in a column
-    of the row is copied as it stands, also an agent that has ended, while that column still exists. Every assignment is saved and deleted through the repository, so each is an event."""
+    """Gives rows of assignable models to actors and reads who holds a row. It is the one place that
+    writes the assignments table. Only a person or an agent that has not ended can be given a row. A row
+    of a model that one actor holds passes from its holder to the next in one change; a row of a model
+    that several actors hold gains a holder. An assigned row also assigns the children its model declares:
+    a child with no assignment inherits one, a child that inherited from the row's last assignment follows
+    to the new one, and a child given by hand or inherited from another row is left as it is unless the
+    command overrides it. Unassigning a row also removes the assignments inherited from it, each before
+    the one it names, and leaves those given by hand. A row can give up a hand-given assignment and
+    inherit its parent's instead. A child made or linked after its parent was assigned inherits the
+    parent's assignment when it has none, and a child whose link to a parent is removed loses the
+    assignment it inherited from that parent. An actor kept in a column of the row is copied as it stands,
+    also an agent that has ended, while that column still exists. Every assignment is saved and deleted
+    through the repository, so each is an event."""
 
     def __init__(self, queries: Queries, repository: Repository, rows: AssignableRows) -> None:
         self.queries, self.repository, self.rows = queries, repository, rows
