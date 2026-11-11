@@ -48,6 +48,12 @@ class CheckpointWindows:
     def unfinished_ids(self, checkpoint: Phase) -> tuple[int, ...]:
         return tuple(place.task_id for place in self.window(checkpoint) if place.state not in FINISHED_STATES)
 
+    def unfinished_following_ids(self, checkpoint: Phase) -> tuple[int, ...]:
+        return tuple(place.task_id for place in self.places if place.phase_position > checkpoint.position and place.state not in FINISHED_STATES)
+
+    def following_checkpoint(self, checkpoint: Phase) -> Phase | None:
+        return next((phase for phase in self.checkpoint_phases() if phase.position > checkpoint.position), None)
+
     def testing_ids(self, checkpoint: Phase) -> tuple[int, ...]:
         return tuple(place.task_id for place in self.window(checkpoint) if place.state is TaskState.TESTING)
 

@@ -21,7 +21,7 @@ class PhaseTestDeferrals:
     def count(self, phase_id: int) -> int:
         return self.queries.query(PhaseTestDeferral).filter(phase_id=phase_id).count()
 
-    def left_out(self, phase_id: int) -> tuple[PhaseTestDeferral, ...]:
+    def omitted(self, phase_id: int) -> tuple[PhaseTestDeferral, ...]:
         return tuple(self.queries.query(PhaseTestDeferral).filter(phase_id=phase_id).matching(IsNull("closed_at")).oldest().all_rows())
 
     def due(self, phase_id: int) -> tuple[PhaseTestDeferral, ...]:
@@ -32,9 +32,9 @@ class PhaseTestDeferrals:
         if not phase.test_command:
             source_phases = self.rows.required_by_id(Phase, sorted({deferral.phase_id for deferral in due}))
             return tuple(OwnTestCommand.parse(source_phases[deferral.phase_id].test_command).with_paths(deferral.path_words()).text() for deferral in due)
-        left_out_paths = tuple(path for deferral in self.left_out(phase.id) for path in deferral.path_words())
+        omitted_paths = tuple(path for deferral in self.omitted(phase.id) for path in deferral.path_words())
         due_paths = tuple(path for deferral in due for path in deferral.path_words())
-        command = OwnTestCommand.parse(phase.test_command).without(left_out_paths).text() if left_out_paths else phase.test_command
+        command = OwnTestCommand.parse(phase.test_command).without(omitted_paths).text() if omitted_paths else phase.test_command
         return tuple([OwnTest(command, due_paths).command])
 
     def close_due(self, phase_id: int, context: Context) -> None:
