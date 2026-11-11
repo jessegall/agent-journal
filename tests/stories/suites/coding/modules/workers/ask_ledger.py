@@ -230,12 +230,12 @@ def test_a_person_retiring_a_worker_with_tasks_left_leaves_the_merger_one_line_a
         story.expect_success(f'task make "Job {number}" --brief "Do job {number}" --environment main', actor=story.agent)
         story.expect_success(f"worker send --wait {agent_number(story, case.worker.id)} --task {number}", actor=story.agent)
     ask(case)
-    story.expect_success(f"agent stop {agent_number(story, case.worker.id)}", actor=story.user)
+    story.expect_success(f"agent end {case.worker.id}", actor=case.worker)
     story.expect_success(f'agent retire {agent_number(story, case.worker.id)} --reason "no longer needed"', actor=story.user)
     story.run_listeners()
-    lines = [line.text for line in story.container.get(Queries).query(MergerLine).oldest().all_rows() if "was retired" in line.text]
+    lines = [line.text for line in story.container.get(Queries).query(MergerLine).oldest().all_rows() if "ended with" in line.text]
     story.expect_rows(len(lines) == 1, all(f"task:{number}" in lines[0] for number in range(1, 6)), questions(story)[0].outcome is AskOutcome.MOOT,
-                      "was retired" not in case.main_lines(), detail=f"{lines} | {case.main_lines()}")
+                      "ended with" not in case.main_lines(), detail=f"{lines} | {case.main_lines()}")
 
 
 def test_an_overdue_ask_of_a_worker_whose_worktree_is_gone_closes_as_moot_and_wakes_nobody(case):

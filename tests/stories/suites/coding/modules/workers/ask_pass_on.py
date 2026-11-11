@@ -77,6 +77,7 @@ def test_a_message_of_the_main_agent_to_the_worker_ends_the_escalation_so_a_late
     ask(case)
     case.story.advance(timedelta(minutes=31))
     watch(case)
+    case.story.advance(timedelta(minutes=1))
     case.story.expect_success(f'message send "Use the compiler in tools/bin" --to agent:{agent_number(case.story, case.worker.id)}', actor=case.story.agent)
     case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, "Use the compiler in tools/bin" in case.worker_messages(), detail=case.worker_messages())
     ask(case, SECOND_QUESTION, AskTopic.TESTS)
