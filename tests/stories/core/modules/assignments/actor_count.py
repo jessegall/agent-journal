@@ -48,20 +48,21 @@ def test_assigning_a_twice_on_a_many_actor_model_is_refused_already_assigned(dep
     depot.expect_rows(actor_ids(depot, "pallet") == [depot.user.id], detail=str(actor_ids(depot, "pallet")))
 
 
-class TestAPalletOfTwoActors:
-    @pytest.fixture
-    def shared(self, depot):
-        assigned(depot, "pallet 1", worker(depot).id)
-        assigned(depot, "pallet 1", depot.user.id)
-        return depot
+@pytest.fixture
+def shared(depot):
+    assigned(depot, "pallet 1", worker(depot).id)
+    assigned(depot, "pallet 1", depot.user.id)
+    return depot
 
-    def test_unassign_from_one_actor_removes_only_that_actor(self, shared):
-        shared.expect_success(f"unassign pallet 1 --from {worker(shared).id} --environment main", actor=shared.user)
-        shared.expect_rows(actor_ids(shared, "pallet") == [shared.user.id], detail=str(actor_ids(shared, "pallet")))
 
-    def test_unassign_without_an_actor_removes_every_actor(self, shared):
-        shared.expect_success("unassign pallet 1 --environment main", actor=shared.user)
-        shared.expect_rows(actor_ids(shared, "pallet") == [], detail=str(actor_ids(shared, "pallet")))
+def test_unassign_from_one_actor_removes_only_that_actor(shared):
+    shared.expect_success(f"unassign pallet 1 --from {worker(shared).id} --environment main", actor=shared.user)
+    shared.expect_rows(actor_ids(shared, "pallet") == [shared.user.id], detail=str(actor_ids(shared, "pallet")))
+
+
+def test_unassign_without_an_actor_removes_every_actor(shared):
+    shared.expect_success("unassign pallet 1 --environment main", actor=shared.user)
+    shared.expect_rows(actor_ids(shared, "pallet") == [], detail=str(actor_ids(shared, "pallet")))
 
 
 def test_unassigning_a_row_nobody_has_is_a_quiet_success(depot):
