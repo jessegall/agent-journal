@@ -40,72 +40,9 @@
 4: src/suites/coding/modules/workers/support/merger_nudges.py: collects more than 3 classes, functions and values
 4: src/suites/coding/modules/workers/support/worker_nudges.py: collects more than 3 classes, functions and values
 4: src/suites/coding/modules/workers/support/worker_settings.py: collects more than 3 classes, functions and values
+4: src/suites/coding/modules/workers/support/worker_test_limit_nudges.py: collects more than 3 classes, functions and values
 4: src/suites/coding/support/coding_nudges.py: collects more than 3 classes, functions and values
 4: src/suites/coding/support/coding_settings.py: collects more than 3 classes, functions and values
-6: tests/unit/core/modules/agents/test_agent_program.py: tests src/core/modules/agents/support/agent_program.py
-6: tests/unit/core/modules/claude_code/providers/test_claude_inbox.py: tests src/core/modules/claude_code/providers/support/claude_inbox.py
-6: tests/unit/core/modules/claude_code/providers/test_claude_trust.py: tests src/core/modules/claude_code/providers/support/claude_trust.py
-6: tests/unit/core/modules/codex/providers/test_codex_token_count.py: tests src/core/modules/codex/providers/support/codex_token_count.py
-6: tests/unit/core/modules/codex/providers/test_codex_trust.py: tests src/core/modules/codex/providers/support/codex_trust.py
-6: tests/unit/core/modules/codex/test_codex_session_effort.py: tests src/core/modules/codex/providers/support/codex_session_effort.py
-6: tests/unit/core/modules/codex/test_codex_turn_effort.py: tests src/core/modules/codex/providers/support/codex_turn_effort.py
-6: tests/unit/core/modules/demo/test_demo_folders.py: tests src/core/modules/demo/support/demo_folders.py
-6: tests/unit/core/modules/developer/test_private_data_scan.py: tests src/core/modules/developer/support/private_data_scan.py
-6: tests/unit/core/modules/developer/test_system_log.py: tests src/core/modules/developer/support/system_log.py
-6: tests/unit/core/modules/docking/test_dock_item_query.py: tests src/core/modules/docking/queries/dock_item_query.py
-6: tests/unit/core/modules/documents/test_mention_refs.py: tests src/core/modules/documents/support/mention_refs.py
-6: tests/unit/core/modules/drivers/test_block_stop_rule.py: tests src/core/modules/drivers/rules/block_stop_rule.py
-6: tests/unit/core/modules/helpers/test_exit_reasons.py: tests src/core/modules/helpers/support/exit_reasons.py
-6: tests/unit/core/modules/helpers/test_helper_spend.py: tests src/core/modules/helpers/support/helper_spend.py
-6: tests/unit/core/modules/helpers/test_program_shares.py: tests src/core/modules/helpers/support/program_shares.py
-6: tests/unit/core/modules/helpers/test_program_states.py: tests src/core/modules/helpers/support/program_states.py
-6: tests/unit/core/modules/library/test_library_address.py: tests src/core/modules/library/support/library_address.py
-6: tests/unit/core/modules/library/test_library_sync_tick.py: tests src/core/modules/library/ticks/library_sync_tick.py
-6: tests/unit/core/modules/memories/test_active_memory_query.py: tests src/core/modules/memories/queries/active_memory_query.py
-6: tests/unit/core/modules/memories/test_memory.py: tests src/core/modules/memories/models/memory.py
-6: tests/unit/core/modules/messages/test_message_text.py: tests src/core/modules/messages/support/message_text.py
-6: tests/unit/core/modules/messages/test_repeated_messages.py: tests src/core/modules/messages/support/repeated_messages.py
-6: tests/unit/core/modules/overview/test_overview_section.py: tests src/core/modules/overview/support/overview_section.py
-6: tests/unit/core/modules/plans/test_plan_approval.py: tests src/core/modules/plans/support/plan_approval.py
-6: tests/unit/core/modules/plugins/test_login_path.py: tests src/core/modules/plugins/support/login_path.py
-6: tests/unit/core/modules/plugins/test_plugin_manifest_files.py: tests src/core/modules/plugins/support/plugin_manifest_files.py
-6: tests/unit/core/modules/plugins/test_plugin_program.py: tests src/core/modules/plugins/support/plugin_program.py
-6: tests/unit/core/modules/plugins/test_plugin_queue.py: tests src/core/modules/plugins/support/plugin_queue.py
-6: tests/unit/core/modules/plugins/test_plugin_socket.py: tests src/core/modules/plugins/support/plugin_socket.py
-6: tests/unit/core/modules/processes/test_foreground_limit.py: tests src/core/modules/processes/support/foreground_limit.py
-6: tests/unit/core/modules/processes/test_group_cpu_time.py: tests src/core/modules/processes/support/group_cpu_time.py
-6: tests/unit/core/modules/processes/test_output_folder.py: tests src/core/modules/processes/support/output_folder.py
-6: tests/unit/core/modules/processes/test_process.py: tests src/core/modules/processes/models/process.py
-6: tests/unit/core/modules/processes/test_process_lifecycle.py: tests src/core/modules/processes/models/lifecycles/process_lifecycle.py
-6: tests/unit/core/modules/processes/test_reader_judge.py: tests src/core/modules/processes/support/reader_judge.py
-6: tests/unit/core/modules/processes/test_reader_run.py: tests src/core/modules/processes/support/reader_run.py
-6: tests/unit/core/modules/processes/test_run_visibility.py: tests src/core/modules/processes/support/run_visibility.py
-6: tests/unit/core/modules/processes/test_step_tally.py: tests src/core/modules/processes/support/step_tally.py
-6: tests/unit/core/modules/processes/test_streaming_hints.py: tests src/core/modules/processes/support/streaming_hints.py
-6: tests/unit/core/modules/reviews/test_review_report.py: tests src/core/modules/reviews/support/review_report.py
-6: tests/unit/core/modules/skills/test_skill_declaration.py: tests src/engine/skill/skill_declaration.py
-6: tests/unit/core/modules/skills/test_skill_digest.py: tests src/engine/skill/skill_digest.py
-6: tests/unit/core/modules/triggers/test_cron_line.py: tests src/core/modules/triggers/commands/support/cron_line.py
-6: tests/unit/core/modules/usage/test_context_share.py: tests src/core/modules/settings/bindings/support/context_share.py
-6: tests/unit/core/modules/usage/test_status_files.py: tests src/core/modules/usage/support/status_files.py
-6: tests/unit/engine/chat/test_mark_check.py: tests src/engine/module/mark_check.py
-6: tests/unit/engine/cli/test_bookkeeping_subcommands.py: tests src/engine/bookkeeping/bookkeeping_subcommands.py
-6: tests/unit/engine/command/test_move_handler.py: tests src/engine/command/handlers/move_handler.py
-6: tests/unit/engine/registry/test_setting_rule_text.py: tests src/engine/setting/setting_rule_text.py
-6: tests/unit/engine/upgrade/test_move_check.py: tests src/engine/module/move_check.py
-6: tests/unit/engine/viewer/test_window_extensions.py: tests src/engine/module/window_extensions.py
-6: tests/unit/install/test_hook_timeouts.py: tests src/engine/driver/hook_timeouts.py
-6: tests/unit/scripts/test_move_check.py: tests src/engine/module/move_check.py
-6: tests/unit/server/test_hook_database.py: tests src/server/hook/hook_database.py
-6: tests/unit/server/test_hook_sender.py: tests src/server/hook/hook_sender.py
-6: tests/unit/server/test_queue_round_yield.py: tests src/server/hook/queue_round_yield.py
-6: tests/unit/server/test_server_queue.py: tests src/server/hook/server_queue.py
-6: tests/unit/server/test_window_priorities.py: tests src/server/viewer/window_priorities.py
-6: tests/unit/suites/coding/modules/checks/test_check_output_percent.py: tests src/suites/coding/modules/checks/commands/support/check_output_percent.py
-6: tests/unit/suites/coding/modules/workers/test_ask_topic.py: tests src/suites/coding/models/enums/ask_topic.py
-6: tests/unit/suites/coding/modules/workers/test_worker_steps.py: tests src/suites/coding/modules/workers/support/worker_steps.py
-6: tests/unit/suites/coding/modules/workers/test_worker_test_arguments.py: tests src/suites/coding/modules/workers/support/worker_test_arguments.py
-6: tests/unit/suites/coding/modules/workers/test_worker_test_round.py: tests src/suites/coding/modules/workers/support/worker_test_round.py
 7: src/core/modules/agents/commands/remove_instruction_import/support/instruction_import_question.py: is imported from src/core/modules/agents/commands/warn_instruction_imports
 7: src/core/modules/aliases/commands/set_alias_silence/support/alias_silence.py: is imported from src/core/modules/aliases/listeners
 7: src/core/modules/aliases/commands/support/alias_saved_subcommand.py: is imported from src/core/modules/aliases

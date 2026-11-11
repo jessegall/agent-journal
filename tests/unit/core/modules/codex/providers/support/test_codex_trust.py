@@ -6,7 +6,7 @@ import pytest
 from engine.enums.hook_trust import HookTrust
 from core.modules.codex.providers.support.codex_trust import CodexTrust
 
-FIXTURES = Path(__file__).parent / "fixtures"
+FIXTURES = Path(__file__).parent.parent / "fixtures"
 HOOK_NAMES = ["SessionStart", "PreToolUse", "Stop"]
 
 

@@ -116,6 +116,8 @@ class WrongOwnerSurvey:
             files_by_stem[path.stem].append(path)
         apart = []
         for test in self.test_files:
+            if test.parts[:3] == ("tests", "unit", "scripts"):
+                continue
             tested_stem = test.stem.removeprefix("test_")
             mirrored = Path("src", *test.parts[2:-1], f"{tested_stem}.py")
             if len(files_by_stem[tested_stem]) == 1 and mirrored != files_by_stem[tested_stem][0]:

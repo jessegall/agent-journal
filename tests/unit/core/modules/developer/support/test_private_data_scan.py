@@ -58,7 +58,7 @@ def test_a_real_name_or_address_is_a_finding(line, category):
 
 
 def test_no_tracked_file_holds_private_data():
-    root = Path(__file__).parents[5]
+    root = Path(__file__).parents[6]
     tracked = subprocess.check_output(["git", "ls-files", "-z"], cwd=root).decode().split("\0")
     scan, matched = PrivateDataScan(), []
     for name in filter(None, tracked):
