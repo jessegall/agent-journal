@@ -9,7 +9,7 @@ from engine.event.created import Created
 from engine.command.context import Context
 
 
-class MainAgentGuard(Guard[Created[Question]]):
+class QuestionAskerGuard(Guard[Created[Question]]):
     """Allows only the main agent to ask the person a question."""
 
     name = "questions.asked-by-the-main-agent"

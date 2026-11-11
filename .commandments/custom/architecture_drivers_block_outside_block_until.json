@@ -18,7 +18,7 @@
                 "fileMatches": "/documents/rules/open_document_rule\\.py$"
             },
             {
-                "fileMatches": "/rules/(panic_file_rule|private_corpus_rule|unknown_command_rule|plugin_program_rule|silent_start_rule|graphify_search_rule|main_file_write_rule|protected_folder_rule)\\.py$"
+                "fileMatches": "/rules/(panic_file_rule|private_corpus_rule|unknown_command_rule|plugin_program_rule|silent_start_rule|graphify_search_rule|checkout_write_without_code_rule|protected_folder_rule)\\.py$"
             },
             {
                 "fileMatches": "/rules/(runner_rewrite_rule|profile_skill_first_rule|access_rule|native_subagent_rule|allowed_command_types_rule|allowed_tools_rule|denied_programs_rule|denied_tools_rule|no_full_test_run_rule|saved_command_rule)\\.py$"

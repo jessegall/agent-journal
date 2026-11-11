@@ -16,7 +16,7 @@ ALLOWED_COMMANDS = tuple(category.value for category in (CommandCategory.READ, C
                                                           CommandCategory.VERSION_CONTROL))
 
 
-class MainFileWriteRule(DriverRule):
+class CheckoutWriteWithoutCodeRule(DriverRule):
     """While the main agent writes no code, it writes no file of the project checkout, by a file tool or a
     shell line; files outside the checkout, in the .journal folder (agent memory and worker worktrees) and
     journal commands stay allowed."""

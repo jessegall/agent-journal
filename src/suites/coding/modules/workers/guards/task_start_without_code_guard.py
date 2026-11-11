@@ -8,7 +8,7 @@ from suites.coding.modules.workers.support.coding_main_options import CodingMain
 from suites.coding.support.main_caller import MainCaller
 
 
-class MainTaskStartGuard(Guard[Moved[Task]]):
+class TaskStartWithoutCodeGuard(Guard[Moved[Task]]):
     """A main agent that writes no code starts no task itself; the task goes to a worker."""
 
     name = "coding.main-starts-no-task-without-code"

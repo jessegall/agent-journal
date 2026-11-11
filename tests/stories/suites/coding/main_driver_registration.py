@@ -1,8 +1,8 @@
-from suites.coding.modules.workers.rules.main_file_write_rule import MainFileWriteRule
+from suites.coding.modules.workers.rules.checkout_write_without_code_rule import CheckoutWriteWithoutCodeRule
 from suites.coding.modules.workers.rules.approved_plan_stop_rule import ApprovedPlanStopRule
 from suites.coding.modules.workers.rules.delivered_work_stop_rule import DeliveredWorkStopRule
 from suites.coding.modules.workers.rules.dispatch_allowance_rule import DispatchAllowanceRule
-from suites.coding.modules.workers.rules.helper_allowance_rule import HelperAllowanceRule
+from suites.coding.modules.workers.rules.read_only_helper_allowance_rule import ReadOnlyHelperAllowanceRule
 from suites.coding.modules.workers.rules.inactive_worker_stop_rule import InactiveWorkerStopRule
 from suites.coding.modules.workers.rules.merge_checkout_rule import MergeCheckoutRule
 from suites.coding.modules.workers.rules.orphan_worktree_rule import OrphanWorktreeRule
@@ -17,7 +17,7 @@ from tests.stories.support.story_checks import expect_absent_value
 
 TICK_AND_STOP_RULES = [SmallBatchRule, UnstartedWorkerRule, ApprovedPlanStopRule, DeliveredWorkStopRule, WorkerFileRule, MergeCheckoutRule,
                 OrphanWorktreeRule, WorkersOutRule, UnmergedWorkerRule, InactiveWorkerStopRule]
-SECOND_MAIN_RULES = [DispatchAllowanceRule, HelperAllowanceRule, MainFileWriteRule]
+SECOND_MAIN_RULES = [DispatchAllowanceRule, ReadOnlyHelperAllowanceRule, CheckoutWriteWithoutCodeRule]
 
 
 def test_main_driver_keeps_all_its_rules():

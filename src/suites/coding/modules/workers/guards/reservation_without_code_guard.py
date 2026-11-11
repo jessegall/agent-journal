@@ -10,7 +10,7 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
 
 
-class MainReservationGuard(Guard[Created[Assignment]]):
+class ReservationWithoutCodeGuard(Guard[Created[Assignment]]):
     """A main agent that writes no code cannot be given a task it does not hold; the task goes to a worker."""
 
     name = "coding.main-reserves-no-task-without-code"

@@ -12,7 +12,7 @@ from engine.setting.setting_values import SettingValues
 HELPER_START_ARGUMENTS = ("helper", "start")
 
 
-class HelperAllowanceRule(DriverRule):
+class ReadOnlyHelperAllowanceRule(DriverRule):
     """The main agent starts no read-only helpers while the setting main-starts-read-only-helpers is off."""
 
     name = "workers.helper-allowed"

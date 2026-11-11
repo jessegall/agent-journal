@@ -11,7 +11,7 @@ from suites.coding.support.stop_notices import FREE_PLACE_TEXT, UNFINISHED_TASKS
 from suites.coding.support.coding_nudges import FREE_WORKER_PLACE, OPEN_TASKS_WAIT, TASK_ASSIGNMENT, UNFINISHED_TASKS
 
 
-class MainStopRule(DriverRule):
+class StopWithOpenWorkRule(DriverRule):
     """A main agent that stops is handed the next task when it may work on it, and is held back while a task
     can still be sent to a worker and its work controls ask it to keep going; with nothing it can do it may
     stop. While a task can go to a worker and a place is free, a stop is held once for each state of the

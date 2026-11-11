@@ -11,7 +11,7 @@ from suites.coding.support.main_caller import MainCaller
 DESIGNER_PROFILE = "journal-designer"
 
 
-class MainHelperGuard(Guard[Created[Agent]]):
+class ReadOnlyHelperStartGuard(Guard[Created[Agent]]):
     """A main agent starts no read-only helper while read-only helpers are off, and no designer while the
     designer is off. The merger is governed by its own setting."""
 

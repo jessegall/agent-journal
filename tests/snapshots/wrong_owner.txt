@@ -10,16 +10,6 @@
 2: src/core/modules/drivers/support/driver_settings.py: SKIPS_NEED_APPROVAL is a key of helpers
 2: src/core/modules/settings/bindings/support/context_share.py: CONTEXT_LIMIT_ENABLED is a key of helpers
 2: src/core/modules/settings/bindings/support/context_share.py: CONTEXT_LIMIT_TOKENS is a key of helpers
-3: src/core/modules/questions/guards/main_agent_guard.py: its name says the main driver
-3: src/suites/coding/modules/workers/guards/main_dispatch_guard.py: its name says the main driver
-3: src/suites/coding/modules/workers/guards/main_helper_guard.py: its name says the main driver
-3: src/suites/coding/modules/workers/guards/main_merge_guard.py: its name says the main driver
-3: src/suites/coding/modules/workers/guards/main_reservation_guard.py: its name says the main driver
-3: src/suites/coding/modules/workers/guards/main_task_start_guard.py: its name says the main driver
-3: src/suites/coding/modules/workers/guards/merger_message_guard.py: its name says the merger driver
-3: src/suites/coding/modules/workers/rules/helper_allowance_rule.py: its name says the helper driver
-3: src/suites/coding/modules/workers/rules/main_file_write_rule.py: its name says the main driver
-3: src/suites/coding/modules/workers/rules/main_stop_rule.py: its name says the main driver
 4: src/core/modules/agents/support/report_nudges.py: collects more than 3 classes, functions and values
 4: src/core/modules/aliases/support/alias_nudges.py: collects more than 3 classes, functions and values
 4: src/core/modules/developer/support/developer_settings.py: collects more than 3 classes, functions and values
@@ -48,7 +38,6 @@
 4: src/core/modules/transcriptions/support/transcription_nudges.py: collects more than 3 classes, functions and values
 4: src/core/modules/voices/support/voices_settings.py: collects more than 3 classes, functions and values
 4: src/suites/coding/modules/workers/support/merger_nudges.py: collects more than 3 classes, functions and values
-4: src/suites/coding/modules/workers/support/test_limit_nudges.py: collects more than 3 classes, functions and values
 4: src/suites/coding/modules/workers/support/worker_nudges.py: collects more than 3 classes, functions and values
 4: src/suites/coding/modules/workers/support/worker_settings.py: collects more than 3 classes, functions and values
 4: src/suites/coding/support/coding_nudges.py: collects more than 3 classes, functions and values

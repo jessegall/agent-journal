@@ -7,7 +7,7 @@ from suites.coding.modules.workers.support.coding_main_options import CodingMain
 from suites.coding.support.main_caller import MainCaller
 
 
-class MainDispatchGuard(Guard[Created[Worktree]]):
+class DispatchAllowanceGuard(Guard[Created[Worktree]]):
     """A main agent starts no worker or worker worktree while it may not send workers."""
 
     name = "workers.main-sends-no-worker"

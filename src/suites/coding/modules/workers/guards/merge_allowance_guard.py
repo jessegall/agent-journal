@@ -8,7 +8,7 @@ from suites.coding.modules.workers.support.coding_main_options import CodingMain
 from suites.coding.support.main_caller import MainCaller
 
 
-class MainMergeGuard(Guard[Moved[Worktree]]):
+class MergeAllowanceGuard(Guard[Moved[Worktree]]):
     """A main agent merges no worker itself while it may not merge; the merger or a person takes the work in."""
 
     name = "workers.main-merges-no-worker"

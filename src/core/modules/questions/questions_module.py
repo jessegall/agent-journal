@@ -17,7 +17,7 @@ from core.modules.questions.queries.question_query import QuestionQuery
 from core.modules.questions.rules.question_answered_rule import QuestionAnsweredRule
 from core.modules.questions.rules.own_question_tool_rule import OwnQuestionToolRule
 from core.modules.questions.rules.question_closed_rule import QuestionClosedRule
-from core.modules.questions.guards.main_agent_guard import MainAgentGuard
+from core.modules.questions.guards.question_asker_guard import QuestionAskerGuard
 from core.modules.questions.guards.actor_options_guard import ActorOptionsGuard
 from core.modules.questions.listeners.open_questions_dock_listener import OpenQuestionsDockListener
 from core.modules.questions.listeners.question_answered_mark_listener import QuestionAnsweredMarkListener
@@ -59,7 +59,7 @@ class QuestionsModule(Module):
     moves = [QuestionsMove, QuestionLinksMove]
     subcommands = [AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand]
     handlers = [AskQuestionHandler, AnswerQuestionHandler]
-    guards = [MainAgentGuard, ActorOptionsGuard]
+    guards = [QuestionAskerGuard, ActorOptionsGuard]
     driver_rules = [QuestionAnsweredRule, QuestionClosedRule, OwnQuestionToolRule]
     marks = QUESTION_MARKS
     listeners = [OpenQuestionsDockListener, QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener]

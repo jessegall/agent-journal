@@ -10,7 +10,7 @@ from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
-class MergerMessageGuard(Guard[Created[Message]]):
+class MergeAdviceGuard(Guard[Created[Message]]):
     """The merger talks to a worker only through advice, which is counted; any other message to a worker is refused."""
 
     name = "workers.merger-message"
