@@ -30,6 +30,7 @@ from suites.coding.modules.workers.commands.send_worker.send_worker import SendW
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
 from suites.coding.modules.workers.support.work_units import WorkUnits
+from suites.coding.modules.workers.support.merge_return_text import merge_return_line
 
 class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     """Merges a checked worktree into its base branch in the environment's folder, in the order of doc 1101
@@ -112,7 +113,8 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
             self.bus.run_with_context(RecordMergeRequest(worktree.id, target_commit, branch_commit, worktree.folder), context)
         except Refusal as refusal:
             findings = f"{refusal.reason}: {refusal.suggestion}" if refusal.suggestion else refusal.reason
-            self.bus.run_with_context(SendWorker(worktree.session_agent_id, f"Your merge into {worktree.base_branch} was refused before anything was merged:\n{findings}\nFix it in your worktree and deliver again."), context)
+            reason = f"the merge into {worktree.base_branch} was refused before anything was merged: {findings}"
+            self.bus.run_with_context(SendWorker(worktree.session_agent_id, merge_return_line(reason, self.units.unit(worktree.session_agent_id))), context)
             return findings
         return ""
 
