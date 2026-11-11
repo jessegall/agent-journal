@@ -72,7 +72,7 @@ class UnblockerFacts:
         if plan.state not in FOLLOWED_STATES:
             return WaitingLine(task.id, WaitingReason.UNAPPROVED_PLAN, f"which is in plan {plan.id}, a plan that is {plan.state.value}")
         rows = self.plan_rows[plan.id]
-        checkpoint = min((row for row in rows if row.checkpoint and row.closed_at is None), key=lambda row: row.phase_position, default=None)
+        checkpoint = min((row for row in rows if row.is_untested_checkpoint), key=lambda row: row.phase_position, default=None)
         if checkpoint is not None and place.phase_position > checkpoint.phase_position:
             return WaitingLine(task.id, WaitingReason.CHECKPOINT, f"which is behind the checkpoint phase {checkpoint.phase_id} of plan {plan.id}")
         if place.phase_position > min(row.phase_position for row in rows if row.state in WORKING_STATES):

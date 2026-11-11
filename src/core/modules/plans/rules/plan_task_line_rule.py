@@ -12,7 +12,7 @@ from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.plan_progress import PlanProgress
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.support.focus.plan_focus import PlanFocus
-from core.modules.plans.support.plan_nudges import CHECKPOINT_FINISHED, PHASE_FINISHED, PLAN_FINISHED, PLAN_STALLED
+from core.modules.plans.support.plan_nudges import CHECKPOINT_REACHED, PHASE_FINISHED, PLAN_FINISHED, PLAN_STALLED
 from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES, TaskState
 from core.modules.tasks.models.task import Task
 
@@ -62,7 +62,7 @@ class PlanTaskLineRule(DriverRule):
         if self.unfinished("phase_id", place.phase_id).exists():
             return []
         phase = self.queries.query(Phase).find(place.phase_id)
-        declaration = CHECKPOINT_FINISHED if phase.checkpoint else PHASE_FINISHED
+        declaration = CHECKPOINT_REACHED if phase.checkpoint else PHASE_FINISHED
         return [declaration.nudge(plan=place.plan_id, phase=phase.title)]
 
     def unfinished(self, column: str, value: int) -> Query[PlanTask]:

@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from core.modules.plans.migrations.m001_plans import PlansTablesMigration
+from core.modules.plans.migrations.m010_checkpoints import CheckpointsMigration
 from core.modules.plans.models.plan_progress import PlanProgress
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.tasks.migrations.m001_tasks import TasksTablesMigration
@@ -40,7 +41,7 @@ class ViewTiming:
 
     def __init__(self) -> None:
         self.connection = sqlite3.connect(":memory:")
-        for statement in (*TasksTablesMigration.statements, *TaskDelegationMigration.statements, *PlansTablesMigration.statements, *(f"CREATE VIEW {name} AS {select}" for name, select in VIEWS)):
+        for statement in (*TasksTablesMigration.statements, *TaskDelegationMigration.statements, *PlansTablesMigration.statements, *CheckpointsMigration.statements[:-1], *(f"CREATE VIEW {name} AS {select}" for name, select in VIEWS)):
             self.connection.execute(statement)
         self.fill()
 

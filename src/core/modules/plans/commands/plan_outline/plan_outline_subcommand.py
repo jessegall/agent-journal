@@ -8,7 +8,7 @@ from core.modules.plans.support.plan_outlines import PlanOutlines
 
 
 class PlanOutlineSubcommand(ReadSubcommand[PlanOutline]):
-    """`journal plan outline <plan>`: the plan's phases, each with its tasks, in one answer."""
+    """`journal plan outline <plan>`: the plan's phases, each with its tasks, and how each checkpoint stands."""
 
     cli_name = "plan"
     name = "outline"
@@ -24,4 +24,5 @@ class PlanOutlineSubcommand(ReadSubcommand[PlanOutline]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PlanOutline):
-            output.write("\n".join(f"{phase.title}: {len(phase.tasks)} tasks" for phase in value.phases), value.json())
+            lines = [f"{phase.title}: {len(phase.tasks)} tasks" for phase in value.phases]
+            output.write("\n".join((*lines, *value.checkpoint_lines)), value.json())

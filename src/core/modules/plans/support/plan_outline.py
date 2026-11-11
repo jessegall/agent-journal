@@ -8,10 +8,12 @@ from core.modules.plans.support.plan_outline_json_record import PlanOutlineJsonR
 
 @dataclass(frozen=True)
 class PlanOutline:
-    """A plan's phases and tasks in order, holding only what a window draws of them."""
+    """A plan's phases and tasks in order, holding only what a window draws of them, with a line on how each
+    checkpoint stands."""
 
     plan_id: int
     phases: tuple[OutlinePhase, ...]
+    checkpoint_lines: tuple[str, ...] = ()
 
     def chosen(self, phase_id: int | None) -> tuple[OutlinePhase, ...]:
         if phase_id is None:

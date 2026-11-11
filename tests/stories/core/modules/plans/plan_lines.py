@@ -54,10 +54,10 @@ def test_ending_a_task_names_the_task_now_in_hand_once_and_the_phase_it_ended(co
     expect_value_with(lines, "plan 1: phase Build done")
 
 
-def test_a_checkpoint_phase_says_to_wait_for_the_users_word(new_story):
+def test_a_checkpoint_phase_says_the_phases_after_it_wait_for_its_tests(new_story):
     story = new_story(fixture=CheckpointCartPlan)
     story.expect_success("task start 1", "state: started", actor=story.agent)
-    expect_closed_lines(story, 1, "plan 1: phase Build done, a checkpoint: tell the user and wait for their word")
+    expect_closed_lines(story, 1, "plan 1: phase Build done, a checkpoint: the phases after it wait for its tests")
 
 
 def test_the_last_task_says_the_plan_is_done(completed_cart_phase):

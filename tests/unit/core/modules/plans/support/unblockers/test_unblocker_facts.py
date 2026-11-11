@@ -1,3 +1,5 @@
+from engine.time.timestamp import Timestamp
+from core.modules.plans.models.plan_task import PlanTask
 from types import SimpleNamespace
 
 import pytest
@@ -16,9 +18,12 @@ AGENTS = {agent.id: agent for agent in (MAIN, LATER_MAIN, WORKER)}
 def task(task_id=7, state=TaskState.OPEN, holder_id=None, assignee_id=None):
     return SimpleNamespace(id=task_id, state=state, holder_id=holder_id, delegated_to=assignee_id)
 
+CLOSED_AT = Timestamp.parsed("2026-10-31T09:00:00+00:00")
 
-def place(task_id, plan_id, phase_id, phase_position, state=TaskState.OPEN, checkpoint=False, closed_at=None):
-    return SimpleNamespace(task_id=task_id, plan_id=plan_id, phase_id=phase_id, phase_position=phase_position, state=state, checkpoint=checkpoint, closed_at=closed_at)
+
+def place(task_id, plan_id, phase_id, phase_position, state=TaskState.OPEN, checkpoint=False, closed_at=None, checkpoint_passed=False):
+    return PlanTask(task_id=task_id, plan_id=plan_id, phase_id=phase_id, phase_position=phase_position, position=1, priority=0, state=state, checkpoint=checkpoint,
+                    closed_at=closed_at, checkpoint_passed=checkpoint_passed)
 
 
 def facts(asker=MAIN, takeable_ids=tuple([7]), places=(), plan_state=PlanState.STARTED, waits=()):
@@ -70,10 +75,13 @@ def test_a_task_of_a_plan_that_is_not_followed_names_the_plan(state, text):
     assert (line.reason, line.text) == (WaitingReason.UNAPPROVED_PLAN, text)
 
 
-def test_a_task_behind_an_open_checkpoint_phase_names_that_phase_and_a_closed_checkpoint_holds_nothing():
+def test_a_task_behind_a_checkpoint_phase_that_is_open_or_untested_names_that_phase_and_a_passed_checkpoint_blocks_nothing():
+    closed = dict(state=TaskState.COMPLETED, checkpoint=True, closed_at=CLOSED_AT)
     behind = facts(places=[place(6, 4, 11, 1, checkpoint=True), place(7, 4, 12, 2)]).waiting_line(task())
-    passed = facts(places=[place(6, 4, 11, 1, state=TaskState.COMPLETED, checkpoint=True, closed_at="2026"), place(7, 4, 12, 2)]).waiting_line(task())
+    untested = facts(places=[place(6, 4, 11, 1, **closed), place(7, 4, 12, 2)]).waiting_line(task())
+    passed = facts(places=[place(6, 4, 11, 1, **closed, checkpoint_passed=True), place(7, 4, 12, 2)]).waiting_line(task())
     assert (behind.reason, behind.text) == (WaitingReason.CHECKPOINT, "which is behind the checkpoint phase 11 of plan 4")
+    assert (untested.reason, untested.text) == (behind.reason, behind.text)
     assert passed is None
 
 

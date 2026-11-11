@@ -14,6 +14,18 @@ PASSES = "checkpoint-pass list --json --oldest --environment main"
 OUTLINE = "plan outline 1 --environment main"
 
 
+def pass_reach(story: Story, reach_id: int) -> None:
+    story.expect_success(f"checkpoint-reach passed {reach_id}", actor=Actor.core())
+    story.run_listeners()
+
+
+def close(story: Story, *task_ids: int) -> None:
+    for task_id in task_ids:
+        story.run(f"task start {task_id}", actor=story.agent)
+        story.run(f'task close {task_id} --outcome "done"', actor=story.agent)
+    story.run_listeners()
+
+
 def plan_of_phases(story: Story, *phases: tuple[str, bool, int]) -> None:
     story.run(lines.NEW_PLAN)
     for number, (title, is_checkpoint, task_count) in enumerate(phases, 1):
@@ -43,9 +55,16 @@ class ReachedCheckpoint(StoryFixture):
     parent = WindowsPlan
 
     def steps(self, story: Story) -> None:
-        for task_id in (1, 2, 3):
-            story.run(f'task close {task_id} --outcome "done"', actor=story.agent)
-        story.run_listeners()
+        close(story, 1, 2, 3)
+
+
+class PassedCheckpoint(StoryFixture):
+    """The plan of ReachedCheckpoint after the journal ended the run of phase 3 as passed."""
+
+    parent = ReachedCheckpoint
+
+    def steps(self, story: Story) -> None:
+        pass_reach(story, 1)
 
 
 class UnflaggedPlan(StoryFixture):
@@ -66,6 +85,17 @@ class FlaggedEndPlan(StoryFixture):
         plan_of_phases(story, ("Build", False, 1), ("Ship", True, 1))
 
 
+class FirstOfTwoReached(StoryFixture):
+    """A started plan 1 with two checkpoint phases in a row, Build (1) and Check (2), each with one task; task
+    1 is closed, so the checkpoint of phase 1 is reached."""
+
+    parent = UserJoined
+
+    def steps(self, story: Story) -> None:
+        plan_of_phases(story, ("Build", True, 1), ("Check", True, 1))
+        close(story, 1)
+
+
 class EmptyCheckpointPlan(StoryFixture):
     """A started plan 1 whose checkpoint phase Gate (1) has no task, followed by phase Ship (2) with task 1."""
 
@@ -84,10 +114,6 @@ class TwoCheckpointsPlan(StoryFixture):
         plan_of_phases(story, ("Build", True, 1), ("Check", True, 1))
 
 
-def close(story: Story, *task_ids: int) -> None:
-    for task_id in task_ids:
-        story.run(f'task close {task_id} --outcome "done"', actor=story.agent)
-    story.run_listeners()
 
 
 def rows(story: Story, line: str) -> list[dict[str, object]]:
@@ -98,11 +124,6 @@ def rows(story: Story, line: str) -> list[dict[str, object]]:
 
 def reaches(story: Story) -> list[tuple[object, object]]:
     return [(row["phase_id"], row["task_ids"]) for row in rows(story, REACHES)]
-
-
-def pass_reach(story: Story, reach_id: int) -> None:
-    story.expect_success(f"checkpoint-reach pass {reach_id}", actor=Actor.core())
-    story.run_listeners()
 
 
 def test_167_a_flagged_phase_is_a_checkpoint_and_the_end_of_the_plan_is_one_without_a_flag(new_story):
@@ -120,15 +141,13 @@ def test_168_a_plan_has_one_checkpoint_at_its_end_whether_its_last_phase_is_flag
 
 
 def test_169_the_window_of_a_checkpoint_is_the_tasks_placed_after_the_checkpoint_before_it(new_story):
-    story = new_story(fixture=ReachedCheckpoint)
-    pass_reach(story, 1)
+    story = new_story(fixture=PassedCheckpoint)
     close(story, 4, 5)
     story.expect_rows(reaches(story) == [(3, "1,2,3"), (5, "4,5")], detail=str(reaches(story)))
 
 
 def test_170_a_later_phase_stays_closed_while_the_checkpoint_is_reached_and_has_not_passed(new_story):
     story = new_story(fixture=ReachedCheckpoint)
-    story.run("task start 4", actor=story.agent)
     story.expect_success("task show 4", "state: open")
     story.expect_text(OUTLINE, "waits for the tests of phase 3", actor=story.user)
 
@@ -152,23 +171,24 @@ def test_171_a_checkpoint_is_reached_once_when_no_task_of_its_window_is_open_sta
 
 
 def test_178_a_pass_saves_a_pass_row_and_opens_the_tasks_of_the_later_phase(new_story):
-    story = new_story(fixture=ReachedCheckpoint)
-    pass_reach(story, 1)
+    story = new_story(fixture=PassedCheckpoint)
     story.run("task start 4", actor=story.agent)
     story.expect_success("task show 4", "state: started")
-    story.expect_rows([row["phase_id"] for row in rows(story, PASSES)] == [3], rows(story, REACHES)[0]["outcome"] == "passed", detail=str(rows(story, PASSES)))
+    story.expect_rows([row["phase_id"] for row in rows(story, PASSES)] == [3], rows(story, REACHES)[0]["state"] == "passed", detail=str(rows(story, PASSES)))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "plan 1: the tests of checkpoint phase Check passed, the phases after it are open: tell the user")
+    story.expect_text("task-log list --task 2", "tests passed at checkpoint phase 3", actor=story.agent)
 
 
 def test_185_a_checkpoint_phase_with_no_task_passes_at_once_and_the_later_phase_is_open(new_story):
     story = new_story(fixture=EmptyCheckpointPlan)
+    story.run_listeners()
     story.run(lines.TASK_START, actor=story.agent)
     story.expect_success("task show 1", "state: started")
     story.expect_rows([row["phase_id"] for row in rows(story, PASSES)] == [1], reaches(story) == [], detail=str(rows(story, PASSES)))
 
 
 def test_185_two_checkpoint_phases_in_a_row_each_have_a_window_of_one_phase(new_story):
-    story = new_story(fixture=TwoCheckpointsPlan)
-    close(story, 1)
+    story = new_story(fixture=FirstOfTwoReached)
     story.expect_rows(reaches(story) == [(1, "1")], detail=str(reaches(story)))
     pass_reach(story, 1)
     close(story, 2)

@@ -15,7 +15,7 @@ TABLE_CHECK = re.compile(r"CHECK constraint failed: (.+)")
 MISSING_VALUE_COLUMN = re.compile(r"NOT NULL constraint failed: \w+\.(\w+)")
 ENVIRONMENT_COLUMN = "environment_id"
 REFERENCING_TABLES = Statement("SELECT DISTINCT tables.name FROM sqlite_master AS tables, pragma_foreign_key_list(tables.name) AS keys"
-                      " WHERE tables.type = 'table' AND keys.\"table\" = ? ORDER BY tables.name",
+                      " WHERE tables.type = 'table' AND keys.\"table\" = ? AND keys.on_delete NOT IN ('CASCADE', 'SET NULL') ORDER BY tables.name",
                       scan_reason="Foreign-key refusal details inspect the fixed schema catalogue, not stored journal rows.")
 
 
