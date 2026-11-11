@@ -1,3 +1,4 @@
+from engine.text.run_target import RunTarget
 from collections.abc import Sequence
 from pathlib import PurePosixPath
 
@@ -34,4 +35,4 @@ class WorkerTestArguments:
 
     @staticmethod
     def is_test_file(argument: str) -> bool:
-        return not argument.startswith("-") and ("::" in argument or argument.endswith(TEST_FILE_ENDINGS))
+        return not argument.startswith("-") and (RunTarget(argument).is_single_test or argument.endswith(TEST_FILE_ENDINGS))

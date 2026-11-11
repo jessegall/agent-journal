@@ -14,14 +14,10 @@ def upgraded(new_story):
     return story
 
 
-def test_every_task_with_delegated_to_has_the_same_assignee_in_the_pivot(upgraded):
+def test_every_task_with_delegated_to_has_the_same_assignee_in_the_pivot_and_a_row_pointing_at_a_gone_actor_is_dropped(upgraded):
     assignees = task_assignees(upgraded)
     upgraded.expect_rows(all(assignees.get(task_id) == [worker(upgraded).id] for task_id in DELEGATED_TASKS), detail=str(assignees))
-    upgraded.expect_text("task info 1", "delegated to:", actor=upgraded.agent)
-
-
-def test_a_row_pointing_at_a_gone_actor_is_dropped_and_the_others_are_copied(upgraded):
-    assignees = task_assignees(upgraded)
+    upgraded.expect_text("task info 1", "assigned to:", actor=upgraded.agent)
     upgraded.expect_rows(MISSING_ACTOR_TASK not in assignees, sorted(assignees) == list(DELEGATED_TASKS), detail=str(assignees))
 
 

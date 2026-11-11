@@ -4,6 +4,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
+from core.modules.assignments.support.assignments import Assignments
 from core.modules.tasks.queries.task_query import TaskQuery
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
@@ -51,25 +52,19 @@ def free_ids(story: Story) -> list[int]:
     return [task.id for task in story.container.get(TaskQuery).free().oldest().all_rows()]
 
 
-def test_the_open_tasks_assigned_to_a_worker_come_oldest_first_and_a_free_task_is_never_among_them(workshop):
-    assign(workshop, 3, worker_w(workshop))
-    assign(workshop, 1, worker_w(workshop))
-    workshop.expect_rows(assigned_ids(workshop, worker_w(workshop)) == [1, 3], detail=str(assigned_ids(workshop, worker_w(workshop))))
-
-
-def test_a_task_assigned_to_a_worker_is_in_that_workers_assigned_tasks_at_once(workshop):
-    workshop.expect_rows(assigned_ids(workshop, worker_w(workshop)) == [], detail="nothing assigned yet")
-    assign(workshop, 2, worker_w(workshop))
-    workshop.expect_rows(assigned_ids(workshop, worker_w(workshop)) == [2], detail=str(assigned_ids(workshop, worker_w(workshop))))
-    assign(workshop, 2, worker_v(workshop))
-    workshop.expect_rows(assigned_ids(workshop, worker_w(workshop)) == [], assigned_ids(workshop, worker_v(workshop)) == [2], detail="the task follows its new assignee at once")
-
-
-def test_a_task_assigned_to_worker_a_is_not_in_worker_bs_assigned_tasks_whatever_its_priority(workshop):
+def test_the_open_tasks_assigned_to_a_worker_come_oldest_first_are_no_other_workers_whatever_their_priority_and_follow_a_new_assignee_at_once(workshop):
+    worker_a, worker_b = worker_w(workshop), worker_v(workshop)
     workshop.expect_success("task edit 4 --priority critical --environment main", actor=workshop.agent)
-    assign(workshop, 4, worker_w(workshop))
-    assign(workshop, 1, worker_v(workshop))
-    workshop.expect_rows(assigned_ids(workshop, worker_v(workshop)) == [1], ready_ids(workshop, worker_v(workshop)) == [1], detail=str(assigned_ids(workshop, worker_v(workshop))))
+    assign(workshop, 4, worker_a)
+    assign(workshop, 1, worker_a)
+    workshop.expect_rows(assigned_ids(workshop, worker_a) == [1, 4], assigned_ids(workshop, worker_b) == [], ready_ids(workshop, worker_b) == [], free_ids(workshop) == [2, 3],
+                         detail=f"{assigned_ids(workshop, worker_a)} | {assigned_ids(workshop, worker_b)} | {free_ids(workshop)}")
+    assign(workshop, 4, worker_b)
+    workshop.expect_rows(assigned_ids(workshop, worker_a) == [1], assigned_ids(workshop, worker_b) == [4], ready_ids(workshop, worker_b) == [4],
+                         detail=f"the task follows its new assignee at once: {assigned_ids(workshop, worker_a)} | {assigned_ids(workshop, worker_b)}")
+    assign(workshop, 1, worker_b)
+    assign(workshop, 4, worker_a)
+    workshop.expect_rows(assigned_ids(workshop, worker_a) == [4], assigned_ids(workshop, worker_b) == [1], detail="one task each, swapped: the count is as before and the lists are still right")
 
 
 def test_free_tasks_are_those_nobody_has(workshop):
@@ -78,17 +73,22 @@ def test_free_tasks_are_those_nobody_has(workshop):
     workshop.expect_rows(free_ids(workshop) == [2, 3, 4], detail="a started task is no longer free")
 
 
-def test_a_task_given_to_anyone_leaves_the_free_tasks(workshop):
+def test_a_task_given_to_anyone_leaves_the_free_tasks_and_an_unassigned_task_leaves_its_workers_list(workshop):
     assign(workshop, 1, worker_w(workshop))
     assign(workshop, 2, workshop.user)
     assign(workshop, 3, workshop.agent)
     workshop.expect_rows(free_ids(workshop) == [4], detail=str(free_ids(workshop)))
     workshop.expect_success("unassign task 2 --environment main", actor=workshop.user)
     workshop.expect_rows(free_ids(workshop) == [2, 4], detail=str(free_ids(workshop)))
+    workshop.expect_success("unassign task 1 --environment main", actor=workshop.user)
+    workshop.expect_rows(assigned_ids(workshop, worker_w(workshop)) == [], free_ids(workshop) == [1, 2, 4], detail=str(assigned_ids(workshop, worker_w(workshop))))
 
 
-def test_an_assigned_task_with_an_open_dependency_is_assigned_but_not_ready(workshop):
+def test_an_assigned_task_with_an_open_dependency_is_blocked_keeps_its_assignee_and_is_not_ready(workshop):
     assign(workshop, 1, worker_w(workshop))
     assign(workshop, 2, worker_w(workshop))
     workshop.expect_success("task depend 2 --on 3 --environment main", actor=workshop.agent)
-    workshop.expect_rows(assigned_ids(workshop, worker_w(workshop)) == [1, 2], ready_ids(workshop, worker_w(workshop)) == [1], detail=str(ready_ids(workshop, worker_w(workshop))))
+    workshop.expect_text("task show 2 --environment main", "state: blocked", actor=workshop.agent)
+    waiting_task = workshop.container.get(TaskQuery).find(2)
+    workshop.expect_rows(workshop.container.get(Assignments).actor(waiting_task) == worker_w(workshop).id, ready_ids(workshop, worker_w(workshop)) == [1],
+                         detail=str(ready_ids(workshop, worker_w(workshop))))

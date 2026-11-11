@@ -24,18 +24,13 @@ def delegated(new_story):
     return story
 
 
-def test_a_task_has_one_assignee_at_a_time(delegated):
-    delegated.expect_success(f"task assign 3 --to {agent_number(delegated, delegated.worker.id)}", actor=delegated.agent)
-    expect_equal_everywhere(delegated)
-    delegated.expect_success(f"task assign 3 --to {agent_number(delegated, delegated.agent.id)}", actor=delegated.agent)
-    expect_equal_everywhere(delegated)
-    delegated.expect_rows(task_assignees(delegated).get(3) == [delegated.agent.id], detail=str(task_assignees(delegated)))
-
-
-def test_task_assign_is_mirrored_to_the_pivot(delegated):
+def test_task_assign_is_mirrored_to_the_pivot_and_a_task_has_one_assignee_at_a_time(delegated):
     delegated.expect_success(f"task assign 3 --to {agent_number(delegated, delegated.worker.id)}", actor=delegated.agent)
     expect_equal_everywhere(delegated)
     delegated.expect_rows(task_assignees(delegated).get(3) == [delegated.worker.id], detail=str(task_assignees(delegated)))
+    delegated.expect_success(f"task assign 3 --to {agent_number(delegated, delegated.agent.id)}", actor=delegated.agent)
+    expect_equal_everywhere(delegated)
+    delegated.expect_rows(task_assignees(delegated).get(3) == [delegated.agent.id], detail=str(task_assignees(delegated)))
 
 
 def test_a_worker_start_of_a_free_task_is_mirrored(delegated):
@@ -48,6 +43,7 @@ def test_a_release_of_a_worker_is_mirrored_so_waiting_tasks_have_no_row(delegate
     expect_equal_everywhere(delegated)
     delegated.expect_success(f'worker release {agent_number(delegated, delegated.worker.id)} "not needed"', actor=delegated.agent)
     expect_equal_everywhere(delegated)
+    delegated.expect_text("task info 2", "assigned to: nobody", actor=delegated.agent)
     delegated.expect_rows(2 not in task_assignees(delegated), detail=str(task_assignees(delegated)))
 
 
@@ -59,5 +55,7 @@ def test_a_cancelled_delegated_task_stays_equal_in_column_and_pivot(delegated):
 
 
 def test_a_task_assigned_to_a_person_is_mirrored(delegated):
-    outcome = delegated.run(f"assign task 3 --to {delegated.user.id} --environment main", actor=delegated.user)
-    delegated.expect_rows(outcome.code == 0, task_assignees(delegated).get(3) == [delegated.user.id], detail=outcome.output_text)
+    person = Actor(delegated.new_row_id('actor make user "Ada"'), ActorType.USER)
+    outcome = delegated.run(f"assign task 3 --to {person.id} --environment main", actor=person)
+    delegated.expect_success('task edit 3 --priority high --environment main', actor=delegated.agent)
+    delegated.expect_rows(outcome.code == 0, task_assignees(delegated).get(3) == [person.id], detail=outcome.output_text)

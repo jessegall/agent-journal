@@ -52,8 +52,10 @@ HELP_FLAGS = ("--help", "-h")
 class Console:
     """Runs one `journal <model> <subcommand>`, or the shell line an alias names: checks the registry is
     current, chooses the subcommand, reads or runs its command, and converts a refusal, a usage error or
-    an unexpected error into its line and exit code. A write runs the commit listeners before and after
-    it; an error after the commit is logged and never changes the exit code of a write that was saved."""
+    an unexpected error into its line and exit code. A subcommand named like its model may be left out:
+    `journal assign task 1` runs `journal assign assign task 1`. A write runs the commit listeners before
+    and after it; an error after the commit is logged and never changes the exit code of a write that was
+    saved."""
 
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, line_parser: LineParser, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
@@ -74,8 +76,7 @@ class Console:
                 return self.handoff.run(shell_run, stream)
             if not argv or argv[0] in HELP_FLAGS:
                 return self.help_line_count("the journal's commands; journal <name> --help lists one's subcommands", self.line_parser.lookup.cli_names(), stream)
-            subcommand_omitted = len(argv) == 1 or (argv[1].startswith("-") and argv[1] not in HELP_FLAGS)
-            if subcommand_omitted and f"{argv[0]} {argv[0]}" in self.registry.subcommands:
+            if self.omits_subcommand(argv):
                 return self.run_parsed([argv[0], *argv], caller, output)
             if len(argv) == 1 or argv[1] in HELP_FLAGS:
                 return self.subcommand_help(argv[0], stream)
@@ -100,6 +101,15 @@ class Console:
         except Exception as error:
             output.error(self.errors.reported(argv, error, caller.environment_id))
             return ERROR_CODE
+
+    def omits_subcommand(self, argv: list[str]) -> bool:
+        if f"{argv[0]} {argv[0]}" not in self.registry.subcommands:
+            return False
+        if len(argv) == 1:
+            return True
+        if argv[1] in HELP_FLAGS:
+            return False
+        return argv[1].startswith("-") or argv[1] not in self.line_parser.lookup.names(argv[0])
 
     def request_approval(self, refusal: Refusal, argv: list[str], caller: Caller, parsed: Namespace) -> str | None:
         approval = refusal.original
