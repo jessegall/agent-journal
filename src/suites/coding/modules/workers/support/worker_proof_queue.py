@@ -55,14 +55,15 @@ class WorkerProofQueue:
 
     def submit_ready(self, worktree: Worktree, tasks: tuple[Task, ...], context: Context) -> Submission:
         task_ids = [task.id for task in tasks]
-        proofs = tuple(self.proofs.worktree_proofs(worktree.id).matching(Among("task_id", task_ids)).oldest().all_rows())
-        tested = [proof for proof in proofs if proof.test_command and proof.state in UNTESTED_STATES]
-        self.send_waiting_line(worktree, [proof for proof in proofs if not proof.test_command and proof.state is ProofState.SHOWN], context)
+        proofs = tuple(self.proofs.worktree_proofs(worktree.id).oldest().all_rows())
+        shown = [proof for proof in proofs if proof.task_id in task_ids and proof.state is ProofState.SHOWN]
+        self.send_waiting_line(worktree, [proof for proof in shown if not proof.test_command], context)
         if self.plans.is_started_plan(task_ids[0]):
-            for proof in tested:
-                if proof.state is ProofState.SHOWN:
+            for proof in shown:
+                if proof.test_command:
                     self.repository.save_change(proof, proof.moved(ProofLifecycle.commit), context)
             return Submission.COMMITTED
+        tested = [proof for proof in proofs if proof.test_command and (proof in shown or proof.state is ProofState.COMMITTED)]
         for proof in tested:
             self.repository.save_change(proof, proof.moved(ProofLifecycle.queue), context)
         return Submission.QUEUED if len(tested) + self.queue_selected(worktree, task_ids[0], context) else Submission.UNTESTED

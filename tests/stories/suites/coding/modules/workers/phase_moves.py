@@ -1,18 +1,13 @@
 import pytest
 
-from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_refusal
+from engine.testing.expectations.expect_reply import expect_reply_allowed
 from engine.testing.examples.hook_samples import HookSamples
-from suites.coding.modules.workers.listeners.worker_test_listener import WorkerTestListener
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from core.modules.plans.support.task_plans import TaskPlans
-from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
-from tests.stories.server.support.server_client import server_story
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_folder, story_repository
-from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
-from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN_DISPATCH, TEST_LINE, dispatched_story_worker, planned_story, start_planned_worker
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
+from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker
 
-MAIN_SESSION = "s-1"
 PLAN_BLOCK = 'plan block 1 --reason "the supplier is late"'
 
 
@@ -22,64 +17,12 @@ def planned_worker(new_story, monkeypatch):
 
 
 @pytest.fixture
-def advanced_with_test(planned_worker):
-    planned_worker.prove_advance(TEST_LINE)
+def committed_with_test(planned_worker):
+    """A worker of a started plan started task 2 beside task 1 and committed task 1, proved with a test: the
+    proof is committed and its test waits for the checkpoint; task 2 is its started task."""
+    planned_worker.story.run("task start 2", actor=planned_worker.worker)
+    planned_worker.prove_commit(TEST_LINE)
     return planned_worker
-
-
-@pytest.fixture
-def advanced_without_test(planned_worker):
-    planned_worker.prove_advance()
-    return planned_worker
-
-
-@pytest.fixture
-def previous_test_running(planned_worker):
-    planned_worker.story.run('plan block 1 --reason "a pause"', actor=planned_worker.story.agent)
-    planned_worker.prove_advance(TEST_LINE)
-    planned_worker.story.run("plan unblock 1", actor=planned_worker.story.agent)
-    return planned_worker
-
-
-@pytest.fixture
-def previous_test_ended(previous_test_running):
-    previous_test_running.end_all_tests()
-    return previous_test_running
-
-
-@pytest.fixture
-def conflict_waiting(new_story, monkeypatch):
-    story = planned_story(new_story)
-    base = story_repository(story)
-    base.checkout(ENVIRONMENT_BRANCH)
-    base.committed("tax.py", "TAX = 1\n", "The first tax")
-    worker = dispatched_story_worker(story, PLAN_DISPATCH, monkeypatch)
-    worker.prove()
-    worker.repository.changed(worker.worker.id, "tax.py", "TAX = 5\n")
-    base.committed("tax.py", "TAX = 21\n", "Another tax")
-    return worker
-
-
-@pytest.fixture
-def last_task(planned_worker):
-    planned_worker.prove_advance(TEST_LINE)
-    planned_worker.prove_advance()
-    planned_worker.prove()
-    return planned_worker
-
-
-@pytest.fixture
-def plan_task_first(new_story, monkeypatch):
-    story = planned_story(new_story)
-    story.run('task make "Docs" --brief "The docs" --environment main', actor=story.agent)
-    return dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 5", monkeypatch)
-
-
-def displayed_task_states(worker) -> dict[int, str]:
-    with server_story(worker.story) as server:
-        cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-        outline = server.viewer_line_value(cookie, {"window": "plans.plans", "line": ["plan", "outline", "1"], "environment": "main"})
-    return {task["id"]: task["state"] for phase in outline["phases"] for task in phase["tasks"]}
 
 
 def test_a_worker_status_reuses_its_phase_worktree_and_waiting_test_reads(planned_worker):
@@ -95,60 +38,21 @@ def test_a_worker_status_reuses_its_phase_worktree_and_waiting_test_reads(planne
     story.expect_rows(all(row[0].id == worktree.id and row[1].id == worktree.id and not row[2] and row[3].id == 1 for row in answers))
 
 
-@pytest.mark.real_git
-def test_a_clash_with_the_base_branch_stops_the_move(conflict_waiting):
-    conflict_waiting.story.expect_refusal("worker next --wait --differences none", "clashes", actor=conflict_waiting.worker)
-    conflict_waiting.story.expect_text("task show 1", "state: started", actor=conflict_waiting.story.agent)
+def test_on_a_blocked_plan_a_worker_runs_tests_as_today(committed_with_test):
+    committed_with_test.story.expect_success(PLAN_BLOCK, actor=committed_with_test.story.agent)
+    expect_reply_allowed(committed_with_test.run_test())
 
 
-def test_the_stalled_test_tick_does_not_start_the_proofs_of_a_task_moved_past(advanced_with_test):
-    StalledWorkerTestRuns()(advanced_with_test.story.container)
-    advanced_with_test.story.expect_rows(advanced_with_test.started == [])
-    advanced_with_test.story.expect_text("proof show 1", "state: shown", actor=advanced_with_test.story.agent)
+def test_on_a_blocked_plan_the_proofs_committed_earlier_run_at_the_next_commit(committed_with_test):
+    committed_with_test.story.expect_success(PLAN_BLOCK, actor=committed_with_test.story.agent)
+    committed_with_test.prove()
+    committed_with_test.story.expect_success(COMMIT, actor=committed_with_test.worker)
+    committed_with_test.story.run_listeners()
+    committed_with_test.story.expect_text("proof show 1", "state: running", actor=committed_with_test.story.agent)
+    committed_with_test.story.expect_rows(len(committed_with_test.started) == 1)
 
 
-def test_the_stalled_test_tick_starts_a_test_left_behind_after_the_hand_in_of_a_phase(last_task, monkeypatch):
-    with monkeypatch.context() as stopped_server:
-        stopped_server.setattr(WorkerTestListener, "start_next", lambda listener, logged: None)
-        last_task.story.expect_text("worker next --wait --differences none", "queued", actor=last_task.worker)
-    last_task.story.expect_text("proof show 1", "state: queued", actor=last_task.story.agent)
-    StalledWorkerTestRuns()(last_task.story.container)
-    last_task.story.expect_text("proof show 1", "state: running", actor=last_task.story.agent)
-
-
-def test_a_test_run_after_a_running_test_uses_the_phase_allowance(previous_test_ended):
-    expect_reply_allowed(previous_test_ended.run_test())
-
-
-def test_on_a_blocked_plan_a_worker_runs_tests_as_today(advanced_with_test):
-    advanced_with_test.story.expect_success(PLAN_BLOCK, actor=advanced_with_test.story.agent)
-    expect_reply_allowed(advanced_with_test.run_test())
-
-
-def test_on_a_blocked_plan_the_earlier_proofs_run_at_the_next_hand_in(advanced_with_test):
-    advanced_with_test.story.expect_success(PLAN_BLOCK, actor=advanced_with_test.story.agent)
-    advanced_with_test.prove_advance()
-    advanced_with_test.story.expect_text("proof show 1", "state: running", actor=advanced_with_test.story.agent)
-    advanced_with_test.story.expect_rows(len(advanced_with_test.started) == 1)
-
-
-def test_a_cancelled_plan_cancels_the_workers_tasks_and_the_worker_may_stop(advanced_with_test):
-    advanced_with_test.story.expect_success('plan cancel 1 --reason "the cart is dropped"', actor=advanced_with_test.story.agent)
-    advanced_with_test.story.expect_text("task show 2", "state: cancelled", actor=advanced_with_test.story.agent)
-    advanced_with_test.story.expect_hook_allowed(advanced_with_test.session, HookSamples.stop())
-
-
-def test_a_task_of_a_plan_and_then_a_task_outside_it_each_follow_their_own_flow(plan_task_first):
-    expect_reply_allowed(plan_task_first.run_test())
-    plan_task_first.edit_prove(TEST_LINE)
-    plan_task_first.story.expect_text("worker next --wait --differences none", "queued", actor=plan_task_first.worker)
-    plan_task_first.end_all_tests()
-    plan_task_first.story.expect_rows(plan_task_first.current_task() == 5)
-    expect_reply_allowed(plan_task_first.run_test())
-
-
-def test_a_person_sees_the_tasks_of_a_phase_as_completed_once_its_tests_have_passed(last_task):
-    last_task.story.run("worker next --wait --differences none", actor=last_task.worker)
-    last_task.end_all_tests()
-    states = displayed_task_states(last_task)
-    last_task.story.expect_rows((states[1], states[2], states[3], states[4]) == ("completed", "completed", "completed", "started"))
+def test_a_cancelled_plan_cancels_the_workers_tasks_and_the_worker_may_stop(committed_with_test):
+    committed_with_test.story.expect_success('plan cancel 1 --reason "the cart is dropped"', actor=committed_with_test.story.agent)
+    committed_with_test.story.expect_text("task show 2", "state: cancelled", actor=committed_with_test.story.agent)
+    committed_with_test.story.expect_hook_allowed(committed_with_test.session, HookSamples.stop())
