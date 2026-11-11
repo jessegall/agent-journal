@@ -1,3 +1,4 @@
+from engine.database.kept_rows import KeptRows
 from collections.abc import Sequence
 from dataclasses import replace
 
@@ -40,11 +41,12 @@ class Assignments:
     also an agent that has ended, while that column still exists. Every assignment is saved and deleted
     through the repository, so each is an event."""
 
-    def __init__(self, queries: Queries, repository: Repository, rows: AssignableRows) -> None:
-        self.queries, self.repository, self.rows = queries, repository, rows
+    def __init__(self, queries: Queries, repository: Repository, rows: AssignableRows, kept: KeptRows) -> None:
+        self.queries, self.repository, self.rows, self.kept = queries, repository, rows, kept
 
     def assignments(self, row: Model) -> tuple[Assignment, ...]:
-        return tuple(self.queries.query(Assignment).filter(subject_model=row.model_name, subject_id=row.id).oldest().all_rows())
+        return self.kept.read("assignments", lambda: tuple(self.queries.query(Assignment).filter(subject_model=row.model_name, subject_id=row.id).oldest().all_rows()),
+                              "subject_model = ? AND subject_id = ?", [row.model_name, row.id], name="assignments.row_assignments")
 
     def actors(self, row: Model) -> tuple[int, ...]:
         return tuple(assignment.actor_id for assignment in self.assignments(row))

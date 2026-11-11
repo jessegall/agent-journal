@@ -1,3 +1,5 @@
+from engine.query.conditions.among import Among
+from core.modules.assignments.support.assignments import Assignments
 from engine.enums.agent_role import AgentRole
 from engine.command.context import Context
 from engine.driver.nudge_declaration import NudgeDeclaration
@@ -26,8 +28,8 @@ class FullTestRunListener(SaveListener[Created[Process] | ProcessEnded]):
     name = "tasks.full-test-run"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, nudger: Nudger) -> None:
-        self.queries, self.repository, self.nudger = queries, repository, nudger
+    def __init__(self, queries: Queries, repository: Repository, nudger: Nudger, assignments: Assignments) -> None:
+        self.queries, self.repository, self.nudger, self.assignments = queries, repository, nudger, assignments
 
     def handle(self, event: Created[Process] | ProcessEnded, context: Context) -> None:
         run = event.row
@@ -53,6 +55,8 @@ class FullTestRunListener(SaveListener[Created[Process] | ProcessEnded]):
 
     def testing_tasks(self, run: Process) -> tuple[Task, ...]:
         testing = tuple(self.queries.query(Task).filter(state=TaskState.TESTING).oldest().all_rows())
-        roles = {agent.id: agent.role for agent in self.queries.query(Agent).find_many(sorted({task.delegated_to for task in testing if task.delegated_to is not None}))}
-        waiting = [task for task in testing if task.delegated_to is None or roles[task.delegated_to] == AgentRole.MAIN]
+        actor_ids = self.assignments.row_actor_ids(Task, [task.id for task in testing])
+        assigned_ids = sorted({actor_id for ids in actor_ids.values() for actor_id in ids})
+        roles = {agent.id: agent.role for agent in self.queries.query(Agent).matching(Among("id", assigned_ids)).all_rows()} if assigned_ids else {}
+        waiting = [task for task in testing if all(roles.get(actor_id) == AgentRole.MAIN for actor_id in actor_ids.get(task.id, ()))]
         return tuple(task for task in waiting if task.updated_at is not None and run.created_at is not None and task.updated_at <= run.created_at)

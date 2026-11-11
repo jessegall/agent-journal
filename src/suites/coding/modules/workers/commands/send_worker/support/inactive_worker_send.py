@@ -1,3 +1,4 @@
+from core.modules.assignments.support.assignments import Assignments
 import shlex
 from dataclasses import replace
 
@@ -27,14 +28,15 @@ class InactiveWorkerSend:
     an open one whose program has ended. A busy worker takes the task as its next one by itself."""
 
     def __init__(self, rows: EventRows, tasks: TaskQuery, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue,
-                 operations: WorkerOperationQuery, bus: Bus, nudger: Nudger) -> None:
+                 operations: WorkerOperationQuery, bus: Bus, nudger: Nudger, assignments: Assignments) -> None:
         self.rows, self.tasks, self.worktrees, self.proof_queue = rows, tasks, worktrees, proof_queue
-        self.operations, self.bus, self.nudger = operations, bus, nudger
+        self.operations, self.bus, self.nudger, self.assignments = operations, bus, nudger, assignments
 
     def send(self, task: Task, context: Context) -> None:
-        if task.delegated_to is None:
+        worker_id = self.assignments.actor(task)
+        if worker_id is None:
             return
-        worker = self.rows.required(Agent, task.delegated_to)
+        worker = self.rows.required(Agent, worker_id)
         if worker.parent_id is None:
             return
         if worker.paused_at is not None:

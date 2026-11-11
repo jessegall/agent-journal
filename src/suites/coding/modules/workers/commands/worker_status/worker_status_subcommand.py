@@ -1,3 +1,4 @@
+from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS
 from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
@@ -57,12 +58,12 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
         if worktree is None:
             return self.kept_status(worker_id)
         tests = self.proofs.worktree_proofs(worktree.id).matching(Among("state", TEST_WAITING_STATES)).oldest().page(arguments.page, arguments.limit)
-        assignments = self.queries.query(Task).filter(delegated_to=worker_id).matching(Among("state", (TaskState.OPEN, TaskState.BLOCKED))).oldest().page(arguments.page, arguments.limit)
+        assignments = self.tasks.assignee_tasks(worker_id).matching(Among("state", (TaskState.OPEN, TaskState.BLOCKED))).oldest().page(arguments.page, arguments.limit)
         worker = self.queries.query(Agent).find(worker_id)
         skills = tuple(self.files.agent_instruction(name, worker) for name in self.unread_skills.names(worker_id))
         current_task = self.queries.query(Task).find(worktree.task_id)
         point = self.guidance.point(worker_id)
-        waiting_tasks = tuple(self.queries.query(Task).filter(delegated_to=worker_id, state=TaskState.TESTING).oldest().all_rows())
+        waiting_tasks = tuple(self.tasks.assignee_tasks(worker_id).filter(state=TaskState.TESTING).oldest().all_rows(TASK_PAGE_ROWS))
         return WorkerStatus(worker_id, worker.number, worktree, current_task, self.tasks.started_tasks(worker_id), point.round.required_staging(), waiting_tasks, self.open_tasks.startable(point.round), tests, assignments, skills, worker.program, self.resume.program_state(worker) if worker.ended_at is not None else None, point, worker.paused_at is not None, self.questions.status_lines(worker_id), worker.standing)
 
     def kept_status(self, worker_id: int) -> KeptWorkerStatus | Refusal:

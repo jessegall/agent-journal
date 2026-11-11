@@ -1,3 +1,4 @@
+from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS
 from dataclasses import replace
 
 from engine.cli.agent_number import AGENT_MODEL_NAME
@@ -80,5 +81,5 @@ class UnmergedWorkerRule(DriverRule):
 
     def task_names(self, worktree: Worktree) -> str:
         proved_ids = {proof.task_id for proof in self.proofs.worktree_proofs(worktree.id).all_rows()}
-        unclosed_ids = {task.id for task in self.tasks.filter(delegated_to=worktree.session_agent_id).unclosed().all_rows()}
+        unclosed_ids = {task.id for task in self.tasks.assignee_tasks(worktree.session_agent_id).unclosed().oldest().all_rows(TASK_PAGE_ROWS)}
         return ", ".join(f"task:{task_id}" for task_id in sorted(proved_ids | unclosed_ids))

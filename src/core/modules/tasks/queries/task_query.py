@@ -45,6 +45,9 @@ class TaskQuery(Query[Task]):
     def assignee(actor_id: int) -> AssigneeAmong:
         return AssigneeAmong(Task, tuple([actor_id]))
 
+    def assignee_tasks(self, actor_id: int) -> Self:
+        return self.matching(self.assignee(actor_id))
+
     def assigned(self, actor_id: int) -> tuple[Task, ...]:
         assignee = self.assignee(actor_id).statement()
         return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(self.assignee(actor_id)).oldest().all_rows(TASK_PAGE_ROWS)),

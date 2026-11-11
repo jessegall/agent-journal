@@ -1,3 +1,4 @@
+from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS
 from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
@@ -43,7 +44,7 @@ class WorkerStopRule(DriverRule):
         if self.requests.has_active_requests(hook.agent_id, self.clock.timestamp()):
             return RuleAnswer.allowed()
         if task is None:
-            blocked = self.tasks.filter(delegated_to=hook.agent_id, state=TaskState.BLOCKED).all_rows()
+            blocked = self.tasks.assignee_tasks(hook.agent_id).filter(state=TaskState.BLOCKED).oldest().all_rows(TASK_PAGE_ROWS)
             return RuleAnswer.with_nudges(*(WORKER_TASK_BLOCKED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, hook.agent_id), task=row.id) for row in blocked))
         if worker_point.step.may_stop():
             return RuleAnswer.allowed()

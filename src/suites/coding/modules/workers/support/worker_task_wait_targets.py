@@ -1,3 +1,4 @@
+from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.command.context import Context
 from engine.database.database import Database
@@ -48,7 +49,7 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
             return True
         if self.proofs.tests_waiting(worktree.id) or self.proofs.has_short_proof(worktree.id):
             return False
-        if worker.ended_at is None or self.queries.query(Task).filter(delegated_to=worker.id, state=TaskState.OPEN).exists():
+        if worker.ended_at is None or self.queries.query(Task).matching(TaskQuery.assignee(worker.id)).filter(state=TaskState.OPEN).exists():
             return False
         task = self.queries.query(Task).find(worktree.task_id)
         return task.started_at is None or task.started_at.value <= worker.ended_at.value
