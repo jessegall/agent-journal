@@ -1,4 +1,5 @@
 from suites.coding.modules.workers.support.work_units import WorkUnits
+from suites.coding.modules.workers.support.worktree_runs import WorktreeRuns
 from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS
 from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
@@ -36,8 +37,8 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
     cli_name = "worker"
     name = "status"
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, unread_skills: UnreadSkills, files: SkillFiles, resume: WorkerResume, guidance: WorkerGuidance, numbers: RowNumbers, questions: WorkerQuestions, tasks: TaskQuery, open_tasks: WorkerOpenTasks, units: WorkUnits) -> None:
-        self.tasks, self.open_tasks, self.units = tasks, open_tasks, units
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, unread_skills: UnreadSkills, files: SkillFiles, resume: WorkerResume, guidance: WorkerGuidance, numbers: RowNumbers, questions: WorkerQuestions, tasks: TaskQuery, open_tasks: WorkerOpenTasks, units: WorkUnits, runs: WorktreeRuns) -> None:
+        self.tasks, self.open_tasks, self.units, self.runs = tasks, open_tasks, units, runs
         self.questions = questions
         self.numbers = numbers
         self.guidance = guidance
@@ -66,7 +67,10 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
         point = self.guidance.point(worker_id)
         waiting_tasks = tuple(self.tasks.assignee_tasks(worker_id).filter(state=TaskState.TESTING).oldest().all_rows(TASK_PAGE_ROWS))
         return WorkerStatus(worker_id, worker.number, worktree, current_task, self.tasks.started_tasks(worker_id), point.round.required_staging(), waiting_tasks, self.open_tasks.startable(point.round), tests, assignments, skills, worker.program, self.resume.program_state(worker) if worker.ended_at is not None else None, point, worker.paused_at is not None, self.questions.status_lines(worker_id), worker.standing,
-                            self.units.unit(worker_id).status_line)
+                            self.unit_line(worker_id, worktree.id))
+
+    def unit_line(self, worker_id: int, worktree_id: int) -> str:
+        return " ".join(line for line in (self.units.unit(worker_id).status_line, self.runs.passed_text(worktree_id)) if line)
 
     def kept_status(self, worker_id: int) -> KeptWorkerStatus | Refusal:
         if self.worktrees.newest_worktree(worker_id) is None:
