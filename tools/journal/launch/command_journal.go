@@ -122,7 +122,7 @@ func (journal CommandJournal) StopMainAgent(environment string) error {
 		return err
 	}
 	for _, agent := range agents {
-		if _, err := journal.Run("agent", "stop", strconv.Itoa(agent.ID), "--environment", environment); err != nil {
+		if _, err := journal.Run("agent", "stop", "row:"+strconv.Itoa(agent.ID), "--environment", environment); err != nil {
 			return err
 		}
 	}

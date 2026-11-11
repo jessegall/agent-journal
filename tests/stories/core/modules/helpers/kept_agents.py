@@ -96,7 +96,7 @@ def test_helper_form_offers_send_at_the_kept_limit_and_preserves_the_command_ref
     answer = json.loads(text)
     server.story.expect_rows(status == 200 and answer["code"] != 0)
     server.story.expect_rows(json.loads(answer["error"])["refused"] in availability["fresh_reason"])
-    profile_line(server, cookie, ["helper", "send", str(helper.id), "Read the tax"])
+    profile_line(server, cookie, ["helper", "send", f"row:{helper.id}", "Read the tax"])
 
 
 def test_helper_form_offers_send_in_light_and_dark(helper_form_server):
@@ -139,7 +139,7 @@ def test_retire_permissions(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     story.expect_refusal(f"agent retire {agent_number(story, story.agent.id)} {REASON}", "main agent is not retired", actor=story.agent)
-    story.expect_refusal(f"agent retire {agent_number(story, helper.id)} {REASON}", "belongs to agent", actor=Actor(helper.id, ActorType.AGENT))
+    story.expect_refusal(f"agent retire {agent_number(story, helper.id)} {REASON}", "belongs to main agent", actor=Actor(helper.id, ActorType.AGENT))
     story.expect_success(f"agent retire {agent_number(story, helper.id)} {REASON}", actor=story.user)
 
 
@@ -222,7 +222,7 @@ def test_a_start_with_an_idle_helper_is_refused_with_its_send_line(new_story, mo
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_refusal('helper start journal-researcher --brief "Read src/till.py" --environment main', f'helper {helper.id} is idle: journal helper send {agent_number(story, helper.id)} "<job>"', actor=story.agent)
+    story.expect_refusal('helper start journal-researcher --brief "Read src/till.py" --environment main', f'helper {agent_number(story, helper.id)} is idle: journal helper send {agent_number(story, helper.id)} "<job>"', actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
 
@@ -287,7 +287,7 @@ def test_a_new_main_takes_over_an_idle_helper_and_gets_its_report(new_story, mon
 def test_steering_or_new_job(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
-    story.expect_refusal(f'helper send {agent_number(story, helper.id)} "Unrelated work"', f"helper {helper.id} is busy", actor=story.agent)
+    story.expect_refusal(f'helper send {agent_number(story, helper.id)} "Unrelated work"', f"helper {agent_number(story, helper.id)} is busy", actor=story.agent)
     story.expect_success(f'helper send {agent_number(story, helper.id)} "Also read the tax" --steer', actor=story.agent)
     jobs = tuple(story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).all_rows())
     story.expect_rows(len(jobs) == 1, "Also read the tax" in jobs[0].brief)
