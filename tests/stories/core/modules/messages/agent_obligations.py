@@ -3,12 +3,13 @@ from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
+from core.modules.chat.models.journal_exception import JournalException
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from tests.stories.core.support.read_limit import READ_LIMIT_ROWS, limit_reads
 from tests.stories.core.modules.messages.reply_teaching import READ_MESSAGE, VIEW_LINE, ReplySession, journal_line, listeners_run_at_hook  # noqa: F401
 
 HELPER_SESSION = "s-2"
@@ -51,7 +52,7 @@ def use_tools(story, session: str, count: int) -> None:
 def test_a_worker_messaged_by_its_main_agent_is_held_after_the_countdown_and_freed_by_its_reply(new_story):
     story = new_story(fixture=WorkerBeside)
     story.advance(timedelta(seconds=30))
-    worker = Actor(next(story.container.get(Queries).query(Agent).filter(role="worker").all_rows()).id, ActorType.AGENT)
+    worker = Actor(story.story_rows(Agent, role="worker")[0].id, ActorType.AGENT)
     story.expect_success(f'message send "Look at src/cart.py again" --to agent:{agent_number(story, worker.id)}', actor=story.agent)
     story.expect_success("message read 1", actor=worker)
     story.expect_hook_allowed(WORKER_SESSION, VIEW_LINE, "answer message 1 before you go on")
@@ -87,3 +88,16 @@ def test_a_journal_line_holds_nobody(new_story):
     story.hook("s-1", journal_line("journal message read 1").with_fields(event="post_tool_use"))
     use_tools(story, "s-1", 12)
     story.expect_absent_hook_line("s-1", EDIT, "answer message 1")
+
+
+def test_a_main_agent_that_wrote_many_messages_since_an_answered_report_is_checked_within_the_read_limit(new_story):
+    story = beside_story(new_story)
+    story.expect_success(f'message send "Read the cart" --to agent:{agent_number(story, story.helper.id)}', actor=story.agent)
+    story.expect_success(f'message send "The total is wrong" --to agent:{agent_number(story, story.agent.id)}', actor=story.helper)
+    story.expect_success("message read 2", actor=story.agent)
+    story.expect_success('message reply 2 "Fixing it"', actor=story.agent)
+    for number in range(READ_LIMIT_ROWS + 10):
+        story.expect_success(f'message send "Step {number} is done" --environment main', actor=story.agent)
+    limit_reads(story)
+    story.expect_absent_hook_line("s-1", EDIT, "answer message 2")
+    story.expect_rows(story.story_rows(JournalException) == (), detail=str(story.story_rows(JournalException)))

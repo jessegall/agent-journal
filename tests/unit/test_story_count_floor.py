@@ -5,7 +5,7 @@ from tests.unit.source_tree import source_tree
 
 ROOT = Path(__file__).resolve().parents[2]
 STORIES = ROOT / "tests" / "stories"
-STORIES_AT_PLAN_START = 5868
+STORIES_AT_PLAN_START = 5869
 
 # The stories of a removed rule are re-homed, never deleted. A commit that adds stories raises
 # STORIES_AT_PLAN_START by as many in the same commit, so the floor keeps up with the count.

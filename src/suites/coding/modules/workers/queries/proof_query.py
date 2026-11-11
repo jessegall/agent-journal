@@ -11,9 +11,13 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.replaced_rows import replaced_rows
 from suites.coding.modules.workers.conditions.proof_task_testing import ProofTaskTesting
 
+PROOF_PAGE_ROWS = 50
+
 
 class ProofQuery(Query[Proof]):
-    """Reads proofs, with the proofs of one worktree and those waiting for a check by name."""
+    """Reads proofs, with the proofs of one worktree and those waiting for a check by name. The proofs of a task
+    are those of the newest worktree that proved each point: a proof an older worktree made for the same point is
+    replaced, so a short one there no longer fails a checkpoint."""
 
     def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:
         super().__init__(database, tables, Proof)
@@ -42,7 +46,9 @@ class ProofQuery(Query[Proof]):
         return self.worktree_proofs(worktree_id).filter(state=ProofState.SHOWN)
 
     def task_proofs(self, task_ids: Sequence[int]) -> tuple[Proof, ...]:
-        return tuple(self.matching(Among("task_id", task_ids)).oldest().all_rows())
+        proofs = self.matching(Among("task_id", task_ids)).oldest().all_rows(PROOF_PAGE_ROWS)
+        current = {(proof.task_id, proof.point): proof for proof in sorted(proofs, key=lambda proof: (proof.worktree_id, proof.id))}
+        return tuple(sorted(current.values(), key=lambda proof: proof.id))
 
     def committed_proofs(self, task_ids: Sequence[int]) -> Self:
         return self.filter(state=ProofState.COMMITTED).matching(Among("task_id", task_ids))

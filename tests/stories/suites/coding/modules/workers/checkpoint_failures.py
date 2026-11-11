@@ -1,5 +1,7 @@
 import pytest
 
+from tests.stories.core.support.agent_labels import agent_number
+
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.models.merger_line import MergerLine
@@ -156,3 +158,18 @@ def test_195_a_task_returned_after_its_merge_gets_a_new_worktree_cut_from_the_he
     worker.edit_prove(TEST_LINE)
     states = {task_id: proof["state"] for task_id, proof in proofs_by_task(worker).items()}
     story.expect_rows(states == {1: "shown", 2: "checked", 3: "checked"}, len(rows(worker, "proof list --json --oldest --limit 20")) == 3, detail=str(states))
+
+
+def test_a_short_proof_left_on_a_released_worktree_fails_no_later_run_once_a_new_worktree_proved_its_point(failed_cart_proof):
+    worker, story = failed_cart_proof, failed_cart_proof.story
+    number = agent_number(story, worker.worker.id)
+    story.expect_success(f'worker release {number} "its work is taken in by hand"', actor=story.agent)
+    story.expect_success(f"worker send {number} --task 1 --wait", actor=story.agent)
+    worker.repository.changed(worker.worker.id, "cart.py", FIXED_CART)
+    story.expect_success(f'proof make 1 --task 1 "cart.py:1, the fixed cart total" --test "{file_proof_line(TEST_LINE)}"', actor=worker.worker)
+    story.expect_success(COMMIT, actor=worker.worker)
+    story.run_listeners()
+    merge(worker)
+    end_run(worker)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
+    story.expect_rows([row["state"] for row in rows(worker, REACHES)] == ["failed", "passed"], detail=str(rows(worker, REACHES)))
