@@ -37,6 +37,7 @@ CHECKED_AGENTS_REASON = "One activity row for each running agent and each worker
 from engine.query.conditions.prefix import Prefix
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
+from suites.coding.modules.workers.support.worker_questions import WorkerQuestions
 
 
 class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
@@ -49,8 +50,8 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, home: JournalHome, queries: Queries, settings: SettingValues,
-                 work: MainAgentWork, nudger: Nudger, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces, task_query: TaskQuery, agent_rows: AgentRows, inbox: MergerInbox) -> None:
-        self.task_query, self.agent_rows, self.inbox = task_query, agent_rows, inbox
+                 work: MainAgentWork, nudger: Nudger, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces, task_query: TaskQuery, agent_rows: AgentRows, inbox: MergerInbox, questions: WorkerQuestions) -> None:
+        self.task_query, self.agent_rows, self.inbox, self.questions = task_query, agent_rows, inbox, questions
         self.home, self.queries, self.settings = home, queries, settings
         self.work, self.nudger, self.bus, self.stop, self.main_line, self.places = work, nudger, bus, stop, main_line, places
 
@@ -101,6 +102,8 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         grace = self.settings.minutes(IDLE_WORKER_MINUTES).count
         repeat = self.settings.minutes(IDLE_WORKER_REPEAT_MINUTES).count
         for worker in agents:
+            if worker.ended_at is None and f"idle:{worker.id}" in idle_lines and idle_lines[f"idle:{worker.id}"].is_open_question():
+                self.questions.close_idle_line(idle_lines[f"idle:{worker.id}"], context)
             if worker.ended_at is None or worker.paused_at is not None or worker.id in excluded:
                 continue
             if worker.id not in stalled and (worker.id not in workers or worker.id not in working):

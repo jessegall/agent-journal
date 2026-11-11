@@ -19,6 +19,7 @@ from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.wait import Wait
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from suites.coding.modules.workers.models.merger_line import MergerLine
+from suites.coding.modules.workers.support.ask_deadline import AskDeadline
 from suites.coding.modules.workers.support.worker_settings import QUESTION_ANSWER_MINUTES, QUESTION_FORWARD_MINUTES
 
 CLOCK_FORMAT = "%H:%M"
@@ -66,6 +67,12 @@ class WorkerQuestions:
     def close_worker_lines(self, worker_id: int, reason: str, context: Context) -> None:
         for line in self.worker_lines(worker_id):
             self.record(line, AskOutcome.MOOT, reason, context)
+
+    def due_workers(self, visits_limit: int, timestamp: Timestamp) -> tuple[int, ...]:
+        return tuple(dict.fromkeys(line.worker_id for line in self.open_lines() if AskDeadline.from_line(line, visits_limit).is_forward_due(timestamp)))
+
+    def close_idle_line(self, line: MergerLine, context: Context) -> None:
+        self.record(line, AskOutcome.MOOT, "the worker works again", context)
 
     def close_task_lines(self, task_id: int, reason: str, context: Context) -> None:
         for line in self.task_lines(task_id):

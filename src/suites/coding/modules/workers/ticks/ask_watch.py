@@ -20,10 +20,12 @@ class AskWatch:
         timestamp = container.get(Clock).timestamp()
         forwarded_workers: set[int] = set()
         for line in container.get(WorkerQuestions).open_lines():
+            if line.worker_id in forwarded_workers:
+                continue
             with container.get(Scopes).row_scope(line):
                 deadline = AskDeadline.from_line(line, container.get(SettingValues).number(QUESTION_VISITS_LIMIT))
-                if deadline.is_forward_due(timestamp) and line.worker_id not in forwarded_workers:
+                if deadline.is_forward_due(timestamp):
                     forwarded_workers.add(line.worker_id)
                     container.get(Bus).run(ForwardWorkerQuestions(line.worker_id), Actor.core(), environment_id=line.environment_id)
-                elif deadline.is_answer_overdue(timestamp) and line.worker_id not in forwarded_workers:
+                elif deadline.is_answer_overdue(timestamp):
                     MergerRetry().retry_line(container, line)
