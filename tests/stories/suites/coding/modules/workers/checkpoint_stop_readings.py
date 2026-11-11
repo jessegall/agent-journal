@@ -58,7 +58,7 @@ def test_a_stop_by_another_agent_shows_a_card_and_sends_no_line(two_task_worker)
 
 def test_the_resume_limit_reaches_the_main_agent_once_and_not_the_merger(two_task_worker):
     story = two_task_worker
-    set_resume_limit(story, 0)
+    set_resume_limit(story.container, 0)
     story.expect_success(MERGER_ON, actor=story.user)
     ended(story)
     story.run_listeners()

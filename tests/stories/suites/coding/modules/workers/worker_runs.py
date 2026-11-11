@@ -70,7 +70,7 @@ def worker_with_a_run(new_story):
 
 def test_a_worker_past_its_restarts_on_old_tasks_is_restarted_for_a_queued_task(second_job_worker):
     story, worker = second_job_worker
-    set_resume_limit(story, 1)
+    set_resume_limit(story.container, 1)
     session = worker_session(story, worker)
     story.advance(timedelta(minutes=1))
     story.run(f"agent end {worker.id}", actor=worker)
@@ -128,7 +128,7 @@ def test_a_worker_with_a_run_going_may_stop(new_story):
 
 def test_a_worker_past_its_restarts_that_stops_with_a_run_going_leaves_the_main_agent_no_line_until_it_stops_with_none(worker_with_a_run):
     story, worker, run, bus = worker_with_a_run
-    set_resume_limit(story, 1)
+    set_resume_limit(story.container, 1)
     session = worker_session(story, worker)
     line = f"worker:{agent_number(story, worker.id)} ended with"
     for _ in range(3):
@@ -156,7 +156,7 @@ def stopped_twice(story, worker, session, uses_tool_after_first_stop: bool) -> N
 def test_a_worker_that_used_a_tool_since_its_last_restart_is_started_again_past_the_restart_limit(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    set_resume_limit(story, 1)
+    set_resume_limit(story.container, 1)
     worker = dispatched_worker(story)
     stopped_twice(story, worker, worker_session(story, worker), uses_tool_after_first_stop=True)
     expect_count_output_2(story, f"agent-line list --agent {worker.id}", "you ended with tasks left", 2)
@@ -165,7 +165,7 @@ def test_a_worker_that_used_a_tool_since_its_last_restart_is_started_again_past_
 def test_a_worker_that_did_nothing_since_its_last_restart_is_not_started_past_the_restart_limit(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    set_resume_limit(story, 1)
+    set_resume_limit(story.container, 1)
     worker = dispatched_worker(story)
     stopped_twice(story, worker, worker_session(story, worker), uses_tool_after_first_stop=False)
     expect_count_output_2(story, f"agent-line list --agent {worker.id}", "you ended with tasks left", 1)
@@ -174,7 +174,7 @@ def test_a_worker_that_did_nothing_since_its_last_restart_is_not_started_past_th
 def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    set_resume_limit(story, 1)
+    set_resume_limit(story.container, 1)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
     story.advance(timedelta(minutes=1))

@@ -89,7 +89,7 @@ def test_a_worker_that_ended_while_its_hand_in_runs_leaves_no_stopped_line(hando
 
 
 def test_after_its_limit_a_worker_that_ended_names_its_tasks_those_in_testing_included(program_ended):
-    set_resume_limit(program_ended.story, 0)
+    set_resume_limit(program_ended.story.container, 0)
     program_ended.story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=program_ended.story.user)
     program_ended.story.tick(MAIN_SESSION)
     program_ended.story.expect_text(f"agent-line list --agent {program_ended.story.agent.id}", f"worker:{agent_number(program_ended.story, program_ended.worker.id)} ended with task:1, task:2, task:3 left")

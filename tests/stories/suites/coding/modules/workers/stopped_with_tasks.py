@@ -89,7 +89,7 @@ def test_a_worker_another_agent_stopped_with_open_tasks_stays_stopped(two_task_w
 
 def test_a_worker_that_keeps_ending_with_the_merger_on_is_named_to_the_main_agent_once(two_task_worker):
     story = two_task_worker
-    set_resume_limit(story, 0)
+    set_resume_limit(story.container, 0)
     story.expect_success(MERGER_ON, actor=story.user)
     ended(story)
     story.tick(MAIN_SESSION)
@@ -99,7 +99,7 @@ def test_a_worker_that_keeps_ending_with_the_merger_on_is_named_to_the_main_agen
 
 def test_a_worker_that_keeps_ending_with_a_blocked_current_task_names_its_open_task_to_the_main_agent(two_task_worker):
     story = two_task_worker
-    set_resume_limit(story, 0)
+    set_resume_limit(story.container, 0)
     story.expect_success('task block 1 --reason "waits on a person"', actor=story.agent)
     ended(story)
     waiting_lines_entered(story)

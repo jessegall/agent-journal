@@ -29,7 +29,7 @@ def next_round(story) -> None:
 @pytest.fixture
 def ended_with_open_tasks(two_task_worker):
     """A worker with two open tasks whose program ended and that nothing starts again."""
-    set_resume_limit(two_task_worker, 0)
+    set_resume_limit(two_task_worker.container, 0)
     ended(two_task_worker)
     two_task_worker.tick(MAIN_SESSION)
     return two_task_worker

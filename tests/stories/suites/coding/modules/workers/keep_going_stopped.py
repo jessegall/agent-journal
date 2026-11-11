@@ -60,7 +60,7 @@ def test_a_worker_whose_process_ended_with_work_left_is_named_and_named_as_kept_
     story = ended_with_work.story
     story.tick(MAIN_SESSION)
     ended_lines = stopped_lines(story)
-    set_resume_limit(story, 0)
+    set_resume_limit(story.container, 0)
     story.tick(MAIN_SESSION)
     lines = stopped_lines(story)
     story.expect_rows(len(ended_lines) == 1, "its process ended" in ended_lines[0], "task:1" in ended_lines[0], len(lines) == 2, "kept stopping" in lines[0], "task:1" in lines[0], detail=str(lines))
