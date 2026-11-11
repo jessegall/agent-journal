@@ -47,6 +47,10 @@ class Staging:
     def started_except(self, task_ids: Collection[int]) -> tuple[Task, ...]:
         return tuple(entry.task for entry in self.entries if entry.task.id not in task_ids)
 
+    def open_task_line(self, task: Task) -> str:
+        missing = self.missing_points(task.id)
+        return f"task {task.id}: {task.title}" if missing is None or not missing.points else missing.text()
+
     def refused_short(self) -> tuple[Proof, ...]:
         refused = tuple(proof for entry in self.entries if entry.is_refused_short() for proof in entry.short())
         if refused or self.ready:

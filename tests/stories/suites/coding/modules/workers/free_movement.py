@@ -1,7 +1,6 @@
 import pytest
 
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH
 from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, proofs, prove_task, unplanned_holding_worker
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN_DISPATCH, TEST_LINE, StoryWorker, approve_plan, dispatched_story_worker, planned_story
@@ -96,18 +95,16 @@ def test_22_the_status_lists_started_tasks_with_their_missing_points_tasks_to_st
                       [task["id"] for task in listed["blocked"]] == [2], [task["id"] for task in listed["staged"]] == [1], detail=status)
 
 
-def test_23_a_task_that_waited_on_a_task_of_the_worker_is_listed_to_start_once_that_task_is_completed(new_story, monkeypatch):
+def test_23_a_task_that_waits_on_a_task_of_another_agent_is_listed_to_start_once_that_task_is_closed(new_story, monkeypatch):
     worker = unplanned_holding_worker(new_story, monkeypatch)
     story = worker.story
+    audit = story.new_row_id('task make "Audit" --brief "The audit"', actor=story.agent)
     receipts = story.new_row_id('task make "Receipts" --brief "The receipts"', actor=story.agent)
-    story.expect_success(f"task depend {receipts} --on 1", actor=story.agent)
+    story.expect_success(f"task depend {receipts} --on {audit}", actor=story.agent)
     story.expect_success(f"worker send --wait {agent_number(story, worker.worker.id)} --task {receipts}", actor=story.agent)
     listed_while_waiting = startable_ids(worker)
-    prove_task(worker, 1, 1, TEST_LINE)
-    prove_task(worker, 2, 1)
-    story.expect_success(COMMIT, actor=worker.worker)
+    story.expect_success(f'task cancel {audit} --reason "no audit is needed"', actor=story.user)
     story.run_listeners()
-    worker.end_all_tests()
     story.expect_rows(receipts not in listed_while_waiting, receipts in startable_ids(worker), detail=f"{listed_while_waiting} | {startable_ids(worker)}")
 
 
