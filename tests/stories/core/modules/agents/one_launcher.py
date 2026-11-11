@@ -31,7 +31,8 @@ def slow_launcher(new_story):
     owner_link = socket_path.with_name(socket_path.name + ".pid")
     owner_link.unlink(missing_ok=True)
     owner_link.symlink_to(str(os.getpid()))
-    return story
+    yield story
+    owner_link.unlink(missing_ok=True)
 
 
 def test_548_a_launcher_whose_process_runs_and_is_slow_to_answer_is_not_replaced_by_a_second_launcher(slow_launcher, monkeypatch):
