@@ -7,8 +7,8 @@ from tests.stories.suites.coding.modules.workers.context_limit import HARD, LIMI
 
 SMALL_CONTEXT = 100_000
 LOWER_LIMIT = 250_000
-BETWEEN_THE_LIMITS = 300_000
-STILL_OVER = LIMIT_TOKENS + 10_000
+TOKENS_OVER_LOWER_LIMIT = 300_000
+TOKENS_OVER_LIMIT = LIMIT_TOKENS + 10_000
 DEFAULT_GROWTH = LIMIT_TOKENS // 10
 HALVED_GROWTH_PERCENT = 5
 EDIT = HookSamples.edit("src/cart.py")
@@ -48,12 +48,12 @@ def test_a_reading_at_the_limit_is_due_and_one_token_under_is_not(limited, token
 
 def test_e5_a_compaction_that_left_the_context_over_the_limit_is_followed_by_another_only_after_the_growth_share(compacted_agent):
     agent = compacted_agent
-    reads_context(agent, STILL_OVER)
+    reads_context(agent, TOKENS_OVER_LIMIT)
     stops(agent)
-    has_context(agent, STILL_OVER + DEFAULT_GROWTH - 1)
+    has_context(agent, TOKENS_OVER_LIMIT + DEFAULT_GROWTH - 1)
     stops(agent)
     expect_compaction_count(agent, 0)
-    has_context(agent, STILL_OVER + DEFAULT_GROWTH)
+    has_context(agent, TOKENS_OVER_LIMIT + DEFAULT_GROWTH)
     stops(agent)
     expect_compaction_count(agent, 1)
 
@@ -61,8 +61,8 @@ def test_e5_a_compaction_that_left_the_context_over_the_limit_is_followed_by_ano
 def test_the_growth_share_is_a_setting_a_person_changes(compacted_agent):
     agent = compacted_agent
     set_value(agent, CONTEXT_LIMIT_GROWTH_PERCENT, HALVED_GROWTH_PERCENT)
-    reads_context(agent, STILL_OVER)
-    has_context(agent, STILL_OVER + DEFAULT_GROWTH // 2)
+    reads_context(agent, TOKENS_OVER_LIMIT)
+    has_context(agent, TOKENS_OVER_LIMIT + DEFAULT_GROWTH // 2)
     stops(agent)
     expect_compaction_count(agent, 1)
 
@@ -70,7 +70,7 @@ def test_the_growth_share_is_a_setting_a_person_changes(compacted_agent):
 def test_e6_a_limit_a_person_lowers_types_nothing_by_itself_and_applies_to_the_next_stop(compacted_agent):
     agent = compacted_agent
     reads_context(agent, SMALL_CONTEXT)
-    has_context(agent, BETWEEN_THE_LIMITS)
+    has_context(agent, TOKENS_OVER_LOWER_LIMIT)
     set_value(agent, CONTEXT_LIMIT_TOKENS, LOWER_LIMIT)
     agent.run_listeners()
     expect_compaction_count(agent, 0)
