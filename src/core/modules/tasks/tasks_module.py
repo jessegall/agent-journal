@@ -84,7 +84,7 @@ from core.modules.tasks.commands.make_task_dependency.make_task_dependency_subco
 from core.modules.tasks.commands.remove_task_dependency.remove_task_dependency_subcommand import RemoveTaskDependencySubcommand
 from core.modules.tasks.commands.record_task_independence.record_task_independence_subcommand import RecordTaskIndependenceSubcommand
 from core.modules.tasks.guards.dependencies_closed_guard import DependenciesClosedGuard
-from core.modules.tasks.listeners.task_assignment_mirror_listener import TaskAssignmentMirrorListener
+from core.modules.tasks.listeners.task_assignment_copy_listener import TaskAssignmentCopyListener
 from core.modules.tasks.migrations.m025_task_assignments import TaskAssignmentsMigration
 from core.modules.tasks.guards.visible_dependency_guard import VisibleDependencyGuard
 from core.modules.tasks.guards.no_dependency_loop_guard import NoDependencyLoopGuard
@@ -164,7 +164,7 @@ class TasksModule(Module):
     moves = [TasksMove]
     guards = [TaskTagAccessGuard, TaskTagWordGuard, TaskEditAccessGuard, VisibleDependencyGuard, NoDependencyLoopGuard, DependenciesClosedGuard, UserWaitGuard, ReservedTaskGuard]
     views = [TaskTagWord, OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow, TaskBlockReview]
-    listeners = [TaskAssignmentMirrorListener, TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener]
+    listeners = [TaskAssignmentCopyListener, TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
     driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, AutoModeTaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]

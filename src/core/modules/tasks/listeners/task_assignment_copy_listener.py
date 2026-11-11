@@ -7,11 +7,11 @@ from core.modules.tasks.models.task import Task
 
 
 # Deleted in phase 8 of plan 1104 (task 8.6), once every writer writes the assignments table itself.
-class TaskAssignmentMirrorListener(SaveListener[Changed[Task]]):
+class TaskAssignmentCopyListener(SaveListener[Changed[Task]]):
     """While the column delegated_to still exists, the assignment of a task is kept equal to it: the agent in
     the column holds the task, and an empty column leaves it unassigned."""
 
-    name = "tasks.assignment-mirror"
+    name = "tasks.assignment-copy"
 
     def __init__(self, assignments: Assignments) -> None:
         self.assignments = assignments
