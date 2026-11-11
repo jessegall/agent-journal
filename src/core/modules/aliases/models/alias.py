@@ -50,6 +50,9 @@ class Alias(Model):
             if VARIABLE_SEPARATOR not in variable:
                 raise Refusal(f"a variable is {variable}=value, not {variable}", "give each --env as NAME=value")
 
+    def begins(self, command: str) -> bool:
+        return command.startswith(self.line.replace(ARGS_MARK, "").strip())
+
     def shell_line(self, arguments: Sequence[str]) -> str:
         quoted = shlex.join(arguments)
         return self.line.replace(ARGS_MARK, quoted) if ARGS_MARK in self.line else f"{self.line} {quoted}".rstrip()
