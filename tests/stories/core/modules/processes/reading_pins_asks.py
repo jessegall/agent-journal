@@ -75,9 +75,9 @@ def test_a_worker_command_rejected_before_it_ran_ends_its_request_with_that_reas
     story.expect_text("reader-request show 1 --json", '"skip_reason": "command rejected before it ran"', '"completed_at": "', actor=story.agent)
 
 
-def test_a_draft_for_a_command_a_stock_reader_matches_offers_the_stock_reader_and_not_a_passing_project_reader(new_story):
+def test_a_draft_for_a_command_a_stock_reader_matches_offers_the_passing_project_reader_first(new_story):
     story = new_story(fixture=ProjectPytestReader)
     process = worker_run(story, "pytest tests/cart -q", CommandCategory.TEST_RUN)
     end_run(story, process, PYTEST_SAMPLE)
-    story.expect_text("reader draft 1", "journal reader add pytest", actor=story.agent)
-    story.expect_no_text("reader draft 1", "project-tests", actor=story.agent)
+    story.expect_text("reader draft 1", "journal reader add project-tests", actor=story.agent)
+    story.expect_no_text("reader draft 1", "journal reader add pytest ", actor=story.agent)

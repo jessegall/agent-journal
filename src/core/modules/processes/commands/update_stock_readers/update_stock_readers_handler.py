@@ -2,7 +2,6 @@ from collections.abc import Callable
 from dataclasses import replace
 
 from engine.actor.actor import CORE_ACTOR_ID
-from engine.event.event_log import EventLog
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.database.kept_rows import KeptRows
@@ -13,15 +12,14 @@ from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.stock_reader import STOCK_READERS, StockReader
 from core.modules.processes.support.stock_reader_rows import StockReaderRows
-
-READER_FIELDS = {"type", "commands", "lines_pattern", "script", "progress_pattern", "finished_pattern", "failed_pattern", "summary_pattern", "topic_pattern", "title", "subject", "step_pattern", "count_pattern", "count_command"}
+from core.modules.processes.support.reading.stock_reader_edits import StockReaderEdits
 
 
 class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
     command = UpdateStockReaders
 
-    def __init__(self, readers: ReaderQuery, events: EventLog, repository: Repository, kept: KeptRows) -> None:
-        self.readers, self.events, self.repository, self.kept = readers, events, repository, kept
+    def __init__(self, readers: ReaderQuery, edits: StockReaderEdits, repository: Repository, kept: KeptRows) -> None:
+        self.readers, self.edits, self.repository, self.kept = readers, edits, repository, kept
 
     def handle(self, command: UpdateStockReaders, context: Context) -> None:
         rows = self.kept.read("readers", self.loaded_rows, name="processes.stock_readers")
@@ -43,9 +41,7 @@ class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
 
     def loaded_rows(self) -> StockReaderRows:
         readers = {reader.name: reader for reader in self.readers.all_rows()}
-        edited = frozenset(event.row_id for event in self.events.row_events_many("readers", [reader.id for reader in readers.values()])
-                           if event.event == "reader.update" and event.actor_id != CORE_ACTOR_ID and bool(READER_FIELDS.intersection(event.data)))
-        return StockReaderRows(readers, edited)
+        return StockReaderRows(readers, self.edits.edited_ids(readers.values()))
 
     @staticmethod
     def reader(stock: StockReader, reader: Reader | None = None) -> Reader:

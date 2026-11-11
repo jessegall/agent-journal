@@ -88,7 +88,7 @@ class WorkerTestListings(RunCounts):
         return next((reader for reader in readers if reader.count_command and ReaderSelection.reads(reader, part)), None)
 
     def reader(self, part: ProcessPart, output: Output | None, readers: tuple[Reader, ...]) -> Reader | None:
-        first_answer = ReaderSelection.choose(readers, [part])
+        first_answer = ReaderSelection.choose(readers, [part], self.readers.layers())
         if output is None or output.reader_id is None:
             return first_answer.reader if first_answer else None
         if output.reader_position not in (0, part.position):

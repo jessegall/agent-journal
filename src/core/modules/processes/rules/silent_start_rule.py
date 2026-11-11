@@ -74,5 +74,5 @@ class SilentStartRule(DriverRule):
         return RuleAnswer(refusal=refused.text, nudges=(refused, ready), last=True)
 
     def reader_changed_after(self, run: SilentRun) -> bool:
-        selected = ReaderSelection.choose(self.readers.all(), [run.part])
+        selected = ReaderSelection.choose(self.readers.all(), [run.part], self.readers.layers())
         return selected is not None and run.process.created_at is not None and selected.reader.update_timestamp().value > run.process.created_at.value

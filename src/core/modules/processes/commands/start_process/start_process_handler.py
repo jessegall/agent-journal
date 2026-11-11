@@ -43,10 +43,11 @@ class StartProcessHandler(Handler[StartProcess, Process]):
                                                queued_at=context.timestamp, plugin=command.plugin, is_queue_run=bool(command.plugin) or any(part.category.is_queued for part in command.parts) and all(part.category.is_queued or part.category is CommandCategory.JOURNAL for part in command.parts),
                                                owner_agent_id=command.owner_agent_id, task_id=command.task_id, timeout_seconds=min(timeouts, default=None)), context)
         readers = self.readers.all() if command.category.has_reader else ()
+        layers = self.readers.layers()
         parts: list[ProcessPart] = []
         for position, spec in enumerate(command.parts, 1):
             part = ProcessPart(process_id=process.id, position=position, text=spec.text, program=spec.program, command=spec.command, piped=spec.piped, category=spec.category, is_visible=self.visibility.is_visible(spec))
-            selected = ReaderSelection.choose(readers, [part])
+            selected = ReaderSelection.choose(readers, [part], layers)
             explicit_reader_id = spec.named_reader_id if spec.named_reader_id is not None else command.reader_id
             reader = selected.reader if selected else None
             if explicit_reader_id is not None:
@@ -57,7 +58,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
             reader = self.rows.required(Reader, command.reader_id)
             self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=reader.id, title=RunTitle.title(reader, command.line)), context)
         else:
-            part_reader = ReaderSelection.choose(readers, [part for part in parts if part.reader_request_id is None])
+            part_reader = ReaderSelection.choose(readers, [part for part in parts if part.reader_request_id is None], layers)
             self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=part_reader.reader.id if part_reader else None,
                                         reader_position=part_reader.part.position if part_reader else 0, title=RunTitle.title(part_reader.reader, part_reader.part.text) if part_reader else ""), context)
         self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
