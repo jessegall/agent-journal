@@ -1,3 +1,4 @@
+from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_dispatcher import AgentDispatcher
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.standing import Standing
@@ -11,4 +12,7 @@ class AgentStanding:
         self.dispatcher, self.agents = dispatcher, agents
 
     def standing(self, agent_id: int) -> Standing:
-        return self.dispatcher.standing(self.agents.find(agent_id))
+        return self.read(self.agents.find(agent_id))
+
+    def read(self, agent: Agent) -> Standing:
+        return self.dispatcher.standing(agent)
