@@ -15,13 +15,16 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_MERGE_CON
 from suites.coding.modules.workers.support.worker_round import WorkerRound
 from suites.coding.modules.workers.support.worker_staging import WorkerStaging
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
+from suites.coding.modules.workers.support.work_units import WorkUnits
+from suites.coding.modules.workers.support.worktree_runs import WorktreeRuns
 
 
 class WorkerSteps:
     """Which fixed point of its round a worker is at, read from the rows the journal keeps."""
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, next_task: WorkerNextTask, stop: WorkerStop, queries: Queries, staging: WorkerStaging) -> None:
-        self.staging = staging
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, next_task: WorkerNextTask, stop: WorkerStop, queries: Queries, staging: WorkerStaging, units: WorkUnits,
+                 runs: WorktreeRuns) -> None:
+        self.staging, self.units, self.runs = staging, units, runs
         self.tasks, self.worktrees, self.proofs = tasks, worktrees, proofs
         self.next_task, self.stop, self.queries = next_task, stop, queries
 
@@ -50,7 +53,15 @@ class WorkerSteps:
             return WorkerStep.WAIT
         if self.has_open_failure(worktree):
             return WorkerStep.FIX
+        if self.is_unit_committed(worker_round, worktree):
+            return WorkerStep.WAIT if self.runs.holds_merge(worktree.id) else WorkerStep.MERGE_DUE
         return self.working_step(worker_round)
+
+    def is_unit_committed(self, worker_round: WorkerRound, worktree: Worktree) -> bool:
+        if worktree.state is not WorktreeState.CUT or worker_round.started:
+            return False
+        unit = self.units.unit(worker_round.worker_id)
+        return unit.has_several_tasks and unit.is_committed
 
     @staticmethod
     def working_step(worker_round: WorkerRound) -> WorkerStep:
