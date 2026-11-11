@@ -124,6 +124,9 @@ class ShellLine:
         command_terms = tuple(tuple(command.split()) for command in commands)
         return tuple(part for part in self.parts if part.program == JOURNAL_PROGRAM and (not command_terms or any(part.arguments[:len(terms)] == terms for terms in command_terms)))
 
+    def has_only_journal_commands(self, *commands: str) -> bool:
+        return bool(self.parts) and len(self.parts_running_journal_command(*commands)) == len(self.parts)
+
     def journal_command_numbers(self, *commands: str) -> tuple[int, ...]:
         first_numbers = (next((word for word in part.arguments if word.isdigit()), "") for part in self.parts_running_journal_command(*commands))
         return tuple(dict.fromkeys(int(number) for number in first_numbers if number))

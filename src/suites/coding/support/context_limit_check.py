@@ -22,6 +22,9 @@ class ContextLimitCheck:
     def is_compaction_requested(self, agent_id: int, timestamp: Timestamp) -> bool:
         return self.compactions.blocks_request(agent_id, timestamp)
 
+    def is_compaction_unfinished(self, agent_id: int, timestamp: Timestamp) -> bool:
+        return self.compactions.open_compaction(agent_id) is not None or self.is_compaction_requested(agent_id, timestamp)
+
     def tokens(self, agent_id: int) -> int | None:
         if not self.settings.flag(CONTEXT_LIMIT_ENABLED):
             return None

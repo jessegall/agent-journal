@@ -161,14 +161,41 @@ def test_past_the_second_limit_a_tool_is_refused_and_the_compaction_is_typed_at_
     agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
     agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
     agent.expect_rows(agent.typing.typed == [COMPACT], detail="typed once while the last one runs")
+    agent.advance(timedelta(minutes=10))
+    agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail="a tool use shows the typed line still waits in the program")
 
 
-def test_past_the_second_limit_a_memory_command_still_runs_so_a_stop_waiting_on_the_weighing_can_end(hard_limited_worker):
+def journal_line(line):
+    texts = [text.strip() for text in line.split("&&")]
+    return HookSamples.shell(line, *(ShellPart(text.split()[0], CommandCategory.JOURNAL if text.startswith("journal ") else CommandCategory.READ, text.split()[1:]) for text in texts))
+
+
+@pytest.mark.parametrize("line", ["journal message read 7", "journal message unread", "journal wait stuck full", "journal refusal skip workers.context-limit-hard-stop --reason wrong",
+                                  "journal agent-block skip 3 --reason waits", "journal overview", "journal memory weigh 1 5", "journal memory list && journal message read 7"])
+def test_past_the_second_limit_a_journal_command_a_stop_waits_on_still_runs(hard_limited_worker, line):
     agent = hard_limited_worker
     has_context(agent, HARD)
-    weigh = HookSamples.shell("journal memory weigh 1 5", ShellPart("journal", CommandCategory.JOURNAL, ["memory", "weigh", "1", "5"]))
-    agent.expect_hook_allowed(SESSION, weigh)
+    agent.expect_hook_allowed(SESSION, journal_line(line))
     agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
+
+
+@pytest.mark.parametrize("line", ["journal memory list && cat src/cart.py", "journal plan outline 3", "journal task show 3"])
+def test_past_the_second_limit_a_line_that_also_runs_something_a_stop_never_waits_on_is_refused(hard_limited_worker, line):
+    agent = hard_limited_worker
+    has_context(agent, HARD)
+    agent.expect_hook_refusal(SESSION, journal_line(line), "no more tools, stop now")
+
+
+def test_past_the_second_limit_an_agent_with_an_unread_message_reads_it_and_its_stop_no_longer_names_the_message(hard_limited_worker):
+    agent = hard_limited_worker
+    agent.expect_success("message send 'look at the cart'", actor=agent.user)
+    has_context(agent, HARD)
+    agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
+    agent.expect_hook_allowed(SESSION, journal_line("journal message read 1"))
+    agent.expect_success("message read 1", actor=agent.agent)
+    stop = agent.hook(SESSION, HookSamples.stop())
+    agent.expect_rows("unread" not in stop.refusal and "new message" not in stop.refusal, detail=stop.refusal)
 
 
 def test_past_the_second_limit_the_watch_of_a_run_still_going_passes_so_the_stop_it_blocks_can_end(hard_limited_worker):

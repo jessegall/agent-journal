@@ -118,9 +118,10 @@ class Assignments:
         self.repository.delete_stored(assignment, context)
 
     def follow_parent(self, child: Assignable, context: Context) -> None:
-        if self.assignments(child):
+        parents = self.rows.parents(child)
+        if not parents or self.assignments(child):
             return
-        source = next((assignment for parent in self.rows.parents(child) for assignment in self.assignments(parent)), None)
+        source = next((assignment for parent in parents for assignment in self.assignments(parent)), None)
         if source is not None and not child.cascade_skips(source.actor_id):
             self.child_cascade(child, source, None, CascadeWalk(context, override=False), Cascade())
 
