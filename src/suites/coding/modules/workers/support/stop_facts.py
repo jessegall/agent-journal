@@ -7,7 +7,8 @@ from suites.coding.modules.workers.models.enums.stop_reading import StopReading
 class StopFacts:
     """What is known about a worker at the end of a turn with tasks left, and the one reading that follows:
     a person's stop first, then work that still goes, a failed launch, a stop nobody resumes, the resume
-    limit, and a resume with the program ready or still starting."""
+    limit, and a resume with the program ready or still starting. At the resume limit the main agent gets
+    one line; a later stop with no task moved since is a repeat that sends none."""
 
     is_busy: bool
     is_person_stop: bool
@@ -17,6 +18,7 @@ class StopFacts:
     has_requested_help: bool
     is_program_ready: bool
     task_names: str
+    is_main_agent_informed: bool = False
 
     def reading(self) -> StopReading:
         if self.is_person_stop:
@@ -28,5 +30,5 @@ class StopFacts:
         if not self.is_delegated or self.has_requested_help:
             return StopReading.STOPPED
         if self.is_resume_limit_reached:
-            return StopReading.RESUME_LIMIT
+            return StopReading.RESUME_LIMIT_REPEATED if self.is_main_agent_informed else StopReading.RESUME_LIMIT
         return StopReading.RESUMED if self.is_program_ready else StopReading.RESUMED_PROGRAM_STARTING

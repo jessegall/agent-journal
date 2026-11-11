@@ -25,4 +25,6 @@ class Escalations:
         if line is None or line.closed_at is None or self.worktrees.worker_worktree(worker_id) is None:
             return None
         writer_ids = [message.creator_id for message in self.queries.query(Message).filter(target_agent_id=worker_id).matching(Greater("created_at", line.closed_at.text)).all_rows()]
+        if not writer_ids:
+            return line
         return None if any(agent.id in writer_ids for agent in MainAgentFinder.rows(self.queries)) else line

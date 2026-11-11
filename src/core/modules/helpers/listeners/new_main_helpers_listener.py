@@ -1,4 +1,3 @@
-from engine.enums.agent_role import AgentRole
 from engine.enums.helper_role import HelperRole
 from engine.event.created import Created
 from engine.command.context import Context
@@ -9,15 +8,17 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.models.agent_session import AgentSession
 from core.modules.agents.support.report_nudges import PARENT_REPORT_SOURCE
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.agents.support.agent_rows import AgentRows
 
 
-class NewMainHelpersListener(SaveListener[Created[Agent]]):
+class NewMainHelpersListener(SaveListener[Created[AgentSession]]):
     """A new main session takes over the open helpers whose parent ended and the report lines left on ended main
-    sessions of its environment, so no report waits on a row nobody reads."""
+    sessions of its environment, so no report waits on a row nobody reads. A main session that starts on the
+    main agent's own row takes them over the same way as one that starts on a new row."""
 
     name = "helpers.new-main-agent"
     disabled_scopes = [ActorScope]
@@ -25,9 +26,9 @@ class NewMainHelpersListener(SaveListener[Created[Agent]]):
     def __init__(self, queries: Queries, agents: AgentRows, repository: Repository) -> None:
         self.queries, self.agents, self.repository = queries, agents, repository
 
-    def handle(self, event: Created[Agent], context: Context) -> None:
-        agent = event.row
-        if agent.role != AgentRole.MAIN:
+    def handle(self, event: Created[AgentSession], context: Context) -> None:
+        agent = self.agents.find(event.row.session_agent_id)
+        if not agent.is_main:
             return
         helpers = [helper for helper in self.agents.running(HelperRole.HELPER) if helper.parent_id is not None]
         lines = tuple(self.queries.query(AgentLine).filter(source=PARENT_REPORT_SOURCE, state=AgentLineState.WAITING).all_rows())

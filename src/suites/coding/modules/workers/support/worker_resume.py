@@ -96,8 +96,9 @@ class WorkerResume:
         job = next((line for line in sorted(lines, key=lambda line: line.source != WORKER_TEST_LIMIT_SOURCE)
                     if line.source in RESUMING_SOURCES and line.source != UNFINISHED_TASKS_SOURCE), None)
         job = job or self.lost_job(worker) or next((line for line in lines if line.source == UNFINISHED_TASKS_SOURCE), None)
-        if job is None and self.started_work.is_abandoned(worker):
-            job = self.started_work.job(worker)
+        abandoned_tasks = self.started_work.abandoned_tasks(worker) if job is None else ()
+        if abandoned_tasks:
+            job = self.started_work.job(worker, abandoned_tasks)
         if job is None:
             return LaunchAnswer.SKIPPED
         return self.launch_job(worker, worktree, job, actor)

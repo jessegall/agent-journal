@@ -33,12 +33,15 @@ class WorkerStartedWork:
         return [worker for worker in self.queries.query(Agent).find_many(sorted(holders | assigned)) if self.is_abandoned(worker)]
 
     def is_abandoned(self, worker: Agent) -> bool:
+        return bool(self.abandoned_tasks(worker))
+
+    def abandoned_tasks(self, worker: Agent) -> tuple[Task, ...]:
         if worker.role != CodingHelperRole.WORKER or worker.ended_at is None or worker.paused_at is not None or worker.retired_at is not None:
-            return False
+            return ()
         worker_round = self.unfinished.steps.round(worker.id)
-        if worker_round.is_asking or not self.unfinished.round_rows(worker_round):
-            return False
-        return not self.has_waiting_job(worker) and not self.stop.was_stopped(worker) and not self.reached_restart_limit(worker)
+        if worker_round.is_asking or self.has_waiting_job(worker) or self.stop.was_stopped(worker) or self.reached_restart_limit(worker):
+            return ()
+        return self.unfinished.round_rows(worker_round)
 
     def reached_restart_limit(self, worker: Agent) -> bool:
         with self.bus.scopes.row_scope(worker):
@@ -52,5 +55,5 @@ class WorkerStartedWork:
         progress = self.unfinished.last_progress_text(worker.id)
         return sum(line.creation_timestamp().text >= progress for line in lines)
 
-    def job(self, worker: Agent) -> AgentLine:
-        return self.bus.run(SendUnfinishedTasksLine(worker.id, self.guidance.line(worker.id)), Actor.core(), environment_id=worker.environment_id)
+    def job(self, worker: Agent, tasks: tuple[Task, ...]) -> AgentLine:
+        return self.bus.run(SendUnfinishedTasksLine(worker.id, self.unfinished.names(tasks), self.guidance.line(worker.id)), Actor.core(), environment_id=worker.environment_id)

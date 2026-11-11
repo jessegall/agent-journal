@@ -15,6 +15,8 @@ DELEGATED_STOP = StopFacts(is_busy=False, is_person_stop=False, has_launch_faile
     (replace(DELEGATED_STOP, is_person_stop=True, is_busy=True), StopReading.PERSON_STOP),
     (replace(DELEGATED_STOP, has_launch_failed=True), StopReading.LAUNCH_FAILURE),
     (replace(DELEGATED_STOP, is_resume_limit_reached=True), StopReading.RESUME_LIMIT),
+    (replace(DELEGATED_STOP, is_resume_limit_reached=True, is_main_agent_informed=True), StopReading.RESUME_LIMIT_REPEATED),
+    (replace(DELEGATED_STOP, is_main_agent_informed=True), StopReading.RESUMED),
     (replace(DELEGATED_STOP, is_program_ready=False), StopReading.RESUMED_PROGRAM_STARTING),
     (DELEGATED_STOP, StopReading.RESUMED),
     (replace(DELEGATED_STOP, is_delegated=False), StopReading.STOPPED),
@@ -29,6 +31,7 @@ def test_a_stop_with_tasks_left_has_one_reading(facts, expected):
     (StopReading.PERSON_STOP, True, None),
     (StopReading.LAUNCH_FAILURE, True, StopLineTarget.MAIN_AGENT),
     (StopReading.RESUME_LIMIT, True, StopLineTarget.MAIN_AGENT),
+    (StopReading.RESUME_LIMIT_REPEATED, True, None),
     (StopReading.RESUMED_PROGRAM_STARTING, True, StopLineTarget.MERGER),
     (StopReading.RESUMED, True, StopLineTarget.MERGER),
     (StopReading.STOPPED, True, StopLineTarget.MERGER),
@@ -39,7 +42,7 @@ def test_each_stop_says_whether_a_card_shows_and_who_gets_the_line(stop, shows_c
 
 
 def test_every_stop_with_a_card_and_no_person_behind_it_sends_one_line_to_somebody():
-    assert [stop for stop in StopReading if stop.shows_card and stop.line_target is None] == [StopReading.PERSON_STOP]
+    assert [stop for stop in StopReading if stop.shows_card and stop.line_target is None] == [StopReading.PERSON_STOP, StopReading.RESUME_LIMIT_REPEATED]
 
 
 def test_only_the_two_resumed_stops_resume_the_worker():

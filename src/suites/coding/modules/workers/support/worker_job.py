@@ -3,6 +3,7 @@ from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfi
 from suites.coding.modules.workers.support.test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
 
 SILENT_AGENT_SOURCE = "workers.silent-agent"
+ENDED_WORKER_SOURCE = "workers.ended-worker"
 WORKER_JOB_SOURCE = "workers.worker-job"
 WAITING_TASKS_SOURCE = "workers.waiting-tasks"
 MERGE_CONFLICT_SOURCE = "workers.merge-clash"

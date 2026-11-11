@@ -11,6 +11,7 @@ class StopReading(StrEnum):
     PERSON_STOP = "person stop"
     LAUNCH_FAILURE = "launch failure"
     RESUME_LIMIT = "resume limit"
+    RESUME_LIMIT_REPEATED = "resume limit, main agent told before"
     RESUMED_PROGRAM_STARTING = "resumed, program starting"
     RESUMED = "resumed"
     STOPPED = "stopped"
@@ -33,6 +34,7 @@ LINE_TARGETS = {
     StopReading.PERSON_STOP: None,
     StopReading.LAUNCH_FAILURE: StopLineTarget.MAIN_AGENT,
     StopReading.RESUME_LIMIT: StopLineTarget.MAIN_AGENT,
+    StopReading.RESUME_LIMIT_REPEATED: None,
     StopReading.RESUMED_PROGRAM_STARTING: StopLineTarget.MERGER,
     StopReading.RESUMED: StopLineTarget.MERGER,
     StopReading.STOPPED: StopLineTarget.MERGER,

@@ -1,14 +1,16 @@
 from engine.testing.examples.hook_samples import HookSamples
+from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNFINISHED_TASKS
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.ask_ledger import ANSWER, HELP_REQUEST_LINE, questions
 from tests.stories.suites.coding.modules.workers.merger_cases import MergerCase, case  # noqa: F401
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON, main_agent_lines, missing_program, running_worker, two_task_worker, worker_story  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
+from tests.stories.suites.coding.modules.workers.support.earlier_main_rows import put_under_earlier_main_row
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 from tests.stories.suites.coding.modules.workers.worker_ask import asking, asking_with_merger_running, merger_disabled_worker  # noqa: F401
 
-GO_ON_TEXT = WORKER_UNFINISHED_TASKS.text.split("{")[0].strip()
+GO_ON_TEXT = WORKER_UNFINISHED_TASKS.text.split(",")[0]
 SECOND_MAIN_SESSION = "s-second-main"
 
 
@@ -28,7 +30,7 @@ def test_a_worker_that_keeps_stopping_is_sent_back_with_its_tasks_as_often_as_it
         story.hook(session, HookSamples.session_start())
     lines = worker_lines(story, story.worker.id)
     worker = f"worker:{agent_number(story, story.worker.id)}"
-    story.expect_rows(lines.count(GO_ON_TEXT) == 2, "task 1" in lines and "task 2" in lines, main_agent_lines(story).count(f"{worker} ended with") == 1, detail=f"{lines} | {main_agent_lines(story)}")
+    story.expect_rows(lines.count(f"{GO_ON_TEXT}, task:1, task:2:") == 2, main_agent_lines(story).count(f"{worker} ended with") == 1, detail=f"{lines} | {main_agent_lines(story)}")
 
 
 def test_a_worker_that_asked_for_help_and_stops_is_answered_and_never_told_to_go_on(case):
@@ -41,16 +43,17 @@ def test_a_worker_that_asked_for_help_and_stops_is_answered_and_never_told_to_go
     story.expect_rows(ANSWER in case.worker_messages(), GO_ON_TEXT not in worker_lines(story, case.worker.id), detail=worker_lines(story, case.worker.id))
 
 
-def test_a_worker_started_by_a_main_session_that_ended_reaches_the_main_agent_that_runs_now(merger_disabled_worker):
+def test_a_worker_under_a_main_row_that_ended_is_taken_over_by_the_next_main_session_and_its_lines_reach_that_one(merger_disabled_worker):
     story = merger_disabled_worker.story
-    first_main = story.agent
-    second_main_id = story.new_row_id(f"agent start {SECOND_MAIN_SESSION} claude main --environment main")
-    story.expect_success(f"agent end {first_main.id}", actor=first_main)
+    worker = merger_disabled_worker.worker
+    earlier_main_id = put_under_earlier_main_row(story, worker.id)
+    story.expect_success(f"agent start {SECOND_MAIN_SESSION} claude main --environment main", actor=story.user)
+    story.expect_rows(story.row(Agent, worker.id).parent_id == story.agent.id, detail=f"the worker is under agent {story.row(Agent, worker.id).parent_id}")
     merger_disabled_worker.post_question()
     story.run_listeners()
     line = questions(story)[0]
-    story.expect_text(f"agent-line list --agent {second_main_id}", f"merger-line:{line.id}")
-    story.expect_no_text(f"agent-line list --agent {first_main.id}", f"merger-line:{line.id}")
-    story.expect_success('task block 1 --reason "waits on a person"', actor=merger_disabled_worker.worker)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"merger-line:{line.id}")
+    story.expect_success('task block 1 --reason "waits on a person"', actor=worker)
     story.run_listeners()
-    story.expect_text(f"agent-line list --agent {second_main_id}", "task:1")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "task:1")
+    story.expect_absent(f"agent-line list --agent {earlier_main_id}", "task:1")
