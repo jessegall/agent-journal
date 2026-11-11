@@ -55,16 +55,17 @@ def test_32_a_failure_comes_back_as_work_to_fix(running_worker_run):
     worker = running_worker_run
     worker.end_tests(1, 0, 0, 0)
     worker.end_all_tests()
-    worker.story.expect_text("task show 1", "state: started", actor=worker.story.agent)
-    worker.story.expect_rows(worker.status().splitlines()[0].startswith("Fix"), detail=worker.status())
+    worker.story.expect_text("task show 3", "state: started", actor=worker.story.agent)
+    worker.story.expect_rows("Point: fix" in worker.status(), detail=worker.status())
 
 
+@pytest.mark.real_git
 def test_33_only_what_failed_runs_again(running_worker_run):
     worker = running_worker_run
     worker.end_tests(1, 0, 0, 0)
     worker.end_all_tests()
     started_count = len(worker.started)
-    prove_task(worker, 1, 1, TEST_LINE)
+    prove_task(worker, 3, 1, TEST_LINE)
     worker.story.run("worker commit --differences none", actor=worker.worker)
     worker.story.run_listeners()
     again = [process.line for process in worker.started_processes()[started_count:]]
@@ -79,11 +80,12 @@ def test_34_a_failure_while_the_worker_is_in_a_later_phase(running_worker_run):
     worker.story.expect_rows("Point: fix" in worker.status(), detail=worker.status())
 
 
+@pytest.mark.real_git
 def test_35_two_runs_in_a_row(running_worker_run):
     worker = running_worker_run
     worker.end_tests(1, 0, 0, 0)
     worker.end_all_tests()
-    prove_task(worker, 1, 1, TEST_LINE)
+    prove_task(worker, 3, 1, TEST_LINE)
     worker.story.run("worker commit --differences none", actor=worker.worker)
     worker.story.run_listeners()
     worker.story.expect_rows([row["state"] for row in worker_reaches(worker)] == ["failed", "running"], detail=str(worker_reaches(worker)))
