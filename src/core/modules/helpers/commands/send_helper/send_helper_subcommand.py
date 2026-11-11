@@ -5,6 +5,8 @@ from engine.caller.caller import Caller
 from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from core.modules.helpers.commands.send_helper.send_helper import SendHelper
+from core.modules.agents.support.agent_label import AgentLabel
+from core.modules.agents.support.agent_rows import AgentRows
 
 
 class SendHelperSubcommand(Subcommand[SendHelper, int]):
@@ -13,6 +15,9 @@ class SendHelperSubcommand(Subcommand[SendHelper, int]):
     cli_name = "helper"
     name = "send"
     outward = True
+
+    def __init__(self, agents: AgentRows) -> None:
+        self.agents = agents
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("helper_id", type=AgentNumber)
@@ -25,5 +30,5 @@ class SendHelperSubcommand(Subcommand[SendHelper, int]):
         return SendHelper(arguments.helper_id, arguments.job, arguments.steer, arguments.plan, arguments.title)
 
     def write_output(self, value: object, output: Output) -> None:
-        output.write(f"helper {value} takes the job", {"helper_id": value})
+        output.write(f"{AgentLabel.from_agent(self.agents.find(value)).text} takes the job", {"helper_id": value})
 

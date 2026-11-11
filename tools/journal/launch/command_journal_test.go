@@ -32,7 +32,7 @@ func TestTheCommandJournalStopsTheRunningMainsItIsToldOfPastAThousandAgents(t *t
 	if err := journal.StopMainAgent("main"); err != nil {
 		t.Fatal(err)
 	}
-	wanted := []string{"agent running-main-agents --environment main --json", "agent stop 1205 --environment main"}
+	wanted := []string{"agent running-main-agents --environment main --json", "agent stop row:1205 --environment main"}
 	if strings.Join(requests, "; ") != strings.Join(wanted, "; ") {
 		t.Fatalf("the journal was asked %v", requests)
 	}
