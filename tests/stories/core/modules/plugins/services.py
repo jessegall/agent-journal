@@ -7,6 +7,9 @@ import select
 import shutil
 import signal
 from datetime import timedelta
+from threading import Event, Thread
+import subprocess
+import time
 
 from engine.actor.actor import Actor
 from engine.file.file_access import FileAccess
@@ -24,6 +27,7 @@ from core.modules.plugins.commands.support.plugin_service_round import PluginSer
 from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
+from core.modules.plugins.support.orphan_services import OrphanServices
 from core.modules.plugins.support.plugin_services import PluginServices
 from core.modules.plugins.support.service_processes import ServiceProcesses
 from engine.enums.command_category import CommandCategory
@@ -39,6 +43,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 END_LIMIT_SECONDS = 5
+OTHER_SERVER_START_SECONDS = 0.5
 SERVED = ("served", "answers")
 REMOVAL_PART = ShellPart("rm", CommandCategory.EDIT, ["-rf", "build"], effects=[CommandEffect.DELETES_FILES])
 
@@ -68,7 +73,7 @@ def test_an_upgrade_starts_the_service_again_with_the_new_code_before_it_reports
         upgraded = story.run("plugin upgrade served --yes", actor=story.user)
         second = processes.running[("served", "answers")]
         story.expect_rows(upgraded.code == 0, second.pid != first.pid, second.running(), not first.running(), detail=upgraded.output_text)
-        story.expect_text("plugin services", "served answers: running", actor=story.user)
+        story.expect_success("plugin service-log served answers --lines 1", actor=story.user)
     finally:
         processes.close()
 
@@ -446,3 +451,49 @@ def test_a_restart_with_the_plugin_folder_replaced_leaves_one_service_running(ne
     finally:
         after_restart.close()
         story.processes.close()
+
+
+def service_process_ids(story) -> list[int]:
+    program = str(story.container.get(PluginFolders).code("served") / "serve.py")
+    return [pid for pid, _, command_parts in OrphanServices.listed() if program in command_parts[:2]]
+
+
+def other_server_start(story, is_locked: Event, started: list[subprocess.Popen]) -> None:
+    code, pid_file = story.container.get(PluginFolders).code("served"), story.services.sockets.pid(*SERVED)
+    environment = story.services.environment(SERVED, PluginManifest.read(code))
+    with story.services.start_lock(SERVED):
+        is_locked.set()
+        time.sleep(OTHER_SERVER_START_SECONDS)
+        started.append(subprocess.Popen([str(code / "serve.py")], cwd=code, env=environment, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True))
+        pid_file.write_text(str(started[0].pid))
+
+
+def test_one_service_has_one_process_across_a_restart_by_command_two_servers_and_a_server_restart(new_story):
+    story = server_kept_story(new_story)
+    before_restart = story.processes.running[SERVED]
+    story.expect_success("plugin service restart served answers", actor=story.user)
+    first = story.processes.running[SERVED]
+    story.expect_success("plugin service-log served answers --lines 1", actor=story.user)
+    story.expect_rows(first.pid != before_restart.pid, service_process_ids(story) == [first.pid], detail=str(service_process_ids(story)))
+    second_server, after_restart = ServiceProcesses(), ServiceProcesses()
+    story.services.follow(second_server)
+    story.services.follow(story.processes)
+    story.expect_rows(second_server.running[SERVED].pid == first.pid, service_process_ids(story) == [first.pid], detail=str(service_process_ids(story)))
+    story.processes.close()
+    is_locked, started = Event(), []
+    other_server = Thread(target=other_server_start, args=[story, is_locked, started])
+    other_server.start()
+    try:
+        is_locked.wait(END_LIMIT_SECONDS)
+        story.services.follow(after_restart)
+        other_server.join(END_LIMIT_SECONDS)
+        story.expect_rows(after_restart.running[SERVED].pid == started[0].pid, service_process_ids(story) == [started[0].pid], detail=str(service_process_ids(story)))
+        os.killpg(started[0].pid, signal.SIGKILL)
+        started[0].wait(END_LIMIT_SECONDS)
+        last_server = ServiceProcesses()
+        story.services.follow(last_server)
+        current = last_server.running[SERVED]
+        story.expect_rows(current.running(), current.pid != started[0].pid, service_process_ids(story) == [current.pid], detail=str(service_process_ids(story)))
+        last_server.close()
+    finally:
+        after_restart.close()

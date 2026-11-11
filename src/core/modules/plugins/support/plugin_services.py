@@ -1,6 +1,9 @@
 from engine.file.file_access import FileAccess
+import fcntl
 import subprocess
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import timedelta
 from pathlib import Path
 
@@ -13,6 +16,7 @@ from engine.log.system_log_writer import SystemLogWriter
 from engine.enums.log_level import LogLevel
 from core.modules.plugins.models.enums.service_restart import ServiceRestart
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
+from core.modules.plugins.support.condition_check import ConditionCheck
 from core.modules.plugins.support.service_fault import ServiceFault
 from core.modules.plugins.support.manifest_service import ManifestService
 from core.modules.plugins.errors.plugin_fault_error import PluginFaultError
@@ -40,7 +44,9 @@ class PluginServices:
     socket and its health socket are up, and each stopped once its plugin is switched off or removed; a
     service that misses its health check is started again and named. A service still running from the server
     before, with its plugin's files unchanged, is kept; any other one left running is stopped, by the pid kept
-    for it, before its new one starts."""
+    for it, before its new one starts. One service has one process: the decision to keep the recorded process
+    or to start a new one is made under a lock of that service, so two servers that start at the same moment,
+    as after a reboot, end with one process, which the second one keeps."""
 
     def __init__(self, runnable: RunnablePlugins, folders: PluginFolders, program: PluginProgram, sockets: PluginSocketPaths, setting_values: SettingValues,
                  clock: Clock, scripts: PluginScriptProcesses, system_log: SystemLogWriter) -> None:
@@ -88,31 +94,46 @@ class PluginServices:
             if not processes.retries.is_due(key, self.clock.timestamp().value):
                 return faults
         program, pid_file = str(folder / service.command[0]), self.sockets.pid(*key)
-        previous_pid = int(FileAccess.shared().read(pid_file)) if process is None and pid_file.is_file() else None
-        if previous_pid is not None and self.is_kept(previous_pid, pid_file, program, digest):
-            processes.running[key], processes.digests[key] = AdoptedProcess(previous_pid, program), digest
-            return faults
         environment = self.environment(key, manifest)
-        if process is None and service.condition:
-            limit_seconds = self.setting_values.project.number(CONDITION_LIMIT_SETTING)
-            try:
-                passed = subprocess.run(["sh", "-c", service.condition], cwd=folder, env=environment, capture_output=True, timeout=limit_seconds).returncode == 0
-            except subprocess.TimeoutExpired:
-                processes.skipped[key] = self.clock.timestamp()
-                return [*faults, f"the condition of its service {service.name} ran past {limit_seconds} s"]
-            if not passed:
-                processes.skipped[key] = self.clock.timestamp()
+        with self.start_lock(key):
+            recorded_pid = int(FileAccess.shared().read(pid_file)) if pid_file.is_file() else None
+            if recorded_pid is not None and self.is_kept(recorded_pid, pid_file, program, digest):
+                processes.running[key], processes.digests[key] = AdoptedProcess(recorded_pid, program), digest
                 return faults
-            processes.skipped.pop(key, None)
-        if previous_pid is not None:
-            LeftoverProcess.stop(previous_pid, program)
-        try:
-            self.start(processes, key, folder, service, manifest, digest, environment)
-        except OSError as error:
-            self.system_log.write(LogLevel.WARNING, f"plugin {key[0]} service {key[1]} could not start: {error}")
-            return [*faults, *self.failure(processes, key, service, f"it could not start: {error}")]
+            if process is None and service.condition:
+                check = self.condition_check(processes, key, folder, service, environment)
+                if not check.is_passed:
+                    return [*faults, *check.faults]
+            if recorded_pid is not None:
+                LeftoverProcess.stop(recorded_pid, program)
+            try:
+                self.start(processes, key, folder, service, manifest, digest, environment)
+            except OSError as error:
+                self.system_log.write(LogLevel.WARNING, f"plugin {key[0]} service {key[1]} could not start: {error}")
+                return [*faults, *self.failure(processes, key, service, f"it could not start: {error}")]
         processes.retries.started(key, self.clock.timestamp().value)
         return faults
+
+    def condition_check(self, processes: ServiceProcesses, key: tuple[str, str], folder: Path, service: ManifestService, environment: dict[str, str]) -> ConditionCheck:
+        limit_seconds = self.setting_values.project.number(CONDITION_LIMIT_SETTING)
+        try:
+            passed = subprocess.run(["sh", "-c", service.condition], cwd=folder, env=environment, capture_output=True, timeout=limit_seconds).returncode == 0
+        except subprocess.TimeoutExpired:
+            processes.skipped[key] = self.clock.timestamp()
+            return ConditionCheck(False, tuple([f"the condition of its service {service.name} ran past {limit_seconds} s"]))
+        if not passed:
+            processes.skipped[key] = self.clock.timestamp()
+            return ConditionCheck(False)
+        processes.skipped.pop(key, None)
+        return ConditionCheck(True)
+
+    @contextmanager
+    def start_lock(self, key: tuple[str, str]) -> Iterator[None]:
+        self.sockets.folder.mkdir(parents=True, exist_ok=True)
+        pid_file = self.sockets.pid(*key)
+        with FileAccess.shared().writer(pid_file.with_name(f"{pid_file.name}.lock"), "a") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            yield
 
     def failure(self, processes: ServiceProcesses, key: tuple[str, str], service: ManifestService, reason: str) -> list[str]:
         is_repeated_failure = processes.retries.failed(key, self.clock.timestamp().value)

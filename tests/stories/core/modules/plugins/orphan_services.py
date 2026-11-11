@@ -1,5 +1,7 @@
+import os
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -39,6 +41,17 @@ def test_a_leftover_process_of_this_projects_plugin_service_is_stopped(served):
     leftover = orphaned(plugin_program(served))
     stopped(served)
     expect_value(LeftoverProcess.is_running(leftover), False)
+
+
+def test_a_second_process_of_the_service_with_a_parent_that_still_runs_is_stopped(served):
+    folder = tempfile.mkdtemp(prefix="second")
+    environment = {**os.environ, "SAMPLE_HEALTH_SOCKET": f"{folder}/health", "JOURNAL_PLUGIN_SOCKET": f"{folder}/answers", "JOURNAL_PLUGIN_DATA": folder}
+    second = subprocess.Popen(["python3", str(plugin_program(served))], env=environment, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    while not Path(f"{folder}/answers").is_socket():
+        expect_value(second.poll(), None)
+    stopped(served)
+    second.wait(5)
+    expect_value(served.processes.running[SERVICE_KEY].running(), True)
 
 
 def test_the_supervised_service_is_left_running(served):
