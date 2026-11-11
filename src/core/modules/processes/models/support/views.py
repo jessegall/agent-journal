@@ -1,6 +1,6 @@
-from core.modules.assignments.models.support.views import ASSIGNED_ACTOR_SQL
+from core.modules.assignments.models.support.views import ASSIGNED_ROW_IDS_SQL
 
-TASK_ACTOR_SQL = ASSIGNED_ACTOR_SQL.format(model="task", row_id="tasks.id")
+SESSION_AGENT_TASK_IDS_SQL = ASSIGNED_ROW_IDS_SQL.format(model="task", actor_id="processes.session_agent_id")
 PROCESS_ROWS_SELECT = "SELECT id, environment_id, session_agent_id, line, state FROM processes"
 
 PROCESS_QUEUE_ROWS_SELECT = """
@@ -10,7 +10,7 @@ SELECT processes.id, processes.environment_id, processes.session_agent_id, proce
        agents.role = 'main' AS is_main,
        coalesce(processes.owner_agent_id, CASE WHEN agents.role != 'main' THEN agents.id END) AS owner_agent_id,
        coalesce(processes.task_id, (SELECT tasks.id FROM tasks WHERE (tasks.holder_id = processes.session_agent_id
-        OR """ + TASK_ACTOR_SQL + """ = processes.session_agent_id) AND tasks.started_at <= processes.created_at
+        OR tasks.id IN """ + SESSION_AGENT_TASK_IDS_SQL + """) AND tasks.started_at <= processes.created_at
         ORDER BY tasks.started_at DESC, tasks.id DESC LIMIT 1)) AS task_id,
        CASE WHEN processes.state NOT IN ('running', 'background') THEN 'recent'
             WHEN processes.queued_at IS NOT NULL THEN 'waiting' ELSE 'running' END AS section
