@@ -10,6 +10,7 @@ from core.modules.assignments.listeners.link_created_listener import LinkCreated
 from core.modules.assignments.listeners.link_removed_listener import LinkRemovedListener
 from core.modules.assignments.listeners.row_deleted_listener import RowDeletedListener
 from core.modules.assignments.migrations.m001_assignments import AssignmentsTableMigration
+from core.modules.assignments.migrations.m002_assignments_actor_subject_index import AssignmentsActorSubjectIndexMigration
 from core.modules.assignments.models.assignment import Assignment
 
 
@@ -22,7 +23,7 @@ class AssignmentsModule(Module):
     seed_reason = "an assignment shows on the row it is about, which the module of that row seeds"
     dependencies = ["journal.core.actors", "journal.core.agents"]
     models = [ModelDeclaration(Assignment, excluded_subcommands=["make", "edit"])]
-    migrations = [AssignmentsTableMigration]
+    migrations = [AssignmentsTableMigration, AssignmentsActorSubjectIndexMigration]
     subcommands = [AssignRowSubcommand, UnassignRowSubcommand]
     handlers = [AssignRowHandler, UnassignRowHandler]
     listeners = [RowDeletedListener, ChildCreatedListener, LinkCreatedListener, LinkRemovedListener]

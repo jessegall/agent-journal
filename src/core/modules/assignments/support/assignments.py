@@ -1,5 +1,5 @@
 from engine.database.kept_rows import KeptRows
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import replace
 
 from engine.command.context import Context
@@ -47,8 +47,15 @@ class Assignments:
         self.queries, self.repository, self.rows, self.kept = queries, repository, rows, kept
 
     def assignments(self, row: Model) -> tuple[Assignment, ...]:
-        return self.kept.read("assignments", lambda: tuple(self.queries.query(Assignment).filter(subject_model=row.model_name, subject_id=row.id).oldest().all_rows()),
-                              "subject_model = ? AND subject_id = ?", [row.model_name, row.id], name="assignments.row_assignments")
+        return self.kept_assignments(row.model_name, row.id, lambda: tuple(self.queries.query(Assignment).filter(subject_model=row.model_name, subject_id=row.id).oldest().all_rows()))
+
+    def keep_rows(self, model: type[Model], row_ids: Sequence[int]) -> None:
+        loaded = tuple(self.queries.query(Assignment).filter(subject_model=model.model_name).matching(Among("subject_id", list(row_ids))).oldest().all_rows(ASSIGNMENT_PAGE_ROWS))
+        for row_id in row_ids:
+            self.kept_assignments(model.model_name, row_id, lambda row_id=row_id: tuple(assignment for assignment in loaded if assignment.subject_id == row_id))
+
+    def kept_assignments(self, model_name: str, row_id: int, loader: Callable[[], tuple[Assignment, ...]]) -> tuple[Assignment, ...]:
+        return self.kept.read("assignments", loader, "subject_model = ? AND subject_id = ?", [model_name, row_id], name="assignments.row_assignments")
 
     def actors(self, row: Model) -> tuple[int, ...]:
         return tuple(assignment.actor_id for assignment in self.assignments(row))

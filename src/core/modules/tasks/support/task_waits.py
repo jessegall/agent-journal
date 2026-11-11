@@ -36,10 +36,12 @@ class TaskWaits:
             self.repository.update(wait, context, ended_at=context.timestamp)
         opened = [task for task in self.queries.query(Task).matching(Among("id", list(dict.fromkeys(wait.task_id for wait in waits)))).oldest().full_table(ENDED_WAITS_REASON).all_rows()
                   if task.state is TaskState.BLOCKED and not self.pending_task(task.id)]
+        if not opened:
+            return
+        self.assignments.keep_rows(Task, [task.id for task in opened])
         for task in opened:
             self.repository.save_change(task, task.moved(TaskLifecycle.unblock), context)
-        if opened:
-            self.notify_agents(opened, context)
+        self.notify_agents(opened, context)
 
     def waits_target_tasks(self, task_id: int) -> bool:
         return all(wait.target.startswith(TASK_TARGET_PREFIX) for wait in self.pending_task(task_id))

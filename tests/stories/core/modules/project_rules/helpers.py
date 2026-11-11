@@ -51,6 +51,7 @@ def test_a_workers_compaction_fades_only_what_it_made_itself(new_story):
     worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
     agent_row_id = story.new_row_id(f'memory make "{WORKTREE_MEMORY}" --environment main', actor=worker)
     story.hook("s-9", HookSamples.sample("compact"))
+    story.hook("s-9", HookSamples.session_start().with_raw({"source": "compact"}))
     story.run_listeners()
     story.expect_success("memory show 1", "weight: 5")
     story.expect_success(f"memory show {agent_row_id}", "weight: 4")
