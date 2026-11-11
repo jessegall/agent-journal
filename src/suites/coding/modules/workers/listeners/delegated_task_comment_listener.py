@@ -1,3 +1,4 @@
+from core.modules.assignments.support.assignments import Assignments
 from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.enums.actor_type import ActorType
@@ -29,15 +30,15 @@ class DelegatedTaskCommentListener(SaveListener[Created[Link]]):
     name = "workers.delegated-task-comment"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, links: RowLinkWriter, queries: Queries, nudger: Nudger, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, links: RowLinkWriter, queries: Queries, nudger: Nudger, numbers: RowNumbers, assignments: Assignments) -> None:
+        self.numbers, self.assignments = numbers, assignments
         self.links, self.queries, self.nudger = links, queries, nudger
 
     def handle(self, event: Created[Link], context: Context) -> None:
         link = event.row
         if link.link_type != LinkType.COMMENT or link.target_model != Task.model_name:
             return
-        worker_id = self.queries.query(Task).find(link.target_id).delegated_to
+        worker_id = self.assignments.actor(self.queries.query(Task).find(link.target_id))
         if worker_id is None or self.queries.query(ActorRecord).find(context.actor.id).type is not ActorType.USER:
             return
         if self.queries.query(Agent).find(worker_id).role == AgentRole.MAIN:

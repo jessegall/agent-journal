@@ -1,3 +1,4 @@
+from core.modules.assignments.support.assignments import Assignments
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.event.logged_event import LoggedEvent
@@ -21,12 +22,14 @@ class UnstartedWorkerListener(CommitListener[Moved[Task]]):
     moves = tuple([TaskLifecycle.unblock])
     disabled_scopes = [ActorScope]
 
-    def __init__(self, bus: Bus, rows: EventRows, worker_command: WorkerCommand, environments: EnvironmentRows, worktrees: WorktreeQuery) -> None:
+    def __init__(self, bus: Bus, rows: EventRows, worker_command: WorkerCommand, environments: EnvironmentRows, worktrees: WorktreeQuery, assignments: Assignments) -> None:
         self.bus, self.rows, self.worker_command, self.environments, self.worktrees = bus, rows, worker_command, environments, worktrees
+        self.assignments = assignments
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
         task = event.row
-        worktree = None if task.delegated_to is None else self.worktrees.worker_worktree(task.delegated_to)
+        worker_id = self.assignments.actor(task)
+        worktree = None if worker_id is None else self.worktrees.worker_worktree(worker_id)
         if worktree is None or worktree.starts_program:
             return
         worker = self.rows.required(Agent, worktree.session_agent_id)

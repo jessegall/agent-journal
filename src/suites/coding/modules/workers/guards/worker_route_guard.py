@@ -1,34 +1,34 @@
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
-from engine.event.moved import Moved
-from engine.event.updated import Updated
+from engine.event.created import Created
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
-from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
+from core.modules.assignments.models.assignment import Assignment
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
 from suites.coding.modules.workers.support.worker_route_policy import ROUTE_GUARD, WorkerRoutePolicy
 from suites.coding.modules.workers.support.worker_route_request import WorkerRouteRequest
 
 
-class WorkerRouteGuard(Guard[Updated[Task] | Moved[Task]]):
-    """Holds direct assignments to a worker to their ready program, with a person's exception."""
+class WorkerRouteGuard(Guard[Created[Assignment]]):
+    """Holds a task given to a worker to its ready program, with a person's exception. A task its own holder
+    is given, and one given as a worktree is cut, pass."""
 
     name = ROUTE_GUARD
-    moves = tuple([TaskLifecycle.release])
 
     def __init__(self, policy: WorkerRoutePolicy, rows: EventRows) -> None:
         self.policy, self.rows = policy, rows
 
-    def check(self, event: Updated[Task] | Moved[Task], context: Context) -> None:
-        task = event.row
-        if context.actor.type is ActorType.USER or task.delegated_to is None or task.delegated_to == event.previous.delegated_to or task.delegated_to == task.holder_id:
+    def check(self, event: Created[Assignment], context: Context) -> None:
+        assignment = event.row
+        if assignment.subject_model != Task.model_name or context.actor.type is ActorType.USER or isinstance(context.command, RecordWorktreeCut):
             return
-        if isinstance(context.command, RecordWorktreeCut):
+        task = self.rows.required(Task, assignment.subject_id)
+        if assignment.actor_id == task.holder_id:
             return
-        worker = self.rows.required(Agent, task.delegated_to)
+        worker = self.rows.required(Agent, assignment.actor_id)
         if worker.role == AgentRole.MAIN:
             return
         self.policy.check_task(task, WorkerRouteRequest(worker.program, context.actor.type, context.skipped_guards))

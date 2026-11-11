@@ -1,27 +1,26 @@
-from engine.event.updated import Updated
 from engine.command.context import Context
-from engine.listener.save_listener import SaveListener
+from engine.listener.event_rows import EventRows
 from engine.scope.actor_scope import ActorScope
 from engine.tasks.tasks_changed_together import TasksChangedTogether
+from core.modules.assignments.listeners.assigned_listener import AssignedListener
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.send_worker.support.inactive_worker_send import InactiveWorkerSend
 
 
-class AssignedWorkerTaskListener(SaveListener[Updated[Task]]):
+class AssignedWorkerTaskListener(AssignedListener):
     """An open task newly given to a worker goes to that worker at once when the worker is idle; the worker
     commands that hand tasks over send them themselves."""
 
+    subject = Task
     name = "workers.assigned-task"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, inactive_sender: InactiveWorkerSend) -> None:
+    def __init__(self, rows: EventRows, inactive_sender: InactiveWorkerSend) -> None:
+        super().__init__(rows)
         self.inactive_sender = inactive_sender
 
-    def handle(self, event: Updated[Task], context: Context) -> None:
-        task, old_task = event.row, event.old_row
-        if isinstance(context.command, TasksChangedTogether):
+    def assigned(self, row: Task, actor_id: int, context: Context) -> None:
+        if isinstance(context.command, TasksChangedTogether) or row.state is not TaskState.OPEN:
             return
-        if task.state is not TaskState.OPEN or old_task is None or old_task.delegated_to == task.delegated_to:
-            return
-        self.inactive_sender.send(task, context)
+        self.inactive_sender.send(row, context)

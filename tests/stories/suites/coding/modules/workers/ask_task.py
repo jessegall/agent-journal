@@ -39,6 +39,17 @@ def test_91c_91d_an_ask_with_no_task_is_about_the_task_of_the_worktree_and_close
     story.expect_rows((first.task_id, first.outcome) == (1, AskOutcome.MOOT), (second.task_id, second.outcome) == (2, None), detail=f"{first} | {second}")
 
 
+def test_an_ask_about_a_task_the_worker_gives_back_closes_as_moot_while_the_ask_about_the_task_it_keeps_stays(two_started):
+    story = two_started.story
+    story.expect_success(f'worker ask "{QUESTION}" --about tool --task 2', actor=two_started.worker)
+    story.expect_success(f'worker ask "{SECOND_QUESTION}" --about tests', actor=two_started.worker)
+    story.expect_success('task release 2 --reason "the main agent takes the receipts"', actor=two_started.worker)
+    story.run_listeners()
+    returned, own = questions(story)
+    story.expect_rows((returned.task_id, returned.outcome) == (2, AskOutcome.MOOT), (own.task_id, own.outcome) == (1, None), detail=f"{returned} | {own}")
+    story.expect_text("task-log list --task 2", "ended as moot: task 2 is no longer the worker's", actor=story.agent)
+
+
 def test_232_a_worker_with_a_started_task_that_has_no_proof_may_not_stop_until_it_has_an_open_ask(two_started):
     story = two_started.story
     story.expect_hook_refusal(two_started.session, HookSamples.stop(), "Task 1 is not finished")

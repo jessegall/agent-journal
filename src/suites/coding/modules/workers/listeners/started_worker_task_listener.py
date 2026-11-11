@@ -1,3 +1,4 @@
+from core.modules.assignments.support.assignments import Assignments
 from engine.event.moved import Moved
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
@@ -22,12 +23,13 @@ class StartedWorkerTaskListener(SaveListener[Moved[Task]]):
     moves = tuple([TaskLifecycle.start])
     disabled_scopes = [ActorScope]
 
-    def __init__(self, worktrees: WorktreeQuery, queries: Queries, repository: Repository) -> None:
-        self.worktrees, self.queries, self.repository = worktrees, queries, repository
+    def __init__(self, worktrees: WorktreeQuery, queries: Queries, repository: Repository, assignments: Assignments) -> None:
+        self.worktrees, self.queries, self.repository, self.assignments = worktrees, queries, repository, assignments
 
     def handle(self, event: Moved[Task], context: Context) -> None:
         task = event.row
-        worktree = self.worktrees.worker_worktree(task.delegated_to) if task.delegated_to is not None else None
+        worker_id = self.assignments.actor(task)
+        worktree = self.worktrees.worker_worktree(worker_id) if worker_id is not None else None
         if worktree is None or worktree.task_id == task.id or worktree.state is not WorktreeState.CUT:
             return
         if self.queries.query(Task).find(worktree.task_id).state not in WAITING_STATES:

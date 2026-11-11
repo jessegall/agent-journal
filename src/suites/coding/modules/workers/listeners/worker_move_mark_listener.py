@@ -9,7 +9,7 @@ from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.queries.task_query import TaskQuery
+from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
 from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMarkType
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -61,5 +61,5 @@ class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
     def tasks_text(self, move: Move, worktree: Worktree, task: Task) -> str:
         if move is not WorktreeLifecycle.deliver:
             return f"task {task.id}"
-        delivered = self.queries.query(Task).filter(delegated_to=worktree.session_agent_id).matching(Among("state", (TaskState.TESTING, TaskState.COMPLETED))).all_rows()
+        delivered = self.tasks.assignee_tasks(worktree.session_agent_id).matching(Among("state", (TaskState.TESTING, TaskState.COMPLETED))).oldest().all_rows(TASK_PAGE_ROWS)
         return ", ".join(f"task {row.id}" for row in sorted(delivered, key=lambda row: row.id))

@@ -1,3 +1,4 @@
+from core.modules.assignments.support.assignments import Assignments
 from dataclasses import replace
 
 from engine.listener.save_listener import SaveListener
@@ -23,15 +24,15 @@ class ReassignedTaskListener(SaveListener[Moved[Task]]):
     moves = tuple([TaskLifecycle.release])
     disabled_scopes = [ActorScope]
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, advance: WorkerTaskAdvance, repository: Repository, next_task: WorkerNextTask) -> None:
-        self.next_task = next_task
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, advance: WorkerTaskAdvance, repository: Repository, next_task: WorkerNextTask, assignments: Assignments) -> None:
+        self.next_task, self.assignments = next_task, assignments
         self.tasks, self.worktrees, self.advance, self.repository = tasks, worktrees, advance, repository
 
     def handle(self, event: Moved[Task], context: Context) -> None:
         old, new = event.old_row, event.row
         if old is None or old.holder_id is None:
             return
-        worker_released = new.delegated_to == old.holder_id
+        worker_released = self.assignments.actor(new) == old.holder_id
         if worker_released and context.actor.id != old.holder_id:
             return
         if worker_released:

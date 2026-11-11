@@ -1,3 +1,5 @@
+from core.modules.tasks.models.task import Task
+from core.modules.assignments.support.assignments import Assignments
 from engine.query.conditions.minimum import Minimum
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
@@ -20,8 +22,8 @@ class StopFactsReader:
     answers nothing for a worker with no task left. The main agent counts as informed once a line that the
     worker ended with tasks left was sent since the worker last moved a task."""
 
-    def __init__(self, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, resume: WorkerResume, handoff: WorkerHandoff, launches: WorkerLaunchFailures, settings: SettingValues) -> None:
-        self.settings = settings
+    def __init__(self, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, resume: WorkerResume, handoff: WorkerHandoff, launches: WorkerLaunchFailures, settings: SettingValues, assignments: Assignments) -> None:
+        self.settings, self.assignments = settings, assignments
         self.queries, self.unfinished, self.stop, self.resume, self.handoff, self.launches = queries, unfinished, stop, resume, handoff, launches
 
     def read(self, worker: Agent, worker_round: WorkerRound, actor_id: int) -> StopFacts | None:
@@ -32,7 +34,7 @@ class StopFactsReader:
         progress = Minimum("created_at", self.unfinished.last_progress_text(worker.id))
         resume_count = self.queries.query(AgentLine).filter(session_agent_id=worker.id, source=UNFINISHED_TASKS_SOURCE).matching(progress).count()
         return StopFacts(is_busy=is_busy, is_person_stop=self.stop.is_final(worker, actor_id), has_launch_failed=self.launches.has_failed(worker),
-                         is_delegated=any(task.delegated_to == worker.id for task in tasks), is_resume_limit_reached=resume_count >= self.settings.number(WORKER_RESUME_LIMIT),
+                         is_delegated=any(worker.id in actor_ids for actor_ids in self.assignments.row_actor_ids(Task, [task.id for task in tasks]).values()), is_resume_limit_reached=resume_count >= self.settings.number(WORKER_RESUME_LIMIT),
                          has_requested_help=worker_round.is_asking, is_program_ready=self.resume.program_state(worker).is_ready, task_names=self.unfinished.names(tasks),
                          is_main_agent_informed=self.is_main_agent_informed(worker, progress), committed_names=self.unfinished.names(self.unfinished.committed(worker.id)))
 

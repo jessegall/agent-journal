@@ -1,7 +1,7 @@
 import json
 
 from engine.listener.save_listener import SaveListener
-from engine.query.conditions.is_null import IsNull
+from core.modules.assignments.queries.conditions.unassigned import Unassigned
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from engine.scope.environment_scope import EnvironmentScope
@@ -56,4 +56,4 @@ class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
         return tuple(agent for agent in MainAgentFinder.all_running(self.queries) if setting.environment_id in (None, agent.environment_id))
 
     def undelegated(self) -> int:
-        return self.queries.query(Task).filter(state=TaskState.OPEN).matching(IsNull("delegated_to")).count()
+        return self.queries.query(Task).filter(state=TaskState.OPEN).matching(Unassigned(Task)).count()

@@ -1,3 +1,4 @@
+from core.modules.assignments.support.assignments import Assignments
 from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.enums.agent_role import AgentRole
@@ -22,16 +23,17 @@ class BlockedWorkerTaskListener(SaveListener[Moved[Task]]):
     moves = tuple([TaskLifecycle.block])
     disabled_scopes = [ActorScope]
 
-    def __init__(self, main_agent_line: MainAgentLine, queries: Queries, nudger: Nudger, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, main_agent_line: MainAgentLine, queries: Queries, nudger: Nudger, numbers: RowNumbers, assignments: Assignments) -> None:
+        self.numbers, self.assignments = numbers, assignments
         self.main_agent_line, self.queries, self.nudger = main_agent_line, queries, nudger
 
     def handle(self, event: Moved[Task], context: Context) -> None:
         task = event.row
-        if task.delegated_to is None or self.queries.query(Agent).find(task.delegated_to).role == AgentRole.MAIN:
+        worker_id = self.assignments.actor(task)
+        if worker_id is None or self.queries.query(Agent).find(worker_id).role == AgentRole.MAIN:
             return
-        if task.delegated_to != context.actor.id:
-            self.nudger.send(task.delegated_to, BLOCKED_WORKER_TASK, self.name, context, task=task.id)
+        if worker_id != context.actor.id:
+            self.nudger.send(worker_id, BLOCKED_WORKER_TASK, self.name, context, task=task.id)
             return
-        notice = WORKER_TASK_BLOCKED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, task.delegated_to), task=task.id)
+        notice = WORKER_TASK_BLOCKED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id), task=task.id)
         self.main_agent_line.send_nudge(notice, self.name, context)
