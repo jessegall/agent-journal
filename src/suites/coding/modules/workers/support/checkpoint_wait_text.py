@@ -7,7 +7,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_runs import WorktreeRuns
 
 TESTS_TEXT = "tests run at the checkpoint of phase {phase}"
-WAIT_TEXT = "committed: the merger merges; " + TESTS_TEXT
+WAIT_TEXT = "committed; " + TESTS_TEXT
 OPEN_TASKS_TEXT = ", when tasks {tasks} are in"
 MERGED_TEXT = "merged into {branch}"
 CHECKPOINT_MERGED_TEXT = "merged; its tests run at the checkpoint of phase {phase}"

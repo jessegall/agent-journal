@@ -81,7 +81,7 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         if not staging.entries:
             return staging
         for proof in staging.refused_short()[:1]:
-            raise Refusal(f"proof {proof.id} is short: fix it and hand it in again", AskTopic.GENERAL.hint(f"journal proof make {proof.point} --task {proof.task_id} \"<file:line, and the test that shows it>\""))
+            raise Refusal(f"proof {proof.id} is short: fix it and show it again", AskTopic.GENERAL.hint(f"journal proof make {proof.point} --task {proof.task_id} \"<file:line, and the test that shows it>\""))
         if staging.ready:
             return staging
         if staging.incomplete:

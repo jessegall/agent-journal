@@ -72,7 +72,7 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
         tasks = self.range.tasks_up_to(worktree, commit)
         unfinished = [str(task.id) for task in tasks if task.state not in COMMITTED_TASK_STATES]
         if unfinished or not tasks:
-            raise Refusal(f"task {', '.join(unfinished) or commit} is not handed in", "take in only work the worker has handed in")
+            raise Refusal(f"task {', '.join(unfinished) or commit} is not committed", "take in only work the worker has committed")
         return tasks
 
     def check_proofs(self, worktree: Worktree, tasks: list[Task]) -> None:

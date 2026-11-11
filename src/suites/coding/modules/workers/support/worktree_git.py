@@ -239,7 +239,7 @@ class WorktreeGit:
         kept = [path for path in deleted if self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", path.split(BUILT_FOLDER, 1)[0]).stdout.strip() and not self.is_rebuilt(worktree, path)]
         if kept:
             raise Refusal(f"it deletes {len(kept)} built files under web/dist while their sources stay, such as {kept[0]}",
-                          AskTopic.TOOL.hint("build them again with npm --prefix src/viewer run build, then hand in again"))
+                          AskTopic.TOOL.hint("build them again with npm --prefix src/viewer run build, then commit again"))
 
     def rebuild(self, worktree: Worktree, base_folder: str) -> None:
         changed = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", worktree.base_branch, worktree.branch).stdout.splitlines()
