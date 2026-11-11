@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import timedelta
 
@@ -7,7 +8,10 @@ from core.modules.processes.support.group_cpu_time import GroupCpuTime
 from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.stories.core.modules.processes.support.process_samples import moved_run
+from tests.stories.core.modules.helpers.helper_jobs import helper_agent
+from tests.stories.core.modules.processes.support.cadence_probe import (HelperBesideWorker, agent_run, cadence_tick, expect_told, kept_lines, printed_now,
+                                                                       running_run, told, tree_of, worker_agent)
+from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 MISSING_GROUP = 999999
@@ -149,3 +153,123 @@ def test_a_quiet_run_its_agent_read_is_kept_past_the_hang_time_and_stopped_once_
     story.advance(timedelta(seconds=HANG_SECONDS))
     watch_tick(story)
     story.expect_text("process show 1", "state: stopped", actor=story.agent)
+
+
+TICK = timedelta(seconds=10)
+HALF = HANG_SECONDS // 2
+STUCK = "uses no processor time"
+
+
+def titled(story: Story, title: str, process_id: int = 1) -> None:
+    story.expect_success(f'output title {process_id} "{title}"', actor=story.agent)
+
+
+def watched(story: Story, seconds: int, tree: FakeGroupCpuTime | None = None) -> None:
+    """Ten seconds at a time, the hang watch and then the cadence watch; a busy tree uses more processor time each step."""
+    for _ in range(seconds // TICK.seconds):
+        story.advance(TICK)
+        if tree is not None:
+            tree.used += 1
+        watch_tick(story)
+        cadence_tick(story)
+
+
+def stuck_line(process_id: int, seconds: int = HALF) -> str:
+    return f"output {process_id} printed nothing for {seconds} s and uses no processor time: read it, or it is stopped at {HANG_SECONDS} s"
+
+
+def hung_line(process_id: int) -> str:
+    return f"output {process_id} printed nothing for {HANG_SECONDS} seconds, so it was stopped: its output is kept"
+
+
+def test_a_stuck_test_run_wakes_its_agent_once_at_half_the_hang_time_and_is_stopped_at_the_hang_time(new_story):
+    story = new_story(fixture=ActiveTestRun)
+    titled(story, "Running the stuck tests")
+    started_tree(story, 12.0)
+    watched(story, HALF)
+    warnings = [row for row in json.loads(kept_lines(story))["rows"] if STUCK in row["text"]]
+    story.expect_rows([row["text"] for row in warnings] == [stuck_line(1)], all(row["wakes_agent"] for row in warnings), detail=kept_lines(story))
+    story.expect_text("process show 1", "state: background", actor=story.agent)
+    watched(story, HALF)
+    story.expect_text("process show 1", "state: stopped", actor=story.agent)
+    lines = kept_lines(story)
+    story.expect_rows(lines.count(STUCK) == 1, hung_line(1) in lines, detail=lines)
+
+
+def test_a_helpers_and_a_workers_stuck_runs_wake_them_with_the_same_warning(new_story):
+    story = new_story(fixture=HelperBesideWorker)
+    helper, worker = helper_agent(story), worker_agent(story)
+    runs = (agent_run(story, helper, "npm test", CommandCategory.TEST_RUN), agent_run(story, worker, "make build", CommandCategory.BUILD))
+    tree_of(story, FakeGroupCpuTime(12.0), MISSING_GROUP, *runs)
+    watch_tick(story)
+    watched(story, HALF)
+    expect_told(story, helper.session, stuck_line(runs[0].id))
+    expect_told(story, worker.session, stuck_line(runs[1].id))
+
+
+def test_a_busy_silent_test_run_gets_no_stuck_warning_and_is_still_asked_to_be_looked_at(new_story):
+    story = new_story(fixture=ActiveTestRun)
+    titled(story, "Running the busy tests")
+    tree = started_tree(story, 12.0)
+    watched(story, LOOK_SECONDS + 100, tree)
+    story.expect_rows(STUCK not in kept_lines(story), detail=kept_lines(story))
+    expect_looks(story, 1)
+    story.expect_text("process show 1", "state: background", actor=story.agent)
+
+
+def test_a_stuck_build_test_run_check_and_python_run_are_warned_alike(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    runs = [moved_run(story, line, category) for line, category in (("make build", CommandCategory.BUILD), ("pytest -q", CommandCategory.TEST_RUN),
+                                                                     ("make lint", CommandCategory.CHECK), ("python3 tools/sync.py", CommandCategory.PROCESS))]
+    titled(story, "Building the project", runs[0].id)
+    tree_of(story, FakeGroupCpuTime(12.0), MISSING_GROUP, *runs)
+    watch_tick(story)
+    watched(story, HALF)
+    outputs = ", ".join(str(process.id) for process in runs)
+    heard = told(story, "s-1") + told(story, "s-1")
+    story.expect_rows(any(f"output {outputs} printed nothing for {HALF} s and uses no processor time" in line for line in heard), detail="\n".join(heard))
+
+
+def test_reading_a_stuck_run_after_the_warning_starts_the_hold_anew_and_the_stop_still_follows(new_story):
+    story = new_story(fixture=ActiveTestRun)
+    titled(story, "Running the frozen tests")
+    started_tree(story, 12.0)
+    watched(story, HALF)
+    story.expect_success("output read 1 --tail 5", actor=story.agent)
+    watched(story, HALF)
+    story.expect_text("process show 1", "state: background", actor=story.agent)
+    watched(story, HALF)
+    story.expect_text("process show 1", "state: stopped", actor=story.agent)
+    expect_told(story, "s-1", hung_line(1))
+
+
+def test_a_stuck_build_that_prints_again_is_warned_again_after_a_new_silence(new_story):
+    story = new_story(fixture=ActiveBuild)
+    titled(story, "Building the stuck project")
+    started_tree(story, 12.0)
+    watched(story, HALF)
+    first = told(story, "s-1")
+    printed_now(story, running_run(story), "linking\n")
+    watched(story, HALF + TICK.seconds)
+    second = told(story, "s-1")
+    story.expect_rows(any(stuck_line(1) in line for line in first), any(STUCK in line for line in second), detail="\n".join(first + second))
+
+
+def test_a_run_with_no_known_process_tree_is_never_warned_or_stopped_but_still_told_it_does_not_stream(new_story):
+    story = new_story(fixture=ActiveBuild)
+    titled(story, "Building without a tree")
+    started_tree(story, None)
+    watched(story, HANG_SECONDS + 30)
+    story.expect_text("process show 1", "state: background", actor=story.agent)
+    lines = kept_lines(story)
+    story.expect_rows(STUCK not in lines, "output 1 printed nothing for 30 seconds" in lines, detail=lines)
+
+
+def test_a_chain_whose_test_part_is_stuck_is_warned_once_for_its_output(new_story):
+    story = new_story(fixture=BuilderStarted)
+    process = moved_run(story, "make build && pytest -q")
+    story.expect_success(f"process part-end {process.id} --position 1 --exit-code 0", actor=story.agent)
+    started_tree(story, 12.0)
+    watched(story, HALF + 2 * TICK.seconds)
+    lines = kept_lines(story)
+    story.expect_rows(lines.count(STUCK) == 1, stuck_line(process.id) in lines, detail=lines)

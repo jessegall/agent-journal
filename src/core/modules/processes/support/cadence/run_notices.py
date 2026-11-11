@@ -14,27 +14,33 @@ KIND_LINE = re.compile(r"^([a-z-]+) (\d+) (\d+(?:\.\d+)?)$")
 class RunNotices:
     """The one record of the cadence notices a run was given, kept in its folder: the total, and for each kind
     how often and when last. A kind is not repeated within ten minutes, a run gets at most three notices in
-    all, another kind may come at once, and the stuck warning comes once until the run prints again."""
+    all, another kind may come at once, and the stuck warning comes once until the run prints again; it warns
+    of a stop, so it is not counted among the three and the three do not hold it back."""
 
     def __init__(self, folder: OutputFolder) -> None:
         self.folder = folder
 
     def allowed(self, process_id: int, kind: NoticeKind, now: float) -> bool:
         total, kinds = self.kept(process_id)
+        if kind is NoticeKind.FROZEN:
+            return kind not in kinds
         if total >= MOST_NOTICES:
             return False
-        if kind not in kinds:
-            return True
-        return kind is not NoticeKind.FROZEN and now - kinds[kind][1] >= REPEAT_SECONDS
+        return kind not in kinds or now - kinds[kind][1] >= REPEAT_SECONDS
 
     def recorded(self, process_id: int, kind: NoticeKind, now: float) -> None:
         total, kinds = self.kept(process_id)
         count = kinds[kind][0] if kind in kinds else 0
-        self.write(process_id, total + 1, {**kinds, kind: (count + 1, now)})
+        self.write(process_id, total + int(kind is not NoticeKind.FROZEN), {**kinds, kind: (count + 1, now)})
 
     def cleared(self, process_id: int) -> None:
         total, _ = self.kept(process_id)
         self.write(process_id, total, {})
+
+    def printed_again(self, process_id: int) -> None:
+        total, kinds = self.kept(process_id)
+        if NoticeKind.FROZEN in kinds:
+            self.write(process_id, total, {kind: record for kind, record in kinds.items() if kind is not NoticeKind.FROZEN})
 
     def write(self, process_id: int, total: int, kinds: dict[NoticeKind, tuple[int, float]]) -> None:
         lines = [f"total {total}", *(f"{kind.value} {count} {last}" for kind, (count, last) in kinds.items())]

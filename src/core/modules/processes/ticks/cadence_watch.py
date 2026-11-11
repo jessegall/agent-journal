@@ -47,6 +47,8 @@ class CadenceWatch:
         except OSError as error:
             container.get(SystemLogWriter).write(LogLevel.WARNING, f"cadence watch: output {process.id} could not be read: {error}")
             return False
+        if growths != before:
+            container.get(RunNotices).printed_again(process.id)
         hang = HangWatch.limits(container, process.environment_id).hang
         cadence = container.get(RunCadences).for_process(process, current)
         self.judged(container, process, part, cadence, hang)

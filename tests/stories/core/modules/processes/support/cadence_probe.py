@@ -1,3 +1,4 @@
+import os
 import shutil
 import time
 from datetime import timedelta
@@ -20,6 +21,7 @@ from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.cadence.cadence_log import CADENCE_FILE, TICK_SECONDS, CadenceLog
 from core.modules.processes.queries.process_query import ProcessQuery
+from core.modules.processes.support.group_cpu_time import GroupCpuTime
 from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper
 
@@ -95,6 +97,21 @@ def kept_lines(story: Story, agent_id: int = 0, actor: Actor | None = None) -> s
 def elsewhere_run(story: Story, actor: Actor) -> Process:
     """A silent build of the agent of the second environment, started and moved to the background there."""
     return started_by(story, actor, StartProcess.single_part(actor.id, "make there", "/work/elsewhere", CommandCategory.BUILD, 30), environment_id=2)
+
+
+def tree_of(story: Story, tree: GroupCpuTime, group: int, *processes: Process) -> None:
+    """The given processor time stands for the process trees of the runs, each under the given group."""
+    story.container.bind(GroupCpuTime, tree)
+    for process in processes:
+        story.container.get(OutputFolder).write_pid(process.id, group)
+
+
+def printed_now(story: Story, process: Process, text: str) -> None:
+    """The run prints the text now, by the story's clock."""
+    folder = story.container.get(OutputFolder)
+    folder.write_output(process.id, 1, folder.output(process.id, 1) + text)
+    printed_at = story.clock.timestamp().value.timestamp()
+    os.utime(story.home.folder / "processes" / str(process.id) / "1.out", (printed_at, printed_at))
 
 
 def removed_output(story: Story, process: Process) -> None:
