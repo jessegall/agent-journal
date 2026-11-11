@@ -35,7 +35,9 @@ stays kept on the same agent number and session until retired.
 - Any blocked task can go to a worker, alone, in a phase or in a whole plan: it stays assigned while it waits, and the
   worker takes it when it opens, sent to it at once when the worker is idle. A new worker given only blocked tasks is made and not started; it starts by itself when one of them opens.
 - By default, a started plan runs the tests of a phase at its end, and you hear nothing until then. A proof with no test on a
-  phase needs no check from you; you can still read it and send it back. A worker out of test runs asks with `journal worker ask --about tests`.
+  phase needs no check from you; you can still read it and send it back. A worker out of test runs asks with `journal worker ask --about tests`. After you ask, the merger or the journal
+  settles it and you are woken: you are told by when an answer is due, you may stop meanwhile, and a question nobody
+  answers in time goes to the main agent by itself. `journal worker status` shows your open question.
   `journal helper grant <number> <program> "<subcommands>" "<arguments>"` says what it may run, alternatives split by a bar; it runs that with
   `journal helper run <program> ...`, and a later grant for the same program replaces the earlier one. To decline, grant nothing.
 - Give a worker many tasks at once: a large batch runs long and bothers you less than many small dispatches.
