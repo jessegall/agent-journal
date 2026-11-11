@@ -55,14 +55,10 @@ def merged_worker(committed_worker) -> StoryWorker:
     return committed_worker
 
 
-def test_158_a_commit_in_a_started_plan_says_committed_and_starts_no_test(group_worker):
+def test_158_a_commit_in_a_started_plan_says_committed_names_the_checkpoint_of_its_tests_and_starts_no_test(group_worker):
     outcome = group_worker.story.run(COMMIT, actor=group_worker.worker)
-    group_worker.story.expect_rows(outcome.code == 0, COMMITTED in outcome.output_text, group_worker.started == [], detail=f"{outcome.output_text} started: {group_worker.started}")
-
-
-def test_159_the_answer_of_the_commit_and_the_status_say_at_which_checkpoint_the_tests_run(group_worker):
-    outcome = group_worker.story.run(COMMIT, actor=group_worker.worker)
-    group_worker.story.expect_rows(CHECKPOINT_WORDS in outcome.output_text, CHECKPOINT_WORDS in group_worker.status(), detail=f"{outcome.output_text} | {group_worker.status()}")
+    group_worker.story.expect_rows(outcome.code == 0, COMMITTED in outcome.output_text, CHECKPOINT_WORDS in outcome.output_text, group_worker.started == [],
+                                   detail=f"{outcome.output_text} started: {group_worker.started}")
 
 
 def test_160_a_commit_of_a_task_in_no_plan_starts_its_test_as_before(new_story, monkeypatch):
@@ -83,9 +79,9 @@ def test_162_a_commit_with_a_missing_proof_is_refused_in_a_started_plan_as_outsi
     worker.story.expect_rows(outcome.code != 0, "proof" in outcome.output_text, proof_states(worker) == {}, detail=outcome.output_text)
 
 
-def test_163_a_final_commit_makes_the_worktree_ready_to_merge_and_the_worker_waits_for_the_merge(committed_worker):
-    row = worktree_row(committed_worker)
-    committed_worker.story.expect_rows(row.get("merge_ready_at") is not None, MERGE_WAIT_WORDS in committed_worker.status(), detail=f"{row} | {committed_worker.status()}")
+def test_159_163_a_final_commit_makes_the_worktree_ready_to_merge_and_the_status_names_the_merge_and_the_checkpoint(committed_worker):
+    row, status = worktree_row(committed_worker), committed_worker.status()
+    committed_worker.story.expect_rows(row.get("merge_ready_at") is not None, MERGE_WAIT_WORDS in status, CHECKPOINT_WORDS in status, detail=f"{row} | {status}")
 
 
 def test_164_the_merge_takes_a_worktree_of_committed_proofs_in_a_started_plan_and_refuses_one_with_a_short_proof(committed_worker):

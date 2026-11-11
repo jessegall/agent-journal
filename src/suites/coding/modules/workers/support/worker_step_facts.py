@@ -18,12 +18,15 @@ class WorkerStepFacts:
     deliver_command: str
     conflict_files: str = ""
     tests_waiting: bool = False
+    checkpoint_wait: str | None = None
 
     def changed_deliver_command(self, command: str) -> "WorkerStepFacts":
         return replace(self, deliver_command=command)
 
     @property
     def waiting_text(self) -> str:
+        if self.checkpoint_wait is not None:
+            return self.checkpoint_wait
         return f"The tests of {self.label} are queued." if self.tests_waiting else f"{self.label} is handed in."
 
     def words(self) -> dict[str, object]:

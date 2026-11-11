@@ -66,9 +66,11 @@ def crashed_building(phase_worker):
 
 
 @pytest.fixture
-def failed_group(handed_in):
-    handed_in.end_tests(1, 0, 0)
-    return handed_in
+def failed_group(new_story, monkeypatch):
+    worker = unplanned_worker(new_story, monkeypatch)
+    worker.prove_advance(TEST_LINE)
+    worker.end_tests(1)
+    return worker
 
 
 def test_a_batch_handed_in_stops_quietly(new_story, monkeypatch):

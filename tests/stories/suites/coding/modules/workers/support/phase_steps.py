@@ -189,3 +189,12 @@ def unplanned_worker(new_story, monkeypatch) -> StoryWorker:
     repository_environment(story)
     story.run('task make "Tax" --brief "The tax"', actor=story.agent)
     return dispatched_story_worker(story, EXTERNAL_DISPATCH, monkeypatch)
+
+
+def unplanned_group_worker(new_story, monkeypatch) -> StoryWorker:
+    """A worker holding task 1 with tasks 2 and 3 queued, none of them in a plan."""
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository_environment(story)
+    for title in ("Tax", "Totals"):
+        story.run(f'task make "{title}" --brief "The {title.lower()}"', actor=story.agent)
+    return dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2 3", monkeypatch)

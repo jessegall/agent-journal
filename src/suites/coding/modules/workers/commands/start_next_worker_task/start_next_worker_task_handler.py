@@ -24,6 +24,7 @@ from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import W
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
+from suites.coding.modules.workers.models.enums.submission import Submission
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskCommit
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
@@ -98,10 +99,12 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         if group is not None:
             if self.phases.continues_group(group, following):
                 return self.continue_group(worktree, following, context)
-            return self.submit_group(worktree, tested, group, context)
-        if self.proof_queue.queue(worktree, context):
+            return self.submit_group(worktree, tested, group, following, context)
+        submission = self.proof_queue.submit(worktree, tested, None, context)
+        if submission is Submission.QUEUED:
             return tested
-        self.close_checked(tested, context)
+        if submission is Submission.UNTESTED:
+            self.close_checked(tested, context)
         return self.start_following(worktree, following, context)
 
     def continue_group(self, worktree: Worktree, following: Task, context: Context) -> Task:
@@ -111,11 +114,14 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=returned_task.id), context)
         return returned_task
 
-    def submit_group(self, worktree: Worktree, task: Task, group: WorkerTestGroup, context: Context) -> Task:
+    def submit_group(self, worktree: Worktree, task: Task, group: WorkerTestGroup, following: Task, context: Context) -> Task:
         for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):
             self.repository.save_change(started, started.moved(TaskLifecycle.test), context)
-        if self.proof_queue.queue_group(worktree, task, group, context):
+        submission = self.proof_queue.submit(worktree, task, group, context)
+        if submission is Submission.QUEUED:
             return task
+        if submission is Submission.COMMITTED:
+            return self.start_following(worktree, following, context)
         self.results.finish(worktree, context)
         return self.rows.required(Task, self.rows.required(Worktree, worktree.id).task_id)
 

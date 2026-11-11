@@ -17,6 +17,7 @@ from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import W
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
+from suites.coding.modules.workers.models.enums.submission import Submission
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskCommit
 from suites.coding.models.enums.ask_topic import AskTopic
@@ -62,10 +63,11 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
         self.free_task.give_next(context.actor.id, context)
         for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):
             self.repository.save_change(started, started.moved(TaskLifecycle.test), context)
-        delivered = self.repository.save_change(committed, committed.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, logs_read_at=None, logs_output_id=None, tests_passed_at=None, returned_at=None), context)
         task = self.rows.required(Task, committed.task_id)
+        delivered = self.repository.save_change(committed, committed.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, logs_read_at=None, logs_output_id=None, tests_passed_at=None, returned_at=None,
+                                                                             merge_ready_at=self.proof_queue.merge_ready_time(task, context)), context)
         group = self.phases.group(delivered, task)
-        queued = self.proof_queue.queue(delivered, context) if group is None else self.proof_queue.queue_group(delivered, task, group, context)
-        if not queued:
+        submission = self.proof_queue.submit(delivered, task, group, context)
+        if submission is Submission.UNTESTED:
             self.results.finish(delivered, context)
         return self.rows.required(Task, committed.task_id)

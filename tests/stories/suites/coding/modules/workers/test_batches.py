@@ -83,18 +83,6 @@ def test_failures_of_the_batch_return_together_and_only_failures_run_again(submi
     submitted.story.expect_rows(submitted.current_task() == 5)
 
 
-def test_the_phase_setting_off_tests_each_task_at_its_own_hand_in(new_story, monkeypatch):
-    worker = start_planned_worker(new_story, monkeypatch, build_test="pytest tests/phase.py")
-    configure(worker, PHASE, "off")
-    for _ in range(4):
-        expect_reply_allowed(worker.run_test())
-    worker.edit_prove(TEST_LINE)
-    worker.story.expect_text("worker next --wait --differences none", "tests of task 1", actor=worker.worker)
-    worker.story.expect_rows(len(worker.started) == 1, worker.current_task() == 1)
-    worker.end_all_tests()
-    worker.story.expect_rows(worker.current_task() == 2, all(process.line == TEST_LINE for process in worker.started_processes()))
-
-
 def test_a_batch_has_three_own_runs_and_the_next_batch_starts_a_new_count(batch):
     for remaining in (2, 1, 0):
         reply = batch.run_test()

@@ -6,6 +6,7 @@ from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.phase_task import PhaseTask
+from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 
 
@@ -18,6 +19,10 @@ class TaskPlans:
     def find(self, task_id: int) -> Plan | None:
         phase = self.find_phase(task_id)
         return None if phase is None else self.rows.required(Plan, phase.plan_id)
+
+    def is_started_plan(self, task_id: int) -> bool:
+        plan = self.find(task_id)
+        return plan is not None and plan.state is PlanState.STARTED
 
     def find_phase(self, task_id: int) -> Phase | None:
         place = self.kept.read("phase_tasks", self.queries.query(PhaseTask).filter(task_id=task_id).first,

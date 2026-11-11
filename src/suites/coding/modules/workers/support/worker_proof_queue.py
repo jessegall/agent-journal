@@ -5,10 +5,13 @@ from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.setting.setting_values import SettingValues
+from engine.time.timestamp import Timestamp
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_test_group import WorkerTestGroup
 from core.modules.plans.models.phase import Phase
+from core.modules.plans.support.task_plans import TaskPlans
 from core.modules.tasks.models.task import Task
+from suites.coding.modules.workers.models.enums.submission import Submission
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.proof import Proof
@@ -28,16 +31,33 @@ PENDING_AFFECTED_STATES = (AffectedTestState.QUEUED, AffectedTestState.PICKING, 
 class WorkerProofQueue:
     """Queues the test of every proof of a worktree that has not passed, says how many it queued, and tells the
     main agent of the proofs with no test, which wait for its check. At the end of a phase those proofs are
-    checked instead, and the phase's own test is added as a proof."""
+    checked instead, and the phase's own test is added as a proof. In a started plan nothing is queued: the
+    proofs are committed and their tests wait for a checkpoint of the plan."""
 
-    def __init__(self, proofs: ProofQuery, repository: Repository, main_agent_line: MergerInbox, settings: SettingValues, git: WorktreeGit, queries: Queries, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, proofs: ProofQuery, repository: Repository, main_agent_line: MergerInbox, settings: SettingValues, git: WorktreeGit, queries: Queries, numbers: RowNumbers, plans: TaskPlans) -> None:
+        self.numbers, self.plans = numbers, plans
         self.proofs, self.repository, self.main_agent_line, self.queries = proofs, repository, main_agent_line, queries
         self.settings, self.git = settings, git
 
     def tests_pending(self, worktree: Worktree) -> bool:
         affected_pending = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).matching(Among("state", PENDING_AFFECTED_STATES)).exists()
         return affected_pending or self.proofs.tests_waiting(worktree.id)
+
+    def submit(self, worktree: Worktree, task: Task, group: WorkerTestGroup | None, context: Context) -> Submission:
+        if self.plans.is_started_plan(task.id):
+            self.commit_proofs(worktree, context)
+            self.send_untested_line(worktree, context)
+            return Submission.COMMITTED
+        queued_count = self.queue(worktree, context) if group is None else self.queue_group(worktree, task, group, context)
+        return Submission.QUEUED if queued_count else Submission.UNTESTED
+
+    def merge_ready_time(self, task: Task, context: Context) -> Timestamp | None:
+        return context.timestamp if self.plans.is_started_plan(task.id) else None
+
+    def commit_proofs(self, worktree: Worktree, context: Context) -> None:
+        for proof in tuple(self.proofs.worktree_proofs(worktree.id).filter(state=ProofState.SHOWN).oldest().all_rows()):
+            if proof.test_command:
+                self.repository.save_change(proof, proof.moved(ProofLifecycle.commit), context)
 
     def queue_proofs(self, worktree: Worktree, context: Context) -> int:
         queued_count = 0

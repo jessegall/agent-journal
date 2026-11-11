@@ -7,6 +7,7 @@ from suites.coding.modules.workers.support.worker_groups import WorkerGroups
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_point import WorkerPoint
 from suites.coding.modules.workers.support.worker_round import WorkerRound
+from suites.coding.modules.workers.support.checkpoint_wait_text import CheckpointWaitText
 from suites.coding.modules.workers.support.worker_step_facts import WorkerStepFacts
 from suites.coding.modules.workers.support.worker_step_text import step_line
 from suites.coding.modules.workers.support.worker_steps import WorkerSteps
@@ -21,8 +22,8 @@ CONFLICT_FILES_FIELD = "lines"
 class WorkerGuidance:
     """What a worker should do now: the one source of every line that tells it."""
 
-    def __init__(self, steps: WorkerSteps, groups: WorkerGroups, phases: WorkerPhases, queries: Queries, names: WorkerTestNames) -> None:
-        self.steps, self.groups, self.phases, self.queries, self.names = steps, groups, phases, queries, names
+    def __init__(self, steps: WorkerSteps, groups: WorkerGroups, phases: WorkerPhases, queries: Queries, names: WorkerTestNames, checkpoint_wait: CheckpointWaitText) -> None:
+        self.steps, self.groups, self.phases, self.queries, self.names, self.checkpoint_wait = steps, groups, phases, queries, names, checkpoint_wait
 
     def line(self, worker_id: int) -> str:
         return self.point(worker_id).line
@@ -55,7 +56,8 @@ class WorkerGuidance:
         task = self.current_task(worker_round)
         worktree_task = self.queries.query(Task).find(worktree.task_id)
         files = "" if worker_round.conflict is None else str(dict(worker_round.conflict.nudge.fields)[CONFLICT_FILES_FIELD])
-        return WorkerStepFacts(task_id=task.id, open_task_count=open_task_count, test_runs_available=runs, label=self.phases.test_label(worktree_task), deliver_command=DELIVER_COMMAND if worker_round.following is None else NEXT_COMMAND, conflict_files=files, tests_waiting=self.steps.proofs.tests_waiting(worktree.id))
+        return WorkerStepFacts(task_id=task.id, open_task_count=open_task_count, test_runs_available=runs, label=self.phases.test_label(worktree_task), deliver_command=DELIVER_COMMAND if worker_round.following is None else NEXT_COMMAND, conflict_files=files, tests_waiting=self.steps.proofs.tests_waiting(worktree.id),
+                               checkpoint_wait=self.checkpoint_wait.text(worktree))
 
     def current_task(self, worker_round: WorkerRound) -> Task:
         if worker_round.started:
