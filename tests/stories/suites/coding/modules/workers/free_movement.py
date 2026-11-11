@@ -37,7 +37,7 @@ def after_a_checkpoint(new_story, monkeypatch) -> StoryWorker:
 
 
 def startable_ids(worker: StoryWorker) -> list[int]:
-    return [task["id"] for task in worker.status_json()["startable_tasks"]]
+    return [task["id"] for task in worker.status_json()["startable"]]
 
 
 def test_16_a_worker_starts_a_task_of_a_later_phase_while_its_own_phase_has_open_tasks(one_task):
@@ -93,7 +93,7 @@ def test_22_the_status_lists_started_tasks_with_their_missing_points_tasks_to_st
     story.expect_success(f'task block 2 --reason "{BLOCK_REASON}"', actor=two_tasks.worker)
     status, listed = two_tasks.status(), two_tasks.status_json()
     story.expect_rows("Tasks you may start: 1" in status, "task 3" in status, "Tasks blocked: 1" in status, BLOCK_REASON in status, startable_ids(two_tasks) == [3],
-                      [task["id"] for task in listed["blocked_tasks"]] == [2], [task["id"] for task in listed["ready_tasks"]] == [1], detail=status)
+                      [task["id"] for task in listed["blocked"]] == [2], [task["id"] for task in listed["staged"]] == [1], detail=status)
 
 
 def test_23_a_task_that_waited_on_a_task_of_the_worker_is_listed_to_start_once_that_task_is_completed(new_story, monkeypatch):
