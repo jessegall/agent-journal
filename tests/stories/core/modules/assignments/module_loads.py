@@ -8,6 +8,6 @@ def test_the_assignments_table_exists_after_start(new_story):
 
 def test_assignment_make_and_edit_are_not_commands(new_story):
     story = new_story(fixture=UserJoined)
-    for verb in ("make", "edit"):
-        outcome = story.run(f"assignment {verb} --environment main", actor=story.user)
+    for subcommand in ("make", "edit"):
+        outcome = story.run(f"assignment {subcommand} --environment main", actor=story.user)
         story.expect_rows(outcome.code != 0, detail=outcome.output_text)

@@ -9,6 +9,8 @@ class AssignmentsModule(Module):
 
     name = "journal.core.assignments"
     requires_core = ">=5,<6"
+    move_reason = "version 4 has no assignments table: it kept who works on a task in a column of the task"
+    seed_reason = "an assignment shows on the row it is about, which the module of that row seeds"
     dependencies = ["journal.core.actors"]
     models = [ModelDeclaration(Assignment, excluded_subcommands=["make", "edit"])]
     migrations = [AssignmentsTableMigration]

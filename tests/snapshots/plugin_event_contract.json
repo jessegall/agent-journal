@@ -1106,9 +1106,9 @@
     "fields": [
       "actor_id",
       "creator_id",
+      "source_id",
       "subject_id",
-      "subject_model",
-      "via_id"
+      "subject_model"
     ]
   },
   "core.assignments.assignment.deleted": {
@@ -1120,9 +1120,9 @@
     "fields": [
       "actor_id",
       "creator_id",
+      "source_id",
       "subject_id",
-      "subject_model",
-      "via_id"
+      "subject_model"
     ]
   },
   "core.assignments.assignment.updated": {
@@ -1134,9 +1134,9 @@
     "fields": [
       "actor_id",
       "creator_id",
+      "source_id",
       "subject_id",
-      "subject_model",
-      "via_id"
+      "subject_model"
     ]
   },
   "core.chat.chat_mark.created": {
