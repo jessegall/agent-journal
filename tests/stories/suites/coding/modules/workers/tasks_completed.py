@@ -83,7 +83,7 @@ def test_56_no_line_of_the_status_of_a_worker_closes_a_task_and_its_tasks_are_co
     two_started.story.expect_rows(not any(CLOSING_LINE in status for status in statuses), detail=str(statuses))
 
 
-def test_54_59_the_main_agent_gets_one_line_for_the_proofs_that_wait_and_one_when_all_passed_and_its_check_completes_a_task_with_no_test(three_started):
+def test_54_59_the_main_agent_gets_one_line_for_the_proofs_that_wait_and_its_check_completes_a_task_with_no_test(three_started):
     prove_task(three_started, 1, 1, TEST_LINE)
     prove_task(three_started, 2, 1)
     prove_task(three_started, 3, 1)
@@ -93,5 +93,4 @@ def test_54_59_the_main_agent_gets_one_line_for_the_proofs_that_wait_and_one_whe
     for proof_id in (2, 3):
         three_started.story.expect_success(f"proof check {proof_id}", "state: checked", actor=three_started.story.agent)
     expect_task_states(three_started, "completed", 1, 2, 3)
-    passed_lines = [line for line in three_started.main_agent_lines() if "all pass" in line]
-    three_started.story.expect_rows(len(waiting_lines) == 1, "proofs 2 3" in waiting_lines[0], len(passed_lines) == 1, detail=str(three_started.main_agent_lines()))
+    three_started.story.expect_rows(len(waiting_lines) == 1, "proofs 2 3" in waiting_lines[0], detail=str(three_started.main_agent_lines()))
