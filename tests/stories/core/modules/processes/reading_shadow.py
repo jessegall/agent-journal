@@ -28,8 +28,10 @@ def test_a_workers_test_run_with_no_reader_is_required_a_reader_while_its_reques
 
 def test_a_main_agents_test_run_with_no_reader_is_suggested_one_at_its_end(new_story):
     story = new_story(fixture=BuilderStarted)
-    decision = end_decision(story, ended_after_a_while(story, main_test_run_without_reader(story)))
+    process = ended_after_a_while(story, main_test_run_without_reader(story))
+    decision = end_decision(story, process)
     story.expect_rows(decision == MAIN_TESTS_WITHOUT_READER[0], detail=f"{decision}: {MAIN_TESTS_WITHOUT_READER[1]}")
+    story.expect_text(f"process card {process.id} --json", '"reading_text": "Reader: none"', actor=story.agent)
 
 
 def test_a_rejected_worker_command_needs_no_reader(new_story):

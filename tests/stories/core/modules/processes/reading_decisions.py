@@ -5,7 +5,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
-from tests.stories.core.modules.processes.support.reading_scenarios import TOX_OUTPUT, TwoToxReaders, ended_after_a_while
+from tests.stories.core.modules.processes.support.reading_scenarios import TOX_OUTPUT, TwoToxReaders, end_decision, ended_after_a_while
 from tests.stories.core.modules.processes.support.reading_decision_samples import ReadingMoment, stored_missing_reader, stored_suitable_reader
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -46,6 +46,7 @@ def test_a_background_build_with_no_reader_keeps_a_missing_reader_at_its_end_and
     process = moved_run(story, "custom-build run", category=CommandCategory.BUILD)
     story.advance(LONG_RUN)
     end_run(story, process, "compiling\n" * 3 + "done\n")
+    story.run_listeners()
     story.expect_text("reading-decision show 2", "moment: end", "state: missing", "reason: reader missing", actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), f"output {process.id} ended", "no reader reads custom-build yet")
     story.expect_text(f"process card {process.id} --json", '"reading_text": "Reader: none"', actor=story.agent)
@@ -53,13 +54,11 @@ def test_a_background_build_with_no_reader_keeps_a_missing_reader_at_its_end_and
 
 def test_a_pytest_run_the_stock_reader_reads_is_suitable_and_a_read_command_needs_no_reader(new_story):
     story = new_story(fixture=BuilderStarted)
-    tests_run = start_process(story, "pytest tests/cart -q", category=CommandCategory.TEST_RUN)
-    story.advance(LONG_RUN)
-    end_run(story, tests_run, PYTEST_OUTPUT)
-    end_run(story, start_process(story, "cat notes", category=CommandCategory.READ), "notes\n")
-    story.expect_text("reading-decision show 4", "moment: end", "state: not needed", actor=story.agent)
-    story.expect_text("reading-decision show 2", "moment: end", "state: suitable", actor=story.agent)
-    story.expect_text(f"process card {tests_run.id} --json", '"reading_text": null', actor=story.agent)
+    tests_run = ended_after_a_while(story, start_process(story, "pytest tests/cart -q", category=CommandCategory.TEST_RUN), PYTEST_OUTPUT)
+    read_run = start_process(story, "cat notes", category=CommandCategory.READ)
+    end_run(story, read_run, "notes\n")
+    story.expect_rows(end_decision(story, read_run) == ("not needed", "nothing", 1), end_decision(story, tests_run) == ("suitable", "nothing", 1))
+    story.expect_text("reading-decision list --json", '"state": "suitable"', '"state": "not needed"', actor=story.agent)
 
 
 def test_the_card_of_a_run_whose_reader_lacks_fields_says_the_reader_is_poor(new_story):

@@ -55,10 +55,12 @@ def large_background_output(story: Story) -> Process:
 def ended_after_a_while(story: Story, process: Process, text: str = BUILD_OUTPUT) -> Process:
     story.advance(LONG_RUN)
     end_run(story, process, text)
+    story.run_listeners()
     return process
 
 
 def end_decision(story: Story, process: Process) -> tuple[str, str, int]:
+    story.run_listeners()
     row = story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, moment=ReadingMoment.END).first()
     assert row is not None, f"no end decision was kept for output {process.id}"
     return row.state.value, row.action.value, int(row.level)
