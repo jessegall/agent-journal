@@ -33,7 +33,7 @@ class ProcessSetting(Enum):
                                 SettingType.NUMBER, default=900)
     FIRST_OUTPUT_SECONDS = SettingValue("first-output-seconds", "Seconds before a silent run is reported", "Seconds a run may print nothing before its agent is told.",
                                         SettingType.NUMBER, default=30, rule=NumberRule(1))
-    STOPPED_WRITING_SECONDS = SettingValue("stopped-writing-seconds", "Seconds before a run that stopped printing is reported",
+    STOPPED_WRITING_SECONDS = SettingValue("stopped-writing-seconds", "Seconds a run may stop printing",
                                            "Seconds a run that printed may stay silent before its agent is told.", SettingType.NUMBER, default=120, rule=NumberRule(1))
     SPARSE_SECONDS = SettingValue("sparse-seconds", "Seconds between lines of a sparse run",
                                   "Average seconds between prints, over the last five, from which a run counts as printing too little.", SettingType.NUMBER, default=30,

@@ -1,5 +1,7 @@
 import pytest
 
+from engine.setting.setting_limits import length_problems
+
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.support.cadence_limits import CadenceLimits
 
@@ -12,6 +14,7 @@ def test_each_cadence_setting_has_its_key_its_default_and_a_title_and_a_descript
     declared = setting.value
     assert (declared.key, declared.default) == CADENCE_SETTINGS[setting]
     assert declared.title and declared.description
+    assert not list(length_problems(declared.title, declared.description, declared.key))
 
 
 @pytest.mark.parametrize("setting", list(CADENCE_SETTINGS))
