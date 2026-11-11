@@ -25,7 +25,7 @@ def test_a_second_dispatch_shows_only_its_worktree_totals_and_keeps_its_pace_on_
         expect_browser(server, "workerProgress.browser.mjs", [str(worker.id), story.clock.timestamp().text, "0 of 2 tasks", "", "new"])
         story.advance(timedelta(minutes=30))
         story.expect_success('task close 2 --outcome "Tax added"', actor=worker)
-        story.expect_success("worker next --wait --differences none", actor=worker)
+        story.expect_success("task start 3", actor=worker)
         story.expect_success(f"agent end {worker.id}")
         session = worker_session(story, worker)
         story.expect_success(f"agent start {session} claude worker --environment main --process-started-at {story.clock.timestamp().text}")

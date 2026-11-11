@@ -8,9 +8,11 @@ from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGE
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, file_proof_line, start_planned_worker, unplanned_worker
 
 COMMITTED = "committed"
+BUILD_TASKS = 3
 CHECKPOINT_WORDS = "tests run at the checkpoint of phase 2, when tasks 4 are in"
 MERGE_WAIT_WORDS = "committed: the merger merges; tests run at the checkpoint"
 MERGED_REASON = "merged; its tests run at the checkpoint of phase 2"
@@ -35,12 +37,14 @@ def worktree_row(worker: StoryWorker) -> dict[str, object]:
 
 @pytest.fixture
 def group_worker(new_story, monkeypatch) -> StoryWorker:
-    """A worker of a started plan that proved tasks 1 and 2 of phase Build, the first with a test, and has proved
-    the last task 3 with a test; nothing is committed yet."""
-    worker = start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
-    worker.prove_advance(TEST_LINE)
-    worker.prove_advance()
-    worker.prove(SECOND_TEST_LINE)
+    """A worker of a started plan that started the three tasks of phase Build and committed tasks 1 and 2 in an
+    interim commit, the first proved with a test; it has proved the last task 3 with a test and not committed it."""
+    worker = holding_worker(new_story, monkeypatch, BUILD_TASKS)
+    worker.repository.changed(worker.worker.id, "cart.py", CART_CHANGE)
+    prove_task(worker, 1, 1, TEST_LINE)
+    prove_task(worker, 2, 1)
+    worker.story.run(COMMIT, actor=worker.worker)
+    prove_task(worker, 3, 1, SECOND_TEST_LINE)
     return worker
 
 
@@ -59,23 +63,16 @@ def merged_worker(committed_worker) -> StoryWorker:
     return committed_worker
 
 
-def test_158_a_commit_in_a_started_plan_says_committed_names_the_checkpoint_of_its_tests_and_starts_no_test(group_worker):
-    outcome = group_worker.story.run(COMMIT, actor=group_worker.worker)
-    group_worker.story.expect_text("worker status", CHECKPOINT_WORDS, actor=group_worker.worker)
-    group_worker.story.expect_rows(outcome.code == 0, COMMITTED in outcome.output_text, CHECKPOINT_WORDS in outcome.output_text, group_worker.started == [],
-                                   detail=f"{outcome.output_text} started: {group_worker.started}")
-
-
 def test_160_a_commit_of_a_task_in_no_plan_starts_its_test_as_before(new_story, monkeypatch):
     worker = unplanned_worker(new_story, monkeypatch)
-    worker.prove_advance(TEST_LINE)
+    worker.prove_commit(TEST_LINE)
     worker.story.run_listeners()
     worker.story.expect_rows(len(worker.started) == 1, COMMITTED not in proof_states(worker).values(), detail=f"started: {worker.started}, proofs: {proof_states(worker)}")
 
 
 def test_162_a_commit_with_a_missing_proof_is_refused_in_a_started_plan_as_outside_one(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
-    outcome = worker.story.run("worker next --wait --differences none", actor=worker.worker)
+    outcome = worker.story.run(COMMIT, actor=worker.worker)
     worker.story.expect_rows(outcome.code != 0, "proof" in outcome.output_text, proof_states(worker) == {}, detail=outcome.output_text)
 
 

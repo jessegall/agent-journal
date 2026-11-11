@@ -2,15 +2,12 @@ from datetime import timedelta
 
 import pytest
 
-from engine.actor.actor import Actor
-from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID, missing_program, running_worker, start_launcher, worker_story
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, dispatched_worker, repository_environment
-from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 
 __all__ = ["missing_program", "running_worker", "worker_story"]
@@ -46,26 +43,6 @@ def worker_on_a_task(new_story):
 def worker_blocked_its_task(worker_on_a_task):
     worker_on_a_task.expect_success(BLOCK, actor=worker_on_a_task.worker)
     return worker_on_a_task
-
-
-@pytest.fixture
-def handed_in_worker(worker_on_a_task):
-    worker_on_a_task.repository.changed(worker_on_a_task.worker.id, "cart.py", CART_CHANGE)
-    worker_on_a_task.expect_success(FIRST_PROOF, actor=worker_on_a_task.worker)
-    worker_on_a_task.expect_success(DELIVERY, actor=worker_on_a_task.worker)
-    return worker_on_a_task
-
-
-@pytest.fixture
-def worker_with_a_queued_task(new_story, monkeypatch):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    recording_launch(monkeypatch)
-    repository = repository_environment(story)
-    story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
-    story.worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
-    repository.changed(story.worker.id, "cart.py", CART_CHANGE)
-    story.expect_success('proof make 1 --task 1 "cart.py:1, its story" --test "python tests/cart.py"', actor=story.worker)
-    return story
 
 
 def test_a_blocked_task_is_not_left_to_the_merger(worker_blocked_its_task):
@@ -104,16 +81,3 @@ def test_a_stopped_worker_whose_blocked_task_opens_is_started_again(running_work
     WorkerResumeRetry()(story.container)
     launcher.drain_requests()
     story.expect_rows(len(launcher.starts) == 1, launcher.starts[0]["agent_id"] == story.worker.id, detail=str(launcher.requests))
-
-
-def test_worker_next_after_a_hand_in_says_it_is_handed_in(handed_in_worker):
-    story = handed_in_worker
-    text = refusal_text(story, "worker next --wait --differences none")
-    story.expect_rows("handed in" in text, "worker-worktree list" not in text, detail=text)
-
-
-def test_worker_next_while_its_tests_run_says_to_stop(worker_with_a_queued_task):
-    story = worker_with_a_queued_task
-    story.expect_success("worker next --wait --differences none", actor=story.worker)
-    text = refusal_text(story, "worker next --wait --differences none")
-    story.expect_rows("stop" in text, detail=text)

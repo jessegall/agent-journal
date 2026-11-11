@@ -1,6 +1,7 @@
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
@@ -42,7 +43,8 @@ def test_logs_include_each_task_in_a_worker_batch(new_story):
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('task log 1 "Cart finished"', actor=worker)
     story.expect_success('proof make 1 --task 1 "cart.py:1"', actor=worker)
-    story.expect_success("worker next --wait --differences none", actor=worker)
+    story.expect_success("task start 2", actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     repository.changed(worker.id, "tax.py", "TAX = 1\n")
     story.expect_success('task log 2 "Tax finished"', actor=worker)
     story.expect_success('proof make 1 --task 2 "tax.py:1"', actor=worker)

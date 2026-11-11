@@ -126,7 +126,8 @@ def test_175_183_the_run_makes_the_selected_run_over_the_files_the_window_change
 
 def test_187_a_failed_test_of_a_run_the_main_agent_started_early_returns_the_task_in_testing_to_its_worker(new_story, monkeypatch):
     worker = dispatched_story_worker(planned_story(new_story), PHASE_DISPATCH, monkeypatch)
-    worker.prove_advance(TEST_LINE)
+    worker.story.run("task start 2", actor=worker.worker)
+    worker.prove_commit(TEST_LINE)
     StalledWorkerTestRuns()(worker.story.container)
     worker.story.expect_success("plan check 1", actor=worker.story.agent)
     worker.story.run_listeners()

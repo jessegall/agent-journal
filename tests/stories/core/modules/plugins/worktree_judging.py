@@ -38,8 +38,8 @@ def test_a_main_checkout_sin_reaches_only_the_main_agent(worktree_story):
     expect_plugin_notice(story, LISTING_SAMPLE, f"[plugin worktree-judge] {story.repository.folder / 'cart.py'}: mutable default")
 
 
-@pytest.mark.parametrize("command", ["worker next --differences none", "worker deliver --differences none"])
-def test_both_worker_handoffs_judge_the_worker_files_from_its_base(worktree_story, command):
+@pytest.mark.parametrize("command", ["worker commit --differences none", "worker deliver --differences none"])
+def test_both_names_of_the_worker_commit_judge_the_worker_files_from_its_base(worktree_story, command):
     story = worktree_story
     story.repository.changed(story.worker.id, "cart.py", SIN)
     story.expect_refusal(command, f"{story.worktree / 'cart.py'}: mutable default", actor=story.worker)
@@ -52,7 +52,7 @@ def test_a_resumed_worker_is_not_judged_for_new_main_commits(worktree_story):
     story.repository.committed("main_only.py", SIN, "Main adds a function")
     story.expect_success(f'worker send --wait {agent_number(story, story.worker.id)} "Continue the worker changes"', actor=story.agent)
     story.expect_rows((story.worktree / "main_only.py").read_text() == SIN)
-    story.expect_success("worker next --wait --differences none", actor=story.worker)
+    story.expect_success("worker commit --wait --differences none", actor=story.worker)
     data = json.loads((story.home.folder / "plugin-data/worktree-judge/delivery.json").read_text())
     expect_row(data, base=story.repository.tip(ENVIRONMENT_BRANCH))
     expect_row(data, files=["cart.py"])
@@ -64,4 +64,4 @@ def test_a_resumed_workers_new_sin_still_holds_its_handoff(worktree_story):
     story.repository.committed("main_only.py", SIN, "Main adds a function")
     story.expect_success(f'worker send --wait {agent_number(story, story.worker.id)} "Add the worker function"', actor=story.agent)
     story.repository.changed(story.worker.id, "cart.py", SIN)
-    story.expect_refusal("worker next --wait --differences none", f"{story.worktree / 'cart.py'}: mutable default", actor=story.worker)
+    story.expect_refusal("worker commit --wait --differences none", f"{story.worktree / 'cart.py'}: mutable default", actor=story.worker)

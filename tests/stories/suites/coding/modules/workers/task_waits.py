@@ -7,6 +7,7 @@ from engine.setting.setting_values import SettingValues
 from engine.enums.duration_unit import DurationUnit
 from suites.coding.modules.workers.support.worker_settings import WORKER_IDLE_HOURS
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, checked_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.stuck import MAIN_SESSION, PROCESS_START
@@ -34,7 +35,8 @@ def test_finishing_one_task_in_a_workers_batch_keeps_the_wait_blocked(new_story)
     task_id = waiting_task(story, worker)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story"', actor=worker)
-    story.expect_success("worker next --wait --differences none", actor=worker)
+    story.expect_success(f"task start {second_id}", actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     story.expect_success(f"task show {second_id}", "state: started", actor=story.agent)
     story.expect_success(f"task show {task_id}", "state: blocked", actor=story.agent)
 
@@ -76,7 +78,7 @@ def test_a_failed_test_keeps_the_task_waiting_for_the_workers_correction(new_sto
     story.expect_success(f"task show {task_id}", "state: blocked", actor=story.agent)
 
 
-def test_a_worker_ending_between_tests_and_its_next_task_keeps_the_wait_blocked(new_story, monkeypatch):
+def test_a_worker_ending_while_its_tests_run_with_a_task_it_has_not_started_keeps_the_wait_blocked(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     processes = recording_launch(monkeypatch)
@@ -85,13 +87,13 @@ def test_a_worker_ending_between_tests_and_its_next_task_keeps_the_wait_blocked(
     task_id = waiting_task(story, worker)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
-    story.expect_success("worker next --wait --differences none", actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     story.run_listeners()
     story.clock.advance(timedelta(seconds=1))
     story.expect_success(f"agent end {worker.id}", actor=worker)
     story.clock.advance(timedelta(seconds=1))
     ended(story, processes[0], 0)
-    story.expect_success(f"task show {second_id}", "state: started", actor=story.agent)
+    story.expect_success(f"task show {second_id}", "state: open", actor=story.agent)
     story.expect_success(f"task show {task_id}", "state: blocked", actor=story.agent)
 
 

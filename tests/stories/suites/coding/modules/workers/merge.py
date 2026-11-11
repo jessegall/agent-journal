@@ -19,6 +19,7 @@ from core.modules.agents.models.agent import Agent
 from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
 import subprocess
 
@@ -344,7 +345,8 @@ def test_reading_one_task_does_not_mark_other_tasks_logs_as_read(new_story):
     story.expect_success('task log 1 "First decision" --important', actor=worker)
     task_id = story.new_row_id('task make "A second task" --brief "Add tax"', actor=story.agent)
     story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task_id}", actor=story.agent)
-    story.expect_success("worker next --wait --differences none", actor=worker)
+    story.expect_success(f"task start {task_id}", actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     repository.changed(worker.id, "tax.py", "TAX = 1\n")
     story.expect_success(f'task log {task_id} "Second decision" --important', actor=worker)
     story.expect_success(f'proof make 1 --task {task_id} "tax.py:1, read the tax"', actor=worker)

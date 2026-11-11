@@ -11,6 +11,7 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import SECO
 
 THREE_TASKS = 3
 CHECKPOINT_WORDS = "tests run at the checkpoint of phase 2"
+CHECKPOINT_TASKS_WORDS = f"{CHECKPOINT_WORDS}, when tasks 4 are in"
 LEFT_OUT_WORDS = "task 3 is not part of this commit: it has no proof"
 INTERIM_WORDS = "Interim: go on with task 3"
 FINAL_WORDS = "Final: your work is handed in, stop and wait"
@@ -95,22 +96,26 @@ def test_41_the_tasks_of_an_interim_commit_in_a_started_plan_stay_in_testing_unt
     interim_in_plan.story.expect_rows(interim_in_plan.started == [], detail=f"started: {interim_in_plan.started}")
 
 
-def test_42_43_44_a_commit_of_the_last_started_task_outside_a_plan_is_named_final_delivers_the_worktree_and_the_main_agent_hears_of_its_tests(interim):
+def test_42_43_44_a_commit_of_the_last_started_task_outside_a_plan_is_named_final_delivers_the_worktree_refuses_a_further_commit_and_the_main_agent_hears_of_its_tests(interim):
     prove_task(interim, 3, 1, TEST_LINE)
     final = interim.story.run(COMMIT, actor=interim.worker)
     interim.story.run_listeners()
     status = interim.status_line()
+    refused_while_testing = interim.story.run(COMMIT, actor=interim.worker)
     interim.end_all_tests()
+    refused_when_passed = interim.story.run(COMMIT, actor=interim.worker)
     interim.story.expect_rows(FINAL_WORDS in final.output_text, worktree(interim)["state"] == "delivered", "stop" in status, any("all pass" in line for line in interim.main_agent_lines()),
-                              detail=f"{final.output_text} | {status} | {interim.main_agent_lines()}")
+                              refused_while_testing.code != 0, "stop" in refused_while_testing.output_text, refused_when_passed.code != 0, "handed in" in refused_when_passed.output_text,
+                              detail=f"{final.output_text} | {status} | {interim.main_agent_lines()} | {refused_while_testing.output_text} | {refused_when_passed.output_text}")
 
 
-def test_42_43_a_commit_of_the_last_started_task_in_a_started_plan_makes_the_worktree_ready_to_merge_and_the_worker_waits_for_the_merge(interim_in_plan):
+def test_42_43_158_a_commit_of_the_last_started_task_in_a_started_plan_names_the_checkpoint_of_its_tests_and_makes_the_worktree_ready_to_merge(interim_in_plan):
     prove_task(interim_in_plan, 3, 1, TEST_LINE)
-    interim_in_plan.story.expect_success(COMMIT, actor=interim_in_plan.worker)
+    final = interim_in_plan.story.run(COMMIT, actor=interim_in_plan.worker)
     interim_in_plan.story.run_listeners()
-    row, status = worktree(interim_in_plan), interim_in_plan.status_line()
-    interim_in_plan.story.expect_rows(row["state"] == "delivered", row["merge_ready_at"] is not None, "merge" in status, interim_in_plan.started == [], detail=f"{row} | {status}")
+    row, status = worktree(interim_in_plan), interim_in_plan.status()
+    interim_in_plan.story.expect_rows(final.code == 0, "committed" in final.output_text, CHECKPOINT_TASKS_WORDS in final.output_text, CHECKPOINT_TASKS_WORDS in status, row["state"] == "delivered",
+                                      row["merge_ready_at"] is not None, "merge" in status.splitlines()[0], interim_in_plan.started == [], detail=f"{final.output_text} | {row} | {status}")
 
 
 def test_45_a_worker_with_a_started_task_that_has_no_proof_may_not_stop_and_one_whose_last_commit_is_tested_may(interim):

@@ -56,7 +56,7 @@ def test_199_200_the_two_settings_of_tests_at_a_phase_end_and_in_batches_exist_n
 def test_200_a_task_in_no_plan_is_tested_at_its_own_commit_whatever_the_batch_size_was(new_story, monkeypatch):
     story = planned_story(new_story, approve=False)
     worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2", monkeypatch)
-    worker.prove_advance(TEST_LINE)
+    worker.prove_commit(TEST_LINE)
     story.run_listeners()
     story.expect_rows(run_lines(worker) == [CART_COMMAND], detail=str(run_lines(worker)))
 
@@ -78,7 +78,8 @@ def test_206_the_runs_a_worker_may_start_itself_are_counted_between_two_commits(
     apply_work_setting(worker.story, RUNS_SETTING, 1)
     expect_reply_allowed(worker.run_test())
     expect_reply_refusal(worker.run_test(), "No test runs left")
-    worker.prove_advance(TEST_LINE)
+    worker.story.run("task start 2", actor=worker.worker)
+    worker.prove_commit(TEST_LINE)
     expect_reply_allowed(worker.run_test())
     worker.story.expect_text("work-settings show --json --environment main", RUNS_TITLE, actor=worker.story.user)
 
@@ -86,12 +87,14 @@ def test_206_the_runs_a_worker_may_start_itself_are_counted_between_two_commits(
 def test_213_a_proof_test_that_runs_when_the_rule_changes_ends_as_it_was_and_the_next_commit_starts_none(new_story, monkeypatch):
     worker = phase_worker(new_story, monkeypatch)
     story = worker.story
-    worker.prove_advance(TEST_LINE)
+    story.run("task start 2", actor=worker.worker)
+    worker.prove_commit(TEST_LINE)
     StalledWorkerTestRuns()(story.container)
     story.expect_success("plan check 1", actor=story.agent)
     story.run_listeners()
     running_before = list(worker.started)
-    worker.prove_advance(SECOND_TEST_LINE)
+    story.run("task start 3", actor=worker.worker)
+    worker.prove_commit(SECOND_TEST_LINE)
     worker.prove(TEST_LINE)
     story.expect_success(COMMIT, actor=worker.worker)
     story.run_listeners()

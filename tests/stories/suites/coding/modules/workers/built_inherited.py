@@ -2,6 +2,7 @@ from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.support.story_checks import expect_value
@@ -114,7 +115,8 @@ def test_another_tasks_commit_on_the_earlier_branch_does_not_count(base_story):
     first = dispatched_worker(story, f"{DISPATCH} 2")
     repository.changed(first.id, "cart.py", CART_CHANGE)
     story.expect_success(FIRST_PROOF, actor=first)
-    story.expect_success("worker next --wait --differences none", actor=first)
+    story.expect_success("task start 2", actor=first)
+    story.expect_success(COMMIT, actor=first)
     story.expect_success(f'worker release {agent_number(story, first.id)} "the worker left"', actor=story.agent)
     third = dispatched_worker(story, f"{WORKER_DISPATCH_LINE} 2")
     expect_cut_from_the_base(story, repository, third)

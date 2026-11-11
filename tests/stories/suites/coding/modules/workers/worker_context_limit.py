@@ -12,6 +12,7 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, dispatched_worker, repository_environment, worker_session
 
 LIMIT = 400_000
@@ -90,14 +91,15 @@ def finished_task_ids(new_story):
     story.expect_success("task overview 1", actor=worker)
     repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, by reading"', actor=worker)
+    story.expect_success("task start 2", actor=worker)
     return story, worker
 
 
-def test_a_worker_past_the_limit_at_worker_next_is_told_to_stop_and_may_stop_with_its_next_task_started(new_story):
+def test_a_worker_past_the_limit_at_an_interim_commit_is_told_to_stop_and_may_stop_with_its_next_task_started(new_story):
     story, worker = finished_task_ids(new_story)
     limit_enabled(story)
     has_context(story, worker, LIMIT)
-    story.expect_success("worker next --wait --differences none", actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     story.expect_text("task show 2", "state: started", actor=story.agent)
     session = worker_session(story, worker)
     story.expect_hook_allowed(session, HookSamples.sample("post_tool_use"), "stop now")
@@ -105,9 +107,9 @@ def test_a_worker_past_the_limit_at_worker_next_is_told_to_stop_and_may_stop_wit
     story.expect_hook_allowed(session, HookSamples.stop())
 
 
-def test_a_worker_under_the_limit_at_worker_next_goes_on_and_may_not_stop(new_story):
+def test_a_worker_under_the_limit_at_an_interim_commit_goes_on_and_may_not_stop(new_story):
     story, worker = finished_task_ids(new_story)
     limit_enabled(story)
     has_context(story, worker, LIMIT - 1)
-    story.expect_success("worker next --wait --differences none", actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     story.expect_hook_refusal(worker_session(story, worker), HookSamples.stop(), "task")

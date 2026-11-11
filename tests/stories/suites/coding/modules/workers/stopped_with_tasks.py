@@ -113,7 +113,7 @@ def test_a_worker_handing_on_to_an_open_task_is_pointed_at_it(worker_command):
     story, _, worker, _ = worker_command
     story.expect_success('task make "Print the receipt" --brief "Print it" --environment main', actor=story.agent)
     story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task 2", actor=story.agent)
-    outcome = story.run("worker next --differences none", actor=worker)
+    outcome = story.run("worker commit --differences none", actor=worker)
     story.expect_rows(GO_ON_WITH_TASK_2 in outcome.output_text, "stop or go on" not in outcome.output_text, detail=outcome.output_text)
 
 

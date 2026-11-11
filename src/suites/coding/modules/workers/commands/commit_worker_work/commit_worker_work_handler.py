@@ -32,6 +32,7 @@ from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskC
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.enums.worker_step import WorkerStep
 from suites.coding.modules.workers.support.worker_free_task import WorkerFreeTask
+from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 
 
@@ -47,7 +48,8 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
     to testing and its proofs submitted. Outside a started plan their tests are queued, and with nothing to
     run it finishes at once; in a started plan they wait for the checkpoint. A started task with no shown
     proof stays started and is named in the answer: the commit is then interim and the worktree stays cut
-    on that task. A commit that leaves no started task is final and delivers the worktree. A worker with no
+    on that task, and a worker past the context limit is told to stop there so that its stop compacts it. A
+    commit that leaves no started task is final and delivers the worktree. A worker with no
     started task commits for the task of its worktree, which delivers the worktree. The worker is given the
     next free task it may take, which it starts when this work is done."""
 
@@ -55,8 +57,9 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, results: RecordWorkerTestHandler,
-                 differences: DeliveryDifferences, free_task: WorkerFreeTask, guidance: WorkerGuidance, staging: WorkerStaging, wait_text: CheckpointWaitText, bus: Bus, numbers: RowNumbers) -> None:
-        self.wait_text, self.bus, self.numbers = wait_text, bus, numbers
+                 differences: DeliveryDifferences, free_task: WorkerFreeTask, guidance: WorkerGuidance, staging: WorkerStaging, wait_text: CheckpointWaitText, bus: Bus, numbers: RowNumbers,
+                 compaction: WorkerCompaction) -> None:
+        self.wait_text, self.bus, self.numbers, self.compaction = wait_text, bus, numbers, compaction
         self.rows, self.worktrees, self.proof_queue, self.repository, self.task_commit = rows, worktrees, proof_queue, repository, task_commit
         self.results, self.differences, self.free_task, self.guidance, self.staging = results, differences, free_task, guidance, staging
 
@@ -103,6 +106,8 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
             if task.state is TaskState.STARTED:
                 self.repository.save_change(task, task.moved(TaskLifecycle.test), context)
         worktree = self.repository.save_change(committed, self.moved_worktree(committed, open_tasks, tasks, context), context)
+        if open_tasks:
+            self.compaction.stop_after_task(context.actor.id)
         submission = self.proof_queue.submit_ready(worktree, tasks, context)
         if submission is Submission.UNTESTED:
             self.results.finish(worktree, context)

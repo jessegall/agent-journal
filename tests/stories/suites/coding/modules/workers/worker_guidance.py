@@ -6,10 +6,13 @@ from core.modules.drivers.models.agent_line import AgentLine
 
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
+from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task, unplanned_holding_worker
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, PLAN_DISPATCH, SECOND_TEST_LINE, TEST_LINE, start_planned_worker, unplanned_worker
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 
 RUNS_SETTING = "setting set journal.suites.coding.workers.worker-phase-test-runs 5 --environment main"
+BUILD_TASKS = 3
 
 
 def now_of(line: str) -> str:
@@ -38,72 +41,18 @@ def plan_worker(new_story, monkeypatch):
 
 
 @pytest.fixture
-def last_of_phase(phase_worker):
-    phase_worker.prove_advance(TEST_LINE)
-    phase_worker.prove_advance(SECOND_TEST_LINE)
-    phase_worker.prove(TEST_LINE)
-    return phase_worker
-
-
-@pytest.fixture
-def handed_in(last_of_phase):
-    last_of_phase.story.run("worker deliver --wait --differences none", actor=last_of_phase.worker)
-    return last_of_phase
-
-
-@pytest.fixture
-def failed_group(handed_in):
-    handed_in.end_tests(1, 0, 0)
-    return handed_in
+def last_of_phase(new_story, monkeypatch):
+    """A worker of phase Build that started its three tasks and proved each with a test; nothing is committed."""
+    worker = holding_worker(new_story, monkeypatch, BUILD_TASKS)
+    for task_id, test_line in ((1, TEST_LINE), (2, SECOND_TEST_LINE), (3, TEST_LINE)):
+        prove_task(worker, task_id, 1, test_line)
+    return worker
 
 
 @pytest.fixture
 def proven(phase_worker):
     phase_worker.prove()
     return phase_worker
-
-
-@pytest.fixture
-def advanced(phase_worker):
-    phase_worker.prove_advance()
-    return phase_worker
-
-
-@pytest.fixture
-def single_test_run(phase_worker):
-    phase_worker.run_test()
-    return phase_worker
-
-
-@pytest.fixture
-def plan_last_task(plan_worker):
-    plan_worker.prove_advance(TEST_LINE)
-    plan_worker.prove_advance()
-    return plan_worker
-
-
-@pytest.fixture
-def plan_handed_in(plan_last_task):
-    return plan_last_task, plan_last_task.prove_advance(SECOND_TEST_LINE)
-
-
-@pytest.fixture
-def asking(phase_worker):
-    phase_worker.story.expect_success('wait stuck "the plan is unclear"', actor=phase_worker.worker)
-    return phase_worker
-
-
-@pytest.fixture
-def handed_in_and_asking(handed_in):
-    handed_in.story.expect_success('wait stuck "the plan is unclear"', actor=handed_in.worker)
-    return handed_in
-
-
-@pytest.fixture
-def fixed_group(failed_group):
-    failed_group.prove(TEST_LINE)
-    failed_group.story.run("worker deliver --wait --differences none", actor=failed_group.worker)
-    return failed_group
 
 
 @pytest.fixture
@@ -117,15 +66,15 @@ def clashed(new_story):
     return story, worker, repository
 
 
-def test_the_last_proven_task_of_a_phase_with_the_next_phase_queued_hands_in_with_next(plan_last_task):
-    plan_last_task.prove(SECOND_TEST_LINE)
-    expect_step(plan_last_task, "group-end", "journal worker next")
+def test_a_proven_task_of_a_started_plan_is_committed_with_worker_commit_and_tested_at_the_checkpoint(plan_worker):
+    plan_worker.prove(SECOND_TEST_LINE)
+    expect_step(plan_worker, "commit", "journal worker commit", "checkpoint")
 
 
-def test_a_task_outside_any_group_hands_in_with_next_while_more_are_queued(new_story, monkeypatch):
+def test_a_proven_task_in_no_plan_is_committed_with_worker_commit_and_tested_on_the_commit(new_story, monkeypatch):
     worker = unplanned_worker(new_story, monkeypatch)
     worker.prove(TEST_LINE)
-    expect_step(worker, "group-end", "journal worker next")
+    expect_step(worker, "commit", "journal worker commit", "tests it on your commit")
 
 
 def test_the_run_allowance_follows_its_setting(phase_worker):
@@ -148,9 +97,10 @@ def test_the_main_agent_reads_the_same_line_as_the_worker(phase_worker):
     phase_worker.story.expect_rows(main_view.splitlines()[0] == phase_worker.status_line())
 
 
-def test_worker_next_with_the_next_task_at_once_speaks_in_the_same_voice(proven):
-    outcome = proven.story.run("worker next --wait --differences none", actor=proven.worker)
-    proven.story.expect_rows("your next task, task 2" in outcome.output_text, detail=outcome.output_text)
+def test_an_interim_commit_in_a_started_plan_says_what_status_says(proven):
+    proven.story.run("task start 2", actor=proven.worker)
+    outcome = proven.story.run(COMMIT, actor=proven.worker)
+    proven.story.expect_rows("go on with task 2" in outcome.output_text, detail=outcome.output_text)
     expect_voice(proven, outcome.output_text)
 
 
@@ -161,18 +111,19 @@ def test_worker_deliver_says_what_status_says(last_of_phase):
 
 def test_the_failed_tests_line_outside_a_phase_says_what_status_says(new_story, monkeypatch):
     worker = unplanned_worker(new_story, monkeypatch)
-    worker.prove(TEST_LINE)
-    worker.story.run("worker next --wait --differences none", actor=worker.worker)
+    worker.prove_commit(TEST_LINE)
+    worker.story.run_listeners()
     worker.end_tests(1)
     expect_voice(worker, next(line for line in worker.worker_lines() if "tests failed" in line))
 
 
-def test_the_next_task_line_says_what_status_says(new_story, monkeypatch):
-    worker = unplanned_worker(new_story, monkeypatch)
-    worker.prove(TEST_LINE)
-    worker.story.run("worker next --wait --differences none", actor=worker.worker)
+def test_the_passed_tests_line_of_an_interim_commit_says_what_status_says(new_story, monkeypatch):
+    worker = unplanned_holding_worker(new_story, monkeypatch)
+    prove_task(worker, 1, 1, TEST_LINE)
+    worker.story.run(COMMIT, actor=worker.worker)
+    worker.story.run_listeners()
     worker.end_tests(0)
-    expect_voice(worker, next(line for line in worker.worker_lines() if "Your next task is" in line))
+    expect_voice(worker, next(line for line in worker.worker_lines() if "the tests of your commit passed" in line))
 
 
 def test_a_clash_names_the_clashed_files_at_status_and_in_its_line(clashed):

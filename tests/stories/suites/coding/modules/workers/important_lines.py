@@ -23,7 +23,7 @@ def test_a_hand_in_must_say_what_differs_from_the_task(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     _, worker = proved_worker(story)
     story.expect_refusal("worker deliver --wait", "did you do anything other than the task brief asked", actor=worker)
-    story.expect_refusal("worker next --wait", "did you do anything other than the task brief asked", actor=worker)
+    story.expect_refusal("worker commit --wait", "did you do anything other than the task brief asked", actor=worker)
 
 
 def test_a_difference_is_an_important_line_the_merge_asks_an_answer_to(new_story):

@@ -219,7 +219,8 @@ def test_an_advice_at_an_unchanged_point_is_refused(advising):
 def test_the_same_step_on_the_next_task_is_a_new_point(planned):
     worker, advised = planned
     advised.advised(ADVICES[0], 1)
-    outcome = worker.prove_advance()
+    worker.story.run("task start 2", actor=worker.worker)
+    outcome = worker.prove_commit()
     expect_value(outcome.code, 0)
     advised.visit()
     advised.advised(ADVICES[1], 2)
@@ -311,7 +312,8 @@ def test_the_ask_limit_holds_with_the_merger_off(merger_disabled_plan):
 def test_a_worker_that_answers_to_a_group_of_tasks_counts_asks_for_the_group_not_per_task(planned_with_three_asks):
     worker, advised = planned_with_three_asks
     advised.worked_on()
-    outcome = worker.prove_advance()
+    worker.story.run("task start 2", actor=worker.worker)
+    outcome = worker.prove_commit()
     expect_value(outcome.code, 0)
     advised.post_questions(4)
     advised.post_questions(5)

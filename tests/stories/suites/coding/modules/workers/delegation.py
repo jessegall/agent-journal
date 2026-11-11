@@ -15,6 +15,7 @@ from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, BuilderHelper
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
@@ -116,7 +117,8 @@ def test_a_workers_last_task_can_be_taken_back_after_other_work_is_finished(new_
     story, repository, worker = delegated_story(new_story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
-    story.expect_success("worker next --wait --differences none", actor=worker)
+    story.expect_success("task start 2", actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     story.expect_success(f"task assign 2 --to {agent_number(story, story.agent.id)}", actor=story.agent)
     story.expect_text("task show 2", "state: open", actor=story.agent)
     story.expect_success("worker deliver --wait --differences none", actor=worker)
@@ -147,14 +149,14 @@ def test_a_comment_on_a_task_with_no_worker_tells_no_worker_and_links_none(new_s
 
 
 
-def test_moving_to_the_next_task_hands_nothing_in_and_the_last_task_has_no_next(new_story):
+def test_an_interim_commit_hands_nothing_in(new_story):
     story, repository, worker = delegated_story(new_story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
-    story.expect_success("worker next --wait --differences none", actor=worker)
+    story.expect_success("task start 2", actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     story.run_listeners()
     expect_absent_marks_text(story, "handed in")
-    story.expect_refusal("worker next --wait --differences none", "task 2 is your last", actor=worker)
 
 
 def dispatch_sample(*arguments: str):
@@ -187,7 +189,8 @@ def test_the_last_delivery_delivers_the_worktree_and_the_merge_closes_every_task
     story, repository, worker = delegated_story(new_story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
-    story.run("worker next --wait --differences none", actor=worker)
+    story.run("task start 2", actor=worker)
+    story.run(COMMIT, actor=worker)
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
     story.expect_success('proof make 1 --task 2 "cart.py:1, the second story"', actor=worker)
     story.run("worker deliver --wait --differences none", actor=worker)
@@ -267,7 +270,8 @@ def test_a_merged_worker_with_a_task_still_assigned_is_not_listed_as_running(new
     story.expect_success(f'task block {third} --reason "Waits for the release"', actor=story.agent)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
-    story.run("worker next --wait --differences none", actor=worker)
+    story.run("task start 2", actor=worker)
+    story.run(COMMIT, actor=worker)
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
     story.expect_success('proof make 1 --task 2 "cart.py:1, the second story"', actor=worker)
     story.run("worker deliver --wait --differences none", actor=worker)

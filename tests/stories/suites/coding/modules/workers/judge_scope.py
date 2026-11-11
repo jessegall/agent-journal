@@ -4,6 +4,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.judge_plugin import SINFUL_TEXT, judge_plugin_folder, judged_data, judged_files
@@ -60,7 +61,8 @@ def test_a_worker_whose_base_moved_sends_the_judge_only_its_own_files(judged_wor
 
 def test_an_earlier_task_of_the_worker_stays_on_the_list_at_a_later_hand_in(two_task_worker):
     story, repository, worker = two_task_worker
-    story.expect_success("worker next --wait --differences none", actor=worker)
+    story.expect_success("task start 2", actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     repository.changed(worker.id, "second.py", "SECOND = 1\n")
     story.expect_success('proof make 1 --task 2 "second.py:1, the second story"', actor=worker)
     story.expect_success(DELIVERY, actor=worker)

@@ -10,7 +10,9 @@ from suites.coding.modules.workers.listeners.worker_test_listener import WorkerT
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, PLAN_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story
 
 REACHES = "checkpoint-reach list --json --oldest --environment main"
@@ -42,11 +44,14 @@ def run_lines(worker: StoryWorker) -> list[str]:
 
 
 def commit_tasks(worker: StoryWorker, *test_lines: str) -> None:
-    """The worker proves one task for each test line, the empty line being a proof with no test, and commits
-    them all; the main agent checks each proof that has no test."""
-    for test_line in test_lines[:-1]:
-        worker.prove_advance(test_line)
-    worker.prove(test_lines[-1])
+    """The worker starts one task for each test line, proves each, the empty line being a proof with no test,
+    and commits them all in one commit; the main agent checks each proof that has no test."""
+    task_ids = range(1, len(test_lines) + 1)
+    for task_id in task_ids[1:]:
+        worker.story.run(f"task start {task_id}", actor=worker.worker)
+    worker.repository.changed(worker.worker.id, "cart.py", CART_CHANGE)
+    for task_id, test_line in zip(task_ids, test_lines):
+        prove_task(worker, task_id, 1, test_line)
     worker.story.run(COMMIT, actor=worker.worker)
     worker.story.run_listeners()
     for proof_id, test_line in enumerate(test_lines, 1):

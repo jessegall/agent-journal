@@ -47,15 +47,6 @@ def expect_tip(story, repository, worker):
                       (folder / "rate.py").read_text() == "RATE = 2\n")
 
 
-def test_worker_next_rebases_before_the_next_task_starts(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    story.expect_success('task make "Second job" --environment main', actor=story.agent)
-    worker = moved_base_worker(story, repository, "worker dispatch --test-command python=pytest --model sonnet 1 2")
-    story.expect_success("worker next --wait --differences none", actor=worker)
-    expect_tip(story, repository, worker)
-
-
 def test_a_clash_stops_the_hand_in_and_leaves_the_markers_until_the_worker_settles_them(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)

@@ -16,6 +16,7 @@ from tests.stories.core.modules.processes.support.process_samples import start_p
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
@@ -149,7 +150,7 @@ def test_a_stopped_worker_keeps_its_task_in_testing_and_loses_the_one_queued_whi
     worker = dispatched_worker(story, f"{DISPATCH} 2")
     repository.changed(worker.id, "cart.py", "TOTAL = 2\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, its story" --test "python tests/cart.py"', actor=worker)
-    story.expect_success("worker next --wait --differences none", actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.expect_success(f"agent stop {agent_number(story, worker.id)}", actor=user)

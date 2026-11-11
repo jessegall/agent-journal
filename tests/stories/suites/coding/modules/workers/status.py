@@ -10,6 +10,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
 
 
@@ -45,7 +46,7 @@ def test_worker_status_lists_tests_waiting_for_the_queue(worker_batch, monkeypat
     story.expect_success("setting make journal.core.processes.run-batch-size 0 --environment main")
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart story" --test "python tests/cart.py"', actor=worker)
-    story.expect_success("worker next --wait --differences none", actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     story.run_listeners()
     status = json.loads(story.run(f"worker status {agent_number(story, worker.id)} --json", actor=story.agent).output_text)
     story.expect_rows(status["current_task"]["state"] == "testing", status["tests"]["total"] == 1,

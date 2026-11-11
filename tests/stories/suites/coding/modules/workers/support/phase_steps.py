@@ -120,10 +120,6 @@ class StoryWorker:
         self.prove(test_line)
         return self.story.run("worker commit --wait --differences none", actor=self.worker)
 
-    def prove_advance(self, test_line: str = "") -> LineOutcome:
-        self.prove(test_line)
-        return self.story.run("worker next --wait --differences none", actor=self.worker)
-
     def end_test(self, process_id: int, code: int = 0) -> None:
         ended(self.story, process_id, code)
 
