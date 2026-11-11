@@ -111,3 +111,16 @@ def test_66_a_task_cancelled_after_its_proof_was_shown_is_named_as_left_out_of_t
     outcome = story.run(COMMIT, actor=worker.worker)
     expect_task_states(worker, "testing", 1)
     story.expect_rows(outcome.code == 0, "task 2 is cancelled and left out" in outcome.output_text, detail=outcome.output_text)
+
+
+def test_a_commit_of_a_worker_whose_row_a_restart_ended_while_its_program_runs_goes_through_and_the_worker_goes_on(two_of_three_proved):
+    worker, story = two_of_three_proved, two_of_three_proved.story
+    free_task = story.new_row_id('task make "Free job" --brief "A small job" --complexity 1 --environment main', actor=story.agent)
+    story.expect_success(f"agent end {worker.worker.id}", actor=story.agent)
+    outcome = story.run(COMMIT, actor=worker.worker)
+    late_proof = prove_task(worker, 3, 1)
+    story.expect_rows(outcome.code == 0, "go on with task 3" in outcome.output_text, late_proof.code == 0, detail=f"{outcome.output_text} | {late_proof.output_text}")
+    expect_task_states(worker, "testing", 1, 2)
+    expect_task_states(worker, "started", 3)
+    expect_open_undelegated(worker, free_task)
+
