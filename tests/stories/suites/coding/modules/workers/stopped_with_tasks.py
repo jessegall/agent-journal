@@ -12,6 +12,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID, missing_program, running_worker, start_launcher, worker_story
 from tests.stories.suites.coding.modules.workers.queued_commands import worker_command
+from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 
 __all__ = ["missing_program", "running_worker", "worker_command", "worker_story"]
 
@@ -86,9 +87,9 @@ def test_a_worker_another_agent_stopped_with_open_tasks_stays_stopped(two_task_w
     two_task_worker.expect_rows(launcher.requests == [], detail=str(launcher.requests))
 
 
-def test_a_worker_that_keeps_ending_with_the_merger_on_is_named_to_the_main_agent_once(two_task_worker, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
+def test_a_worker_that_keeps_ending_with_the_merger_on_is_named_to_the_main_agent_once(two_task_worker):
     story = two_task_worker
+    set_resume_limit(story, 0)
     story.expect_success(MERGER_ON, actor=story.user)
     ended(story)
     story.tick(MAIN_SESSION)
@@ -96,9 +97,9 @@ def test_a_worker_that_keeps_ending_with_the_merger_on_is_named_to_the_main_agen
     story.expect_rows(lines.count(f"worker:{agent_number(story, story.worker.id)} ended with") == 1, detail=lines)
 
 
-def test_a_worker_that_keeps_ending_with_a_blocked_current_task_names_its_open_task_to_the_main_agent(two_task_worker, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
+def test_a_worker_that_keeps_ending_with_a_blocked_current_task_names_its_open_task_to_the_main_agent(two_task_worker):
     story = two_task_worker
+    set_resume_limit(story, 0)
     story.expect_success('task block 1 --reason "waits on a person"', actor=story.agent)
     ended(story)
     waiting_lines_entered(story)

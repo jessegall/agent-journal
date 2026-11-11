@@ -5,13 +5,14 @@ from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.enums.agent_role import AgentRole
 from engine.command.bus import Bus
 from engine.database.database import Database
-from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
-from engine.driver.hook_event import HookEvent
-from suites.coding.modules.workers.rules.stopped_worker_run_rule import StoppedWorkerRunRule
+from engine.query.conditions.prefix import Prefix
+from engine.query.queries import Queries
+from suites.coding.modules.workers.commands.report_stopped_worker_runs.report_stopped_worker_runs import SOURCE_KEY_PREFIX
+from suites.coding.modules.workers.models.merger_line import MergerLine
+from suites.coding.modules.workers.ticks.stopped_worker_runs import StoppedWorkerRuns
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
@@ -25,8 +26,13 @@ from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestr
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment, worker_session
 from tests.stories.support.story_checks import expect_absent_value, expect_count_output_2, expect_total_cost_less
 from tests.stories.core.support.agent_labels import agent_label
+from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 
-RULE_LIMIT_POINTS = 20
+TICK_LIMIT_POINTS = 20
+
+
+def stopped_run_texts(story) -> list[str]:
+    return [line.text for line in story.container.get(Queries).query(MergerLine).matching(Prefix("source_key", SOURCE_KEY_PREFIX)).oldest().all_rows()]
 
 
 def worker_with_background_run(new_story):
@@ -62,9 +68,9 @@ def worker_with_a_run(new_story):
     return worker_with_background_run(new_story)
 
 
-def test_a_worker_past_its_restarts_on_old_tasks_is_restarted_for_a_queued_task(second_job_worker, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
+def test_a_worker_past_its_restarts_on_old_tasks_is_restarted_for_a_queued_task(second_job_worker):
     story, worker = second_job_worker
+    set_resume_limit(story, 1)
     session = worker_session(story, worker)
     story.advance(timedelta(minutes=1))
     story.run(f"agent end {worker.id}", actor=worker)
@@ -82,23 +88,24 @@ def test_a_tick_reads_no_ended_worker_that_has_no_running_process(new_story):
         worker_id = story.new_row_id(f"agent start ended-{number} claude worker --parent {story.agent.id} --environment main")
         story.run(f"agent end {worker_id}", actor=story.agent)
     story.advance(timedelta(minutes=31))
-    event = HookEvent.parsed(HookSamples.tick().with_fields(session="s-1", firing="check", fired_at_ms=0).body)
-    hook = AgentHook(event=event, agent_id=story.agent.id, environment_id=1, role=AgentRole.MAIN, driver="coding.main", timestamp=story.clock.timestamp())
     database = story.container.get(Database)
     start = database.repeated_work.points()
-    story.container.get(StoppedWorkerRunRule).answer(hook)
+    StoppedWorkerRuns()(story.container)
     cost = database.repeated_work.points().minus(start)
-    expect_total_cost_less(cost, RULE_LIMIT_POINTS)
+    expect_total_cost_less(cost, TICK_LIMIT_POINTS)
 
 
-def test_a_worker_stopped_past_the_limit_on_a_run_that_goes_on_is_named_to_the_main_agent(new_story):
+def test_with_the_merger_off_a_worker_stopped_past_the_limit_on_a_run_that_goes_on_is_named_to_the_main_agent_once(new_story):
     story, worker, run, _ = worker_with_background_run(new_story)
     story.run(f"agent end {worker.id}", actor=worker)
-    story.tick("s-1")
-    story.expect_absent(f"agent-line list --agent {story.agent.id}", f"waits on output {run.id}")
+    StoppedWorkerRuns()(story.container)
+    story.expect_rows(stopped_run_texts(story) == [], detail="the limit has not gone by")
     story.advance(timedelta(minutes=31))
-    story.tick("s-1")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} stopped and waits on output {run.id}")
+    StoppedWorkerRuns()(story.container)
+    StoppedWorkerRuns()(story.container)
+    texts = stopped_run_texts(story)
+    story.expect_rows(texts == [f"worker:{agent_number(story, worker.id)} stopped and waits on output {run.id}, still running: stop that output"], detail=str(texts))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "merger-line:")
 
 
 def test_a_paused_worker_stays_stopped_when_its_run_ends(new_story, monkeypatch):
@@ -119,9 +126,9 @@ def test_a_worker_with_a_run_going_may_stop(new_story):
     story.expect_hook_allowed(worker_session(story, worker), HookSamples.stop())
 
 
-def test_a_worker_past_its_restarts_that_stops_with_a_run_going_leaves_the_main_agent_no_line_until_it_stops_with_none(worker_with_a_run, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
+def test_a_worker_past_its_restarts_that_stops_with_a_run_going_leaves_the_main_agent_no_line_until_it_stops_with_none(worker_with_a_run):
     story, worker, run, bus = worker_with_a_run
+    set_resume_limit(story, 1)
     session = worker_session(story, worker)
     line = f"worker:{agent_number(story, worker.id)} ended with"
     for _ in range(3):
@@ -146,28 +153,28 @@ def stopped_twice(story, worker, session, uses_tool_after_first_stop: bool) -> N
     story.run(f"agent end {worker.id}", actor=worker)
 
 
-def test_a_worker_that_used_a_tool_since_its_last_restart_is_started_again_past_the_restart_limit(new_story, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
+def test_a_worker_that_used_a_tool_since_its_last_restart_is_started_again_past_the_restart_limit(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
+    set_resume_limit(story, 1)
     worker = dispatched_worker(story)
     stopped_twice(story, worker, worker_session(story, worker), uses_tool_after_first_stop=True)
     expect_count_output_2(story, f"agent-line list --agent {worker.id}", "you ended with tasks left", 2)
 
 
-def test_a_worker_that_did_nothing_since_its_last_restart_is_not_started_past_the_restart_limit(new_story, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
+def test_a_worker_that_did_nothing_since_its_last_restart_is_not_started_past_the_restart_limit(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
+    set_resume_limit(story, 1)
     worker = dispatched_worker(story)
     stopped_twice(story, worker, worker_session(story, worker), uses_tool_after_first_stop=False)
     expect_count_output_2(story, f"agent-line list --agent {worker.id}", "you ended with tasks left", 1)
 
 
-def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
+def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
+    set_resume_limit(story, 1)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
     story.advance(timedelta(minutes=1))

@@ -9,9 +9,10 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfinished_tasks_line import SendUnfinishedTasksLine
-from suites.coding.modules.workers.support import worker_job
+from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES, UNFINISHED_TASKS_SOURCE
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
+from suites.coding.modules.workers.support.worker_settings import WORKER_RESUME_LIMIT
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
@@ -20,10 +21,10 @@ from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 class WorkerStartedWork:
     """The stopped workers that hold started work or an open assigned task they can go on with and have no job
     waiting, which nothing else resumes: not one whose tests wait, not one a person or another agent stopped,
-    and not one that was told to go on three times with no task moved since."""
+    and not one that was told to go on as often as the worker resume limit allows with no task moved since."""
 
-    def __init__(self, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, bus: Bus, guidance: WorkerGuidance) -> None:
-        self.guidance = guidance
+    def __init__(self, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, bus: Bus, guidance: WorkerGuidance, settings: SettingValues) -> None:
+        self.guidance, self.settings = guidance, settings
         self.queries, self.unfinished, self.stop, self.bus = queries, unfinished, stop, bus
 
     def workers(self) -> list[Agent]:
@@ -37,10 +38,11 @@ class WorkerStartedWork:
         worker_round = self.unfinished.steps.round(worker.id)
         if worker_round.is_asking or not self.unfinished.round_rows(worker_round):
             return False
-        return not self.has_waiting_job(worker) and not self.stop.was_stopped(worker) and self.resume_count(worker) < worker_job.RESUME_LIMIT_COUNT
+        return not self.has_waiting_job(worker) and not self.stop.was_stopped(worker) and not self.reached_restart_limit(worker)
 
     def reached_restart_limit(self, worker: Agent) -> bool:
-        return self.resume_count(worker) >= worker_job.RESUME_LIMIT_COUNT
+        with self.bus.scopes.row_scope(worker):
+            return self.resume_count(worker) >= self.settings.number(WORKER_RESUME_LIMIT)
 
     def has_waiting_job(self, worker: Agent) -> bool:
         return self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.WAITING).matching(Among("source", tuple(RESUMING_SOURCES))).exists()

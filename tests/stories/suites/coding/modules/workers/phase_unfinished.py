@@ -6,6 +6,7 @@ import pytest
 from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, PHASE_DISPATCH, PLAN_DISPATCH, TEST_LINE, start_planned_worker
+from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 
 MAIN_SESSION = "s-1"
 PROCESS_START = "2026-10-31T09:00:00+00:00"
@@ -87,8 +88,8 @@ def test_a_worker_that_ended_while_its_hand_in_runs_leaves_no_stopped_line(hando
     worker.story.expect_rows(not any("stopped with" in line or "ended with" in line for line in worker.main_agent_lines()), detail=str(worker.main_agent_lines()))
 
 
-def test_after_its_limit_a_worker_that_ended_names_its_tasks_those_in_testing_included(program_ended, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
+def test_after_its_limit_a_worker_that_ended_names_its_tasks_those_in_testing_included(program_ended):
+    set_resume_limit(program_ended.story, 0)
     program_ended.story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=program_ended.story.user)
     program_ended.story.tick(MAIN_SESSION)
     program_ended.story.expect_text(f"agent-line list --agent {program_ended.story.agent.id}", f"worker:{agent_number(program_ended.story, program_ended.worker.id)} ended with task:1, task:2, task:3 left")

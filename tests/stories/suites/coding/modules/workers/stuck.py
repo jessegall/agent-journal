@@ -20,6 +20,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import D
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
 from tests.stories.core.support.agent_labels import agent_label
+from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 
 MAIN_SESSION = "s-1"
 PROCESS_START = "2026-10-31T09:00:00+00:00"
@@ -153,10 +154,10 @@ def test_a_stopped_worker_keeps_its_task_in_testing_and_loses_the_one_queued_whi
     story.expect_no_text(lines.SECOND_TASK_DETAILS, "delegated_to")
 
 
-def test_a_worker_that_ends_with_only_a_queued_task_has_it_named_to_the_main_agent(new_story, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
+def test_a_worker_that_ends_with_only_a_queued_task_has_it_named_to_the_main_agent(new_story):
     story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
+    set_resume_limit(story, 0)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, f"{DISPATCH} 2")
     story.expect_success('task block 1 --reason "waits on a person"', actor=worker)
@@ -178,10 +179,10 @@ def test_a_queued_task_waiting_on_an_open_task_is_not_next_in_the_queue(new_stor
     story.expect_hook_allowed(session, HookSamples.stop())
 
 
-def test_a_worker_that_keeps_ending_is_named_to_the_main_agent(new_story, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
+def test_a_worker_that_keeps_ending_is_named_to_the_main_agent(new_story):
     story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
+    set_resume_limit(story, 0)
     worker = dispatched_worker(story)
     story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
@@ -189,10 +190,10 @@ def test_a_worker_that_keeps_ending_is_named_to_the_main_agent(new_story, monkey
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} ended with task:1 left: send it a job, or release it")
 
 
-def test_a_worker_that_ends_with_many_tasks_left_gives_the_main_agent_one_line(new_story, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
+def test_a_worker_that_ends_with_many_tasks_left_gives_the_main_agent_one_line(new_story):
     story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
+    set_resume_limit(story, 0)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     story.run('task make "Third job" --brief "Do the third job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, f"{DISPATCH} 2 3")

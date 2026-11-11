@@ -1,13 +1,35 @@
+from datetime import timedelta
+
+from engine.command.bus import Bus
+from engine.query.conditions.prefix import Prefix
 from engine.query.queries import Queries
+from core.modules.processes.commands.end_process.end_process import EndProcess
+from core.modules.processes.commands.start_process.start_process import StartProcess
+from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.models.process import Process
+from engine.enums.command_category import CommandCategory
+from suites.coding.modules.workers.commands.report_stopped_worker_runs.report_stopped_worker_runs import SOURCE_KEY_PREFIX
+from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from suites.coding.modules.workers.models.merger_line import MergerLine
+from suites.coding.modules.workers.support.worker_settings import SILENT_RECOVERY_ATTEMPTS, STOPPED_WORKER_RUN_MINUTES, WORKER_RESUME_LIMIT
+from suites.coding.modules.workers.ticks.stopped_worker_runs import StoppedWorkerRuns
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON, ended, main_agent_lines, missing_program, running_worker, two_task_worker, worker_story  # noqa: F401
+from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting, set_resume_limit
 
 MARKS = "chat-mark list --environment 1"
 
 
 def merger_texts(story) -> list[str]:
     return [line.text for line in story.container.get(Queries).query(MergerLine).oldest().all_rows()]
+
+
+def background_run(story) -> Process:
+    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
+    part = PartSpec("make test", "make", False, CommandCategory.TEST_RUN)
+    run = story.container.get(Bus).run(StartProcess(story.worker.id, None, "make test", "/work", "zsh", CommandCategory.TEST_RUN, 30, [part]), story.worker, environment_id=1)
+    story.expect_success(f"process background {run.id}", actor=story.worker)
+    return run
 
 
 def worker_label(story) -> str:
@@ -21,6 +43,8 @@ def test_a_resumed_worker_gets_a_card_and_one_restart_line_to_the_merger_and_non
     story.run_listeners()
     texts = merger_texts(story)
     story.expect_rows(len(texts) == 1, "tasks left" in story.run(MARKS).output_text, worker_label(story) not in main_agent_lines(story), detail=f"{texts} | {main_agent_lines(story)}")
+    restart_line = story.container.get(Queries).query(MergerLine).first()
+    story.expect_rows(restart_line.environment_id == 1, detail="the restart line is saved in the environment of its worker")
 
 
 def test_a_stop_by_another_agent_shows_a_card_and_sends_no_line(two_task_worker):
@@ -31,9 +55,9 @@ def test_a_stop_by_another_agent_shows_a_card_and_sends_no_line(two_task_worker)
     story.expect_rows(merger_texts(story) == [], "tasks left" in story.run(MARKS).output_text, f"{worker_label(story)} ended with" not in main_agent_lines(story), detail=str(merger_texts(story)))
 
 
-def test_the_resume_limit_reaches_the_main_agent_once_and_not_the_merger(two_task_worker, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
+def test_the_resume_limit_reaches_the_main_agent_once_and_not_the_merger(two_task_worker):
     story = two_task_worker
+    set_resume_limit(story, 0)
     story.expect_success(MERGER_ON, actor=story.user)
     ended(story)
     story.run_listeners()
@@ -44,7 +68,43 @@ def test_the_resume_limit_reaches_the_main_agent_once_and_not_the_merger(two_tas
 def test_a_worker_whose_run_still_goes_shows_no_card_and_sends_no_line(two_task_worker):
     story = two_task_worker
     story.expect_success(MERGER_ON, actor=story.user)
-    story.expect_success("worker test tests/test_cart.py", actor=story.worker)
+    background_run(story)
     ended(story)
     story.run_listeners()
     story.expect_rows(merger_texts(story) == [], "tasks left" not in story.run(MARKS).output_text, detail=str(merger_texts(story)))
+
+
+def stopped_run_lines(story) -> tuple[MergerLine, ...]:
+    return tuple(story.container.get(Queries).query(MergerLine).matching(Prefix("source_key", SOURCE_KEY_PREFIX)).oldest().all_rows())
+
+
+def test_a_person_sets_the_resume_limit_on_the_workers_screen_and_the_next_stop_follows_it(two_task_worker):
+    story = two_task_worker
+    story.expect_success(MERGER_ON, actor=story.user)
+    story.expect_text(SHOWN_SETTINGS, WORKER_RESUME_LIMIT, STOPPED_WORKER_RUN_MINUTES, SILENT_RECOVERY_ATTEMPTS, actor=story.user)
+    apply_work_setting(story, SILENT_RECOVERY_ATTEMPTS, 1)
+    apply_work_setting(story, WORKER_RESUME_LIMIT, 0)
+    ended(story)
+    story.run_listeners()
+    lines = main_agent_lines(story)
+    story.expect_rows(lines.count(f"{worker_label(story)} ended with") == 1, merger_texts(story) == [], detail=lines)
+
+
+def test_a_stopped_worker_whose_run_goes_on_past_the_minutes_set_on_the_workers_screen_is_one_line_to_the_merger_until_the_run_ends(two_task_worker):
+    story = two_task_worker
+    story.expect_success(MERGER_ON, actor=story.user)
+    apply_work_setting(story, STOPPED_WORKER_RUN_MINUTES, 5)
+    run = background_run(story)
+    ended(story)
+    story.advance(timedelta(minutes=4))
+    StoppedWorkerRuns()(story.container)
+    story.expect_rows(stopped_run_lines(story) == (), detail="the minutes a person set have not gone by")
+    story.advance(timedelta(minutes=2))
+    StoppedWorkerRuns()(story.container)
+    StoppedWorkerRuns()(story.container)
+    lines = stopped_run_lines(story)
+    story.expect_rows(len(lines) == 1, f"{worker_label(story)} stopped and waits on output {run.id}" in lines[0].text, lines[0].outcome is None,
+                      lines[0].worker_id == story.worker.id, "waits on output" not in main_agent_lines(story), detail=f"{lines} | {main_agent_lines(story)}")
+    story.container.get(Bus).run(EndProcess(run.id, 0, 10, 1), story.worker, environment_id=1)
+    StoppedWorkerRuns()(story.container)
+    story.expect_rows(stopped_run_lines(story)[0].outcome is AskOutcome.MOOT, detail=str(stopped_run_lines(story)))

@@ -1,4 +1,8 @@
+from engine.actor.actor import Actor
+from engine.command.bus import Bus
 from engine.testing.stories.story import Story
+from core.modules.settings.commands.set_setting.set_setting import SetSetting
+from suites.coding.modules.workers.support.worker_settings import WORKER_RESUME_LIMIT
 
 REVISION_PREFIX = "revision: "
 SHOWN_SETTINGS = "work-settings show --environment main"
@@ -12,3 +16,8 @@ def settings_revision(story: Story) -> str:
 def apply_work_setting(story: Story, key: str, value: object) -> None:
     """A person changes one setting of the Workers screen, by the line the screen sends."""
     story.expect_success(f"work-settings apply --revision {settings_revision(story)} --environment main {key}={value}", actor=story.user)
+
+
+def set_resume_limit(story: Story, count: int) -> None:
+    """Sets how often a stopped worker is told to go on, as the story's setup and not as one of its steps."""
+    story.container.get(Bus).run(SetSetting(WORKER_RESUME_LIMIT, str(count), project=False), Actor.core(), environment_id=1)

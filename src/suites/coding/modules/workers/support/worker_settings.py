@@ -27,6 +27,7 @@ QUESTION_FORWARD_MINUTES = f"{MODULE_KEY}.ask-pass-on-minutes"
 QUESTION_VISITS_LIMIT = f"{MODULE_KEY}.ask-visits-limit"
 MERGER_GROUP_MESSAGE_LIMIT = f"{MODULE_KEY}.most-merger-messages-per-group"
 SILENT_RECOVERY_ATTEMPTS = f"{MODULE_KEY}.silent-recovery-attempts"
+WORKER_RESUME_LIMIT = f"{MODULE_KEY}.worker-resume-limit"
 INACTIVE_HELPER_MINUTES = f"{MODULE_KEY}.quiet-helper-minutes"
 INACTIVE_HELPER_GRACE_MINUTES = f"{MODULE_KEY}.quiet-helper-grace-minutes"
 WORKER_BATCH_SIZE = f"{MODULE_KEY}.worker-batch-size"
@@ -57,6 +58,7 @@ WORKER_SETTING_VALUES = [
     SettingValue("ask-visits-limit", "Merger readings of a question", "How many times the merger reads a worker's question without answering before it goes to the main agent.", SettingType.NUMBER, default=2, person_set=True, required_settings=[MERGER_ENABLED]),
     SettingValue("most-merger-messages-per-group", "Questions and advice per group of tasks", "Questions a worker asks, and advice the merger gives it, in one group of tasks. A further question is passed on.", SettingType.NUMBER, default=5, person_set=True, required_settings=[MERGER_ENABLED]),
     SettingValue("silent-recovery-attempts", "Wake-up lines for a silent agent", "How many wake-up lines a silent agent gets before it is reported as not answering.", SettingType.NUMBER, default=3, person_set=True),
+    SettingValue("worker-resume-limit", "Go-on lines for a stopped worker", "How often a stopped worker with tasks left is told to go on, with no task moved, before it is reported.", SettingType.NUMBER, default=3, person_set=True),
     SettingValue("idle-worker-repeat-minutes", "Worker idle warning repeat", "Minutes between warnings about a worker with work left.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("test-at-phase-end", "Test at phase end", "Test plan tasks together at the end of each phase. Off tests each task when handed in.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("test-batch-size", "Tasks per test batch", "Tasks outside a plan to finish before testing together. The last task also ends a batch.", SettingType.NUMBER, default=1, person_set=True),
@@ -105,6 +107,7 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         QUESTION_VISITS_LIMIT: NumberRule(1),
                         MERGER_GROUP_MESSAGE_LIMIT: NumberRule(1),
                         SILENT_RECOVERY_ATTEMPTS: NumberRule(1),
+                        WORKER_RESUME_LIMIT: NumberRule(0),
                         INACTIVE_HELPER_GRACE_MINUTES: NumberRule(1),
                         INACTIVE_HELPER_MINUTES: NumberRule(1),
                         TEST_BATCH_SIZE: NumberRule(1),

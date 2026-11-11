@@ -10,11 +10,11 @@ from tests.stories.suites.coding.modules.workers.gone_workers import missing_pro
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MAIN_SESSION, ended, expect_worker_restart, main_agent_lines, retried, two_task_worker
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 
 __all__ = ["missing_program", "running_worker", "two_task_worker", "worker_story"]
 
 ROUND = timedelta(minutes=10)
-RESUME_LIMIT = "suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT"
 
 
 def ended_worker_line(story, worker_id: int) -> str:
@@ -27,9 +27,9 @@ def next_round(story) -> None:
 
 
 @pytest.fixture
-def ended_with_open_tasks(two_task_worker, monkeypatch):
+def ended_with_open_tasks(two_task_worker):
     """A worker with two open tasks whose program ended and that nothing starts again."""
-    monkeypatch.setattr(RESUME_LIMIT, 0)
+    set_resume_limit(two_task_worker, 0)
     ended(two_task_worker)
     two_task_worker.tick(MAIN_SESSION)
     return two_task_worker
