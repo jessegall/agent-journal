@@ -48,9 +48,9 @@ class MergerLine(EnvironmentScoped, Model):
     def status_text(self) -> str:
         if self.outcome is not None:
             return f"ask {self.id} was {self.outcome.description()}"
-        asked = self.creation_timestamp().value.strftime(CLOCK_FORMAT)
+        created = self.creation_timestamp().value.strftime(CLOCK_FORMAT)
         due = f", answer due {self.due_at.value.strftime(CLOCK_FORMAT)}" if self.due_at is not None else ""
-        return f"ask {self.id} open since {asked}{due}, with the merger"
+        return f"ask {self.id} open since {created}{due}, with the merger"
 
     def is_open_question(self) -> bool:
         return self.worker_id is not None and self.outcome is None
