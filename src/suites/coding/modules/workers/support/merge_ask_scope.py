@@ -31,6 +31,8 @@ class MergeAskScope:
         worktree = self.worktrees.required_worker_worktree(worker_id)
         if not unit.has_several_tasks:
             raise Refusal("your task asks for its merge by its commit", "run journal worker commit")
+        if worktree.commit_count == 0:
+            raise Refusal("nothing is committed since your last merge", "commit first")
         started = next(iter(self.tasks.started_tasks(worker_id)), None)
         if started is not None and not up_to:
             raise Refusal(f"task {started.id} is started", "commit it, or ask up to an earlier task with --up-to and go on")
@@ -38,8 +40,6 @@ class MergeAskScope:
         self.check_runs(worktree, part.task_ids)
         if self.steps.round(worker_id).conflict is not None:
             raise Refusal(f"your worktree clashed with {worktree.base_branch}", "settle the conflict markers and commit first")
-        if worktree.commit_count == 0:
-            raise Refusal("nothing is committed since your last merge", "commit first")
         waiting = self.queries.query(MergeAsk).filter(worktree_id=worktree.id, state=MergeAskState.WAITING).first()
         if waiting is not None:
             raise Refusal(f"your ask {waiting.id} waits for the merge", "wait; you are told when it is merged")

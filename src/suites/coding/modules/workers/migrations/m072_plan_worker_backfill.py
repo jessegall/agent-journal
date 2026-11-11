@@ -2,11 +2,12 @@ from engine.database.migration import Migration
 
 PLAN_KEY = '$."journal.core.plans"'
 OPEN_PLAN_WORKERS = (
-    "FROM plan_tasks"
-    " JOIN tasks ON tasks.id = plan_tasks.task_id AND tasks.closed_at IS NULL"
+    "FROM phase_tasks"
+    " JOIN phases ON phases.id = phase_tasks.phase_id"
+    " JOIN tasks ON tasks.id = phase_tasks.task_id AND tasks.closed_at IS NULL"
     " JOIN assignments ON assignments.subject_model = 'task' AND assignments.subject_id = tasks.id"
     " JOIN agents ON agents.id = assignments.actor_id AND agents.role = 'worker'"
-    " WHERE plan_tasks.plan_id = plans.id"
+    " WHERE phases.plan_id = plans.id"
 )
 
 
