@@ -26,13 +26,12 @@ from suites.coding.modules.workers.support.worker_job import SILENT_AGENT_SOURCE
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.support.worker_nudges import IDLE_WORKER, SILENT_AGENT_CONTINUE, SILENT_WORKER_CONTINUE
-from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES, IDLE_WORKER_MINUTES, IDLE_WORKER_REPEAT_MINUTES, RESUME_SILENT_AGENTS
+from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES, IDLE_WORKER_MINUTES, IDLE_WORKER_REPEAT_MINUTES, RESUME_SILENT_AGENTS, SILENT_RECOVERY_ATTEMPTS
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from engine.enums.agent_role import AgentRole
 from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
-RECOVERY_ATTEMPTS = 3
 CHECKED_AGENTS_REASON = "One activity row for each running agent and each worker that is not retired, which the agent limits bound."
 from engine.query.conditions.prefix import Prefix
 from suites.coding.modules.workers.models.merger_line import MergerLine
@@ -72,6 +71,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         for line in self.queries.query(AgentLine).matching(Among("session_agent_id", agent_ids)).filter(source=SILENT_AGENT_SOURCE).oldest().all_rows():
             lines[line.session_agent_id].append(line)
         span = self.settings.minutes(SILENT_AGENT_MINUTES)
+        attempt_limit = self.settings.number(SILENT_RECOVERY_ATTEMPTS)
         resumes = self.settings.flag(RESUME_SILENT_AGENTS)
         for agent in agents:
             if not resumes and agent.role != AgentRole.MAIN:
@@ -87,8 +87,8 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
                         and (connection.reconnected_at is None or line.creation_timestamp() >= connection.reconnected_at)]
             if attempts and attempts[-1].creation_timestamp().elapsed_seconds(context.timestamp) < span.count * 2 ** len(attempts):
                 continue
-            if len(attempts) >= RECOVERY_ATTEMPTS:
-                self.bus.dispatch(ReportSilentAgent(agent.id, "three waking lines got no hook", activity_at), context)
+            if len(attempts) >= attempt_limit:
+                self.bus.dispatch(ReportSilentAgent(agent.id, f"{attempt_limit} waking lines got no hook", activity_at), context)
                 continue
             declaration = SILENT_WORKER_CONTINUE if agent.id in workers else SILENT_AGENT_CONTINUE
             self.nudger.send(agent.id, declaration, SILENT_AGENT_SOURCE, context)
