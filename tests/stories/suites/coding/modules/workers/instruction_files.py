@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 from dataclasses import dataclass
 
@@ -8,7 +9,7 @@ from engine.testing.stories.story import Story
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, DISPATCH, FIRST_PROOF, checked_worker, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DISPATCH, FIRST_PROOF, checked_worker, dispatched_worker, repository_environment
 from tests.stories.support.story_checks import expect_value
 
 PROJECT_TEXT = "The project's own briefing.\n"
@@ -84,7 +85,7 @@ def branch_with_instruction_files(new_story):
 def hand_in(branch):
     story = branch.story
     story.expect_success(FIRST_PROOF, "point: 1", actor=branch.worker)
-    story.expect_success(DELIVERY, actor=branch.worker)
+    story.expect_success(COMMIT, actor=branch.worker)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
     story.expect_success(f"worker logs {agent_number(story, branch.worker.id)}", actor=story.agent)
     branch.repository.checkout(ENVIRONMENT_BRANCH)

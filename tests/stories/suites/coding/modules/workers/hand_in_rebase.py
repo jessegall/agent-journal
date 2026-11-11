@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 import json
 from concurrent.futures import ThreadPoolExecutor
 
@@ -8,7 +9,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from engine.query.queries import Queries
 
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
 
@@ -53,13 +54,13 @@ def test_a_clash_stops_the_hand_in_and_leaves_the_markers_until_the_worker_settl
     worker = moved_base_worker(story, repository)
     repository.changed(worker.id, "tax.py", WORKER_TAX)
     repository.committed("tax.py", MAIN_TAX, "Another tax")
-    story.expect_refusal(DELIVERY, f"your work clashes with {ENVIRONMENT_BRANCH} in tax.py", actor=worker)
+    story.expect_refusal(COMMIT, f"your work clashes with {ENVIRONMENT_BRANCH} in tax.py", actor=worker)
     story.expect_success("task show 1", "state: started", actor=worker)
     tax = repository.worktree_folder(worker.id) / "tax.py"
     story.expect_rows("<<<<<<<" in tax.read_text())
-    story.expect_refusal(DELIVERY, "conflict markers remain in tax.py", actor=worker)
+    story.expect_refusal(COMMIT, "conflict markers remain in tax.py", actor=worker)
     repository.changed(worker.id, "tax.py", MERGED_TAX)
-    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     repository.expect_file(repository.worker_branch(worker.id), "tax.py", MERGED_TAX)
     expect_tip(story, repository, worker)
 
@@ -70,7 +71,7 @@ def test_a_proof_runs_on_the_rebased_code(new_story, monkeypatch):
     repository = repository_environment(story)
     worker = moved_base_worker(story, repository)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story" --test "python tests/cart.py"', actor=worker)
-    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     story.run_listeners()
     story.expect_rows(len(launches) == 1)
     expect_tip(story, repository, worker)
@@ -88,10 +89,10 @@ def test_the_next_hand_in_restores_files_left_in_a_stash_by_a_stopped_server(new
     with monkeypatch.context() as patch:
         patch.setattr(WorktreeGit, "unstash", stop_restore)
         with pytest.raises(StoppedDelivery):
-            story.run(DELIVERY, actor=worker)
+            story.run(COMMIT, actor=worker)
     story.expect_rows(not (repository.worktree_folder(worker.id) / "notes.py").exists())
 
-    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success(COMMIT, actor=worker)
 
     repository.expect_file(repository.worker_branch(worker.id), "cart.py", CART_CHANGE)
     repository.expect_file(repository.worker_branch(worker.id), "notes.py", "NOTE = 1\n")
@@ -114,11 +115,11 @@ def test_an_interrupted_rebase_restores_the_uncommitted_files_before_returning(n
     with monkeypatch.context() as patch:
         patch.setattr(WorktreeGit, "git", stop_rebase)
         with pytest.raises(StoppedDelivery):
-            story.run(DELIVERY, actor=worker)
+            story.run(COMMIT, actor=worker)
 
     story.expect_rows((repository.worktree_folder(worker.id) / "notes.py").read_text() == "NOTE = 1\n")
     repository.expect_no_stash()
-    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success(COMMIT, actor=worker)
 
 
 def stashed_worker(story, repository):
@@ -147,7 +148,7 @@ def test_a_hand_in_leaves_another_workers_stash_untouched(new_story):
     worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=sibling.id).first()
     stash = story.container.get(WorktreeGit).stash(worktree)
 
-    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success(COMMIT, actor=worker)
 
     repository.expect_file(repository.worker_branch(worker.id), "cart.py", CART_CHANGE)
     story.expect_rows(not (repository.worktree_folder(sibling.id) / "sibling.py").exists())
@@ -177,7 +178,7 @@ def test_a_stash_another_worker_pushes_in_the_middle_of_a_hand_in_is_never_taken
         return finished
 
     monkeypatch.setattr(WorktreeGit, "checked", checked_with_sibling_stash)
-    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success(COMMIT, actor=worker)
 
     repository.expect_file(repository.worker_branch(worker.id), "notes.py", "NOTE = 1\n")
     story.expect_rows(not (repository.worktree_folder(worker.id) / "sibling.py").exists())

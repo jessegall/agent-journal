@@ -225,7 +225,7 @@ def test_rework_requires_current_overview_before_writes(assigned_worker):
     scenario.story.expect_success("task overview 1", actor=worker)
     scenario.repository.changed(worker.id, "cart.py", "TOTAL = 2\n")
     scenario.story.expect_success('proof make 1 "cart.py:1, assignment completed" --task 1', actor=worker)
-    scenario.story.expect_success("worker deliver --wait --differences none", actor=worker)
+    scenario.story.expect_success("worker commit --wait --differences none", actor=worker)
     scenario.command(f'worker send --wait {agent_number(scenario.story, worker.id)} "Recheck the cart assignment"')
     session = worker_session(scenario.story, worker)
     scenario.story.hook(session, HookSamples.tool_use("Read", ToolType.READ, [], None))

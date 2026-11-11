@@ -5,7 +5,7 @@ from suites.coding.models.enums.ask_topic import AskTopic
 from tests.stories.core.modules.plugins.worker_steps import step_plugin_story
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.hand_in_rebase import MAIN_TAX, MERGED_TAX, WORKER_TAX, expect_tip, moved_base_worker
+from tests.stories.suites.coding.modules.workers.hand_in_rebase import MAIN_TAX, MERGED_TAX, WORKER_TAX, moved_base_worker
 from tests.stories.suites.coding.modules.workers.refused_steps import REASON
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT, COMMIT_COMMAND
@@ -117,13 +117,6 @@ def test_31_a_change_in_a_protected_folder_refuses_the_commit(working):
     story.expect_success(FIRST_PROOF, actor=worker)
     expect_refused_with(story, COMMIT, "cart.py is protected", "undo the change in that folder", AskTopic.TOOL.question_line(), actor=worker)
     story.expect_text("proof show 1", "state: shown", actor=story.agent)
-
-
-@pytest.mark.real_git
-def test_32_a_commit_on_a_base_branch_that_moved_is_rebased_and_its_worktree_names_the_base(moved_base):
-    story, repository, worker = moved_base
-    story.expect_success(COMMIT, actor=worker)
-    expect_tip(story, repository, worker)
 
 
 @pytest.mark.real_git

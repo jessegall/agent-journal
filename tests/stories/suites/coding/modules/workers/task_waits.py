@@ -46,7 +46,7 @@ def test_merging_a_worker_opens_the_task_waiting_on_it(new_story):
     task_id = waiting_task(story, worker)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story"', actor=worker)
-    story.expect_success("worker deliver --wait --differences none", actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
     story.expect_success(f"task show {task_id}", "state: blocked", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)

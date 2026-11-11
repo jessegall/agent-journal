@@ -31,7 +31,7 @@ def test_a_worker_wait_reason_follows_tests_proof_check_and_merge(new_story, mon
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the total" --test "python tests/cart.py"', actor=worker)
     story.expect_success('proof make 2 --task 1 "cart.py:1, the review"', actor=worker)
-    story.expect_success("worker deliver --wait --differences none", actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
     story.run_listeners()
     story.expect_success('actor make user "Ada"')
     with server_story(story) as server:

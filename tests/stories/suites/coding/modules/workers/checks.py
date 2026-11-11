@@ -1,7 +1,8 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, delivered_worker, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment
 
 SHORTFALL = "the rounding has no test"
 PROOF_SHORT = f'proof short 1 "{SHORTFALL}"'
@@ -25,7 +26,7 @@ def test_a_short_proof_shown_again_and_delivered_is_checked(new_story):
     story.expect_success(PROOF_SHORT, "state: short", actor=story.agent)
     repository.changed(worker.id, "cart_test.py", "def test_the_total_rounds_to_cents(): pass\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, and cart_test.py:1 for the rounding"', "state: shown", actor=worker)
-    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     story.expect_success(lines.TASK_DETAILS, "state: testing")
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
 

@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -7,7 +8,7 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 SESSION = "s-plugin-worker"
@@ -32,7 +33,7 @@ def test_a_person_dispatches_a_worker_that_starts_no_program_and_its_session_hoo
         story.expect_rows(launcher.requests == [])
         repository.changed(worker.id, "cart.py", CART_CHANGE)
         story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
-        story.expect_success(DELIVERY, actor=worker)
+        story.expect_success(COMMIT, actor=worker)
         story.expect_success("proof check 1", "state: checked", actor=story.agent)
         story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
         repository.checkout(ENVIRONMENT_BRANCH)

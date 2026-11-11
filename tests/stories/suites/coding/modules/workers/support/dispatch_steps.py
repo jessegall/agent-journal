@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 import shlex
 from pathlib import Path
@@ -19,7 +20,6 @@ from tests.stories.suites.coding.modules.workers.support.memory_git.memory_workt
 DISPATCH = "worker dispatch --test-command python=pytest --model sonnet 1"
 CART_CHANGE = "TOTAL = 1\n"
 FIRST_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart total story"'
-DELIVERY = "worker deliver --wait --differences none"
 
 
 SAVED_TEST_COMMAND = 'alias add cart-test "pytest tests/" --category "test run"'
@@ -67,7 +67,7 @@ def delivered_worker(story: Story, repository: GitRepository, line: str = DISPAT
     worker = dispatched_worker(story, line)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
-    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     return worker
 
 

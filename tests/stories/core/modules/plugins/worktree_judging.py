@@ -38,11 +38,10 @@ def test_a_main_checkout_sin_reaches_only_the_main_agent(worktree_story):
     expect_plugin_notice(story, LISTING_SAMPLE, f"[plugin worktree-judge] {story.repository.folder / 'cart.py'}: mutable default")
 
 
-@pytest.mark.parametrize("command", ["worker commit --differences none", "worker deliver --differences none"])
-def test_both_names_of_the_worker_commit_judge_the_worker_files_from_its_base(worktree_story, command):
+def test_a_worker_commit_judges_the_worker_files_from_its_base(worktree_story):
     story = worktree_story
     story.repository.changed(story.worker.id, "cart.py", SIN)
-    story.expect_refusal(command, f"{story.worktree / 'cart.py'}: mutable default", actor=story.worker)
+    story.expect_refusal("worker commit --differences none", f"{story.worktree / 'cart.py'}: mutable default", actor=story.worker)
 
 
 def test_a_resumed_worker_is_not_judged_for_new_main_commits(worktree_story):

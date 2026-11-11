@@ -131,5 +131,5 @@ def test_s42_the_own_test_failure_limit_is_a_setting_and_counts_failures_already
     for _ in range(3):
         bus.run(RecordOwnTestFailure(worker.id, 1, WORKER_RUN_LINE), Actor.core(), environment_id=1)
     story.expect_success("setting set journal.suites.coding.workers.own-test-failures-to-flag 3 --environment main", actor=story.user)
-    story.expect_success("worker deliver --wait --differences none", actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_text(f"worker logs {agent_number(story, worker.id)}", "! its own runs failed 3 times: tests/stories/cart.py", actor=story.agent)

@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 import json
 import shlex
@@ -7,7 +8,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, checked_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.support.story_checks import expect_value
 
@@ -54,7 +55,7 @@ def test_s57_later_merge_waits_for_required_followup(new_story):
     second = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 2", actor=story.agent), ActorType.AGENT)
     repository.changed(second.id, "second.py", "TOTAL = 2\n")
     story.expect_success('proof make 1 --task 2 "second.py:1, the second story"', "point: 1", actor=second)
-    story.expect_success(DELIVERY, actor=second)
+    story.expect_success(COMMIT, actor=second)
     story.expect_success("proof check 2", "state: checked", actor=story.agent)
     story.expect_success(f"worker logs {agent_number(story, second.id)}", actor=story.agent)
     story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "failed with code 1", actor=story.agent)

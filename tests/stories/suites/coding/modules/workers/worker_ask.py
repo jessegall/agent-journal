@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 import json
 from dataclasses import dataclass
@@ -20,7 +21,7 @@ from tests.stories.core.modules.processes.support.process_samples import start_p
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, dispatched_worker, repository_environment, worker_session
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from tests.stories.suites.coding.modules.workers.support.judge_plugin import SINFUL_TEXT, judge_plugin_folder
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start, running_launcher
@@ -120,7 +121,7 @@ def judged(new_story):
     questioning_worker = asking_worker(story)
     questioning_worker.repository.changed(questioning_worker.worker.id, "cart.py", SINFUL_TEXT)
     story.expect_success(FIRST_PROOF, actor=questioning_worker.worker)
-    story.expect_refusal(DELIVERY, "cart.py has a sin", actor=questioning_worker.worker)
+    story.expect_refusal(COMMIT, "cart.py has a sin", actor=questioning_worker.worker)
     return questioning_worker
 
 
@@ -142,13 +143,13 @@ def test_the_facts_holds_the_last_refusal_of_the_worker(judged):
 @pytest.mark.real_git
 def test_a_refusal_that_a_later_hand_in_cleared_is_not_in_the_facts(judged):
     judged.repository.changed(judged.worker.id, "cart.py", CART_CHANGE)
-    judged.story.expect_success(DELIVERY, actor=judged.worker)
+    judged.story.expect_success(COMMIT, actor=judged.worker)
     judged.post_question()
     judged.story.expect_rows(judged.facts()["refusal"] is None, judged.facts()["point"] == "wait", detail=str(judged.facts()))
 
 
 def test_a_worker_that_handed_in_may_still_ask(changed_worker):
-    changed_worker.story.expect_success(DELIVERY, actor=changed_worker.worker)
+    changed_worker.story.expect_success(COMMIT, actor=changed_worker.worker)
     changed_worker.post_question(topic=AskTopic.TESTS)
     changed_worker.story.expect_rows(changed_worker.facts()["point"] == "wait", changed_worker.facts()["files"] == ["cart.py"], detail=str(changed_worker.facts()))
 

@@ -3,13 +3,13 @@ import pytest
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, delivered_worker, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 TWO_POINT_BRIEF = 'task edit 1 --brief "- the total adds the tax\n- the total rounds to cents"'
 
 
-@pytest.mark.parametrize("hand_over_line", (DELIVERY, COMMIT))
+@pytest.mark.parametrize("hand_over_line", (COMMIT, COMMIT))
 def test_a_delivery_with_a_point_of_the_brief_unproved_is_refused_naming_the_point(new_story, hand_over_line):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)

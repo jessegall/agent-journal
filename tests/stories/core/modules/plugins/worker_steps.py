@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 import pytest
 
 import json
@@ -8,7 +9,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.plugins.support.worker_step_samples import step_plugin_folder
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, DISPATCH, FIRST_PROOF, checked_worker, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, FIRST_PROOF, checked_worker, dispatched_worker, repository_environment
 def step_plugin_story(new_story, event_name: str, services: list[dict[str, object]] | None = None):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
@@ -32,7 +33,7 @@ def test_a_plugin_holding_a_workers_delivery_refuses_it_with_its_reason(plugin_w
     story, worker = plugin_worker
     story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
     story.run(FIRST_PROOF, actor=worker)
-    story.expect_refusal(DELIVERY, "[plugin steps] cart.py has a sin", actor=worker)
+    story.expect_refusal(COMMIT, "[plugin steps] cart.py has a sin", actor=worker)
     story.expect_text("worker-worktree list", "cut", actor=story.agent)
 
 
@@ -41,7 +42,7 @@ def delivered_with_file(new_story, name: str):
     worker = dispatched_worker(story)
     story.repository.changed(worker.id, name, "TOTAL = 1\n")
     story.run(FIRST_PROOF, actor=worker)
-    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     return story, worker
 
 
@@ -79,7 +80,7 @@ def test_a_failed_upgrade_leaves_no_upgrade_mark_and_the_next_delivery_reaches_t
     worker = dispatched_worker(story)
     story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
     story.run(FIRST_PROOF, actor=worker)
-    story.expect_refusal(DELIVERY, "[plugin steps] cart.py has a sin", actor=worker)
+    story.expect_refusal(COMMIT, "[plugin steps] cart.py has a sin", actor=worker)
 
 
 def test_a_plugin_whose_files_changed_judges_no_worker_step(delivering_plugin):
@@ -89,7 +90,7 @@ def test_a_plugin_whose_files_changed_judges_no_worker_step(delivering_plugin):
     worker = dispatched_worker(story)
     story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
     story.run(FIRST_PROOF, actor=worker)
-    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success(COMMIT, actor=worker)
 
 
 def test_a_plugin_being_upgraded_raises_nothing_in_the_step_check(new_story):
@@ -100,4 +101,4 @@ def test_a_plugin_being_upgraded_raises_nothing_in_the_step_check(new_story):
     worker = dispatched_worker(story)
     story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
     story.run(FIRST_PROOF, actor=worker)
-    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success(COMMIT, actor=worker)

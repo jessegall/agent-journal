@@ -149,7 +149,7 @@ def test_merger_scope_reads_a_real_judge_refusal(new_story, monkeypatch):
     judged = merger_case(story, repository_environment(story))
     judged.repository.changed(judged.worker.id, "cart.py", SINFUL_TEXT)
     story.expect_success(FIRST_PROOF, actor=judged.worker)
-    story.expect_refusal("worker deliver --wait --differences none", "cart.py has a sin", actor=judged.worker)
+    story.expect_refusal("worker commit --wait --differences none", "cart.py has a sin", actor=judged.worker)
     judged.story.expect_rows("own and refused: cart.py" in judged.scope(), detail=judged.scope())
 
 
@@ -211,7 +211,7 @@ def test_a_tell_shows_a_mark_in_the_chat(case):
 def test_a_pass_shows_a_mark_in_the_chat(case):
     case.repository.changed(case.worker.id, "cart.py", CART_CHANGE)
     case.story.expect_success(FIRST_PROOF, actor=case.worker)
-    case.story.expect_success("worker deliver --wait --differences none", actor=case.worker)
+    case.story.expect_success("worker commit --wait --differences none", actor=case.worker)
     case.story.expect_success(f'merger pass {agent_number(case.story, case.worker.id)} "A design choice"', actor=case.merger)
     case.story.expect_rows("The merger left" in case.marks(), detail=case.marks())
 

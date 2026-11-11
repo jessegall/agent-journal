@@ -38,7 +38,7 @@ def merger_delivery(story, monkeypatch):
     story.expect_success("proof check 1", actor=story.agent)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
     try:
-        story.expect_success("worker deliver --wait --differences none", actor=worker)
+        story.expect_success("worker commit --wait --differences none", actor=worker)
         story.run_listeners()
     finally:
         launcher.server.close()

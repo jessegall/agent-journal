@@ -26,7 +26,7 @@ WHY = "its stories belong to task 4 of phase Ship"
 DEFERRALS = "phase-test-deferral list --json --oldest --environment main"
 LIMIT_SETTING = "journal.suites.coding.workers.most-phase-test-deferrals"
 FIRST_RUN_SIZE = 3
-REPEATED_HAND_IN = 'worker deliver --wait --differences "nothing to fix: its failing test paths are deferred"'
+REPEATED_HAND_IN = 'worker commit --wait --differences "nothing to fix: its failing test paths are deferred"'
 
 
 @dataclass(frozen=True)

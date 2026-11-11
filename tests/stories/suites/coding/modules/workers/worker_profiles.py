@@ -1,4 +1,5 @@
 from core.modules.agents.testing.fake_launcher import FakeLauncher
+from suites.coding.modules.workers.support.worker_command import WORK_STEPS
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 
@@ -20,7 +21,7 @@ def test_a_worker_gets_its_profile_s_body_before_its_task(new_story):
 
 def test_the_required_steps_reach_a_worker_of_any_profile(new_story):
     story, brief = dispatched_brief(new_story, "worker dispatch --test-command python=pytest 1 --profile journal-medior")
-    story.expect_rows("journal worker deliver" in brief)
+    story.expect_rows(WORK_STEPS in brief)
 
 
 def test_a_profile_of_another_type_is_refused(new_story):

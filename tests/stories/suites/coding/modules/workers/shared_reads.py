@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 import sqlite3
 from typing import NamedTuple
 
@@ -13,7 +14,7 @@ from suites.coding.modules.workers.bindings.worker_agent_work import WorkerAgent
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import (
-    DELIVERY, dispatched_worker, repository_environment,
+    dispatched_worker, repository_environment,
 )
 from tests.stories.suites.coding.modules.workers.support.program_split import SplitViewer
 from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
@@ -37,7 +38,7 @@ def pending_workers(new_story):
         worker = dispatched_worker(story, f"worker dispatch --test-command python=pytest {task_id} --model sonnet")
         repository.changed(worker.id, "cart.py", f"TOTAL = {number + 1}\n")
         story.expect_success(f'proof make 1 --task {task_id} "cart.py:1, the total story"', actor=worker)
-        story.expect_success(DELIVERY, actor=worker)
+        story.expect_success(COMMIT, actor=worker)
         story.expect_success(f"agent end {worker.id}", actor=story.agent)
         workers.append(worker)
     return WorkerReadsStory(story, tuple(workers))

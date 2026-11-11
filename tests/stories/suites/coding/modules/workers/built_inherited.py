@@ -3,7 +3,7 @@ import pytest
 
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.support.story_checks import expect_value
 
@@ -13,14 +13,14 @@ pytestmark = pytest.mark.real_git
 SECOND_JOB = 'task make "Second job" --brief "Do the second job" --environment main'
 SECOND_PROOF = 'proof make 1 --task 2 "second.py:1, the second story"'
 WORKER_DISPATCH_LINE = 'worker dispatch --test-command python=pytest --model sonnet --fresh "a new session"'
-BUILT_HAND_IN = 'worker deliver --wait --differences "already built: cart.py"'
+BUILT_HAND_IN = 'worker commit --wait --differences "already built: cart.py"'
 
 
 def built_and_released(story, repository, dispatch=DISPATCH):
     worker = dispatched_worker(story, dispatch)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(FIRST_PROOF, actor=worker)
-    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     story.expect_success(f'worker release {agent_number(story, worker.id)} "the worker left"', actor=story.agent)
     return worker
 
@@ -61,7 +61,7 @@ def added_second(second_worker):
     story, repository, first, second = second_worker
     repository.changed(second.id, "notes.py", "NOTE = 1\n")
     story.expect_success(FIRST_PROOF, actor=second)
-    story.expect_success(DELIVERY, actor=second)
+    story.expect_success(COMMIT, actor=second)
     return story, repository, first, second
 
 
@@ -128,7 +128,7 @@ def test_a_kept_worker_sent_a_built_task_finds_the_earlier_work_too(base_story):
     kept = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet 2")
     repository.changed(kept.id, "second.py", "SECOND = 1\n")
     story.expect_success(SECOND_PROOF, actor=kept)
-    story.expect_success(DELIVERY, actor=kept)
+    story.expect_success(COMMIT, actor=kept)
     story.expect_success("proof check 1", actor=story.agent)
     story.expect_success(f"worker logs {agent_number(story, kept.id)}", actor=story.agent)
     story.expect_success(f"worker merge --wait {agent_number(story, kept.id)}", actor=story.agent)

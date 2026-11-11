@@ -22,14 +22,14 @@ def proved_worker(story):
 def test_a_hand_in_must_say_what_differs_from_the_task(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     _, worker = proved_worker(story)
-    story.expect_refusal("worker deliver --wait", "did you do anything other than the task brief asked", actor=worker)
+    story.expect_refusal("worker commit --wait", "did you do anything other than the task brief asked", actor=worker)
     story.expect_refusal("worker commit --wait", "did you do anything other than the task brief asked", actor=worker)
 
 
 def test_a_difference_is_an_important_line_the_merge_asks_an_answer_to(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository, worker = proved_worker(story)
-    story.expect_success(f'worker deliver --wait --differences "{OMISSION}"', actor=worker)
+    story.expect_success(f'worker commit --wait --differences "{OMISSION}"', actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
     story.expect_text(f"worker logs {agent_number(story, worker.id)}", f"! {OMISSION}", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -43,7 +43,7 @@ def test_the_logs_give_a_notes_first_words_and_a_task_shows_them_whole(new_story
     _, worker = proved_worker(story)
     story.expect_success('task log 1 "one two three four five six seven eight nine ten"', actor=worker)
     story.expect_success('task log 1 --important "I could not work out the rounding"', actor=worker)
-    story.expect_success("worker deliver --wait --differences none", actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
     summary = story.run(f"worker logs {agent_number(story, worker.id)}", actor=story.agent).output_text
     story.expect_rows("! I could not work out the rounding" in summary, "one two three four five six seven eight" in summary, "nine ten" not in summary)
     story.expect_text(f"worker logs {agent_number(story, worker.id)} --task 1", "one two three four five six seven eight nine ten", actor=story.agent)
@@ -56,7 +56,7 @@ def test_a_test_failing_five_times_in_a_workers_own_runs_is_kept_from_the_worker
     for _ in range(5):
         bus.run(RecordOwnTestFailure(worker.id, 1, WORKER_RUN_LINE), Actor.core(), environment_id=1)
     story.expect_rows("failed 5 times" not in story.run("task overview 1", actor=worker).output_text)
-    story.expect_success("worker deliver --wait --differences none", actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_text(f"worker logs {agent_number(story, worker.id)}", "! its own runs failed 5 times: tests/stories/cart.py", actor=story.agent)
 
 

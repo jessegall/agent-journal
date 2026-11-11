@@ -3,7 +3,7 @@ import pytest
 
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 pytestmark = pytest.mark.real_git
@@ -69,7 +69,7 @@ def test_the_later_merge_brings_only_the_rest(proven_worker):
     story, repository, worker, second_task = proven_worker
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)} --up-to 1", actor=story.agent)
     story.expect_success(f'proof make 1 --task {second_task} "receipt.py:1, the receipt story"', actor=worker)
-    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     story.expect_success("proof check 2", actor=story.agent)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)

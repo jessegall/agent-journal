@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,7 +17,7 @@ from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.merger_cases import MergerCase, merger_case, running_merger
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, dispatched_worker, repository_environment, worker_session
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker, start_planned_worker
@@ -110,7 +111,7 @@ class AdvisedWorker:
     def delivered(self) -> None:
         self.case.repository.changed(self.worker.id, "cart.py", CART_CHANGE)
         self.story.expect_success(FIRST_PROOF, actor=self.worker)
-        self.story.expect_success(DELIVERY, actor=self.worker)
+        self.story.expect_success(COMMIT, actor=self.worker)
         self.story.expect_success("proof check 1", "state: checked", actor=self.story.agent)
         self.story.expect_success(f"worker logs {agent_number(self.story, self.worker.id)}", actor=self.story.agent)
         self.case.repository.checkout(ENVIRONMENT_BRANCH)

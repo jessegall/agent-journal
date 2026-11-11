@@ -25,7 +25,7 @@ def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new
     path = repository.worktree_folder(worker.id) / "cart.py"
     story.expect_hook_allowed(worker_session(story, worker), HookSamples.edit(str(path)))
     path.write_text("TOTAL = 3\n")
-    story.expect_success("worker deliver --wait --differences none", actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")

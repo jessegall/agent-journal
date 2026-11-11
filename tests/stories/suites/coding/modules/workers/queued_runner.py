@@ -48,7 +48,7 @@ def worker_runner(new_story):
 
 
 @pytest.mark.real_git
-@pytest.mark.parametrize("command_name", ["send", "next", "deliver"])
+@pytest.mark.parametrize("command_name", ["send", "next", "commit"])
 def test_a_queued_worker_command_runs_through_the_real_runner_and_cli(worker_runner, monkeypatch, command_name):
     story, worker, binary, variables = worker_runner
     children, spawned = [], Event()
@@ -65,7 +65,7 @@ def test_a_queued_worker_command_runs_through_the_real_runner_and_cli(worker_run
     arguments = ["worker", command_name, "--differences", "none"]
     actor = worker
     task_id = None
-    if command_name != "deliver":
+    if command_name != "commit":
         task_id = story.new_row_id('task make "The next cart change" --brief "Add the receipt"', actor=story.agent)
     if command_name == "next":
         arguments = ["worker", "next"]
@@ -90,5 +90,5 @@ def test_a_queued_worker_command_runs_through_the_real_runner_and_cli(worker_run
         story.expect_text(f"task show {task_id}", "state: started", f"holder_id: {worker.id}")
     if command_name == "send":
         story.expect_text(f"task show {task_id}", f"delegated_to: {worker.id}")
-    if command_name == "deliver":
+    if command_name == "commit":
         story.expect_text("worker-worktree show 1", "state: delivered")

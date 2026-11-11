@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 from engine.cli.shell_handoff import RUNNER_VARIABLE
 from concurrent.futures import ThreadPoolExecutor
@@ -32,7 +33,7 @@ from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSo
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.modules.documents.support.trail_fixtures import SelectedTrail, Scenario
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 
 
@@ -85,14 +86,14 @@ def run_operation_copy(story, operation):
 def worker_git_command(worker_command, name):
     story, repository, worker, _ = worker_command
     if name is WorkerOperationName.MERGE:
-        story.expect_success(DELIVERY, actor=worker)
+        story.expect_success(COMMIT, actor=worker)
         story.expect_success("proof check 1", actor=story.agent)
         story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
         repository.checkout(ENVIRONMENT_BRANCH)
     return worker_command
 
 
-@pytest.mark.parametrize(("name", "method"), [(WorkerOperationName.COMMIT, "rebased_commit"), (WorkerOperationName.DELIVER, "rebased_commit"),
+@pytest.mark.parametrize(("name", "method"), [(WorkerOperationName.COMMIT, "rebased_commit"),
                                                (WorkerOperationName.JOB, "sync"), (WorkerOperationName.MERGE, "merge")])
 @pytest.mark.real_git
 @pytest.mark.parametrize("queue_full", [False, True])
@@ -183,7 +184,7 @@ def test_a_merge_that_succeeds_makes_no_conflict_line_when_the_worker_has_a_next
 
 def test_a_second_command_on_the_same_worker_is_refused(worker_command):
     story, _, worker, launches = worker_command
-    story.expect_text('worker deliver --differences none', "command accepted", actor=worker)
+    story.expect_text('worker commit --differences none', "command accepted", actor=worker)
     story.expect_refusal(f'worker send {agent_number(story, worker.id)} "Another job"', "has a command running", actor=story.agent)
     story.expect_refusal(f'worker send {agent_number(story, worker.id)} --wait "Another job"', "has a command running", actor=story.agent)
     story.expect_rows(len(launches) == 1)
@@ -192,7 +193,7 @@ def test_a_second_command_on_the_same_worker_is_refused(worker_command):
 @pytest.mark.real_git
 def test_a_failed_background_command_releases_the_worker_and_names_its_output(worker_command, monkeypatch):
     story, _, worker, _ = worker_command
-    story.expect_text('worker deliver --differences none', "command accepted", actor=worker)
+    story.expect_text('worker commit --differences none', "command accepted", actor=worker)
     operation = story.container.get(Queries).query(WorkerOperation).newest().first()
 
     def failed_git(*args, **kwargs):
@@ -211,7 +212,7 @@ def test_a_failed_background_command_releases_the_worker_and_names_its_output(wo
 def test_a_worker_command_starts_in_the_urgent_round_while_the_ordinary_listeners_wait(worker_command, monkeypatch):
     story, _, worker, launches = worker_command
     monkeypatch.setattr(CommitListenerRunner, "run", lambda _runner: None)
-    story.expect_text('worker deliver --differences none', "command accepted", actor=worker)
+    story.expect_text('worker commit --differences none', "command accepted", actor=worker)
     story.expect_rows(launches == [])
     story.container.get(CommitListenerRunner).run_urgent()
     story.expect_rows(len(launches) == 1)
@@ -219,27 +220,27 @@ def test_a_worker_command_starts_in_the_urgent_round_while_the_ordinary_listener
 
 def test_a_worker_command_lost_before_it_started_tells_the_worker_and_can_be_given_again(worker_command):
     story, _, worker, launches = worker_command
-    story.expect_text('worker deliver --differences none', "command accepted", actor=worker)
+    story.expect_text('worker commit --differences none', "command accepted", actor=worker)
     operation = story.container.get(Queries).query(WorkerOperation).newest().first()
     story.container.get(Bus).run(OrphanProcess(operation.process_id), Actor.core(), environment_id=story.row(Agent, worker.id).environment_id)
     lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id).all_rows()
     notifications = [line for line in lines if line.nudge.key == "workers.operation_never_started"]
     story.expect_rows(len(notifications) == 1, str(operation.process_id) in notifications[0].text,
                       story.row(WorkerOperation, operation.id).ended_at is not None)
-    story.expect_text('worker deliver --differences none', "command accepted", actor=worker)
+    story.expect_text('worker commit --differences none', "command accepted", actor=worker)
     story.expect_rows(len(launches) == 2)
 
 
 def test_missing_proofs_are_refused_before_creating_a_background_process(worker_command):
     story, _, worker, launches = worker_command
     story.expect_success('task edit 1 --brief "- Add the total\n- Round to cents"', actor=story.agent)
-    story.expect_refusal('worker deliver --differences none', "point 2 has no proof", actor=worker)
+    story.expect_refusal('worker commit --differences none', "point 2 has no proof", actor=worker)
     story.expect_rows(launches == [], story.container.get(Queries).query(WorkerOperation).count() == 0)
 
 
 def test_a_worker_can_stop_after_hand_in_and_resumes_when_the_command_ends(worker_command):
     story, _, worker, _ = worker_command
-    story.expect_text('worker deliver --differences none', "command accepted", actor=worker)
+    story.expect_text('worker commit --differences none', "command accepted", actor=worker)
     operation = story.container.get(Queries).query(WorkerOperation).newest().first()
     story.expect_success(f"agent end {worker.id}", actor=worker)
     story.expect_rows(story.row(Agent, worker.id).ended_at is not None)
@@ -270,7 +271,7 @@ def test_a_launcher_failure_is_kept_in_the_output_and_releases_the_reservation(w
         raise OSError("runner was removed")
 
     monkeypatch.setattr(QueuedProcessLaunch, "start", cannot_start)
-    story.expect_text('worker deliver --differences none', "command accepted", actor=worker)
+    story.expect_text('worker commit --differences none', "command accepted", actor=worker)
     operation = story.container.get(Queries).query(WorkerOperation).newest().first()
     story.expect_rows(operation.ended_at is not None)
     story.expect_text(f"output read {operation.process_id} --tail 5", "runner was removed", actor=worker)

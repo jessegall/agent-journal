@@ -328,7 +328,7 @@ def test_a_delivery_without_tests_passed_is_reported_as_stopped(recovery):
     story_repository(story).changed(worker.id, "cart.py", "TOTAL = 3\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, checked"', actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
-    story.expect_success("worker deliver --wait --differences none", actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
     story.container.get(Database).update(Statement("UPDATE worker_worktrees SET tests_passed_at = NULL WHERE session_agent_id = ?", [worker.id]))
     story.expect_success(f"agent end {worker.id}", actor=worker)
     recovery.advance(20 * 60)

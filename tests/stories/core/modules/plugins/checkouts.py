@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
@@ -11,7 +12,7 @@ from tests.stories.core.modules.plugins.support.notices import expect_plugin_not
 from tests.stories.core.modules.plugins.support.checkout_stories import (
     CHANGED_ORDER_TEXT, ORDER, ORDER_TEXT, checkout_row, checkout_story, delivery_changes, edit_event, edit_events, read_file, moved_worktree_row, real)
 from tests.stories.core.support.scanned_edits import scanned_edit
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, DISPATCH, FIRST_PROOF
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, FIRST_PROOF
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 NEW_FILE = "src/new.py"
@@ -57,7 +58,7 @@ def test_s50_from_base_reads_from_the_merged_branch(new_story):
     story = checkout_story(new_story)
     story.repository.changed(story.worker.id, ORDER, CHANGED_ORDER_TEXT)
     story.expect_success(FIRST_PROOF, "point: 1", actor=story.worker)
-    story.expect_success(DELIVERY, actor=story.worker)
+    story.expect_success(COMMIT, actor=story.worker)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
     story.repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, story.worker.id)}", actor=story.agent)
@@ -93,7 +94,7 @@ def test_s54_a_single_edit_event_for_a_move_says_added_and_the_hand_in_is_still_
     worktree_rename(story)
     file = read_file(edit_event(story, story.worker_session, name=SALE, existed=False))
     story.expect_rows(file["status"] == "added", file["renamed_from"] == "")
-    story.run(DELIVERY, actor=story.worker)
+    story.run(COMMIT, actor=story.worker)
     expect_renamed(story)
 
 

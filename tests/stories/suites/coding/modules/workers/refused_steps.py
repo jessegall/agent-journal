@@ -20,9 +20,9 @@ def working_story(new_story):
     return story, worker
 
 
-@pytest.mark.parametrize("step", ["worker commit --differences none", "worker deliver --differences none"])
-def test_a_worker_refused_by_a_plugin_five_times_is_named_to_the_main_agent(working_story, monkeypatch, step):
+def test_a_worker_refused_by_a_plugin_five_times_is_named_to_the_main_agent(working_story, monkeypatch):
     story, worker = working_story
+    step = "worker commit --differences none"
     monkeypatch.setattr(PluginStepCheck, "refusal", lambda *_args, **_kwargs: REASON)
     for _ in range(4):
         story.expect_refusal(step, REASON, actor=worker)

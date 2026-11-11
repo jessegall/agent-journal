@@ -53,7 +53,7 @@ def waiting_place(new_story, monkeypatch, request):
     first = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(first.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=first)
-    story.expect_success("worker deliver --wait --differences none", actor=first)
+    story.expect_success("worker commit --wait --differences none", actor=first)
     story.run_listeners()
     task = story.new_row_id('task make "Next job" --brief "Change the next file" --environment main', actor=story.agent)
     second = Actor(story.new_row_id(f"worker dispatch --test-command python=pytest --model sonnet {task}", actor=story.agent), ActorType.AGENT)

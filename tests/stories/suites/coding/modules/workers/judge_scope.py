@@ -5,7 +5,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.judge_plugin import SINFUL_TEXT, judge_plugin_folder, judged_data, judged_files
 from tests.stories.support.story_checks import expect_value, expect_value_with
@@ -55,7 +55,7 @@ def test_a_worker_whose_base_moved_sends_the_judge_only_its_own_files(judged_wor
     base_merged(story, worker)
     repository.committed("second.py", "SECOND = 2\n", "The second move of the base")
     base_merged(story, worker)
-    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     expect_value(judged_files(story), ["cart.py"])
 
 
@@ -65,5 +65,5 @@ def test_an_earlier_task_of_the_worker_stays_on_the_list_at_a_later_hand_in(two_
     story.expect_success(COMMIT, actor=worker)
     repository.changed(worker.id, "second.py", "SECOND = 1\n")
     story.expect_success('proof make 1 --task 2 "second.py:1, the second story"', actor=worker)
-    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success(COMMIT, actor=worker)
     expect_value(judged_files(story), ["cart.py", "second.py"])

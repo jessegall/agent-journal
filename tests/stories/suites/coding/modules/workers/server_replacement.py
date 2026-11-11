@@ -64,7 +64,7 @@ def test_a_queued_proof_is_started_by_the_new_server_and_counts(new_story, monke
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story" --test "probe pass tests/cart.py"', actor=worker)
     story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
     with server_story(story):
-        story.expect_success("worker deliver --wait --differences none", actor=worker)
+        story.expect_success("worker commit --wait --differences none", actor=worker)
         story.run_listeners()
         story.expect_text("proof show 1", "state: running", actor=story.agent)
     with started_server(story.home):

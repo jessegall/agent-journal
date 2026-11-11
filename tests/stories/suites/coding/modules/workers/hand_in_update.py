@@ -21,7 +21,7 @@ def running_delivery(new_story, monkeypatch):
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
-    story.expect_success("worker deliver --wait --differences none", actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
     story.run_listeners()
     process_id = story.container.get(Queries).query(Proof).find(1).process_id
     folder = story.home.folder / "processes" / str(process_id)

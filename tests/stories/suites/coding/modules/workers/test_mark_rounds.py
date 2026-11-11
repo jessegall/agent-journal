@@ -20,7 +20,7 @@ def test_a_second_test_round_of_the_same_task_gets_its_own_mark(new_story, monke
     repository.changed(worker.id, "cart.py", "TOTAL = 2\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1" --test "python tests/cart.py"', actor=worker)
     story.expect_success('proof make 2 --task 1 "tax.py:1, read by hand"', actor=worker)
-    story.expect_success("worker deliver --wait --differences none", actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
     story.run_listeners()
     ended(story, started[0], 0)
     first = story.container.get(Queries).query(ChatMark).filter(key="worker-tests:1:1").first()
@@ -29,7 +29,7 @@ def test_a_second_test_round_of_the_same_task_gets_its_own_mark(new_story, monke
     story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Add the tax test"', actor=story.agent)
     repository.changed(worker.id, "tax.py", "TAX = 1\n")
     story.expect_success('proof make 2 --task 1 "tax.py:1" --test "python tests/tax.py"', actor=worker)
-    story.expect_success("worker deliver --wait --differences none", actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
     story.run_listeners()
 
     marks = list(story.container.get(Queries).query(ChatMark).filter(type="workers.tests").oldest().all_rows())

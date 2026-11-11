@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 import shutil
 import sys
@@ -5,7 +6,7 @@ import sys
 import pytest
 
 from tests.stories.core.modules.plugins.support.event_stories import REFUSAL, EventWorkerStarted, data_row, event_plugin_story, plugin_data, plugin_row, script_calls
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, DISPATCH, FIRST_PROOF, dispatched_worker, expect_clean_environment, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, FIRST_PROOF, dispatched_worker, expect_clean_environment, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import CHECKOUT_BRANCH, ENVIRONMENT_BRANCH
 
 
@@ -60,7 +61,7 @@ def lifting_story(new_story):
 def delivery_line(story) -> None:
     story.repository.changed(story.worker.id, "cart.py", "TOTAL = 1\n")
     story.expect_success(FIRST_PROOF, "point: 1", actor=story.worker)
-    story.expect_success(DELIVERY, actor=story.worker)
+    story.expect_success(COMMIT, actor=story.worker)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
     story.expect_success(f"worker logs {agent_number(story, story.worker.id)}", actor=story.agent)
 

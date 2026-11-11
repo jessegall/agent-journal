@@ -32,5 +32,5 @@ def test_a_proof_waits_for_the_task_to_be_handed_in(new_story):
     repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
     story.expect_hook_allowed(MAIN_SESSION, HookSamples.stop())
-    story.expect_success("worker deliver --wait --differences none", actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), f"worker:{agent_number(story, worker.id)} delivered task:1, proofs 1")

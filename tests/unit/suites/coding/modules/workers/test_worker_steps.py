@@ -21,7 +21,7 @@ def test_every_step_gives_what_now_then(step):
 
 
 def test_group_end_names_the_hand_in_command_of_its_facts():
-    assert "journal worker deliver" in step_line(WorkerStep.GROUP_END, FACTS.changed_deliver_command("journal worker deliver"))
+    assert "journal worker commit" in step_line(WorkerStep.GROUP_END, FACTS.changed_deliver_command("journal worker commit"))
     assert "journal worker next" in step_line(WorkerStep.GROUP_END, FACTS)
 
 

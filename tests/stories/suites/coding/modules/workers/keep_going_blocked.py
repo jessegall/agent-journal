@@ -57,7 +57,7 @@ def test_the_line_about_a_blocked_task_wakes_the_main_agent():
 
 def test_worker_deliver_on_a_blocked_task_is_refused_and_hands_in_nothing(worker_blocked_its_task):
     story = worker_blocked_its_task
-    text = refusal_text(story, "worker deliver --wait --differences none")
+    text = refusal_text(story, "worker commit --wait --differences none")
     story.expect_rows("task 1 is blocked" in text, detail=text)
     story.expect_text("worker-worktree list --json", '"state": "cut"', actor=story.agent)
 
