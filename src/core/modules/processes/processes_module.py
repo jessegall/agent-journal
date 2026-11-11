@@ -184,6 +184,7 @@ from core.modules.processes.commands.set_output_timeout.set_output_timeout_subco
 from core.modules.processes.commands.stop_timed_process.stop_timed_process_handler import StopTimedProcessHandler
 from core.modules.processes.ticks.run_timeouts import RunTimeouts
 from core.modules.processes.ticks.hang_watch import HangWatch
+from core.modules.processes.ticks.cadence_watch import CadenceWatch
 from core.modules.processes.commands.ask_agent_to_look.ask_agent_to_look_handler import AskAgentToLookHandler
 from core.modules.processes.commands.stop_hung_process.stop_hung_process_handler import StopHungProcessHandler
 from core.modules.processes.ticks.output_checks import OutputChecks
@@ -243,7 +244,7 @@ class ProcessesModule(Module):
     name = "journal.core.processes"
     nudges = PROCESS_NUDGES
     tick_handlers = [TickHandler(TickInterval(seconds=1), OutputReading(), "read running outputs"), TickHandler(TickInterval(seconds=1), RunSlotGrant(), "run slots"),
-                     TickHandler(TickInterval(seconds=1), RunTimeouts(), "run timeouts"), TickHandler(TickInterval(seconds=15), HangWatch(), "hang watch"), TickHandler(TickInterval(seconds=15), OutputChecks(), "output checks"),
+                     TickHandler(TickInterval(seconds=1), RunTimeouts(), "run timeouts"), TickHandler(TickInterval(seconds=15), HangWatch(), "hang watch"), TickHandler(TickInterval(seconds=10), CadenceWatch(), "cadence watch"), TickHandler(TickInterval(seconds=15), OutputChecks(), "output checks"),
                      TickHandler(TickInterval(seconds=15), RunEndRecovery(), "run end recovery", starts_immediately=True),
                      TickHandler(TickInterval(seconds=15 * 60), ProcessPruning(), "process pruning")]
     skills = [SkillDeclaration("journal-shell", "Run shell commands through the journal and read what they printed; read it before reading an output, or writing a reader or an alias",
