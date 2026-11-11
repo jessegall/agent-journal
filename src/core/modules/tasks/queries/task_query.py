@@ -27,6 +27,7 @@ from core.modules.assignments.queries.conditions.unassigned import Unassigned
 
 FOLLOWED_PLAN_STATES = ("approved", "started")
 
+TASK_PAGE_ROWS = 50
 
 class TaskQuery(Query[Task]):
     """Reads tasks with named filters. The open tasks assigned to an actor are that actor's work, and the open
@@ -37,7 +38,7 @@ class TaskQuery(Query[Task]):
         self.kept = kept
 
     def started_tasks(self, agent_id: int) -> tuple[Task, ...]:
-        return self.kept.read(self.table.name, lambda: self.newest_current(self.holder(agent_id).started().all_rows()),
+        return self.kept.read(self.table.name, lambda: self.newest_current(self.holder(agent_id).started().oldest().all_rows(TASK_PAGE_ROWS)),
                               "holder_id = ? AND state = ?", [agent_id, TaskState.STARTED], name="tasks.current_tasks")
 
     @staticmethod
@@ -46,18 +47,18 @@ class TaskQuery(Query[Task]):
 
     def assigned(self, actor_id: int) -> tuple[Task, ...]:
         assignee = self.assignee(actor_id).statement()
-        return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(self.assignee(actor_id)).oldest().all_rows()),
+        return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(self.assignee(actor_id)).oldest().all_rows(TASK_PAGE_ROWS)),
                               f"state = ? AND {assignee.sql}", [TaskState.OPEN, *assignee.parameters], name="tasks.queued_tasks")
 
     def assigned_ready(self, actor_id: int) -> tuple[Task, ...]:
         assignee, dependency_free = self.assignee(actor_id).statement(), self.no_open_dependency().statement()
-        return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(self.assignee(actor_id)).matching(self.no_open_dependency()).all_rows()),
+        return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(self.assignee(actor_id)).matching(self.no_open_dependency()).oldest().all_rows(TASK_PAGE_ROWS)),
                               f"state = ? AND {assignee.sql} AND {dependency_free.sql}", [TaskState.OPEN, *assignee.parameters, *dependency_free.parameters], name="tasks.next_delegated")
 
     def free(self) -> Self:
         return self.open_tasks().matching(Unassigned(Task))
 
-    # The two names below are removed in phase 7 of plan 1104, with their callers in the coding suite.
+    # The two names below are removed in phase 7 of plan 1104, with their callers.
     def queued_tasks(self, agent_id: int) -> tuple[Task, ...]:
         return self.assigned(agent_id)
 

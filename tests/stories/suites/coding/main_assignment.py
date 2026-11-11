@@ -1,4 +1,7 @@
 from tests.stories.core.support.agent_labels import agent_number
+from engine.database.database import READ_LIMIT_ROWS, Database
+from core.modules.chat.models.journal_exception import JournalException
+from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.available_work import AvailableWork
@@ -9,6 +12,7 @@ from tests.stories.support.story_checks import expect_value
 AUTO = "journal.suites.coding.auto-mode"
 DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers"
 WORKER_LIMIT = "journal.suites.coding.workers.worker-run-limit"
+MANY_TASKS = READ_LIMIT_ROWS + 1
 
 
 def available(story):
@@ -96,3 +100,15 @@ def test_a_main_agent_that_waits_on_something_may_stop_with_an_unfinished_task(n
     story = new_story(fixture=UnfinishedTaskMain)
     story.expect_success('wait stuck "the person decides the order"', actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.stop())
+
+
+def test_a_stop_of_a_main_agent_with_more_unfinished_tasks_than_one_read_may_load_is_held_and_records_no_fault(new_story):
+    story = new_story(fixture=UnfinishedTaskMain)
+    for number in range(MANY_TASKS):
+        task = story.new_row_id(f'task make "Step {number}" --brief "One more step"', actor=story.agent)
+        story.run(f"task assign {task} --to {agent_number(story, story.agent.id)}", actor=story.agent)
+    story.container.get(Database).read_limit_rows = READ_LIMIT_ROWS
+    reply = story.hook("s-1", HookSamples.stop())
+    faults = [row.message for row in story.container.get(Queries).query(JournalException).all_rows()]
+    story.expect_rows(bool(reply.refusal), faults == [], detail=f"{reply.refusal} | {faults}")
+
