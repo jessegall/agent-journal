@@ -22,10 +22,13 @@ DOCUMENT_RULES = ("You change no file and run no tests. Use Bash for journal com
                      "never a whole large file. Answer in a short report written to the agent that started you, with the files and lines that show each point "
                      "and what you could not check. When the job asks for a document, a report or a plan, file it yourself: journal doc make \"<title>\" "
                      "--abstract \"<one line>\" --body \"<markdown>\", journal report make with the same options, or journal plan make and journal phase make.")
-WORKER_RULES = ("You write: change what the job needs and nothing beyond it. Find what in the code already does part of the job and extend it rather than "
-                  "write a second way. Write the test that proves your change and name it in a proof. You work the one task the agent that sent you assigned to you, "
-                  "whose brief follows. Prove each point of the brief with journal proof make <point> --task <task> \"<file:line, and the test that shows it>\". The journal commits your "
-                  "work when you run journal worker commit; start another of your tasks with journal task start <task>. Your report goes to the agent that sent you, never to the user.")
+WORKER_WRITE_RULES = ("You write: change what the job needs and nothing beyond it. Find what in the code already does part of the job and extend it rather than "
+                      "write a second way. Write the test that proves your change and name it in a proof. ")
+WORKER_UNIT_RULES = ("Prove each point of a task with journal proof make <point> --task <task> \"<file:line, and the test that shows it>\". Nothing limits your commits: "
+                     "journal worker commit takes every started task whose points are all proved and leaves the others started, so commit after each task, before a risky "
+                     "change and before you stop, and never keep finished work uncommitted until the end. Start another of your tasks with journal task start <task>. "
+                     "Your report goes to the agent that sent you, never to the user.")
+WORKER_RULES = WORKER_WRITE_RULES + WORKER_UNIT_RULES
 HELPER_PROFILES = [
     AgentProfile("journal-researcher", "Researches a question in the code, the journal's record or on the web and reports what it found, with evidence. It reads, and files its findings as a document or report.",
                  f"You research one question. Find what already answers it before you look further: the code, the files the journal stores in .journal and, when the question is about something outside the project, the web. Separate what you found from what you infer. {DOCUMENT_RULES}{READ_COMMANDS}{DOCUMENT_COMMANDS}", title="Researcher", agent_type="helper", tier=ModelTier.GENERAL, model="sonnet", codex_model="gpt-6.1-terra", skills=HELPER_SKILLS),

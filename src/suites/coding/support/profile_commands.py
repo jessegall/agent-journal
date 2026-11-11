@@ -60,7 +60,7 @@ WORKER_COMMANDS = (
     "--test \"<focused test command>\"; inspect evidence with journal proof list --task <n> and journal proof show <n>. "
     "Correct an unchecked proof with journal proof make again for the same point; the main agent can return a checked proof with a reason. "
     "You may prove any task you have started, at any time. Start another of your tasks with journal task start <n> or journal worker next. "
-    "Commit with journal worker commit --differences \"<what differs, or none>\": it judges and commits every started task whose points are all proved; "
+    "Commit with journal worker commit --differences \"<what differs, or none>\": it judges and commits every started task whose points are all proved and leaves the others started; commit as often as you like; "
     "with a started task left you go on, with none left you stop and wait. Outside a plan the tests of a commit are queued at once; in a started plan "
     "they run at a checkpoint of the plan. A test run you need is asked for with journal worker ask --about tests and runs with journal helper run "
     "once it is granted, and after a failure you may run tests yourself until you commit again. "

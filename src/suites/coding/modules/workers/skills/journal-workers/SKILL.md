@@ -173,6 +173,8 @@ An open question lets you stop; the answer wakes you. Going on with other work e
   what you did. When you followed the brief, `--differences none`.
 - A task already built needs no change: prove each point with where it is, and commit with `--differences "<why no change was needed>"`.
   With `--differences none`, a commit that changed nothing is refused. The main agent reads your line.
+- Nothing limits commits. A commit takes every started task whose points are all proved and leaves the others started;
+  commit after each task, before a risky change and before you stop.
 - While a started task is left, the commit is interim and you go on with that task. With none left it is final: your
   work waits for its tests and its merge, so stop and wait. Once it is merged the journal starts you on the
   next of your tasks, in a new worktree.
