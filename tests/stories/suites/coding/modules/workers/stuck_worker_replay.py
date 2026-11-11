@@ -14,11 +14,11 @@ def test_one_walk_a_worker_asks_the_merger_answers_then_asks_again_and_the_journ
     first = questions(story)[0]
     story.expect_success("merger next", actor=case.merger)
     story.expect_success(f'merger answer {first.id} "Use the compiler in tools/bin"', actor=case.merger)
-    story.expect_rows("Use the compiler in tools/bin" in case.worker_lines(), detail=case.worker_lines())
+    story.expect_rows("Use the compiler in tools/bin" in case.worker_messages(), detail=case.worker_messages())
     ask(case, SECOND_QUESTION, AskTopic.TESTS)
     story.advance(timedelta(minutes=31))
     watch(case)
     text = messages(case)
     story.expect_rows(text.count("What: ") == 1, SECOND_QUESTION in text, QUESTION not in text, questions(story)[1].outcome is AskOutcome.FORWARDED, detail=text)
     story.expect_success(f'message send "Fill the fixture from the sample" --to agent:{agent_number(story, case.worker.id)}', actor=story.agent)
-    story.expect_rows("Fill the fixture from the sample" in case.worker_lines(), [line.outcome for line in questions(story)] == [AskOutcome.ANSWERED, AskOutcome.FORWARDED], detail=case.worker_lines())
+    story.expect_rows("Fill the fixture from the sample" in case.worker_messages(), [line.outcome for line in questions(story)] == [AskOutcome.ANSWERED, AskOutcome.FORWARDED], detail=case.worker_messages())

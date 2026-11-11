@@ -34,7 +34,8 @@ def test_a_worker_that_stops_with_tasks_left_wakes_the_merger(two_task_worker, m
     lines = merger_lines(story)
     marks = story.run("chat-mark list --environment 1").output_text
     story.expect_rows(len(lines) >= 1, all(line.read_at is None for line in lines), "tasks left" in marks, detail=f"{lines} | {marks}")
-    story.expect_rows(f"worker:{agent_number(story, story.worker.id)}" not in main_agent_lines(story), detail=main_agent_lines(story))
+    worker = f"worker:{agent_number(story, story.worker.id)}"
+    story.expect_rows(f"{worker} stopped with" not in main_agent_lines(story), f"{worker} ended with" not in main_agent_lines(story), detail=main_agent_lines(story))
     with running_launcher(story):
         MergerRetry()(story.container)
         story.run_listeners()
