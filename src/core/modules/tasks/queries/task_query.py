@@ -21,12 +21,16 @@ from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.conditions.task_tag_match import TaskTagMatch
 from core.modules.tasks.conditions.takeable_tasks import TakeableTasks
 from core.modules.agents.models.agent import MAIN_ROLE, Agent
+from core.modules.assignments.queries.conditions.assignee_among import AssigneeAmong
+from core.modules.assignments.queries.conditions.assignee_match import AssigneeMatch
+from core.modules.assignments.queries.conditions.unassigned import Unassigned
 
 FOLLOWED_PLAN_STATES = ("approved", "started")
 
 
 class TaskQuery(Query[Task]):
-    """Reads tasks with named filters, including tasks available to delegate under approved plans."""
+    """Reads tasks with named filters. The open tasks assigned to an actor are that actor's work, and the open
+    tasks assigned to nobody are free; both are read from the assignments table."""
 
     def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:
         super().__init__(database, tables, Task)
@@ -36,9 +40,25 @@ class TaskQuery(Query[Task]):
         return self.kept.read(self.table.name, lambda: self.newest_current(self.holder(agent_id).started().all_rows()),
                               "holder_id = ? AND state = ?", [agent_id, TaskState.STARTED], name="tasks.current_tasks")
 
+    def assigned(self, actor_id: int) -> tuple[Task, ...]:
+        assignee = AssigneeAmong(Task, (actor_id,)).statement()
+        return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(AssigneeAmong(Task, (actor_id,))).oldest().all_rows()),
+                              f"state = ? AND {assignee.sql}", [TaskState.OPEN, *assignee.parameters], name="tasks.queued_tasks")
+
+    def assigned_ready(self, actor_id: int) -> tuple[Task, ...]:
+        assignee, no_dependency = AssigneeAmong(Task, (actor_id,)).statement(), self.no_open_dependency().statement()
+        return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(AssigneeAmong(Task, (actor_id,))).matching(self.no_open_dependency()).all_rows()),
+                              f"state = ? AND {assignee.sql} AND {no_dependency.sql}", [TaskState.OPEN, *assignee.parameters, *no_dependency.parameters], name="tasks.next_delegated")
+
+    def free(self) -> Self:
+        return self.open_tasks().matching(Unassigned(Task))
+
+    # The two names below are removed in phase 7 of plan 1104, with their callers in the coding suite.
     def queued_tasks(self, agent_id: int) -> tuple[Task, ...]:
-        return self.kept.owner_read(self.table.name, lambda: tuple(self.filter(delegated_to=agent_id, state=TaskState.OPEN).oldest().all_rows()),
-                              "delegated_to = ? AND state = ?", [agent_id, TaskState.OPEN], name="tasks.queued_tasks")
+        return self.assigned(agent_id)
+
+    def ready_delegated(self, agent_id: int) -> tuple[Task, ...]:
+        return self.assigned_ready(agent_id)
 
     def remember(self, task: Task) -> None:
         self.replace_cached(task, tuple([task]))
@@ -48,17 +68,11 @@ class TaskQuery(Query[Task]):
 
     def replace_cached(self, task: Task, present: tuple[Task, ...]) -> None:
         started = [row for row in present if row.state is TaskState.STARTED]
-        queued = [row for row in present if row.state is TaskState.OPEN]
         def with_started(tasks: tuple[Task, ...]) -> tuple[Task, ...]:
             return self.newest_current([row for row in tasks if row.id != task.id] + started)
 
-        def with_queued(tasks: tuple[Task, ...]) -> tuple[Task, ...]:
-            return tuple(sorted([row for row in tasks if row.id != task.id] + queued, key=lambda row: row.id))
-
         if task.holder_id is not None:
             self.kept.update(self.table.name, with_started, "holder_id = ? AND state = ?", [task.holder_id, TaskState.STARTED], name="tasks.current_tasks")
-        if task.delegated_to is not None:
-            self.kept.update(self.table.name, with_queued, "delegated_to = ? AND state = ?", [task.delegated_to, TaskState.OPEN], name="tasks.queued_tasks")
 
     @staticmethod
     def newest_current(tasks: Sequence[Task]) -> tuple[Task, ...]:
@@ -79,14 +93,9 @@ class TaskQuery(Query[Task]):
     def no_open_dependency(self) -> Condition:
         return SubqueryMatch("id", Select(OpenDependency.view).column("task_id"), negated=True)
 
-    def ready_delegated(self, agent_id: int) -> tuple[Task, ...]:
-        return self.kept.owner_read(self.table.name, lambda: tuple(self.filter(delegated_to=agent_id, state=TaskState.OPEN).matching(self.no_open_dependency()).all_rows()),
-                              f"delegated_to = ? AND state = ? AND {self.no_open_dependency().statement().sql}",
-                              [agent_id, TaskState.OPEN], name="tasks.next_delegated")
-
     def main_reserved(self, task_ids: Sequence[int]) -> Self:
         running_main_agents = Select("agents").matching(Among("role", [AgentRole.MAIN])).matching(IsNull("ended_at")).column("id")
-        return self.matching(Among("id", task_ids)).matching(SubqueryMatch("delegated_to", running_main_agents)).matching(IsNull("holder_id")).matching(Among("state", [TaskState.OPEN, TaskState.BLOCKED]))
+        return self.matching(Among("id", task_ids)).matching(AssigneeMatch(Task, running_main_agents)).matching(IsNull("holder_id")).matching(Among("state", [TaskState.OPEN, TaskState.BLOCKED]))
 
     def takeable(self, agent: Agent) -> Self:
         return self.matching(self.takeable_condition(agent))
@@ -102,9 +111,8 @@ class TaskQuery(Query[Task]):
         return self.matching(TaskTagMatch(word))
 
     def delegation_candidates(self, excluded_agent_ids: Sequence[int]) -> Self:
-        active_delegates = SubqueryMatch("delegated_to", Select("agents").matching(IsNull("ended_at")).column("id"))
-        active_task_ids = Select("tasks").matching(active_delegates).column("id")
-        excluded_task_ids = Select("tasks").matching(Among("delegated_to", excluded_agent_ids)).column("id")
+        active_task_ids = Select("tasks").matching(AssigneeMatch(Task, Select("agents").matching(IsNull("ended_at")).column("id"))).column("id")
+        excluded_task_ids = Select("tasks").matching(AssigneeAmong(Task, tuple(excluded_agent_ids))).column("id")
         return (self.open_tasks().matching(SubqueryMatch("id", active_task_ids, negated=True)).matching(SubqueryMatch("id", excluded_task_ids, negated=True))
                 .matching(self.unapproved_plan_exclusion()))
 
@@ -121,7 +129,7 @@ class TaskQuery(Query[Task]):
         return self.free_tasks(exclusion).matching(Less("complexity", most_complexity + 1)).descending("priority").ordered("id").first()
 
     def free_tasks(self, exclusion: Condition) -> Self:
-        return self.open_tasks().matching(IsNull("delegated_to")).matching(self.no_open_dependency()).matching(exclusion)
+        return self.free().matching(self.no_open_dependency()).matching(exclusion)
 
     def closed_counts(self, starts: Sequence[Timestamp]) -> list[int]:
         if not starts:
