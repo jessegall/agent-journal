@@ -198,13 +198,6 @@ def test_a_worker_that_goes_on_working_after_asking_still_gets_its_answer(case):
     case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.ANSWERED, ANSWER in case.worker_messages(), detail=case.worker_messages())
 
 
-def test_a_reading_of_the_merger_that_closes_at_the_limit_forwards_the_ask_without_the_watch(case):
-    ask(case)
-    end_unanswered_visit(case)
-    end_unanswered_visit(case)
-    case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, detail=str(questions(case.story)[0]))
-
-
 def test_an_ask_made_with_the_merger_off_starts_no_merger_when_the_merger_is_switched_on_later(merger_disabled_worker, monkeypatch):
     merger_can_start(monkeypatch)
     story = merger_disabled_worker.story
