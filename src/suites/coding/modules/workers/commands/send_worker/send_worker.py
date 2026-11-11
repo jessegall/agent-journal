@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from suites.coding.modules.workers.support.test_command_entry import TestCommandEntry
 
 from engine.command.command import Command
-from engine.tasks.tasks_changed_together import TasksChangedTogether
+from core.modules.tasks.support.tasks_changed_together import TasksChangedTogether
 from core.modules.drivers.models.agent_line import AgentLine
 
 

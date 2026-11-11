@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from engine.tasks.tasks_changed_together import TasksChangedTogether
+from core.modules.tasks.support.tasks_changed_together import TasksChangedTogether
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.task_source_copy import TaskSourceCopy
 

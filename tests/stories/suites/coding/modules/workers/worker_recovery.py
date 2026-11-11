@@ -2,7 +2,7 @@ from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
 from engine.command.bus import Bus
-from engine.tasks.clear_delegated_tasks import ClearDelegatedTasks
+from core.modules.tasks.commands.clear_delegated_tasks.clear_delegated_tasks import ClearDelegatedTasks
 from engine.actor.actor import Actor
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.modules.agents.models.agent import Agent
