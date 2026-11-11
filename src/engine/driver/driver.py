@@ -2,7 +2,6 @@ from collections.abc import Sequence
 from typing import ClassVar, Never
 
 from engine.driver.driver_rule import DriverRule
-from engine.module.suite import Suite
 from engine.guard.guard import Guard
 
 
@@ -12,7 +11,7 @@ class Driver:
     opening lines."""
 
     name: ClassVar[str]
-    suite: ClassVar[type[Suite]]
+    suite_name: ClassVar[str]
     role: ClassVar[str]
     rules: ClassVar[Sequence[type[DriverRule]]] = []
     guards: ClassVar[Sequence[type[Guard[Never]]]] = []

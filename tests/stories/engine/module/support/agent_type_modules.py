@@ -69,7 +69,7 @@ class SampleSuite(Suite):
 
 class UnknownDriver(Driver):
     name = "sample.unknown"
-    suite = SampleSuite
+    suite_name = SampleSuite.name
     role = "missing-driver-role"
 
 

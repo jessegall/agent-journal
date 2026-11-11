@@ -14,7 +14,7 @@ class WorkerDriver(Driver):
     allows."""
 
     name = "coding.worker"
-    suite = CodingSuite
+    suite_name = CodingSuite.name
     role = CodingHelperRole.WORKER
     rules = [WorkerFullTestRunRule, WorkerGitRule, WorkerCommandTypeRule, WorkerTaskStartRule]
     opening_lines = ["You are a worker: you do your tasks in your worktree, prove each point with journal proof make, start another task with journal task start and commit your work with journal worker commit; journal handles git.", WORKER_TEST_RULE, "Use python3 for Python commands.", CONTEXT_LINE]

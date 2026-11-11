@@ -29,7 +29,7 @@ class AccessSuite(Suite):
 
 class AccessDriver(Driver):
     name = "access.base"
-    suite = AccessSuite
+    suite_name = AccessSuite.name
     role = AgentRole.MAIN
 
 

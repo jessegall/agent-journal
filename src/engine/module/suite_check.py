@@ -66,15 +66,15 @@ class SuiteCheck:
         for module in modules:
             reachable = {module.name, *module.dependencies}
             for driver in module.drivers:
-                if driver.suite.name not in owners:
-                    problems.append(f"driver {driver.name} names suite {driver.suite.name}, which no installed module ships")
-                elif owners[driver.suite.name] not in reachable:
-                    problems.append(f"driver {driver.name} names suite {driver.suite.name} of module {owners[driver.suite.name]}, which module {module.name} does not depend on")
+                if driver.suite_name not in owners:
+                    problems.append(f"driver {driver.name} names suite {driver.suite_name}, which no installed module ships")
+                elif owners[driver.suite_name] not in reachable:
+                    problems.append(f"driver {driver.name} names suite {driver.suite_name} of module {owners[driver.suite_name]}, which module {module.name} does not depend on")
         return tuple(problems)
 
     def wrong_suite_drivers(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
-        return tuple(f"driver {driver.name} belongs to suite {driver.suite.name}, so its name starts {driver.suite.name}."
-                     for module in modules for driver in module.drivers if driver.name.partition(".")[0] != driver.suite.name)
+        return tuple(f"driver {driver.name} belongs to suite {driver.suite_name}, so its name starts {driver.suite_name}."
+                     for module in modules for driver in module.drivers if driver.name.partition(".")[0] != driver.suite_name)
 
     def wrong_defaults(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
         roles = {driver.name: driver.role for module in modules for driver in module.drivers}

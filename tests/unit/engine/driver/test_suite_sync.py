@@ -59,7 +59,7 @@ class BuilderDriver(Driver):
     """Drives the main agent of the coding suite."""
 
     name = "coding.builder"
-    suite = Coding
+    suite_name = Coding.name
     role = AgentRole.MAIN
     rules = [NoGit, StopThrough]
 
@@ -113,13 +113,13 @@ def test_a_driver_of_a_suite_its_module_depends_on_passes():
 
 def test_a_default_naming_a_driver_of_another_role_or_an_unrequired_suite_is_refused():
     mixed = type("Mixed", tuple([Suite]), {"name": "mixed", "defaults": {'worker': "mixed.builder", AgentRole.MAIN: "coding.builder"}})
-    builder = type("MixedBuilder", tuple([Driver]), {"name": "mixed.builder", "suite": mixed, "role": AgentRole.MAIN})
+    builder = type("MixedBuilder", tuple([Driver]), {"name": "mixed.builder", "suite_name": mixed.name, "role": AgentRole.MAIN})
     assert problems(module("mixed", suites=[mixed], drivers=[builder])) == ["suite mixed gives role worker driver mixed.builder, which drives role main",
                                                                            "suite mixed gives role main driver coding.builder, of a suite it does not require"]
 
 
 def test_a_rule_a_driver_lists_may_not_name_patterns_and_a_rule_a_module_adds_must():
-    listed = type("Listed", tuple([Driver]), {"name": "coding.listed", "suite": Coding, "role": AgentRole.MAIN, "rules": [AnyMain]})
+    listed = type("Listed", tuple([Driver]), {"name": "coding.listed", "suite_name": Coding.name, "role": AgentRole.MAIN, "rules": [AnyMain]})
     loose = type("Loose", tuple([DriverRule]), {"name": "safety.loose", "hook": "stop"})
     assert problems(module("coding", suites=[Coding], drivers=[listed], driver_rules=[loose])) == [
         "rule safety.any-main is listed by coding.listed and also names driver patterns", "rule safety.loose names no driver pattern, so no driver hears it"]
