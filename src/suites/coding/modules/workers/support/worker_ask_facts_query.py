@@ -1,11 +1,11 @@
 from engine.query.conditions.among import Among
 from engine.query.conditions.minimum import Minimum
 from engine.query.queries import Queries
-from core.modules.plans.models.phase import Phase
-from core.modules.plans.models.phase_task import PhaseTask
+from core.modules.plans.models.plan_task import PlanTask
 from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES
 from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS
 from suites.coding.modules.workers.support.phase_work import PhaseWork
 from core.modules.plans.support.task_plans import TaskPlans
 from core.modules.processes.queries.process_query import ProcessQuery
@@ -37,19 +37,18 @@ class WorkerAskFactsQuery:
         phase = self.plans.find_phase(task_id)
         if phase is None:
             return None
-        later_phase_ids = [row.id for row in self.queries.query(Phase).filter(plan_id=phase.plan_id).matching(Minimum("position", phase.position)).all_rows()]
-        task_ids = [place.task_id for place in self.queries.query(PhaseTask).matching(Among("phase_id", later_phase_ids)).all_rows()]
-        tasks = [task for task in self.queries.query(Task).find_many(sorted(task_ids)) if task.state in UNFINISHED_STATES]
-        blockers: dict[int, list[int]] = {task.id: [] for task in tasks}
-        for dependency in self.queries.query(OpenDependency).matching(Among("task_id", list(blockers))).all_rows():
+        unfinished = self.queries.query(PlanTask).filter(plan_id=phase.plan_id).matching(Minimum("phase_position", phase.position)).matching(Among("state", UNFINISHED_STATES))
+        places = tuple(unfinished.ordered("task_id").all_rows(TASK_PAGE_ROWS))
+        blockers: dict[int, list[int]] = {place.task_id: [] for place in places}
+        for dependency in self.queries.query(OpenDependency).matching(Among("task_id", list(blockers))).ordered("id").all_rows(TASK_PAGE_ROWS):
             blockers[dependency.task_id].append(dependency.dependency_id)
         return PhaseWork(phase.title, phase.test_command if phase.checkpoint and phase.test_command else None,
-                         tuple(self.task_line(task, blockers[task.id]) for task in tasks))
+                         tuple(self.task_line(place, blockers[place.task_id]) for place in places))
 
     @staticmethod
-    def task_line(task: Task, blocker_ids: list[int]) -> str:
+    def task_line(place: PlanTask, blocker_ids: list[int]) -> str:
         waits = ", ".join(f"task {blocker_id}" for blocker_id in blocker_ids) if blocker_ids else "nothing"
-        return f"task {task.id} ({task.state.value}) waits on {waits}"
+        return f"task {place.task_id} ({place.state.value}) waits on {waits}"
 
     def last_refusal(self, worktree: Worktree) -> str | None:
         counted = self.queries.query(WorkerRefusalCount).filter(worktree_id=worktree.id).first()

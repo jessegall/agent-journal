@@ -6,7 +6,6 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.command.context import Context
-from engine.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from engine.driver.nudger import Nudger
 from core.modules.tasks.models.task import Task
@@ -27,17 +26,14 @@ class InactiveWorkerSend:
     idle: no started task, no command running, and no worktree, a delivered one with no tests waiting, or
     an open one whose program has ended. A busy worker takes the task as its next one by itself."""
 
-    def __init__(self, rows: EventRows, tasks: TaskQuery, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue,
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue,
                  operations: WorkerOperationQuery, bus: Bus, nudger: Nudger, assignments: Assignments) -> None:
-        self.rows, self.tasks, self.worktrees, self.proof_queue = rows, tasks, worktrees, proof_queue
+        self.tasks, self.worktrees, self.proof_queue = tasks, worktrees, proof_queue
         self.operations, self.bus, self.nudger, self.assignments = operations, bus, nudger, assignments
 
     def send(self, task: Task, context: Context) -> None:
-        worker_id = self.assignments.actor(task)
-        if worker_id is None:
-            return
-        worker = self.rows.required(Agent, worker_id)
-        if worker.parent_id is None:
+        worker = self.assignments.agent(task)
+        if worker is None or worker.parent_id is None:
             return
         if worker.paused_at is not None:
             self.nudger.send(worker.parent_id, WORKER_OPERATION_PAUSED, WORKER_JOB_SOURCE, context, worker=worker.number)

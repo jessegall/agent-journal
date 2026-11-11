@@ -14,7 +14,7 @@ from suites.coding.modules.workers.support.worker_route_request import WorkerRou
 
 class WorkerRouteGuard(Guard[Created[Assignment]]):
     """Holds a task given to a worker to its ready program, with a person's exception. A task its own holder
-    is given, and one given as a worktree is cut, pass."""
+    is given, one given as a worktree is cut, and one given to a person pass."""
 
     name = ROUTE_GUARD
 
@@ -28,7 +28,7 @@ class WorkerRouteGuard(Guard[Created[Assignment]]):
         task = self.rows.required(Task, assignment.subject_id)
         if assignment.actor_id == task.holder_id:
             return
-        worker = self.rows.required(Agent, assignment.actor_id)
-        if worker.role == AgentRole.MAIN:
+        worker = self.rows.find(Agent, assignment.actor_id)
+        if worker is None or worker.role == AgentRole.MAIN:
             return
         self.policy.check_task(task, WorkerRouteRequest(worker.program, context.actor.type, context.skipped_guards))

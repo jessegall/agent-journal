@@ -16,4 +16,4 @@ class LinkCreatedListener(SaveListener[Created[AssignmentLink]]):
 
     def handle(self, event: Created[AssignmentLink], context: Context) -> None:
         for linked in self.rows.linked(event.row):
-            self.assignments.follow_parent(linked.child, context)
+            self.assignments.follow_parents(linked.child, [linked.parent], context)

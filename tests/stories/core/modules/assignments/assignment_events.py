@@ -26,13 +26,9 @@ def listener_lines(story) -> list[str]:
     return [row["title"] for row in sorted(rows, key=lambda row: row["id"]) if "assigned" in row["title"]]
 
 
-def test_an_assigned_listener_gets_one_call_per_assignment_with_the_row_and_actor(depot):
+def test_an_assigned_listener_gets_one_call_per_assignment_and_a_one_actor_replacement_calls_unassigned_for_a_then_assigned_for_b(depot):
     assign_crate(depot, worker(depot).id)
     depot.expect_rows(listener_lines(depot) == [f"assigned crate 1 to {worker(depot).id}"], detail=str(listener_lines(depot)))
-
-
-def test_a_one_actor_replacement_calls_unassigned_for_a_then_assigned_for_b(depot):
-    assign_crate(depot, worker(depot).id)
     assign_crate(depot, depot.user.id)
     depot.expect_rows(listener_lines(depot)[1:] == [f"unassigned crate 1 from {worker(depot).id}", f"assigned crate 1 to {depot.user.id}"], detail=str(listener_lines(depot)))
 

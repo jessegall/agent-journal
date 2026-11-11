@@ -1,4 +1,4 @@
-from engine.testing.runs.run_size import TEST_NAME_SEPARATOR
+from engine.text.run_target import RunTarget
 from dataclasses import dataclass
 
 FAILED_MARK = "FAILED "
@@ -14,4 +14,4 @@ class FailedTestPaths:
     @classmethod
     def read(cls, output: str) -> "FailedTestPaths":
         failed_lines = [line[len(FAILED_MARK):] for line in output.splitlines() if line.startswith(FAILED_MARK)]
-        return cls(tuple(dict.fromkeys(line.split()[0].split(TEST_NAME_SEPARATOR)[0] for line in failed_lines if line.strip())))
+        return cls(tuple(dict.fromkeys(RunTarget(line.split()[0]).file for line in failed_lines if line.strip())))

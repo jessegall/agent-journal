@@ -51,7 +51,7 @@ def test_a_module_with_no_assignable_model_needs_no_dependency():
 
 
 def test_a_person_and_an_agent_take_work_and_a_module_and_the_core_do_not():
-    assert [actor_type for actor_type in ActorType if actor_type.can_take_work] == [ActorType.USER, ActorType.AGENT]
+    assert [actor_type for actor_type in ActorType if actor_type.can_receive_work] == [ActorType.USER, ActorType.AGENT]
 
 
 class Bin(Model, Assignable):

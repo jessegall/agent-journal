@@ -1,4 +1,8 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+
+from engine.actor.actor import CORE_ACTOR_ID
+from core.modules.processes.models.enums.reader_type import ReaderType
+from core.modules.processes.models.reader import Reader
 
 
 @dataclass(frozen=True)
@@ -17,6 +21,12 @@ class StockReader:
     count: str = ""
     count_command: str = ""
     step: str = ""
+
+    def applied(self, reader: Reader | None) -> Reader:
+        stored = reader if reader is not None else Reader(creator_id=CORE_ACTOR_ID, name=self.name, type=ReaderType.PATTERN, commands=self.commands)
+        return replace(stored, type=ReaderType.PATTERN, commands=self.commands, lines_pattern=self.lines, script="", progress_pattern=self.progress,
+                       finished_pattern=self.finished, failed_pattern=self.failed, summary_pattern=self.summary, topic_pattern="", title=self.title,
+                       subject="", step_pattern=self.step, count_pattern=self.count, count_command=self.count_command)
 
 
 DART_LINES = r"^[0-9]+:[0-9]+ \+[0-9]+"

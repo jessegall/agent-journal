@@ -1,9 +1,9 @@
+from engine.text.run_target import RunTarget
 from engine.file.file_access import FileAccess
 import re
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 
-TEST_NAME_SEPARATOR = "::"
 HEAVY_TESTS = 50
 FULL_SUITE = "tests"
 UNIT_FOLDER = "unit"
@@ -27,7 +27,7 @@ class RunSize:
     def is_heavy(self) -> bool:
         if not self.targets or self.is_full_suite():
             return True
-        is_single_test = len(self.targets) == 1 and (TEST_NAME_SEPARATOR in self.targets[0] or Path(self.targets[0]).is_file())
+        is_single_test = len(self.targets) == 1 and (RunTarget(self.targets[0]).is_single_test or Path(self.targets[0]).is_file())
         return not is_single_test and self.limited_count(HEAVY_TESTS) >= HEAVY_TESTS
 
     def limited_count(self, limit: int) -> int:
@@ -51,7 +51,7 @@ class RunSize:
 
     def test_counts(self) -> Iterator[int]:
         for target in self.targets:
-            if TEST_NAME_SEPARATOR in target:
+            if RunTarget(target).is_single_test:
                 yield 1
             else:
                 yield from (len(TEST_FUNCTION.findall(FileAccess.shared().read(path, errors="replace"))) for path in self.python_files(Path(target)))

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import StrEnum
 
 from engine.database.migration import Migration
 from engine.enums.actor_count import ActorCount
@@ -14,6 +15,13 @@ BOOKKEEPING = ("version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAU
                " created_at TEXT NOT NULL, updated_at TEXT NOT NULL")
 
 
+class ParcelStage(StrEnum):
+    """Where a parcel is: stored in its bay, or shipped."""
+
+    STORED = "stored"
+    SHIPPED = "shipped"
+
+
 @dataclass(frozen=True, kw_only=True)
 class Parcel(Model, Assignable):
     """A sample row at the end of the chain, as a task is: once shipped, the assignment of a parent passes it."""
@@ -23,10 +31,10 @@ class Parcel(Model, Assignable):
     takes_actors = ActorCount.SINGLE
 
     title: str
-    is_shipped: bool = False
+    stage: ParcelStage = ParcelStage.STORED
 
     def cascade_skips(self, actor_id: int) -> bool:
-        return self.is_shipped
+        return self.stage is ParcelStage.SHIPPED
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -70,9 +78,11 @@ class ChainTables(Migration):
     statements = (
         f"CREATE TABLE yards (id INTEGER PRIMARY KEY, title TEXT NOT NULL, {BOOKKEEPING}) STRICT",
         f"CREATE TABLE bays (id INTEGER PRIMARY KEY, yard_id INTEGER NOT NULL REFERENCES yards(id) ON DELETE CASCADE, title TEXT NOT NULL, {BOOKKEEPING}) STRICT",
-        f"CREATE TABLE parcels (id INTEGER PRIMARY KEY, title TEXT NOT NULL, is_shipped INTEGER NOT NULL DEFAULT 0, {BOOKKEEPING}) STRICT",
+        f"CREATE TABLE parcels (id INTEGER PRIMARY KEY, title TEXT NOT NULL, stage TEXT NOT NULL DEFAULT 'stored', {BOOKKEEPING}) STRICT",
         f"CREATE TABLE bay_parcels (id INTEGER PRIMARY KEY, bay_id INTEGER NOT NULL REFERENCES bays(id) ON DELETE CASCADE,"
         f" parcel_id INTEGER NOT NULL UNIQUE REFERENCES parcels(id) ON DELETE CASCADE, {BOOKKEEPING}) STRICT",
+        "CREATE INDEX bays_yard ON bays (yard_id)",
+        "CREATE INDEX bay_parcels_bay ON bay_parcels (bay_id)",
     )
 
 
