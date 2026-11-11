@@ -65,7 +65,7 @@ CHECKPOINT_FAILURE_FALLBACK = NudgeDeclaration("workers.checkpoint_failure_fallb
 WORKER_MERGE_CONFLICT = NudgeDeclaration("workers.merge_clash", NudgeType.STEERING, '{branch} is merged into your worktree and clashes on {lines}: {line}', turn_limited=False, path_fields=["lines", "line"])
 WORKER_TASK_COUNT = NudgeDeclaration("workers.started_task_count", NudgeType.STEERING, 'you hold {count} tasks of the {most} you may hold at once', turn_limited=False)
 WORKER_COMMIT_PASSED = NudgeDeclaration("workers.commit_tests_passed", NudgeType.STEERING, 'the tests of your commit passed: {line}', turn_limited=False, path_fields=["line"])
-WORKER_PROOF_SHORT = NudgeDeclaration("workers.proof_short", NudgeType.STEERING, 'proof:{proof} of task:{task} is short: read it, fix it, then deliver', turn_limited=False)
+WORKER_PROOF_SHORT = NudgeDeclaration("workers.proof_short", NudgeType.STEERING, 'proof:{proof} of task:{task} is short: read it, fix it, show it again and commit', turn_limited=False)
 WORKER_ASKING_STOPPED = NudgeDeclaration("workers.asking_stopped", NudgeType.STEERING, 'worker:{worker} is stopped and nothing will start it: its question has no answer, {tasks}', interval=Interval(Seconds(1800)), turn_limited=False, wakes_agent=True)
 WORKER_PROCESS_ENDED = NudgeDeclaration("workers.process_ended", NudgeType.STEERING, 'worker:{worker} is stopped and nothing will start it: its process ended, {tasks}', interval=Interval(Seconds(300)), turn_limited=False, wakes_agent=True)
 WORKER_LIMIT_STOPPED = NudgeDeclaration("workers.limit_stopped", NudgeType.STEERING, 'worker:{worker} is stopped and nothing will start it: it kept stopping, {tasks}', interval=Interval(Seconds(1800)), turn_limited=False, wakes_agent=True)

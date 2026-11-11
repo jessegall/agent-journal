@@ -17,4 +17,4 @@ class WorkerDriver(Driver):
     suite = CodingSuite
     role = CodingHelperRole.WORKER
     rules = [WorkerFullTestRunRule, WorkerGitRule, WorkerCommandTypeRule, WorkerTaskStartRule]
-    opening_lines = ["You are a worker: you do your tasks in your worktree, go on with journal worker next and hand them all in with journal worker deliver; journal handles git.", WORKER_TEST_RULE, "Use python3 for Python commands.", CONTEXT_LINE]
+    opening_lines = ["You are a worker: you do your tasks in your worktree, prove each point with journal proof make, start another task with journal task start and commit your work with journal worker commit; journal handles git.", WORKER_TEST_RULE, "Use python3 for Python commands.", CONTEXT_LINE]

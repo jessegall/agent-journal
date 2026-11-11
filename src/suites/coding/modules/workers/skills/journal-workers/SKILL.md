@@ -24,30 +24,30 @@ stays kept on the same agent number and session until retired.
 - Give new work to a kept worker on that model that can take it, even when the subject changes; prefer the one that already knows
   the work. `journal worker send <number> --task <task> [<task> ...]` assigns its next tasks. A kept worker can take them on
   its open worktree; after its work is merged, a send creates a new worktree in its old folder on the same session.
-  What it already delivered and its proofs stay recorded. An unmerged branch is never overwritten.
-- `journal worker dispatch <task> [<task> ...] --tier general` starts a worker on the tasks; `--profile` is a checked worker profile, journal-worker by default, whose text the worker starts from. `--tier fast|general|strongest` chooses the model of the selected program; with no tier, the profile chooses it. `--model <model>` names one exact model (`--name` shows on its card). It takes the tasks one by one with no report in
-  between; outside a plan the journal runs the tests of each before the next starts and tells you when the last passes. `--library-link <folder>` links a folder such as
+  What it already committed and its proofs stay recorded. An unmerged branch is never overwritten.
+- `journal worker dispatch <task> [<task> ...] --tier general` starts a worker on the tasks; `--profile` is a checked worker profile, journal-worker by default, whose text the worker starts from. `--tier fast|general|strongest` chooses the model of the selected program; with no tier, the profile chooses it. `--model <model>` names one exact model (`--name` shows on its card). It starts its tasks itself, several at once if it likes, and commits them as it proves them, with no report in
+  between; outside a plan the journal runs the tests of each commit and tells you when the last passes. `--library-link <folder>` links a folder such as
   `.venv` into its worktree and `--library-copy <folder>` copies it. `--program <program>` names the agent program.
 - `journal worker dispatch --plan <plan> [--phase <phase>] --tier strongest` hands a worker the available tasks of an approved or
   started plan, or of one phase of it, in the plan's order. Use `journal worker send <number> --plan <plan> [--phase <phase>]`
-  to give the same work to a kept worker. The plan shows as delegated, and phase tests run at each phase's end.
+  to give the same work to a kept worker. The plan shows as delegated, and its tests run at the checkpoints of the plan.
   Completed, started and already assigned tasks are left alone.
 - Any blocked task can go to a worker, alone, in a phase or in a whole plan: it stays assigned while it waits, and the
   worker takes it when it opens, sent to it at once when the worker is idle. A new worker given only blocked tasks is made and not started; it starts by itself when one of them opens.
-- By default, a started plan runs the tests of a phase at its end, and you hear nothing until then. A proof with no test on a
-  phase needs no check from you; you can still read it and send it back. A worker out of test runs asks with `journal worker ask --about tests`. After you ask, the merger or the journal
+- A started plan runs its tests at its checkpoints, by the journal itself, and you hear nothing until then. A proof with no test in a
+  started plan needs no check from you; you can still read it and send it back. A worker out of test runs asks with `journal worker ask --about tests`. After you ask, the merger or the journal
   settles it and you are woken: you are told by when an answer is due, you may stop meanwhile, and a question nobody
   answers in time goes to the main agent by itself. `journal worker status` shows your open question.
   `journal helper grant <number> <program> "<subcommands>" "<arguments>"` says what it may run, alternatives split by a bar; it runs that with
   `journal helper run <program> ...`, and a later grant for the same program replaces the earlier one. To decline, grant nothing.
-- Give a worker many tasks at once: a large batch runs long and bothers you less than many small dispatches.
+- Give a worker many tasks at once: that runs long and bothers you less than many small dispatches.
 - `journal worker models` lists each program's models from the cheapest to the strongest.
 - With no program flags, a dispatch follows the first matching route, then the split, then your own program.
   `journal worker split --task <task>` previews the program, model and reason without starting anything.
   `journal worker-route list` shows the routes in order. A route tests all its tags and its complexity range together.
 - A strict route waits when its program is out. Read the reason and end time in the refusal. A route that needs a
-  missing score names `journal task edit <task> --complexity <1-5>`; score it before dispatching. A batch whose tasks
-  choose different programs must be split into the named groups; use `--phase` for a suitable part of a plan.
+  missing score names `journal task edit <task> --complexity <1-5>`; score it before dispatching. A dispatch whose tasks
+  choose different programs must be split as its refusal names; use `--phase` for a suitable part of a plan.
 - An agent cannot override the program of a ready route by naming another. After that refusal, an authorized exception
   uses `--skip-guard workers.route-holds --skip-reason "<why>"`. The skip and its reason stay in the log and a chat mark.
   A person can choose any program. An agent cannot change a route a person made.
@@ -60,13 +60,13 @@ stays kept on the same agent number and session until retired.
 - `journal agent retire <number> --reason "<why>"` asks the person to retire a stopped worker for good; the worker
   is kept until the person agrees, since an agent is never retired by an agent. A retired worker retains its history and transcript but
   can never resume or receive another job. Dirty files or unmerged work prevent retirement; settle
-  them first. Reporting, delivering, merging and stopping a process do not by themselves retire the agent.
+  them first. Reporting, committing, merging and stopping a process do not by themselves retire the agent.
 - Read each proof with `journal proof list --task <n>`, check it with `journal proof check <n>` or send it back with
   `journal proof short <n> "<what is missing>"`.
-- Read each completed task with `journal worker logs <number>` after the latest hand-in: a task's outcome, its important
+- Read each completed task with `journal worker logs <number>` after its latest commit: a task's outcome, its important
   lines whole and its other lines by their first words. `--task <n>` prints one task whole; open one that looks wrong.
-- An important line is one the worker marked, a difference it stated at its hand-in, or one the journal wrote when a task
-  failed its hand-ins or a test failed over and over in the worker's own runs. A merge with such lines needs your
+- An important line is one the worker marked, a difference it stated at its commit, or one the journal wrote when a task
+  failed its commits or a test failed over and over in the worker's own runs. A merge with such lines needs your
   answer: `journal worker merge <number> --read-important "<what you make of them>"`.
 - Take the work in with `journal worker merge <number>` once every point is checked; nothing else adds a worker's work.
   Merging a worker's work is the main agent's own decision, never a question for the person: when the merge command
@@ -120,15 +120,15 @@ never starts is ended after the idle time; no worker is retired unless a person 
 
 ## When this happens
 
-Read `journal worker status` first: it says the point of your round you are at (build, task-proven, group-end, wait, fix,
-conflict or question) and the one thing to do there. Every refusal at a hand-in says what is wrong and what fixes it.
+Read `journal worker status` first: it says the point you are at (build, commit, wait, fix, conflict, blocked or
+question) and the one thing to do there. Every refusal at a commit says what is wrong and what fixes it.
 When you cannot go on, ask the merger; it hears your point, your last refusal, your last outputs, your task and your files.
 
 | You saw | Ask | Meanwhile |
 |---|---|---|
 | A judge refusal you cannot place | `journal worker ask "<what>" --about judge` | fix the findings in your own files, leave the rest, and go on |
-| No test runs left, or a test you cannot run | `journal worker ask "<what>" --about tests` | work on the next task or prove what you have while the answer comes |
-| The task is already built, or changed nothing | `journal worker ask "<what>" --about built` | prove each point with where it is and hand in with --differences already built: <where>, then go on to the next task |
+| No test runs left, or a test you cannot run | `journal worker ask "<what>" --about tests` | work on another task or prove what you have while the answer comes |
+| The task is already built, or changed nothing | `journal worker ask "<what>" --about built` | prove each point with where it is and commit with --differences already built: <where>, then go on with your other tasks |
 | A clash you cannot settle | `journal worker ask "<what>" --about conflict` | settle what you can in the named files |
 | A tool or folder you do not have | `journal worker ask "<what>" --about tool` | do the part that needs no such tool |
 | Anything else | `journal worker ask "<what>" --about general` | go on with anything the task still holds, or stop |
@@ -152,38 +152,38 @@ An open question lets you stop; the answer wakes you. Going on with other work e
   working. Use it only for what the main agent must act on, never for progress: a finished task, a passing test and what
   you do next go in `journal task log`.
 
-- `journal worker status` shows your current task, tests waiting and remaining assignments. The main agent can name
-  a worker with `journal worker status <number>`. Use `--page` and `--limit` for longer lists, or `--json` for structured output.
+- `journal worker status` shows your started tasks and these lists: Tasks held (started, with the points that have no
+  proof yet), Tasks staged (every point proved: the next commit takes them), Tasks waiting for tests (committed), Tasks
+  you may start, and Tasks blocked with the reason. The main agent can name a worker with
+  `journal worker status <number>`. Use `--page` and `--limit` for longer lists, or `--json` for structured output.
 - `journal proof points --agent <number>` lists the points of your task's brief.
 - Prove each one with `journal proof make <point> --task <task> "<file:line, and the test>" --test "<command>"`: the journal runs that
   test command in your worktree. Before making a proof, read the test suite and decide which existing tests and test
   files cover the code you changed. Include those and your new tests in the proof's `--test` command; it covers both.
-  A proof with no test waits for the main agent's check.
+  You may prove any task you have started, at any time: nothing is judged then. A proof with no test waits for the main agent's check.
 - Correct your own unchecked proof with `journal proof edit <proof> --task <task> "<text>" --test "<command>"`, or with `journal proof make` again for the same point. The main agent can return a checked proof with `journal proof short <proof> "<reason>"`.
 - Never run a plugin's check of the code on your own work. The journal judges your work when
-  you hand it in and when it is merged, and what it finds comes back to you to fix at its source.
-- At each hand-in, say only what you did other than the task's brief asked or left out of it, never what you did:
-  `journal worker next --differences "<what>"`. When you followed the brief, `--differences none`. The same goes for
-  `journal worker deliver`.
-- A task already built needs no change: prove each point with where it is, and hand in with `--differences "<why no change was needed>"`.
-  With `--differences none`, a task that changed nothing is refused. The main agent reads your line.
-- `journal worker next` inside a phase or batch only commits your task and gives you the next one: no judge, no tests.
-  At the end of the phase or batch it hands them all over: the plugins judge your changes together, a refusal says what to put
-  right; the journal commits and puts all its proofs' tests on the run queue at once, on the commit you handed in. Go on working in your worktree meanwhile: your later edits do not change the result, and a failure or your next task comes back to you.
-- `journal worker deliver` hands in all your tasks together, refused while one is queued. The journal then runs your
-  tests, all on the run queue at once; those that fail come back to you to fix and deliver again.
-- Inside a phase or batch, leave tests to the hand-in unless you really need a run yourself:
-  - Inside a phase or batch `journal worker next` commits your task and gives you the next one at once. A proof may have no test.
-  - The journal runs your proofs' tests when you hand in and returns any failures. Run a test yourself only if you
-    really need it. Each worker has three test commands per phase or batch by default, set by `worker-phase-test-runs`.
-    Each counted command says how many remain. A fourth is refused; only then ask with `journal worker ask --about tests`.
-    A granted line runs with `journal helper run` and does not use the phase allowance. The count starts anew
-    in the next phase or batch. After failed tests come back, runs are free until the next hand-in.
-  - At a phase or batch end, `journal worker next` or `journal worker deliver` after your last runs the tests
-    of all tasks waiting for that hand-in, plus a phase's own test when set. You may go on working meanwhile. All failures come back
-    together, and only failed tests run at the next hand-in.
-  - When tests fail, you get every failure in one line, on the first failed task. You may run tests yourself with no
-    flag until you hand in again, which runs only what failed.
+  you commit it and when it is merged, and what it finds comes back to you to fix at its source.
+- Start another of your tasks with `journal task start <task>`, or let `journal worker next` start the next one in the
+  plan's order: it commits and tests nothing. You may have as many tasks started at once as the setting
+  `most-open-tasks` allows (5 by default). A task another worker has started, a blocked task and a task after a
+  checkpoint that has not passed are refused, and the refusal says which it is.
+- `journal worker commit --differences "<what>"` judges and commits, in one commit, every started task whose points
+  are all proved. Say in `--differences` only what you did other than the task's brief asked or left out of it, never
+  what you did. When you followed the brief, `--differences none`.
+- A task already built needs no change: prove each point with where it is, and commit with `--differences "<why no change was needed>"`.
+  With `--differences none`, a commit that changed nothing is refused. The main agent reads your line.
+- While a started task is left, the commit is interim and you go on with that task. With none left it is final: your
+  work waits for its tests and its merge, so stop and wait.
+- The tests of a commit: outside a plan the journal queues the tests of your proofs on that commit and returns any
+  failure. In a started plan they run at a checkpoint of the plan, by the journal itself, and a failure comes back to
+  the worker whose task it is. You may go on working meanwhile: your later edits do not change the result.
+- When a test fails, its task is yours again and its proof is short: fix it, show the proof again with
+  `journal proof make` and commit again. Only what failed runs again.
+- Run a test yourself only if you really need it. Each worker has three test commands between two commits by default,
+  set by `worker-phase-test-runs`. Each counted command says how many remain. A fourth is refused; only then ask with
+  `journal worker ask --about tests`. A granted line runs with `journal helper run` and does not use the allowance. The
+  count starts anew at your next commit. After failed tests come back, runs are free until you commit again.
 - A test or build, also `journal worker test`, holds your call for the setting `worker-run-wait-seconds` (60 by default), queued or
   running. If it ends in time you get its output at once; if not you get its output number and may go on or stop.
 - A run that moves to the background is watched for you, so you need no Monitor: go on working and hear of its end on your

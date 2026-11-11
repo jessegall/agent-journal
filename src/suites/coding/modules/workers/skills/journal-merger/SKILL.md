@@ -22,11 +22,11 @@ A line from `journal worker ask` holds the worker's point, its last refusal, its
 | A .venv or node_modules is missing, or a test tool cannot start | `journal merger repair <number>` | The worker is told when something came back. |
 | A worker asks to run a test | `journal helper grant <number> <program> "<test files>"` | A run that is needed and names its test files is granted; the worker runs it with `journal helper run`. Tell the worker why when you do not grant it. |
 | A worker's test count went over its limit, or the count could not be made | The output named in its line | Tell the worker which test files to run, or grant one named run. |
-| A task already built, or passed on from a worker that left | The commits named in its refusal | Tell the worker to prove each point with where it is and hand in with `--differences "already built: <where>"`. |
+| A task already built, or passed on from a worker that left | The commits named in its refusal | Tell the worker to prove each point with where it is and commit with `--differences "already built: <where>"`. |
 | A clash | The files in its line | Name the files to the worker and let it settle them. Two workers renaming one thing: tell the one that came second. |
 | Slow tests | The tests each proof ran against the minutes they took | Remark on it to the worker. Slow tests never stop a merge. |
-| Hand-ins failing over and over | The failed output and the task log | Work out where it goes wrong and advise on the fix. |
-| Guards contradicting each other at a hand-in | The refusal text and the worker's point in `journal worker status <number>` | Ask the main agent: this is a fault of the journal, not of the worker. |
+| Commits failing over and over | The failed output and the task log | Work out where it goes wrong and advise on the fix. |
+| Guards contradicting each other at a commit | The refusal text and the worker's point in `journal worker status <number>` | Ask the main agent: this is a fault of the journal, not of the worker. |
 | A worker ended seconds after its start | Its worktree and its first lines | Ask the main agent to send it again. |
 | A checkpoint test fails on files whose stories belong to a later phase | The failed output named in the line, and the later phases in `journal plan outline <plan>` | `journal merger defer-test <number> "<test paths>" --why "<why>"`: the paths wait for the next checkpoint, and the worker is told to hand its task in again. A real failure is not deferred: advise the worker to fix it. |
 | A worker's question, with its line number and its facts | The facts under the question in `journal merger next` | Answer it with `journal merger answer <line> "<text>"`: the worker is woken with your words. An answer is not held back by the advice limits. A question you leave is shown to you again, and after two readings or half an hour the journal passes it on. |

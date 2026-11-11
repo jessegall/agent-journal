@@ -105,7 +105,7 @@ def test_42_43_44_a_commit_of_the_last_started_task_outside_a_plan_is_named_fina
     interim.end_all_tests()
     refused_when_passed = interim.story.run(COMMIT, actor=interim.worker)
     interim.story.expect_rows(FINAL_WORDS in final.output_text, worktree(interim)["state"] == "delivered", "stop" in status, any("all pass" in line for line in interim.main_agent_lines()),
-                              refused_while_testing.code != 0, "stop" in refused_while_testing.output_text, refused_when_passed.code != 0, "handed in" in refused_when_passed.output_text,
+                              refused_while_testing.code != 0, "stop" in refused_while_testing.output_text, refused_when_passed.code != 0, "is committed" in refused_when_passed.output_text,
                               detail=f"{final.output_text} | {status} | {interim.main_agent_lines()} | {refused_while_testing.output_text} | {refused_when_passed.output_text}")
 
 

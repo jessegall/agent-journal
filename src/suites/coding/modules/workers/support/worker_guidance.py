@@ -13,8 +13,6 @@ from suites.coding.modules.workers.support.worker_step_text import step_line
 from suites.coding.modules.workers.support.worker_steps import WorkerSteps
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 
-NEXT_COMMAND = 'journal worker next --differences "<what differs, or none>"'
-DELIVER_COMMAND = 'journal worker commit --differences "<what differs, or none>"'
 WORK_LABEL = "your work"
 CONFLICT_FILES_FIELD = "lines"
 
@@ -49,14 +47,14 @@ class WorkerGuidance:
         return step_line(WorkerStep.QUESTION, self.no_work_facts(worker_round))
 
     def conflict_line(self, task: Task, files: str) -> str:
-        return step_line(WorkerStep.CONFLICT, WorkerStepFacts(task_id=task.id, open_task_count=0, test_runs_available=None, label=WORK_LABEL, deliver_command=DELIVER_COMMAND, conflict_files=files))
+        return step_line(WorkerStep.CONFLICT, WorkerStepFacts(task_id=task.id, open_task_count=0, test_runs_available=None, label=WORK_LABEL, conflict_files=files))
 
     def facts(self, worker_round: WorkerRound, worktree: Worktree, open_task_count: int, runs: int | None) -> WorkerStepFacts:
         task = self.current_task(worker_round)
         staging = worker_round.required_staging()
         worktree_task = self.queries.query(Task).find(worktree.task_id)
         files = "" if worker_round.conflict is None else str(dict(worker_round.conflict.nudge.fields)[CONFLICT_FILES_FIELD])
-        return WorkerStepFacts(task_id=task.id, open_task_count=open_task_count, test_runs_available=runs, label=f"task {worktree_task.id}", deliver_command=DELIVER_COMMAND if worker_round.following is None else NEXT_COMMAND, conflict_files=files, tests_waiting=self.steps.proofs.tests_waiting(worktree.id),
+        return WorkerStepFacts(task_id=task.id, open_task_count=open_task_count, test_runs_available=runs, label=f"task {worktree_task.id}", conflict_files=files, tests_waiting=self.steps.proofs.tests_waiting(worktree.id),
                                checkpoint_wait=self.checkpoint_wait.text(worktree), ready_task_ids=tuple(ready.id for ready in staging.ready), open_task_ids=tuple(opened.id for opened in staging.open_tasks),
                                missing=staging.missing_points(task.id), is_planned=self.plans.is_started_plan(task.id))
 
@@ -67,4 +65,4 @@ class WorkerGuidance:
 
     @staticmethod
     def no_work_facts(worker_round: WorkerRound) -> WorkerStepFacts:
-        return WorkerStepFacts(task_id=worker_round.started[0].id if worker_round.started else 0, open_task_count=len(worker_round.started), test_runs_available=None, label=WORK_LABEL, deliver_command=DELIVER_COMMAND)
+        return WorkerStepFacts(task_id=worker_round.started[0].id if worker_round.started else 0, open_task_count=len(worker_round.started), test_runs_available=None, label=WORK_LABEL)

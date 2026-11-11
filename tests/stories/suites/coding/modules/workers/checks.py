@@ -14,7 +14,7 @@ def test_a_short_proof_moves_the_task_back_to_started_and_tells_the_worker_what_
     worker = delivered_worker(story, repository)
     story.expect_success(PROOF_SHORT, "state: short", f"shortfall: {SHORTFALL}", actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
-    story.expect_text(f"agent-line list --agent {worker.id}", "proof:1 of task:1 is short: read it, fix it, then deliver")
+    story.expect_text(f"agent-line list --agent {worker.id}", "proof:1 of task:1 is short: read it, fix it, show it again and commit")
     story.expect_absent(f"agent-line list --agent {worker.id}", SHORTFALL)
     story.expect_text("proof show 1", SHORTFALL)
 

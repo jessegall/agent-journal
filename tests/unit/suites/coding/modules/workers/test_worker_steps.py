@@ -4,7 +4,7 @@ from suites.coding.modules.workers.models.enums.worker_step import WorkerStep
 from suites.coding.modules.workers.support.worker_step_facts import WorkerStepFacts
 from suites.coding.modules.workers.support.worker_step_text import step_line
 
-FACTS = WorkerStepFacts(task_id=7, open_task_count=2, test_runs_available=1, label="phase 3", deliver_command="journal worker next", conflict_files="cart.py")
+FACTS = WorkerStepFacts(task_id=7, open_task_count=2, test_runs_available=1, label="phase 3", conflict_files="cart.py")
 
 
 def test_only_wait_asked_and_blocked_may_stop():

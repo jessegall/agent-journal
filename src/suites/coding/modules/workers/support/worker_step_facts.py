@@ -1,4 +1,4 @@
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 
 from suites.coding.modules.workers.support.missing_points import MissingPoints
 from suites.coding.modules.workers.support.step_fields import StepFields
@@ -21,7 +21,6 @@ class WorkerStepFacts:
     open_task_count: int
     test_runs_available: int | None
     label: str
-    deliver_command: str
     conflict_files: str = ""
     tests_waiting: bool = False
     checkpoint_wait: str | None = None
@@ -30,14 +29,11 @@ class WorkerStepFacts:
     missing: MissingPoints | None = None
     is_planned: bool = False
 
-    def changed_deliver_command(self, command: str) -> "WorkerStepFacts":
-        return replace(self, deliver_command=command)
-
     @property
     def waiting_text(self) -> str:
         if self.checkpoint_wait is not None:
             return self.checkpoint_wait
-        return f"The tests of {self.label} are queued." if self.tests_waiting else f"{self.label} is handed in."
+        return f"The tests of {self.label} are queued." if self.tests_waiting else f"{self.label} is committed."
 
     @property
     def proven_text(self) -> str:
@@ -58,5 +54,5 @@ class WorkerStepFacts:
 
     def words(self) -> StepFields:
         return StepFields(waiting=self.waiting_text, task=self.task_id, open_tasks=f"{self.open_task_count} task(s)", runs=run_count_text(self.test_runs_available), label=self.label,
-                         deliver=self.deliver_command, files=self.conflict_files, proven=self.proven_text, commit=self.commit_text,
+                         files=self.conflict_files, proven=self.proven_text, commit=self.commit_text,
                          commit_tests=PLANNED_COMMIT_TEXT if self.is_planned else COMMIT_TEXT, missing=self.missing_text)

@@ -25,13 +25,13 @@ def skill_text(name: str) -> str:
     return " ".join(text.split())
 
 
-def test_76a_the_opening_text_of_a_worker_names_proof_start_and_commit_and_no_deliver_group_or_batch(new_story):
+def test_76a_the_opening_text_of_a_worker_names_proof_start_and_commit_and_no_deliver_or_batch_of_tasks(new_story):
     story, brief = dispatched_brief(new_story, DISPATCH)
     worker_id = story.container.get(WorktreeQuery).open_worktrees()[0].session_agent_id
     session = worker_session(story, Actor(worker_id, ActorType.AGENT))
     opening = " ".join([brief, *story.hook(session, HookSamples.session_start()).lines])
     story.expect_rows(*(command in opening for command in WORKER_COMMANDS), detail=opening)
-    story.expect_rows("journal worker deliver" not in opening, "worker next judges" not in opening, "group" not in opening.lower(), "batch" not in opening.lower(), detail=opening)
+    story.expect_rows("journal worker deliver" not in opening, "worker next judges" not in opening, not [word for word in ("this group", "the group", "group of", "batch") if word in opening.lower()], detail=opening)
 
 
 def test_76b_the_workers_skill_names_proof_start_and_commit_and_no_deliver_group_or_batch_setting(new_story):

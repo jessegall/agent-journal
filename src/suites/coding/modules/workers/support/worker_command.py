@@ -18,7 +18,12 @@ from engine.errors.refusal import Refusal
 from core.modules.agents.support.agent_label import AgentLabel
 from core.modules.agents.support.new_session_line import NewSessionLine
 
-WORK_STEPS = "Read journal worker status first: it says where you are and what to do now. Prove each point with journal proof make, with the tests that cover your changes in its --test command; hand in with journal worker next and journal worker deliver."
+WORK_STEPS = ("Read journal worker status first: it says where you are and what to do now. Prove each point of a task you have started with "
+              "journal proof make <point> --task <task> \"<file:line, and the test>\", naming the tests that cover your changes in its --test command; "
+              "you may prove any started task at any time and nothing is judged then. Start another of your tasks with journal task start <task> or "
+              "journal worker next. When points are proved, run journal worker commit --differences \"<what differs, or none>\": the journal judges and commits "
+              "every started task whose points are all proved. With a started task left you go on; with none left the commit is final, so stop and wait. "
+              "In a started plan the tests run at a checkpoint of the plan, by the journal itself.")
 
 
 class WorkerCommand:

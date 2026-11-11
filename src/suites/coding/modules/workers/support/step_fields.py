@@ -9,7 +9,6 @@ class StepFields(TypedDict):
     open_tasks: str
     runs: str
     label: str
-    deliver: str
     files: str
     proven: str
     commit: str
