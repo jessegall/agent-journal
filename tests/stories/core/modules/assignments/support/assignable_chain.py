@@ -15,52 +15,52 @@ BOOKKEEPING = ("version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAU
 
 
 @dataclass(frozen=True, kw_only=True)
-class Piece(Model, Assignable):
-    """A sample row at the end of the chain, as a task is: once done, the assignment of a parent passes it."""
+class Parcel(Model, Assignable):
+    """A sample row at the end of the chain, as a task is: once shipped, the assignment of a parent passes it."""
 
-    model_name = "piece"
-    cli_name = "piece"
+    model_name = "parcel"
+    cli_name = "parcel"
     takes_actors = ActorCount.SINGLE
 
     title: str
-    is_done: bool = False
+    is_shipped: bool = False
 
     def cascade_skips(self, actor_id: int) -> bool:
-        return self.is_done
+        return self.is_shipped
 
 
 @dataclass(frozen=True, kw_only=True)
-class SectionPiece(Model, AssignmentLink):
-    """The link that puts one piece in one section, as a phase holds a task."""
+class BayParcel(Model, AssignmentLink):
+    """The link that puts one parcel in one bay, as a phase holds a task."""
 
-    model_name = "section_piece"
-    cli_name = "section-piece"
+    model_name = "bay_parcel"
+    cli_name = "bay-parcel"
 
-    section_id: int
-    piece_id: int
+    bay_id: int
+    parcel_id: int
 
 
 @dataclass(frozen=True, kw_only=True)
-class Section(Model, Assignable):
-    """A sample row in the middle of the chain, as a phase is: it belongs to a lot and holds pieces by a link."""
+class Bay(Model, Assignable):
+    """A sample row in the middle of the chain, as a phase is: it belongs to a yard and holds parcels by a link."""
 
-    model_name = "section"
-    cli_name = "section"
+    model_name = "bay"
+    cli_name = "bay"
     takes_actors = ActorCount.SINGLE
-    assigns = tuple([Children(Piece, "section_id", link_model=SectionPiece, link_column="piece_id")])
+    assigns = tuple([Children(Parcel, "bay_id", link_model=BayParcel, link_column="parcel_id")])
 
-    lot_id: int
+    yard_id: int
     title: str
 
 
 @dataclass(frozen=True, kw_only=True)
-class Lot(Model, Assignable):
-    """A sample row at the top of the chain, as a plan is: it holds sections."""
+class Yard(Model, Assignable):
+    """A sample row at the top of the chain, as a plan is: it holds bays."""
 
-    model_name = "lot"
-    cli_name = "lot"
+    model_name = "yard"
+    cli_name = "yard"
     takes_actors = ActorCount.SINGLE
-    assigns = tuple([Children(Section, "lot_id")])
+    assigns = tuple([Children(Bay, "yard_id")])
 
     title: str
 
@@ -68,11 +68,11 @@ class Lot(Model, Assignable):
 class ChainTables(Migration):
     number = 1
     statements = (
-        f"CREATE TABLE lots (id INTEGER PRIMARY KEY, title TEXT NOT NULL, {BOOKKEEPING}) STRICT",
-        f"CREATE TABLE sections (id INTEGER PRIMARY KEY, lot_id INTEGER NOT NULL REFERENCES lots(id) ON DELETE CASCADE, title TEXT NOT NULL, {BOOKKEEPING}) STRICT",
-        f"CREATE TABLE pieces (id INTEGER PRIMARY KEY, title TEXT NOT NULL, is_done INTEGER NOT NULL DEFAULT 0, {BOOKKEEPING}) STRICT",
-        f"CREATE TABLE section_pieces (id INTEGER PRIMARY KEY, section_id INTEGER NOT NULL REFERENCES sections(id) ON DELETE CASCADE,"
-        f" piece_id INTEGER NOT NULL UNIQUE REFERENCES pieces(id) ON DELETE CASCADE, {BOOKKEEPING}) STRICT",
+        f"CREATE TABLE yards (id INTEGER PRIMARY KEY, title TEXT NOT NULL, {BOOKKEEPING}) STRICT",
+        f"CREATE TABLE bays (id INTEGER PRIMARY KEY, yard_id INTEGER NOT NULL REFERENCES yards(id) ON DELETE CASCADE, title TEXT NOT NULL, {BOOKKEEPING}) STRICT",
+        f"CREATE TABLE parcels (id INTEGER PRIMARY KEY, title TEXT NOT NULL, is_shipped INTEGER NOT NULL DEFAULT 0, {BOOKKEEPING}) STRICT",
+        f"CREATE TABLE bay_parcels (id INTEGER PRIMARY KEY, bay_id INTEGER NOT NULL REFERENCES bays(id) ON DELETE CASCADE,"
+        f" parcel_id INTEGER NOT NULL UNIQUE REFERENCES parcels(id) ON DELETE CASCADE, {BOOKKEEPING}) STRICT",
     )
 
 
@@ -82,5 +82,5 @@ class ChainModule(Module):
     name = "acme.chain"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.assignments"]
-    models = [ModelDeclaration(Lot), ModelDeclaration(Section), ModelDeclaration(Piece), ModelDeclaration(SectionPiece)]
+    models = [ModelDeclaration(Yard), ModelDeclaration(Bay), ModelDeclaration(Parcel), ModelDeclaration(BayParcel)]
     migrations = [ChainTables]
