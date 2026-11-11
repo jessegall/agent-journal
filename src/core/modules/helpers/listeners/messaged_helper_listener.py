@@ -5,7 +5,7 @@ from engine.event.logged_event import LoggedEvent
 from engine.listener.commit_listener import CommitListener
 from engine.listener.commit_listener_runner import PROGRAM_STOP_RUN_ORDER
 from engine.scope.actor_scope import ActorScope
-from core.modules.agents.models.enums.launch_answer import LaunchAnswer
+from core.modules.agents.models.enums.dispatch import Dispatch
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.agents.support.report_nudges import PARENT_REPORT_SOURCE
@@ -34,5 +34,5 @@ class MessagedHelperListener(CommitListener[Created[AgentLine]]):
         helper = self.agents.find(line.session_agent_id)
         if helper.ended_at is None or not helper.is_kept_helper or not self.launcher.is_running:
             return
-        if self.helper_resume.resume(helper, line.text) is LaunchAnswer.STARTED:
+        if self.helper_resume.resume(helper, line.text) is Dispatch.STARTED:
             self.bus.run(EnterAgentLine(line.id), Actor.core(), environment_id=helper.environment_id)
