@@ -45,8 +45,8 @@ class PlanCheckpoints:
         if not windows.phases:
             return
         reaches = self.reaches(plan_id)
-        running_phase_ids = {reach.phase_id for reach in reaches if reach.state is CheckpointState.RUNNING}
-        run_tasks = {reach.phase_id: reach.tasks() for reach in reaches if not reach.is_early and reach.state is not CheckpointState.FAILED}
+        running_phase_ids = self.running_phase_ids(reaches)
+        run_tasks = {reach.phase_id: reach.tasks() for reach in reaches if reach.source.opens_phases() and reach.state is not CheckpointState.FAILED}
         passed = self.passed_phase_ids(plan_id)
         for checkpoint in windows.checkpoint_phases():
             if not windows.is_reached(checkpoint) or checkpoint.id in running_phase_ids:
@@ -59,13 +59,22 @@ class PlanCheckpoints:
 
     def run_early(self, plan_id: int, context: Context) -> EarlyRun:
         windows = self.windows(plan_id)
-        running_phase_ids = {reach.phase_id for reach in self.reaches(plan_id) if reach.state is CheckpointState.RUNNING}
+        running_phase_ids = self.running_phase_ids(self.reaches(plan_id))
         for checkpoint in windows.checkpoint_phases() if windows.phases else ():
             testing = windows.testing_ids(checkpoint)
             if testing and checkpoint.id not in running_phase_ids:
                 self.repository.save(CheckpointReach.started_early(context.actor.id, plan_id, checkpoint.id, testing), context)
                 return EarlyRun(checkpoint.id, testing)
         return EarlyRun()
+
+    def reach_worker(self, plan_id: int, phase_id: int, task_ids: tuple[int, ...], context: Context) -> CheckpointReach | None:
+        if phase_id in self.running_phase_ids(self.reaches(plan_id)):
+            return None
+        return self.repository.save(CheckpointReach.started_worker(context.actor.id, plan_id, phase_id, task_ids), context)
+
+    @staticmethod
+    def running_phase_ids(reaches: tuple[CheckpointReach, ...]) -> frozenset[int]:
+        return frozenset(reach.phase_id for reach in reaches if reach.state is CheckpointState.RUNNING)
 
     def save_pass(self, plan_id: int, phase_id: int, context: Context) -> bool:
         if self.queries.query(CheckpointPass).filter(plan_id=plan_id, phase_id=phase_id).exists():

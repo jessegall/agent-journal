@@ -76,7 +76,7 @@ class DeferPhaseTestHandler(Handler[DeferPhaseTest, str]):
         return f"deferred {deferral.paths} until the checkpoint of phase {due.id}"
 
     def failed_paths(self, checkpoint: Phase) -> tuple[str, ...] | None:
-        reaches = [reach for reach in self.checkpoints.reaches(checkpoint.plan_id) if reach.phase_id == checkpoint.id and not reach.is_early]
+        reaches = [reach for reach in self.checkpoints.reaches(checkpoint.plan_id) if reach.phase_id == checkpoint.id and reach.source.opens_phases()]
         if not reaches or reaches[-1].state is not CheckpointState.FAILED:
             return None
         return self.failed_test_paths(reaches[-1])

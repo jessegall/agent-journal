@@ -1,3 +1,4 @@
+from core.modules.plans.models.enums.checkpoint_reach_source import CheckpointReachSource
 import shlex
 from dataclasses import replace
 
@@ -52,7 +53,7 @@ class CheckpointRunner(CheckpointRuns):
         if self.results.is_started(reach):
             return
         committed = tuple(self.proofs.committed_proofs(reach.tasks()).oldest().all_rows())
-        test_count = 0 if reach.is_early else self.start_tests(reach, context)
+        test_count = 0 if reach.source is CheckpointReachSource.EARLY else self.start_tests(reach, context)
         if committed and not test_count:
             self.git.base_checkout(self.environments.find(reach.environment_id), FOLDER_NAME.format(plan=reach.plan_id))
         for proof in committed:
