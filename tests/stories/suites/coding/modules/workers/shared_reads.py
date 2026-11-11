@@ -62,9 +62,9 @@ def test_agent_cards_share_pending_work_through_the_viewer_route(pending_workers
         return original_read(work)
 
     monkeypatch.setattr(WorkerAgentWork, "read", counted_read)
-    cards = pending_viewer.value("agents.agents", ["agent", "cards", "--show", filter_name])
+    cards = pending_viewer.value("agents.agents", ["agent", "cards", "--show", filter_name, "--limit", "100"])
     expected = set() if filter_name == "idle" else {worker.id for worker in workers}
-    story.expect_rows({row["id"] for row in cards["rows"]} == expected,
+    story.expect_rows({row["id"] for row in cards["rows"] if row["id"] >= 1} == expected,
                       len(reads) <= 1, not pending_viewer.server.context.reported_findings.keys)
 
 

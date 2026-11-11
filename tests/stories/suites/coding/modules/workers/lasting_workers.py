@@ -13,7 +13,6 @@ from engine.command.bus import Bus
 from engine.driver.program_lockdown import ProgramLockdown
 from engine.enums.actor_type import ActorType
 from engine.file.file_access import FileAccess
-from engine.query.queries import Queries
 from suites.coding.modules.workers.commands.end_inactive_worker.end_inactive_worker import EndInactiveWorker
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -65,7 +64,7 @@ def merged_worker(new_story):
 
 
 def worker_rows(story) -> list[Agent]:
-    return list(story.container.get(Queries).query(Agent).filter(role="worker").all_rows())
+    return list(story.story_rows(Agent, role="worker"))
 
 
 def worktree_rows(story, worker_id: int) -> list[Worktree]:
@@ -146,7 +145,7 @@ def test_a_worker_whose_worktree_was_merged_stays_kept_and_idle_with_its_memorie
     worker = story.row(Agent, story.worker.id)
     story.expect_text("memory list", MEMORY_TEXT, actor=story.worker)
     story.expect_text(f"worker status {worker.number}", f"worker {worker.number} is idle", "no worktree", actor=story.agent)
-    story.expect_text("agent list --role worker --environment main", f"{worker.number}", actor=story.agent)
+    story.expect_text(f"agent show {worker.number} --environment main", f"number: {worker.number}", "role: worker", actor=story.agent)
     story.expect_rows(worker.retired_at is None, worker.ended_at is not None, story.container.get(WorktreeQuery).worker_worktree(worker.id) is None, len(worker_rows(story)) == 1)
 
 

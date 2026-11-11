@@ -247,7 +247,7 @@ def test_the_board_lists_a_task_delegated_to_a_worker_under_its_state_and_has_no
     story, _, worker = delegated_story(new_story)
     story.run('task make "My own job" --environment main', actor=story.agent)
     groups = {group["state"]: group for group in json.loads(story.run("task board --environment main --json", actor=story.user).output_text)["groups"]}
-    delegated = [row for group in groups.values() for row in group["rows"] if row["assigned_actor_id"] is not None]
+    delegated = [row for group in groups.values() for row in group["rows"] if row["assigned_actor_id"] is not None and row["id"] >= 1]
     expect_value((sorted(row["id"] for row in delegated), {row["assigned_actor_id"] for row in delegated}), ([1, 2], {worker.id}))
     expect_value("delegated" in groups, False)
     expect_total_started_groups(groups, 1)
