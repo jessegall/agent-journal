@@ -6,15 +6,15 @@ from tests.stories.suites.coding.modules.workers.compaction_never_twice import A
 from tests.stories.suites.coding.modules.workers.context_limit import LIMIT_TOKENS, SESSION, LimitEnabled, has_context, set_value, stops, typing_recorded
 
 TOKENS_OVER_LIMIT = LIMIT_TOKENS + 10_000
-ONE_TOKEN_LIMIT = 1
-FIRST_READING = 1_000
-READING_AFTER_COMPACTION = 500
-GROWN_READING = READING_AFTER_COMPACTION + 1
+SMALLEST_LIMIT_TOKENS = 1
+TOKENS_AT_START = 1_000
+TOKENS_AFTER_COMPACTION = 500
+TOKENS_AFTER_GROWTH = TOKENS_AFTER_COMPACTION + 1
 LONG_WAIT = timedelta(seconds=601)
 EDIT = HookSamples.edit("src/cart.py")
 
 
-def reading_after_the_compaction(story, tokens):
+def reports_context_after_compaction(story, tokens):
     """The program rewrites its status file after the compaction ended, and the agent's next tool use lets the
     journal read it."""
     story.advance(STATUS_FILE_AGE)
@@ -29,7 +29,7 @@ def compaction_rows(story) -> str:
 
 def test_b10_a_reading_after_a_compaction_that_is_still_over_the_limit_moves_its_row_to_unreduced_and_types_nothing(new_story):
     agent = typing_recorded(new_story(fixture=AutoCompacted))
-    reading_after_the_compaction(agent, TOKENS_OVER_LIMIT)
+    reports_context_after_compaction(agent, TOKENS_OVER_LIMIT)
     rows = compaction_rows(agent)
     agent.expect_rows('"state": "unreduced"' in rows, f'"tokens_after": {TOKENS_OVER_LIMIT}' in rows, detail=rows)
     agent.tick(SESSION)
@@ -38,26 +38,26 @@ def test_b10_a_reading_after_a_compaction_that_is_still_over_the_limit_moves_its
 
 def test_a_reading_after_a_compaction_under_the_limit_moves_its_row_to_measured(new_story):
     agent = typing_recorded(new_story(fixture=AutoCompacted))
-    reading_after_the_compaction(agent, LIMIT_TOKENS - 1)
+    reports_context_after_compaction(agent, LIMIT_TOKENS - 1)
     rows = compaction_rows(agent)
     agent.expect_rows('"state": "measured"' in rows, '"state": "unreduced"' not in rows, detail=rows)
 
 
 def test_j2_with_the_limit_at_one_token_an_agent_is_compacted_once_and_again_only_after_its_context_grows(new_story):
     agent = typing_recorded(new_story(fixture=LimitEnabled))
-    set_value(agent, CONTEXT_LIMIT_TOKENS, ONE_TOKEN_LIMIT)
-    has_context(agent, FIRST_READING)
+    set_value(agent, CONTEXT_LIMIT_TOKENS, SMALLEST_LIMIT_TOKENS)
+    has_context(agent, TOKENS_AT_START)
     stops(agent)
     expect_compaction_count(agent, 1)
     compacted(agent, "manual")
-    reading_after_the_compaction(agent, READING_AFTER_COMPACTION)
+    reports_context_after_compaction(agent, TOKENS_AFTER_COMPACTION)
     stops(agent)
     agent.advance(LONG_WAIT)
     stops(agent)
     expect_compaction_count(agent, 1)
     agent.expect_rows('"state": "unreduced"' in compaction_rows(agent), detail=compaction_rows(agent))
     agent.advance(STATUS_FILE_AGE)
-    has_context(agent, GROWN_READING)
+    has_context(agent, TOKENS_AFTER_GROWTH)
     modified_at_story_time(agent)
     agent.advance(LONG_WAIT)
     stops(agent)
