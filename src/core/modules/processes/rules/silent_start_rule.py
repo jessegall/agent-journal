@@ -12,6 +12,7 @@ from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.run_shapes import RunShapes
 from core.modules.processes.support.silent_start_runs import SilentStartRuns
 from core.modules.processes.support.silent_run import SilentRun
+from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
 
 UNKNOWN_SHAPE = "none of the known ones"
 MISSING_TOTAL_TEXT = "states no total, so the command must print one first"
@@ -30,8 +31,8 @@ class SilentStartRule(DriverRule):
     drivers = ["*"]
     single_action_refusal = "A command that ran a minute with no percent shown is refused until a reader or a reason is given"
 
-    def __init__(self, runs: SilentStartRuns, folder: OutputFolder, readers: ReaderRows) -> None:
-        self.runs, self.folder, self.readers = runs, folder, readers
+    def __init__(self, runs: SilentStartRuns, folder: OutputFolder, readers: ReaderRows, marks: UnreadableMarks) -> None:
+        self.runs, self.folder, self.readers, self.marks = runs, folder, readers, marks
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
@@ -49,6 +50,8 @@ class SilentStartRule(DriverRule):
         return part.classification.category.is_watched
 
     def answer_name(self, name: str) -> RuleAnswer:
+        if self.marks.excuses(name):
+            return RuleAnswer.allowed()
         runs = self.runs.runs(name)
         count = SilentStartRuns.silent_run_count(runs)
         if count >= SILENT_RUN_LIMIT_COUNT:

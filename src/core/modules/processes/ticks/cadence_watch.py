@@ -15,11 +15,13 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.cadence.cadence_log import CadenceLog
 from core.modules.processes.support.cadence.judged_runs import JudgedRuns
+from core.modules.processes.support.cadence.marked_commands import MarkedCommands
 from core.modules.processes.support.cadence.run_cadence import RunCadence
 from core.modules.processes.support.cadence.run_cadences import RunCadences
 from core.modules.processes.support.cadence.run_notices import RunNotices
 from core.modules.processes.support.cadence.run_silences import RunSilences
 from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.silent_start_runs import SilentStartRuns
 from core.modules.processes.ticks.hang_watch import CPU_FILE, HangWatch
 
 
@@ -61,6 +63,8 @@ class CadenceWatch:
         kind = NoticeKind.of(state)
         if kind is None:
             notices.cleared(process.id)
+            return
+        if container.get(MarkedCommands).skips(kind, SilentStartRuns.name(part.text, part.program, part.category)):
             return
         self.warned(container, process, part, kind, self.seconds(state, cadence), hang, cadence.now)
 

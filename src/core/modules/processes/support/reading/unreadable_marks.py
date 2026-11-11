@@ -21,6 +21,10 @@ class UnreadableMarks:
     def marked(self, command: str) -> UnreadableMark | None:
         return self.marks.standing().of_words(UnreadableMarks.covering_words(command)).newest().first()
 
+    def excuses(self, command: str) -> bool:
+        """Whether a standing mark covers the command, so nothing asks it for a reader."""
+        return self.marked(command) is not None
+
     def last_marked_at(self, command: str) -> Timestamp | None:
         """When the newest mark covering the command was made, lifted or not; none when it was never marked."""
         newest = self.marks.of_words(UnreadableMarks.covering_words(command)).newest().first()

@@ -23,14 +23,16 @@ from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.reader_demands import ReaderDemands
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.run_counts import RunCounts
+from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
 
 
 class ReaderRequests:
     """Opens an agent's request for each command without a proper reader."""
 
     def __init__(self, queries: Queries, requests: ReaderRequestQuery, parts: ProcessPartQuery, repository: Repository,
-                 demands: ReaderDemands, settings: ProcessSettings, clock: Clock, suites: SuiteChoice, judge: ReaderJudge, counts: RunCounts) -> None:
-        self.counts = counts
+                 demands: ReaderDemands, settings: ProcessSettings, clock: Clock, suites: SuiteChoice, judge: ReaderJudge, counts: RunCounts,
+                 marks: UnreadableMarks) -> None:
+        self.counts, self.marks = counts, marks
         self.queries, self.requests, self.parts, self.repository = queries, requests, parts, repository
         self.demands, self.settings, self.clock = demands, settings, clock
         self.suites = suites
@@ -41,7 +43,7 @@ class ReaderRequests:
                 and self.settings.flag(ProcessSetting.READERS_FORCED))
 
     def request(self, process: Process, spec: PartSpec, reader: Reader | None, context: Context) -> int | None:
-        if not self.demands.needs_reader(spec):
+        if not self.demands.needs_reader(spec) or self.marks.excuses(spec.command or spec.text):
             return None
         scope = ReaderSampleScope(process.session_agent_id, spec.command or spec.text)
         reason = self.counts.reader_reason(process, spec, reader, self.demands.reason(spec, reader, scope))
