@@ -1,0 +1,108 @@
+from datetime import timedelta
+
+from engine.command.context import Context
+from engine.enums.log_level import LogLevel
+from engine.log.system_log_writer import SystemLogWriter
+from engine.process.leftover_process import LeftoverProcess
+from engine.provider.launch_command import LaunchCommand
+from engine.provider.providers import Providers
+from engine.query.conditions.is_null import IsNull
+from engine.query.conditions.minimum import Minimum
+from engine.query.queries import Queries
+from engine.repository.repository import Repository
+from engine.time.clock import Clock
+from engine.time.timestamp import Timestamp
+from core.modules.agents.models.agent import Agent
+from core.modules.agents.models.enums.dispatch import Dispatch
+from core.modules.agents.models.enums.standing_state import StandingState
+from core.modules.agents.models.enums.stop_reason import StopReason
+from core.modules.agents.models.enums.stopped import Stopped
+from core.modules.agents.support.agent_label import AgentLabel
+from core.modules.agents.support.agent_launcher import AgentLauncher
+from core.modules.agents.support.agent_program import AgentProgram
+from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.agents.support.agent_sessions import AgentSessions
+from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy
+from core.modules.agents.support.launcher_link import LauncherLink
+from core.modules.agents.support.program_exit import ProgramExit
+from core.modules.agents.support.standing import Standing
+from core.modules.environments.support.environment_rows import EnvironmentRows
+
+RECENT_END_SECONDS = 600
+OPENED_ROW_TEXT = "was ended while its program runs: its row is open again"
+ENDED_ROW_TEXT = "was open while no program of it runs: its row has ended"
+FINISHED_REASON = "its program ended"
+
+
+class AgentDispatcher:
+    """Owns the life of an agent's program: it starts it, says whether it runs, and ends it, and it is the one
+    place that writes the end of an agent's row. The standing is worked out from the launcher, the recorded
+    process of an open row and the row, each read once. A stop ends the row only after the program is gone.
+    One round of reconcile opens a row that ended while its program runs and ends an open row whose started
+    program is gone, and writes each correction to the system log."""
+
+    def __init__(self, launcher: AgentLauncher, program: AgentProgram, link: LauncherLink, providers: Providers, repository: Repository,
+                 policy: CurrentAgentPolicy, agents: AgentRows, sessions: AgentSessions, environments: EnvironmentRows, queries: Queries, clock: Clock,
+                 system_log: SystemLogWriter) -> None:
+        self.launcher, self.program, self.link, self.providers, self.repository, self.policy = launcher, program, link, providers, repository, policy
+        self.agents, self.sessions, self.environments, self.queries, self.clock, self.system_log = agents, sessions, environments, queries, clock, system_log
+
+    def start(self, agent: Agent, command: LaunchCommand) -> Dispatch:
+        return self.launcher.hand(agent, self.environments.find(agent.environment_id), command).dispatch
+
+    def stop(self, agent: Agent, reason: StopReason, context: Context) -> Stopped:
+        self.program.stop(agent)
+        if self.has_program(agent):
+            return Stopped.PROGRAM_RUNNING
+        if agent.ended_at is None:
+            self.end_row(agent, context)
+            self.record(agent, reason.value)
+        return Stopped.PROGRAM_ENDED
+
+    def exited(self, agent: Agent, program_exit: ProgramExit, context: Context) -> None:
+        if program_exit.is_other_process(agent.pid):
+            self.record(agent, f"the exit of process {program_exit.pid} changed nothing, since process {agent.pid} runs now")
+            return
+        if agent.ended_at is None:
+            self.end_row(agent, context)
+
+    def standing(self, agent: Agent) -> Standing:
+        if self.has_program(agent):
+            return Standing(StandingState.RUNNING)
+        if agent.launch_failed_at is not None:
+            return Standing(StandingState.FAILED)
+        if agent.ended_at is not None:
+            return Standing(StandingState.ENDED, self.end_reason(agent))
+        return Standing(StandingState.STARTING if agent.launched_at is not None else StandingState.UNSTARTED)
+
+    def reconcile(self, context: Context) -> None:
+        for agent in self.wrongly_ended_agents():
+            self.repository.update(agent, context, ended_at=None)
+            self.record(agent, OPENED_ROW_TEXT)
+        for agent in self.wrongly_open_agents():
+            self.end_row(agent, context)
+            self.record(agent, ENDED_ROW_TEXT)
+
+    def end_row(self, agent: Agent, context: Context) -> Agent:
+        return self.repository.save_change(agent, agent.ended(context.timestamp, self.policy.agent_policy()), context)
+
+    def has_program(self, agent: Agent) -> bool:
+        return self.link.has_program(agent.terminal_id) or self.has_open_process(agent)
+
+    def has_open_process(self, agent: Agent) -> bool:
+        return agent.ended_at is None and agent.pid is not None and LeftoverProcess.runs_program(agent.pid, self.providers.executable(agent.program))
+
+    def wrongly_ended_agents(self) -> tuple[Agent, ...]:
+        earliest = Timestamp(self.clock.timestamp().value - timedelta(seconds=RECENT_END_SECONDS))
+        ended = self.queries.query(Agent).matching(Minimum("ended_at", earliest.text)).matching(IsNull("retired_at")).all_rows()
+        return tuple(agent for agent in ended if self.link.has_program(agent.terminal_id))
+
+    def wrongly_open_agents(self) -> tuple[Agent, ...]:
+        return tuple(agent for agent in self.agents.running() if agent.is_launched_helper and not self.has_program(agent))
+
+    def end_reason(self, agent: Agent) -> str:
+        session = self.sessions.current(agent.id)
+        return session.end_reason if session is not None and session.end_reason else FINISHED_REASON
+
+    def record(self, agent: Agent, text: str) -> None:
+        self.system_log.write(LogLevel.INFORMATION, f"{AgentLabel.from_agent(agent).text} {text}")

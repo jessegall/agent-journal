@@ -12,6 +12,8 @@ STOPPED_ANSWER = b"stopped\n"
 STOP_FIELD = "stop"
 START_FIELD = "command"
 IDLE_FIELD = "quiet"
+RUNNING_FIELD = "running"
+RUNNING_ANSWER = b"running\n"
 REFUSED_TRIES = 3
 REFUSED_PAUSE_SECONDS = 0.1
 
@@ -35,6 +37,9 @@ class LauncherLink:
         answer = self.request_launcher({"agent_id": agent_id, IDLE_FIELD: True}, ANSWER_BYTES)
         fields = answer.split() if answer else []
         return int(fields[1]) if len(fields) == 2 and fields[0] == b"quiet" and fields[1].isdigit() else None
+
+    def has_program(self, agent_id: int) -> bool:
+        return self.request_launcher({"agent_id": agent_id, RUNNING_FIELD: True}, ANSWER_BYTES) == RUNNING_ANSWER
 
     def request_stop(self, agent_id: int) -> None:
         self.request_launcher({"agent_id": agent_id, STOP_FIELD: True})

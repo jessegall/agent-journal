@@ -58,6 +58,7 @@ class Agent(EnvironmentScoped, Model):
     interrupted_at: Timestamp | None = None
     launched_at: Timestamp | None = None
     halted_at: Timestamp | None = None
+    launch_failed_at: Timestamp | None = None
 
     @property
     def is_typable(self) -> bool:
@@ -66,6 +67,10 @@ class Agent(EnvironmentScoped, Model):
     @property
     def is_main(self) -> bool:
         return self.role == MAIN_ROLE
+
+    @property
+    def is_launched_helper(self) -> bool:
+        return not self.is_main and self.launched_at is not None
 
     @property
     def is_kept_helper(self) -> bool:
