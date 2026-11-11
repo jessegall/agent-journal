@@ -1,9 +1,12 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
+from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.make_proof.make_proof import MakeProof
 from suites.coding.modules.workers.models.proof import Proof
+from suites.coding.modules.workers.queries.proof_query import ProofQuery
+from suites.coding.modules.workers.support.waiting_proofs import WaitingProofs
 
 
 class MakeProofSubcommand(Subcommand[MakeProof, Proof]):
@@ -13,6 +16,9 @@ class MakeProofSubcommand(Subcommand[MakeProof, Proof]):
     name = "make"
     outward = True
 
+    def __init__(self, proofs: ProofQuery) -> None:
+        self.proofs = proofs
+
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("point", type=int)
         parser.add_argument("text", help="the file and line, and the test that shows it")
@@ -21,3 +27,7 @@ class MakeProofSubcommand(Subcommand[MakeProof, Proof]):
 
     def command(self, arguments: Namespace, caller: Caller) -> MakeProof:
         return MakeProof(arguments.point, arguments.text, arguments.task, arguments.test)
+
+    def write_output(self, value: Proof, output: Output) -> None:
+        super().write_output(value, output)
+        output.line(WaitingProofs(tuple(self.proofs.waiting_proofs(value.worktree_id).all_rows())).text())

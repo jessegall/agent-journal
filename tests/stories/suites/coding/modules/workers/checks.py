@@ -43,11 +43,11 @@ def test_a_worker_edits_an_unchecked_proof_and_cannot_edit_it_after_check(new_st
     story.expect_refusal(f'proof edit {proof} --task 1 "too late"', 'checked already', actor=worker)
 
 
-def test_a_proof_must_name_the_workers_current_task(new_story):
+def test_a_proof_for_a_task_that_does_not_exist_is_refused_and_one_for_the_started_task_is_made(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.expect_refusal('proof make 1 "evidence" --task 99', 'current task is 1', actor=worker)
+    story.expect_refusal('proof make 1 "evidence" --task 99', 'no task 99', actor=worker)
     story.expect_success('proof make 1 "evidence" --task 1', 'task_id: 1', actor=worker)
 
 

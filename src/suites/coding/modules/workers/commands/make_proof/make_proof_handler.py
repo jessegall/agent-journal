@@ -3,13 +3,16 @@ import shlex
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
+from engine.listener.event_rows import EventRows
 from engine.repository.repository import Repository
+from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.make_proof.make_proof import MakeProof
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.proof_test_line import ProofTestLine
+from suites.coding.modules.workers.support.worker_task_access import WorkerTaskAccess
 
 PIPE_TOKENS = frozenset(("|", "|&", ">", ">>", ">&", "&>", "--tail", "--head", "--cut"))
 FIRST_POINT = 1
@@ -21,16 +24,18 @@ class MakeProofHandler(Handler[MakeProof, Proof]):
 
     command = MakeProof
 
-    def __init__(self, worktrees: WorktreeQuery, proofs: ProofQuery, repository: Repository, test_line: ProofTestLine) -> None:
+    def __init__(self, worktrees: WorktreeQuery, proofs: ProofQuery, repository: Repository, test_line: ProofTestLine, rows: EventRows, access: WorkerTaskAccess) -> None:
         self.worktrees, self.proofs, self.repository, self.test_line = worktrees, proofs, repository, test_line
+        self.rows, self.access = rows, access
 
     def handle(self, command: MakeProof, context: Context) -> Proof:
         worktree = self.worktrees.worker_worktree(context.actor.id)
         if worktree is None:
             raise Refusal("only a worker with a worktree out makes proofs", "journal worker-worktree list shows the worktrees")
         task_proofs = self.proofs.worktree_proofs(worktree.id).filter(task_id=command.task_id)
-        if command.task_id != worktree.task_id and not task_proofs.exists():
-            raise Refusal(f"the worker's current task is {worktree.task_id}, not {command.task_id}", "name the task this proof is for")
+        task = self.rows.required(Task, command.task_id)
+        if not self.access.is_holder(task, context.actor.id) and not task_proofs.exists():
+            raise self.access.refusal(task, context.actor.id)
         if command.point < FIRST_POINT:
             raise Refusal(f"the points of a brief start at {FIRST_POINT}, not {command.point}", f"journal task show {command.task_id} lists them")
         if self.is_piped(command.test_command):

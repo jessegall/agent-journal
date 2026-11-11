@@ -38,6 +38,7 @@ def test_1_a_proof_of_a_started_task_the_worker_is_not_working_on_is_registered_
 
 def test_2_a_proof_of_a_task_the_worker_has_not_started_is_refused_with_the_line_that_starts_it(one_task):
     refused = prove_task(one_task, 2, 1)
+    one_task.story.expect_text("task show 2", "state: open", actor=one_task.story.agent)
     one_task.story.expect_rows(refused.code != 0, "task 2 is not started" in refused.output_text, "journal task start 2" in refused.output_text, proofs(one_task) == (), detail=refused.output_text)
 
 
