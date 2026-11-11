@@ -13,7 +13,7 @@ EVENT_COUNT = 100
 ROW_EVENT_READ = "FROM events WHERE row_table"
 
 
-@pytest.mark.story_budget(cpu_seconds=8.0, reason="it writes 100 events on one row to prove a delivery reads one")
+@pytest.mark.story_budget(points=32000, cpu_seconds=8.0, reason="it runs 101 task edits, 100 events on one row, to prove a delivery reads one")
 def test_a_delivery_on_a_row_with_100_events_reads_one_event_row_and_names_the_newest(new_story):
     story = event_plugin_story(new_story, {"event": TASK_UPDATED, "commit": "see.sh"})
     story.expect_success(SECOND_JOB, actor=story.agent)

@@ -12,7 +12,7 @@ def test_approval_and_critique_have_separate_module_owners(new_story):
     critique = buttons["plan_reviews.critique"].declaration
     expect_row(approve, label="Approve", runs="plan approve {row_id}", icon="check", primary=True,
                tip="Approve the plan; the agent starts it", menu_label="Other ways to approve")
-    expect_row(critique, label="Ask for critique", tip="Reviewers read it before you approve")
+    expect_row(critique, label="Request critique", tip="Reviewers read it before you approve")
     story.expect_rows(set(approve.slots) == {"dock.plans.waiting", "row.plan"}, set(critique.slots) == {"dock.plans.waiting", "row.plan"})
 
 

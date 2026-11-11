@@ -55,7 +55,7 @@ def database(tmp_path):
     (Statement("SELECT * FROM reviews WHERE state = ? ORDER BY id", ["queued"]), "reviews_state"),
     (Statement("SELECT * FROM agents WHERE parent_id = ? ORDER BY id DESC LIMIT 25", [1]), "agents_parent"),
     (Statement("SELECT * FROM hook_calls WHERE session_agent_id = ? AND hook = ? AND tool = ? AND answer = ? ORDER BY id DESC LIMIT 1", [1, "pre_tool_use", "Monitor", "allowed"]),
-     "hook_calls_agent_tool_answer"),
+     "hook_calls_allowed_agent_tool"),
     (Statement("SELECT count(*) FROM chat_marks WHERE session_agent_id = ? OR session_agent_id IS NULL", [1]), "chat_marks_agent"),
     (Statement("SELECT * FROM sequence_run_rows ORDER BY id DESC LIMIT 25"), "sequence_runs_open_id"),
     (Statement("SELECT * FROM chat_messages ORDER BY id DESC LIMIT 25"), "messages_chat_visible_id"),
