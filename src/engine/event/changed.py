@@ -18,8 +18,12 @@ class Changed(Generic[M]):
     move: Move | None = None
 
     @classmethod
-    def pattern(cls, model: type[Model], moves: Sequence[Move]) -> str:
-        return "*.*" if model is Model else f"{model.model_name}.*"
+    def pattern(cls, model: type, moves: Sequence[Move]) -> str:
+        return f"{cls.row_name(model)}.*"
+
+    @staticmethod
+    def row_name(model: type) -> str:
+        return model.model_name if issubclass(model, Model) and model is not Model else "*"
 
 
 def is_changed_class(class_type: type) -> TypeIs[type[Changed[Model]]]:

@@ -13,10 +13,14 @@ from engine.model.move import Move
 @dataclass(frozen=True)
 class EventType:
     """One event a listener or guard declared by its type parameter: the class of the event and the model of its
-    row, or no model for a system event."""
+    row, or no model for a system event. In place of a model it can name a trait, a class that models take on:
+    the event then matches the rows of every model, and applies to the rows of the models with that trait."""
 
     event_class: type[SystemEvent] | type[Changed[Model]] | type[Touched[Model]]
-    model: type[Model] | None
+    model: type | None
+
+    def applies_to(self, row: Model) -> bool:
+        return self.model is None or issubclass(self.model, Model) or isinstance(row, self.model)
 
     @classmethod
     def declared(cls, subscriber: type, base: type) -> tuple["EventType", ...]:

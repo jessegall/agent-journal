@@ -72,6 +72,9 @@ class Change(Generic[M]):
     def is_empty(self) -> bool:
         return self.old_row is not None and self.new_row is not None and self.move is None and not self.fields
 
+    def reaches(self, subscriber: type[EventSubscriber[object]]) -> bool:
+        return subscriber.event_type(self.event).applies_to(self.row)
+
     def typed_event(self, subscriber: type[EventSubscriber[object]]) -> object:
         declared = subscriber.event_type(self.event).event_class
         if not is_changed_class(declared):

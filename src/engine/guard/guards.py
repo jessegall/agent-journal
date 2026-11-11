@@ -42,6 +42,8 @@ class Guards:
 
     def check(self, entry: GuardEntry, change: Change[Model]) -> None:
         guard_class = entry.path.checked_class(Guard)
+        if not change.reaches(guard_class):
+            return
         try:
             self.container.get(guard_class).check(change.typed_event(guard_class), change.context)
         except Refusal as refusal:
