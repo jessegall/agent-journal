@@ -36,12 +36,12 @@ def test_pattern_of_deleted_assignable_is_star_delete():
 
 
 def test_a_listener_of_the_trait_form_hears_a_row_of_a_subclass():
-    assert trait_form().applies_to(Box())
+    assert trait_form().is_applicable(Box())
 
 
 def test_a_listener_of_the_trait_form_skips_a_row_of_a_class_that_is_not_a_subclass():
-    assert not trait_form().applies_to(Lid())
+    assert not trait_form().is_applicable(Lid())
 
 
 def test_an_ordinary_model_listener_is_unchanged():
-    assert BoxCreatedListener.event == "box.create" and BoxCreatedListener.event_types[0].applies_to(Lid())
+    assert BoxCreatedListener.event == "box.create" and BoxCreatedListener.event_types[0].is_applicable(Lid())

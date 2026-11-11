@@ -19,7 +19,7 @@ class EventType:
     event_class: type[SystemEvent] | type[Changed[Model]] | type[Touched[Model]]
     model: type | None
 
-    def applies_to(self, row: Model) -> bool:
+    def is_applicable(self, row: Model) -> bool:
         return self.model is None or issubclass(self.model, Model) or isinstance(row, self.model)
 
     @classmethod

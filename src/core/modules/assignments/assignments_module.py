@@ -4,6 +4,8 @@ from core.modules.assignments.commands.assign_row.assign_row_handler import Assi
 from core.modules.assignments.commands.assign_row.assign_row_subcommand import AssignRowSubcommand
 from core.modules.assignments.commands.unassign_row.unassign_row_handler import UnassignRowHandler
 from core.modules.assignments.commands.unassign_row.unassign_row_subcommand import UnassignRowSubcommand
+from core.modules.assignments.guards.assigned_actor_guard import AssignedActorGuard
+from core.modules.assignments.listeners.row_deleted_listener import RowDeletedListener
 from core.modules.assignments.migrations.m001_assignments import AssignmentsTableMigration
 from core.modules.assignments.models.assignment import Assignment
 
@@ -20,3 +22,5 @@ class AssignmentsModule(Module):
     migrations = [AssignmentsTableMigration]
     subcommands = [AssignRowSubcommand, UnassignRowSubcommand]
     handlers = [AssignRowHandler, UnassignRowHandler]
+    listeners = [RowDeletedListener]
+    guards = [AssignedActorGuard]

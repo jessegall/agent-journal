@@ -1,3 +1,4 @@
+from engine.event.event_subscriber import EventSubscriber
 from engine.event.change import Change
 from engine.container.container import Container
 from engine.guard.change_filter import ChangeFilter
@@ -18,12 +19,15 @@ class Listeners:
     def __init__(self, registry: Registry, container: Container, change_filter: ChangeFilter, scopes: Scopes) -> None:
         self.registry, self.container, self.change_filter, self.scopes = registry, container, change_filter, scopes
 
+    def is_heard(self, name: str, listener_class: type[EventSubscriber[object]], change: Change[Model]) -> bool:
+        return self.change_filter.applies(name, change) and change.reaches(listener_class)
+
     def run_deletion_listeners(self, change: Change[Model]) -> None:
         for entry in self.registry.event_listeners(change.event, ListenerTiming.DELETION):
             listener_class = entry.path.loaded()
             if not is_deletion_listener_class(listener_class):
                 raise ListenerClassError(f"{entry.path.text} is no deletion listener")
-            if self.change_filter.applies(entry.name, change) and change.reaches(listener_class):
+            if self.is_heard(entry.name, listener_class, change):
                 self.container.get(listener_class).handle(change.typed_event(listener_class), change.context)
 
     def run_deletion_listeners_many(self, changes: Sequence[Change[Model]]) -> None:
@@ -33,7 +37,7 @@ class Listeners:
             listener_class = entry.path.loaded()
             if not is_deletion_listener_class(listener_class):
                 raise ListenerClassError(f"{entry.path.text} is no deletion listener")
-            events = [change.typed_event(listener_class) for change in changes if self.change_filter.applies(entry.name, change) and change.reaches(listener_class)]
+            events = [change.typed_event(listener_class) for change in changes if self.is_heard(entry.name, listener_class, change)]
             if events:
                 self.container.get(listener_class).handle_many(events, changes[0].context)
 
@@ -42,6 +46,6 @@ class Listeners:
             listener_class = entry.path.loaded()
             if not is_save_listener_class(listener_class):
                 raise ListenerClassError(f"{entry.path.text} is no save listener")
-            if self.change_filter.applies(entry.name, change) and change.reaches(listener_class):
+            if self.is_heard(entry.name, listener_class, change):
                 with self.scopes.change_scope(listener_class.disabled_scopes, change):
                     self.container.get(listener_class).handle(change.typed_event(listener_class), change.context)
