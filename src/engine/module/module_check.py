@@ -11,6 +11,7 @@ from engine.module.module import Module
 from engine.module.errors.module_error import ModuleError
 from engine.module.module_states import modules_book
 from engine.module.state_check import StateCheck
+from engine.module.assignable_check import AssignableCheck
 from engine.module.helper_type_check import HelperTypeCheck
 from engine.module.profile_check import ProfileCheck
 from engine.module.name_groups import NameGroups
@@ -44,7 +45,7 @@ class ModuleCheck:
 
     def __init__(self, tables: Tables, suites: SuiteCheck, windows: WindowCheck, providers: ProviderCheck, marks: MarkCheck,
                  docks: DockCheck, settings: SettingCheck, skills: SkillCheck, moves: MoveCheck, templates: TemplateCheck,
-                 buttons: ButtonCheck, finder: ModuleFinder, states: StateCheck, helper_types: HelperTypeCheck, profiles: ProfileCheck, inspectors: InspectorCheck) -> None:
+                 buttons: ButtonCheck, finder: ModuleFinder, states: StateCheck, helper_types: HelperTypeCheck, profiles: ProfileCheck, inspectors: InspectorCheck, assignables: AssignableCheck) -> None:
         self.tables, self.suites, self.windows, self.providers, self.marks, self.docks = tables, suites, windows, providers, marks, docks
         self.settings, self.skills, self.moves = settings, skills, moves
         self.templates = templates
@@ -53,6 +54,7 @@ class ModuleCheck:
         self.profiles = profiles
         self.buttons, self.finder = buttons, finder
         self.inspectors = inspectors
+        self.assignables = assignables
 
     def known_events(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         book = modules_book(modules)
@@ -79,7 +81,7 @@ class ModuleCheck:
         problems = (self.duplicate_names(modules, rules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.duplicate_event_keys(modules) + self.duplicate_handlers(modules)
                     + self.duplicate_subcommands(modules) + self.suites.problems(modules, rules, self.finder.suite_list()) + self.windows.problems(modules, self.known_events(modules)) + self.inspectors.problems(modules, self.known_events(modules))
                     + self.providers.problems(modules) + self.marks.problems(modules) + self.docks.problems(modules) + self.settings.problems(modules)
-                    + self.skills.problems(modules, self.known_events(modules)) + self.moves.problems(modules) + self.templates.problems(modules) + self.states.problems(modules)
+                    + self.skills.problems(modules, self.known_events(modules)) + self.moves.problems(modules) + self.templates.problems(modules) + self.states.problems(modules) + self.assignables.problems(modules)
                     + self.buttons.declared_problems(modules, frozenset(module.name for module in self.finder.default_modules()))
                     + self.helper_types.problems(modules, rules, self.finder.suite_list()) + self.profiles.problems(modules, self.finder.suite_list()))
         if problems:

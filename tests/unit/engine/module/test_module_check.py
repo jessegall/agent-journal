@@ -28,6 +28,7 @@ from engine.module.errors.module_error import ModuleError
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.setting_check import SettingCheck
 from engine.module.state_check import StateCheck
+from engine.module.assignable_check import AssignableCheck
 from engine.module.helper_type_check import HelperTypeCheck
 from engine.module.profile_check import ProfileCheck
 from engine.module.template_check import TemplateCheck
@@ -170,5 +171,5 @@ def test_two_handlers_for_one_command_are_refused():
 
 
 def module_check() -> ModuleCheck:
-    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(ModuleFinder(JournalHome(Path("journal")))), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()), SettingCheck(), SkillCheck(), MoveCheck(), TemplateCheck(), ButtonCheck(), ModuleFinder(JournalHome(Path("journal"))), StateCheck(), HelperTypeCheck(), ProfileCheck(), InspectorCheck())
+    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(ModuleFinder(JournalHome(Path("journal")))), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()), SettingCheck(), SkillCheck(), MoveCheck(), TemplateCheck(), ButtonCheck(), ModuleFinder(JournalHome(Path("journal"))), StateCheck(), HelperTypeCheck(), ProfileCheck(), InspectorCheck(), AssignableCheck())
 
