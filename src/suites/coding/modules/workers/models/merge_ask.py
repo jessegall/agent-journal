@@ -19,6 +19,10 @@ class MergeAsk(EnvironmentScoped, Model):
     worktree_id: int
     commit_id: str
     task_ids: str
+    unit_name: str
     note: str
     is_whole: bool
     state: MergeAskState = MergeAskState.WAITING
+
+    def tasks(self) -> tuple[int, ...]:
+        return tuple(int(task_id) for task_id in self.task_ids.split(",") if task_id)

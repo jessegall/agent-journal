@@ -16,6 +16,7 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merger_nudges import NO_WORKER_WAITING
 from suites.coding.modules.workers.support.worker_log_lines import WorkerLogLines
+from suites.coding.modules.workers.support.merge_ask_section import MergeAskSection
 from suites.coding.modules.workers.support.worker_log_read import WorkerLogRead
 from suites.coding.modules.workers.commands.read_next_merge.read_next_merge import ReadNextMerge
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
@@ -28,7 +29,9 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
 
     command = ReadNextMerge
 
-    def __init__(self, agents: AgentRows, queries: Queries, worktrees: WorktreeQuery, log_lines: WorkerLogLines, repository: Repository, log_read: WorkerLogRead, numbers: RowNumbers) -> None:
+    def __init__(self, agents: AgentRows, queries: Queries, worktrees: WorktreeQuery, log_lines: WorkerLogLines, repository: Repository, log_read: WorkerLogRead, numbers: RowNumbers,
+                 merge_ask: MergeAskSection) -> None:
+        self.merge_ask = merge_ask
         self.numbers = numbers
         self.agents, self.queries, self.worktrees, self.log_lines, self.repository, self.log_read = agents, queries, worktrees, log_lines, repository, log_read
 
@@ -46,7 +49,7 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
         review = self.log_lines.review(worktree)
         sections = [self.task_section(task, review.summary(task), [proof for proof in review.proofs if proof.task_id == task.id]) for task in review.tasks]
         important = "important lines: pass this worker to the main agent\n" if review.has_important_lines() else ""
-        text = f"{messages}\n{AgentLabel.from_row_id(worker_id, self.numbers, "worker").text}\n{important}\n" + "\n\n".join(sections)
+        text = f"{messages}\n{AgentLabel.from_row_id(worker_id, self.numbers, "worker").text}\n{important}{self.merge_ask.text(worktree)}\n" + "\n\n".join(sections)
         output_id = self.record_lines(lines, text, command, visit, context)
         self.log_read.record(worktree, output_id, context)
         return text

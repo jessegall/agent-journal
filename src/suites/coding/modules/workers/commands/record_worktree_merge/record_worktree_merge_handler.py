@@ -13,6 +13,9 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.record_worktree_merge.record_worktree_merge import RecordWorktreeMerge
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.models.enums.merge_ask_state import MergeAskState
+from suites.coding.modules.workers.models.lifecycles.merge_ask_lifecycle import MergeAskLifecycle
+from suites.coding.modules.workers.models.merge_ask import MergeAsk
 from suites.coding.modules.workers.support.checkpoint_wait_text import CheckpointWaitText
 from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
@@ -23,7 +26,8 @@ from suites.coding.modules.workers.support.worker_task_advance import WorkerTask
 
 class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
     """Closes the worker's delivered tasks once git has merged its worktree, or restarts its task with the files
-    that clashed. A task of a started plan is closed with the checkpoint its tests run at."""
+    that clashed. A task of a started plan is closed with the checkpoint its tests run at. The worker's ask that
+    waited for this merge is merged with it."""
 
     command = RecordWorktreeMerge
     runs_once = True
@@ -42,6 +46,9 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
         reasons = self.wait_text.merged_reasons(worktree, [delivered.id for delivered in delivered_tasks])
         for delivered in delivered_tasks:
             self.repository.save_change(delivered, delivered.close(context.timestamp, context.actor, reasons[delivered.id]), context)
+        waiting_ask = self.queries.query(MergeAsk).filter(worktree_id=worktree.id, state=MergeAskState.WAITING).first()
+        if waiting_ask is not None:
+            self.repository.save_change(waiting_ask, waiting_ask.moved(MergeAskLifecycle.merge), context)
         merged = replace(worktree.merge(context.timestamp, context.actor), commit_before_merge=command.commit_before_merge, commit_after_merge=command.commit_after_merge,
                          merged_task_ids=",".join(str(delivered.id) for delivered in delivered_tasks))
         return MergeOutcome(self.repository.save_change(worktree, merged, context), ())

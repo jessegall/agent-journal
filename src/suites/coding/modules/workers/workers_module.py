@@ -366,7 +366,7 @@ from suites.coding.modules.workers.migrations.m030_merger_lines import MergerLin
 from suites.coding.modules.workers.migrations.m031_worktree_library_links import WorktreeLibraryLinksMigration
 from suites.coding.modules.workers.migrations.m034_worktree_pass_reason import WorktreePassReasonMigration
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE, MERGER_PASSED, WORKER_MERGED
+from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE, MERGER_PASSED, UNIT_MERGED, WORKER_MERGED
 from suites.coding.modules.workers.models.worker_test_failure import WorkerTestFailure
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
@@ -458,7 +458,7 @@ class WorkersModule(Module):
                          WindowExtension("viewer.shell", reads=["worker-worktree points", "worker-worktree list", "proof list"],
                                          runs=["worker send", "worker merge", "worker release"], events=["proof.*", "worker_worktree.*"],
                                          key_events={"usage": ["proof.*", "worker_worktree.*"], "bars": ["proof.*", "worker_worktree.*"]})]
-    nudges = [MERGER_LINE_AVAILABLE, APPROVED_PLAN_WAIT, WORKER_MERGED, MERGER_PASSED, *WORKER_NUDGES, TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
+    nudges = [UNIT_MERGED, MERGER_LINE_AVAILABLE, APPROVED_PLAN_WAIT, WORKER_MERGED, MERGER_PASSED, *WORKER_NUDGES, TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS

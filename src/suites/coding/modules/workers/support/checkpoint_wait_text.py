@@ -4,12 +4,14 @@ from core.modules.plans.support.checkpoint_windows import CheckpointWindows
 from core.modules.plans.support.plan_checkpoints import PlanCheckpoints
 from core.modules.plans.support.task_plans import TaskPlans
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.support.worktree_runs import WorktreeRuns
 
 TESTS_TEXT = "tests run at the checkpoint of phase {phase}"
 WAIT_TEXT = "committed: the merger merges; " + TESTS_TEXT
 OPEN_TASKS_TEXT = ", when tasks {tasks} are in"
 MERGED_TEXT = "merged into {branch}"
 CHECKPOINT_MERGED_TEXT = "merged; its tests run at the checkpoint of phase {phase}"
+WORKER_RUN_MERGED_TEXT = "merged; tested at the checkpoint of phase {phase} on commit {commit}"
 
 
 class CheckpointWaitText:
@@ -18,8 +20,8 @@ class CheckpointWaitText:
     tests passed, has no such sentence. It also gives the reason each merged task is closed with: in a started
     plan the checkpoint its tests run at."""
 
-    def __init__(self, plans: TaskPlans, checkpoints: PlanCheckpoints) -> None:
-        self.plans, self.checkpoints = plans, checkpoints
+    def __init__(self, plans: TaskPlans, checkpoints: PlanCheckpoints, runs: WorktreeRuns) -> None:
+        self.plans, self.checkpoints, self.runs = plans, checkpoints, runs
 
     def text(self, worktree: Worktree) -> str | None:
         phase = self.plans.find_phase(worktree.task_id)
@@ -42,6 +44,7 @@ class CheckpointWaitText:
         self.plans.prepare(task_ids)
         plan_windows = dict[int, CheckpointWindows]()
         reasons = dict[int, str]()
+        passed_commits = self.runs.passed_commits(worktree.id)
         for task_id in task_ids:
             phase = self.plans.find_phase(task_id)
             if phase is None or not self.plans.is_started_plan(task_id):
@@ -49,5 +52,7 @@ class CheckpointWaitText:
                 continue
             if phase.plan_id not in plan_windows:
                 plan_windows[phase.plan_id] = self.checkpoints.windows(phase.plan_id)
-            reasons[task_id] = CHECKPOINT_MERGED_TEXT.format(phase=plan_windows[phase.plan_id].window_checkpoint(phase.id).id)
+            checkpoint_id = plan_windows[phase.plan_id].window_checkpoint(phase.id).id
+            commit = passed_commits.get(checkpoint_id)
+            reasons[task_id] = CHECKPOINT_MERGED_TEXT.format(phase=checkpoint_id) if commit is None else WORKER_RUN_MERGED_TEXT.format(phase=checkpoint_id, commit=commit)
         return reasons

@@ -18,4 +18,4 @@ class MergedWorkerLineListener(CommitListener[Moved[Worktree]]):
         self.bus = bus
 
     def handle(self, event: Moved[Worktree], logged: LoggedEvent) -> None:
-        self.bus.run(SendMergedWorkerLine(event.row.session_agent_id), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)
+        self.bus.run(SendMergedWorkerLine(event.row.session_agent_id, event.row.id), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)

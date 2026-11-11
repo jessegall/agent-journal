@@ -29,6 +29,7 @@ from suites.coding.modules.workers.commands.record_merge_request.record_merge_re
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
+from suites.coding.modules.workers.support.work_units import WorkUnits
 
 class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     """Merges a checked worktree into its base branch in the environment's folder, in the order of doc 1101
@@ -40,14 +41,19 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     command = MergeWorker
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, checks: MergeChecks, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, followups: MergeFollowups, log_lines: WorkerLogLines, queued_start: WorkerQueuedStart, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, checks: MergeChecks, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, followups: MergeFollowups, log_lines: WorkerLogLines, queued_start: WorkerQueuedStart, numbers: RowNumbers,
+                 units: WorkUnits) -> None:
+        self.numbers, self.units = numbers, units
         self.log_lines, self.queued_start = log_lines, queued_start
         self.rows, self.worktrees, self.checks, self.git = rows, worktrees, checks, git
         self.environments, self.bus, self.followups = environments, bus, followups
 
     def check_rows(self, command: MergeWorker, actor: Actor) -> None:
         worktree = self.worktrees.worker_worktree(command.worker_id)
+        unit = self.units.unit(command.worker_id)
+        if worktree is not None and worktree.state is WorktreeState.CUT and unit.has_several_tasks:
+            raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} works {unit.merge_name} and has not asked for its merge",
+                          "merge its committed work so far with --up-to <task>")
         if worktree is None or worktree.state is not WorktreeState.DELIVERED:
             raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has delivered nothing to merge", "journal worker-worktree list shows the worktrees")
         self.checks.check_proofs(worktree)

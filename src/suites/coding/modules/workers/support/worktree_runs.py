@@ -21,6 +21,11 @@ class WorktreeRuns:
         passed_ids = {reach.id for reach in self.reaches(links) if reach.state is CheckpointState.PASSED}
         return "; ".join(PASSED_TEXT.format(phase=link.phase_id, commit=link.commit_id) for link in links if link.reach_id in passed_ids)
 
+    def passed_commits(self, worktree_id: int) -> dict[int, str]:
+        links = self.links(worktree_id)
+        passed_ids = {reach.id for reach in self.reaches(links) if reach.state is CheckpointState.PASSED}
+        return {link.phase_id: link.commit_id for link in links if link.reach_id in passed_ids}
+
     def holds_merge(self, worktree_id: int) -> bool:
         return self.blocking_run(worktree_id) is not None
 

@@ -26,7 +26,7 @@ class AskMergeHandler(Handler[AskMerge, MergeAskOutcome]):
     def handle(self, command: AskMerge, context: Context) -> MergeAskOutcome:
         worktree, unit = self.scope.checked(command.worker_id, command.note)
         task_ids = ",".join(str(task_id) for task_id in unit.task_ids)
-        merge_ask = self.repository.save(MergeAsk(creator_id=context.actor.id, worktree_id=worktree.id, commit_id=worktree.commit_short_id, task_ids=task_ids,
+        merge_ask = self.repository.save(MergeAsk(creator_id=context.actor.id, worktree_id=worktree.id, commit_id=worktree.commit_short_id, task_ids=task_ids, unit_name=unit.merge_name,
                                                   note=command.note, is_whole=True), context)
         delivered = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, merge_ready_at=context.timestamp), context)
         return MergeAskOutcome(merge_ask, delivered, unit)
