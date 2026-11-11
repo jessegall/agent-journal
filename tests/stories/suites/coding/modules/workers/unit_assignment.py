@@ -88,7 +88,6 @@ def test_13_a_plan_not_approved_or_started_is_refused(new_story, monkeypatch):
     worker.story.expect_refusal(f"worker send {number_of(worker)} --plan 1", "only an approved or started plan goes to a worker", actor=worker.story.agent)
 
 
-@pytest.mark.xfail(strict=True, reason="plan 1119: a task sent onto an open unit joins it")
 def test_14_a_send_onto_an_open_unit_joins_it(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
     task_id = worker.story.new_row_id('task make "Receipts" --brief "Print them"', actor=worker.story.agent)
