@@ -1,6 +1,7 @@
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
+from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_reach import WorktreeReach
@@ -36,6 +37,12 @@ class CheckpointFolders:
             return merged[-1].session_agent_id
         main_agent = self.agents.main_agent()
         return None if main_agent is None else main_agent.id
+
+    def required_owner_id(self, reach: CheckpointReach) -> int:
+        owner_id = self.owner_id(reach)
+        if owner_id is None:
+            raise Refusal(f"checkpoint reach {reach.id} has no agent to own its tests")
+        return owner_id
 
     def compare_commit(self, reach: CheckpointReach) -> str:
         link = self.link(reach)

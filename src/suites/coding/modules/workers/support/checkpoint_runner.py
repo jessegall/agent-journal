@@ -16,6 +16,7 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.plans.support.checkpoint_runs import CheckpointRuns
 from suites.coding.modules.workers.support.checkpoint_folders import FOLDER_NAME, CheckpointFolders
 from suites.coding.modules.workers.support.checkpoint_results import CheckpointResults
+from suites.coding.modules.workers.support.worker_run_starts import WorkerRunStarts
 from suites.coding.modules.workers.models.affected_test import AffectedTestState
 from suites.coding.modules.workers.models.checkpoint_test import CheckpointTest
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
@@ -33,8 +34,8 @@ class CheckpointRunner(CheckpointRuns):
     the own test and the selected run are not run. A run with no test passes at once, as the core's runs do."""
 
     def __init__(self, proofs: ProofQuery, repository: Repository, bus: Bus, git: WorktreeGit, environments: EnvironmentRows, settings: SettingValues, rows: EventRows,
-                 results: CheckpointResults, deferrals: PhaseTestDeferrals, folders: CheckpointFolders) -> None:
-        self.results, self.deferrals, self.folders = results, deferrals, folders
+                 results: CheckpointResults, deferrals: PhaseTestDeferrals, folders: CheckpointFolders, starts: WorkerRunStarts) -> None:
+        self.results, self.deferrals, self.folders, self.starts = results, deferrals, folders, starts
         super().__init__(repository, bus)
         self.proofs, self.git = proofs, git
         self.environments, self.settings, self.rows = environments, settings, rows
@@ -46,33 +47,40 @@ class CheckpointRunner(CheckpointRuns):
         if self.results.is_started(reach):
             return
         committed = tuple(self.proofs.committed_proofs(reach.tasks()).oldest().all_rows())
-        test_count = 0 if reach.source is CheckpointReachSource.EARLY else self.start_tests(reach, context)
-        if committed and not test_count:
-            self.folders.checkout(reach)
+        has_tests = reach.source is not CheckpointReachSource.EARLY and self.has_tests(reach)
+        if not committed and not has_tests:
+            super().start(reach, context)
+            return
+        folder = self.starts.checkout(reach, context)
+        if folder is None:
+            return
+        if has_tests:
+            self.start_tests(reach, folder, context)
         for proof in committed:
             self.repository.save_change(proof, proof.moved(ProofLifecycle.queue), context)
-        if not committed and not test_count:
-            super().start(reach, context)
 
     def folder(self, environment: Environment, plan_id: int) -> str:
         return self.git.base_folder(environment, FOLDER_NAME.format(plan=plan_id))
 
-    def start_tests(self, reach: CheckpointReach, context: Context) -> int:
-        owner_id, compare_commit = self.folders.owner_id(reach), self.folders.compare_commit(reach)
+    def has_tests(self, reach: CheckpointReach) -> bool:
         phase_commands = self.deferrals.run_commands(self.rows.required(Phase, reach.phase_id))
+        return self.folders.owner_id(reach) is not None and bool(phase_commands or self.is_selected_run_due(reach))
+
+    def is_selected_run_due(self, reach: CheckpointReach) -> bool:
         picker, selected_command = self.settings.text(AFFECTED_TESTS_COMMAND).strip(), self.settings.text(PROJECT_TEST_COMMAND).strip()
-        is_selected_run_due = bool(picker and selected_command and compare_commit)
-        if owner_id is None or not (phase_commands or is_selected_run_due):
-            return 0
-        folder = self.folders.checkout(reach)
+        return bool(picker and selected_command and self.folders.compare_commit(reach))
+
+    def start_tests(self, reach: CheckpointReach, folder: str, context: Context) -> None:
+        owner_id = self.folders.required_owner_id(reach)
+        phase_commands = self.deferrals.run_commands(self.rows.required(Phase, reach.phase_id))
         tests = [CheckpointTest(reach_id=reach.id, owner_agent_id=owner_id, test_command=phase_command, state=AffectedTestState.TESTING, process_id=0) for phase_command in phase_commands]
-        if is_selected_run_due:
-            files = [change.relative for change in self.git.file_changes(folder, compare_commit)]
+        if self.is_selected_run_due(reach):
+            picker, selected_command = self.settings.text(AFFECTED_TESTS_COMMAND).strip(), self.settings.text(PROJECT_TEST_COMMAND).strip()
+            files = [change.relative for change in self.git.file_changes(folder, self.folders.compare_commit(reach))]
             tests.append(CheckpointTest(reach_id=reach.id, owner_agent_id=owner_id, picker_command=shlex.join([*shlex.split(picker), *files]), test_command=selected_command,
                                         state=AffectedTestState.PICKING, process_id=0))
         for test in tests:
             self.start_test(test, folder, context)
-        return len(tests)
 
     def start_test(self, test: CheckpointTest, folder: str, context: Context) -> None:
         start = StartProcess.single_part(test.owner_agent_id, test.picker_command or test.test_command, folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
