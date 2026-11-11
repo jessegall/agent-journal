@@ -1,3 +1,4 @@
+from core.modules.plans.conditions.plan_tasks_condition import PlanTasksCondition
 from engine.database.kept_rows import KeptRows
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.excluding import Excluding
@@ -30,19 +31,20 @@ class WorkUnits:
 
     def unit(self, worker_id: int) -> WorkUnit:
         assignee = TaskQuery.assignee(worker_id).statement()
-        return self.kept.read("tasks", lambda: self.loaded_unit(worker_id), f"closed_at IS NULL AND {assignee.sql}", assignee.parameters, name="workers.work_unit")
-
-    def loaded_unit(self, worker_id: int) -> WorkUnit:
-        open_work = self.tasks.assignee_tasks(worker_id).unclosed()
-        task_ids = tuple(task.id for task in open_work.oldest().all_rows(TASK_PAGE_ROWS))
-        uncommitted_count = open_work.matching(Excluding(Equal("state", TaskState.TESTING))).count()
+        task_ids, uncommitted_count = self.kept.read("tasks", lambda: self.open_work(worker_id), f"closed_at IS NULL AND {assignee.sql}", assignee.parameters, name="workers.work_unit_tasks")
         self.plans.prepare(task_ids)
         plan = self.assigned_plan(worker_id, task_ids)
         phase = None if plan is not None else self.shared_phase(task_ids)
         if plan is None:
             return WorkUnit(plan, phase, task_ids, uncommitted_count, len(task_ids), uncommitted_count)
-        progress = self.queries.query(PlanProgress).find(plan.id)
+        plan_tasks = PlanTasksCondition(tuple([plan.id])).statement()
+        progress = self.kept.read("tasks", lambda: self.queries.query(PlanProgress).find(plan.id), plan_tasks.sql, plan_tasks.parameters, name="workers.unit_plan_progress")
         return WorkUnit(plan, phase, task_ids, uncommitted_count, progress.task_count, progress.task_count - progress.completed_count - progress.testing_count)
+
+    def open_work(self, worker_id: int) -> tuple[tuple[int, ...], int]:
+        open_work = self.tasks.assignee_tasks(worker_id).unclosed()
+        task_ids = tuple(task.id for task in open_work.oldest().all_rows(TASK_PAGE_ROWS))
+        return task_ids, open_work.matching(Excluding(Equal("state", TaskState.TESTING))).count()
 
     def assigned_plan(self, worker_id: int, task_ids: tuple[int, ...]) -> Plan | None:
         plan = self.plans.find(task_ids[0]) if task_ids else None
