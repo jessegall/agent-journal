@@ -19,5 +19,5 @@ class UpdateOutcome:
             return [f"Your worktree is on {self.base_branch} at {self.update.base_commit[:10]}. Go on."]
         lines = [f"The update clashes with {self.base_branch} in {', '.join(self.update.conflicts)}: settle the markers, then go on. Your next commit carries the settled files."]
         if self.update.stash_id:
-            lines.append(f"Your uncommitted changes stay in stash {self.update.stash_id}: apply them with git stash apply {self.update.stash_id} after you commit the settled merge.")
+            lines.append(f"Your uncommitted changes stay in stash {self.update.stash_id} until your next commit puts them back on the settled merge.")
         return lines

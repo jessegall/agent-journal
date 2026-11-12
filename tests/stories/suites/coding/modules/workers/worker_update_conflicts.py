@@ -33,7 +33,7 @@ def s38_a_failed_rebase_falls_back_to_a_merge_of_the_base(story, repository: Git
 def s39_uncommitted_changes_wait_in_a_named_stash_while_markers_are_settled(story, repository: GitRepository, worker: Actor) -> None:
     both_change_the_cart(repository, worker)
     (repository.worktree_folder(worker.id) / "shop.py").write_text("SHOP = 2\n")
-    story.expect_text(UPDATE, "The update clashes", "Your uncommitted changes stay in stash", "git stash apply", actor=worker)
+    story.expect_text(UPDATE, "The update clashes", "Your uncommitted changes stay in stash", "until your next commit puts them back", actor=worker)
 
 
 def s40_the_next_commit_commits_the_settled_merge(story, repository: GitRepository, worker: Actor) -> None:
@@ -76,10 +76,36 @@ def s51_a_stop_after_the_stash_is_repaired_by_the_next_update(story, repository:
     story.expect_rows((folder / "cart.py").read_text() == "TOTAL = 6\n")
 
 
+def s52_the_commit_of_the_settled_merge_puts_the_kept_changes_back(story, repository: GitRepository, worker: Actor) -> None:
+    # report 1354: the commit after a clashing update applied the stash over the unsettled merge and dropped it
+    folder = repository.worktree_folder(worker.id)
+    both_change_the_cart(repository, worker)
+    (folder / "shop.py").write_text("SHOP = 2\n")
+    story.expect_text(UPDATE, "Your uncommitted changes stay in stash", actor=worker)
+    (folder / "cart.py").write_text("def total():\n    return 3\n")
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the settled total"', actor=worker)
+    story.run('worker commit --wait --differences "settled the update merge"', actor=worker)
+    committed = repository.git("show", "HEAD:shop.py", folder=folder).stdout
+    stashes = repository.git("stash", "list", folder=folder).stdout
+    story.expect_rows((folder / "shop.py").read_text() == "SHOP = 2\n", committed == "SHOP = 2\n", repository.worker_branch(worker.id) not in stashes, detail=stashes)
+
+
+def s53_changes_that_clash_with_the_rebased_tree_are_named_and_kept(story, repository: GitRepository, worker: Actor) -> None:
+    # report 1354: the stash applied after a rebase wrote markers, was dropped, and the update said it was clean
+    folder, base = repository.worktree_folder(worker.id), checkout_of(repository, ENVIRONMENT_BRANCH)
+    committed_on(repository, base, "cart.py", "TOTAL = 1\n", "The base adds the total")
+    story.expect_text(UPDATE, f"Your worktree is on {ENVIRONMENT_BRANCH} at ", actor=worker)
+    (folder / "cart.py").write_text("TOTAL = 5\n")
+    committed_on(repository, base, "cart.py", "TOTAL = 2\n", "The base changes the total")
+    story.expect_text(UPDATE, f"The update clashes with {ENVIRONMENT_BRANCH} in cart.py", actor=worker)
+    text, stashes = (folder / "cart.py").read_text(), repository.git("stash", "list", folder=folder).stdout
+    story.expect_rows(MARKER in text, "TOTAL = 5" in text, repository.worker_branch(worker.id) in stashes, detail=f"{text}\n{stashes}")
+
 CASES: list[Callable[..., None]] = [s36_a_function_changed_on_both_sides_leaves_markers, s38_a_failed_rebase_falls_back_to_a_merge_of_the_base,
                                     s39_uncommitted_changes_wait_in_a_named_stash_while_markers_are_settled, s40_the_next_commit_commits_the_settled_merge,
                                     s41_open_markers_refuse_a_second_update, s49_a_stash_that_leaves_no_markers_stays_in_the_stack,
-                                    s50_a_deleted_base_branch_changes_nothing, s51_a_stop_after_the_stash_is_repaired_by_the_next_update]
+                                    s50_a_deleted_base_branch_changes_nothing, s51_a_stop_after_the_stash_is_repaired_by_the_next_update,
+                                    s52_the_commit_of_the_settled_merge_puts_the_kept_changes_back, s53_changes_that_clash_with_the_rebased_tree_are_named_and_kept]
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case.__name__.split("_")[0])
