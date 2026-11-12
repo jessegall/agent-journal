@@ -69,6 +69,7 @@ onBeforeUnmount(() => document.removeEventListener("keydown", slash));
 
 <style scoped>
 .setting-find { position: relative; width: 280px; }
+.setting-find :deep(.search-bar) { padding: 0; background: none; border: 0; }
 .list { position: absolute; z-index: 5; top: calc(100% + 4px); right: 0; width: 360px; margin: 0; padding: 4px; list-style: none; border: 1px solid var(--border-2); border-radius: 8px; background: var(--raised); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3); }
 .entry { display: flex; flex-direction: column; gap: 2px; padding: 7px 10px; border-radius: 6px; cursor: pointer; }
 .entry.on { background: var(--sel); }

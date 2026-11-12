@@ -141,6 +141,7 @@ function pick(entry) {
 .env { padding: 2px 8px; border: 1px solid var(--border-2); border-radius: 999px; color: var(--text-3); font-size: 11.5px; }
 .settings-bar { position: sticky; top: 0; z-index: 2; background: var(--raised, var(--bg)); }
 .settings-body { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.settings-body :deep([data-tab-body]), .settings-body :deep([data-tab-content]) { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .flush { padding: 0 0 22px; }
 .note { margin: 14px 18px 0; padding: 8px 12px; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent-dim, var(--hover)); color: var(--text); font-size: 12.5px; }
 .hint { margin: 14px 0 0; color: var(--warn); font-size: 12px; text-wrap: pretty; }

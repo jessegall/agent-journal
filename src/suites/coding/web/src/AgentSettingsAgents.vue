@@ -32,5 +32,5 @@ const open = (key) => { opened.value = rows.value.find((row) => row.key === key)
 </template>
 
 <style scoped>
-.agents { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.agents { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; }
 </style>

@@ -311,7 +311,7 @@ const ct = {
       }, null, 8, ["rows"]))
     ]));
   }
-}, wt = /* @__PURE__ */ q(kt, [["__scopeId", "data-v-18d49cff"]]), bt = {
+}, wt = /* @__PURE__ */ q(kt, [["__scopeId", "data-v-05cc036a"]]), bt = {
   class: "page",
   "data-agent-settings-presets": ""
 }, ht = { class: "crumb" }, $t = { class: "body" }, St = { class: "cards" }, Ot = "Any other mix of the eight switches. The form shows Custom as soon as the switches match neither preset.", _t = {
@@ -559,7 +559,7 @@ const ct = {
       _: 1
     }));
   }
-}, Vt = /* @__PURE__ */ q(qt, [["__scopeId", "data-v-6d35f2b5"]]);
+}, Vt = /* @__PURE__ */ q(qt, [["__scopeId", "data-v-810340dc"]]);
 export {
   Vt as A
 };
