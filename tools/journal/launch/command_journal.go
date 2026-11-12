@@ -170,7 +170,16 @@ func SaveAnswers(home string, answers map[string]string) error {
 // ProgramCommand is the command line that starts the program on the choice, as the program's provider in the
 // journal builds it: its conversation, its prompts, its launch name and the arguments the person gave. Each argument
 // is one line of the answer, so one holding a space stays whole.
-func (journal CommandJournal) ProgramCommand(request Request, choice Choice, launchName string) ([]string, error) {
+// ProgramCommand is the command line that starts an agent program, and the variables its launch must carry, such as
+// the journal's own CODEX_HOME.
+type ProgramCommand struct {
+	Arguments []string          `json:"arguments"`
+	Variables map[string]string `json:"variables"`
+}
+
+// ProgramCommand asks the journal for the command in its JSON form; a journal too old to know --format answers
+// with an error or plain lines, and is asked again for the lines, with no variables.
+func (journal CommandJournal) ProgramCommand(request Request, choice Choice, launchName string) (ProgramCommand, error) {
 	argv := []string{"program", "command", request.Program, choice.Folder, "--launch", launchName}
 	if choice.Session != "" {
 		argv = append(argv, "--resume", choice.Session)
@@ -181,15 +190,30 @@ func (journal CommandJournal) ProgramCommand(request Request, choice Choice, lau
 	for _, argument := range request.ArgumentsBesideSession() {
 		argv = append(argv, "--program-argument="+argument)
 	}
-	output, err := journal.Run(argv...)
-	if err != nil {
-		return nil, err
-	}
+	output, jsonErr := journal.Run(append(argv, "--format", "json")...)
 	trimmed := strings.TrimSpace(output)
-	if trimmed == "" {
-		return nil, fmt.Errorf("the journal gave no command line for %s", request.Program)
+	if jsonErr == nil && strings.HasPrefix(trimmed, "{") {
+		var command ProgramCommand
+		if err := json.Unmarshal([]byte(trimmed), &command); err != nil {
+			return ProgramCommand{}, err
+		}
+		if len(command.Arguments) == 0 {
+			return ProgramCommand{}, fmt.Errorf("the journal gave no command line for %s", request.Program)
+		}
+		return command, nil
 	}
-	return strings.Split(trimmed, "\n"), nil
+	lines, err := journal.Run(argv...)
+	if err != nil {
+		if jsonErr != nil {
+			return ProgramCommand{}, jsonErr
+		}
+		return ProgramCommand{}, err
+	}
+	plain := strings.TrimSpace(lines)
+	if plain == "" {
+		return ProgramCommand{}, fmt.Errorf("the journal gave no command line for %s", request.Program)
+	}
+	return ProgramCommand{Arguments: strings.Split(plain, "\n")}, nil
 }
 
 // TellMenuAnswer shows in the chat what the launcher pressed on a menu in the agent's terminal; a journal that does not

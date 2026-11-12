@@ -108,7 +108,7 @@ def test_the_journal_files_hold_bypass_its_own_hooks_and_only_the_person_keys_it
     ProgramHooks.store(worktree / ".claude" / "settings.json",
                        {"hooks": {"PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": "project-check", "timeout": 60}]}]}})
     story.expect_text(f'program manage claude "{worktree}"', "managed hooks: 1")
-    story.expect_text(f'program command codex "{story.home.project_folder}" --launch launch-1', "codex")
+    story.expect_text(f'program command codex "{story.home.project_folder}" --launch launch-1 --format json', "CODEX_HOME")
     expect_claude_file(story, claude_settings(story))
     expect_codex_files(story)
 
@@ -118,9 +118,9 @@ def test_two_writes_with_nothing_changed_give_the_same_bytes(new_story):
     files = [story.home.folder / "programs" / "claude" / "settings.json", story.home.folder / "programs" / "codex" / "config.toml",
              story.home.folder / "programs" / "codex" / "hooks.json"]
     story.expect_text(f'program command claude "{story.home.project_folder}" --launch launch-1', "claude")
-    story.expect_text(f'program command codex "{story.home.project_folder}" --launch launch-2', "codex")
+    story.expect_text(f'program command codex "{story.home.project_folder}" --launch launch-2 --format json', "CODEX_HOME")
     first_bytes = [path.read_bytes() for path in files]
-    story.expect_text(f'program command codex "{story.home.project_folder}" --launch launch-3', "codex")
+    story.expect_text(f'program command codex "{story.home.project_folder}" --launch launch-3 --format json', "CODEX_HOME")
     story.expect_text(f'program command claude "{story.home.project_folder}" --launch launch-4', "claude")
     claude_text = first_bytes[0].decode()
     story.expect_rows([path.read_bytes() for path in files] == first_bytes, all(data.endswith(b"\n") and not data.endswith(b"\n\n") for data in first_bytes),

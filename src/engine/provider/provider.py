@@ -222,6 +222,9 @@ class Provider(ABC):
     def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
         return {}
 
+    def launch_variables(self, home: JournalHome) -> Mapping[str, str]:
+        return {}
+
     def journal_hook_file(self, folder: Path) -> Path:
         return folder / self.hook_file.path
 
