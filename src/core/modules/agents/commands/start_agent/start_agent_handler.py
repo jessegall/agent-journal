@@ -13,7 +13,7 @@ from core.modules.agents.support.agent_numbers import AgentNumbers
 from core.modules.agents.support.program_process import ProgramProcess
 from core.modules.agents.support.agent_sessions import AgentSessions
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.agents.support.single_main_agent import SingleMainAgent
+from core.modules.agents.commands.support.single_main_agent import SingleMainAgent
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from engine.helper_type.helper_type_book import HelperTypeBook

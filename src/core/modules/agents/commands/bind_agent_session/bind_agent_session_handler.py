@@ -7,7 +7,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_dispatcher import AgentDispatcher
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.agent_sessions import AgentSessions
-from core.modules.agents.support.single_main_agent import SingleMainAgent
+from core.modules.agents.commands.support.single_main_agent import SingleMainAgent
 from core.modules.agents.support.agent_label import AgentLabel
 
 
