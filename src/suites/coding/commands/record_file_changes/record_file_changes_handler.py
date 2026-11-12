@@ -12,14 +12,15 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.plugins.commands.deliver_file_edit.deliver_file_edit import DeliverFileEdit
 from core.modules.processes.models.process import Process
 from suites.coding.commands.record_file_changes.record_file_changes import RecordFileChanges
+from suites.coding.commands.prune_file_edits.prune_file_edits import PruneFileEdits
 from suites.coding.commands.record_file_edit.record_file_edit import RecordFileEdit
 from suites.coding.support.file_change_report import FileChangeReport
 from suites.coding.support.managed_files import ManagedFiles
 
 
 class RecordFileChangesHandler(Handler[RecordFileChanges, None]):
-    """Keeps each file of a scan's report as a file edit of the agent it followed, and tells the plugins; the one
-    place a file edit is born."""
+    """Keeps each file of a scan's report as a file edit of the agent it followed, tells the plugins, and prunes the
+    oldest edits once for the whole report; the one place a file edit is born."""
 
     command = RecordFileChanges
 
@@ -34,6 +35,7 @@ class RecordFileChangesHandler(Handler[RecordFileChanges, None]):
             for change in [change for change in report.changes if not self.managed_files.has(agent, change.diff.path)]:
                 self.bus.dispatch(RecordFileEdit(agent.id, change.diff, change.rows), scoped)
                 self.bus.dispatch(DeliverFileEdit(agent.id, change.diff.path, report.folder, change.rows), scoped)
+            self.bus.dispatch(PruneFileEdits(), scoped)
 
     def scan_agent(self, command: RecordFileChanges) -> Agent:
         if command.process_id is not None:

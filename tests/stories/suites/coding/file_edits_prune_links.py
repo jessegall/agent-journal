@@ -4,7 +4,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.support.story_checks import expect_value
 
-RECORD_HANDLER = "suites.coding.commands.record_file_edit.record_file_edit_handler"
+RECORD_HANDLER = "suites.coding.commands.prune_file_edits.prune_file_edits_handler"
 EDITS_MADE = 60
 EDITS_PRUNED = 30
 LINK_STATEMENT = ("INSERT INTO links (creator_id, source_model, source_id, target_model, target_id, link_type, version, metadata, created_at, updated_at)"

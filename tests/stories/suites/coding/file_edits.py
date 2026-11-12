@@ -5,11 +5,11 @@ from engine.file.file_access import FileAccess
 from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from engine.testing.examples.hook_samples import HookSamples
-from suites.coding.commands.record_file_edit import record_file_edit_handler
+from suites.coding.commands.prune_file_edits import prune_file_edits_handler
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskOrchestrator
-from tests.stories.core.support.scanned_edits import scanned_edit
+from tests.stories.core.support.scanned_edits import scanned_edit, scanned_edits
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.support.story_checks import expect_value
 
@@ -90,8 +90,8 @@ def test_a_scan_is_kept_for_the_agent_of_its_session_whatever_environment_it_wor
 
 
 def test_the_log_keeps_the_newest_1000_file_edits(new_story, monkeypatch):
-    expect_value(record_file_edit_handler.ROWS_KEPT, 1000)
-    monkeypatch.setattr(record_file_edit_handler, "ROWS_KEPT", 3)
+    expect_value(prune_file_edits_handler.ROWS_KEPT, 1000)
+    monkeypatch.setattr(prune_file_edits_handler, "ROWS_KEPT", 3)
     story = new_story(fixture=BuilderStarted)
     for number in range(1, 6):
         scanned_edit(story, "s-1", f"src/part{number}.py")
@@ -105,12 +105,24 @@ def test_a_request_that_prunes_more_than_ten_file_edits_reads_the_links_once_for
     story = new_story(fixture=BuilderStarted)
     for number in range(1, 14):
         scanned_edit(story, "s-1", f"src/part{number}.py")
-    monkeypatch.setattr(record_file_edit_handler, "ROWS_KEPT", 2)
+    monkeypatch.setattr(prune_file_edits_handler, "ROWS_KEPT", 2)
     scanned_edit(story, "s-1", "src/part14.py")
     reads = {sql: count for sql, count in story.repeated_work.read_texts.items() if "FROM links" in sql}
     story.expect_rows(len(reads) <= 2, all(count == 1 for count in reads.values()), detail=str(reads))
     story.expect_refusal("file-edit show 12", "no")
     story.expect_text("file-edit show 14", "path: src/part14.py")
+
+
+def test_a_scan_of_many_files_past_the_kept_count_prunes_once_for_the_whole_report(new_story, monkeypatch):
+    story = new_story(fixture=BuilderStarted)
+    for number in range(1, 4):
+        scanned_edit(story, "s-1", f"src/old{number}.py")
+    monkeypatch.setattr(prune_file_edits_handler, "ROWS_KEPT", 2)
+    scanned_edits(story, "s-1", [f"src/part{number}.py" for number in range(1, 16)])
+    prunes = [count for sql, count in story.repeated_work.read_texts.items() if sql.startswith("SELECT * FROM file_edits") and "OFFSET" in sql]
+    story.expect_rows(prunes == [1], detail=str(story.repeated_work.read_texts))
+    story.expect_refusal("file-edit show 16", "no")
+    story.expect_text("file-edit show 18", "path: src/part15.py")
 
 
 def test_an_edit_in_a_repository_inside_the_project_shows_in_the_feed_by_its_path_from_the_project_folder(new_story):
