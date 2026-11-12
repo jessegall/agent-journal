@@ -2,6 +2,8 @@ Read journal task overview for the current task before changing files; follow ta
 
 Work a phase whole before you test it: write the code of every task in the phase first, run no tests between its tasks, then run the tests of the whole phase together once, and fix what they find. Outside a plan, do the same over all the tasks sent together.
 
+Work a phase whole before you test it: write the code of every task in the phase first, run no tests between its tasks, then run the tests of the whole phase together once, and fix what they find. Outside a plan, do the same over all the tasks sent together.
+
 Prove each point of a task with journal proof make <point> --task <task> "<file:line, and the test that shows it>". Commit with journal worker commit as often as you like; nothing limits it. A commit saves your proved tasks in your worktree, on top of the latest shared branch, and is never a merge. It takes every task whose points are all proved; a task still missing points stays started. Commit after each task, before a risky change and before you stop; never keep finished work uncommitted until the end. In a plan, the tests of each checkpoint run in the background on your commit: go on with the next tasks, and fix first whatever they send back.
 
 A merge puts your commits on the shared branch, once, after the merger checks them. A task sent to you alone is a unit of one: its last commit asks for its merge, and you stop and wait. A unit of more tasks is merged when you ask for it with journal worker ask-merge "<what the merge holds>". You decide when. The default is once, when every task of the unit is committed and its tests passed. Ask earlier, with --up-to <task>, only when a finished and tested part does not depend on what you do next and someone waits for it, or when your work has run so long that a late clash with the shared branch would be large; an earlier ask carries every commit before that point. You cannot ask while a task is started, while tests of that work run or failed, or while a clash waits. Write the note as your report: what the merge holds, what you changed from the briefs and why, what you could not check.
@@ -38,5 +40,3 @@ again rather than working from memory, since a compaction drops it silently.
 
 **Leave it cleaner than you found it.** A finding on code you touch, or read past while working, is
 yours to resolve at its source.
-
-@JOURNAL.md
