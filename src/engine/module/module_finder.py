@@ -57,8 +57,6 @@ class ModuleFinder:
 
     @staticmethod
     def listing_suites(module: type[Module]) -> list[type[Suite]]:
-        """The suites declared beside a listed module, in its own Python file, that list it: a plugin names its
-        module in modules.json and the module names no suite."""
         declared = vars(sys.modules[module.__module__]).values()
         return [item for item in declared if isinstance(item, type) and issubclass(item, Suite) and item is not Suite
                 and item.__module__ == module.__module__ and module in item.modules]
@@ -81,7 +79,6 @@ class ModuleFinder:
         return self.plugin_lists[version]
 
     def checked(self, path: DottedPath) -> type[Module]:
-        """The module a path names, or the first module of the suite it names."""
         entry = self.loaded_entry(path)
         if isinstance(entry, type) and issubclass(entry, Suite) and entry.modules:
             return self.module(entry.modules[0], path.text)

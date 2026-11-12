@@ -15,8 +15,8 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 class MergeReadyListener(CommitListener[Moved[Worktree]]):
     """Starts the merger when a worktree can be merged: when its tests passed, or, in a started plan, when its
-    work was committed for the last time and no worker run of it still goes or failed. A worktree whose branch has
-    no commit ahead of its base is closed as merged and no merger is sent."""
+    work was committed for the last time and no worker run of it still goes or failed. A worktree whose branch
+    has no commit ahead of its base is closed as merged and no merger is sent."""
 
     name = "workers.merge-ready"
     moves = [WorktreeLifecycle.mark_tests_passed, WorktreeLifecycle.deliver]

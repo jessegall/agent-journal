@@ -15,8 +15,8 @@ from suites.coding.modules.workers.support.worker_test_launch import WorkerTestL
 
 class WorkerTestRunListener(CommitListener[Created[Process]]):
     """Starts a test a worker asked for by its test command, in the worker's worktree. A test run from a shell
-    line is started by that line, and the test of a proof or an affected-test pick by WorkerTestListener and a checkpoint's test by
-    CheckpointTestListener."""
+    line is started by that line, and the test of a proof or an affected-test pick by WorkerTestListener and a
+    checkpoint's test by CheckpointTestListener."""
 
     name = "workers.test-run-launch"
 

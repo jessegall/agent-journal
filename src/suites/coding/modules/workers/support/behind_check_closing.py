@@ -12,9 +12,9 @@ GONE_FROM = (BehindCheckState.OPEN, BehindCheckState.ORDERED, BehindCheckState.C
 
 
 class BehindCheckClosing:
-    """Closes the checks of a worktree as what happened to it says: brought up to date by a commit or an update,
-    clashing when an update left markers, gone when the worktree left its cut state; an update that failed is noted
-    on an open or ordered check, which stays as it was. A closed check is left as it is."""
+    """Closes the checks of a worktree as what happened to it says: brought up to date by a commit or an
+    update, clashing when an update left markers, gone when the worktree left its cut state; an update that
+    failed is noted on an open or ordered check, which stays as it was. A closed check is left as it is."""
 
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository

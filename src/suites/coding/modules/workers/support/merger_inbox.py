@@ -12,9 +12,9 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
 class MergerInbox:
-    """Where a line about a worker goes: to the merger while it is on, which passes on what the main agent must act
-    on, and otherwise to the main agent; a worker's question that goes to the main agent this way is recorded as
-    forwarded."""
+    """Where a line about a worker goes: to the merger while it is on, which passes on what the main agent
+    must act on, and otherwise to the main agent; a worker's question that goes to the main agent this way is
+    recorded as forwarded."""
 
     def __init__(self, repository: Repository, main_line: MainAgentLine, settings: SettingValues) -> None:
         self.repository, self.main_line, self.settings = repository, main_line, settings

@@ -12,8 +12,9 @@ from suites.coding.modules.workers.support.behind_checks import BehindChecks
 
 
 class ReturnWorkerSubcommand(Subcommand[Command[None], None]):
-    """`journal merger pass <worker> "<why>"`: leaves the worker to the main agent; for a worker still cut whose
-    worktree is behind its base with a check still open, ordered or clashing, hands that decision to the main agent instead."""
+    """`journal merger pass <worker> "<why>"`: leaves the worker to the main agent; for a worker still cut
+    whose worktree is behind its base with a check still open, ordered or clashing, hands that decision to the
+    main agent instead."""
 
     cli_name = "merger"
     name = "pass"

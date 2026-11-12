@@ -10,8 +10,8 @@ from suites.coding.modules.workers.support.behind_check_closing import BehindChe
 
 class RecordWorktreeBaseHandler(Handler[RecordWorktreeBase, Worktree]):
     """Moves a worktree's row to the base commit its commit stood on and records the tasks that commit took,
-    after git has committed its work; the commit stands on the base, so a check of the worktree closes as brought up to
-    date, a clashing one too, since a commit carries only settled files."""
+    after git has committed its work; the commit stands on the base, so a check of the worktree closes as
+    brought up to date, a clashing one too, since a commit carries only settled files."""
 
     command = RecordWorktreeBase
     disabled_scopes = [ActorScope]

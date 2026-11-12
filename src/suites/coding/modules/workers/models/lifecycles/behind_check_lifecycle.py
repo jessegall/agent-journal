@@ -4,9 +4,10 @@ from suites.coding.modules.workers.models.enums.behind_check_state import Behind
 
 
 class BehindCheckLifecycle(Lifecycle):
-    """A look at a worktree behind its base: open until the merger orders an update, leaves it alone or passes it to
-    the main agent; an order ends updated or clashing, and a clash is settled into an update. The main agent decides
-    after a pass. A check left alone stays closed, and a later look opens a new one; updated and gone are final."""
+    """A look at a worktree behind its base: open until the merger orders an update, leaves it alone or passes
+    it to the main agent; an order ends updated or clashing, and a clash is settled into an update. The main
+    agent decides after a pass. A check left alone stays closed, and a later look opens a new one; updated and
+    gone are final."""
 
     states = State
     initial = [State.OPEN]

@@ -17,9 +17,9 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
 class AnnounceBehindChecksHandler(Handler[AnnounceBehindChecks, tuple[Nudge, ...]]):
-    """Leaves a line for each worktree behind its base where the merger reads it, so journal merger next lists them
-    all; with the merger off the lines go to the main agent as other merger lines do, naming its choices. The look
-    starts the merger once afterwards, outside this write."""
+    """Leaves a line for each worktree behind its base where the merger reads it, so journal merger next lists
+    them all; with the merger off the lines go to the main agent as other merger lines do, naming its choices.
+    The look starts the merger once afterwards, outside this write."""
 
     command = AnnounceBehindChecks
     disabled_scopes = [ActorScope]

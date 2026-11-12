@@ -17,8 +17,8 @@ from engine.types.type_guards import is_list, is_text_list, is_tuple
 class SettingValue:
     """One setting a module declares: its short key, the title and one plain sentence the settings window
     shows, its type and default, whether it is a secret such as a token, where it may be set and whether an
-    agent may set it, and the full keys of the flags that must be on for a window to show it. A screen, a section and a component
-    say where and how it is drawn."""
+    agent may set it, and the full keys of the flags that must be on for a window to show it. A screen, a
+    section and a component say where and how it is drawn."""
 
     key: str
     title: str

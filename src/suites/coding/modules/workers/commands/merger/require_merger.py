@@ -13,7 +13,6 @@ def require_merger(agents: AgentRows, context: Context) -> Agent:
 
 
 def require_merger_or_main_agent(agents: AgentRows, context: Context) -> Agent:
-    """The merger decides about a worktree behind its base, and the main agent may decide after the merger passed it."""
     agent = agents.find(context.actor.id)
     if agent.profile != MERGER_PROFILE and not agents.is_main(agent.id):
         raise Refusal("only the merger or the main agent decides about a worktree behind its base")

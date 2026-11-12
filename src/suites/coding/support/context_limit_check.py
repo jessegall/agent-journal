@@ -9,12 +9,12 @@ from core.modules.tasks.queries.task_query import TaskQuery
 
 
 class ContextLimitCheck:
-    """Says how many tokens an agent's context holds once the context limit is on and the agent's own size, read
-    from ContextShare, makes a compaction due, on a reading written after its newest compaction, and whether the
-    agent's next stop compacts it: it does unless it holds a task to finish first and is under the second limit. Whether a
-    size is due is asked of the compactions, never compared here. An agent asked to compact is not asked a
-    second time for three minutes, whichever rule asks: the typed line can wait in the program until the
-    agent pauses."""
+    """Says how many tokens an agent's context holds once the context limit is on and the agent's own size,
+    read from ContextShare, makes a compaction due, on a reading written after its newest compaction, and
+    whether the agent's next stop compacts it: it does unless it holds a task to finish first and is under the
+    second limit. Whether a size is due is asked of the compactions, never compared here. An agent asked to
+    compact is not asked a second time for three minutes, whichever rule asks: the typed line can wait in the
+    program until the agent pauses."""
 
     def __init__(self, settings: SettingValues, agents: AgentRows, current_window: CurrentContextWindow, tasks: TaskQuery, compactions: ContextCompactions, share: ContextShare) -> None:
         self.settings, self.agents, self.current_window, self.tasks = settings, agents, current_window, tasks

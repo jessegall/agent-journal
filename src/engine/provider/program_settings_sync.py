@@ -25,8 +25,8 @@ SHELL_RUNNER_MARK = JOURNAL_MARKS[1]
 class ProgramSettingsSync:
     """Brings the journal's own settings files of each agent program up to date: before a launch and at server
     start it first backs up the person's own files, and on a tick it only writes the journal's. It takes the
-    journal's old entries out of the project files of each program, once no session of that program that started
-    before the switch still runs."""
+    journal's old entries out of the project files of each program, once no session of that program that
+    started before the switch still runs."""
 
     def __init__(self, home: JournalHome, providers: Providers, managed: ManagedHooks, writer: ProgramSettingsWriter,
                  backup: ProgramSettingsBackup, cleanup: ProjectHookCleanup, sessions: ProgramSessions, clock: Clock) -> None:

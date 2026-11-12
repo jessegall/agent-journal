@@ -22,7 +22,6 @@ class BehindDecisions:
         return self.found(worker_id, WorktreeBehindCheck.open_for_decision)
 
     def passable(self, worker_id: int) -> tuple[Worktree, WorktreeBehindCheck]:
-        """A check the merger may hand to the main agent: one still open, or an update ordered or clashing."""
         return self.found(worker_id, WorktreeBehindCheck.may_be_passed)
 
     def found(self, worker_id: int, wanted: Callable[[WorktreeBehindCheck], bool]) -> tuple[Worktree, WorktreeBehindCheck]:

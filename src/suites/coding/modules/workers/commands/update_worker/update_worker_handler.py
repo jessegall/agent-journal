@@ -19,11 +19,11 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class UpdateWorkerHandler(Handler[UpdateWorker, UpdateOutcome]):
-    """Brings the worker's own worktree up to its base branch before the transaction opens, since git moves its
-    files; then records the base the worktree stands on and how the update ended on the operation that ran it. Built
-    web files are made again when the base moved under a clean update. A check of the worktree closes as brought up to
-    date, or moves to clashing when the update left markers; an update that fails and changes nothing is noted on the check
-    and told to the merger before its refusal goes on to the worker."""
+    """Brings the worker's own worktree up to its base branch before the transaction opens, since git moves
+    its files; then records the base the worktree stands on and how the update ended on the operation that ran
+    it. Built web files are made again when the base moved under a clean update. A check of the worktree
+    closes as brought up to date, or moves to clashing when the update left markers; an update that fails and
+    changes nothing is noted on the check and told to the merger before its refusal goes on to the worker."""
 
     command = UpdateWorker
     disabled_scopes = [ActorScope]

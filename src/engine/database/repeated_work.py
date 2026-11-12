@@ -207,7 +207,6 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def has_page_bounds(page: re.Match[str], statement: Statement) -> bool:
-        """Whether a page reads a known number of rows from a known place; a first page writes no offset."""
         parameters = iter(statement.parameters)
         limit, offset = (next(parameters) if value == "?" else int(value or 0) for value in page.groups()[1:])
         return isinstance(limit, int) and limit > 0 and isinstance(offset, int) and offset >= 0

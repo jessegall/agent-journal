@@ -21,10 +21,10 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
-    """Counts the worktree's commits behind its base once, before the transaction opens, since git runs, and opens a
-    check when it is far enough behind. A worktree with nothing of its own and no command of its worker running is
-    moved onto the base at once and its worker told; one at the set number of commits goes to the main agent;
-    any other waits for the merger, which the look starts once for all its checks."""
+    """Counts the worktree's commits behind its base once, before the transaction opens, since git runs, and
+    opens a check when it is far enough behind. A worktree with nothing of its own and no command of its
+    worker running is moved onto the base at once and its worker told; one at the set number of commits goes
+    to the main agent; any other waits for the merger, which the look starts once for all its checks."""
 
     command = CheckWorktreeBehind
     disabled_scopes = [ActorScope]

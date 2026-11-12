@@ -141,8 +141,6 @@ class ShellLine:
         return action == self._source_line
 
     def journal_argument_lines(self) -> tuple[tuple[str, ...], ...]:
-        """The arguments of every journal command the line runs: its own parts and those nested in them, such as in
-        bash -c or $(...)."""
         return (*(tuple(part.arguments) for part in self.parts if part.program == JOURNAL_PROGRAM), *(tuple(nested) for part in self.parts for nested in part.nested_journal_commands))
 
     def runs_journal_command(self, *commands: str) -> bool:

@@ -19,9 +19,10 @@ from suites.coding.modules.workers.support.merger_visits import MergerVisits
 
 
 class OrderWorkerUpdateHandler(Handler[OrderWorkerUpdate, None]):
-    """Orders the update: reads how far the worktree is behind before the transaction opens, since git runs, moves the check to ordered with who and why, closes the merger visit so the handled line
-    does not come back, and wakes the worker in its session with what moved and what to run. The main agent may order
-    a worker with no check open, which opens one."""
+    """Orders the update: reads how far the worktree is behind before the transaction opens, since git runs,
+    moves the check to ordered with who and why, closes the merger visit so the handled line does not come
+    back, and wakes the worker in its session with what moved and what to run. The main agent may order a
+    worker with no check open, which opens one."""
 
     command = OrderWorkerUpdate
     disabled_scopes = [ActorScope]
@@ -31,7 +32,6 @@ class OrderWorkerUpdateHandler(Handler[OrderWorkerUpdate, None]):
         self.behind, self.tip = 0, ""
 
     def opened(self, worktree: Worktree, deciding_id: int, context: Context) -> WorktreeBehindCheck:
-        """The main agent may order an update no look has opened a check for; the merger decides only open checks."""
         if not self.agents.is_main(deciding_id):
             raise Refusal(NO_OPEN_CHECK, "journal merger behind <worker> shows how far it is behind")
         return self.repository.save(WorktreeBehindCheck.opened(worktree.environment_id, worktree.id, self.tip, self.behind), context)

@@ -21,9 +21,10 @@ CLOSED_NEVER = "9999"
 
 
 class WorkUnits:
-    """Reads the unit of a worker: the ids of its assigned tasks that are not closed or were completed since its
-    worktree was cut, and the plan whose agent it is, or else the one phase all of them belong to. The one reader of a worker's plan, so the move of plan
-    assignment to the assignments table changes only here. Counts are counted, never read row by row."""
+    """Reads the unit of a worker: the ids of its assigned tasks that are not closed or were completed since
+    its worktree was cut, and the plan whose agent it is, or else the one phase all of them belong to. The one
+    reader of a worker's plan, so the move of plan assignment to the assignments table changes only here.
+    Counts are counted, never read row by row."""
 
     def __init__(self, tasks: TaskQuery, plans: TaskPlans, agents: AgentRows, queries: Queries, kept: KeptRows, worktrees: WorktreeQuery) -> None:
         self.tasks, self.plans, self.agents, self.queries, self.kept, self.worktrees = tasks, plans, agents, queries, kept, worktrees
