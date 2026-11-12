@@ -7,10 +7,9 @@ from engine.database.schema_columns import SchemaColumns
 from engine.database.statement import Statement
 from engine.enums.agent_role import AgentRole
 from engine.errors.refusal import Refusal
-from engine.model.table import Table
-from core.modules.agents.models.agent import MAIN_NUMBER, Agent
+from core.modules.agents.models.agent import MAIN_NUMBER
 from core.modules.agents.support.fold_clash_rules import FoldClashRules
-from core.modules.agents.support.main_fold_plan import EnvironmentFold, MainFoldPlan
+from core.modules.agents.support.main_fold_plan import EnvironmentFold, MainFoldPlan, MainRow
 from core.modules.agents.support.reference_columns import AGENT_MODEL_NAMES, AgentColumns, ReferenceColumns
 
 SESSIONS = ("agent_sessions", "session_agent_id")
@@ -63,8 +62,7 @@ class MainFold:
         self.rewrite = ReferenceRewrite(database)
 
     def plan(self) -> tuple[EnvironmentFold, ...]:
-        table = Table.build(Agent)
-        return MainFoldPlan.folds([table.row_model(row) for row in self.database.rows(MAIN_ROWS)])
+        return MainFoldPlan.folds([MainRow.from_row(row) for row in self.database.rows(MAIN_ROWS)])
 
     def run(self, folds: tuple[EnvironmentFold, ...], folded_at: str) -> FoldCounts:
         counts = FoldCounts()
@@ -114,7 +112,7 @@ class MainFold:
                  for table, model_column, id_column in columns.pairs}
         return plain | pairs
 
-    def record(self, fold: EnvironmentFold, agent: Agent, folded_at: str) -> int:
+    def record(self, fold: EnvironmentFold, agent: MainRow, folded_at: str) -> int:
         agent_rows = self.rewrite.rows(AGENTS_TABLE, "id", [agent.id])
         actor_rows = self.rewrite.rows(ACTORS_TABLE, "id", [agent.id])
         sessions = self.rewrite.rows(*SESSIONS, [agent.id])
