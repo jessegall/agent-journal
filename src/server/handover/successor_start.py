@@ -12,6 +12,7 @@ from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel
 from server.handover.handover_descriptors import READY_BYTE, HandoverDescriptors
 from engine.serving.server_files import ServerFiles
+from engine.file.file_access import FileAccess
 
 KILLED_WAIT_SECONDS = 5
 PYTHON_PATH_VARIABLE = "PYTHONPATH"
@@ -43,7 +44,7 @@ class SuccessorStart:
 
     def started(self, version: Path, descriptors: HandoverDescriptors) -> subprocess.Popen[bytes]:
         environment = {**os.environ, PYTHON_PATH_VARIABLE: str(version)}
-        with self.files.log.open("a") as log:
+        with FileAccess.shared().writer(self.files.log, "a") as log:
             return subprocess.Popen([sys.executable, str(version / "server" / "server.py"), "--home", str(self.home.folder), "--take-over", descriptors.text],
                                     cwd=self.home.folder.parent, env=environment, pass_fds=astuple(descriptors), stdin=subprocess.DEVNULL, stdout=log, stderr=log,
                                     start_new_session=True)

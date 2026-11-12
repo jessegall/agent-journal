@@ -101,6 +101,12 @@ class FileAccess:
             with self.lock:
                 self.invalidate(path)
 
+    def lifetime_writer(self, file: Path | str, mode: str = "a") -> IO[Any]:
+        path = Path(file).resolve()
+        with self.lock:
+            self.invalidate(path)
+        return path.open(mode)
+
     @contextmanager
     def descriptor_writer(self, file: Path | str, flags: int, permissions: int) -> Generator[int]:
         path = Path(file).resolve()
