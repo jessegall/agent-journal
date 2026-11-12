@@ -15,7 +15,7 @@ COMMANDS_KEY = "commands"
 
 @dataclass(frozen=True)
 class PluginAnswer:
-    """What a plugin printed for an event, version 4's line out: allow, refuse with a reason, or tell a line,
+    """What a plugin printed for an event, version 4's line out: allow, refuse with a reason, queue a judge run, or tell a line,
     with the cards it shows, the journal commands it runs, the skills it requires and how long it took in
     milliseconds; an empty output allows.
     """

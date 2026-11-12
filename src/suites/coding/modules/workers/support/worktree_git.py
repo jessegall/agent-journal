@@ -154,6 +154,8 @@ class WorktreeGit:
         if not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
             return False
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "add", "-A")
+        if self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--cached", "--quiet").returncode == 0:
+            return False
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "-m", message, "-m", trailer)
         return True
 
