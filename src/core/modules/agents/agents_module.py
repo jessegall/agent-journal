@@ -60,6 +60,9 @@ from core.modules.agents.models.agent_session import AgentSession
 from core.modules.agents.listeners.session_end_listener import SessionEndListener
 from core.modules.agents.listeners.session_launch_listener import SessionLaunchListener
 from core.modules.agents.migrations.m023_agent_sessions import AgentSessionsMigration
+from core.modules.agents.migrations.m027_agent_folds import AgentFoldsMigration
+from core.modules.agents.models.agent_fold import AgentFold
+from core.modules.agents.models.agent_fold_row import AgentFoldRow
 from core.modules.agents.migrations.m024_main_agent_parent import MainAgentParentMigration
 from core.modules.agents.support.local_launcher_transport import LocalLauncherTransport
 from core.modules.agents.support.program_transport import ProgramTransport
@@ -154,10 +157,10 @@ class AgentsModule(Module):
     helper_types = [HelperType("helper", "Read-only helper", run_limit_key="journal.core.helpers.read-only-helper-run-limit", kept_limit_key="journal.core.helpers.read-only-helper-kept-limit", profile_limits_key="journal.core.helpers.read-only-helper-profile-limits", job_command=("helper", "send"), line="Reads the project and reports; it changes no code."), HelperType("reviewer", "Reviewer")]
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
-    models = [ModelDeclaration(Agent, query=AgentQuery, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"]),
+    models = [ModelDeclaration(Agent, query=AgentQuery, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentFold, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentFoldRow, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(AgentSession, excluded_subcommands=["make", "edit", "delete"])]
     moves = [AgentsMove]
-    migrations = [AgentAnnouncedColumnMigration, AgentLaunchFailureColumnMigration, MainAgentParentMigration, AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
+    migrations = [AgentFoldsMigration, AgentAnnouncedColumnMigration, AgentLaunchFailureColumnMigration, MainAgentParentMigration, AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
     nudges = [AGENT_START_FAILED, *REPORT_NUDGES, PROGRAM_SETTINGS_BAN]
     guards = [AgentNameGuard, NumberGuard, RetiredRowGuard, RetiredDeleteGuard, AgentChatGuard]
     tick_handlers = [TickHandler(TickInterval(seconds=30), AgentReconcile(), "agent rows and their programs"),
