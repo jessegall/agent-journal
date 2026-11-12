@@ -24,7 +24,7 @@ class StatisticListSubcommand(ReadSubcommand[Sequence[Statistic]]):
         parser.add_argument("--prefix", default="")
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[Statistic]:
-        return tuple(row for row in self.queries.query(Statistic).ordered("key").full_table(COUNTERS_REASON).all_rows() if row.key.startswith(arguments.prefix))
+        return tuple(row for row in sorted(self.queries.query(Statistic).every_row(COUNTERS_REASON), key=lambda row: row.key) if row.key.startswith(arguments.prefix))
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [row for row in value if isinstance(row, Statistic)] if is_tuple(value) else []

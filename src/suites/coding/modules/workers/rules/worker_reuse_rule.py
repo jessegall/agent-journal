@@ -15,6 +15,8 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_REUSE
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.dispatch_arguments import DISPATCH_ARGUMENTS
 
+REUSE_REASON = "every open worktree is checked for a worker that knows the files of the new tasks"
+
 NEW_WORKER_FLAG = "--fresh"
 
 
@@ -47,7 +49,7 @@ class WorkerReuseRule(DriverRule):
         paths = PathMentions.found(" ".join(task.brief for task in self.queries.query(Task).find_many(task_ids)))
         if not paths:
             return None
-        worktrees = list(self.queries.query(Worktree).all_rows())
+        worktrees = list(self.queries.query(Worktree).every_row(REUSE_REASON))
         workers = {worker.id: worker for worker in self.queries.query(Agent).find_many([worktree.session_agent_id for worktree in worktrees])}
         for worktree in worktrees:
             is_ended = workers[worktree.session_agent_id].ended_at is not None

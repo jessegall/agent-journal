@@ -38,7 +38,7 @@ def replace_parsed_run(story, monkeypatch):
 
 
 def recorded(story) -> list[str]:
-    return [row.message for row in story.container.get(Queries).query(JournalException).limited(20) if "ReadLimitError" in row.message]
+    return [row.message for row in story.container.get(Queries).query(JournalException).take(20) if "ReadLimitError" in row.message]
 
 
 def test_a_line_of_the_main_agent_that_loads_too_many_rows_is_refused_and_shown_the_flag(new_story, monkeypatch):

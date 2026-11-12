@@ -9,6 +9,8 @@ from core.modules.library.support.copy_status import CopyStatus
 from core.modules.library.support.library_client import LibraryClient
 from core.modules.library.support.library_shares import LibraryShares
 
+STATUSES_REASON = "the status list covers every copy taken from the library"
+
 
 class CopyStatuses:
     """Works out the status of each copy when it is read, from the stored state, the digest of its row against the
@@ -18,7 +20,7 @@ class CopyStatuses:
         self.queries, self.shares, self.connections, self.client = queries, shares, connections, client
 
     def all_statuses(self) -> tuple[CopyStatus, ...]:
-        copies = self.queries.query(LibraryCopy).all_rows()
+        copies = self.queries.query(LibraryCopy).every_row(STATUSES_REASON)
         return tuple(status for status in (self.status(copy) for copy in copies) if status is not None)
 
     def status(self, copy: LibraryCopy) -> CopyStatus | None:

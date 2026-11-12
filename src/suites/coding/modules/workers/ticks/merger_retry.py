@@ -23,6 +23,8 @@ from suites.coding.modules.workers.support.merge_ready_lines import MergeReadyLi
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
+MERGER_RETRY_REASON = "the tick retries the merger in every environment with an unread line or an open visit"
+
 
 class MergerRetry:
     """Wakes an idle merger when the next worker can be merged or a line waits unread for it. A merger whose
@@ -37,13 +39,13 @@ class MergerRetry:
             with container.get(Scopes).row_scope(worktree):
                 self.retry(container, worktree)
         self.return_unhandled_lines(container)
-        unread = container.get(Queries).query(MergerLine).matching(IsNull("read_at")).matching(IsNull("read_output_id")).matching(IsNull("outcome")).oldest().all_rows()
+        unread = container.get(Queries).query(MergerLine).matching(IsNull("read_at")).matching(IsNull("read_output_id")).matching(IsNull("outcome")).every_row(MERGER_RETRY_REASON)
         for line in dict((row.environment_id, row) for row in reversed(tuple(unread))).values():
             with container.get(Scopes).row_scope(line):
                 self.retry_line(container, line)
 
     def return_unhandled_lines(self, container: Container) -> None:
-        open_visits = container.get(Queries).query(MergerVisit).matching(IsNull("closed_at")).all_rows()
+        open_visits = container.get(Queries).query(MergerVisit).matching(IsNull("closed_at")).every_row(MERGER_RETRY_REASON)
         for visit in dict((row.environment_id, row) for row in open_visits).values():
             with container.get(Scopes).row_scope(visit):
                 if self.is_merger_idle(container):

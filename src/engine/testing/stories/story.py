@@ -66,6 +66,8 @@ from engine.testing.stories.story_state import StoryState
 from engine.testing.fakes.fixed_process_table import FixedProcessTable
 from engine.testing.expectations.line_outcome import LineOutcome
 
+STORY_ROWS_REASON = "the story kit lists every row of a table for an assertion"
+
 
 M = TypeVar("M", bound=Model)
 S = TypeVar("S")
@@ -97,7 +99,9 @@ class Story:
     @classmethod
     def opened(cls, home: JournalHome, state: StoryState) -> "Story":
         clock, process_table = ManualClock(), FixedProcessTable([])
-        return cls(home, story_container(home, clock, process_table), clock, process_table, state)
+        story = cls(home, story_container(home, clock, process_table), clock, process_table, state)
+        story.container.get(Database).cuts_raise = True
+        return story
 
     def attach_journal(self, journal: StoryJournal) -> None:
         self.journal = journal
@@ -152,7 +156,7 @@ class Story:
             return seeder.seed(seed(), count, **fixed)
 
     def story_rows(self, model: type[M], **values: object) -> tuple[M, ...]:
-        return tuple(self.container.get(Queries).query(model).filter(**values).matching(Minimum(ID_COLUMN, 1)).oldest().all_rows())
+        return tuple(self.container.get(Queries).query(model).filter(**values).matching(Minimum(ID_COLUMN, 1)).every_row(STORY_ROWS_REASON))
 
     def use_fixture_environment(self, name: str | None) -> None:
         self.fixture_environment, self.fixture_environment_id = name, None
@@ -256,7 +260,7 @@ class Story:
         output = Output(self.container.get(Tables), False, stream)
         for match in TOUCHED_LINE.finditer(outcome.output_text):
             for model_name, row_id in (name.split(":") for name in match[1].split(", ")):
-                for row in self.container.get(Queries).query(models[model_name]).filter(id=int(row_id)).all_rows() if model_name in models else ():
+                for row in self.container.get(Queries).query(models[model_name]).filter(id=int(row_id)).get() if model_name in models else ():
                     output.row(row)
         return outcome.output_text + stream.getvalue()
 

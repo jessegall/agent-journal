@@ -12,6 +12,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.request_log_import import RequestLogImport
 from tests.stories.core.support.fixtures import UserJoined
 
+TEST_ROWS_REASON = "the test reads every row it checks"
 RUN_LINE = "echo from-main"
 MERGE_LINE = "echo merged"
 
@@ -29,7 +30,7 @@ def test_a_run_lands_on_its_own_environments_main_agent_and_a_merge_keeps_a_proc
     RequestLogImport()(story.container)
     RequestLogImport()(story.container)
     with story.container.get(Scopes).opened(None, main_id):
-        runs = tuple(story.container.get(Queries).query(RequestRun).all_rows())
+        runs = tuple(story.container.get(Queries).query(RequestRun).every_row(TEST_ROWS_REASON))
     owners = [(run.line, run.session_agent_id) for run in runs]
     merge_row = story.container.get(Queries).query(Process).find(merged.process_id)
     story.expect_rows(any(RUN_LINE in line and agent == main_agent for line, agent in owners), all(agent != web_agent for _, agent in owners),

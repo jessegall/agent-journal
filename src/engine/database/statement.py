@@ -37,10 +37,6 @@ class Statement:
         return self.all_joined((self, tail), separator)
 
     @classmethod
-    def row_state(cls, table: str, row_id: int) -> "Statement":
-        return Statement(f"SELECT state FROM {table} WHERE id = ?", [row_id])
-
-    @classmethod
     def all_joined(cls, statements: tuple["Statement", ...], separator: str) -> "Statement":
         reason = next((statement.scan_reason for statement in statements if statement.scan_reason is not None), None)
         return Statement(separator.join(statement.sql for statement in statements), tuple(parameter for statement in statements for parameter in statement.parameters), reason)

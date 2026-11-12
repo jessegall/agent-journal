@@ -31,6 +31,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from engine.testing.expectations.expect_reply import expect_reply_line
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 @pytest.fixture
 def kept_reader_sample(new_story):
@@ -89,7 +91,7 @@ def test_a_worker_run_with_a_poor_reader_or_none_gets_only_the_ended_line(new_st
         output = story.container.get(OutputQuery).process_output(ended.id)
         story.expect_rows(story.container.get(ReadingNotices).nudges(ended, output, story.container.get(RunVisibility).parts(ended.id)) == ())
     story.hook("s-8", HookSamples.stop())
-    blocks = story.container.get(Queries).query(AgentBlock).filter(session_agent_id=worker.id, closed_at=None).all_rows()
+    blocks = story.container.get(Queries).query(AgentBlock).filter(session_agent_id=worker.id, closed_at=None).every_row(TEST_ROWS_REASON)
     story.expect_rows(not tuple(blocks))
 
 
@@ -99,7 +101,7 @@ def test_a_worker_with_no_reader_is_held_and_cannot_skip_the_block(new_story):
     worker = reader_worker(story)
     requests = story.container.get(ReaderRequestQuery)
     story.expect_rows(requests.has_active_requests(worker.id, story.clock.timestamp()))
-    blocks = tuple(story.container.get(Queries).query(AgentBlock).filter(session_agent_id=worker.id).all_rows())
+    blocks = tuple(story.container.get(Queries).query(AgentBlock).filter(session_agent_id=worker.id).every_row(TEST_ROWS_REASON))
     story.expect_rows(len(blocks) == 1, blocks[0].grace_tool_uses == 0, blocks[0].grace_seconds == 0)
     story.expect_refusal(f'agent-block skip {blocks[0].id} --reason "skip the reader"', "cannot", actor=worker)
     story.expect_hook_refusal("s-reader", HookSamples.shell("touch skip", ShellPart("touch", CommandCategory.EDIT, ["skip"])), "no proper reader")
@@ -199,7 +201,7 @@ def test_the_main_agent_gets_one_line_and_no_chat_mark_for_two_workers_on_one_co
     reply = story.hook("s-1", HookSamples.prompt("continue"))
     story.expect_rows(sum("reader request" in line for line in reply.lines) == 2)
     story.run_listeners()
-    marks = tuple(story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").all_rows())
+    marks = tuple(story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").every_row(TEST_ROWS_REASON))
     story.expect_rows(not marks)
     repeated_reply = story.hook("s-1", HookSamples.prompt("continue again"))
     story.expect_rows(not any("reader request" in line for line in repeated_reply.lines))
@@ -215,7 +217,7 @@ def test_the_main_agent_is_held_after_five_tool_uses_with_a_countdown(notified_r
 
 def test_a_skipped_block_does_not_free_the_worker_and_comes_back(notified_reader_story):
     story = notified_reader_story
-    blocks = story.container.get(Queries).query(AgentBlock).filter(session_agent_id=story.agent.id, closed_at=None).all_rows()
+    blocks = story.container.get(Queries).query(AgentBlock).filter(session_agent_id=story.agent.id, closed_at=None).every_row(TEST_ROWS_REASON)
     block = next(block for block in blocks if block.nudge_key.startswith("processes.reader_request"))
     story.run(f'agent-block skip {block.id} --reason "finish another change"', actor=story.agent)
     story.expect_rows(story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
@@ -251,7 +253,7 @@ def test_an_idle_main_agent_gets_the_reader_request_on_tick(requested_reader_sto
     story = requested_reader_story
     reply = story.tick("s-1")
     story.expect_rows(not reply.lines)
-    lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source="processes.reader-request.1").all_rows())
+    lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source="processes.reader-request.1").every_row(TEST_ROWS_REASON))
     story.expect_rows(len(lines) == 1, lines[0].wakes_agent, "reader request 1" in lines[0].text)
     story.tick("s-1")
     story.expect_rows(story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source="processes.reader-request.1").count() == 1)

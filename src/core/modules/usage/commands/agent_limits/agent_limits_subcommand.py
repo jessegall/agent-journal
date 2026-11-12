@@ -19,6 +19,8 @@ from core.modules.usage.support.agent_limit_counts import AgentLimitCounts
 from core.modules.usage.support.agent_profile_limit_counts import AgentProfileLimitCounts
 from core.modules.settings.support.setting_reader import SettingReader
 
+PENDING_AGENTS_REASON = "every agent with pending work counts against its limit"
+
 
 class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
     """Reads agent counts and the limits in force for each registered type and its kept profiles."""
@@ -33,9 +35,9 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
         self.settings = settings
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[AgentLimitCounts, ...]:
-        kept = tuple(self.queries.query(AgentCounts).all_rows())
+        kept = tuple(self.queries.query(AgentCounts).get())
         pending_ids = tuple(self.work.pending())
-        pending = tuple(self.queries.query(Agent).matching(Among("id", pending_ids)).matching(IsNull("retired_at")).all_rows()) if pending_ids else ()
+        pending = tuple(self.queries.query(Agent).matching(Among("id", pending_ids)).matching(IsNull("retired_at")).every_row(PENDING_AGENTS_REASON)) if pending_ids else ()
         installed_profiles = {profile.name: profile for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
         titles = {name: profile.display_title for name, profile in installed_profiles.items()}
         counts: list[AgentLimitCounts] = []

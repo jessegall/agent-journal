@@ -7,6 +7,8 @@ from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple
 from suites.coding.modules.workers.models.worker_wait import WorkerWait
 
+WORKER_WAITS_REASON = "the list shows what every worker waits on"
+
 
 class WorkerWaitsSubcommand(ReadSubcommand[tuple[WorkerWait, ...]]):
     cli_name = "worker"
@@ -17,7 +19,7 @@ class WorkerWaitsSubcommand(ReadSubcommand[tuple[WorkerWait, ...]]):
         self.queries = queries
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[WorkerWait, ...]:
-        rows = self.queries.query(WorkerWait).ordered("agent_id").all_rows()
+        rows = self.queries.query(WorkerWait).every_row(WORKER_WAITS_REASON)
         return tuple(rows)
 
     def write_output(self, value: object, output: Output) -> None:

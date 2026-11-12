@@ -14,6 +14,8 @@ from core.modules.plans.models.plan import Plan
 from core.modules.tasks.models.task import Task
 from core.modules.documents.models.text_row import TextRow
 
+SELECTIONS_REASON = "every comment on the page is shown with its selection"
+
 MESSAGE_MODEL = "message"
 
 
@@ -24,7 +26,7 @@ class RowComments:
         self.queries = queries
 
     def comments(self, row: Model) -> tuple[Message, ...]:
-        return tuple(self.query(row).oldest().limited(25))
+        return tuple(self.query(row).oldest().take(25))
 
     def query(self, row: Model) -> Query[Message]:
         links = self.queries.query(Link).filter(target_model=row.model_name, target_id=row.id, link_type=LinkType.COMMENT, source_model=MESSAGE_MODEL).oldest()
@@ -40,7 +42,7 @@ class RowComments:
     def page(self, row: TextRow | Plan | Task, number: int = 1, size: int = 25) -> Page[CommentRead]:
         messages = self.query(row).oldest().page(number, size)
         ids = tuple(message.id for message in messages.rows)
-        selections = {selection.message_id: selection for selection in self.queries.query(CommentSelection).matching(Among("message_id", ids)).limited(len(ids))}
+        selections = {selection.message_id: selection for selection in self.queries.query(CommentSelection).matching(Among("message_id", ids)).every_row(SELECTIONS_REASON)}
         return Page(tuple(self.read(message, selections.get(message.id), row) for message in messages.rows), number, size, messages.total)
 
     def read(self, message: Message, selection: CommentSelection | None, row: TextRow | Plan | Task) -> CommentRead:

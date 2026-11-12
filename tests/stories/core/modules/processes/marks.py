@@ -23,6 +23,8 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuild
 from tests.stories.core.support.fixtures import UserJoined
 from engine.testing.expectations.expect_row import expect_row
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 MARKS = "chat-mark list --environment 1 --oldest"
 AFTER = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])).with_fields(event="post_tool_use")
 PROGRESS = 'reader add steps --commands "make*" --lines "FAILED" --progress "\\[ *([0-9]+)%\\]"'
@@ -184,7 +186,7 @@ def test_visibility_and_the_long_run_dock_agree(process_story):
              ("journal worker_merGe 7", False), ("make build", True)]
     processes = [(started_run(story, line, category=CommandCategory.BUILD if line == "make build" else CommandCategory.UNKNOWN), visible) for line, visible in cases]
     story.advance(timedelta(seconds=6))
-    candidates = {process.id for process in story.container.get(ProcessQuery).running().long_run_candidates(story.clock.timestamp(), 5).all_rows()}
+    candidates = {process.id for process in story.container.get(ProcessQuery).running().long_run_candidates(story.clock.timestamp(), 5).every_row(TEST_ROWS_REASON)}
     visibility = story.container.get(RunVisibility)
     expect_visible_visibility_id(visibility, candidates, processes, [(visible, visible) for _, visible in processes])
     story.hook("s-1", HookSamples.stop())

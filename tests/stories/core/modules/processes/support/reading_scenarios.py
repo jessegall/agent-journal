@@ -13,6 +13,8 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 TOX_OUTPUT = "FAILED one\nerror two\n"
 REJECTED_OUTPUT = "Usage: journal sins [OPTIONS]\nUnknown option --tail\n"
 BUILD_OUTPUT = "compiling\ncompiling\ndone\n"
@@ -82,7 +84,7 @@ def end_reason(story: Story, process: Process) -> str:
 def end_positions(story: Story, process: Process) -> list[int]:
     """The part of each end decision kept for a run, one entry per decision."""
     story.run_listeners()
-    return sorted(row.part_position for row in story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, moment=ReadingMoment.END).all_rows())
+    return sorted(row.part_position for row in story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, moment=ReadingMoment.END).every_row(TEST_ROWS_REASON))
 
 
 def heard(story: Story, session: str = "s-1") -> str:

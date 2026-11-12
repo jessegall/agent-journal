@@ -28,7 +28,8 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
     """Moves queued proofs to running and makes their processes, owned by the worker that wrote them, so it
     reads their output; a later listener starts them once this is committed. They all go on the run queue at
     once and run on the commit handed in, in a checkout of its own, so the worker can go on working in its
-    worktree. A proof of a merged worktree is run by a checkpoint of its plan, on that run's checkout of the
+    worktree. A checkout busy with tests of an older commit is never reused: the new proofs wait queued until it
+    is free. A proof of a merged worktree is run by a checkpoint of its plan, on that run's checkout of the
     head of the environment's branch."""
 
     runs_once = True
@@ -44,8 +45,9 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
         proofs = [proof for proof in self.proofs.test_rows() if proof.worktree_id in worktrees]
         running = {proof.worktree_id for proof in proofs if proof.state is ProofState.RUNNING}
         queued = [proof for proof in proofs if proof.state is ProofState.QUEUED]
-        folders = {worktree_id: self.test_folder(worktrees[worktree_id], running) for worktree_id in {proof.worktree_id for proof in queued}}
-        for proof in queued:
+        ready = {worktree_id for worktree_id in {proof.worktree_id for proof in queued} if self.is_ready(worktrees[worktree_id], running)}
+        folders = {worktree_id: self.test_folder(worktrees[worktree_id], running) for worktree_id in ready}
+        for proof in (proof for proof in queued if proof.worktree_id in ready):
             self.start(proof, worktrees[proof.worktree_id], folders[proof.worktree_id], context)
             running.add(proof.worktree_id)
         for first_answer in self.affected.queued():
@@ -58,6 +60,11 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
                 self.repository.update(first_answer, context, state=AffectedTestState.CANCELLED)
                 continue
             self.start_picker(first_answer, worktree, context)
+
+    def is_ready(self, worktree: Worktree, running: set[int]) -> bool:
+        """Whether the queued proofs of a worktree can start: a test checkout that still runs tests at an older commit
+        is never reused for a newer one, so they wait queued until it is free and is brought to their commit."""
+        return worktree.merged_at is not None or worktree.id not in running or self.git.is_test_checkout_current(worktree)
 
     def test_folder(self, worktree: Worktree, running: set[int]) -> str:
         if worktree.merged_at is not None:

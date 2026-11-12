@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
+from engine.query.conditions.interval_passed_since import IntervalPassedSince
+from engine.query.conditions.greater import Greater
+from engine.query.conditions.all_of import AllOf
 
 
 @dataclass(frozen=True)
@@ -11,4 +14,4 @@ class IntervalPassed:
     present: str
 
     def statement(self) -> Statement:
-        return Statement("interval_minutes > 0 AND (last_run_at IS NULL OR datetime(last_run_at, '+' || interval_minutes || ' minutes') <= datetime(?))", [self.present])
+        return AllOf([Greater("interval_minutes", 0), IntervalPassedSince("last_run_at", "interval_minutes", self.present)]).statement()

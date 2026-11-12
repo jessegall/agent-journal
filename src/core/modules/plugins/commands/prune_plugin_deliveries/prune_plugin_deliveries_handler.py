@@ -8,6 +8,8 @@ from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveri
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_delivery import PluginDelivery
 
+PRUNE_REASON = "pruning keeps the newest deliveries of a plugin and removes every older one"
+
 KEPT_DELIVERY_DAYS = 7
 KEPT_DELIVERIES = 50
 
@@ -23,8 +25,8 @@ class PrunePluginDeliveriesHandler(Handler[PrunePluginDeliveries, int]):
     def handle(self, command: PrunePluginDeliveries, context: Context) -> int:
         cutoff = context.timestamp.value - timedelta(days=KEPT_DELIVERY_DAYS)
         old: list[PluginDelivery] = []
-        for plugin in tuple(self.queries.query(Plugin).all_rows()):
-            rows = tuple(self.queries.query(PluginDelivery).filter(plugin_id=plugin.id).newest().all_rows())
+        for plugin in tuple(self.queries.query(Plugin).get()):
+            rows = tuple(sorted(self.queries.query(PluginDelivery).filter(plugin_id=plugin.id).every_row(PRUNE_REASON), key=lambda row: row.id, reverse=True))
             old += [row for row in rows[KEPT_DELIVERIES:] if row.creation_timestamp().value < cutoff]
         for row in old:
             self.repository.delete(row, context)

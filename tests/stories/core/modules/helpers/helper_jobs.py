@@ -12,6 +12,8 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 JOB = "Now read the listener side."
 START = 'helper start journal-researcher --brief "Read src/cart.py" --environment main'
 
@@ -44,7 +46,7 @@ def resumable_session(story, helper, monkeypatch) -> None:
 
 
 def read_jobs(story, helper):
-    return list(story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).oldest().all_rows())
+    return list(story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).every_row(TEST_ROWS_REASON))
 
 
 class EndedHelper(StoryFixture):

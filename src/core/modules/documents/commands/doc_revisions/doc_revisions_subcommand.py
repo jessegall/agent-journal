@@ -11,6 +11,8 @@ from core.modules.documents.models.doc_revision import DocRevision
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent
 
+REVISIONS_REASON = "the revision list names every revision of the document and its author"
+
 
 class DocRevisionsSubcommand(ReadSubcommand[Sequence[DocRevision]]):
     """`journal doc revisions <n>`: each revision of a document, its number, time, and what changed."""
@@ -25,13 +27,13 @@ class DocRevisionsSubcommand(ReadSubcommand[Sequence[DocRevision]]):
         parser.add_argument("id", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[DocRevision]:
-        return tuple(self.queries.query(DocRevision).filter(doc_id=arguments.id).ordered("number").all_rows())
+        return tuple(sorted(self.queries.query(DocRevision).filter(doc_id=arguments.id).every_row(REVISIONS_REASON), key=lambda revision: revision.number))
 
     def write_output(self, value: object, output: Output) -> None:
         revisions = [row for row in value if isinstance(row, DocRevision)] if is_tuple(value) else []
         author_ids = [row.author_id for row in revisions if row.author_id is not None]
         actors = {actor.id: actor.name for actor in self.queries.query(ActorRecord).find_many(author_ids)}
-        agents = {agent.id: agent.display_name for agent in self.queries.query(Agent).matching(Among("id", author_ids)).all_rows()}
+        agents = {agent.id: agent.display_name for agent in self.queries.query(Agent).matching(Among("id", author_ids)).every_row(REVISIONS_REASON)}
         names = {**actors, **agents}
 
         def author_name(author_id: int | None) -> str:

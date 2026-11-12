@@ -24,4 +24,4 @@ class CountProfileUseHandler(Handler[CountProfileUse, None]):
         self.repository.save(replace(last_used, value=int(self.clock.timestamp().value.timestamp())), context)
 
     def row(self, key: str) -> Statistic:
-        return next(self.queries.query(Statistic).filter(key=key).all_rows(), None) or Statistic(key=key)
+        return self.queries.query(Statistic).filter(key=key).first() or Statistic(key=key)

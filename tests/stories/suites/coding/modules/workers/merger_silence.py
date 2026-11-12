@@ -18,6 +18,8 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 RETURNED_MERGE_REPORT = "does not seem able to fix it"
 CLOSING_MESSAGE = "No merge is pending."
 
@@ -35,7 +37,7 @@ class WorkerWithMerger:
         return Actor(self.agent.id, ActorType.AGENT)
 
     def texts(self) -> list[str]:
-        return [message.text for message in self.story.container.get(Queries).query(Message).filter(session_agent_id=self.agent.id).all_rows()]
+        return [message.text for message in self.story.container.get(Queries).query(Message).filter(session_agent_id=self.agent.id).every_row(TEST_ROWS_REASON)]
 
     def return_merge(self, count: int) -> None:
         for _ in range(count):

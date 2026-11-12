@@ -23,6 +23,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from tests.stories.support.story_checks import expect_value
 from tests.stories.core.support.agent_labels import agent_number
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 READ = HookSamples.shell("cat cart.py", ShellPart("cat", CommandCategory.READ, ["cart.py"]))
 LINT = HookSamples.shell("ruff check", ShellPart("ruff", CommandCategory.CHECK, ["check"]))
 
@@ -44,10 +46,10 @@ class TargetedSession(StoryFixture):
 
     def expect(self, story):
         agents = story.container.get(Queries).query(Agent)
-        worker = next(iter(agents.filter(role="worker").all_rows()))
+        worker = next(iter(agents.filter(role="worker").every_row(TEST_ROWS_REASON)))
         story.worker = Actor(worker.id, ActorType.AGENT)
         story.worker_session = worker.session
-        helper = next(iter(agents.filter(session="h-1").all_rows()))
+        helper = next(iter(agents.filter(session="h-1").every_row(TEST_ROWS_REASON)))
         story.helper = Actor(helper.id, ActorType.AGENT)
 
 

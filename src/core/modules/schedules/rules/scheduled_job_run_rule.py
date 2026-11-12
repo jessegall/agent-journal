@@ -20,5 +20,5 @@ class ScheduledJobRunRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         prompt = (hook.event.prompt or "").strip()
-        jobs = self.queries.query(ScheduledJob).filter(session_agent_id=hook.agent_id).matching(IsNull("ended_at")).all_rows()
+        jobs = self.queries.query(ScheduledJob).filter(session_agent_id=hook.agent_id).matching(IsNull("ended_at")).get()
         return RuleAnswer.allowed().running(*(RecordScheduledJobRun(job.id) for job in jobs if job.prompt.strip() == prompt))

@@ -55,7 +55,7 @@ class PlanFocus:
         return self.last_overview
 
     def loaded_overview(self, agent: Agent) -> FocusOverview:
-        plans = tuple(self.queries.query(Plan).filter(state=PlanState.STARTED).ordered("started_at", "id").all_rows())
+        plans = tuple(self.queries.query(Plan).filter(state=PlanState.STARTED).ordered("started_at", "id").get())
         explicit_id = self.explicit_plan_id(agent)
         explicit_plan = next((plan for plan in plans if plan.id == explicit_id), None)
         unused = None

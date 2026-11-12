@@ -26,7 +26,7 @@ class McpCheckSubcommand(ReadSubcommand[Sequence[str]]):
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[str]:
         config_names = self.configs.names()
         lines: list[str] = []
-        for server in self.servers.oldest().all_rows():
+        for server in self.servers.oldest().get():
             missing = [file for file, names in config_names.items() if server.name not in names]
             if self.standing.standing(server) == NEEDS_KEY:
                 lines.append(f"{server.name}  needs its key: journal mcp key {server.name} <value>")

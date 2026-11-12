@@ -16,6 +16,9 @@ from core.modules.processes.support.stock_digest import StockDigest
 from core.modules.processes.support.stock_retirement import StockRetirement
 from core.modules.processes.support.reading.stock_reader_edits import StockReaderEdits
 
+RETIRED_READER_REASON = "a retired stock reader is taken off every output and request that used it"
+CATALOGUE_REASON = "the stock update compares every reader of the catalogue with the shipped ones"
+
 
 class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
     command = UpdateStockReaders
@@ -25,7 +28,7 @@ class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
         self.outputs, self.requests = outputs, requests
 
     def handle(self, command: UpdateStockReaders, context: Context) -> None:
-        rows = self.kept.read("readers", self.loaded_rows, name="processes.stock_readers")
+        rows = self.kept.read(self.readers, self.loaded_rows, name="processes.stock_readers")
         for stock in STOCK_READERS:
             reader = rows.readers.get(stock.name)
             if reader is not None and (not reader.is_stock or reader.id in rows.edited_ids):
@@ -33,7 +36,7 @@ class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
             updated = replace(stock.applied(reader), shipped_digest=StockDigest.of(stock))
             if updated != reader:
                 saved = self.repository.save_change(reader, updated, context)
-                self.kept.update("readers", self.with_saved(saved), name="processes.stock_readers")
+                self.kept.update(self.readers, self.with_saved(saved), name="processes.stock_readers")
         shipped_names = {stock.name for stock in STOCK_READERS}
         for reader in tuple(rows.readers.values()):
             if StockRetirement.retires(reader, shipped_names, reader.id in rows.edited_ids):
@@ -41,9 +44,9 @@ class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
 
     def retired(self, reader: Reader, context: Context) -> None:
         """A stock row whose shipped entry is gone leaves, and the outputs and ended requests it read lose it."""
-        for output in tuple(self.outputs.filter(reader_id=reader.id).all_rows()):
+        for output in tuple(self.outputs.filter(reader_id=reader.id).every_row(RETIRED_READER_REASON)):
             self.repository.update(output, context, reader_id=None)
-        for request in tuple(self.requests.filter(reader_id=reader.id).all_rows()):
+        for request in tuple(self.requests.filter(reader_id=reader.id).every_row(RETIRED_READER_REASON)):
             self.repository.update(request, context, reader_id=None)
         self.repository.delete(reader, context)
 
@@ -55,5 +58,5 @@ class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
         return updated
 
     def loaded_rows(self) -> StockReaderRows:
-        readers = {reader.name: reader for reader in self.readers.all_rows()}
+        readers = {reader.name: reader for reader in self.readers.every_row(CATALOGUE_REASON)}
         return StockReaderRows(readers, self.edits.edited_ids(readers.values()))

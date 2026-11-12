@@ -11,6 +11,8 @@ from core.modules.viewer.models.window_permission import WindowPermission
 from core.modules.viewer.commands.prune_window_permissions.prune_window_permissions import PruneWindowPermissions
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType
 
+PERMISSIONS_REASON = "pruning checks every window permission of the environment for a subject that is gone"
+
 
 class PruneWindowPermissionsHandler(Handler[PruneWindowPermissions, int]):
     """Deletes every permission whose window, dock or buttons no installed module declares, and every page trust of a
@@ -35,14 +37,15 @@ class PruneWindowPermissionsHandler(Handler[PruneWindowPermissions, int]):
 
     def permissions(self, environment_id: int) -> tuple[WindowPermission, ...]:
         with self.scopes.read_scope((), None, environment_id):
-            return self.kept.scoped_read("window_permissions", lambda: tuple(self.queries.query(WindowPermission).all_rows()), name="viewer.permission_catalogue")
+            permissions = self.queries.query(WindowPermission)
+            return self.kept.read(permissions, lambda: tuple(permissions.every_row(PERMISSIONS_REASON)), name="viewer.permission_catalogue")
 
     def drop_kept(self, permission: WindowPermission) -> None:
         def without_permission(rows: tuple[WindowPermission, ...]) -> tuple[WindowPermission, ...]:
             return tuple(row for row in rows if row.id != permission.id)
 
         with self.scopes.read_scope((), None, permission.environment_id):
-            self.kept.scoped_update("window_permissions", without_permission, name="viewer.permission_catalogue")
+            self.kept.update(self.queries.query(WindowPermission), without_permission, name="viewer.permission_catalogue")
 
     def has_subject(self, subject: str) -> bool:
         return self.registry.has_window(subject) or self.registry.dock(subject) is not None or bool(self.registry.subject_button_lines(subject))

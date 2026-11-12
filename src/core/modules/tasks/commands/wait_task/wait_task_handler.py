@@ -11,7 +11,6 @@ from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.tasks.support.task_opener import USER_TARGET
 from core.modules.tasks.support.task_wait_targets import TaskWaitTargets
 
-
 class WaitTaskHandler(Handler[WaitTask, Task]):
     """Blocks a task until its targets resolve, its command passes or someone unblocks it."""
 

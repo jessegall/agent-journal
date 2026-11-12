@@ -17,6 +17,8 @@ from suites.coding.modules.workers.support.worker_questions import WorkerQuestio
 from suites.coding.modules.workers.support.worker_settings import STOPPED_WORKER_RUN_MINUTES
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
 
+STOPPED_RUNS_REASON = "every run still going after its worker stopped is reported once"
+
 RUN_ENDED_REASON = "the run ended or the worker works again"
 
 
@@ -33,11 +35,11 @@ class ReportStoppedWorkerRunsHandler(Handler[ReportStoppedWorkerRuns, None]):
         self.queries, self.processes, self.unfinished, self.settings, self.inbox, self.questions = queries, processes, unfinished, settings, inbox, questions
 
     def handle(self, command: ReportStoppedWorkerRuns, context: Context) -> None:
-        runs = tuple(self.processes.running().oldest().all_rows())
+        runs = tuple(self.processes.running().every_row(STOPPED_RUNS_REASON))
         workers = {worker.id: worker for worker in self.queries.query(Agent).find_many(sorted({run.session_agent_id for run in runs}))}
         limit_seconds = self.settings.minutes(STOPPED_WORKER_RUN_MINUTES).count
         reported_runs = {self.source_key(run): run for run in runs if run.session_agent_id in workers and self.is_running_after_stop(workers[run.session_agent_id], context, limit_seconds)}
-        lines = {line.source_key: line for line in self.queries.query(MergerLine).matching(Prefix("source_key", SOURCE_KEY_PREFIX)).oldest().all_rows()}
+        lines = {line.source_key: line for line in self.queries.query(MergerLine).matching(Prefix("source_key", SOURCE_KEY_PREFIX)).every_row(STOPPED_RUNS_REASON)}
         for source_key, line in lines.items():
             if source_key not in reported_runs and line.is_open_question():
                 self.questions.record(line, AskOutcome.MOOT, RUN_ENDED_REASON, context)

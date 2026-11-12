@@ -1,3 +1,4 @@
+from core.modules.aliases.migrations.m007_alias_category_index import AliasCategoryIndexMigration
 from engine.cli.shell_aliases import ShellAliases
 from core.modules.aliases.migrations.m003_alias_agent_access import AliasAgentAccessMigration
 from core.modules.aliases.guards.reader_alias_guard import ReaderAliasGuard
@@ -46,7 +47,7 @@ class AliasesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.processes", "journal.core.plugins", "journal.core.drivers"]
     models = [ModelDeclaration(Alias, query=AliasQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(CommandType)]
     views = [SavedCommand]
-    migrations = [AliasesTableMigration, AliasCategoryMigration, AliasAgentAccessMigration, CommandPrefixesMigration, AliasSilenceMigration, CommandTypesMigration]
+    migrations = [AliasCategoryIndexMigration, AliasesTableMigration, AliasCategoryMigration, AliasAgentAccessMigration, CommandPrefixesMigration, AliasSilenceMigration, CommandTypesMigration]
     moves = [AliasesMove]
     handlers = [AddAliasHandler, EditAliasHandler, RemoveAliasHandler, SetAliasSilenceHandler]
     subcommands = [AliasSavedSubcommand, AddAliasSubcommand, EditAliasSubcommand, RemoveAliasSubcommand, SkipSavedCommandSubcommand]

@@ -43,10 +43,10 @@ class AgentsMove(VersionFourMove):
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         roles = list(context.role_names)
-        all_rows = list(source.rows(TABLE))
-        latest_ids = self.newest_main_ids(all_rows)
+        source_rows = list(source.rows(TABLE))
+        latest_ids = self.newest_main_ids(source_rows)
         main_rows: dict[int, int] = {}
-        for row in sorted(all_rows, key=lambda row: row["id"] not in latest_ids):
+        for row in sorted(source_rows, key=lambda row: row["id"] not in latest_ids):
             role = self.moved_role(row["role"] or AgentRole.MAIN.value)
             if not row["session"]:
                 report.drop("agents without a session", 1)

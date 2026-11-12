@@ -10,5 +10,5 @@ class ProcessPruning:
     """Prunes ended processes in every environment."""
 
     def __call__(self, container: Container) -> None:
-        for environment in container.get(Queries).query(Environment).all_rows():
+        for environment in container.get(Queries).query(Environment).get():
             container.get(Bus).run(PruneProcesses(), Actor.core(), environment_id=environment.id)

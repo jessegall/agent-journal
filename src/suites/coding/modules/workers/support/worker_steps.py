@@ -19,6 +19,8 @@ from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.modules.workers.support.work_units import WorkUnits
 from suites.coding.modules.workers.support.worktree_runs import WorktreeRuns
 
+CONFLICT_LINES_REASON = "every merge conflict line of the worker is checked for one after the delivery"
+
 
 class WorkerSteps:
     """Which fixed point of its round a worker is at, read from the rows the journal keeps."""
@@ -95,5 +97,5 @@ class WorkerSteps:
     def conflict_line(self, worktree: Worktree) -> AgentLine | None:
         if worktree.state is not WorktreeState.CUT or worktree.delivered_at is None:
             return None
-        lines = self.queries.query(AgentLine).filter(session_agent_id=worktree.session_agent_id, source=MERGE_CONFLICT_SOURCE).newest().all_rows()
+        lines = sorted(self.queries.query(AgentLine).filter(session_agent_id=worktree.session_agent_id, source=MERGE_CONFLICT_SOURCE).every_row(CONFLICT_LINES_REASON), key=lambda line: line.id, reverse=True)
         return next((line for line in lines if line.nudge.key == WORKER_MERGE_CONFLICT.key and line.creation_timestamp().value >= worktree.delivered_at.value), None)

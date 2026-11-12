@@ -1,15 +1,17 @@
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.database.database import Database
-from engine.database.statement import Statement
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
 from engine.enums.agent_role import AgentRole
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.agents.support.agent_label import AgentLabel
+from core.modules.plans.models.plan import Plan
+from core.modules.questions.models.question import Question
+from core.modules.tasks.models.task import Task
 
-TARGET_TABLES = {"task": "tasks", "question": "questions", "plan": "plans"}
+TARGET_MODELS: dict[str, type[Task | Question | Plan]] = {"task": Task, "question": Question, "plan": Plan}
 FINISHED_STATES = ("completed", "cancelled", "answered", "closed")
 
 
@@ -25,7 +27,7 @@ class TaskWaitTargets:
 
     @property
     def target_types(self) -> tuple[str, ...]:
-        return (*TARGET_TABLES, "helper")
+        return (*TARGET_MODELS, "helper")
 
     @property
     def target_help(self) -> str:
@@ -35,15 +37,16 @@ class TaskWaitTargets:
     def target(self, target_type: str, row_id: int) -> str:
         if target_type == "helper":
             return self.helper_target(self.agent_row_id(row_id))
-        table = TARGET_TABLES.get(target_type)
-        if table is None:
+        model = TARGET_MODELS.get(target_type)
+        if model is None:
             raise Refusal(f"{target_type}:{row_id} gives nothing to wait on", self.target_help)
-        rows = self.database.rows(Statement.row_state(table, row_id))
-        if not rows:
+        query = self.queries.query(model)
+        row = query.filter(id=row_id).first()
+        if row is None:
             raise Refusal(f"{target_type} {row_id} does not exist", "name a row that does")
-        if rows[0]["state"] in FINISHED_STATES:
-            raise Refusal(f"{target_type} {row_id} is {rows[0]['state']} already", "nothing waits on it; carry on with the task")
-        return f"{table}:{row_id}"
+        if row.state in FINISHED_STATES:
+            raise Refusal(f"{target_type} {row_id} is {row.state} already", "nothing waits on it; carry on with the task")
+        return f"{query.table.name}:{row_id}"
 
     def helper_target(self, row_id: int) -> str:
         helper = self.queries.query(Agent).find(row_id)

@@ -8,6 +8,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
+CHECKS_REASON = "every behind check of the worktree is weighed"
 NO_OPEN_CHECK = "no open check for this worker"
 
 
@@ -38,4 +39,4 @@ class BehindDecisions:
         return worktree
 
     def check(self, worktree: Worktree, wanted: Callable[[WorktreeBehindCheck], bool]) -> WorktreeBehindCheck | None:
-        return next((row for row in self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).newest().all_rows() if wanted(row)), None)
+        return next((row for row in reversed(tuple(self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON))) if wanted(row)), None)

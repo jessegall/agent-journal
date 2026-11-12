@@ -7,6 +7,8 @@ from suites.coding.modules.workers.models.behind_facts import BehindFacts
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
+CHECKS_REASON = "every behind check of the worktree is weighed"
+
 
 class BehindFactsReader:
     """Reads the facts of a worktree behind its base branch, changing nothing: the files the new base commits
@@ -29,5 +31,5 @@ class BehindFactsReader:
                            uncommitted, worker.program, worker.program_model, self.earlier_decisions(worktree), tip)
 
     def earlier_decisions(self, worktree: Worktree) -> tuple[str, ...]:
-        checks = self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).oldest().all_rows()
+        checks = self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON)
         return tuple(f"{check.behind} behind, {check.state}{': ' + check.reason if check.reason else ''}" for check in checks if not check.open_for_decision())

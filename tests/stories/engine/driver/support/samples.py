@@ -36,6 +36,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.event.created import Created
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 SAMPLES = "tests.stories.engine.driver.support.samples:SamplesModule"
 LEAD = "samples.lead"
 
@@ -305,7 +307,7 @@ class EditLockOverlay(Overlay):
         self.queries = queries
 
     def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
-        return [OpenRow("edit_lock", lock.id, lock.updated_at) for lock in self.queries.query(EditLock).filter(agent_id=agent_id, state=EditLockState.OPEN).all_rows()]
+        return [OpenRow("edit_lock", lock.id, lock.updated_at) for lock in self.queries.query(EditLock).filter(agent_id=agent_id, state=EditLockState.OPEN).every_row(TEST_ROWS_REASON)]
 
 
 class LeadLockGuard(Guard[Created[EditLock]]):

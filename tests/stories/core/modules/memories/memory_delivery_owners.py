@@ -9,6 +9,8 @@ from core.modules.memories.models.memory import Memory
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.memories.support.memory_owners import MAIN_FACT, MAIN_MEMORY, MainAndWorkerMemories, WORKER_FACT, WORKER_MEMORY, read_agent, stored_memory
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 COMPACTION = HookSamples.sample("compact")
 SESSION_START = HookSamples.session_start()
 CART_EDIT = HookSamples.edit("src/cart.py")
@@ -34,7 +36,7 @@ def test_a_scope_shows_only_its_agent_s_rows_and_ends_with_its_block(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
     queries, scopes = story.container.get(Queries), story.container.get(Scopes)
     with scopes.opened(read_agent(story, "s-9").id):
-        story.expect_rows([memory.id for memory in queries.query(Memory).all_rows()] == [WORKER_MEMORY])
+        story.expect_rows([memory.id for memory in queries.query(Memory).every_row(TEST_ROWS_REASON)] == [WORKER_MEMORY])
     story.expect_rows(queries.query(Memory).count() == 2)
 
 
@@ -44,7 +46,7 @@ def test_a_nested_scope_gives_the_outer_scope_back(new_story):
     with scopes.opened(story.agent.id):
         with scopes.opened(None):
             story.expect_rows(queries.query(Memory).count() == 2)
-        story.expect_rows([memory.id for memory in queries.query(Memory).all_rows()] == [MAIN_MEMORY])
+        story.expect_rows([memory.id for memory in queries.query(Memory).every_row(TEST_ROWS_REASON)] == [MAIN_MEMORY])
 
 
 def test_a_listener_that_declares_no_scope_ends_a_worker_s_memory_with_its_task(new_story):

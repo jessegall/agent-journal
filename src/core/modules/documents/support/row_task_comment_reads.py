@@ -14,4 +14,4 @@ class RowTaskCommentReads(TaskCommentReads):
         return self.comments.query(task).count()
 
     def newest(self, task: Task, characters: int, count: int) -> tuple[TaskComment, ...]:
-        return tuple(TaskComment(message.id, message.text) for message in reversed(self.comments.previews(task, characters).newest().limited(count)))
+        return tuple(TaskComment(message.id, message.text) for message in reversed(self.comments.previews(task, characters).newest().take(count)))

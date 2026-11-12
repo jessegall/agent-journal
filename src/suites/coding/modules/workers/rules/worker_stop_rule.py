@@ -1,4 +1,3 @@
-from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS
 from suites.coding.modules.workers.models.enums.worker_step import WorkerStep
 from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
@@ -18,6 +17,8 @@ from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
+
+UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 HELP_COMMAND_TEXT = AskTopic.GENERAL.question_line()
 
@@ -47,7 +48,7 @@ class WorkerStopRule(DriverRule):
         if worker_point.step is WorkerStep.MERGE_DUE:
             return RuleAnswer.refused(WORKER_TASK_STARTED.nudge(line=worker_point.line))
         if task is None:
-            blocked = self.tasks.assignee_tasks(hook.agent_id).filter(state=TaskState.BLOCKED).oldest().all_rows(TASK_PAGE_ROWS)
+            blocked = self.tasks.assignee_tasks(hook.agent_id).filter(state=TaskState.BLOCKED).every_row(UNIT_TASKS_REASON)
             return RuleAnswer.with_nudges(*(WORKER_TASK_BLOCKED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, hook.agent_id), task=row.id) for row in blocked))
         if worker_point.step.may_stop():
             return RuleAnswer.allowed()

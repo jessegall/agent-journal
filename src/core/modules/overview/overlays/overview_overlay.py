@@ -2,10 +2,7 @@ from collections.abc import Sequence
 
 from engine.driver.open_row import OpenRow
 from engine.driver.overlay import Overlay
-from engine.query.conditions.is_null import IsNull
-from engine.query.queries import Queries
-from core.modules.drivers.models.agent_block import AgentBlock
-from core.modules.overview.support.overview_nudges import OVERVIEW_REFUSAL
+from core.modules.overview.support.overview_blocks import OverviewBlocks
 
 
 class OverviewOverlay(Overlay):
@@ -18,9 +15,9 @@ class OverviewOverlay(Overlay):
     delays_lines = True
     delays_notices = True
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, blocks: OverviewBlocks) -> None:
+        self.blocks = blocks
 
     def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
-        block = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, nudge_key=OVERVIEW_REFUSAL.key).matching(IsNull("closed_at")).oldest().first()
+        block = self.blocks.oldest_open(agent_id)
         return [OpenRow("agent_block", block.id, block.creation_timestamp())] if block is not None else []

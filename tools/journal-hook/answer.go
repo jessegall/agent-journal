@@ -201,5 +201,5 @@ func uncheckedRefusal(limit time.Duration) string {
 
 // missedLine is the line given to an agent whose hook went around the journal.
 func missedLine(limit time.Duration) string {
-	return fmt.Sprintf("[journal] The journal did not answer within %d seconds, so this went through unchecked. Check it: curl -s --unix-socket .journal/server.sock http://journal/health should answer 200, and .journal/runtime/server.log says why it does not.", int(limit.Seconds()))
+	return fmt.Sprintf("[journal] The journal did not answer within %d seconds, so this went through unchecked. Check it: curl -s --unix-socket .journal/server.sock http://journal/health should answer 200, and .journal/runtime/server.log says why it does not. If it refuses everything, the main agent runs journal panic \"<why>\", which needs no server.", int(limit.Seconds()))
 }

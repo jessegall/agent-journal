@@ -18,7 +18,7 @@ class TaskFactsReader:
 
     def read(self, task: Task) -> TaskFacts:
         plan_task = self.queries.query(PlanTask).filter(task_id=task.id).first()
-        return TaskFacts(title=task.title, brief=task.brief, complexity=task.complexity, priority=task.priority, tags=tuple(tag.word for tag in self.queries.query(TaskTag).filter(task_id=task.id).all_rows()),
+        return TaskFacts(title=task.title, brief=task.brief, complexity=task.complexity, priority=task.priority, tags=tuple(self.queries.query(TaskTag).filter(task_id=task.id).pluck("word", str)),
                          creator_type=self.creator_type(task.creator_id), creator_id=task.creator_id, plan_id=None if plan_task is None else plan_task.plan_id)
 
     def creator_type(self, creator_id: int) -> CreatorType:

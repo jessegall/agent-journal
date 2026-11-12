@@ -36,7 +36,7 @@ class PluginAliasesListener(SaveListener[Created[Plugin] | Updated[Plugin]]):
             return
         folder = self.folders.code(plugin.name)
         manifest_aliases = {alias.name: alias for alias in PluginManifest.read(folder).aliases}
-        stored_aliases = {alias.name: alias for alias in self.aliases.filter(plugin_id=plugin.id).all_rows()}
+        stored_aliases = {alias.name: alias for alias in self.aliases.filter(plugin_id=plugin.id).get()}
         for stored in stored_aliases.values():
             if stored.name not in manifest_aliases:
                 self.repository.delete(stored, context)

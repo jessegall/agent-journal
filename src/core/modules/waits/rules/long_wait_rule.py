@@ -25,7 +25,7 @@ class LongWaitRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         current_time = self.clock.timestamp()
         nudges: list[Nudge] = []
-        for wait in self.queries.query(Wait).filter(session_agent_id=hook.agent_id, state=WaitState.OPEN).all_rows():
+        for wait in self.queries.query(Wait).filter(session_agent_id=hook.agent_id, state=WaitState.OPEN).get():
             minutes = wait.opened_at.elapsed_minutes(current_time)
             if minutes >= LONG_WAIT_MINUTES:
                 nudges.append(WAIT_CHECK.nudge(minutes=minutes, wait=wait.id))

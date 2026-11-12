@@ -27,7 +27,7 @@ class Store:
         self.wanted = values.get("state")
         return self
 
-    def all_rows(self) -> list[WorktreeBehindCheck]:
+    def every_row(self, reason: str) -> list[WorktreeBehindCheck]:
         return [self.check] if self.check.state is self.wanted else []
 
     def save_change(self, row, changed, context):

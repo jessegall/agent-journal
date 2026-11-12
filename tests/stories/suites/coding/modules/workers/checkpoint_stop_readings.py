@@ -19,6 +19,8 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON, ended, main_agent_lines, missing_program, running_worker, two_task_worker, worker_story  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting, set_resume_limit
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 MARKS = "chat-mark list --environment 1"
 
 
@@ -69,7 +71,7 @@ def test_a_worker_whose_run_still_goes_shows_no_card_and_sends_no_line(two_task_
 
 
 def stopped_run_lines(story) -> tuple[MergerLine, ...]:
-    return tuple(story.container.get(Queries).query(MergerLine).matching(Prefix("source_key", SOURCE_KEY_PREFIX)).oldest().all_rows())
+    return tuple(story.container.get(Queries).query(MergerLine).matching(Prefix("source_key", SOURCE_KEY_PREFIX)).every_row(TEST_ROWS_REASON))
 
 
 def test_a_person_sets_the_resume_limit_on_the_workers_screen_and_the_next_stop_follows_it(two_task_worker):

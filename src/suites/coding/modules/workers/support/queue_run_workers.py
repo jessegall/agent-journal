@@ -16,5 +16,5 @@ class QueueRunWorkers:
         if not page.rows:
             return {}
         agent_ids = tuple({process.session_agent_id for process in page.rows})
-        workers = {worker.id for worker in self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(Among("id", agent_ids)).limited(page.size)}
+        workers = {worker.id for worker in self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(Among("id", agent_ids)).take(page.size)}
         return {process.id: process.session_agent_id for process in page.rows if process.session_agent_id in workers}

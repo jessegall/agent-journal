@@ -31,6 +31,8 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTestListings
 from engine.testing.expectations.expect_reply import expect_reply_refusal
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 class TestLimitSetup(StoryFixture):
     """A worker whose own runs may include at most five tests."""
@@ -62,7 +64,7 @@ def test_a_run_over_the_limit_is_stopped_when_its_collected_line_is_read(limited
     story.container.get(OutputFolder).write_output(process.id, 1, "collected 8 items\n")
     OutputReading()(story.container)
     story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED)
-    lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").all_rows())
+    lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").every_row(TEST_ROWS_REASON))
     story.expect_rows(len(lines) == 1, "8 tests" in lines[0].text, "5" in lines[0].text)
 
 
@@ -156,7 +158,7 @@ def test_a_run_over_the_limit_by_its_listing_is_stopped_when_its_count_arrives(l
     story.expect_rows(folder.has_slot(process.id))
     folder.write_count(process.id, "\nJOURNAL_COUNT_PART_1\ncollected 8 items\n", 0)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
-    lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").all_rows())
+    lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").every_row(TEST_ROWS_REASON))
     story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED, len(lines) == 1, "8 tests" in lines[0].text)
     story.expect_text(f"output show {process.id}", "test_count: 8", actor=story.agent)
 
@@ -189,7 +191,7 @@ def test_a_listing_without_a_known_count_stops_the_run(limited_run, status):
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     folder.write_count(process.id, "no number\n" if status == 0 else "collected 100 items\n", status)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
-    lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").all_rows())
+    lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").every_row(TEST_ROWS_REASON))
     story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED,
                       len(lines) == 1, "could not count" in lines[0].text)
     story.expect_rows("save a reader that counts the tests" in lines[0].text, "journal reader draft" in lines[0].text, "--about tests" in lines[0].text, detail=lines[0].text)
@@ -226,6 +228,6 @@ def test_a_listing_that_fails_shows_why_in_the_output_summary(limited_run):
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     story.container.get(OutputFolder).write_count(process.id, "zsh: no such file: vitest\n", 1)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
-    lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").all_rows())
+    lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").every_row(TEST_ROWS_REASON))
     story.expect_rows(len(lines) == 1, f"output {process.id} stopped" in lines[0].text)
     story.expect_text(f"output read {process.id} --summary", "no such file: vitest", actor=reader_worker(story))

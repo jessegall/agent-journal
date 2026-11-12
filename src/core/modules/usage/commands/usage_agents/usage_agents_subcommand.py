@@ -71,7 +71,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         if agent_id is not None:
             cards = cards.filter(id=agent_id)
         activity = self.activity.current()
-        running = tuple(cards.matching(activity).oldest().full_table(RUNNING_AGENTS_REASON).all_rows())
+        running = tuple(cards.matching(activity).every_row(RUNNING_AGENTS_REASON))
         ended = tuple(cards.matching(Greater("ended_at", "")).matching(Excluding(activity)).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if closed else ()
         pending = activity.pending
         policy = self.suites.agent_policy()

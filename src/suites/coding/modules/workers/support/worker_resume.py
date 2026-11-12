@@ -47,6 +47,8 @@ from pathlib import Path
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery
 from suites.coding.modules.workers.support.worker_instruction_files import WorkerInstructionFiles
 
+ENTERED_LINES_REASON = "every line typed to the worker since its last hook may be the job it lost"
+
 
 class WorkerResume:
     """Resumes ended workers on waiting jobs and retries a job that did not start; a worker that holds
@@ -94,7 +96,7 @@ class WorkerResume:
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is None or self.is_job_delivering(worker, worker.ended_at):
             return Dispatch.REFUSED
-        lines = tuple(self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.WAITING).oldest().all_rows())
+        lines = tuple(self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.WAITING).oldest().get())
         job = next((line for line in sorted(lines, key=lambda line: line.source != WORKER_TEST_LIMIT_SOURCE)
                     if line.source in RESUMING_SOURCES and line.source != UNFINISHED_TASKS_SOURCE), None)
         job = job or self.lost_job(worker) or next((line for line in lines if line.source == UNFINISHED_TASKS_SOURCE), None)
@@ -153,5 +155,5 @@ class WorkerResume:
     def lost_job(self, worker: Agent) -> AgentLine | None:
         activity = self.rows.required(AgentActivity, worker.id)
         last_hook = activity.last_hook_at if activity.last_hook_at is not None else activity.created_at
-        entered = self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", last_hook.text)).newest().all_rows()
+        entered = sorted(self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", last_hook.text)).every_row(ENTERED_LINES_REASON), key=lambda line: line.id, reverse=True)
         return next((line for line in entered if line.source in RESUMING_SOURCES), None)

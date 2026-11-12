@@ -28,7 +28,7 @@ class DumpDockListener(CommitListener[Changed[Dump]]):
         self.bus, self.actors, self.queries, self.items = bus, actors, queries, items
 
     def event_docks(self, logged: LoggedEvent) -> list[Dock]:
-        return [dock for dock in self.queries.query(Dock).all_rows() if logged.environment_id in (None, dock.environment_id)]
+        return [dock for dock in self.queries.query(Dock).get() if logged.environment_id in (None, dock.environment_id)]
 
     def handle(self, event: Changed[Dump], logged: LoggedEvent) -> None:
         dump = event.row
@@ -37,7 +37,7 @@ class DumpDockListener(CommitListener[Changed[Dump]]):
             for dock in self.event_docks(logged):
                 self.bus.run(AddDockItem(DumpDockType.DUMP.value, Dump.model_name, dump.id), actor, cause_id=logged.id, environment_id=dock.environment_id)
         if dump.closed_at is not None:
-            docked = [item for item in self.items.type_items(DumpDockType.DUMP.value).row_items(Dump.model_name, dump.id).all_rows() if item.state == DockItemState.DOCKED]
+            docked = self.items.type_items(DumpDockType.DUMP.value).row_items(Dump.model_name, dump.id).filter(state=DockItemState.DOCKED).get()
             docks = {dock.id: dock for dock in self.queries.query(Dock).find_many([item.dock_id for item in docked])}
             for item in docked:
                 self.bus.run(RemoveDockItem(item.id), actor, cause_id=logged.id, environment_id=docks[item.dock_id].environment_id)

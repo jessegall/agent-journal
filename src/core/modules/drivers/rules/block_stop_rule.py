@@ -27,7 +27,7 @@ class BlockStopRule(DriverRule):
         self.queries, self.conditions, self.container = queries, conditions, container
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        blocks = tuple(self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id, blocks_stop=True).matching(IsNull("closed_at")).oldest().full_table(OPEN_BLOCKS_REASON).all_rows())
+        blocks = tuple(self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id, blocks_stop=True).matching(IsNull("closed_at")).every_row(OPEN_BLOCKS_REASON))
         finished = [block for block in blocks if block.is_finished(self.conditions, hook, self.container)]
         waiting = [block for block in blocks if block not in finished]
         closing = [CloseAgentBlock(block.id) for block in finished]

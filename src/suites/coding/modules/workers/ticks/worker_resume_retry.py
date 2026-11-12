@@ -14,6 +14,8 @@ from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from suites.coding.modules.workers.support.worker_started_work import WorkerStartedWork
 
+RESUME_REASON = "every worker with a waiting resume line is tried again"
+
 
 class WorkerResumeRetry:
     """Every few seconds, each worker with a waiting job that the suite's policy says should run is resumed
@@ -24,7 +26,7 @@ class WorkerResumeRetry:
     def __call__(self, container: Container) -> None:
         InternetConnection.shared(container.get(JournalHome)).check(container.get(ConnectionProbe), container.get(Clock).timestamp())
         queries, resume, policy = container.get(Queries), container.get(WorkerResume), container.get(DispatchPolicy)
-        waiting = queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("source", tuple(RESUMING_SOURCES))).oldest().all_rows()
+        waiting = queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("source", tuple(RESUMING_SOURCES))).every_row(RESUME_REASON)
         for worker in queries.query(Agent).find_many(list(dict.fromkeys(line.session_agent_id for line in waiting))):
             if policy.is_wanted(worker) and resume.may_resume(worker):
                 resume.replace_running_program(worker, Actor.core())

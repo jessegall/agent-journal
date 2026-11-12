@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
+from engine.query.conditions.all_of import AllOf
+from engine.query.conditions.any_of import AnyOf
+from core.modules.documents.conditions.link_counterparts import end
 from core.modules.documents.models.link import Link
 from core.modules.documents.references.row_ref import RowRef
 from core.modules.documents.models.enums.link_side import LinkSide
@@ -15,9 +18,8 @@ class LinkScope:
 
     def statement(self) -> Statement:
         if self.side is not LinkSide.ROW:
-            return Statement(f"{self.side}_model = ? AND {self.side}_id = ?", (self.reference.model, self.reference.row_id))
-        return Statement("((source_model = ? AND source_id = ?) OR (target_model = ? AND target_id = ?))",
-                         (self.reference.model, self.reference.row_id, self.reference.model, self.reference.row_id))
+            return AllOf(end(str(self.side), self.reference)).statement()
+        return AnyOf([AllOf(end("source", self.reference)), AllOf(end("target", self.reference))]).statement()
 
     def counterpart(self, link: Link) -> RowRef:
         if (link.source_model, link.source_id) == (self.reference.model, self.reference.row_id):

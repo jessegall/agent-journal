@@ -7,6 +7,8 @@ from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.reviews.models.reviewer_row import ReviewerRow
 from core.modules.reviews.support.reviewer_board import ReviewerBoard
 
+BOARD_REASON = "the reviewer board shows every review with its steps"
+
 
 class ReviewBoardSubcommand(ReadSubcommand[ReviewerBoard]):
     """`journal review board`: the reviews being done with their steps so far, and how many reviews wait, in
@@ -23,7 +25,7 @@ class ReviewBoardSubcommand(ReadSubcommand[ReviewerBoard]):
 
     def read(self, arguments: Namespace, caller: Caller) -> ReviewerBoard:
         rows = self.queries.query(ReviewerRow)
-        return ReviewerBoard(tuple(rows.ordered("review_id", "row_type", "step_id").all_rows()))
+        return ReviewerBoard(tuple(sorted(rows.every_row(BOARD_REASON), key=lambda row: (row.review_id, row.row_type, row.step_id or 0))))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ReviewerBoard):

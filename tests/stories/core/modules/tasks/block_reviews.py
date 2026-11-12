@@ -15,6 +15,8 @@ from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from tests.stories.core.support.plan_steps import started_plan
 from tests.stories.core.modules.documents.support.trail_fixtures import Scenario
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 FIRST_STORY_TASK = 1
 
 
@@ -252,7 +254,7 @@ def test_all_due_user_waits_share_one_line_and_each_review_is_recorded(reviewed_
     story, answer = reviewed_user_waits
     ids = ", ".join(str(task_id) for task_id in range(1, 32))
     expect_matching_lines(answer, "wait on the user", [f"tasks {ids} wait on the user: tell the user what is still needed"])
-    rows = list(story.container.get(Queries).query(TaskBlockReview).matching(Minimum("task_id", FIRST_STORY_TASK)).all_rows())
+    rows = list(story.container.get(Queries).query(TaskBlockReview).matching(Minimum("task_id", FIRST_STORY_TASK)).every_row(TEST_ROWS_REASON))
     expect_reviewed_rows(rows, story.clock.timestamp())
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
     expect_absent_line(review(story), "wait on the user")

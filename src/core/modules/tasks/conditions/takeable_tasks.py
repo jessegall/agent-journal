@@ -1,11 +1,15 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
+from engine.query.conditions.all_of import AllOf
+from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.select import Select
 
-TASK_ASSIGNMENTS = "SELECT subject_id FROM assignments WHERE subject_model = 'task'"
-MAIN_TAKEABLE = (f"state = 'open' AND (id NOT IN ({TASK_ASSIGNMENTS})"
-                 f" OR id IN ({TASK_ASSIGNMENTS} AND actor_id IN (SELECT id FROM agents WHERE role = 'main')))")
-ASSIGNED_TAKEABLE = f"state = 'open' AND id IN ({TASK_ASSIGNMENTS} AND actor_id = ?)"
+OPEN_STATE = "open"
+MAIN_ROLE = "main"
+TASK_MODEL = "task"
 
 
 @dataclass(frozen=True)
@@ -17,4 +21,10 @@ class TakeableTasks:
     is_main: bool
 
     def statement(self) -> Statement:
-        return Statement(MAIN_TAKEABLE, []) if self.is_main else Statement(ASSIGNED_TAKEABLE, [self.agent_id])
+        assigned = Select("assignments").matching(Equal("subject_model", TASK_MODEL))
+        if self.is_main:
+            main_agents = Select("agents").matching(Equal("role", MAIN_ROLE)).column("id")
+            to_main = assigned.matching(SubqueryMatch("actor_id", main_agents)).column("subject_id")
+            unassigned = SubqueryMatch("id", assigned.column("subject_id"), negated=True)
+            return AllOf([Equal("state", OPEN_STATE), AnyOf([unassigned, SubqueryMatch("id", to_main)])]).statement()
+        return AllOf([Equal("state", OPEN_STATE), SubqueryMatch("id", assigned.matching(Equal("actor_id", self.agent_id)).column("subject_id"))]).statement()

@@ -18,6 +18,6 @@ class AgentActivities:
 
     def read(self, hook: AgentHook) -> dict[int, AgentActivity]:
         if self.event is not hook.event:
-            self.rows = {row.id: row for row in self.queries.query(AgentActivity).matching(AgentFamily(hook.agent_id)).matching(IsNull("ended_at")).full_table(OPEN_FAMILY_REASON).all_rows()}
+            self.rows = {row.id: row for row in self.queries.query(AgentActivity).matching(AgentFamily(hook.agent_id)).matching(IsNull("ended_at")).every_row(OPEN_FAMILY_REASON)}
             self.event = hook.event
         return self.rows

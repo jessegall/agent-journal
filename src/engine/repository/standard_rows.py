@@ -9,6 +9,8 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 
+STANDARD_ROWS_REASON = "the rows a version comes with are compared by title with every stored one"
+
 
 class StandardRows:
     """Brings the rows the journal itself made of one model to what this version comes with, by title: a new one
@@ -19,12 +21,11 @@ class StandardRows:
 
     def save_all[M: Model](self, model: type[M], standard: Sequence[M], fields: Sequence[str], context: Context, used: Callable[[M], bool] = lambda row: False) -> None:
         query = self.queries.query(model).filter(creator_id=CORE_ACTOR_ID)
-        stored = self.kept.read(query.table.name, lambda: {getattr(row, "title"): row for row in query.all_rows()},
-                                "creator_id = ?", [CORE_ACTOR_ID], name="standard.rows")
+        stored = self.kept.read(query, lambda: {getattr(row, "title"): row for row in query.every_row(STANDARD_ROWS_REASON)}, name="standard.rows")
         titles = {getattr(row, "title") for row in standard}
         for row in [row for title, row in stored.items() if title not in titles and not used(row)]:
             self.repository.delete_stored(row, context)
-            self.kept.update(query.table.name, partial(self.without_row, row), "creator_id = ?", [CORE_ACTOR_ID], name="standard.rows")
+            self.kept.update(query, partial(self.without_row, row), name="standard.rows")
         for row in standard:
             existing = stored.get(getattr(row, "title"))
             if existing is not None and not any(getattr(existing, field) != getattr(row, field) for field in fields):
@@ -33,7 +34,7 @@ class StandardRows:
                 saved = self.repository.save(row, context)
             else:
                 saved = self.repository.update(existing, context, **{field: getattr(row, field) for field in fields})
-            self.kept.update(query.table.name, partial(self.with_row, saved), "creator_id = ?", [CORE_ACTOR_ID], name="standard.rows")
+            self.kept.update(query, partial(self.with_row, saved), name="standard.rows")
 
     @staticmethod
     def without_row[M: Model](row: M, rows: dict[str, M]) -> dict[str, M]:

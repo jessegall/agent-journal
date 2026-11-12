@@ -11,6 +11,8 @@ from suites.coding.modules.workers.models.merge_followup import STEP_FINISHED, U
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_settings import MERGE_COMMANDS, MERGE_COMMANDS_NAME
 
+FOLLOWUPS_REASON = "a merge waits on every unfinished followup of another worktree"
+
 
 class MergeFollowups:
     """The required commands after a merge as a durable plan: saved as they stand when git merges, run one
@@ -25,7 +27,7 @@ class MergeFollowups:
         return self.queries.query(MergeFollowup).filter(worktree_id=worktree_id).newest().first()
 
     def blocked_followup(self, worktree: Worktree) -> MergeFollowup | None:
-        pending = (followup for followup in self.queries.query(MergeFollowup).all_rows()
+        pending = (followup for followup in self.queries.query(MergeFollowup).every_row(FOLLOWUPS_REASON)
                    if followup.worktree_id != worktree.id and not followup.finished)
         return next(pending, None)
 

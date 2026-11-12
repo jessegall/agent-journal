@@ -8,6 +8,8 @@ from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.messages.models.attached_file import AttachedFile
 from core.modules.messages.support.attachment_page import AttachmentPage
 
+ATTACHMENTS_REASON = "the attachment search looks through every attached file"
+
 IMAGE_NAME = re.compile(r"\.(png|jpe?g|gif|webp|svg|bmp|avif)$", re.IGNORECASE)
 ALL_CATEGORIES = "all"
 IMAGE_CATEGORY = "images"
@@ -36,7 +38,7 @@ class AttachmentListSubcommand(ReadSubcommand[AttachmentPage]):
         parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
 
     def read(self, arguments: Namespace, caller: Caller) -> AttachmentPage:
-        files = sorted(self.queries.query(AttachedFile).all_rows(), key=lambda row: row.message_id, reverse=True)
+        files = sorted(self.queries.query(AttachedFile).every_row(ATTACHMENTS_REASON), key=lambda row: row.message_id, reverse=True)
         terms = arguments.search.strip().lower()
         matches = [row for row in files if terms in row.name.lower() or terms in row.message_text.lower()]
         images = sum(1 for row in matches if IMAGE_NAME.search(row.name))

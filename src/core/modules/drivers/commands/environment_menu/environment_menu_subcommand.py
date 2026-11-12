@@ -28,7 +28,7 @@ class EnvironmentMenuSubcommand(ReadSubcommand[EnvironmentMenu]):
         pass
 
     def read(self, arguments: Namespace, caller: Caller) -> EnvironmentMenu:
-        rows = self.queries.query(EnvironmentMenuRow).oldest().full_table(MENU_REASON).all_rows()
+        rows = self.queries.query(EnvironmentMenuRow).every_row(MENU_REASON)
         return EnvironmentMenu(tuple(EnvironmentMenuChoice(row, self.suites.suite_name(row.suite_setting)) for row in rows))
 
     def write_output(self, value: object, output: Output) -> None:

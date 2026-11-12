@@ -1,3 +1,4 @@
+from core.modules.helpers.migrations.m010_helper_job_profile_index import HelperJobProfileIndexMigration
 from core.modules.helpers.migrations.m009_helper_grant_environment_index import HelperGrantEnvironmentIndexMigration
 from core.modules.helpers.guards.provider_outage_access_guard import ProviderOutageAccessGuard
 from core.modules.helpers.commands.cold_sessions.cold_sessions_subcommand import ColdSessionsSubcommand
@@ -81,7 +82,7 @@ class HelpersModule(Module):
     seed_reason = "demo programs have no outages"
     move_reason = "version 4 had no helpers"
     requires_core = ">=5,<6"
-    migrations = [HelperGrantEnvironmentIndexMigration, HelperGrantsMigration, OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperCapKeyMigration, ProviderOutagesMigration, HelperJobCountsIndexMigration, UsageLimitsMigration, HelperSettingKeysMigration]
+    migrations = [HelperJobProfileIndexMigration, HelperGrantEnvironmentIndexMigration, HelperGrantsMigration, OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperCapKeyMigration, ProviderOutagesMigration, HelperJobCountsIndexMigration, UsageLimitsMigration, HelperSettingKeysMigration]
     models = [ModelDeclaration(HelperGrant, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(ProviderOutage), ModelDeclaration(UsageLimit, excluded_subcommands=["make"])]
     dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage", "journal.core.chat", "journal.core.skills", "journal.core.settings", "journal.core.processes", "journal.core.environments", "journal.core.tasks"]
     marks = PROGRAM_MARKS

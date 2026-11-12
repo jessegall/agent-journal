@@ -2,7 +2,6 @@ import gc
 import os
 from engine.file.file_clone import FileClone
 from pathlib import Path
-import sqlite3
 
 from engine.database.database import Database
 from engine.testing.stories.story_journal import StoryJournal
@@ -35,8 +34,7 @@ class WorkingJournal(StoryJournal):
         self.is_taken = True
 
     def defer_writes(self, database: Database) -> None:
-        database.connection.execute("PRAGMA wal_autocheckpoint = 0")
-        database.connection.setconfig(sqlite3.SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE, True)
+        database.defer_checkpoints()
 
     def discard_writes(self) -> None:
         is_abandoned = self.has_open_connection()

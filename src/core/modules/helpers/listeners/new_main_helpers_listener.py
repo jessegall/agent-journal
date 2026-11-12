@@ -14,6 +14,8 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.agents.support.agent_rows import AgentRows
 
+ORPHANED_HELPERS_REASON = "a new main agent takes over every helper and report line of an ended one"
+
 
 class NewMainHelpersListener(SaveListener[Created[AgentSession]]):
     """A new main session takes over the open helpers whose parent ended and the report lines left on ended main
@@ -31,7 +33,7 @@ class NewMainHelpersListener(SaveListener[Created[AgentSession]]):
         if not agent.is_main:
             return
         helpers = [helper for helper in self.agents.running(HelperRole.HELPER) if helper.parent_id is not None]
-        lines = tuple(self.queries.query(AgentLine).filter(source=PARENT_REPORT_SOURCE, state=AgentLineState.WAITING).all_rows())
+        lines = tuple(self.queries.query(AgentLine).filter(source=PARENT_REPORT_SOURCE, state=AgentLineState.WAITING).every_row(ORPHANED_HELPERS_REASON))
         ended_ids = self.ended_ids({helper.parent_id for helper in helpers} | {line.session_agent_id for line in lines})
         for helper in helpers:
             if helper.parent_id in ended_ids:
@@ -43,5 +45,5 @@ class NewMainHelpersListener(SaveListener[Created[AgentSession]]):
     def ended_ids(self, agent_ids: set[int]) -> set[int]:
         if not agent_ids:
             return set()
-        ended = self.queries.query(Agent).matching(Among("id", tuple(sorted(agent_ids)))).matching(HasValue("ended_at")).all_rows()
+        ended = self.queries.query(Agent).matching(Among("id", tuple(sorted(agent_ids)))).matching(HasValue("ended_at")).every_row(ORPHANED_HELPERS_REASON)
         return {agent.id for agent in ended}

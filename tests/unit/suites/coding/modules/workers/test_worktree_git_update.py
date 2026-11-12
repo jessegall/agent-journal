@@ -1,3 +1,4 @@
+from tests.unit.support.declared_merge_builds import declared_merge_builds
 import subprocess
 from pathlib import Path
 
@@ -12,7 +13,7 @@ from tests.unit.suites.coding.modules.workers.test_worktree_git_own_files import
 
 
 def git() -> WorktreeGit:
-    return WorktreeGit(None, plain_executor())
+    return WorktreeGit(None, plain_executor(), declared_merge_builds())
 
 
 def own(worktree: Worktree) -> SampleRepository:

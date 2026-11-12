@@ -6,6 +6,8 @@ from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.drivers.models.nudge_record import NudgeRecord
 
+NUDGE_LINES_REASON = "every record of the nudges asked about decides whether each is due again"
+
 
 class NudgeRecords:
     """Reads the records of the lines an agent is about to be sent, never all of that agent's records."""
@@ -15,16 +17,14 @@ class NudgeRecords:
 
     def newest_row(self, agent_id: int, key: str) -> NudgeRecord | None:
         newest = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id, key=key).descending("last_delivered_at")
-        return self.kept.read("nudge_records", newest.first, "session_agent_id = ? AND key = ?", [agent_id, key], name="drivers.nudges.newest")
+        return self.kept.read(newest, newest.first, name="drivers.nudges.newest")
 
     def nudge_rows(self, agent_id: int, nudges: Sequence[Nudge]) -> list[NudgeRecord]:
-        keys = sorted({nudge.key for nudge in nudges})
-        condition = f"session_agent_id = ? AND key IN ({', '.join('?' for _ in keys)})"
-        return self.kept.read("nudge_records", lambda: self.loaded_rows(agent_id, nudges), condition, [agent_id, *keys],
-                              name=f"drivers.nudges:{sorted({nudge.text for nudge in nudges})}")
+        records = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id).matching(Among("key", tuple(sorted({nudge.key for nudge in nudges}))))
+        return self.kept.read(records, lambda: self.loaded_rows(agent_id, nudges), name=f"drivers.nudges:{sorted({nudge.text for nudge in nudges})}")
 
     def loaded_rows(self, agent_id: int, nudges: Sequence[Nudge]) -> list[NudgeRecord]:
         clock_keys = sorted({nudge.key for nudge in nudges if nudge.interval})
         newest = [row for row in (self.newest_row(agent_id, key) for key in clock_keys) if row is not None]
-        lines = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id).matching(Among("key", tuple(sorted({nudge.key for nudge in nudges})))).matching(Among("text", tuple(sorted({nudge.text for nudge in nudges})))).all_rows()
+        lines = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id).matching(Among("key", tuple(sorted({nudge.key for nudge in nudges})))).matching(Among("text", tuple(sorted({nudge.text for nudge in nudges})))).every_row(NUDGE_LINES_REASON)
         return [*newest, *lines]

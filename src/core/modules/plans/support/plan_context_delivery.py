@@ -15,14 +15,13 @@ class PlanContextDelivery:
         self.kept = kept
 
     def start_event(self, plan: Plan) -> int | None:
-        event = self.kept.read_newest("plans", lambda: self.events.latest_row("plans", plan.id, ("plan.start", "plan.unblock")),
-                                      "id = ?", [plan.id], name="plans.context-start")
+        event = self.kept.read_newest(self.queries.query(Plan).filter(id=plan.id), lambda: self.events.latest_row("plans", plan.id, ("plan.start", "plan.unblock")),
+                                      name="plans.context-start")
         return event.id if event is not None else None
 
     def has_read(self, plan_id: int, event_id: int, agent_id: int) -> bool:
-        return self.kept.read("plan_context_reads",
-                              lambda: self.queries.query(PlanContextRead).filter(plan_id=plan_id, start_event_id=event_id, session_agent_id=agent_id).exists(),
-                              "plan_id = ? AND start_event_id = ? AND session_agent_id = ?", [plan_id, event_id, agent_id], name="plans.context-read")
+        reads = self.queries.query(PlanContextRead).filter(plan_id=plan_id, start_event_id=event_id, session_agent_id=agent_id)
+        return self.kept.read(reads, reads.exists, name="plans.context-read")
 
     def acknowledge(self, plan: Plan, context: Context) -> None:
         event_id = self.start_event(plan)

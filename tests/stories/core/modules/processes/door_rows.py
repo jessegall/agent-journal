@@ -16,6 +16,7 @@ from core.modules.processes.support.request_log import RequestLog
 from core.modules.processes.support.request_log_entry import RequestLogEntry
 from tests.stories.core.support.fixtures import UserJoined
 
+TEST_ROWS_REASON = "the test reads every row it checks"
 IMPORT_LABEL = "request log import"
 IMPORT_SECONDS = 5
 TICK_JOIN_SECONDS = 5.0
@@ -44,7 +45,7 @@ def test_the_ticker_writes_the_logged_requests_and_a_held_hook_keeps_its_row_und
         ticker.tick()
         ticker.join(TICK_JOIN_SECONDS)
     with story.container.get(Scopes).opened(None, main_id):
-        rows = [(run.line, run.session_agent_id, run.exit_code) for run in story.container.get(Queries).query(RequestRun).all_rows()]
+        rows = [(run.line, run.session_agent_id, run.exit_code) for run in story.container.get(Queries).query(RequestRun).every_row(TEST_ROWS_REASON)]
     story.expect_rows(("journal task list", story.agent.id, 0) in rows, ("claude stop", story.agent.id, 2) in rows, detail=str(rows))
 
 

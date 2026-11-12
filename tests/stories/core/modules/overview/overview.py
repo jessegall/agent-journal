@@ -1,9 +1,11 @@
 import pytest
 
 import json
+from datetime import timedelta
 
 from engine.enums.command_category import CommandCategory
 from core.modules.agents.support.terminal_typing import TerminalTyping
+from core.modules.overview.support.overview_blocks import OverviewBlocks
 from core.modules.overview.support.overview_first import OverviewFirst
 from core.modules.skills.support.main_agent_skills import MainAgentSkills
 from tests.stories.engine.driver.support.hook_agents import hook_agent
@@ -74,9 +76,23 @@ def test_after_a_session_start_nothing_passes_before_the_overview_but_reading_a_
     story.expect_hook_refusal("s-1", EDIT, "read the overview first")
     story.expect_hook_refusal("s-1", LISTING, "read the overview first")
     story.expect_hook_refusal("s-1", JOURNAL_LINE, "read the overview first")
+    again = story.hook("s-1", EDIT).refusal
+    story.expect_rows("read the overview first" in again, "refusal skip" not in again, detail=again)
     story.expect_hook_allowed("s-1", SKILL_READ)
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)
     story.expect_hook_allowed("s-1", EDIT)
+
+
+def test_a_main_agent_whose_overview_hook_was_lost_reads_it_again_and_its_next_command_goes_through(new_story):
+    story = overview_story(new_story)
+    agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
+    story.run_listeners()
+    story.advance(timedelta(seconds=1))
+    story.expect_success("overview", actor=agent)
+    story.expect_success("overview", actor=agent)
+    story.expect_hook_allowed("s-1", EDIT)
+    story.run_listeners()
+    story.expect_rows(not story.container.get(OverviewBlocks).is_held(agent.id))
 
 
 def test_a_compaction_blocks_again_and_a_resume_does_not(new_story):

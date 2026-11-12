@@ -17,6 +17,8 @@ from tests.stories.server.support.server_client import server_story
 from tests.stories.server.viewer.attachments import IMAGE_BYTES, uploaded
 from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 class MissingTrailBehaviour(AssertionError):
     @classmethod
@@ -38,7 +40,7 @@ def read_source_rows(queries: Queries, registry: Registry, agent_id: int):
     models = [model for model in registered if model.model_name == "message_work_source"]
     if not models:
         return ()
-    rows = tuple(queries.query(models[0]).filter(agent_id=agent_id, environment_id=1).all_rows())
+    rows = tuple(queries.query(models[0]).filter(agent_id=agent_id, environment_id=1).every_row(TEST_ROWS_REASON))
     assert len(rows) <= 1, "more than one source row for an agent and environment"
     return rows
 

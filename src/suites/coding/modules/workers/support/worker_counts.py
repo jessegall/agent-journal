@@ -27,7 +27,7 @@ class WorkerCounts:
         changed_at = self.shares.changed_at()
         if changed_at is not None:
             query = query.matching(Minimum("cut_at", changed_at.text))
-        worktrees = query.descending("cut_at", "id").limited(RECENT_WORKTREES_COUNT)
+        worktrees = query.descending("cut_at", "id").take(RECENT_WORKTREES_COUNT)
         agents = self.rows.required_index(Agent, [row.session_agent_id for row in worktrees])
         programs = {agent_id: agent.program for agent_id, agent in agents.items()}
         counts: Counter[str] = Counter()

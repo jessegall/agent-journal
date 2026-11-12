@@ -11,6 +11,8 @@ from tests.stories.suites.coding.modules.workers.support.held_tasks import holdi
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, PLAN_DISPATCH, SECOND_TEST_LINE, TEST_LINE, start_planned_worker, unplanned_worker
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 RUNS_SETTING = "setting set journal.suites.coding.workers.worker-phase-test-runs 5 --environment main"
 BUILD_TASKS = 3
 
@@ -126,7 +128,7 @@ def test_a_clash_names_the_clashed_files_at_status_and_in_its_line(clashed):
     story, worker, repository = clashed
     status = story.run("worker status", actor=worker).output_text
     story.expect_rows("Point: conflict" in status, "cart.py" in status.splitlines()[0], "journal worker commit" in status.splitlines()[0], detail=status)
-    lines = [line.text for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id).all_rows() if "clashes on" in line.text]
+    lines = [line.text for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id).every_row(TEST_ROWS_REASON) if "clashes on" in line.text]
     story.expect_rows(bool(lines), all("Now:" in line and "Then:" in line for line in lines), detail=str(lines))
 
 

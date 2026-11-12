@@ -23,6 +23,6 @@ class FullOutputReadListener(SaveListener[Updated[Output]]):
         process = self.queries.query(Process).find(event.row.process_id)
         if process.session_agent_id != context.actor.id:
             return
-        pending = self.queries.query(Output).filter(full_read_output_id=process.id).all_rows()
+        pending = self.queries.query(Output).filter(full_read_output_id=process.id).get()
         for output in pending:
             self.repository.update(output, context, fully_read_at=context.timestamp, full_read_output_id=None)

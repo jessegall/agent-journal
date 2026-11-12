@@ -1,6 +1,5 @@
 from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
-from itertools import islice
 from typing import ClassVar
 
 from engine.caller.caller import Caller
@@ -14,9 +13,9 @@ from engine.query.queries import Queries
 from engine.query.query import PAGE_SIZE_ROWS, Query
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.page_arguments import read_limit
 
 
-READ_PAGE_ROWS = 50
 
 
 class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
@@ -32,7 +31,7 @@ class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
         self.queries = queries
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
+        parser.add_argument("--limit", type=read_limit, default=PAGE_SIZE_ROWS)
         parser.add_argument("--after-id", type=int, default=None)
         parser.add_argument("--before-id", type=int, default=None)
         parser.add_argument("--ids", type=number_list, default=None)
@@ -48,7 +47,7 @@ class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
             query = query.matching(Less("id", arguments.before_id))
         if arguments.ids is not None:
             query = query.matching(Among("id", arguments.ids))
-        return ViewRowPage(tuple(islice(query.newest().all_rows(min(arguments.limit, READ_PAGE_ROWS)), arguments.limit)))
+        return ViewRowPage(tuple(query.newest().take(arguments.limit)))
 
     def filtered(self, query: Query[ViewModel], arguments: Namespace) -> Query[ViewModel]:
         return query

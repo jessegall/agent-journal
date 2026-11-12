@@ -26,7 +26,7 @@ class PluginDescriptionsSubcommand(ReadSubcommand[RowList]):
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
-        return RowList([{"id": plugin.name, "plugin": plugin.name, "description": self.description(plugin)} for plugin in self.plugins.all_rows()])
+        return RowList([{"id": plugin.name, "plugin": plugin.name, "description": self.description(plugin)} for plugin in self.plugins.get()])
 
     def description(self, plugin: Plugin) -> str:
         try:

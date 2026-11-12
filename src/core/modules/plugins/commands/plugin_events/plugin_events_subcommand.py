@@ -26,7 +26,7 @@ class PluginEventsSubcommand(ReadSubcommand[tuple[PluginEventRow, ...]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[PluginEventRow, ...]:
         entries: list[PluginEventRow] = []
-        for plugin in self.plugins.oldest().all_rows():
+        for plugin in self.plugins.oldest().get():
             manifest = self.runnable.readable_manifest(plugin)
             if manifest is not None and arguments.plugin in ("", plugin.name):
                 entries.extend(self.rows.rows(manifest, self.folders.code(plugin.name)))

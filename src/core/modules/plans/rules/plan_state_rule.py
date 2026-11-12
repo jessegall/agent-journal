@@ -16,6 +16,8 @@ from core.modules.plans.queries.plan_query import PlanQuery
 from core.modules.plans.support.plan_nudges import PLAN_APPROVED, PLAN_APPROVED_WITH_MESSAGE, PLAN_BLOCKED, PLAN_CANCELLED, PLAN_WAITING
 from core.modules.plans.support.plan_approval import PlanApproval
 
+CHANGED_PLANS_REASON = "every plan whose state changed since the last answer is told to the agent"
+
 STATE_NUDGES: dict[PlanState, NudgeDeclaration] = {
     PlanState.READY: PLAN_WAITING,
     PlanState.APPROVED: PLAN_APPROVED,
@@ -40,7 +42,7 @@ class PlanStateRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         answered_at = self.hook_history.last_answer(self.name, hook)
         start = answered_at or self.queries.query(Agent).find(hook.agent_id).creation_timestamp()
-        changed = self.plans.matching(Greater("updated_at", start.text)).matching(Among("state", tuple(STATE_NUDGES))).oldest().all_rows()
+        changed = self.plans.matching(Greater("updated_at", start.text)).matching(Among("state", tuple(STATE_NUDGES))).every_row(CHANGED_PLANS_REASON)
         return RuleAnswer.with_nudges(*(self.plan_nudge(plan) for plan in changed))
 
     def plan_nudge(self, plan: Plan) -> Nudge:

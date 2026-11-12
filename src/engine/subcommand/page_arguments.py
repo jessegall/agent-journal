@@ -1,7 +1,15 @@
-from argparse import ArgumentParser
-from engine.query.query import PAGE_SIZE_ROWS
+from argparse import ArgumentParser, ArgumentTypeError
+from engine.query.query import MOST_NAMED_LIMIT_ROWS, PAGE_SIZE_ROWS
+
+
+def read_limit(text: str) -> int:
+    """A person's --limit, from 1 to the most rows one read may name."""
+    rows = int(text)
+    if not 1 <= rows <= MOST_NAMED_LIMIT_ROWS:
+        raise ArgumentTypeError(f"--limit is from 1 to {MOST_NAMED_LIMIT_ROWS}; read further rows with --page")
+    return rows
 
 
 def page_arguments(parser: ArgumentParser) -> None:
     parser.add_argument("--page", type=int, default=1)
-    parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
+    parser.add_argument("--limit", type=read_limit, default=PAGE_SIZE_ROWS)

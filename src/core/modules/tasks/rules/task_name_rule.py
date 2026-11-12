@@ -32,5 +32,5 @@ class TaskNameRule(DriverRule):
         if current is None:
             return RuleAnswer.allowed()
         numbers = {int(number) for number in TASK_NUMBER.findall(current.task.brief)} - {current.task.id}
-        labelled = self.queries.query(Task).matching(Among("id", tuple(numbers))).matching(Among("state", UNFINISHED_STATES)).oldest().all_rows() if numbers else ()
+        labelled = self.queries.query(Task).matching(Among("id", tuple(numbers))).matching(Among("state", UNFINISHED_STATES)).oldest().get() if numbers else ()
         return RuleAnswer.with_nudges(*(TASK_NAME.nudge(task=current.task.id, other=task.id) for task in labelled))

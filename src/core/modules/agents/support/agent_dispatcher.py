@@ -33,6 +33,8 @@ from core.modules.agents.support.program_process import ProgramProcess
 from core.modules.agents.support.standing import Standing
 from core.modules.environments.support.environment_rows import EnvironmentRows
 
+RECENTLY_ENDED_REASON = "every agent that ended lately and is kept may be started again"
+
 RECENT_END_SECONDS = 600
 OPENED_ROW_TEXT = "was ended while its program runs: its row is open again"
 ENDED_ROW_TEXT = "was open while no program of it runs: its row has ended"
@@ -136,7 +138,7 @@ class AgentDispatcher:
 
     def recently_ended_agents(self) -> tuple[Agent, ...]:
         earliest = Timestamp(self.clock.timestamp().value - timedelta(seconds=RECENT_END_SECONDS))
-        return tuple(self.queries.query(Agent).matching(Minimum("ended_at", earliest.text)).matching(IsNull("retired_at")).all_rows())
+        return tuple(self.queries.query(Agent).matching(Minimum("ended_at", earliest.text)).matching(IsNull("retired_at")).every_row(RECENTLY_ENDED_REASON))
 
     def wrongly_ended_agents(self) -> tuple[Agent, ...]:
         ended = (agent for agent in self.recently_ended_agents() if not self.dispatch_policy.is_final(agent))

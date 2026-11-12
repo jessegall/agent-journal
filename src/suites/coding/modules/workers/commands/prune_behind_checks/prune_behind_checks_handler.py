@@ -28,6 +28,6 @@ class PruneBehindChecksHandler(Handler[PruneBehindChecks, int]):
 
     def handle(self, command: PruneBehindChecks, context: Context) -> int:
         cutoff = Timestamp(context.timestamp.value - timedelta(days=self.settings.number(CHECK_HISTORY_DAYS)))
-        old = self.queries.query(WorktreeBehindCheck).matching(Among("state", CLOSED_STATES)).matching(Maximum("updated_at", cutoff.text)).ordered("updated_at", "id").limited(PRUNE_BATCH_COUNT)
+        old = self.queries.query(WorktreeBehindCheck).matching(Among("state", CLOSED_STATES)).matching(Maximum("updated_at", cutoff.text)).ordered("updated_at", "id").take(PRUNE_BATCH_COUNT)
         self.repository.delete_many_stored(old, context)
         return len(old)

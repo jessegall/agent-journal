@@ -25,7 +25,7 @@ class ShareSessionSubcommand(ReadSubcommand[ShareLink]):
     def read(self, arguments: Namespace, caller: Caller) -> ShareLink:
         if caller.actor.type is not ActorType.CORE:
             raise Refusal("only the viewer reads a link's session")
-        links = list(self.queries.query(ShareLink).filter(token_digest=arguments.token_digest).all_rows())
+        links = self.queries.query(ShareLink).filter(token_digest=arguments.token_digest).get()
         if not links:
             raise Refusal("no link has this token")
         return links[0]

@@ -43,6 +43,8 @@ from tests.stories.suites.coding.modules.workers.support.program_split import (
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.suites.coding.modules.workers.support.route_expectations import expect_model_route_refusal, expect_unmatched_route
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 @pytest.mark.parametrize('agent_role', ['worker', 'helper'])
 @pytest.mark.parametrize('cause', ['window', 'outage'])
@@ -536,7 +538,7 @@ def test_codex_hooks_run_in_the_worker_folder(new_story, monkeypatch, program, m
                                       input=json.dumps({"session_id": session, "hook_event_name": event, "cwd": str(folder), **body}),
                                       capture_output=True, text=True, timeout=30, env=environment)
             story.expect_rows(finished.returncode == 0, detail=finished.stderr)
-    calls = tuple(story.container.get(Queries).query(HookCall).filter(session_agent_id=worker.id, tool="read_file").all_rows())
+    calls = tuple(story.container.get(Queries).query(HookCall).filter(session_agent_id=worker.id, tool="read_file").every_row(TEST_ROWS_REASON))
     story.expect_rows(len(calls) == 1)
     story.expect_rows(calls[0].folder == str(folder))
     story.expect_success(f"program trust codex {shlex.quote(str(folder))}", "ready")

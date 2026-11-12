@@ -1,4 +1,3 @@
-from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS
 from dataclasses import replace
 
 from engine.cli.agent_number import AGENT_MODEL_NAME
@@ -25,6 +24,8 @@ from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerW
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED, MERGER_WAIT_MINUTES
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNMERGED, WORKER_UNMERGED_DUE
+
+UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 BLOCKING_REMINDER_COUNT = 3
 
@@ -55,7 +56,7 @@ class UnmergedWorkerRule(DriverRule):
         for worktree in delivered:
             if self.is_with_merger(worktree, hook):
                 continue
-            proofs = tuple(self.proofs.waiting_proofs(worktree.id).oldest().all_rows())
+            proofs = tuple(self.proofs.waiting_proofs(worktree.id).every_row(UNIT_TASKS_REASON))
             action = f"{self.merge_command(worktree)}, or journal worker release {self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)}"
             if proofs:
                 action = f"journal proof check {', '.join(str(proof.id) for proof in proofs)}"
@@ -64,7 +65,7 @@ class UnmergedWorkerRule(DriverRule):
             nudges.append(replace(declaration.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), tasks=self.task_names(worktree), action=action), key=key))
         commands = {self.merge_command(worktree) for worktree in delivered}
         prefix = f"{REQUIRED_COMMAND_REFUSAL.key}:journal worker merge "
-        blocks = self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id).matching(IsNull("closed_at")).full_table(OPEN_BLOCKS_REASON).all_rows()
+        blocks = self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id).matching(IsNull("closed_at")).every_row(OPEN_BLOCKS_REASON)
         stale = [CloseAgentBlock(block.id) for block in blocks if block.nudge_key.startswith(prefix) and block.condition_text not in commands]
         return RuleAnswer.with_nudges(*nudges).running(*stale)
 
@@ -80,6 +81,6 @@ class UnmergedWorkerRule(DriverRule):
         return record.delivery_count if record is not None else 0
 
     def task_names(self, worktree: Worktree) -> str:
-        proved_ids = {proof.task_id for proof in self.proofs.worktree_proofs(worktree.id).all_rows()}
-        unclosed_ids = {task.id for task in self.tasks.assignee_tasks(worktree.session_agent_id).unclosed().oldest().all_rows(TASK_PAGE_ROWS)}
+        proved_ids = {proof.task_id for proof in self.proofs.worktree_proofs(worktree.id).every_row(UNIT_TASKS_REASON)}
+        unclosed_ids = {task.id for task in self.tasks.assignee_tasks(worktree.session_agent_id).unclosed().every_row(UNIT_TASKS_REASON)}
         return ", ".join(f"task:{task_id}" for task_id in sorted(proved_ids | unclosed_ids))

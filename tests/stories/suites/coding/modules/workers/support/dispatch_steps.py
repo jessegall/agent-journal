@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.support.merge_builds import MergeBuilds
 from engine.process.door.process_executor import ProcessExecutor
 from tests.stories.core.modules.agents.support.numbered_agents import FIRST_STORY_NUMBER
 import json
@@ -21,6 +22,8 @@ from tests.stories.suites.coding.modules.workers.support.memory_git.git_choice i
 from tests.stories.suites.coding.modules.workers.support.memory_git.memory_repository import MemoryRepository
 from tests.stories.suites.coding.modules.workers.support.memory_git.memory_worktree_git import MemoryWorktreeGit
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 DISPATCH = "worker dispatch --test-command python=pytest --model sonnet 1"
 CART_CHANGE = "TOTAL = 1\n"
 FIRST_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart total story"'
@@ -43,7 +46,7 @@ def repository_environment(story: Story, branch: str = ENVIRONMENT_BRANCH, real_
 
 def memory_repository(story: Story) -> MemoryRepository:
     repository = MemoryRepository.sample(repository_folder(story))
-    story.bind(WorktreeGit, MemoryWorktreeGit(story.container.get(WorkerFolderRuns), repository.history, story.container.get(ProcessExecutor)))
+    story.bind(WorktreeGit, MemoryWorktreeGit(story.container.get(WorkerFolderRuns), repository.history, story.container.get(ProcessExecutor), story.container.get(MergeBuilds)))
     checked: dict[type, bool] = {}
     for class_type in [key for key, instance in story.container.instances.items() if uses_git(type(instance), checked)]:
         del story.container.instances[class_type]
@@ -88,7 +91,7 @@ def worker_session(story: Story, worker: Actor) -> str:
 
 
 def merged_worker_lines(story: Story, worker: Actor) -> list[AgentLine]:
-    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows()
+    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON)
     return [line for line in lines if line.text == f"worker:{agent_number(story, worker.id)} was merged"]
 
 

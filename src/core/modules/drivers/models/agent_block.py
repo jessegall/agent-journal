@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from engine.driver.count_down import COUNTDOWN_TOOL_USES
 from engine.driver.interval import Interval
 from engine.driver.seconds import Seconds
+from engine.enums.nudge_type import NudgeType
 from engine.model.model import Model
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
@@ -59,6 +60,12 @@ class AgentBlock(Prunable, Model):
             return True
         return bool((self.grace_tool_uses and tool_uses >= self.grace_tool_uses)
                     or (self.grace_seconds and self.creation_timestamp().elapsed_seconds(timestamp) >= self.grace_seconds))
+
+    @property
+    def refusal_type(self) -> NudgeType:
+        """A strict block refuses the skip of its own refusal too, so its refusal offers none and names only the
+        command that ends it."""
+        return NudgeType.SAFETY_REFUSAL if self.strict else NudgeType.REFUSAL
 
     @property
     def grace(self) -> Interval | None:

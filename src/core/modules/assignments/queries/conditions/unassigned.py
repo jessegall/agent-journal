@@ -2,6 +2,9 @@ from dataclasses import dataclass
 
 from engine.database.statement import Statement
 from engine.model.model import Model
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.select import Select
 
 
 @dataclass(frozen=True)
@@ -11,4 +14,4 @@ class Unassigned:
     model: type[Model]
 
     def statement(self) -> Statement:
-        return Statement("id NOT IN (SELECT subject_id FROM assignments WHERE subject_model = ?)", [self.model.model_name])
+        return SubqueryMatch("id", Select("assignments").matching(Equal("subject_model", self.model.model_name)).column("subject_id"), negated=True).statement()

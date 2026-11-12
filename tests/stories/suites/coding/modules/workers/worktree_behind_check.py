@@ -15,6 +15,7 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.ticks.behind_worktrees import BehindWorktrees
 
+TEST_ROWS_REASON = "the test reads every row it checks"
 SETTING = "journal.suites.coding.workers"
 LOGIN_BRANCH = "feature/login"
 
@@ -45,12 +46,12 @@ def look(story) -> None:
 
 def checks(story) -> list[WorktreeBehindCheck]:
     with story.container.get(Scopes).opened(None, 1):
-        return list(story.container.get(Queries).query(WorktreeBehindCheck).oldest().all_rows())
+        return list(story.container.get(Queries).query(WorktreeBehindCheck).every_row(TEST_ROWS_REASON))
 
 
 def behind_lines(story) -> list[str]:
     with story.container.get(Scopes).opened(None, 1):
-        return [line.text for line in story.container.get(Queries).query(MergerLine).all_rows() if "commits behind" in line.text]
+        return [line.text for line in story.container.get(Queries).query(MergerLine).every_row(TEST_ROWS_REASON) if "commits behind" in line.text]
 
 
 @dataclass(frozen=True)

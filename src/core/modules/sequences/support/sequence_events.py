@@ -18,19 +18,19 @@ class SequenceEvents:
         return self.index().ends.get(event, frozenset())
 
     def index(self) -> SequenceEventIndex:
-        return self.kept.read("sequences", self.load, name="sequences.event-index")
+        return self.kept.read(self.queries.query(Sequence), self.load, name="sequences.event-index")
 
     def load(self) -> SequenceEventIndex:
-        return SequenceEventIndex.built(self.queries.query(Sequence).all_rows())
+        return SequenceEventIndex.built(self.queries.query(Sequence).get())
 
     def remember(self, sequence: Sequence) -> None:
         def saved(index: SequenceEventIndex) -> SequenceEventIndex:
             return index.saved(sequence)
 
-        self.kept.update("sequences", saved, name="sequences.event-index")
+        self.kept.update(self.queries.query(Sequence), saved, name="sequences.event-index")
 
     def remove(self, sequence_id: int) -> None:
         def removed(index: SequenceEventIndex) -> SequenceEventIndex:
             return index.removed(sequence_id)
 
-        self.kept.update("sequences", removed, name="sequences.event-index")
+        self.kept.update(self.queries.query(Sequence), removed, name="sequences.event-index")

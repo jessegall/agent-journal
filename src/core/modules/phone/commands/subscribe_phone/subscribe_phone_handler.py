@@ -24,7 +24,7 @@ class SubscribePhoneHandler(Handler[SubscribePhone, Phone]):
     def handle(self, command: SubscribePhone, context: Context) -> Phone:
         if context.actor.type is not ActorType.CORE:
             raise Refusal("only the viewer subscribes a phone to notices")
-        phones = list(self.queries.query(Phone).filter(token_digest=command.token_digest, state=PhoneState.PAIRED).all_rows())
+        phones = self.queries.query(Phone).filter(token_digest=command.token_digest, state=PhoneState.PAIRED).get()
         if not phones:
             raise Refusal("no paired phone has this session")
         if command.subscription is not None and not self.names_endpoint(command.subscription):

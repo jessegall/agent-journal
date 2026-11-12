@@ -11,7 +11,8 @@ from core.modules.processes.support.run_visibility import RunVisibility
 
 
 class EndProcessHandler(Handler[EndProcess, Process]):
-    """Ends a process and keeps its complete output until the process is removed."""
+    """Ends a process and keeps its complete output until the process is removed. A merge the journal ran itself ends
+    with moves of its own and its output is never read for a reader, so no listener of an agent's ended run hears it."""
 
     command = EndProcess
 
@@ -21,13 +22,19 @@ class EndProcessHandler(Handler[EndProcess, Process]):
     def handle(self, command: EndProcess, context: Context) -> Process:
         process = self.rows.required(Process, command.row_id)
         exit_code = command.exit_code or self.failed_test_code(process)
-        ended = process.finish(context.timestamp, context.actor, exit_code) if exit_code == 0 else process.fail(context.timestamp, context.actor, exit_code)
+        ended = self.ended(process, context, exit_code)
         ended = self.repository.save_change(process, ended, context)
-        if self.outputs.process_output(process.id) is None:
+        if process.is_journal_merge or self.outputs.process_output(process.id) is None:
             return ended
         output = self.bus.dispatch(ReadNewOutput(process.id, is_final=True), context)
         self.repository.update(output, context, byte_count=command.byte_count, line_count=command.line_count, ended_at=context.timestamp)
         return ended
+
+    @staticmethod
+    def ended(process: Process, context: Context, exit_code: int) -> Process:
+        if process.is_journal_merge:
+            return process.end_journal_merge(context.timestamp, exit_code)
+        return process.finish(context.timestamp, context.actor, exit_code) if exit_code == 0 else process.fail(context.timestamp, context.actor, exit_code)
 
     def failed_test_code(self, process: Process) -> int:
         """The exit code of a test part that failed while its line still ended well."""

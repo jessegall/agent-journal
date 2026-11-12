@@ -23,7 +23,7 @@ class PlanContextRule(DriverRule):
         self.plans, self.delivery = plans, delivery
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        for plan in self.plans.filter(state=PlanState.STARTED).oldest().all_rows():
+        for plan in self.plans.filter(state=PlanState.STARTED).oldest().get():
             event_id = self.delivery.start_event(plan)
             if event_id is not None and not self.delivery.has_read(plan.id, event_id, hook.agent_id):
                 nudge = PLAN_CONTEXT.nudge(plan=plan.id)

@@ -2,6 +2,12 @@ from dataclasses import dataclass
 
 from engine.database.statement import Statement
 
+PART_COMMAND = "coalesce(nullif(command, ''), text)"
+from engine.query.conditions.equal import Equal
+from engine.query.select import Select
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.conditions.all_of import AllOf
+
 
 @dataclass(frozen=True)
 class ReaderSampleScope:
@@ -11,6 +17,5 @@ class ReaderSampleScope:
     command: str
 
     def statement(self) -> Statement:
-        return Statement("process_id IN (SELECT id FROM processes WHERE session_agent_id = ?)"
-                         " AND coalesce(nullif(command, ''), text) = ?",
-                         [self.agent_id, self.command])
+        runs = Select("processes").matching(Equal("session_agent_id", self.agent_id)).column("id")
+        return AllOf([SubqueryMatch("process_id", runs), Equal(PART_COMMAND, self.command)]).statement()

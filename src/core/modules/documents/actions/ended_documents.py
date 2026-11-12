@@ -7,6 +7,8 @@ from core.modules.documents.commands.keep_revision.keep_revision import KeepRevi
 from core.modules.documents.models.open_document import OpenDocument
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 
+OPEN_DOCUMENTS_REASON = "every document left open by an ended author is closed with its text kept"
+
 
 class EndedDocuments:
     """Closes documents left open by ended agents and tells their parents."""
@@ -21,10 +23,10 @@ class EndedDocuments:
                 f"doc {opened.doc_id} closed after its author ended; its text was kept"), Actor.core(), cause_id=cause_id)
 
     def close_all(self) -> None:
-        opened = tuple(self.queries.query(OpenDocument).all_rows())
+        opened = tuple(self.queries.query(OpenDocument).every_row(OPEN_DOCUMENTS_REASON))
         if not opened:
             return
-        agents = {agent.id: agent for agent in self.queries.query(Agent).matching(Among("id", [row.author_id for row in opened])).all_rows()}
+        agents = {agent.id: agent for agent in self.queries.query(Agent).matching(Among("id", [row.author_id for row in opened])).every_row(OPEN_DOCUMENTS_REASON)}
         for row in opened:
             agent = agents.get(row.author_id)
             if agent is not None and agent.ended_at is not None:

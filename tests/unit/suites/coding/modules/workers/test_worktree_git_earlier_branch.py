@@ -1,3 +1,4 @@
+from tests.unit.support.declared_merge_builds import declared_merge_builds
 from tests.unit.support.plain_executor import plain_executor
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -21,7 +22,7 @@ def repository_with_commit(tmp_path, subject: str) -> SampleRepository:
 def earlier_branch(repository: SampleRepository, *task_ids: int) -> str | None:
     worktree = Worktree(session_agent_id=1, task_id=task_ids[0], creator_id=1, folder=str(repository.folder), branch=SECOND_BRANCH, base_branch=BASE_BRANCH,
                         base_commit=repository.tip(BASE_BRANCH))
-    return WorktreeGit(None, plain_executor()).earlier_branch(str(repository.folder), worktree, task_ids)
+    return WorktreeGit(None, plain_executor(), declared_merge_builds()).earlier_branch(str(repository.folder), worktree, task_ids)
 
 
 def test_the_search_finds_the_branch_of_a_commit_of_several_tasks_for_each_task_of_its_subject(tmp_path):

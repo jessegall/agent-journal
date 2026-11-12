@@ -34,5 +34,6 @@ class ServerConfigs:
         return tuple(file.path.relative_to(folder) for file in files)
 
     def installed(self, dropped: Sequence[str] = ()) -> list[McpServer]:
-        servers = self.kept.read("mcp_servers", lambda: tuple(self.queries.query(McpServer).oldest().all_rows()), name="mcp.installed_servers")
+        installed = self.queries.query(McpServer).oldest()
+        servers = self.kept.read(installed, lambda: tuple(installed.get()), name="mcp.installed_servers")
         return [server for server in servers if server.name not in dropped]

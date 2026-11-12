@@ -4,7 +4,6 @@ from typing import Self
 
 from engine.database.database import Database
 from engine.database.kept_rows import KeptRows
-from engine.database.statement import Statement
 from engine.time.timestamp import Timestamp
 from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
@@ -16,9 +15,10 @@ from engine.query.conditions.maximum import Maximum
 from engine.query.conditions.minimum import Minimum
 from engine.query.conditions.equal import Equal
 from engine.query.query import Query
-from core.modules.drivers.models.support.views import tool_use_counts_select
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
+
+DISPLAY_CALLS_REASON = "every message display call since the agent's last turn is shown"
 
 STOPS_READ = 20
 MOST_DISPLAYED_PARTS = 500
@@ -43,7 +43,7 @@ class HookCallQuery(Query[HookCall]):
         return self.filter(session_agent_id=agent_id)
 
     def stop_refusal_count(self, agent_id: int) -> int:
-        stops = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().limited(STOPS_READ)
+        stops = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().take(STOPS_READ)
         refused = [stop.answer == HookAnswer.REFUSED for stop in stops]
         return refused.index(False) if False in refused else len(refused)
 
@@ -62,16 +62,16 @@ class HookCallQuery(Query[HookCall]):
 
     def newest_calls(self, agent_id: int, hook: HookEventName, most: int) -> Iterator[HookCall]:
         hook_calls = self.agent(agent_id).filter(hook=hook).newest()
-        calls = hook_calls.limited(min(most, CALL_BATCH_ROWS))
+        calls = hook_calls.take(min(most, CALL_BATCH_ROWS))
         for read_count in range(CALL_BATCH_ROWS, most + CALL_BATCH_ROWS, CALL_BATCH_ROWS):
             yield from calls
             if len(calls) < CALL_BATCH_ROWS or read_count >= most:
                 return
-            calls = hook_calls.matching(Less("id", calls[-1].id)).limited(min(most - read_count, CALL_BATCH_ROWS))
+            calls = hook_calls.matching(Less("id", calls[-1].id)).take(min(most - read_count, CALL_BATCH_ROWS))
 
     def latest_turn_call(self, agent_id: int) -> HookCall | None:
-        return self.kept.read_newest(self.table.name, self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).newest().first,
-                                     "session_agent_id = ? AND hook IN (?, ?, ?, ?, ?, ?)", [agent_id, *TURN_HOOKS], name="drivers.latest_turn")
+        calls = self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).newest()
+        return self.kept.read_newest(calls, calls.first, name="drivers.latest_turn")
 
     def latest_session_end(self, agent_id: int) -> HookCall | None:
         return self.agent(agent_id).filter(hook=HookEventName.SESSION_END).newest().first()
@@ -81,18 +81,18 @@ class HookCallQuery(Query[HookCall]):
 
     def display_calls_after_turn(self, agent_id: int) -> Sequence[HookCall]:
         latest = self.latest_turn_call(agent_id)
-        return tuple(self.agent(agent_id).filter(hook=HookEventName.MESSAGE_DISPLAY).matching(Greater("id", latest.id if latest is not None else 0)).oldest().all_rows())
+        return tuple(self.agent(agent_id).filter(hook=HookEventName.MESSAGE_DISPLAY).matching(Greater("id", latest.id if latest is not None else 0)).every_row(DISPLAY_CALLS_REASON))
 
     def latest_prompt(self, agent_id: int, cutoff_at: Timestamp) -> HookCall | None:
-        return self.kept.read_newest(self.table.name, self.agent(agent_id).filter(hook=HookEventName.PROMPT).matching(Maximum("created_at", cutoff_at.text)).descending("created_at", "id").first,
-                                     "session_agent_id = ? AND hook = ? AND created_at <= ?", [agent_id, HookEventName.PROMPT, cutoff_at.text], name="drivers.prompt_before")
+        calls = self.agent(agent_id).filter(hook=HookEventName.PROMPT).matching(Maximum("created_at", cutoff_at.text)).descending("created_at", "id")
+        return self.kept.read_newest(calls, calls.first, name="drivers.prompt_before")
 
     def last_allowed_stop(self, agent_id: int, cutoff_at: Timestamp) -> HookCall | None:
         return self.agent(agent_id).filter(hook=HookEventName.STOP, answer=HookAnswer.ALLOWED).matching(Maximum("created_at", cutoff_at.text)).newest().first()
 
     def latest_file_edit_call(self, agent_id: int) -> HookCall | None:
-        return self.kept.read_newest(self.table.name, self.agent(agent_id).filter(writes_files=True).newest().first,
-                                     "session_agent_id = ? AND writes_files = 1", [agent_id], name="drivers.latest_write")
+        calls = self.agent(agent_id).filter(writes_files=True).newest()
+        return self.kept.read_newest(calls, calls.first, name="drivers.latest_write")
 
     def has_call_after(self, agent_id: int, hook: HookEventName, summary: str, cutoff_at: Timestamp) -> bool:
         return self.agent(agent_id).filter(hook=hook, summary=summary).matching(Minimum("created_at", cutoff_at.text)).exists()
@@ -123,21 +123,22 @@ class HookCallQuery(Query[HookCall]):
         return compaction is not None and compaction.is_manual_compaction
 
     def is_compacting(self, agent_id: int, checked_at: Timestamp) -> bool:
-        call = self.kept.read_newest(self.table.name, self.agent(agent_id).matching(Among("hook", (*TURN_HOOKS, HookEventName.COMPACT))).newest().first,
-                                     "session_agent_id = ? AND hook IN (?, ?, ?, ?, ?, ?, ?)", [agent_id, *TURN_HOOKS, HookEventName.COMPACT], name="drivers.latest_compaction_turn")
+        calls = self.agent(agent_id).matching(Among("hook", (*TURN_HOOKS, HookEventName.COMPACT))).newest()
+        call = self.kept.read_newest(calls, calls.first, name="drivers.latest_compaction_turn")
         return call is not None and call.is_compaction and call.creation_timestamp().elapsed_seconds(checked_at) < COMPACTION_LIMIT_SECONDS
 
     def write_count(self, agent_id: int, timestamp: Timestamp) -> int:
-        return self.agent(agent_id).filter(writes_files=True, answer=HookAnswer.ALLOWED).matching(Minimum("created_at", timestamp.text)).count()
+        return self.writes_since(agent_id, timestamp).count()
+
+    def writes_since(self, agent_id: int, timestamp: Timestamp) -> Self:
+        return self.agent(agent_id).filter(writes_files=True, answer=HookAnswer.ALLOWED).matching(Minimum("created_at", timestamp.text))
 
     def tool_call_count(self, agent_id: int, timestamp: Timestamp) -> int:
         return self.agent(agent_id).filter(hook=HookEventName.PRE_TOOL_USE).matching(Minimum("created_at", timestamp.text)).count()
 
     def tool_use_counts(self, agent_id: int, starts: Sequence[Timestamp]) -> list[int]:
-        parameters = (*(start.text for start in starts), agent_id, HookEventName.PRE_TOOL_USE.value, min(start.text for start in starts))
-        row = self.database.rows(Statement(tool_use_counts_select(len(starts)), parameters))[0]
-        return [int(count) for count in row]
+        return self.agent(agent_id).filter(hook=HookEventName.PRE_TOOL_USE).counts_after("created_at", [start.text for start in starts])
 
     def newest_agent_hook(self, agent_id: int) -> HookCall | None:
-        return self.kept.read_newest(self.table.name, self.agent(agent_id).matching(Equal("hook", HookEventName.TICK, negated=True)).newest().first,
-                                     "session_agent_id = ? AND hook <> ?", [agent_id, HookEventName.TICK], name="drivers.latest_agent_hook")
+        calls = self.agent(agent_id).matching(Equal("hook", HookEventName.TICK, negated=True)).newest()
+        return self.kept.read_newest(calls, calls.first, name="drivers.latest_agent_hook")

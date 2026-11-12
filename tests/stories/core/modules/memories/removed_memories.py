@@ -4,6 +4,8 @@ from core.modules.memories.models.memory import Memory
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from tests.stories.support.story_checks import expect_value
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 KEPT, REMOVED = "The release waits for the tag", "The old server name"
 REMOVED_ID = 2
 
@@ -33,7 +35,7 @@ def test_the_memory_list_shows_a_removed_memory_when_asked(new_story):
 def test_a_query_leaves_a_removed_memory_out_of_its_rows_and_its_count(new_story):
     story = new_story(fixture=OneMemoryRemoved)
     memories = story.container.get(Queries).query(Memory)
-    expect_value([row.text for row in memories.all_rows()], [KEPT])
+    expect_value([row.text for row in memories.every_row(TEST_ROWS_REASON)], [KEPT])
     expect_value((memories.count(), memories.with_removed().count()), (1, 2))
 
 

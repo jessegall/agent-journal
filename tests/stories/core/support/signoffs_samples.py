@@ -19,6 +19,8 @@ from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 from engine.event.deleted import Deleted
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 class SignoffState(StrEnum):
     REQUESTED = "requested"
@@ -90,7 +92,7 @@ class ForgetTaskSignoffs(DeletionListener[Deleted[Task]]):
         self.queries, self.repository = queries, repository
 
     def handle(self, event: Deleted[Task], context: Context) -> None:
-        for signoff in tuple(self.queries.query(Signoff).filter(task_id=event.row.id).all_rows()):
+        for signoff in tuple(self.queries.query(Signoff).filter(task_id=event.row.id).every_row(TEST_ROWS_REASON)):
             self.repository.delete(signoff, context)
 
 

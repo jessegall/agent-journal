@@ -73,8 +73,8 @@ class UsageAgentSubcommand(ReadSubcommand[AgentInspection]):
         return self.processes.agent(agent_id).matching(Among("state", tuple(FAILED_RUN_TEXTS))).matching(Greater("ended_at", ""))
 
     def recent_moves(self, agent_id: int) -> tuple[AgentMove, ...]:
-        finished_tasks = self.queries.query(Task).filter(state=TaskState.COMPLETED).matching(AssigneeAmong(Task, tuple([agent_id]))).matching(Greater("closed_at", "")).descending("closed_at").limited(LATEST_MOVE_COUNT)
-        runs = self.failed_run_query(agent_id).descending("ended_at").limited(LATEST_MOVE_COUNT)
+        finished_tasks = self.queries.query(Task).filter(state=TaskState.COMPLETED).matching(AssigneeAmong(Task, tuple([agent_id]))).matching(Greater("closed_at", "")).descending("closed_at").take(LATEST_MOVE_COUNT)
+        runs = self.failed_run_query(agent_id).descending("ended_at").take(LATEST_MOVE_COUNT)
         moves = (*(self.finished_task_move(task, task.closed_at) for task in finished_tasks if task.closed_at is not None),
                  *(self.failed_run_move(run, run.ended_at) for run in runs if run.ended_at is not None))
         return tuple(sorted(moves, key=lambda move: move.time, reverse=True)[:LATEST_MOVE_COUNT])

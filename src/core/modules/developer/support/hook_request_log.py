@@ -5,6 +5,7 @@ from datetime import timedelta
 from engine.time.clock import Clock
 from engine.database.hook_requests_table import HookRequestsTable
 from engine.query.queries import Queries
+from engine.query.query import Query
 from engine.query.conditions.among import Among
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING, HOOK_REQUEST_LOG_SIZE_SETTING
@@ -12,8 +13,7 @@ from core.modules.developer.models.hook_request import HookRequest
 from engine.enums.hook_answer import HookAnswer
 from engine.setting.setting_values import SettingValues
 
-LOG_REASON = "The window lists every request the log keeps, a number the log size setting bounds."
-
+REQUEST_LOG_REASON = "the window lists every request the log keeps, a number the log size setting bounds"
 
 class HookRequestLog:
     """Keeps the configured number of completed requests and reads their display view."""
@@ -23,19 +23,23 @@ class HookRequestLog:
         self.agents = agents
 
     def read(self) -> list[HookRequest]:
-        return list(self.queries.query(HookRequest).descending("id").full_table(LOG_REASON).all_rows())
+        return HookRequestLog.newest_first(self.queries.query(HookRequest))
 
     def filter_options(self) -> list[tuple[str, str]]:
         return self.table.filter_options()
 
     def filtered(self, categories: list[str], families: list[str], senders: list[str]) -> list[HookRequest]:
-        query = self.queries.query(HookRequest).descending("id").full_table(LOG_REASON)
+        query = self.queries.query(HookRequest)
         for column, values in (("category", categories), ("family", families), ("sender", senders)):
             if values:
                 query = query.matching(Among(column, values))
         if not families:
             query = query.matching(Among("family", ["process bookkeeping"], negated=True))
-        return list(query.all_rows())
+        return HookRequestLog.newest_first(query)
+
+    @staticmethod
+    def newest_first(query: Query[HookRequest]) -> list[HookRequest]:
+        return sorted(query.every_row(REQUEST_LOG_REASON), key=lambda request: request.id, reverse=True)
 
     def record(self, program: str, headers: Mapping[str, str], body: object, duration_ms: float, outcome: HookAnswer, queued_ms: float = 0, role: str = "main", agent: str = "") -> bool:
         if not self.settings.project.flag(HOOK_REQUEST_LOG_SETTING):

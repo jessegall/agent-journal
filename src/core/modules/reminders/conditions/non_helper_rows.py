@@ -1,6 +1,11 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.select import Select
+
+MAIN_ROLE = "main"
 
 
 @dataclass(frozen=True)
@@ -8,4 +13,5 @@ class NonHelperRows:
     """Matches rows created by a main agent or a person."""
 
     def statement(self) -> Statement:
-        return Statement("creator_id NOT IN (SELECT id FROM agents WHERE role <> 'main')")
+        other_agents = Select("agents").matching(Equal("role", MAIN_ROLE, negated=True)).column("id")
+        return SubqueryMatch("creator_id", other_agents, negated=True).statement()

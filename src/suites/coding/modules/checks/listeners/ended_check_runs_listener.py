@@ -7,6 +7,8 @@ from suites.coding.modules.checks.commands.record_check_progress.record_check_pr
 from suites.coding.modules.checks.models.check import Check
 from engine.event.journal_booting import JournalBooting
 
+BOOT_CHECKS_REASON = "at a start every check left running is ended"
+
 
 class EndedCheckRunsListener(CommitListener[JournalBooting]):
     """As the journal starts, no check is running any more, so a percent left from before it stopped is cleared."""
@@ -17,6 +19,6 @@ class EndedCheckRunsListener(CommitListener[JournalBooting]):
         self.queries, self.bus = queries, bus
 
     def handle(self, event: JournalBooting, logged: LoggedEvent) -> None:
-        for check in tuple(self.queries.query(Check).all_rows()):
+        for check in tuple(self.queries.query(Check).every_row(BOOT_CHECKS_REASON)):
             if check.run_percent is not None:
                 self.bus.run(RecordCheckProgress(check.id, None), Actor.core())

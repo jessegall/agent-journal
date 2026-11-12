@@ -6,6 +6,8 @@ from typing import TypeVar
 from engine.model.positioned import Positioned
 from engine.errors.refusal import Refusal
 
+RENUMBER_REASON = "positions stay without gaps, so every row after a moved one is numbered again"
+
 P = TypeVar("P", bound=Positioned)
 
 POSITION = "position"
@@ -22,12 +24,12 @@ class Positions:
         return highest.position + 1 if highest is not None else 1
 
     def renumber(self, model: type[Positioned], parent_column: str, parent_id: int, position: int, context: Context) -> None:
-        later = self.queries.query(model).filter(**{parent_column: parent_id}).matching(Greater(POSITION, position)).ordered(POSITION)
-        for row in tuple(later.all_rows()):
+        later = self.queries.query(model).filter(**{parent_column: parent_id}).matching(Greater(POSITION, position))
+        for row in sorted(later.every_row(RENUMBER_REASON), key=lambda row: row.position):
             self.repository.save(row.changed(position=row.position - 1), context)
 
     def move(self, row: P, parent_column: str, parent_id: int, position: int, context: Context) -> P:
-        rows = tuple(self.queries.query(type(row)).filter(**{parent_column: parent_id}).ordered(POSITION).all_rows())
+        rows = tuple(sorted(self.queries.query(type(row)).filter(**{parent_column: parent_id}).every_row(RENUMBER_REASON), key=lambda row: row.position))
         if not 1 <= position <= len(rows):
             parent = parent_column.removesuffix("_id")
             raise Refusal(f"{parent} {parent_id} has places 1 to {len(rows)}, not {position}")

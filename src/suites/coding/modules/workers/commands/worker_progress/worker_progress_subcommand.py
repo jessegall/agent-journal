@@ -20,7 +20,7 @@ class WorkerProgressSubcommand(ReadSubcommand[tuple[WorkerProgress, ...]]):
         self.queries = queries
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[WorkerProgress, ...]:
-        return tuple(self.queries.query(WorkerProgress).matching(KeptAgentRows("agent_id")).ordered("agent_id").full_table(PROGRESS_REASON).all_rows())
+        return tuple(self.queries.query(WorkerProgress).matching(KeptAgentRows("agent_id")).every_row(PROGRESS_REASON))
 
     def write_output(self, value: object, output: Output) -> None:
         if is_tuple(value):

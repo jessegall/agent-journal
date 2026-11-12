@@ -17,13 +17,7 @@ class ActiveMemories:
     def absent_memories(self, agent_id: int) -> "ActiveMemories":
         return self
 
-    def weight_order(self) -> "ActiveMemories":
-        return self
-
-    def full_table(self, reason: str) -> "ActiveMemories":
-        return self
-
-    def all_rows(self) -> list[SimpleNamespace]:
+    def every_by_weight(self, reason: str) -> list[SimpleNamespace]:
         return [SimpleNamespace(memory_id=memory_id) for memory_id in MEMORY_IDS]
 
 

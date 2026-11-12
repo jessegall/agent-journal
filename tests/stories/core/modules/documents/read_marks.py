@@ -13,6 +13,8 @@ from tests.stories.core.modules.documents.support.read_marks import ReadableText
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.support.story_checks import expect_value
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 def finished_read(story, line):
     process = start_process(story, f"journal {line}")
@@ -21,7 +23,7 @@ def finished_read(story, line):
 
 
 def read_marks(story):
-    return list(story.container.get(Queries).query(ChatMark).filter(type="documents.read").oldest().all_rows())
+    return list(story.container.get(Queries).query(ChatMark).filter(type="documents.read").every_row(TEST_ROWS_REASON))
 
 
 def test_document_and_report_reads_show_one_clickable_mark_per_row_in_a_turn(new_story):

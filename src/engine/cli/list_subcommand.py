@@ -15,6 +15,7 @@ from engine.query.queries import Queries
 from engine.query.query import PAGE_SIZE_ROWS, Query
 from engine.cli.subcommand_columns import FOREIGN_KEY_SUFFIX, parser_argument
 from engine.database.constraint_refusals import ENVIRONMENT_COLUMN
+from engine.subcommand.page_arguments import read_limit
 
 
 SESSION_PREFIX = "session_"
@@ -36,7 +37,7 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--page", type=int, default=1)
-        parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
+        parser.add_argument("--limit", type=read_limit, default=PAGE_SIZE_ROWS)
         parser.add_argument("--oldest", action="store_true")
         parser.add_argument("--after-id", type=int, default=None)
         parser.add_argument("--before-id", type=int, default=None)

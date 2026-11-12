@@ -24,6 +24,8 @@ from tests.stories.suites.coding.modules.workers.support.merger_launcher import 
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker, start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_without
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 ADVICES = (
     "Check the rounding rule in the cart",
     "Read the failing assertion before the fixture",
@@ -101,10 +103,10 @@ class AdvisedWorker:
         return self
 
     def merger_message_rows(self) -> tuple[MergerAdvice, ...]:
-        return tuple(self.story.container.get(Queries).query(MergerAdvice).filter(worker_id=self.worker.id).oldest().all_rows())
+        return tuple(self.story.container.get(Queries).query(MergerAdvice).filter(worker_id=self.worker.id).every_row(TEST_ROWS_REASON))
 
     def messages(self) -> tuple[Message, ...]:
-        return tuple(self.story.container.get(Queries).query(Message).filter(session_agent_id=self.merger.id, target_agent_id=self.worker.id).oldest().all_rows())
+        return tuple(self.story.container.get(Queries).query(Message).filter(session_agent_id=self.merger.id, target_agent_id=self.worker.id).every_row(TEST_ROWS_REASON))
 
     def question_lines(self) -> tuple[MergerLine, ...]:
         rows = self.story.story_rows(MergerLine)

@@ -42,4 +42,4 @@ class AvailableWork:
         if not sends_workers or not self.places.can_start_new():
             return ()
         waiting = self.tasks.delegation_candidates()
-        return tuple(task.id for task in waiting.oldest().limited(MOST_LISTED_TASKS))
+        return tuple(task.id for task in waiting.oldest().take(MOST_LISTED_TASKS))

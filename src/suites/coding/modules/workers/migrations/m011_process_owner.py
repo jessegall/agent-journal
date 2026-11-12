@@ -10,6 +10,6 @@ class ProcessOwnerMigration(RebuildMigration):
     statements = ["UPDATE processes SET owner_agent_id = worker_id", "ALTER TABLE processes DROP COLUMN worker_id"]
 
     def run(self, database: Database) -> None:
-        if any(row["name"] == "worker_id" for row in database.rows(Statement("PRAGMA table_info(processes)"))):
+        if "worker_id" in self.column_names(database, "processes"):
             super().run(database)
         database.update(Statement("UPDATE process_parts SET is_visible = 1 WHERE substr(text, 1, 20) = 'journal worker merge'"))

@@ -11,6 +11,8 @@ from core.modules.tasks.models.task import Task
 from core.modules.assignments.queries.conditions.unassigned import Unassigned
 from core.modules.tasks.queries.task_query import TaskQuery
 
+READY_TASKS_REASON = "the free task with the highest priority is chosen among every ready task"
+
 
 class FocusedPlanTasks:
     """Picks the task an agent takes next for its plan focus: a ready task of the focused plan or an open task
@@ -39,7 +41,7 @@ class FocusedPlanTasks:
     def free_task(self, plans: Sequence[PlanWork], excluded_id: int | None) -> Task | None:
         for work in plans:
             task_ids = [task_id for task_id in work.ready_task_ids() if task_id != excluded_id]
-            free = work.highest_priority(self.tasks.matching(Unassigned(Task)).matching(Among("id", task_ids)).all_rows()) if task_ids else None
+            free = work.highest_priority(tuple(self.tasks.matching(Unassigned(Task)).matching(Among("id", task_ids)).every_row(READY_TASKS_REASON))) if task_ids else None
             if free is not None:
                 return free
         return None

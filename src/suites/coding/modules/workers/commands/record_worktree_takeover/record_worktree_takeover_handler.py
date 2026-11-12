@@ -1,7 +1,7 @@
 from core.modules.assignments.support.assignments import Assignments
 from core.modules.plans.commands.assign_plan.assign_plan import AssignPlan
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
+from core.modules.tasks.queries.task_query import TaskQuery
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -11,6 +11,8 @@ from engine.repository.repository import Repository
 from suites.coding.modules.workers.commands.record_worktree_takeover.record_worktree_takeover import RecordWorktreeTakeover
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.work_units import WorkUnits
+
+UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 
 class RecordWorktreeTakeoverHandler(Handler[RecordWorktreeTakeover, Worktree]):
@@ -25,7 +27,7 @@ class RecordWorktreeTakeoverHandler(Handler[RecordWorktreeTakeover, Worktree]):
     def handle(self, command: RecordWorktreeTakeover, context: Context) -> Worktree:
         worktree = self.rows.required(Worktree, command.worktree_id)
         plan = self.units.unit(worktree.session_agent_id).plan
-        held = tuple(self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).filter(closed_at=None).oldest().all_rows(TASK_PAGE_ROWS))
+        held = tuple(self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).filter(closed_at=None).every_row(UNIT_TASKS_REASON))
         taken = self.repository.save_change(worktree, worktree.taken_over(command.worker_id), context)
         for task in held:
             if task.holder_id == worktree.session_agent_id:

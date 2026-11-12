@@ -17,7 +17,6 @@ from core.modules.processes.support.run_title import RunTitle
 from core.modules.processes.support.reader_requests import ReaderRequests
 from core.modules.processes.support.run_slots import RunSlots
 from core.modules.processes.support.part_visibility import PartVisibility
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.support.reading.shadow_decisions import ShadowDecisions
 
 
@@ -43,7 +42,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
         process = self.repository.save(Process(session_agent_id=agent.id, hook_call_id=command.hook_call_id, creator_id=context.actor.id,
                                                line=command.line, folder=command.folder, shell=command.shell, category=command.category,
                                                limit_seconds=command.limit_seconds, is_full_test_run=command.is_full_test_run,
-                                               queued_at=context.timestamp, plugin=command.plugin, kind=command.kind, is_queue_run=bool(command.plugin) or any(part.category.is_queued for part in command.parts) and all(part.category.is_queued or part.category is CommandCategory.JOURNAL for part in command.parts),
+                                               queued_at=None if command.is_journal_merge else context.timestamp, started_at=context.timestamp if command.is_journal_merge else None, plugin=command.plugin, kind=command.kind, is_queue_run=bool(command.plugin) or any(part.category.is_queued for part in command.parts) and all(part.category.is_queued or part.category is CommandCategory.JOURNAL for part in command.parts),
                                                owner_agent_id=command.owner_agent_id, task_id=command.task_id, timeout_seconds=min(timeouts, default=None), priority=command.priority), context)
         readers = self.readers.all() if command.category.has_reader else ()
         layers = self.readers.layers()
@@ -64,9 +63,12 @@ class StartProcessHandler(Handler[StartProcess, Process]):
             part_reader = ReaderSelection.choose(readers, [part for part in parts if part.reader_request_id is None], layers)
             self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=part_reader.reader.id if part_reader else None,
                                         reader_position=part_reader.part.position if part_reader else 0, title=RunTitle.title(part_reader.reader, part_reader.part.text) if part_reader else ""), context)
-        self.shadow.store(process, parts, ReadingMoment.START, context)
+        self.shadow.store_at_start(process, parts, context)
         self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
         self.slots.remember(process)
-        self.slots.grant(context)
+        if command.is_journal_merge:
+            self.folder.write_slot(process.id)
+        else:
+            self.slots.grant(context)
         return self.rows.required(Process, process.id)
 

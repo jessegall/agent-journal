@@ -11,6 +11,8 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 def test_the_main_agent_edits_no_file_in_a_workers_worktree(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
@@ -34,7 +36,7 @@ def test_a_line_on_a_clock_waits_out_its_time_though_the_number_in_it_changes(ne
     story.expect_absent_hook_line(session, finished, "you logged nothing")
     story.advance(timedelta(minutes=30))
     story.expect_hook_allowed(session, finished, "you logged nothing for 62 min")
-    records = list(story.container.get(Queries).query(NudgeRecord).filter(session_agent_id=worker.id, key=WORKER_LOG_DUE.key).all_rows())
+    records = list(story.container.get(Queries).query(NudgeRecord).filter(session_agent_id=worker.id, key=WORKER_LOG_DUE.key).every_row(TEST_ROWS_REASON))
     story.expect_rows(len(records) == 1, records[0].delivery_count == 2)
 
 

@@ -1,7 +1,7 @@
 from engine.query.queries import Queries
 from engine.check.step_condition import StepCondition
 from core.modules.plans.models.phase import Phase
-from core.modules.plans.models.plan_task import PlanTask
+from core.modules.plans.models.phase_task import PhaseTask
 
 
 class PlanPhasesHaveTasks(StepCondition):
@@ -13,6 +13,7 @@ class PlanPhasesHaveTasks(StepCondition):
         self.queries = queries
 
     def problem(self, subject_id: int) -> str | None:
-        filled = {task.phase_id for task in self.queries.query(PlanTask).filter(plan_id=subject_id).all_rows()}
-        empty = next((phase.id for phase in self.queries.query(Phase).filter(plan_id=subject_id).oldest().all_rows() if phase.id not in filled), None)
+        places = self.queries.query(PhaseTask).where_column("phase_id", "phases.id")
+        empty_phase = self.queries.query(Phase).filter(plan_id=subject_id).where_not_exists(places).oldest().first()
+        empty = None if empty_phase is None else empty_phase.id
         return None if empty is None else f"phase {empty} of plan {subject_id} has no tasks"

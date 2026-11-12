@@ -17,7 +17,7 @@ class HookRuleHistories:
 
     def rows(self, agent_id: int) -> Mapping[tuple[str, str], RuleHistory]:
         if agent_id not in self.agent_histories:
-            self.agent_histories[agent_id] = {(row.rule, row.layer): row for row in self.queries.query(RuleHistory).filter(session_agent_id=agent_id).full_table(RULE_COUNT_REASON).all_rows()}
+            self.agent_histories[agent_id] = {(row.rule, row.layer): row for row in self.queries.query(RuleHistory).filter(session_agent_id=agent_id).every_row(RULE_COUNT_REASON)}
         return self.agent_histories[agent_id]
 
     def clear(self) -> None:

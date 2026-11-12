@@ -1,8 +1,11 @@
 from engine.command.context import Context
 from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
+from engine.query.query import Query
+from core.modules.plans.conditions.plan_tasks_condition import PlanTasksCondition
+from core.modules.plans.models.phase_task import PhaseTask
+from core.modules.tasks.models.task import Task
 from engine.setting.setting_values import SettingValues
-from core.modules.plans.conditions.plan_window_tables import PlanWindowTables
 from engine.repository.repository import Repository
 from core.modules.plans.models.checkpoint_pass import CheckpointPass
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
@@ -14,6 +17,8 @@ from core.modules.plans.support.checkpoint_branch_moves import CheckpointBranchM
 from core.modules.plans.support.checkpoint_windows import CheckpointWindows
 from core.modules.plans.support.early_run import EarlyRun
 from core.modules.plans.support.plan_settings import WAIT_FOR_PERSON_SETTING
+
+REACHES_REASON = "the checkpoint status shows the newest reach of every phase, read from every reach of the plan"
 
 WINDOW_REASON = "The checkpoints of one plan are worked out from every task of that plan."
 
@@ -32,22 +37,28 @@ class PlanCheckpoints:
         self.queries, self.repository, self.moves, self.kept, self.settings = queries, repository, moves, kept, settings
 
     def windows(self, plan_id: int) -> CheckpointWindows:
-        return self.kept.read_across(PlanWindowTables(plan_id).tables(), lambda: self.loaded_windows(plan_id), name="plans.checkpoint_windows")
+        return self.kept.read_across(self.window_sources(plan_id), lambda: self.loaded_windows(plan_id), name="plans.checkpoint_windows")
+
+    def window_sources(self, plan_id: int) -> tuple[Query[Task] | Query[Phase] | Query[PhaseTask], ...]:
+        """The rows the checkpoint windows of a plan are worked out from: its tasks, its phases and the places of its tasks."""
+        phases = self.queries.query(Phase).filter(plan_id=plan_id)
+        return (self.queries.query(Task).matching(PlanTasksCondition(tuple([plan_id]))), phases,
+                self.queries.query(PhaseTask).where_in("phase_id", phases.select_columns("id")))
 
     def loaded_windows(self, plan_id: int) -> CheckpointWindows:
-        phases = tuple(self.queries.query(Phase).filter(plan_id=plan_id).ordered("position").all_rows())
-        places = tuple(self.queries.query(PlanTask).filter(plan_id=plan_id).full_table(WINDOW_REASON).all_rows())
+        phases = tuple(self.queries.query(Phase).filter(plan_id=plan_id).ordered("position").get())
+        places = tuple(self.queries.query(PlanTask).filter(plan_id=plan_id).every_row(WINDOW_REASON))
         return CheckpointWindows(phases, places)
 
     def reaches(self, plan_id: int) -> tuple[CheckpointReach, ...]:
-        return tuple(self.queries.query(CheckpointReach).filter(plan_id=plan_id).oldest().all_rows())
+        return tuple(self.queries.query(CheckpointReach).filter(plan_id=plan_id).every_row(REACHES_REASON))
 
     def status_lines(self, plan_id: int, windows: CheckpointWindows) -> tuple[str, ...]:
         newest = {reach.phase_id: reach for reach in self.reaches(plan_id)}
         return windows.status_lines(newest, self.passed_phase_ids(plan_id))
 
     def passed_phase_ids(self, plan_id: int) -> frozenset[int]:
-        return frozenset(passed.phase_id for passed in self.queries.query(CheckpointPass).filter(plan_id=plan_id).all_rows())
+        return frozenset(self.queries.query(CheckpointPass).filter(plan_id=plan_id).pluck("phase_id", int))
 
     def is_end_passed(self, plan_id: int) -> bool:
         return self.windows(plan_id).is_end_passed(self.passed_phase_ids(plan_id))

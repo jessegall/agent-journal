@@ -10,6 +10,8 @@ from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 
+UNLAUNCHED_REASON = "every running run may be a worker test that never launched"
+
 LAUNCH_GRACE_SECONDS = 30
 
 
@@ -19,7 +21,7 @@ class UnlaunchedWorkerTestRuns:
 
     def __call__(self, container: Container) -> None:
         folder, current = container.get(OutputFolder), container.get(Clock).timestamp()
-        runs = {process.id: process for process in container.get(ProcessQuery).running().all_rows()}
+        runs = {process.id: process for process in container.get(ProcessQuery).running().every_row(UNLAUNCHED_REASON)}
         stalled = [(runs[proof.process_id], proof.test_command) for proof in container.get(ProofQuery).test_rows()
                    if proof.state is ProofState.RUNNING and proof.process_id in runs and self.is_unlaunched(runs[proof.process_id], folder, current)]
         agents = {agent.id: agent for agent in container.get(Queries).query(Agent).find_many([process.session_agent_id for process, _ in stalled])}

@@ -9,6 +9,8 @@ from core.modules.processes.support.output_folder import CPU_FILE, OutputFolder
 from core.modules.processes.support.cadence.run_silences import RunSilences
 from core.modules.processes.support.process_settings import ProcessSettings
 
+HELD_RUNS_REASON = "every old running run of the agent is checked for the silence that holds it"
+
 
 class HeldRuns:
     """Finds the run of an agent that printed nothing for the hang time since its last output or the last time
@@ -23,7 +25,7 @@ class HeldRuns:
         if agent is None or agent.ended_at is not None:
             return None
         limit = self.settings.integer(ProcessSetting.HANG_SECONDS)
-        for process in self.processes.agent(agent_id).running().minimum_age(timestamp, limit).oldest().all_rows():
+        for process in self.processes.agent(agent_id).running().minimum_age(timestamp, limit).every_row(HELD_RUNS_REASON):
             seconds = self.silent_seconds(process, timestamp)
             if seconds >= limit:
                 return HeldRun(process, seconds, self.processor(process, timestamp, seconds))

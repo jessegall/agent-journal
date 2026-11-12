@@ -45,7 +45,7 @@ class Checks:
     def newest(self) -> "Checks":
         return self
 
-    def all_rows(self) -> list[WorktreeBehindCheck]:
+    def every_row(self, reason: str) -> list[WorktreeBehindCheck]:
         return self.rows
 
     def find(self, row_id: int):

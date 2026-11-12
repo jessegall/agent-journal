@@ -13,6 +13,8 @@ from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, UserB
 from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 @pytest.fixture
 def pending_requests(new_story):
@@ -61,7 +63,7 @@ def test_a_task_wait_does_not_create_a_person_approval(new_story):
 
 def test_many_docked_approvals_use_one_read_through_the_viewer_route(pending_requests, pending_viewer, monkeypatch):
     story = pending_requests
-    items = tuple(story.container.get(Queries).query(DockItem).filter(type="approvals.request", state=DockItemState.DOCKED).all_rows())
+    items = tuple(story.container.get(Queries).query(DockItem).filter(type="approvals.request", state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON))
     reads = []
     original = LineRoute.run_line
 
@@ -82,5 +84,5 @@ def test_a_registry_refresh_removes_a_stale_closed_approval_card(phone_request, 
     story.new_row_id(f"dock add approvals.request approval {request.id} --environment main", actor=story.user)
     story.expect_sync_success(UPGRADE)
     story.run_listeners()
-    items = tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=request.id, state=DockItemState.DOCKED).all_rows())
+    items = tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=request.id, state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON))
     story.expect_rows(not items)

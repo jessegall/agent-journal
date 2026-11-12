@@ -19,6 +19,8 @@ from suites.coding.modules.workers.support.journal_managed_files import JournalM
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from core.modules.agents.support.agent_label import AgentLabel
 
+RETIRED_WORKER_REASON = "a retired worker is checked on every worktree it had and gives up every waiting line"
+
 
 class WorkerRoster(AgentRoster[Agent]):
     """Lists the workers available to hold work. A worker with unmerged or uncommitted work is held from retiring;
@@ -32,7 +34,7 @@ class WorkerRoster(AgentRoster[Agent]):
 
     def retire_block(self, agent: Agent) -> str:
         folder = self.queries.query(Environment).find(agent.environment_id).folder
-        for worktree in self.queries.query(Worktree).filter(session_agent_id=agent.id).with_removed().all_rows():
+        for worktree in self.queries.query(Worktree).filter(session_agent_id=agent.id).with_removed().every_row(RETIRED_WORKER_REASON):
             if self.has_own_changes(agent, worktree):
                 return f"{AgentLabel.from_agent(agent).text} has uncommitted files in {worktree.folder}: commit or remove them, then retire it"
             if self.git.has_unmerged_branch(folder, worktree):
@@ -50,5 +52,5 @@ class WorkerRoster(AgentRoster[Agent]):
 
     def release_pending_work(self, agent: Agent, context: Context) -> None:
         self.bus.dispatch(UnassignAgentTasks(agent.id), context)
-        for line in tuple(self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).all_rows()):
+        for line in tuple(self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).every_row(RETIRED_WORKER_REASON)):
             self.bus.dispatch(RemoveAgentLine(line.id), context)

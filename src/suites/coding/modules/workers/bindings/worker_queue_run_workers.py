@@ -13,11 +13,11 @@ class WorkerQueueRunWorkers(QueueRunWorkers):
         owners = super().read(page)
         if not page.rows:
             return owners
-        proofs = tuple(self.queries.query(Proof).matching(Among("process_id", tuple(process.id for process in page.rows))).limited(page.size))
+        proofs = tuple(self.queries.query(Proof).matching(Among("process_id", tuple(process.id for process in page.rows))).take(page.size))
         if not proofs:
             return owners
         worktree_ids = tuple({proof.worktree_id for proof in proofs})
-        workers = {worktree.id: worktree.session_agent_id for worktree in self.queries.query(Worktree).matching(Among("id", worktree_ids)).limited(page.size)}
+        workers = {worktree.id: worktree.session_agent_id for worktree in self.queries.query(Worktree).matching(Among("id", worktree_ids)).take(page.size)}
         for proof in proofs:
             worker_id = workers.get(proof.worktree_id)
             if worker_id is not None and proof.process_id is not None:

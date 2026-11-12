@@ -16,5 +16,5 @@ class EndedProcessWatchListener(SaveListener[ProcessEnded]):
 
     def handle(self, event: ProcessEnded, context: Context) -> None:
         process = event.row
-        for watch in tuple(self.watches.process(process.id).filter(state=WatchState.OPEN).all_rows()):
+        for watch in tuple(self.watches.process(process.id).filter(state=WatchState.OPEN).get()):
             self.repository.save(watch.end(context.timestamp, context.actor), context)

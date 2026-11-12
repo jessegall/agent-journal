@@ -6,6 +6,8 @@ from engine.registry.registry import Registry
 from core.modules.assignments.support.linked_rows import LinkedRows
 from core.modules.assignments.errors.unassignable_model_refusal import UnassignableModelRefusal
 
+CASCADE_REASON = "an assignment reaches every child row of the row it is given to"
+
 
 class AssignableRows:
     """Finds the row a command names by the command line name of its model and its id, among the models that
@@ -32,7 +34,7 @@ class AssignableRows:
         if children.link_model is None or children.link_column is None:
             parent_id = getattr(row, children.column)
             return [parent_id] if parent_id is not None else []
-        links = self.queries.query(children.link_model).filter(**{children.link_column: row.id}).all_rows()
+        links = self.queries.query(children.link_model).filter(**{children.link_column: row.id}).every_row(CASCADE_REASON)
         return [getattr(link, children.column) for link in links]
 
     def linked(self, link: Model) -> tuple[LinkedRows, ...]:

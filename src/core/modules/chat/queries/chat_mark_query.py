@@ -15,10 +15,11 @@ class ChatMarkQuery(Query[ChatMark]):
         self.kept = kept
 
     def keyed(self, key: str) -> ChatMark | None:
-        return self.kept.scoped_read(self.table.name, self.filter(key=key).first, "key = ?", [key], name="chat.keyed_mark")
+        marks = self.filter(key=key)
+        return self.kept.read(marks, marks.first, name="chat.keyed_mark")
 
     def remember(self, mark: ChatMark) -> None:
-        self.kept.scoped_update(self.table.name, lambda previous: mark, "key = ?", [mark.key], name="chat.keyed_mark")
+        self.kept.update(self.filter(key=mark.key), lambda previous: mark, name="chat.keyed_mark")
 
     def agent_marks(self, agent_id: int) -> Self:
         return self.filter(session_agent_id=agent_id)

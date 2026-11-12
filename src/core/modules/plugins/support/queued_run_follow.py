@@ -7,6 +7,7 @@ from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import END_POLL_SECONDS, OutputFolder
 
+QUEUED_RUNS_REASON = "every queued run that is still waiting is followed"
 STOPPED_EXIT_CODE = 143
 
 
@@ -34,5 +35,5 @@ class QueuedRunFollow:
             self.clock.sleep(END_POLL_SECONDS)
 
     def ahead(self, process: Process) -> int:
-        waiting = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(HasValue("queued_at")).all_rows()
+        waiting = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(HasValue("queued_at")).every_row(QUEUED_RUNS_REASON)
         return sum((other.priority.rank, other.id) < (process.priority.rank, process.id) for other in waiting)

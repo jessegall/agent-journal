@@ -22,7 +22,7 @@ class PluginListSubcommand(ReadSubcommand[Sequence[Plugin]]):
         return
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[Plugin]:
-        return tuple(self.plugins.oldest().all_rows())
+        return tuple(self.plugins.oldest().get())
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [row for row in value if isinstance(row, Plugin)] if is_tuple(value) else []

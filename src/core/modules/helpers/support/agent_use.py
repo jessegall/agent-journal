@@ -29,8 +29,8 @@ class AgentUse:
         oldest_created_at = (self.clock.timestamp().value - timedelta(days=self.settings.number(AGENT_USE_DAYS))).isoformat()
         jobs = self.job_counts.counted_after(oldest_created_at)
         unretired_agents: dict[tuple[str, str], list[Agent]] = defaultdict(list)
-        for agent in self.queries.query(Agent).matching(IsNull("retired_at")).matching(Excluding(Equal("role", MAIN_ROLE))).full_table(KEPT_AGENTS_REASON).all_rows():
-            unretired_agents[(agent.profile or agent.role, agent.program_model or "default")].append(agent)
+        for agent in self.queries.query(Agent).matching(IsNull("retired_at")).matching(Excluding(Equal("role", MAIN_ROLE))).every_row(KEPT_AGENTS_REASON):
+            unretired_agents[agent.use_key].append(agent)
         model_keys = sorted(key for key in {*jobs, *unretired_agents} if jobs[key] or unretired_agents[key])
         return tuple(ModelUse(agent_type, model, jobs[(agent_type, model)], tuple(unretired_agents[(agent_type, model)])) for agent_type, model in model_keys)
 

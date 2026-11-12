@@ -37,7 +37,7 @@ class TaskRows:
             return TaskRows([task for task in self.tasks if task.assignee_id is None])
         return TaskRows([task for task in self.tasks if task.id in condition.values])
 
-    def all_rows(self):
+    def every_row(self, reason):
         return list(self.tasks)
 
 

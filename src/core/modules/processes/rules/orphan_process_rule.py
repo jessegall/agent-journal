@@ -13,6 +13,8 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.rules.support.run_folder_ends import RunFolderEnds
 
+RUNNING_RUNS_REASON = "every run the agent started and still has running is checked for an orphan"
+
 
 TICK_INTERVAL_SECONDS = 150
 
@@ -33,7 +35,7 @@ class OrphanProcessRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         answer = RuleAnswer.allowed()
         restarted = self.folder.tick_interval_seconds(hook.agent_id, hook.timestamp) > TICK_INTERVAL_SECONDS
-        for process in tuple(self.processes.agent_started(hook.agent_id).running().oldest().all_rows()):
+        for process in tuple(self.processes.agent_started(hook.agent_id).running().every_row(RUNNING_RUNS_REASON)):
             answer = self.checked(answer, hook, process, restarted)
         return answer
 

@@ -21,6 +21,8 @@ from core.modules.messages.support.message_replies import MessageReplies
 from core.modules.messages.support.message_nudges import UNANSWERED, UNANSWERED_COUNTDOWN, UNANSWERED_REFUSAL, UNANSWERED_TOOL_USES
 from core.modules.messages.support.block_conditions.messages_answered import MessagesAnswered
 
+READ_PEOPLE_REASON = "every message of a person read since the agent last wrote waits for an answer"
+
 NEWEST_AGENT_MESSAGES = 50
 
 
@@ -55,8 +57,8 @@ class UnansweredMessageRule(DriverRule):
         newest_agent_message = self.messages.addressed(agent_id).filter(type=MessageType.AGENT, creator_id=agent_id).newest().first()
         agent_start = self.queries.query(Agent).find(agent_id).creation_timestamp().text
         wait_start = max(agent_start, newest_agent_message.creation_timestamp().text) if newest_agent_message is not None else agent_start
-        read_people = self.read_after(agent_id, PERSON_MESSAGE_TYPES, wait_start).all_rows()
-        read_agents = self.read_after(agent_id, tuple([MessageType.AGENT]), agent_start).matching(ActiveAgentRows("creator_id")).matching(Excluding(Equal("creator_id", agent_id))).newest().limited(NEWEST_AGENT_MESSAGES)
+        read_people = self.read_after(agent_id, PERSON_MESSAGE_TYPES, wait_start).every_row(READ_PEOPLE_REASON)
+        read_agents = self.read_after(agent_id, tuple([MessageType.AGENT]), agent_start).matching(ActiveAgentRows("creator_id")).matching(Excluding(Equal("creator_id", agent_id))).newest().take(NEWEST_AGENT_MESSAGES)
         candidates = tuple(sorted((*read_people, *read_agents), key=lambda message: message.id))
         answered = self.replies.answered_ids(agent_id, candidates)
         return tuple(message for message in candidates if message.id not in answered)
