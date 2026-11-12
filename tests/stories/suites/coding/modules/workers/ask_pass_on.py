@@ -136,13 +136,13 @@ def test_a_merger_started_by_an_ended_main_session_tells_the_main_agent_that_run
 def test_a_merger_that_told_about_a_worker_can_tell_again_once_a_later_ask_of_the_worker_was_settled(case):
     story = case.story
     worker_line = f"{MERGER_QUESTION_LINE} --worker {agent_number(story, case.worker.id)}"
-    ask(case)
+    ask(case, "The build log is empty", AskTopic.TESTS)
     story.expect_success("merger next", actor=case.merger)
     story.expect_success(worker_line, actor=case.merger)
     expect_refused_with(story, worker_line, "is with the main agent since", "you need not tell it again", actor=case.merger)
-    ask(case, SECOND_QUESTION, AskTopic.TESTS)
+    ask(case, SECOND_QUESTION, AskTopic.TOOL)
     story.expect_success(f'merger answer {questions(story)[1].id} "Use the fixture in tests/data"', actor=case.merger)
     ask(case, "The cart total is wrong", AskTopic.TOOL)
     story.expect_success("merger next", actor=case.merger)
-    story.expect_success(f'merger tell "The cart total is wrong too" --tried "I read its facts" --option "answer the worker" --option "release the worker" --recommend "release the worker" --worker {agent_number(story, case.worker.id)}', actor=case.merger)
+    story.expect_success(f'merger tell "Which rounding does the cart total use" --tried "Compared both totals" --option "round up" --option "round down" --recommend "round up" --worker {agent_number(story, case.worker.id)}', actor=case.merger)
     story.expect_rows(questions(story)[2].outcome is AskOutcome.FORWARDED, detail=str(questions(story)))
