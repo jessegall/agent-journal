@@ -288,8 +288,8 @@ def test_person_names_any_program_over_a_route(split_story):
 def test_agent_cannot_change_a_route_a_person_made(split_story, split_viewer):
     story = split_story
     split_viewer.value('workers.workers', ['worker-route', 'make', '--tags', 'owned', '--program', 'codex'])
-    story.expect_refusal('worker-route edit 1 --program claude', 'person', actor=story.agent)
-    story.expect_refusal('worker-route delete 1', 'person', actor=story.agent)
+    story.expect_refusal('worker-route edit 1 --program claude', 'user', actor=story.agent)
+    story.expect_refusal('worker-route delete 1', 'user', actor=story.agent)
     story.expect_text('worker-route show 1', 'program: codex')
 
 

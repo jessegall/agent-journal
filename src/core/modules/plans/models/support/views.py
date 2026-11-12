@@ -1,4 +1,4 @@
-from engine.agent.agent_name_sql import agent_name_sql
+from engine.agent.agent_name import AgentName
 from core.modules.tasks.models.support.views import AUTOMATIC_TASK_WAIT, TASK_HELPER_MATCH, TASK_TAGS_SELECT, USER_TASK_WAIT
 
 PLAN_TASKS_SELECT = (
@@ -27,7 +27,7 @@ PLAN_CARDS_SELECT = (
     " plan_progress.task_count, plan_progress.completed_count, plan_progress.testing_count, plan_progress.current_phase, plan_progress.complexity,"
     " max(plans.updated_at, coalesce((SELECT max(tasks.updated_at) FROM plan_tasks JOIN tasks ON tasks.id = plan_tasks.task_id"
     " WHERE plan_tasks.plan_id = plans.id), plans.updated_at)) AS changed_at,"
-    " (SELECT json_group_array(json_object('id', helper.id, 'name', " + agent_name_sql("helper") + ", 'main', helper.role = 'main', 'task_id', tasks.id, 'task_title', tasks.title))"
+    " (SELECT json_group_array(json_object('id', helper.id, 'name', " + AgentName.sql("helper") + ", 'main', helper.role = 'main', 'task_id', tasks.id, 'task_title', tasks.title))"
     " FROM plan_tasks"
     " JOIN tasks ON tasks.id = plan_tasks.task_id"
     f" JOIN agents AS helper ON {TASK_HELPER_MATCH}"
@@ -35,7 +35,7 @@ PLAN_CARDS_SELECT = (
     " (SELECT json_group_array(json_object('id', tasks.id, 'title', tasks.title))"
     " FROM plan_tasks JOIN tasks ON tasks.id = plan_tasks.task_id"
     " WHERE plan_tasks.plan_id = plans.id AND plan_tasks.state = 'started') AS working,"
-    " (SELECT json_object('id', assignee.id, 'name', " + agent_name_sql("assignee") + ", 'main', assignee.role = 'main')"
+    " (SELECT json_object('id', assignee.id, 'name', " + AgentName.sql("assignee") + ", 'main', assignee.role = 'main')"
     " FROM agents AS assignee WHERE assignee.id = json_extract(plans.metadata, '$.\"journal.core.plans\".assignee_id')) AS assignee"
     " FROM plans"
     " JOIN plan_progress ON plan_progress.plan_id = plans.id"
@@ -57,7 +57,7 @@ PLAN_OUTLINE_TASKS_SELECT = (
     f" {TASK_TAGS_SELECT}"
     f" ({AUTOMATIC_TASK_WAIT} AND NOT {USER_TASK_WAIT}) AS automatic,"
     " coalesce((SELECT agents.role = 'main' FROM agents WHERE agents.id = tasks.delegated_to), 0) AS main_delegate,"
-    " helper.id AS helper_id, " + agent_name_sql("helper") + " AS helper_name,"
+    " helper.id AS helper_id, " + AgentName.sql("helper") + " AS helper_name,"
     " coalesce(helper.role = 'main', 0) AS helper_main"
     " FROM plan_tasks"
     " JOIN tasks ON tasks.id = plan_tasks.task_id"

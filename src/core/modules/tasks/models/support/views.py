@@ -1,5 +1,5 @@
 from core.modules.assignments.models.support.views import ASSIGNED_ACTOR_SQL
-from engine.agent.agent_name_sql import agent_name_sql
+from engine.agent.agent_name import AgentName
 
 TASK_ACTOR_SQL = ASSIGNED_ACTOR_SQL.format(model="task", row_id="tasks.id")
 DEPENDENT_ACTOR_SQL = ASSIGNED_ACTOR_SQL.format(model="task", row_id="dependent.id")
@@ -25,7 +25,7 @@ TASK_CARDS_SELECT = (
     "SELECT tasks.id, tasks.environment_id, tasks.title, tasks.state, tasks.priority, tasks.complexity, tasks.reason, tasks.closed_at, " + TASK_ACTOR_SQL + " AS assigned_actor_id,"
     f" {TASK_TAGS_SELECT}"
     f" ({AUTOMATIC_TASK_WAIT} AND NOT {USER_TASK_WAIT}) AS automatic, "
-    " (SELECT CASE WHEN actors.type = 'agent' THEN (SELECT " + agent_name_sql("agents") + " FROM agents WHERE agents.id = actors.id)"
+    " (SELECT CASE WHEN actors.type = 'agent' THEN (SELECT " + AgentName.sql("agents") + " FROM agents WHERE agents.id = actors.id)"
     " ELSE actors.name END FROM actors WHERE actors.id = " + TASK_ACTOR_SQL + ") AS assigned_name,"
     " (SELECT actors.type FROM actors WHERE actors.id = " + TASK_ACTOR_SQL + ") AS assigned_type,"
     " coalesce((SELECT agents.role = 'main' FROM agents WHERE agents.id = " + TASK_ACTOR_SQL + "), 0) AS is_main_assignee"
@@ -50,7 +50,7 @@ TASK_INSPECTIONS_SELECT = (
     " WHERE task_waits.task_id = tasks.id AND task_waits.ended_at IS NULL) AS openers,"
     " (SELECT json_group_array(json_object('id', renewal.id, 'reason', renewal.reason, 'created_at', renewal.created_at))"
     " FROM (SELECT id, reason, created_at FROM task_block_renewals WHERE task_id = tasks.id ORDER BY id) AS renewal) AS block_renewals,"
-    " helper.id AS helper_id, " + agent_name_sql("helper") + " AS helper_name,"
+    " helper.id AS helper_id, " + AgentName.sql("helper") + " AS helper_name,"
     " coalesce(helper.role = 'main', 0) AS helper_main"
     " FROM tasks"
     f" LEFT JOIN agents AS helper ON {TASK_HELPER_MATCH}"

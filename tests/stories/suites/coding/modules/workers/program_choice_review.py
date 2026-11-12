@@ -325,7 +325,7 @@ def test_batch_combines_route_constraints(batch_route_story, reverse):
 
 def test_only_a_person_changes_the_split(split_story):
     story = split_story
-    story.expect_refusal(f'setting set {SPLIT} "claude 50,codex 50" --project', 'person', actor=story.agent)
+    story.expect_refusal(f'setting set {SPLIT} "claude 50,codex 50" --project', 'user', actor=story.agent)
     story.expect_success(f'setting request {SPLIT} "claude 50,codex 50" --reason "Share new work evenly" --project --environment main', actor=story.agent)
     story.run_listeners()
     story.expect_text('approval show 1', 'Program split', 'claude', 'codex', 'state: open')
@@ -357,7 +357,7 @@ def test_agent_deletes_its_own_route_above_a_persons_deliberate_move_is_refused(
     story = split_story
     split_viewer.value('workers.workers', ['worker-route', 'make', '--tags', 'person', '--program', 'codex'])
     route_id = story.new_row_id('worker-route make --tags agent --program claude --environment main', actor=story.agent)
-    story.expect_refusal(f'worker-route move {route_id} --to 1', 'person', actor=story.agent)
+    story.expect_refusal(f'worker-route move {route_id} --to 1', 'user', actor=story.agent)
     story.expect_text('worker-route show 1', 'position: 1')
 
 

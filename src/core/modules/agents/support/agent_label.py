@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import Self
 
+from engine.agent.agent_name import AgentName
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
-from core.modules.agents.models.agent import MAIN_ROLE, Agent
+from core.modules.agents.models.agent import Agent
 
-MAIN_LABEL = "main agent"
 AGENT_WORD = "agent"
 
 
@@ -27,4 +27,4 @@ class AgentLabel:
 
     @property
     def text(self) -> str:
-        return MAIN_LABEL if self.word == MAIN_ROLE else f"{self.word.lower()} {self.number}"
+        return AgentName(self.word, self.number).label

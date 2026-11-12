@@ -6,6 +6,7 @@ from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import END_CHANGE, Model
 from engine.model.errors.model_error import ModelError
 from engine.time.timestamp import Timestamp
+from engine.agent.agent_name import AgentName
 from engine.agent.agent_policy import AgentPolicy
 from core.modules.agents.models.enums.agent_activity import AgentActivity
 from core.modules.agents.models.enums.standing_state import StandingState
@@ -141,9 +142,9 @@ class Agent(EnvironmentScoped, Model):
 
     @property
     def display_name(self) -> str:
-        if self.role != MAIN_ROLE:
-            return f"{self.role.capitalize()} {self.number}"
-        return MAIN_TITLE if self.ended_at is None else ENDED_MAIN_TITLE
+        if self.role == MAIN_ROLE and self.ended_at is not None:
+            return ENDED_MAIN_TITLE
+        return AgentName(self.role, self.number).title
 
     @property
     def original_launch_name(self) -> str:
