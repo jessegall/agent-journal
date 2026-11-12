@@ -74,5 +74,20 @@ class Select:
         columns = ", ".join(self.group_columns)
         return self.filtered(Statement(f"SELECT {columns}, count(*) FROM {self.source}")).joined(Statement(f" GROUP BY {columns}"), "")
 
+    def signature_statement(self) -> Statement:
+        """How many rows match, the sums of their ids and versions and their newest change: what a kept read
+        compares to know its rows changed."""
+        table = self.table
+        return self.filtered(Statement(f"SELECT count(*), coalesce(sum({table}.id), 0), coalesce(sum({table}.version), 0), max({table}.updated_at) FROM {self.source}"))
+
+    def newest_signature_statement(self) -> Statement:
+        """The key, version and change time of the newest matching row: what a kept read of the newest row compares."""
+        table = self.table
+        return self.filtered(Statement(f"SELECT {table}.id, {table}.version, {table}.updated_at FROM {self.source}")).joined(Statement(f" ORDER BY {table}.id DESC LIMIT 1"), "")
+
+    def conditions_statement(self) -> Statement:
+        """The tables and conditions of the read, which name a kept read apart from every other."""
+        return self.filtered(Statement(self.source))
+
     def exists_statement(self) -> Statement:
         return self.filtered(Statement(f"SELECT 1 FROM {self.source}")).joined(Statement(" LIMIT 1"), "")

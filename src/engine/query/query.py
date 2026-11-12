@@ -326,6 +326,10 @@ class Query(Generic[M]):
                 return
             last = getattr(rows[-1], key)
 
+    def kept_select(self) -> Select:
+        """The select with the scope of the read applied, as a kept read compares it."""
+        return self.scoped(self.select)
+
     def count(self) -> int:
         select = self.scoped(self.select)
         if select.is_empty:
