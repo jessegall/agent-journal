@@ -40,8 +40,9 @@ def test_a_workers_next_task_is_the_first_in_plan_order_of_its_assigned_open_tas
     story.expect_success("task edit 4 --priority high", actor=story.agent)
     story.expect_rows(2 not in startable_ids(story, worker.worker), {3, 4} <= set(startable_ids(story, worker.worker)), detail=worker.status())
     story.expect_success("worker next --wait", actor=worker.worker)
-    story.expect_text("task show 4", "state: started", actor=story.agent)
+    story.expect_text("task show 3", "state: started", actor=story.agent)
     story.expect_text("task show 2", "state: open", actor=story.agent)
+    story.expect_text("task show 4", "state: open", actor=story.agent)
 
 
 def test_a_free_task_is_never_offered_to_a_worker(new_story, monkeypatch):
@@ -53,7 +54,7 @@ def test_a_free_task_is_never_offered_to_a_worker(new_story, monkeypatch):
     refused = story.run("worker next --wait", actor=worker.worker)
     story.expect_rows(refused.code != 0, "no task is left to start" in refused.output_text, detail=refused.output_text)
     story.expect_text(f"task show {free}", "state: open", actor=story.agent)
-    story.expect_absent(f"task info {free}", "assigned to", actor=story.agent)
+    story.expect_text(f"task info {free}", "assigned to: nobody", actor=story.agent)
 
 
 def test_the_moment_a_task_is_assigned_to_a_worker_status_the_next_task_start_and_the_stop_check_see_it(new_story, monkeypatch):
@@ -64,7 +65,8 @@ def test_the_moment_a_task_is_assigned_to_a_worker_status_the_next_task_start_an
     receipt = story.new_row_id(RECEIPT, actor=story.agent)
     story.expect_success(f"task assign {receipt} --to {agent_number(story, worker.worker.id)}", actor=story.agent)
     story.expect_rows(startable_ids(story, worker.worker) == [receipt], detail=worker.status())
-    story.expect_rows(f"task {receipt}" in worker.stop().refusal)
+    assigned_stop = worker.stop().refusal
+    story.expect_rows(f"Task {receipt}" in assigned_stop, detail=assigned_stop)
     story.expect_success("worker next --wait", actor=worker.worker)
     story.expect_text(f"task show {receipt}", "state: started", actor=story.agent)
 
