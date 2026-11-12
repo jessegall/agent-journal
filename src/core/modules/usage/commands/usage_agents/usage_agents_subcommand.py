@@ -22,7 +22,6 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from engine.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from engine.journal.journal_home import JournalHome
-from engine.provider.context_window import ContextWindow
 from engine.provider.providers import Providers
 from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries
@@ -128,7 +127,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
 
     def is_context_unknown(self, card: AgentCard, status: SessionStatus) -> bool:
         if status.is_read:
-            return not CurrentContextWindow.is_read_after(card.compaction_ended_at, status.context_window())
+            return not CurrentContextWindow.is_read_after(card.compaction_ended_at, status.context)
         return self.current_window.is_session_unknown(card.program, card.session, card.compaction_ended_at)
 
     def context_percent(self, card: AgentCard, status: SessionStatus) -> int | None:
@@ -137,7 +136,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         cap = self.share.cap(card.role, card.profile)
         if not status.is_reported:
             return self.share.usage_within(card.program, card.session, cap).percent
-        return None if status.context_percent is None else self.share.reading_within(ContextWindow(status.context_percent, status.context_tokens), cap).percent
+        return None if status.context.used_percentage is None else self.share.reading_within(status.context, cap).percent
 
     def model(self, card: AgentCard, status: SessionStatus) -> str:
         return status.model or self.providers.reported_model(card.program, self.home, card.session)

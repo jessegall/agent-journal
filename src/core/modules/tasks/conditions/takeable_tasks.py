@@ -2,13 +2,15 @@ from dataclasses import dataclass
 
 from engine.database.statement import Statement
 
-MAIN_TAKEABLE = "state = 'open' AND (delegated_to IS NULL OR delegated_to IN (SELECT id FROM agents WHERE role = 'main'))"
-ASSIGNED_TAKEABLE = "state = 'open' AND delegated_to = ?"
+TASK_ASSIGNMENTS = "SELECT subject_id FROM assignments WHERE subject_model = 'task'"
+MAIN_TAKEABLE = (f"state = 'open' AND (id NOT IN ({TASK_ASSIGNMENTS})"
+                 f" OR id IN ({TASK_ASSIGNMENTS} AND actor_id IN (SELECT id FROM agents WHERE role = 'main')))")
+ASSIGNED_TAKEABLE = f"state = 'open' AND id IN ({TASK_ASSIGNMENTS} AND actor_id = ?)"
 
 
 @dataclass(frozen=True)
 class TakeableTasks:
-    """Matches the open tasks one agent may take: for the main agent the tasks reserved for nobody or for the main
+    """Matches the open tasks one agent may take: for the main agent the tasks assigned to nobody or to the main
     agent, for any other agent only the tasks assigned to it."""
 
     agent_id: int

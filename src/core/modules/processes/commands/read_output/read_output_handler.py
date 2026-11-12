@@ -30,16 +30,16 @@ class ReadOutputHandler(Handler[ReadOutput, OutputLines]):
             self.looks.answered(command.process_id, context.timestamp.value.timestamp())
         kept = self.outputs.process_output(command.process_id)
         if kept is not None and kept.state is OutputState.KEPT:
-            values: dict[str, object] = {}
-            if kept.read_at is None:
-                values["read_at"] = context.timestamp
-            if self.is_full_read(command, kept):
-                pending = self.delivery.pending("\n".join(lines), {"lines": lines}, command.reader_process_id, command.json_output, context)
-                values["fully_read_at"] = context.timestamp if pending is None else None
-                values["full_read_output_id"] = pending
-            if values:
-                self.repository.update(kept, context, **values)
+            self.mark_read(kept, command, lines, context)
         return OutputLines(lines)
+
+    def mark_read(self, kept: Output, command: ReadOutput, lines: list[str], context: Context) -> None:
+        read_at = context.timestamp if kept.read_at is None else kept.read_at
+        if not self.is_full_read(command, kept):
+            self.repository.update(kept, context, read_at=read_at)
+            return
+        pending = self.delivery.pending("\n".join(lines), {"lines": lines}, command.reader_process_id, command.json_output, context)
+        self.repository.update(kept, context, read_at=read_at, fully_read_at=context.timestamp if pending is None else None, full_read_output_id=pending)
 
     def is_full_read(self, command: ReadOutput, output: Output) -> bool:
         return command.all and output.ended_at is not None and self.texts.is_complete(command.process_id)

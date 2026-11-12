@@ -58,7 +58,8 @@ def plan_card(worker):
 def test_a_plan_dispatched_before_dispatch_named_its_worker_gets_its_worker_from_the_upgrade(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch)
     database = worker.story.container.get(Database)
-    database.update(Statement("UPDATE plans SET metadata = '{}', version = version + 1 WHERE id = 1"))
+    database.update(Statement("UPDATE assignments SET source_id = NULL WHERE source_id IN (SELECT id FROM assignments WHERE subject_model IN ('plan', 'phase'))"))
+    database.update(Statement("DELETE FROM assignments WHERE subject_model IN ('plan', 'phase')"))
     before = unit_of(worker)
     PlanWorkerBackfillMigration().run(database)
     card = plan_card(worker)

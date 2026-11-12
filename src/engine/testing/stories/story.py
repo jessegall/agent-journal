@@ -6,7 +6,7 @@ import json
 import re
 import shlex
 from unittest.mock import patch
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from uuid import uuid4
 from typing import TypeVar, cast
 from datetime import timedelta
@@ -88,7 +88,7 @@ class Story:
         self.failed_expectations: list[str] = []
         self.steps: list[str] = []
         self.path: list[str] = []
-        self.agent, self.user, self.helper = state.agent, state.user, state.helper
+        self.state = state
         self.environment: str | None = None
         self.fixture_environment: str | None = None
         self.fixture_environment_id: int | None = None
@@ -104,8 +104,28 @@ class Story:
         journal.defer_writes(self.container.get(Database))
 
     @property
-    def state(self) -> StoryState:
-        return StoryState(self.agent, self.user, self.helper)
+    def agent(self) -> Actor:
+        return self.state.agent
+
+    @agent.setter
+    def agent(self, agent: Actor) -> None:
+        self.state = replace(self.state, agent=agent)
+
+    @property
+    def user(self) -> Actor:
+        return self.state.user
+
+    @user.setter
+    def user(self, user: Actor) -> None:
+        self.state = replace(self.state, user=user)
+
+    @property
+    def helper(self) -> Actor:
+        return self.state.helper
+
+    @helper.setter
+    def helper(self, helper: Actor) -> None:
+        self.state = replace(self.state, helper=helper)
 
     def close(self) -> None:
         self.container.get(Database).close()

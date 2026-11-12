@@ -1,3 +1,4 @@
+from tests.stories.core.modules.tasks.support.holder_assignee_check import assignee_of
 from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
@@ -117,7 +118,8 @@ def test_a_task_sent_to_a_delivered_worker_waits_and_the_delivery_stays_mergeabl
     repository.checkout(ENVIRONMENT_BRANCH)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
     story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task_id}", actor=story.agent)
-    story.expect_text(f"task show {task_id}", "state: open", f"delegated_to: {worker.id}", actor=story.agent)
+    story.expect_text(f"task show {task_id}", "state: open", actor=story.agent)
+    story.expect_text(f"task info {task_id}", f"assigned to: agent {worker.id}", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
     story.expect_text("worker-worktree list", "delivered", actor=story.agent)
     story.expect_text("proof list --task 1", "cart.py:1", actor=story.agent)
@@ -206,7 +208,7 @@ def test_a_send_with_an_open_dependency_assigns_the_task_to_wait_and_cuts_no_wor
     first, second = (story.new_row_id(f'task make "Task {number}"', actor=story.agent) for number in (2, 3))
     story.expect_success(f"task depend {second} --on {first}", actor=story.agent)
     story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {second}", actor=story.agent)
-    story.expect_rows(story.container.get(WorktreeQuery).worker_worktree(worker.id) is None, story.row(Task, second).delegated_to == worker.id)
+    story.expect_rows(story.container.get(WorktreeQuery).worker_worktree(worker.id) is None, assignee_of(story, story.row(Task, second)) == worker.id)
 
 
 @pytest.mark.real_git

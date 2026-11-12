@@ -46,7 +46,8 @@ def failure_lines(worker: StoryWorker) -> list[str]:
 
 def expect_returned(worker: StoryWorker, *task_ids: int) -> None:
     for task_id in task_ids:
-        worker.story.expect_text(f"task show {task_id}", "state: started", f"delegated_to: {worker.worker.id}", actor=worker.story.agent)
+        worker.story.expect_text(f"task show {task_id}", "state: started", actor=worker.story.agent)
+        worker.story.expect_text(f"task info {task_id}", f"assigned to: agent {worker.worker.id}", actor=worker.story.agent)
 
 
 @pytest.fixture
@@ -86,7 +87,8 @@ def test_180_a_worker_with_two_failed_proof_tests_gets_both_tasks_and_one_line_w
     end_run(worker, CART_COMMAND, TOTALS_COMMAND)
     lines = failure_lines(worker)
     expect_returned(worker, 1)
-    worker.story.expect_text("task show 3", "state: open", f"delegated_to: {worker.worker.id}", actor=worker.story.agent)
+    worker.story.expect_text("task show 3", "state: open", actor=worker.story.agent)
+    worker.story.expect_text("task info 3", f"assigned to: agent {worker.worker.id}", actor=worker.story.agent)
     worker.story.expect_text(f"agent-line list --agent {worker.worker.id}", f"output {output_id(worker, CART_COMMAND)}, {output_id(worker, TOTALS_COMMAND)}")
     worker.story.expect_rows(len(lines) == 1, detail=str(worker.worker_lines()))
 

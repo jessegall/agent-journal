@@ -9,7 +9,7 @@ def test_a_helper_whose_worktree_is_not_cut_takes_no_task(new_story):
     story.expect_success('task make "Fix the cart" --brief "Do it" --environment main', actor=story.agent)
     for name in ("helper", "worker"):
         story.expect_refusal(f"task assign 1 --to {agent_number(story, agent_actors(story)[name].id)}", "takes no task", actor=story.agent)
-    story.expect_absent("task show 1", "delegated_to", actor=story.agent)
+    story.expect_text("task info 1", "assigned to: nobody", actor=story.agent)
 
 
 def test_a_person_assignee_skips_the_agent_only_checks(new_story):
@@ -26,7 +26,7 @@ def test_a_worker_that_is_released_gives_back_its_waiting_tasks_open_and_blocked
     story.expect_text("task show 2", "state: open", actor=story.agent)
     story.expect_text("task show 3", "state: blocked", actor=story.agent)
     for task in (2, 3):
-        story.expect_absent(f"task show {task}", "delegated_to", actor=story.agent)
+        story.expect_text(f"task info {task}", "assigned to: nobody", actor=story.agent)
         story.expect_absent(f"task info {task}", "assigned to", actor=story.agent)
 
 

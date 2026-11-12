@@ -15,8 +15,8 @@ WORKER = SimpleNamespace(id=2, role="worker", number=2)
 AGENTS = {agent.id: agent for agent in (MAIN, LATER_MAIN, WORKER)}
 
 
-def task(task_id=7, state=TaskState.OPEN, holder_id=None, assignee_id=None):
-    return SimpleNamespace(id=task_id, state=state, holder_id=holder_id, delegated_to=assignee_id)
+def task(task_id=7, state=TaskState.OPEN, holder_id=None):
+    return SimpleNamespace(id=task_id, state=state, holder_id=holder_id)
 
 CLOSED_AT = Timestamp.parsed("2026-10-31T09:00:00+00:00")
 
@@ -26,10 +26,10 @@ def place(task_id, plan_id, phase_id, phase_position, state=TaskState.OPEN, chec
                     closed_at=closed_at, checkpoint_passed=checkpoint_passed)
 
 
-def facts(asker=MAIN, takeable_ids=tuple([7]), places=(), plan_state=PlanState.STARTED, waits=()):
+def facts(asker=MAIN, takeable_ids=tuple([7]), places=(), plan_state=PlanState.STARTED, waits=(), assignees=None):
     rows = list(places)
     return UnblockerFacts(asker, frozenset(takeable_ids), {row.task_id: row for row in rows if row.task_id == 7},
-                          {4: SimpleNamespace(id=4, state=plan_state)}, {4: rows}, {7: list(waits)}, AGENTS)
+                          {4: SimpleNamespace(id=4, state=plan_state)}, {4: rows}, {7: list(waits)}, AGENTS, assignees or {})
 
 
 def test_an_open_task_in_no_plan_that_the_asker_may_take_can_be_handed_out():
@@ -59,9 +59,9 @@ def test_a_blocked_task_at_the_end_of_the_waits_says_what_it_waits_on(waits, tex
 
 
 def test_a_task_the_asker_may_not_take_names_who_it_is_reserved_for():
-    reserved = facts(takeable_ids=()).waiting_line(task(assignee_id=2))
+    reserved = facts(takeable_ids=(), assignees={7: 2}).waiting_line(task())
     free = facts(WORKER, takeable_ids=()).waiting_line(task())
-    assert (reserved.reason, reserved.text) == (WaitingReason.ANOTHER_ASSIGNEE, "which is reserved for worker 2")
+    assert (reserved.reason, reserved.text) == (WaitingReason.ANOTHER_ASSIGNEE, "which is assigned to worker 2")
     assert (free.reason, free.text) == (WaitingReason.ANOTHER_ASSIGNEE, "which is not assigned to you")
 
 

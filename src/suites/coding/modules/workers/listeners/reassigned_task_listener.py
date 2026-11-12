@@ -1,5 +1,4 @@
 from core.modules.assignments.support.assignments import Assignments
-from dataclasses import replace
 
 from engine.listener.save_listener import SaveListener
 from engine.repository.repository import Repository
@@ -36,7 +35,7 @@ class ReassignedTaskListener(SaveListener[Moved[Task]]):
         if worker_released and context.actor.id != old.holder_id:
             return
         if worker_released:
-            self.repository.save(replace(new, move=None, delegated_to=None), context)
+            self.assignments.unassign(new, context)
         worktree = self.worktrees.worker_worktree(old.holder_id)
         if worktree is None or not worktree.has_cut_task(old.id):
             return

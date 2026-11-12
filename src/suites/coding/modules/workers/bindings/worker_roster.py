@@ -6,7 +6,7 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from core.modules.tasks.commands.clear_delegated_tasks.clear_delegated_tasks import ClearDelegatedTasks
+from core.modules.tasks.commands.unassign_agent_tasks.unassign_agent_tasks import UnassignAgentTasks
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.drop_agent_line.remove_agent_line import RemoveAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
@@ -49,6 +49,6 @@ class WorkerRoster(AgentRoster[Agent]):
             self.bus.run(ReleaseWorker(agent.id, "retired"), actor, environment_id=agent.environment_id)
 
     def release_pending_work(self, agent: Agent, context: Context) -> None:
-        self.bus.dispatch(ClearDelegatedTasks(agent.id), context)
+        self.bus.dispatch(UnassignAgentTasks(agent.id), context)
         for line in tuple(self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).all_rows()):
             self.bus.dispatch(RemoveAgentLine(line.id), context)

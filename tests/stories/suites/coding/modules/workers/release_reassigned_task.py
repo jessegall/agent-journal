@@ -1,3 +1,4 @@
+from tests.stories.core.modules.tasks.support.holder_assignee_check import assignee_of
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.queries.task_query import TaskQuery
@@ -16,7 +17,7 @@ def test_releasing_the_first_worker_leaves_the_second_workers_started_task_uncha
     task = tasks.find(1)
     expect_row(task, state=TaskState.STARTED)
     expect_row(task, holder_id=second_worker.id)
-    expect_row(task, delegated_to=second_worker.id)
+    story.expect_rows(assignee_of(story, task) == second_worker.id)
 
     story.expect_success(f'worker release {agent_number(story, first_worker.id)} "old worker stopped"', actor=story.agent)
 

@@ -29,7 +29,7 @@ def percent(role: str, profile: str, tokens: int, enabled: bool = True) -> int |
     subcommand.share = ContextShare(settings, None, None)
     subcommand.is_context_unknown = lambda card, status: False
     card = SimpleNamespace(role=role, profile=profile)
-    return subcommand.context_percent(card, SessionStatus(model="m", context_percent=WINDOW_PERCENT, context_tokens=tokens))
+    return subcommand.context_percent(card, SessionStatus(model="m", context=ContextWindow(WINDOW_PERCENT, tokens)))
 
 
 def test_a_planner_with_its_own_cap_shows_the_percent_of_that_cap():

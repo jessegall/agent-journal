@@ -13,8 +13,9 @@ WAITING_STATES = (TaskState.OPEN, TaskState.BLOCKED)
 
 
 class WaitingTaskListener(SaveListener[Changed[Task]]):
-    """A task whose state or assignee changes may open what waits on it, or block it again. A move between open and
-    blocked changes no dependency, and a command that changes tasks together updates all its tasks at once."""
+    """A task whose state changes may open what waits on it, or block it again. A move between open and blocked
+    changes no dependency, and a command that changes tasks together updates all its tasks at once. A command
+    that assigns a task updates its waits itself."""
 
     name = "tasks.waiting-tasks"
     disabled_scopes = [ActorScope]
@@ -30,4 +31,4 @@ class WaitingTaskListener(SaveListener[Changed[Task]]):
 
     @staticmethod
     def changes_no_dependency(row: Task, old_row: Task) -> bool:
-        return row.delegated_to == old_row.delegated_to and (row.state == old_row.state or (row.state in WAITING_STATES and old_row.state in WAITING_STATES))
+        return row.state == old_row.state or (row.state in WAITING_STATES and old_row.state in WAITING_STATES)

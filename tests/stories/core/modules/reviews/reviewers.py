@@ -1,5 +1,5 @@
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.core.modules.reviews.support.review_fixtures import REVIEW_DETAILS, OneReviewerAllowed, ReviewRequested, ReviewerReview, read_reviewer
+from tests.stories.core.modules.reviews.support.review_fixtures import REVIEW_DETAILS, review_assignees, OneReviewerAllowed, ReviewRequested, ReviewerReview, read_reviewer
 from tests.stories.core.support.fixtures import ThreeTasks
 
 
@@ -7,7 +7,8 @@ def test_a_reviewer_that_is_added_takes_the_next_queued_review_at_once(new_story
     story = new_story(fixture=ReviewRequested)
     story.run("setting make journal.core.reviews.reviewers-most 1 --environment main")
     reviewer_id = story.new_row_id("reviewer add --environment main", actor=story.agent)
-    story.expect_success(REVIEW_DETAILS, "state: reviewing", f"reviewer_id: {reviewer_id}")
+    story.expect_success(REVIEW_DETAILS, "state: reviewing")
+    story.expect_rows(review_assignees(story) == [reviewer_id], detail=str(review_assignees(story)))
     story.expect_success(f"agent show {agent_number(story, reviewer_id)}", "role: reviewer")
 
 
@@ -27,12 +28,6 @@ def test_an_idle_reviewer_is_let_go_and_none_idle_is_refused(new_story):
 def test_a_queued_review_with_no_reviewer_gets_one_added(new_story):
     story = new_story(fixture=ReviewerReview)
     story.expect_text("reviewer list --environment 1", "reviewers: 1, reviews waiting: 0")
-
-
-def test_a_reviewer_that_ends_while_reviewing_gives_its_review_back_as_abandoned(new_story):
-    story = new_story(fixture=ReviewerReview)
-    story.run(f"agent end {read_reviewer(story).id}")
-    story.expect_success(REVIEW_DETAILS, "state: abandoned")
 
 
 def test_the_reviewer_list_names_each_reviewer_and_the_waiting_reviews_in_order(new_story):

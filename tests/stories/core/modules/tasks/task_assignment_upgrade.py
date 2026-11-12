@@ -1,7 +1,7 @@
 import pytest
 
 from tests.stories.core.modules.tasks.support.assignment_migration_fixtures import DELEGATED_TASKS, MISSING_ACTOR_TASK, TasksWithOldAssignments, run_task_assignments_migration, worker
-from tests.stories.core.modules.tasks.support.holder_assignee_check import assert_holders_are_assignees, assert_pivot_equals_column, task_assignees
+from tests.stories.core.modules.tasks.support.holder_assignee_check import assert_holders_are_assignees, task_assignees
 
 STARTED_TASK = 3
 UNASSIGNED_TASK = 5
@@ -29,7 +29,6 @@ def test_the_migration_assigns_nothing_because_a_task_is_held(upgraded):
 def test_no_listener_assigns_a_task_because_it_holds_it(new_story):
     story = new_story(fixture=TasksWithOldAssignments)
     story.expect_success(f"task start {UNASSIGNED_TASK}", actor=worker(story))
-    assert_pivot_equals_column(story)
     story.expect_rows(task_assignees(story).get(UNASSIGNED_TASK) == [worker(story).id], detail=str(task_assignees(story)))
 
 

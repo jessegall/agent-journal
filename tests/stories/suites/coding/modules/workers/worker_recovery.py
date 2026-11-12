@@ -2,7 +2,7 @@ from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
 from engine.command.bus import Bus
-from core.modules.tasks.commands.clear_delegated_tasks.clear_delegated_tasks import ClearDelegatedTasks
+from core.modules.tasks.commands.unassign_agent_tasks.unassign_agent_tasks import UnassignAgentTasks
 from engine.actor.actor import Actor
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.modules.agents.models.agent import Agent
@@ -74,7 +74,7 @@ def test_a_worker_running_when_the_server_starts_is_left_alone(running_worker):
 
 def test_a_worker_with_started_work_and_no_job_or_delegated_task_is_resumed(running_worker):
     story = running_worker
-    story.container.get(Bus).run(ClearDelegatedTasks(story.worker.id), Actor.core(), environment_id=1)
+    story.container.get(Bus).run(UnassignAgentTasks(story.worker.id), Actor.core(), environment_id=1)
     story.use_processes()
     story.tick("s-1")
     story.advance(timedelta(seconds=1))

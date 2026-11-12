@@ -18,7 +18,7 @@ BUILD_TASKS = 3
 def expect_open_undelegated(worker, *task_ids: int) -> None:
     for task_id in task_ids:
         worker.story.expect_text(f"task show {task_id}", "state: open", actor=worker.story.agent)
-        worker.story.expect_no_text(f"task show {task_id}", f"delegated_to: {worker.worker.id}", actor=worker.story.agent)
+        worker.story.expect_no_text(f"task info {task_id}", f"assigned to: agent {worker.worker.id}", actor=worker.story.agent)
 
 
 @pytest.fixture

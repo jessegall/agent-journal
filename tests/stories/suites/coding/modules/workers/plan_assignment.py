@@ -26,9 +26,10 @@ def story_with_two_workers(new_story):
 def expect_task_holder(story, worker: Actor | None) -> None:
     for task in PLAN_TASKS:
         if worker is None:
-            story.expect_absent(f"task show {task}", "delegated_to", actor=story.agent)
+            story.expect_text(f"task info {task}", "assigned to: nobody", actor=story.agent)
         else:
-            story.expect_text(f"task show {task}", f"delegated_to: {worker.id}", "state: open", actor=story.agent)
+            story.expect_text(f"task show {task}", "state: open", actor=story.agent)
+            story.expect_text(f"task info {task}", f"assigned to: agent {worker.id}", actor=story.agent)
 
 
 def assignee(story) -> dict[str, object]:

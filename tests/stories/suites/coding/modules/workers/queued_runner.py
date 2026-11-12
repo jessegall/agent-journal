@@ -89,6 +89,6 @@ def test_a_queued_worker_command_runs_through_the_real_runner_and_cli(worker_run
     if command_name == "next":
         story.expect_text(f"task show {task_id}", "state: started", f"holder_id: {worker.id}")
     if command_name == "send":
-        story.expect_text(f"task show {task_id}", f"delegated_to: {worker.id}")
+        story.expect_text(f"task info {task_id}", f"assigned to: agent {worker.id}")
     if command_name == "commit":
         story.expect_text("worker-worktree show 1", "state: delivered")

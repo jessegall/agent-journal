@@ -202,7 +202,7 @@ def test_task_assign_holds_the_route(split_story):
     route = story.new_row_id('worker-route make --program codex --tags assigned --environment main', actor=story.agent)
     task = new_task(story, 'Assigned task', '--tag assigned --confirm')
     story.expect_refusal(f'task assign {task} --to {agent_number(story, worker.id)}', f'route {route}', actor=story.agent)
-    story.expect_absent(f'task show {task}', f'delegated_to: {worker.id}')
+    story.expect_absent(f"task info {task}", f"assigned to: agent {worker.id}")
 
 
 def test_task_assign_holds_the_route_started_task_is_released_too(split_story):
@@ -224,7 +224,7 @@ def test_task_assign_holds_the_route_person_passes(split_story, split_viewer):
     story.expect_success('worker-route make --program codex --tags person --environment main', actor=story.agent)
     task = new_task(story, 'Person assigned task', '--tag person --confirm')
     split_viewer.value('tasks.tasks', ['task', 'assign', str(task), '--to', str(agent_number(story, worker.id))])
-    story.expect_text(f'task show {task}', f'delegated_to: {worker.id}')
+    story.expect_text(f"task info {task}", f"assigned to: agent {worker.id}")
 
 
 def test_task_assign_holds_the_route_out_program_passes(split_story):
@@ -234,7 +234,7 @@ def test_task_assign_holds_the_route_out_program_passes(split_story):
     story.expect_success('worker-route make --program codex --tags outage --environment main', actor=story.agent)
     task = new_task(story, 'Out program task', '--tag outage --confirm')
     story.expect_success(f'task assign {task} --to {agent_number(story, worker.id)}', actor=story.agent)
-    story.expect_text(f'task show {task}', f'delegated_to: {worker.id}')
+    story.expect_text(f"task info {task}", f"assigned to: agent {worker.id}")
 
 
 @pytest.fixture
@@ -320,7 +320,8 @@ def test_job_to_a_known_worker_stays_on_its_program(unmerged_worker_story):
     story.expect_success(f'worker send {agent_number(story, worker.id)} --wait --task {task_id} --skip-guard workers.route-holds '
                          '--skip-reason "Keep the existing worker for this comparison"', actor=story.agent)
     expect_program(story, worker, 'claude')
-    story.expect_text(f'task show {task_id}', f'delegated_to: {worker.id}', 'state: open')
+    story.expect_text(f'task show {task_id}', 'state: open')
+    story.expect_text(f"task info {task_id}", f"assigned to: agent {worker.id}")
 
 
 def test_skills_name_tiers_tags_and_routes(split_story):

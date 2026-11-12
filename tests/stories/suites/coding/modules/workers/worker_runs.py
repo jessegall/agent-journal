@@ -203,7 +203,7 @@ def test_a_worker_whose_program_the_launcher_runs_is_stopped_through_the_launche
 def test_a_worker_no_launcher_runs_is_refused_a_stop_and_keeps_its_tasks(new_story):
     story, worker, _, _ = worker_with_background_run(new_story)
     story.expect_refusal(f"agent stop {agent_number(story, worker.id)}", "does not know the process", actor=story.agent)
-    story.expect_text("task show 1", f"delegated_to: {worker.id}", actor=story.agent)
+    story.expect_text("task info 1", f"assigned to: agent {worker.id}", actor=story.agent)
 
 
 def expect_requests_launcher_2(launcher, number, expected) -> None:

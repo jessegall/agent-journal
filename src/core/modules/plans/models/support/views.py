@@ -1,5 +1,8 @@
 from engine.agent.agent_name_sql import agent_name_sql
-from core.modules.tasks.models.support.views import AUTOMATIC_TASK_WAIT, TASK_HELPER_MATCH, TASK_TAGS_SELECT, USER_TASK_WAIT
+from core.modules.assignments.models.support.views import ASSIGNED_ACTOR_SQL
+from core.modules.tasks.models.support.views import AUTOMATIC_TASK_WAIT, TASK_ACTOR_SQL, TASK_HELPER_MATCH, TASK_TAGS_SELECT, USER_TASK_WAIT
+
+PLAN_ACTOR_SQL = ASSIGNED_ACTOR_SQL.format(model="plan", row_id="plans.id")
 
 PLAN_TASKS_SELECT = (
     "SELECT phase_tasks.task_id, phases.plan_id, phase_tasks.phase_id, phases.position AS phase_position, phases.checkpoint,"
@@ -36,7 +39,7 @@ PLAN_CARDS_SELECT = (
     " FROM plan_tasks JOIN tasks ON tasks.id = plan_tasks.task_id"
     " WHERE plan_tasks.plan_id = plans.id AND plan_tasks.state = 'started') AS working,"
     " (SELECT json_object('id', assignee.id, 'name', " + agent_name_sql("assignee") + ", 'main', assignee.role = 'main')"
-    " FROM agents AS assignee WHERE assignee.id = json_extract(plans.metadata, '$.\"journal.core.plans\".assignee_id')) AS assignee"
+    " FROM agents AS assignee WHERE assignee.id = " + PLAN_ACTOR_SQL + ") AS assignee"
     " FROM plans"
     " JOIN plan_progress ON plan_progress.plan_id = plans.id"
 )
@@ -53,10 +56,10 @@ PLAN_EVENT_ROWS_SELECT = (
 
 PLAN_OUTLINE_TASKS_SELECT = (
     "SELECT plan_tasks.task_id, plan_tasks.plan_id, plan_tasks.phase_id, plan_tasks.phase_position, plan_tasks.priority, plan_tasks.state, tasks.title,"
-    " tasks.complexity, tasks.reason, tasks.delegated_to,"
+    f" tasks.complexity, tasks.reason, {TASK_ACTOR_SQL} AS assignee_id,"
     f" {TASK_TAGS_SELECT}"
     f" ({AUTOMATIC_TASK_WAIT} AND NOT {USER_TASK_WAIT}) AS automatic,"
-    " coalesce((SELECT agents.role = 'main' FROM agents WHERE agents.id = tasks.delegated_to), 0) AS main_delegate,"
+    f" coalesce((SELECT agents.role = 'main' FROM agents WHERE agents.id = {TASK_ACTOR_SQL}), 0) AS main_delegate,"
     " helper.id AS helper_id, " + agent_name_sql("helper") + " AS helper_name,"
     " coalesce(helper.role = 'main', 0) AS helper_main"
     " FROM plan_tasks"

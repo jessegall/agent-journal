@@ -1,12 +1,7 @@
-import re
-
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.support.cadence.run_cadence import GROWTHS_KEPT
+from core.modules.processes.support.cadence.cadence_line import CadenceLine
 
 CADENCE_FILE = "cadence"
-TICK_SECONDS = 10
-BREAK_SECONDS = 3 * TICK_SECONDS
-KEPT_LINE = re.compile(r"^\d+ \d+(\.\d+)? \d+(\.\d+)?( \d+(\.\d+)?)*$")
 
 
 class CadenceLog:
@@ -23,23 +18,15 @@ class CadenceLog:
         return self.folder.part_bytes(process_id, position) + self.folder.cut_bytes(process_id, position)
 
     def growths(self, process_id: int) -> tuple[float, ...]:
-        return self.kept(process_id)[3]
+        return self.kept(process_id).growths
 
     def resumed(self, process_id: int) -> float:
-        return self.kept(process_id)[2]
+        return self.kept(process_id).resumed
 
     def record(self, process_id: int, size: int, now: float) -> tuple[float, ...]:
-        kept_size, looked_at, resumed, growths = self.kept(process_id)
-        if looked_at and now - looked_at > BREAK_SECONDS:
-            growths, resumed = (), now
-        if size != kept_size:
-            growths = (*growths, now)[-GROWTHS_KEPT:]
-        self.folder.write(process_id, CADENCE_FILE, " ".join(str(value) for value in (size, now, resumed, *growths)))
-        return growths
+        line = self.kept(process_id).looked(size, now)
+        self.folder.write(process_id, CADENCE_FILE, line.text())
+        return line.growths
 
-    def kept(self, process_id: int) -> tuple[int, float, float, tuple[float, ...]]:
-        line = self.folder.text(process_id, CADENCE_FILE).strip()
-        if not KEPT_LINE.match(line):
-            return 0, 0.0, 0.0, ()
-        size, looked_at, resumed, *growths = line.split()
-        return int(size), float(looked_at), float(resumed), tuple(float(growth) for growth in growths)
+    def kept(self, process_id: int) -> CadenceLine:
+        return CadenceLine.read(self.folder.text(process_id, CADENCE_FILE).strip())

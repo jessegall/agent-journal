@@ -5,6 +5,7 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
+from core.modules.assignments.support.assignments import Assignments
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.support.unblockers.plan_wait_walk import PlanWaitWalk
@@ -26,8 +27,8 @@ class PlanUnblockers:
     their waits that the agent can take now, each with the number of plan tasks that wait on it, and a line
     for each task the agent cannot take. It reads the open waits once and follows them in memory."""
 
-    def __init__(self, queries: Queries, tasks: TaskQuery) -> None:
-        self.queries, self.tasks = queries, tasks
+    def __init__(self, queries: Queries, tasks: TaskQuery, assignments: Assignments) -> None:
+        self.queries, self.tasks, self.assignments = queries, tasks, assignments
 
     def unblockers(self, plan_id: int, agent: Agent) -> Unblockers:
         return self.plan_unblockers([plan_id], agent)[plan_id]
@@ -60,7 +61,7 @@ class PlanUnblockers:
     def facts(self, end_tasks: Sequence[Task], agent: Agent, plan_rows: dict[int, list[PlanTask]]) -> UnblockerFacts:
         task_ids = [task.id for task in end_tasks]
         if not task_ids:
-            return UnblockerFacts(agent, frozenset(), {}, {}, {}, {}, {})
+            return UnblockerFacts(agent, frozenset(), {}, {}, {}, {}, {}, {})
         takeable_ids = frozenset(task.id for task in self.tasks.takeable(agent).matching(Among("id", task_ids)).all_rows())
         places = {row.task_id: row for rows in plan_rows.values() for row in rows if row.task_id in task_ids}
         unplaced_ids = [task_id for task_id in task_ids if task_id not in places]
@@ -74,6 +75,7 @@ class PlanUnblockers:
         waits: dict[int, list[TaskWait]] = defaultdict(list)
         for wait in self.queries.query(TaskWait).matching(Among("task_id", task_ids)).matching(IsNull("ended_at")).all_rows():
             waits[wait.task_id].append(wait)
-        agent_ids = sorted({agent_id for task in end_tasks for agent_id in (task.holder_id, task.delegated_to) if agent_id is not None})
+        assignees = {task_id: actor_ids[0] for task_id, actor_ids in self.assignments.row_actor_ids(Task, task_ids).items() if actor_ids}
+        agent_ids = sorted({*(task.holder_id for task in end_tasks if task.holder_id is not None), *assignees.values()})
         agents = {row.id: row for row in self.queries.query(Agent).matching(Among("id", agent_ids)).all_rows()} if agent_ids else {}
-        return UnblockerFacts(agent, takeable_ids, places, plans, plan_rows, waits, agents)
+        return UnblockerFacts(agent, takeable_ids, places, plans, plan_rows, waits, agents, assignees)

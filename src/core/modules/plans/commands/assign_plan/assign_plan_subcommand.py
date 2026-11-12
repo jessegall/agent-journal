@@ -8,8 +8,9 @@ from core.modules.plans.models.plan import Plan
 
 
 class AssignPlanSubcommand(Subcommand[AssignPlan, Plan]):
-    """`journal plan assign <plan> [--phase <phase>] [--to <n>]`: the open and blocked tasks of the plan or
-    phase are reserved for the agent named; with none named they are left free for the main agent to pick."""
+    """`journal plan assign <plan> [--phase <phase>] [--to <n>] [--override]`: gives the plan or the phase to the
+    agent named, with the tasks that have no assignee yet, or every task with --override; with no agent named the
+    plan goes to the main agent and its tasks stay as they are."""
 
     cli_name = "plan"
     name = "assign"
@@ -17,8 +18,9 @@ class AssignPlanSubcommand(Subcommand[AssignPlan, Plan]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("plan_id", type=int)
-        parser.add_argument("--to", dest="agent_id", type=AgentNumber, default=None, help="the agent the tasks are reserved for; left free for the main agent when not named")
-        parser.add_argument("--phase", dest="phase_id", type=int, default=None, help="only the tasks of this phase, leaving the plan's agent as it is")
+        parser.add_argument("--to", dest="agent_id", type=AgentNumber, default=None, help="the agent the plan and its unassigned tasks go to; the main agent when not named")
+        parser.add_argument("--phase", dest="phase_id", type=int, default=None, help="only this phase and its tasks, leaving the plan's agent as it is")
+        parser.add_argument("--override", action="store_true", help="also move the tasks that are given to someone else")
 
     def command(self, arguments: Namespace, caller: Caller) -> AssignPlan:
-        return AssignPlan(arguments.plan_id, arguments.agent_id, arguments.phase_id)
+        return AssignPlan(arguments.plan_id, arguments.agent_id, arguments.phase_id, arguments.override)

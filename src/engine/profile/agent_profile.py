@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from collections.abc import Mapping, Sequence
 from typing import Any
 from engine.enums.access import Access
@@ -6,6 +6,7 @@ from engine.enums.model_tier import ModelTier
 from engine.enums.occupant import INDEPENDENT_OCCUPANTS, Occupant
 
 KEPT_AGENTS_TEXT = "agents are kept; a person retires them"
+SEQUENCE_FIELDS = ("fallback_programs", "mcp_tools", "writable_folders", "changed", "notes", "skills", "required_skills", "default_fields")
 
 
 @dataclass(frozen=True)
@@ -60,17 +61,14 @@ class AgentProfile:
     def is_builtin(self) -> bool:
         return bool(self.module)
 
-    @staticmethod
-    def stored_occupant(fields: Mapping[str, Any]) -> Occupant:
-        if "reuse" in fields:
-            raise ValueError(KEPT_AGENTS_TEXT)
-        if "occupant" in fields:
-            return Occupant(fields["occupant"])
-        return INDEPENDENT_OCCUPANTS[fields.get("independent", False) is True]
-
     @classmethod
     def parsed(cls, fields: Mapping[str, Any]) -> "AgentProfile":
+        if "reuse" in fields:
+            raise ValueError(KEPT_AGENTS_TEXT)
+        occupant = Occupant(fields["occupant"]) if "occupant" in fields else INDEPENDENT_OCCUPANTS[fields.get("independent", False) is True]
+        current = {name: value for name, value in fields.items() if name != "independent"}
+        sequences = {name: tuple(current[name]) for name in SEQUENCE_FIELDS if name in current}
         access = Access(fields["access"]) if fields["access"] is not None else None
         tier = ModelTier.automatic(fields["tier"]) if fields.get("tier") is not None else None
-        current = {name: value for name, value in fields.items() if name not in ("independent", "reuse", "occupant")}
-        return replace(cls(**current), occupant=cls.stored_occupant(fields), access=access, tier=tier, mcp_tools=tuple(fields["mcp_tools"]), writable_folders=tuple(fields.get("writable_folders", ())), skills=tuple(fields.get("skills", ())), required_skills=tuple(fields.get("required_skills", ())), default_fields=tuple(fields.get("default_fields", ())), fallback_programs=tuple(fields.get("fallback_programs", ())), changed=tuple(fields["changed"]), notes=tuple(fields.get("notes", ())))
+        values: dict[str, Any] = {**current, **sequences, "occupant": occupant, "access": access, "tier": tier}
+        return cls(**values)
