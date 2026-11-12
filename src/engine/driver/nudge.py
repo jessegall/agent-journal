@@ -31,6 +31,14 @@ class Nudge:
     def labelled(self) -> str:
         return f"journal: {self.text}"
 
+    def for_role(self, role: str) -> "Nudge":
+        """This nudge in the text its declaration gives an agent of the role, with the same fields; the default text
+        when the declaration gives that role none."""
+        if self.declaration is None or role not in self.declaration.role_texts:
+            return self
+        rendered = self.declaration.rendered(self.declaration.role_texts[role], dict(self.fields))
+        return replace(rendered, interval=self.interval, turn_limited=self.turn_limited, record_keys=self.record_keys)
+
     @property
     def wakes_agent(self) -> bool:
         return self.declaration is not None and self.declaration.wakes_agent

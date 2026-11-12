@@ -50,7 +50,8 @@ OUTPUT_RUNNING = NudgeDeclaration("processes.output_running", NudgeType.STEERING
 SILENT_RUN_HELD = NudgeDeclaration("processes.silent_run_held", NudgeType.REFUSAL,
                                    "output {output} printed nothing for {seconds} seconds, processor time {processor}: read it, or stop it",
                                    required_command="journal output read {output} --tail 5")
-SLEEP_REFUSED = NudgeDeclaration("processes.sleep_refused", NudgeType.REFUSAL, 'a sleep is refused: you are told when a run ends')
+SLEEP_REFUSED = NudgeDeclaration("processes.sleep_refused", NudgeType.REFUSAL, 'a sleep is refused: you are told when a run ends',
+                               role_texts={"worker": 'a sleep is refused: you are told when your run ends, so go on with your task or stop'})
 RUN_NAME = NudgeDeclaration("processes.name_the_run", NudgeType.STEERING, 'output {process} has its raw command as its title: give it a title', required_command="journal output title {process}")
 
 SILENT_RUN_INTERVAL = Seconds(600)

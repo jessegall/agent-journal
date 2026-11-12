@@ -4,6 +4,7 @@ from datetime import timedelta
 import pytest
 
 from core.modules.agents.testing.fake_launcher import FakeLauncher
+from core.modules.helpers.ticks.unstarted_job_starts import UnstartedJobStarts
 from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.occupant_rotation import job_launch
 from tests.stories.core.modules.helpers.support.rotating_helper import SAVE_ROTATING, EndedEachLaunchHelper, StartedEachLaunchHelper, real_program_states, story_with_profile_file
@@ -116,3 +117,35 @@ def test_a_stopped_helper_ends_its_job_as_stopped_and_the_next_send_makes_a_new_
     working.expect_rows(read_jobs(working, helper)[0].returned == "Stopped", detail=str(read_jobs(working, helper)[0]))
     command = job_launch(working)["command"]
     working.expect_rows(helper_agent(working).session != helper.session, "--resume" not in command, detail=str(command[-4:]))
+
+
+def launches_at_the_next_round(story) -> list[dict]:
+    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"started 702\n")
+    UnstartedJobStarts()(story.container)
+    story.run_listeners()
+    launcher.drain_requests()
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
+    return [request for request in launcher.requests if "command" in request]
+
+
+def test_a_job_that_waited_out_an_outage_goes_on_in_the_same_session_once_the_outage_ends(working, monkeypatch):
+    helper = helper_agent(working)
+    real_program_states(working)
+    resumable_session(working, helper, monkeypatch)
+    ends_at = (working.clock.timestamp().value + timedelta(minutes=30)).isoformat()
+    working.expect_success(f'provider-outage make claude "rate limit" --ends-at {ends_at}', actor=working.agent)
+    working.expect_rows(launches_after_the_program_died(working) == [])
+    working.advance(timedelta(minutes=31))
+    launches = launches_at_the_next_round(working)
+    working.expect_rows(len(launches) == 1, "--resume" in launches[0]["command"], helper_agent(working).session == helper.session,
+                        read_jobs(working, helper)[0].ended_at is None, detail=str(launches))
+
+
+def test_an_open_job_of_a_helper_that_ended_while_the_journal_was_down_is_handed_back_after_the_restart(working, monkeypatch):
+    helper = helper_agent(working)
+    resumable_session(working, helper, monkeypatch)
+    working.expect_success(f"agent end {helper.id}", actor=working.user)
+    working.advance(timedelta(minutes=2))
+    launches = launches_at_the_next_round(working)
+    working.expect_rows(len(launches) == 1, helper.session in launches[0]["command"], read_jobs(working, helper)[0].ended_at is None, detail=str(launches))
