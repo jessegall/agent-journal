@@ -1,0 +1,36 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "NudgeDeclaration"
+            },
+            {
+                "argument": {
+                    "textMatches": "\\{(line|command|title|text|lines)\\}"
+                }
+            },
+            {
+                "fileMatches": "(^|/)core/modules/(processes/support/process_nudges|aliases/support/alias_nudges)\\.py$"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "argument": {
+                    "textMatches": "\\{lines\\} lines|of \\{lines\\}"
+                }
+            }
+        ]
+    },
+    "sin": {
+        "name": "nudge-carries-row-data",
+        "description": "A nudge declaration puts a command, a title, a line or a text of a stored row into the line an agent receives.",
+        "rule": "A nudge names the row and its number; the agent reads the rest by command (rule 8).",
+        "skill": "processes-architecture"
+    }
+}
