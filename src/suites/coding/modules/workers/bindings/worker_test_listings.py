@@ -82,7 +82,7 @@ class WorkerTestListings(RunCounts):
             return
         self.bus.dispatch(StopProcess(process.id), context)
         request = self.bus.dispatch(RequestCountReader(process.id), context)
-        self.nudger.send(process.session_agent_id, TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE, context, output=process.id, request=request)
+        self.nudger.send(process.session_agent_id, TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE, context, output=process.id, name=request)
 
     def counting_reader(self, part: ProcessPart, output: Output | None, readers: tuple[Reader, ...]) -> Reader | None:
         first_answer = self.reader(part, output, readers)

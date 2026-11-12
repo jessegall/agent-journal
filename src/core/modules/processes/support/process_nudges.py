@@ -1,3 +1,5 @@
+from core.modules.processes.models.enums.pressure_level import PressureLevel
+from core.modules.processes.support.reading.exit_texts import ExitTexts
 from engine.driver.interval import Interval
 from engine.driver.seconds import Seconds
 from engine.driver.nudge_declaration import NudgeDeclaration
@@ -14,7 +16,7 @@ UNREADABLE_DECLARED = NudgeDeclaration("processes.unreadable_declared", NudgeTyp
 UNREADABLE_LIFTED = NudgeDeclaration("processes.unreadable_lifted", NudgeType.STEERING, "command {name} prints readable lines again: asks resume")
 HOLD_LIFTED = NudgeDeclaration("processes.hold_lifted", NudgeType.STEERING, "the hold on output {output} was lifted by a person")
 BLOCK_LIFTED = NudgeDeclaration("processes.block_lifted", NudgeType.STEERING, "the block of reader request {request} was lifted by a person")
-READING_PREVENTED = NudgeDeclaration("processes.reading_prevented", NudgeType.REFUSAL, "output {output} has no proper reader: {hint}")
+READING_PREVENTED = NudgeDeclaration("processes.reading_prevented", NudgeType.REFUSAL, "output {output} has no proper reader: " + ExitTexts.template(PressureLevel.PREVENT.exits), full_text=True)
 UNREADABLE_AUDIT = NudgeDeclaration("processes.unreadable_audit", NudgeType.STEERING, "{count} commands are marked unreadable by agents: look at them in the viewer")
 READERS_NEED_REPAIR = NudgeDeclaration("processes.readers_need_repair", NudgeType.STEERING, "reader {reader} picked no line of its last {count} outputs: repair it",
                                       plural_text="readers {reader} picked no line of their last {count} outputs: repair them")
@@ -27,7 +29,8 @@ READER_REQUEST_SPAN = ToolUseSpan(5)
 READER_REQUEST_COUNTDOWN = CountDown("processes.reader_request_countdown", "reader of {command}", READER_REQUEST_SPAN)
 READER_REQUEST_REFUSAL = NudgeDeclaration("processes.reader_request_refusal", NudgeType.REFUSAL, 'reader request {request} needs a reader')
 
-READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "no proper reader reads output {output}")
+READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "no proper reader reads output {output}: save one for reader request {request} with "
+                                "journal reader draft {request} --save, or mark the command unreadable; the block ends when its time runs out or a person lifts it", full_text=True)
 OUTPUT_CHECK = NudgeDeclaration("processes.output_check", NudgeType.STEERING, 'output {output} still runs after {minutes} minutes: check it does its work',
                                 required_command="journal output confirm {output}", wakes_agent=True, turn_limited=False)
 OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.STEERING, 'output {output} ended', turn_limited=False, wakes_agent=True)

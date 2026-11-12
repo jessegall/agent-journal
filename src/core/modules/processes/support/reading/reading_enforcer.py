@@ -27,7 +27,6 @@ from core.modules.processes.support.reader_request_notices import ReaderRequestN
 from core.modules.processes.support.reader_request_text import ReaderRequestText
 from core.modules.processes.support.reader_save_attempts import ReaderSaveAttempts
 from core.modules.processes.support.reader_writers import ReaderWriters
-from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
 from core.modules.processes.support.decisions.escalation_counter import EscalationCounter
@@ -37,7 +36,6 @@ from core.modules.processes.support.process_nudges import (REDIRECTED_RUN, READE
                                                           READING_PREVENTED, SILENT_START_FIXED, SILENT_START_READY, SILENT_START_REFUSED, SILENT_START_TAUGHT)
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
-from core.modules.processes.support.reading.exit_texts import ExitTexts
 from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
 from core.modules.processes.support.run_shapes import RunShapes
 from core.modules.processes.support.silent_run import SilentRun
@@ -122,7 +120,7 @@ class ReadingEnforcer:
         and every exit of a prevent."""
         last = self.decisions.for_command_key(name).filter(moment=ReadingMoment.END).descending("decided_at", "id").first()
         output = last.process_id if last is not None else 0
-        return RuleAnswer.refused(READING_PREVENTED.nudge(output=output, hint=ExitTexts.listed(PressureLevel.PREVENT.exits, name, output)))
+        return RuleAnswer.refused(READING_PREVENTED.nudge(output=output, name=name))
 
     def reader_changed_after(self, run: SilentRun) -> bool:
         selected = ReaderSelection.choose(self.readers.all(), [run.part], self.readers.layers())
