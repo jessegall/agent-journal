@@ -73,10 +73,11 @@ class NextTask(TaskAssigner[Task]):
         actor_ids = self.assignments.row_actor_ids(Task, sorted({task.id for task in (*held, *assigned)}))
         own: dict[int, set[int]] = defaultdict(set)
         for task in held:
-            if not actor_ids[task.id] or task.holder_id in actor_ids[task.id]:
+            assignees = actor_ids.get(task.id, ())
+            if not assignees or task.holder_id in assignees:
                 own[task.holder_id].add(task.id)
         for task in assigned:
-            for agent_id in set(actor_ids[task.id]).intersection(agent_ids):
+            for agent_id in set(actor_ids.get(task.id, ())).intersection(agent_ids):
                 own[agent_id].add(task.id)
         return {agent_id: tuple(sorted(ids)) for agent_id, ids in own.items()}
 
