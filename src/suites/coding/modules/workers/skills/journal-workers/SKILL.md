@@ -206,7 +206,6 @@ An open question lets you stop; the answer wakes you. Going on with other work e
 - A run that moves to the background is watched for you, so you need no Monitor: go on working and hear of its end on your
   next tool call, or stop and be started again when it ends.
 - Git is not yours to run: the journal commits your work.
-- Use python3 for Python commands.
 - `journal skill write` publishes the declared skill files into the project's .claude/skills and .agents/skills;
   it does not load a skill for you. Use the Skill tool on Claude Code or read the SKILL.md path on Codex.
 - `journal module sync` updates the module registry and applies pending schema migrations. These are maintenance
