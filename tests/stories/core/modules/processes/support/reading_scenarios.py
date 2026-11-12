@@ -4,6 +4,7 @@ from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
+from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
@@ -88,3 +89,7 @@ def heard(story: Story, session: str = "s-1") -> str:
     """The lines an agent hears on its next two hooks, as a hook gives only a few lines at a time."""
     return "\n".join([*told(story, session), *told(story, session)])
 
+
+def agent_number(story: Story, agent_id: int) -> int:
+    """The number an agent's card shows, which its buttons send."""
+    return story.story_rows(Agent, id=agent_id)[0].number

@@ -6,7 +6,7 @@ import AgentJobForm from "./AgentJobForm.vue";
 import AgentRetireForm from "./AgentRetireForm.vue";
 import AgentSessionHistory from "./AgentSessionHistory.vue";
 
-const props = defineProps({row: {type: Object, required: true}});
+const props = defineProps({row: {type: Object, required: true}, held: {type: Boolean, default: false}});
 const view = useWindow();
 const mode = ref("");
 const text = ref("");
@@ -60,6 +60,11 @@ async function readTasks() {
         loading.value = false;
     }
 }
+// a person lifts every reading hold on the agent: a run held for printing nothing, and the blocks of its reader requests
+async function liftHold() {
+    await run(["process", "lift-hold", String(props.row.number)], "Hold lifted.");
+}
+
 async function run(command, success) {
     if (pending.value) return;
     pending.value = true;
@@ -111,6 +116,7 @@ async function retire() {
     <div class="agent-actions" data-agent-actions @click.stop @keydown.stop>
             <div class="action-buttons">
                 <Btn small data-agent-history :disabled="pending || loading" @click="openHistory">Session history</Btn>
+                <template v-if="held"><Btn small data-agent-lift-hold :disabled="pending" @click="liftHold">Lift this hold</Btn></template>
                 <template v-if="idle">
                     <template v-if="row.job_command?.length"><Btn small data-agent-send-job :disabled="pending || loading || !canSendJob" @click="openJob">Send a job</Btn></template>
                     <template v-if="row.role !== 'main'"><Btn small data-agent-driver :disabled="pending || loading" @click="openDriver">Change driver</Btn></template>

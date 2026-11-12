@@ -70,7 +70,7 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
             <template v-if="!open"><Icon class="agent-chevron" name="chevronRight" :size="12" /></template>
             <template v-if="open">
                 <span class="agent-head-actions" data-agent-head-actions>
-                    <AgentActions :row="row" />
+                    <AgentActions :row="row" :held="dotState === 'blocked'" />
                     <Btn variant="ghost" small data-agent-inspector @click.stop="peekRef(`agents:${row.id}`)">Open inspector</Btn>
                     <template v-if="row.role === 'helper' && (!row.ended_at || facts?.helper_job_open)"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.number)])">{{ row.ended_at ? "End job" : "Stop" }}</Btn></template>
                 </span>

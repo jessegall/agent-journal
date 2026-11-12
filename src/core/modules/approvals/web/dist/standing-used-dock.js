@@ -1,7 +1,7 @@
-if (!document.getElementById("window-styles-bd6135e97c88")) { const style = document.createElement("style"); style.id = "window-styles-bd6135e97c88"; style.textContent = ".approval-question[data-v-372999c2]{margin:4px 14px 2px 36px;color:var(--text);font-size:13.5px;font-weight:600}.approval-description[data-v-372999c2]{margin:0 14px 8px 36px;color:var(--text-3);font-size:12px;font-weight:400;white-space:pre-wrap}.approval-why[data-v-372999c2]{margin:0 14px 8px 36px;color:var(--text-2);font-size:12.5px;font-weight:400;white-space:pre-wrap;overflow-wrap:anywhere}.approval-details[data-v-372999c2]{margin:4px 14px 8px 36px}.approval-details pre[data-v-372999c2]{margin:6px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}.heading[data-v-48be62ee]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.row[data-v-48be62ee]{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.row small[data-v-48be62ee]{grid-column:1;color:var(--text-3);font-size:10.5px}.row button[data-v-48be62ee]{grid-column:2;grid-row:1 / span 2}.none[data-v-48be62ee]{margin:0;color:var(--text-3);font-size:12px}.standing-question[data-v-72969cec]{margin:4px 14px 2px 36px;color:var(--text);font-size:13.5px;font-weight:600}.standing-reason[data-v-72969cec]{margin:0 14px 8px 36px;color:var(--text-3);font-size:12px;font-weight:400}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-03d5331f0777")) { const style = document.createElement("style"); style.id = "window-styles-03d5331f0777"; style.textContent = ".approval-question[data-v-8f8987f9]{margin:4px 14px 2px 36px;color:var(--text);font-size:13.5px;font-weight:600}.approval-description[data-v-8f8987f9]{margin:0 14px 8px 36px;color:var(--text-3);font-size:12px;font-weight:400;white-space:pre-wrap}.approval-why[data-v-8f8987f9]{margin:0 14px 8px 36px;color:var(--text-2);font-size:12.5px;font-weight:400;white-space:pre-wrap;overflow-wrap:anywhere}.approval-details[data-v-8f8987f9]{margin:4px 14px 8px 36px}.approval-details pre[data-v-8f8987f9]{margin:6px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}.heading[data-v-aabd9386]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.row[data-v-aabd9386]{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.row small[data-v-aabd9386]{grid-column:1;color:var(--text-3);font-size:10.5px}.row button[data-v-aabd9386]{grid-column:2;grid-row:1 / span 2}.none[data-v-aabd9386]{margin:0;color:var(--text-3);font-size:12px}.standing-question[data-v-f59e3db9]{margin:4px 14px 2px 36px;color:var(--text);font-size:13.5px;font-weight:600}.standing-reason[data-v-f59e3db9]{margin:0 14px 8px 36px;color:var(--text-3);font-size:12px;font-weight:400}\n"; document.head.appendChild(style); }
 import { computed as t, openBlock as d, createElementBlock as i, Fragment as p, createElementVNode as o, toDisplayString as s } from "vue";
 import { useDockCard as u, useWindow as l } from "@journal/window-kit";
-import { _ } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+import { _ } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
 const m = {
   class: "standing-question",
   "data-standing-question": ""
@@ -22,7 +22,7 @@ const m = {
       o("p", f, s(r.value), 1)
     ], 64));
   }
-}, x = /* @__PURE__ */ _(g, [["__scopeId", "data-v-72969cec"]]);
+}, x = /* @__PURE__ */ _(g, [["__scopeId", "data-v-f59e3db9"]]);
 export {
   x as default
 };

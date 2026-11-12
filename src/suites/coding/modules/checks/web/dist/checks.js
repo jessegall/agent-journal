@@ -1,10 +1,10 @@
-if (!document.getElementById("window-styles-718f5da8d62e")) { const style = document.createElement("style"); style.id = "window-styles-718f5da8d62e"; style.textContent = ".check-bar[data-v-643882e1]{display:block;overflow:hidden;height:3px;border-radius:2px;background:var(--hover)}.check-bar-fill[data-v-643882e1]{display:block;height:100%;border-radius:2px;background:var(--accent);transition:width .5s ease}.check-bar-fill.sliding[data-v-643882e1]{width:30%;animation:check-bar-slide-643882e1 1.2s ease-in-out infinite alternate}@keyframes check-bar-slide-643882e1{0%{transform:translate(0)}to{transform:translate(233%)}}.check-tools[data-v-a4a837dc]{display:flex;align-items:center;gap:8px;margin-bottom:10px}.check-space[data-v-a4a837dc]{flex:1}.check-command[data-v-a4a837dc]{display:block;margin-bottom:10px;overflow-wrap:anywhere;color:var(--text-2);font-size:12px}.check-output[data-v-a4a837dc]{overflow:auto;max-height:50vh;margin:0;padding:10px 12px;border-radius:8px;background:var(--raised);font-size:12px;white-space:pre-wrap}.check-runs[data-v-a4a837dc]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.check-run-row[data-v-a4a837dc]{display:flex;width:100%;padding:6px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:13px;cursor:pointer}.check-run-row[data-v-a4a837dc]:hover{background:var(--hover)}.check-verdict[data-v-a4a837dc]{color:var(--accent-text)}.check-verdict.failing[data-v-a4a837dc]{color:var(--danger)}.check-note[data-v-a4a837dc]{margin:0;color:var(--text-3)}.cards[data-v-e53653a1]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-content:start;padding:16px 20px}.card[data-v-e53653a1]{display:flex;flex-direction:column;min-width:0;gap:8px;min-height:110px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:inherit;text-align:left;cursor:pointer}.card[data-v-e53653a1]:hover{border-color:var(--border-strong, var(--border))}.card-head[data-v-e53653a1]{display:flex;gap:6px;align-items:center;color:var(--text-2);font-size:13px}.card-icon[data-v-e53653a1]{width:14px;height:14px}.card-title[data-v-e53653a1]{font-weight:600}.card-run[data-v-e53653a1]{align-self:flex-start}.card-detail[data-v-e53653a1]{margin:0;overflow-wrap:anywhere;color:var(--text-2);font-size:12px;white-space:pre-wrap}.card-foot[data-v-e53653a1]{margin-top:auto;color:var(--text-3);font-size:12px}.cards-note[data-v-e53653a1]{margin:0;color:var(--text-2)}.card-state[data-v-e53653a1]{margin-left:auto;color:var(--text-3)}.card-state.passing[data-v-e53653a1]{color:var(--accent-text)}.card-state.failing[data-v-e53653a1]{color:var(--danger)}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-0bfbe0f56aab")) { const style = document.createElement("style"); style.id = "window-styles-0bfbe0f56aab"; style.textContent = ".check-bar[data-v-88da7980]{display:block;overflow:hidden;height:3px;border-radius:2px;background:var(--hover)}.check-bar-fill[data-v-88da7980]{display:block;height:100%;border-radius:2px;background:var(--accent);transition:width .5s ease}.check-bar-fill.sliding[data-v-88da7980]{width:30%;animation:check-bar-slide-88da7980 1.2s ease-in-out infinite alternate}@keyframes check-bar-slide-88da7980{0%{transform:translate(0)}to{transform:translate(233%)}}.check-tools[data-v-9fbf4735]{display:flex;align-items:center;gap:8px;margin-bottom:10px}.check-space[data-v-9fbf4735]{flex:1}.check-command[data-v-9fbf4735]{display:block;margin-bottom:10px;overflow-wrap:anywhere;color:var(--text-2);font-size:12px}.check-output[data-v-9fbf4735]{overflow:auto;max-height:50vh;margin:0;padding:10px 12px;border-radius:8px;background:var(--raised);font-size:12px;white-space:pre-wrap}.check-runs[data-v-9fbf4735]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.check-run-row[data-v-9fbf4735]{display:flex;width:100%;padding:6px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:13px;cursor:pointer}.check-run-row[data-v-9fbf4735]:hover{background:var(--hover)}.check-verdict[data-v-9fbf4735]{color:var(--accent-text)}.check-verdict.failing[data-v-9fbf4735]{color:var(--danger)}.check-note[data-v-9fbf4735]{margin:0;color:var(--text-3)}.cards[data-v-3a2a6d4c]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-content:start;padding:16px 20px}.card[data-v-3a2a6d4c]{display:flex;flex-direction:column;min-width:0;gap:8px;min-height:110px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:inherit;text-align:left;cursor:pointer}.card[data-v-3a2a6d4c]:hover{border-color:var(--border-strong, var(--border))}.card-head[data-v-3a2a6d4c]{display:flex;gap:6px;align-items:center;color:var(--text-2);font-size:13px}.card-icon[data-v-3a2a6d4c]{width:14px;height:14px}.card-title[data-v-3a2a6d4c]{font-weight:600}.card-run[data-v-3a2a6d4c]{align-self:flex-start}.card-detail[data-v-3a2a6d4c]{margin:0;overflow-wrap:anywhere;color:var(--text-2);font-size:12px;white-space:pre-wrap}.card-foot[data-v-3a2a6d4c]{margin-top:auto;color:var(--text-3);font-size:12px}.cards-note[data-v-3a2a6d4c]{margin:0;color:var(--text-2)}.card-state[data-v-3a2a6d4c]{margin-left:auto;color:var(--text-3)}.card-state.passing[data-v-3a2a6d4c]{color:var(--accent-text)}.card-state.failing[data-v-3a2a6d4c]{color:var(--danger)}\n"; document.head.appendChild(style); }
 import { openBlock as t, createElementBlock as a, createElementVNode as u, normalizeStyle as P, normalizeClass as O, ref as w, computed as E, watch as W, onUnmounted as q, createBlock as _, unref as n, withCtx as R, createVNode as B, createTextVNode as N, toDisplayString as l, createCommentVNode as g, Fragment as x, renderList as T, withKeys as z, withModifiers as D } from "vue";
 import { useWindow as K, Dialog as F, Segmented as j, Btn as I, TimeAgo as A, useListTools as M, WindowRoom as U, ListTools as G, Skeleton as H, Icon as J } from "@journal/window-kit";
 const V = (s, y) => {
   const k = s.__vccOpts || s;
-  for (const [m, f] of y)
-    k[m] = f;
+  for (const [f, m] of y)
+    k[f] = m;
   return k;
 }, Q = {
   class: "check-bar",
@@ -20,7 +20,7 @@ const V = (s, y) => {
       }, null, 6)
     ]));
   }
-}, L = /* @__PURE__ */ V(X, [["__scopeId", "data-v-643882e1"]]), Y = { class: "check-tools" }, Z = { class: "check-command" }, ee = {
+}, L = /* @__PURE__ */ V(X, [["__scopeId", "data-v-88da7980"]]), Y = { class: "check-tools" }, Z = { class: "check-command" }, ee = {
   key: 1,
   class: "check-note"
 }, te = {
@@ -45,9 +45,9 @@ const V = (s, y) => {
     const k = [
       { key: "output", label: "Output" },
       { key: "runs", label: "Runs" }
-    ], m = s, f = y, C = K(), r = w("output"), $ = w(null), d = `runs.${m.row.id}`, { rows: p, failure: S } = C.props[d], b = E(() => {
+    ], f = s, m = y, C = K(), r = w("output"), $ = w(null), d = `runs.${f.row.id}`, { rows: p, failure: S } = C.props[d], b = E(() => {
       var h;
-      return ((h = $.value) == null ? void 0 : h.output) ?? m.row.last_output;
+      return ((h = $.value) == null ? void 0 : h.output) ?? f.row.last_output;
     });
     function c(h) {
       $.value = h, r.value = "output";
@@ -62,7 +62,7 @@ const V = (s, y) => {
       title: `Check ${s.row.id}: ${s.row.title}`,
       wide: "",
       "data-check-dialog": "",
-      onClose: i[2] || (i[2] = (v) => f("close"))
+      onClose: i[2] || (i[2] = (v) => m("close"))
     }, {
       default: R(() => [
         u("div", Y, [
@@ -78,7 +78,7 @@ const V = (s, y) => {
             bordered: "",
             "data-check-run": "",
             disabled: s.running,
-            onClick: i[1] || (i[1] = (v) => f("run", s.row))
+            onClick: i[1] || (i[1] = (v) => m("run", s.row))
           }, {
             default: R(() => [
               N(l(s.running ? "Running" : "Run"), 1)
@@ -102,7 +102,7 @@ const V = (s, y) => {
               u("button", {
                 type: "button",
                 class: "check-run-row",
-                onClick: (me) => c(v)
+                onClick: (fe) => c(v)
               }, [
                 u("span", {
                   class: O(["check-verdict", { failing: !v.passed }])
@@ -119,7 +119,7 @@ const V = (s, y) => {
       _: 1
     }, 8, ["title"]));
   }
-}, oe = /* @__PURE__ */ V(le, [["__scopeId", "data-v-a4a837dc"]]), ue = { class: "cards" }, re = {
+}, oe = /* @__PURE__ */ V(le, [["__scopeId", "data-v-9fbf4735"]]), ue = { class: "cards" }, re = {
   key: 1,
   class: "cards-note"
 }, de = {
@@ -132,7 +132,7 @@ const V = (s, y) => {
 }, ke = ["data-row", "onClick", "onKeydown"], pe = { class: "card-head" }, he = { class: "card-title" }, ve = { class: "card-detail" }, _e = { class: "card-foot" }, ye = {
   __name: "CheckCards",
   setup(s) {
-    const y = K(), { rows: k, failure: m, loaded: f } = y.props.checks, C = M(k, { title: (c) => c.title, isOpen: (c) => !c.stopped }), r = w(null), $ = E(() => k.value.find((c) => c.id === r.value) || null), d = w(/* @__PURE__ */ new Set()), p = w("");
+    const y = K(), { rows: k, failure: f, loaded: m } = y.props.checks, C = M(k, { title: (c) => c.title, isOpen: (c) => !c.stopped }), r = w(null), $ = E(() => k.value.find((c) => c.id === r.value) || null), d = w(/* @__PURE__ */ new Set()), p = w("");
     async function S(c) {
       p.value = "";
       const o = await y.run(["check", "start", String(c.id)]);
@@ -147,7 +147,7 @@ const V = (s, y) => {
       default: R(() => [
         B(n(G), { tools: n(C) }, null, 8, ["tools"]),
         u("div", ue, [
-          n(f) ? n(m) ? (t(), a("p", re, l(n(m)), 1)) : n(f) && !n(k).length ? (t(), a("p", de, "No checks yet")) : g("", !0) : (t(), _(n(H), {
+          n(m) ? n(f) ? (t(), a("p", re, l(n(f)), 1)) : n(m) && !n(k).length ? (t(), a("p", de, "No checks yet")) : g("", !0) : (t(), _(n(H), {
             key: 0,
             shape: "cards"
           })),
@@ -217,7 +217,7 @@ const V = (s, y) => {
       _: 1
     }));
   }
-}, Ce = /* @__PURE__ */ V(ye, [["__scopeId", "data-v-e53653a1"]]);
+}, Ce = /* @__PURE__ */ V(ye, [["__scopeId", "data-v-3a2a6d4c"]]);
 export {
   Ce as default
 };

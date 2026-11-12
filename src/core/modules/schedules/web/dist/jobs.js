@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-058eada9df5c")) { const style = document.createElement("style"); style.id = "window-styles-058eada9df5c"; style.textContent = ".agent-jobs[data-v-bc6f180b]{display:flex;flex-direction:column;gap:6px}.agent-jobs-refusal[data-v-bc6f180b]{margin:0;color:var(--danger);font-size:12.5px}.agent-job[data-v-bc6f180b]{display:flex;flex:1;gap:10px;align-items:center;min-width:0;padding:6px 0}.agent-job-text[data-v-bc6f180b]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.agent-job-text span[data-v-bc6f180b]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-644a89021efe")) { const style = document.createElement("style"); style.id = "window-styles-644a89021efe"; style.textContent = ".agent-jobs[data-v-76ced93b]{display:flex;flex-direction:column;gap:6px}.agent-jobs-refusal[data-v-76ced93b]{margin:0;color:var(--danger);font-size:12.5px}.agent-job[data-v-76ced93b]{display:flex;flex:1;gap:10px;align-items:center;min-width:0;padding:6px 0}.agent-job-text[data-v-76ced93b]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.agent-job-text span[data-v-76ced93b]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
 import { ref as v, openBlock as h, createBlock as j, unref as l, withCtx as b, createElementVNode as _, createElementBlock as y, toDisplayString as m, createCommentVNode as S, createVNode as $, createTextVNode as k } from "vue";
 import { useWindow as N, agentRowArgument as w, WindowRoom as x, RowList as D, Btn as A } from "@journal/window-kit";
 const B = [
@@ -105,7 +105,7 @@ const L = (s, n) => {
       _: 1
     }));
   }
-}, K = /* @__PURE__ */ L(H, [["__scopeId", "data-v-bc6f180b"]]);
+}, K = /* @__PURE__ */ L(H, [["__scopeId", "data-v-76ced93b"]]);
 export {
   K as default
 };
