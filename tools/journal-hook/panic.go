@@ -30,7 +30,7 @@ func PanicReason(root string) string {
 
 // Panicking says whether this hook belongs to the main agent while the panic file exists and gives a reason.
 func Panicking(root, role string) bool {
-	if role != "" && role != "main" {
+	if !IsMainRole(role) {
 		return false
 	}
 	return PanicReason(root) != ""
