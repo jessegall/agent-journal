@@ -81,7 +81,11 @@ class ModuleFinder:
         return self.plugin_lists[version]
 
     def checked(self, path: DottedPath) -> type[Module]:
-        return self.module(self.loaded_entry(path), path.text)
+        """The module a path names, or the first module of the suite it names."""
+        entry = self.loaded_entry(path)
+        if isinstance(entry, type) and issubclass(entry, Suite) and entry.modules:
+            return self.module(entry.modules[0], path.text)
+        return self.module(entry, path.text)
 
     def loaded_entry(self, path: DottedPath) -> object:
         self.enable_imports()
