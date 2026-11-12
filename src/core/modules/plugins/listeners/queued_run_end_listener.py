@@ -1,3 +1,4 @@
+from engine.time.timestamp import MILLISECONDS
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
@@ -9,7 +10,6 @@ from core.modules.processes.events.process_ended import ProcessEnded
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 
-MILLISECONDS = 1000
 
 
 class QueuedRunEndListener(SaveListener[ProcessEnded]):
