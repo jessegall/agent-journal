@@ -22,6 +22,7 @@
         ],
         "reject": [
             {"testCode": true},
+            {"all": [{"name": "choose"}, {"extendsAny": "Handler", "of": "enclosingType"}]},
             {"fileMatches": "(^|/)src/core/modules/processes/support/(reading/|reader_drafting\\.py$|reader_judge\\.py$|reader_selection\\.py$|reader_demands\\.py$|reader_layers\\.py$)"},
             {"fileMatches": "(^|/)src/core/modules/processes/commands/(add_reader|make_reader_draft|request_reader|skip_reader_request|remove_reader|choose_default_reader|update_stock_readers)/"}
         ]
