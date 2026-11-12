@@ -15,7 +15,12 @@ class TranscriptAuthors:
     def tagged(self, agent: Agent, rows: Sequence[TranscriptRow]) -> tuple[TranscriptRow, ...]:
         if agent.role == AgentRole.MAIN:
             return tuple(rows)
-        return tuple(replace(row, author=self.author(agent, row)) for row in rows)
+        authors: dict[tuple[str, str, str], str] = {}
+        for row in rows:
+            key = (row.row_type, row.author, row.text)
+            if key not in authors:
+                authors[key] = self.author(agent, row)
+        return tuple(replace(row, author=authors[(row.row_type, row.author, row.text)]) for row in rows)
 
     def author(self, agent: Agent, row: TranscriptRow) -> str:
         if row.row_type == ASSISTANT_TYPE:
