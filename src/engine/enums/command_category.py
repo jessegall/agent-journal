@@ -19,6 +19,14 @@ class CommandCategory(StrEnum):
     UNKNOWN = "unknown"
 
     @property
+    def is_priority_zero(self) -> bool:
+        return self in (CommandCategory.READ, CommandCategory.SEARCH, CommandCategory.EDIT)
+
+    @property
+    def can_go_to_background(self) -> bool:
+        return not self.is_priority_zero
+
+    @property
     def reads_files(self) -> bool:
         return self in (CommandCategory.READ, CommandCategory.SEARCH)
 
