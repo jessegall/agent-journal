@@ -24,3 +24,16 @@ def test_an_existing_test_checkout_moves_to_the_named_commit(tmp_path):
     repository.git("commit", "-am", "The worker's cart", folder=folder)
     checkout = git.commit_checkout(worktree, repository.git("rev-parse", "HEAD", folder=folder).stdout.strip())
     assert Path(checkout, "cart.py").read_text() == "TOTAL = 2\n"
+
+
+def test_an_existing_test_checkout_gets_back_a_tracked_file_marked_skip_worktree_and_removed(tmp_path):
+    repository, folder = worker_checkout(tmp_path)
+    first = repository.tip("base")
+    worktree = worktree_row(repository, folder, first)
+    git = WorktreeGit(None, plain_executor())
+    checkout = git.commit_checkout(worktree, first)
+    repository.git("update-index", "--skip-worktree", "cart.py", folder=Path(checkout))
+    Path(checkout, "cart.py").unlink()
+    git.commit_checkout(worktree, first)
+    assert Path(checkout, "cart.py").read_text() == "TOTAL = 0\n"
+    assert repository.git("ls-files", "-v", folder=Path(checkout)).stdout.startswith("H cart.py")
