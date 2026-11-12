@@ -36,6 +36,7 @@ class ReadingCase:
     reader_judgement: ReaderJudgement | None
     reader_is_default: bool
     reader_failed: bool
+    count_missing: bool
     draft_fits: bool
     output: OutputFacts | None
     runs_without_change: int

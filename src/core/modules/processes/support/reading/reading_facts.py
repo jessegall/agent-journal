@@ -28,6 +28,7 @@ from core.modules.processes.support.decisions.escalation_resets import Escalatio
 from core.modules.processes.support.reading.output_facts import SAMPLE_BYTES, OutputFacts
 from core.modules.processes.models.enums.reader_layer import ReaderLayer
 from core.modules.processes.support.reading.reading_case import ReadingCase
+from core.modules.processes.support.run_counts import RunCounts
 from core.modules.processes.support.silent_start_runs import SilentStartRuns
 
 
@@ -38,10 +39,10 @@ class ReadingFacts:
 
     def __init__(self, readers: ReaderRows, judge: ReaderJudge, writers: ReaderWriters, requests: ReaderRequestQuery, counter: EscalationCounter,
                  resets: EscalationResets, folder: OutputFolder, settings: ProcessSettings, suites: SuiteChoice, rows: EventRows, clock: Clock,
-                 cadences: RunCadences, run: ReaderRun) -> None:
+                 cadences: RunCadences, run: ReaderRun, counts: RunCounts) -> None:
         self.readers, self.judge, self.writers, self.requests, self.counter = readers, judge, writers, requests, counter
         self.resets, self.folder, self.settings, self.suites, self.rows, self.clock, self.cadences = resets, folder, settings, suites, rows, clock, cadences
-        self.run = run
+        self.run, self.counts = run, counts
 
     def case_for(self, process: Process, part: ProcessPart, moment: ReadingMoment) -> ReadingCase:
         agent = self.rows.required(Agent, process.session_agent_id)
@@ -55,6 +56,7 @@ class ReadingFacts:
                            cadence_state=self.cadences.for_process(process, self.clock.timestamp()).state(),
                            exit_code=part.exit_code, reader_layer=self.layer(reader), reader_judgement=self.judgement(process, part, reader),
                            reader_is_default=reader is not None and reader.is_default, reader_failed=self.reader_failed(process, reader, moment),
+                           count_missing=self.counts.count_missing(process, part),
                            draft_fits=self.draft_fits(process, part, reader, moment), output=self.output(process, part, moment),
                            runs_without_change=self.counter.runs_without_change(command_key),
                            request_is_waiting=self.request_is_waiting(process, command), was_skipped=self.resets.skipped_since(command_key, process.creation_timestamp()),

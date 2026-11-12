@@ -14,6 +14,8 @@ class ExitText:
 
 EXIT_TEXTS: dict[ReadingExit, ExitText] = {
     ReadingExit.COMPLY: ExitText("add or fix the reader", "journal reader add {name}"),
+    ReadingExit.COUNT_TESTS: ExitText("add a reader that counts the tests, and the next run starts",
+                                      'journal reader add <name> --commands "<command>*" --count "<pattern of the count>" --count-command "<a command that lists the tests>"'),
     ReadingExit.SKIP_WITH_REASON: ExitText("skip this one start and say why", "journal refusal skip processes.reading --reason '<why>'"),
     ReadingExit.DECLARE_UNREADABLE: ExitText("mark the command unreadable", 'journal reader unreadable "{name}" --reason "<why>"'),
     ReadingExit.READ_OUTPUT: ExitText("read it", "journal output read {output}"),
