@@ -19,6 +19,7 @@ VIEWS_SNAPSHOT = ROOT / "tests" / "snapshots" / "sql_views_listed.txt"
 QUERY_FILE = "src/core/modules/aliases/queries/alias_query.py"
 KINDS = ["name = ?", "closed_at IS NULL", "holder_id IS NOT NULL", "id IN (1, 2)", "title LIKE ?", "id ORDER BY priority", "state GROUP BY state",
          "id LIMIT 5", "tasks JOIN agents ON agents.id = tasks.holder_id", "EXISTS(SELECT 1 FROM task_waits)", "SELECT id FROM tasks"]
+DOCSTRING = "Selects the task to start and joins it to its plan, in order by priority, where it is in the plan."
 METHODS = ("where", "where_in", "where_exists", "join", "group_by", "order_by", "limit")
 
 
@@ -105,6 +106,15 @@ def test_a_condition_that_composes_the_builder_passes(tmp_path):
 '''})
 
 
+def test_a_statement_wrapped_in_a_condition_method_is_flagged(tmp_path):
+    """Story 58: wrapping SQL text in a condition class's statement() does not hide it."""
+    proved(tmp_path, CALL_RULE, {"src/core/modules/tasks/conditions/stale_task.py": f'''class StaleTask:
+    def statement(self):
+        # @sin {CALL_RULE}
+        return Statement("updated_at < datetime('now', '-7 days')")
+'''})
+
+
 def test_engine_query_and_database_files_are_exempt(tmp_path):
     sample = f'''def counted(table):
     # @righteous {TEXT_RULE}
@@ -151,12 +161,15 @@ SORT = "order by priority"
 PLACED = "a task is in the plan"
 
 
-def started(task):
-    # @righteous {TEXT_RULE}
-    """Selects the task to start and joins it to its plan, in order by priority."""
+def held(task):
     # @sin {TEXT_RULE}
     return "holder_id = ?"
 '''})
+    assert re.search(text_pattern(), DOCSTRING) is None
+
+
+def text_pattern() -> str:
+    return next(step["textMatches"] for step in rule(TEXT_RULE)["find"]["where"][0]["any"] if "textMatches" in step)
 
 
 def test_the_sin_names_the_method_for_each_kind():
