@@ -22,10 +22,8 @@ TOOLS_WITHOUT_STOCK_READER = {
     "*python*": "any Python program: there is no one output a reader could know",
 }
 SAMPLES_STILL_MISSING = (
-    "go-build", "go-vet", "make", "gcc", "cmake", "swift-build", "dotnet-build", "maven", "gradle", "webpack", "php-lint", "mypy", "ruff", "dbt",
-    "cabal-build", "stack-build", "sbt-build", "ng-build", "hatch-build", "buck2-build", "pants-package", "pio-run", "turbo", "nx", "moon", "packer",
-    "terraform", "curl", "wget", "docker-pull", "composer-install", "bundle-install", "gem-install", "uv-install", "yarn-install", "pnpm-install",
-    "brew-install", "git-clone",
+    "go-vet", "php-lint", "mypy", "ruff", "curl", "wget", "docker-pull", "composer-install", "bundle-install", "gem-install", "uv-install",
+    "yarn-install", "pnpm-install", "brew-install", "git-clone",
 )
 HINT_PATTERNS = tuple(pattern for patterns, _ in STREAMING_HINTS for pattern in patterns.split(","))
 
