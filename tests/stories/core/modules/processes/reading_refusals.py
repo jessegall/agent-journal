@@ -5,8 +5,8 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
-REDIRECTED_TESTS = HookSamples.shell("pytest -q > results.txt", ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"]), redirects=["> results.txt"])
-REDIRECT_EXIT = "pytest goes to a file, so no reader sees it: run it without the redirect, and read it by its output number"
+REDIRECTED_BUILD = HookSamples.shell("custom-build run > build.txt", ShellPart("custom-build", CommandCategory.BUILD, ["run"]), redirects=["> build.txt"])
+REDIRECT_EXIT = "custom-build goes to a file, so no reader sees it: run it without the redirect, and read it by its output number"
 
 
 def raw_test_line() -> object:
@@ -19,10 +19,11 @@ def raw_test_line() -> object:
 def test_a_saved_command_refusal_names_its_skip_with_a_reason(new_story):
     story = new_story(fixture=UserBuilder)
     story.expect_success('alias add run-tests "pytest"', actor=story.agent)
+    story.expect_hook_refusal("s-1", raw_test_line(), "save this command as an alias")
     story.expect_hook_refusal("s-1", raw_test_line(), "journal refusal skip aliases.saved-command --reason")
 
 
-def test_a_redirected_test_run_is_prevented_at_each_start_with_the_exit_to_drop_the_redirect(new_story):
+def test_a_redirected_build_is_prevented_at_each_start_with_the_exit_to_drop_the_redirect(new_story):
     story = new_story(fixture=ForcedReaders)
-    story.expect_hook_refusal("s-reader", REDIRECTED_TESTS, REDIRECT_EXIT)
-    story.expect_hook_refusal("s-reader", REDIRECTED_TESTS, "journal refusal skip processes.reading --reason")
+    story.expect_hook_refusal("s-reader", REDIRECTED_BUILD, REDIRECT_EXIT)
+    story.expect_hook_refusal("s-reader", REDIRECTED_BUILD, "journal refusal skip processes.reading --reason")

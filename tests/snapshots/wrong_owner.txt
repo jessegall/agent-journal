@@ -1,17 +1,6 @@
-1: src/core/modules/documents/commands/approve_plan/approve_plan_handler.py: its command is in plans
-1: src/core/modules/drivers/commands/record_agent_launch_failure/record_agent_launch_failure_handler.py: its command is in agents
-1: src/core/modules/drivers/commands/send_exception_line/send_exception_line_handler.py: its command is in developer
-1: src/core/modules/messages/commands/report_safeguards_stop/report_safeguards_stop_handler.py: its command is in drivers
-1: src/core/modules/usage/commands/set_profile_limits/set_profile_limits_subcommand.py: its command is in settings
-1: src/core/modules/viewer/commands/window_setting/window_setting_subcommand.py: its command is in settings
-1: src/core/modules/voices/commands/choose_voice/choose_voice_subcommand.py: its command is in settings
-1: src/suites/coding/modules/workers/commands/record_worker_report/send_worker_report_subcommand.py: its command is in messages
-2: src/core/modules/drivers/support/driver_settings.py: AUTOMATIC_APPROVAL is a key of helpers
-2: src/core/modules/drivers/support/driver_settings.py: SKIPS_NEED_APPROVAL is a key of helpers
-2: src/core/modules/settings/bindings/support/context_share.py: CONTEXT_LIMIT_ENABLED is a key of helpers
-2: src/core/modules/settings/bindings/support/context_share.py: CONTEXT_LIMIT_TOKENS is a key of helpers
 4: src/core/modules/agents/support/report_nudges.py: collects more than 3 classes, functions and values
 4: src/core/modules/aliases/support/alias_nudges.py: collects more than 3 classes, functions and values
+4: src/core/modules/claude_code/support/claude_code_settings.py: collects more than 3 classes, functions and values
 4: src/core/modules/developer/support/developer_settings.py: collects more than 3 classes, functions and values
 4: src/core/modules/drivers/support/access_nudges.py: collects more than 3 classes, functions and values
 4: src/core/modules/drivers/support/driver_nudges.py: collects more than 3 classes, functions and values

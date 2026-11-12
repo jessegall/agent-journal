@@ -59,11 +59,19 @@ class WrongOwnerSurvey:
         return [node for node in self.trees[path].body if isinstance(node, ast.ClassDef)]
 
     def handlers_apart(self) -> list[str]:
+        """A handler or subcommand whose command sits in another module, unless that module uses the command itself: then
+        the command is a port the lower module declares and a higher one answers, and moving either would make the
+        modules import each other."""
+        owners_using = defaultdict(set)
+        for path in self.source_files:
+            for name in self.imports(path):
+                owners_using[name].add(self.owner(path))
         apart = []
         for path in self.source_files:
             if not path.stem.endswith(("_handler", "_subcommand")):
                 continue
-            commands = {self.imported_owner(name) for name in self.imports(path) if self.is_command_of(path, name)} - {None, self.owner(path)}
+            names = [name for name in self.imports(path) if self.is_command_of(path, name) and self.imported_owner(name) not in (None, self.owner(path))]
+            commands = {self.imported_owner(name) for name in names if self.imported_owner(name) not in owners_using[name]}
             apart += [f"{path}: its command is in {owner}" for owner in sorted(commands)]
         return apart
 
@@ -74,13 +82,21 @@ class WrongOwnerSurvey:
         return ".commands." in dotted_name and not dotted_name.endswith(("_handler", "_subcommand"))
 
     def setting_keys_apart(self) -> list[str]:
+        """A setting key constant kept outside the module its key names, unless that module imports the constant's
+        module: then the lower module reads a key the higher one declares, and moving the constant up would make the
+        modules import each other."""
+        imported_by = defaultdict(set)
+        for path in self.source_files:
+            for name in self.imports(path):
+                imported_by[self.owner(path)].add(self.imported_owner(name))
         apart = []
         for path in self.source_files:
             for node in self.trees[path].body:
                 if not (isinstance(node, ast.Assign) and isinstance(node.value, ast.Constant) and isinstance(node.value.value, str)):
                     continue
                 match = SETTING_KEY.match(node.value.value)
-                if match is not None and match.group(1).replace("-", "_") != self.owner(path) and self.owner(path) not in ("engine", "server"):
+                key_owner = match.group(1).replace("-", "_") if match is not None else ""
+                if match is not None and key_owner != self.owner(path) and self.owner(path) not in ("engine", "server") and self.owner(path) not in imported_by[key_owner]:
                     apart.append(f"{path}: {ast.unparse(node.targets[0])} is a key of {match.group(1)}")
         return apart
 

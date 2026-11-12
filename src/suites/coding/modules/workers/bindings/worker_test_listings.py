@@ -1,3 +1,4 @@
+from engine.actor.actor import Actor
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
@@ -81,7 +82,7 @@ class WorkerTestListings(RunCounts):
         if not self.requires_count(process, agent) or (status is None and not self.has_listing(process, agent, self.outputs.process_output(process.id))):
             return
         self.bus.dispatch(StopProcess(process.id), context)
-        request = self.bus.dispatch(RequestCountReader(process.id), context)
+        request = self.bus.run(RequestCountReader(process.id), Actor.core(), environment_id=process.environment_id)
         self.nudger.send(process.session_agent_id, TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE, context, output=process.id, name=request)
 
     def counting_reader(self, part: ProcessPart, output: Output | None, readers: tuple[Reader, ...]) -> Reader | None:

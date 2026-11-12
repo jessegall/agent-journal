@@ -34,7 +34,8 @@ def moved(story: Story, process: Process) -> Process:
 
 
 def docked(story: Story, session: str = "s-1") -> None:
-    """The dock seconds pass and the agent's next hooks come, which dock a long run."""
+    """The agent works on while the dock seconds pass, and its next hooks dock a long run."""
+    story.hook(session, HookSamples.stop())
     story.advance(DOCK_SECONDS)
     story.hook(session, HookSamples.stop())
     story.hook(session, HookSamples.stop())
@@ -92,7 +93,7 @@ def test_a_run_moved_by_the_foreground_limit_keeps_its_card_and_its_title_ask(ma
     expect_reply_line(main_story.hook("s-1", READ), RUN_NAME.nudge(process=process.id).text)
 
 
-def test_a_read_that_moved_and_one_that_finished_at_once_never_show_a_card(main_story):
+def test_a_read_that_moved_a_quick_read_and_a_plugin_run_never_show_a_card(main_story):
     quick = started_run(main_story, "cat small.log", CommandCategory.READ)
     end_run(main_story, quick, "line\n")
     slow = started_run(main_story, "grep -r cart logs", CommandCategory.SEARCH)
@@ -101,6 +102,9 @@ def test_a_read_that_moved_and_one_that_finished_at_once_never_show_a_card(main_
     docked(main_story)
     main_story.expect_absent(MARKS, f"process:{slow.id}", actor=main_story.user)
     main_story.expect_absent(MARKS, f"process:{quick.id}", actor=main_story.user)
+    plugin = side_run(main_story, main_story.agent, "make lint", CommandCategory.CHECK, plugin="sample")
+    docked(main_story)
+    main_story.expect_absent(MARKS, f"process:{plugin.id}", actor=main_story.user)
 
 
 def test_the_open_list_shows_a_background_run_that_the_running_state_leaves_out(main_story):
@@ -121,12 +125,6 @@ def test_the_card_of_a_background_run_ends_in_place_with_the_run(main_story, end
     main_story.run_listeners()
     marks = main_story.run(NEWEST_MARKS, actor=main_story.user).output_text
     main_story.expect_rows(marks.count(f"process:{process.id}") == 1 and "ended" in marks, detail=marks)
-
-
-def test_a_plugin_run_in_the_background_stays_hidden(main_story):
-    process = side_run(main_story, main_story.agent, "make lint", CommandCategory.CHECK, plugin="sample")
-    docked(main_story)
-    main_story.expect_absent(MARKS, f"process:{process.id}", actor=main_story.user)
 
 
 def test_a_process_script_is_not_refused_as_a_command_of_unknown_type(main_story):

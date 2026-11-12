@@ -25,6 +25,7 @@ def held_again(story: Story, process: Process) -> None:
 def test_each_exit_of_the_silent_run_hold_works_again_when_the_hold_comes_back(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
     process = moved_run(story, "zork-build bundle", CommandCategory.BUILD)
+    story.expect_success(f'output title {process.id} "Building the bundle"', actor=story.agent)
     held_again(story, process)
     for _ in range(2):
         story.expect_success(f"output read {process.id} --tail 5", actor=story.agent)

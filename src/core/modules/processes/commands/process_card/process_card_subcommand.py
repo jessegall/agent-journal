@@ -13,6 +13,7 @@ from core.modules.processes.queries.reading_decision_query import ReadingDecisio
 from core.modules.processes.support.reading.reading_card_text import ReadingCardText
 from core.modules.processes.support.process_card import ProcessCard
 from core.modules.processes.support.run_title import RunTitle
+from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.support.reading.run_command_words import RunCommandWords
 from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
 
@@ -35,7 +36,7 @@ class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
         kept = self.outputs.process(arguments.process_id).first()
         parts = list(self.parts.process(arguments.process_id).all_rows())
         process = self.processes.find(arguments.process_id)
-        visible = next((part for part in parts if part.category.is_watched), None)
+        visible = RunVisibility.select_visible_part(process, tuple(parts)) or (parts[0] if parts else None)
         reader = self.readers.find(kept.reader_id) if kept is not None and kept.reader_id else None
         words = RunCommandWords.of_parts(parts)
         return ProcessCard(process, kept, RunTitle.temporary(visible), reader, visible.category if visible else CommandCategory.UNKNOWN, any(part.reader_request_id is not None for part in parts),

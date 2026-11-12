@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {age, perHour, seenWords, sinceWords, AgentTip, Icon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import {age, perHour, peekRef, seenWords, sinceWords, AgentTip, Btn, Icon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
 import AgentActions from "./AgentActions.vue";
 import AgentCardDetails from "./AgentCardDetails.vue";
 import AgentStatusDot from "./AgentStatusDot.vue";
@@ -70,6 +70,12 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
             <template v-if="open">
                 <span class="agent-title" data-agent-title data-agent-motion>{{ openTitle }}</span>
                 <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
+                <template v-if="!row.ended_at && !retired">
+                    <span class="agent-head-actions" data-agent-head-actions>
+                        <AgentActions :row="row" :held="dotState === 'blocked'" />
+                        <Btn variant="ghost" small data-agent-inspector @click.stop="peekRef(`agents:${row.id}`)">Open inspector</Btn>
+                    </span>
+                </template>
             </template>
             <template v-else>
                 <AgentTip :agent-id="row.id" :label="title" class="agent-who">
@@ -95,7 +101,6 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
         </template>
         <template v-if="!open"><AgentTaskLine :tasks="tasks" :in-hand="row.role !== 'helper' && facts?.job_enabled ? jobTask || null : null" :job="row.role === 'helper' ? job : ''" :job-title="row.role === 'helper' ? facts?.helper_job_title || '' : ''" :job-launch="row.role === 'helper' ? jobLaunch : ''" :per-hour="rate" /></template>
         <AgentStatusDot :state="dotState" :doing="statusWords" :since="statusSince" :seen="statusSeen" />
-        <template v-if="open && !retired"><AgentActions :row="row" :held="dotState === 'blocked'" /></template>
         <template v-if="open"><AgentCardDetails :row="row" :facts="facts" :progress="progress" :wait-reason="waitReason" :tasks="tasks" :stopped-with-work="stoppedWithWork" :open="open" /></template>
     </div>
 </template>

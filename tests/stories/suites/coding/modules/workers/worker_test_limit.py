@@ -191,7 +191,7 @@ def test_a_worker_stopped_for_an_unknown_count_adds_a_counting_reader_and_its_ne
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     story.expect_rows(story.container.get(Queries).query(Process).find(stopped.id).state is ProcessState.STOPPED)
     story.expect_success('reader add counted-cart --commands "pytest tests/*" --title "Cart tests" --lines "passed" --summary "passed" --count "([0-9]+) tests" '
-                         '--count-command "{part} --collect-only -q"', actor=reader_worker(story))
+                         '--progress "\\[([0-9]+)%\\]" --count-command "{part} --collect-only -q"', actor=reader_worker(story))
     started = worker_run(story, "pytest tests/cart.py", CommandCategory.TEST_RUN)
     story.expect_rows("--collect-only -q" in story.container.get(WorkerTestListings).line(started))
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)

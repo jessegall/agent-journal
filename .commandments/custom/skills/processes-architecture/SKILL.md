@@ -42,6 +42,8 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
   Order them with `ReaderLayers.ordered`: project, plugin, stock; default first, then the newest.
 - **`unreadable-mark-outside-unreadable-marks`** - an unreadable mark is made or removed outside `UnreadableMarks` and the
   mark and lift commands. Make and lift marks through `UnreadableMarks`, so the reason and the actor are recorded.
+- **`run-shown-by-category-outside-run-visibility`** - code outside `RunVisibility` and `PartVisibility` decides by
+  `is_watched` or `is_visible` which runs show a card, a mark or a dock item. Ask `visible_part`.
 - **`output-measured-outside-output-facts`** - code outside `OutputFacts` and the cadence funnel measures an output
   through `OutputFolder`: its size, its silence or its text. Measure it in `OutputFacts` (what it is) or
   `RunCadence`/`RunSilences` (how it prints); everything else asks them.
