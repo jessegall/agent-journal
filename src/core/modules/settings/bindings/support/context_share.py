@@ -2,7 +2,7 @@ from engine.journal.journal_home import JournalHome
 from engine.provider.context_window import ContextWindow
 from engine.provider.providers import Providers
 from engine.setting.setting_values import SettingValues
-from core.modules.agents.models.agent import Agent
+from core.modules.settings.support.context_owner import ContextOwner
 from core.modules.settings.support.context_reading import PERCENT_FULL, ContextReading
 
 CONTEXT_LIMIT_ENABLED = "journal.core.helpers.context-limit-on"
@@ -34,13 +34,13 @@ class ContextShare:
         pairs = (text.rsplit(":", 1) for text in self.settings.texts(key) if ":" in text)
         return {name.strip(): value.strip() for name, value in pairs if value.strip() == NO_CAP or value.strip().isdigit()}
 
-    def usage_of(self, agent: Agent) -> ContextReading:
+    def usage_of(self, agent: ContextOwner) -> ContextReading:
         return self.usage_within(agent.program, agent.session, self.cap(agent.role, agent.profile))
 
-    def reading_of(self, agent: Agent, window: ContextWindow) -> ContextReading:
+    def reading_of(self, agent: ContextOwner, window: ContextWindow) -> ContextReading:
         return self.reading_within(window, self.cap(agent.role, agent.profile))
 
-    def percent_of(self, agent: Agent) -> int | None:
+    def percent_of(self, agent: ContextOwner) -> int | None:
         return self.usage_of(agent).percent
 
     def usage_within(self, program: str, session: str, limit: int | None) -> ContextReading:

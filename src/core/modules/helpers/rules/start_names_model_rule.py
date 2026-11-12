@@ -5,7 +5,7 @@ from engine.enums.hook_event_name import HookEventName
 from core.modules.helpers.support.helper_nudges import START_WITHOUT_MODEL
 
 STARTS = ("helper start", "worker dispatch")
-MODEL_FLAGS = ("--model", "--tier")
+MODEL_FLAG = "--model"
 
 
 class StartNamesModelRule(DriverRule):
@@ -21,5 +21,5 @@ class StartNamesModelRule(DriverRule):
         if shell is None:
             return RuleAnswer.allowed()
         starts = [part for start in STARTS for part in shell.parts_running_journal_command(start)]
-        unnamed = [part for part in starts if not any(argument.split("=")[0] in MODEL_FLAGS for argument in part.arguments)]
+        unnamed = [part for part in starts if not any(argument.split("=")[0] == MODEL_FLAG for argument in part.arguments)]
         return RuleAnswer.refused(START_WITHOUT_MODEL.nudge()) if unnamed else RuleAnswer.allowed()

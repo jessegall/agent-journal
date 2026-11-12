@@ -135,8 +135,9 @@ class ServerFiles:
     def released_sessions(self) -> tuple[str, ...]:
         if not self.held_sessions_file.exists():
             return ()
-        sessions = tuple(dict.fromkeys(line for line in FileAccess.shared().read(self.held_sessions_file).splitlines() if line))
-        self.held_sessions_file.unlink()
+        released = FileAccess.shared().replace(self.held_sessions_file, self.held_sessions_file.with_suffix(".released"))
+        sessions = tuple(dict.fromkeys(line for line in FileAccess.shared().read(released).splitlines() if line))
+        released.unlink()
         return sessions
 
     def mark_maintenance(self) -> None:
