@@ -35,6 +35,7 @@ from suites.coding.migrations.m008_read_only_helper_requests import HelperReques
 from suites.coding.commands.record_file_changes.record_file_changes_handler import RecordFileChangesHandler
 from suites.coding.commands.record_file_changes.record_file_changes_subcommand import RecordFileChangesSubcommand
 from suites.coding.commands.record_file_edit.record_file_edit_handler import RecordFileEditHandler
+from suites.coding.commands.prune_file_edits.prune_file_edits_handler import PruneFileEditsHandler
 from suites.coding.migrations.m001_file_edits import FileEditsTableMigration
 from suites.coding.migrations.m002_file_edit_rows import FileEditRowsMigration
 from suites.coding.commands.project_file_find.project_file_find_subcommand import ProjectFileFindSubcommand
@@ -88,7 +89,7 @@ class CodingModule(Module):
               SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, read-only helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"), types=["main"])]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
     migrations = [HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration, PruneFileEditsMigration]
-    handlers = [RecordFileEditHandler, RecordFileChangesHandler]
+    handlers = [RecordFileEditHandler, RecordFileChangesHandler, PruneFileEditsHandler]
     driver_rules = [WaitingItemsRule, IntroductionRule]
     listeners = [FullTestRunListener]
     subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand]

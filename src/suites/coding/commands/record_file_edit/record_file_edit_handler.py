@@ -12,12 +12,11 @@ from suites.coding.commands.record_file_edit.record_file_edit import RecordFileE
 
 EDITED = "edit"
 NEW_FILE = "new"
-ROWS_KEPT = 1000
 
 
 class RecordFileEditHandler(Handler[RecordFileEdit, FileEdit]):
     """Saves the file edit of the agent's diff, its path named from the environment's folder when it is
-    inside, and removes the oldest edits of the environment past the newest 1000."""
+    inside."""
 
     command = RecordFileEdit
 
@@ -29,12 +28,6 @@ class RecordFileEditHandler(Handler[RecordFileEdit, FileEdit]):
         return str(Path(path).relative_to(folder)) if Path(path).is_relative_to(folder) else path
 
     def handle(self, command: RecordFileEdit, context: Context) -> FileEdit:
-        saved = self.repository.save(FileEdit(session_agent_id=command.agent_id, creator_id=context.actor.id,
+        return self.repository.save(FileEdit(session_agent_id=command.agent_id, creator_id=context.actor.id,
                                              path=self.relative_path(command.diff.path, context.required_environment_id()), added=command.diff.lines_added, removed=command.diff.lines_removed, rows=json.dumps(command.rows),
                                              edit_type=EDITED if command.diff.existed else NEW_FILE), context)
-        self.prune(context)
-        return saved
-
-    def prune(self, context: Context) -> None:
-        edits = self.queries.query(FileEdit)
-        self.repository.delete_many_stored(edits.rows(edits.newest().select.sliced(ROWS_KEPT, ROWS_KEPT)), context)
