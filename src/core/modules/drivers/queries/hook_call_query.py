@@ -4,7 +4,6 @@ from typing import Self
 
 from engine.database.database import Database
 from engine.database.kept_rows import KeptRows
-from engine.database.statement import Statement
 from engine.time.timestamp import Timestamp
 from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName

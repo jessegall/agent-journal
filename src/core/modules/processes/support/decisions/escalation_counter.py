@@ -27,11 +27,11 @@ class EscalationCounter:
         keys = tuple(dict.fromkeys(command_keys))
         ended = self.decisions.matching(Among("command_key", keys)).filter(moment=ReadingMoment.END).descending("decided_at", "id").take(RUNS_READ * len(keys))
         rows = {key: [row for row in ended if row.command_key == key][:RUNS_READ] for key in keys}
-        return {key: self.counted_runs(key, rows[key]) for key in keys}
+        marked = self.resets.last_marked_among(keys)
+        return {key: self.counted_runs(key, rows[key], marked[key]) for key in keys}
 
-    def counted_runs(self, command_key: str, ended: Sequence[ReadingDecisionRow]) -> int:
+    def counted_runs(self, command_key: str, ended: Sequence[ReadingDecisionRow], marked_at: Timestamp | None) -> int:
         changed_at = self.reader_changed_at(command_key)
-        marked_at = self.resets.last_marked_at(command_key)
         return self.counted([KeyRun(row.state, self.is_reset_after(command_key, row.decided_at, changed_at, marked_at)) for row in ended])
 
     def reader_changed_at(self, command_key: str) -> Timestamp | None:

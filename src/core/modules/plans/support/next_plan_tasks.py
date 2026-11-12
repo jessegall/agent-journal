@@ -26,7 +26,7 @@ class NextPlanTasks:
         waiting = SubqueryMatch("task_id", Select(OpenDependency.view).column("task_id"), negated=True)
         takeable = SubqueryMatch("task_id", Select("tasks").matching(TaskQuery.takeable_condition(agent)).column("id"))
         places = self.queries.query(PlanTask).matching(Among("plan_id", plan_ids)).filter(state=TaskState.OPEN)
-        rows = places.matching(waiting).matching(takeable).matching(EarliestUnfinishedPhase()).matching(CheckpointLimit()).every_row(NEXT_TASKS_REASON)
+        rows = tuple(places.matching(waiting).matching(takeable).matching(EarliestUnfinishedPhase()).matching(CheckpointLimit()).every_row(NEXT_TASKS_REASON))
         return {plan_id: tuple(place for place in rows if place.plan_id == plan_id) for plan_id in plan_ids}
 
     def plan_exclusion(self) -> SubqueryMatch:

@@ -1,6 +1,5 @@
 from engine.database.database import Database
 from engine.database.row_insert import RowInsert
-from engine.database.statement import Statement
 from engine.upgrade.creator_resolver import CreatorResolver
 from engine.upgrade.move_context import MoveContext
 from engine.upgrade.move_map import MoveMap
@@ -48,8 +47,7 @@ class ChecksMove(VersionFourMove):
         if title is None:
             return CheckTask(None, False)
         task_id = map.new_id("tasks", int(title[1]))
-        states = target.rows(Statement.row_state("tasks", task_id)) if task_id is not None else []
-        return CheckTask(task_id, bool(states) and states[0]["state"] == BLOCKED_STATE, True)
+        return CheckTask(task_id, task_id is not None and target.row_state("tasks", task_id) == BLOCKED_STATE, True)
 
     def insert(self, rows: RowInsert, row: sqlite3.Row, creator_id: int, context: MoveContext, waiting: CheckTask) -> int:
         created = row["created_at"] or context.timestamp

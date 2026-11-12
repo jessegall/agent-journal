@@ -24,7 +24,6 @@ class AgentNumberMigration(Migration):
     ]
 
     def run(self, database: Database) -> None:
-        columns = [row["name"] for row in database.rows(Statement("PRAGMA table_info(agents)"))]
-        if NUMBER_COLUMN not in columns:
+        if NUMBER_COLUMN not in self.column_names(database, "agents"):
             database.update(Statement("ALTER TABLE agents ADD COLUMN number INTEGER"))
         super().run(database)

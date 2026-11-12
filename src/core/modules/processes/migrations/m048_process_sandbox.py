@@ -1,6 +1,5 @@
 from engine.database.database import Database
 from engine.database.migration import Migration
-from engine.database.statement import Statement
 
 
 class ProcessSandboxMigration(Migration):
@@ -8,7 +7,6 @@ class ProcessSandboxMigration(Migration):
     statements = ["ALTER TABLE processes ADD COLUMN sandbox_level TEXT NOT NULL DEFAULT 'none'"]
 
     def run(self, database: Database) -> None:
-        columns = database.rows(Statement("PRAGMA table_info(processes)"))
-        if any(column["name"] == "sandbox_level" for column in columns):
+        if "sandbox_level" in self.column_names(database, "processes"):
             return
         super().run(database)

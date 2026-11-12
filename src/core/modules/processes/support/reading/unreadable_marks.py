@@ -34,10 +34,17 @@ class UnreadableMarks:
         """Whether a standing mark covers the command, so nothing asks it for a reader."""
         return self.marked(command) is not None
 
-    def last_marked_at(self, command: str) -> Timestamp | None:
-        """When the newest mark covering the command was made, lifted or not; none when it was never marked."""
-        newest = self.marks.of_words(UnreadableMarks.covering_words(command)).newest().first()
-        return newest.creation_timestamp() if newest is not None else None
+    def last_marked_among(self, commands: Sequence[str]) -> dict[str, Timestamp | None]:
+        """When the newest mark covering each command was made, lifted or not, from one read of the marks of all of
+        them; none for a command never marked."""
+        covering = {command: UnreadableMarks.covering_words(command) for command in dict.fromkeys(commands)}
+        words = sorted({word for leading in covering.values() for word in leading})
+        newest: dict[str, Timestamp] = {}
+        for mark in (self.marks.of_words(words).all_rows() if words else []):
+            made_at = mark.creation_timestamp()
+            if mark.words not in newest or made_at > newest[mark.words]:
+                newest[mark.words] = made_at
+        return {command: max((newest[word] for word in leading if word in newest), default=None) for command, leading in covering.items()}
 
     def declare(self, creator_id: int, words: str, note: str, context: Context) -> UnreadableMark:
         return self.mark(creator_id, words, UnreadableReason.DECLARED, UnreadableMarks.checked_note(note), context)

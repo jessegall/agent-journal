@@ -123,3 +123,13 @@ def test_a_query_with_named_filters_is_a_plain_class_the_container_builds(entrie
     container.bind(Database, entries.database)
     shelved = container.get(ShelfEntries).shelved(3).oldest().page().rows
     assert [entry.id for entry in shelved] == [2, 4, 6]
+
+
+def test_counts_after_gives_one_count_per_start_in_one_statement(entries: Query[LogEntry], monkeypatch: pytest.MonkeyPatch):
+    statements: list[str] = []
+    read = entries.database.rows
+    monkeypatch.setattr(entries.database, "rows", lambda statement: statements.append(statement.sql) or read(statement))
+    assert entries.counts_after("id", [5, 2]) == [2, 5]
+    assert entries.filter(shelf_id=None).counts_after("id", [2]) == [3]
+    assert entries.counts_after("id", []) == []
+    assert len(statements) == 2

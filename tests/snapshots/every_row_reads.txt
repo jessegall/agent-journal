@@ -69,6 +69,7 @@ src/core/modules/helpers/commands/start_unstarted_jobs/start_unstarted_jobs_hand
 src/core/modules/helpers/listeners/helper_resume_listener.py:the resume reaches every ended child helper of the agent with an open job
 src/core/modules/helpers/listeners/new_main_helpers_listener.py:a new main agent takes over every helper and report line of an ended one
 src/core/modules/helpers/listeners/new_main_helpers_listener.py:a new main agent takes over every helper and report line of an ended one
+src/core/modules/helpers/queries/agent_job_counts.py:The agents that ran a helper job or took a delegated task in the counted days, each read once to name its type and model.
 src/core/modules/helpers/support/agent_use.py:The helpers and workers that are not retired, which the kept limit of each agent type bounds.
 src/core/modules/helpers/support/kept_helpers.py:every kept helper of a profile is checked for an idle one
 src/core/modules/helpers/support/program_states.py:the state of a program comes from every outage it had, latest end first

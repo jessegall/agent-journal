@@ -167,6 +167,11 @@ class Database:
         row = self.connection.execute("SELECT partial FROM pragma_index_list((SELECT tbl_name FROM sqlite_master WHERE type = 'index' AND name = ?)) WHERE name = ?", (name, name)).fetchone()
         return row is not None and bool(row[0])
 
+    def row_state(self, table: str, row_id: int) -> str | None:
+        """The state of one row by its key, or None when the table has no such row."""
+        rows = self.rows(Statement(f"SELECT state FROM {table} WHERE id = ?", [row_id]))
+        return rows[0]["state"] if rows else None
+
     def insert(self, statement: Statement) -> int:
         self.repeated_work.count_write(statement.sql)
         row_id = statement.result(self.connection).lastrowid
