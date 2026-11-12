@@ -16,15 +16,16 @@ FULL_SUITE_REFUSAL = "name each test file the run covers, never the whole suite"
 
 
 class WorkerTestArguments:
-    """Checks the arguments after a worker's test command name: they name test files, Go packages or a pattern of
-    Go test names, and change neither the program nor the folder it runs in."""
+    """Checks the arguments after a worker's test command name: they change neither the program nor the folder it
+    runs in, and the whole line they make with the command names test files, Go packages or a pattern of Go test
+    names, so a command that already names its packages needs no file beside them."""
 
     @classmethod
-    def check(cls, test_arguments: Sequence[str]) -> None:
+    def check(cls, test_arguments: Sequence[str], line_words: Sequence[str]) -> None:
         for argument in test_arguments:
             if cls.is_forbidden(argument):
                 raise Refusal(f"{argument} cannot change the program or leave the worktree", "give only test files and plain options")
-        if cls.is_full_suite(test_arguments):
+        if cls.is_full_suite(line_words):
             raise Refusal(FULL_SUITE_REFUSAL, "journal worker test <name> <test files>")
 
     @classmethod
