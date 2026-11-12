@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from engine.time.timestamp import Timestamp
-from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
+from core.modules.processes.support.unreadable.unreadable_marks import UnreadableMarks
 
 
 class EscalationResets:

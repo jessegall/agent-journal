@@ -1,5 +1,5 @@
 from core.modules.processes.models.enums.pressure_level import PressureLevel
-from core.modules.processes.support.reading.exit_texts import ExitTexts
+from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
 from engine.driver.interval import Interval
 from engine.driver.seconds import Seconds
 from engine.driver.nudge_declaration import NudgeDeclaration
@@ -30,8 +30,8 @@ READER_REQUEST_SPAN = ToolUseSpan(5)
 READER_REQUEST_COUNTDOWN = CountDown("processes.reader_request_countdown", "reader of {command}", READER_REQUEST_SPAN)
 READER_REQUEST_REFUSAL = NudgeDeclaration("processes.reader_request_refusal", NudgeType.REFUSAL, 'reader request {request} needs a reader')
 
-READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "no proper reader reads output {output}: save one for reader request {request} with "
-                                "journal reader draft {request} --save, or mark the command unreadable; the block ends when its time runs out or a person lifts it", full_text=True)
+READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "no reader reads output {output}: journal reader draft {request} --save for reader request {request}, or mark unreadable",
+                                full_text=True)
 OUTPUT_CHECK = NudgeDeclaration("processes.output_check", NudgeType.STEERING, 'output {output} still runs after {minutes} minutes: check it does its work',
                                 required_command="journal output confirm {output}", wakes_agent=True, turn_limited=False)
 OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.STEERING, 'output {output} ended', turn_limited=False, wakes_agent=True)

@@ -1,7 +1,7 @@
 import pytest
 
 from engine.errors.refusal import Refusal
-from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
+from core.modules.processes.support.unreadable.unreadable_marks import UnreadableMarks
 
 
 def test_an_agents_reason_of_three_words_or_more_is_kept():

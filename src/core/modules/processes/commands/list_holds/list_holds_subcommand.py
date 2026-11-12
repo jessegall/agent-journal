@@ -11,7 +11,7 @@ from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.support.held_runs import HeldRuns
 from core.modules.processes.support.process_nudges import READER_BLOCK, READER_REQUEST_REFUSAL
-from core.modules.processes.support.reading.exit_texts import ExitTexts
+from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
 
 READING_BLOCK_KEYS = (READER_BLOCK.key, READER_REQUEST_REFUSAL.key)
 

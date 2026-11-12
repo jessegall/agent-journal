@@ -18,7 +18,7 @@ TEST_OUTPUT = b"collected 3 items\n\n===== 3 passed in 0.10s =====\n"
 RUNNING_TESTS = ReadingCase(command_key="pytest", category=CommandCategory.TEST_RUN, classification_known=True, has_asking_flag=False,
                             output_hidden=False, is_saved_command=False, is_plugin_run=False, moment=ReadingMoment.RUNNING, age_seconds=120,
                             run_state=ProcessState.BACKGROUND, cadence_state=CadenceState.STREAMING, exit_code=None, reader_layer=None, reader_judgement=None, reader_is_default=False, reader_failed=False, draft_fits=False,
-                            output=None, runs_without_change=0, request_is_waiting=False, was_skipped=False, has_unreadable_mark=False,
+                            output=None, runs_without_change=0, request_is_waiting=False, was_skipped=False, has_unreadable_mark=False, count_missing=False,
                             role_must_have_reader=True, role_may_write_readers=True, role_uses_saved_commands=False, readers_forced=True)
 
 

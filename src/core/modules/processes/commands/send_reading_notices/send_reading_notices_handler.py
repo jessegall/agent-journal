@@ -5,8 +5,8 @@ from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.commands.send_reading_notices.send_reading_notices import SendReadingNotices
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.output_query import OutputQuery
-from core.modules.processes.support.reading.reading_notices import ReadingNotices
-from core.modules.processes.support.reading.unreadable_marker import UnreadableMarker
+from core.modules.processes.support.reading_notices.reading_notices import ReadingNotices
+from core.modules.processes.support.unreadable.unreadable_marker import UnreadableMarker
 from core.modules.processes.support.run_visibility import RunVisibility
 
 SOURCE = "processes.reading-notices"

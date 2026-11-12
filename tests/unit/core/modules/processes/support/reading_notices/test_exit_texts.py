@@ -2,7 +2,7 @@ import pytest
 
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.models.enums.reading_exit import ReadingExit
-from core.modules.processes.support.reading.exit_texts import EXIT_TEXTS, ExitTexts
+from core.modules.processes.support.reading_notices.exit_texts import EXIT_TEXTS, ExitTexts
 
 
 def test_every_exit_has_its_sentence():

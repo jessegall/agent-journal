@@ -16,7 +16,7 @@ from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.models.process import Process
 from suites.coding.support.coding_nudges import FAILED_FULL_RUN
 from core.modules.processes.support.process_nudges import READER_BLOCK, REDIRECTED_RUN, REQUIRED_MONITOR, SILENT_RUN_HELD, SILENT_START_REFUSED
-from core.modules.processes.support.reading.exit_texts import ExitTexts
+from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
 from suites.coding.modules.workers.support.worker_test_limit_nudges import TEST_COUNT_UNKNOWN
 from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
