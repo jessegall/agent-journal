@@ -26,5 +26,5 @@ class HelperAvailabilitySubcommand(ReadSubcommand[HelperStartState]):
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, HelperStartState):
             output.write(value.reason or "a helper can start here", {"can_start": not value.reason, "reason": value.reason, "programs": list(value.programs),
-                         "idle_helpers": [{"id": helper.id, "number": helper.number, "name": helper.given_name or f"Helper {helper.number}"} for helper in value.idle_helpers],
+                         "idle_helpers": [{"id": helper.id, "number": helper.number, "name": helper.display_name} for helper in value.idle_helpers],
                          "can_start_fresh": value.can_start_new, "fresh_reason": value.new_reason})

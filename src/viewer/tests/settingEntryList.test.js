@@ -1,12 +1,6 @@
 import {expect, test} from "vitest";
 import {SettingEntryList} from "@journal/setting-components";
-import {drawnSettingComponent} from "./support/settingComponent.js";
-
-const typed = (list, index, text) => {
-    const input = list.element.querySelector(`[data-entry="${index}"]`);
-    input.value = text;
-    input.dispatchEvent(new Event("input"));
-};
+import {drawnSettingComponent, typedEntry as typed} from "./support/settingComponent.js";
 
 test("an empty list says so and offers to add an entry", () => {
     const list = drawnSettingComponent(SettingEntryList, {modelValue: []});

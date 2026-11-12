@@ -4,14 +4,15 @@ from pathlib import Path
 from engine.time.clock import Clock
 from engine.process.process_ids import ProcessIds
 from engine.file.file_access import FileAccess
-from core.modules.tools.support.graph.graph_stamp import GraphStamp
-from core.modules.tools.support.graph.project_graph_claim import CLAIM_GRACE_SECONDS
+from suites.coding.support.graph_stamp import GraphStamp
+from suites.coding.support.project_graph_claim import CLAIM_GRACE_SECONDS
 
 OUTPUT_FOLDER = "graphify-out"
 STAMP_FILE = ".journal-refresh"
 RUNNING_FILE = ".journal-running"
 FAILED_FILE = ".journal-failed"
 REBUILD_LOCK_FILE = ".rebuild.lock"
+CLUSTERED_FILE = ".journal-clustered"
 
 
 class GraphFiles:
@@ -35,6 +36,13 @@ class GraphFiles:
         if not self.stamp_path.is_file():
             return None
         return GraphStamp.read(FileAccess.shared().read(self.stamp_path))
+
+    def seconds_since_refresh(self, clock: Clock) -> float | None:
+        return clock.epoch_seconds() - self.stamp_path.stat().st_mtime if self.stamp_path.is_file() else None
+
+    def seconds_since_clustering(self, clock: Clock) -> float | None:
+        path = self.output / CLUSTERED_FILE
+        return clock.epoch_seconds() - path.stat().st_mtime if path.is_file() else None
 
     def failed_commit(self) -> str:
         path = self.output / FAILED_FILE

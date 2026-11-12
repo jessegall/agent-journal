@@ -2,11 +2,12 @@ import json
 
 from engine.provider.managed_hooks import ManagedHooks
 from core.modules.tools.support.tools import Tools
-from tests.stories.core.modules.tools.support.graphify_repo import COMMAND_SETTING, INSTALL_SETTING, GraphifyRepo
+from tests.stories.suites.coding.support.graphify_repo import COMMAND_SETTING, INSTALL_SETTING, GraphifyRepo
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 
 TICK = "tool tick graphify --folder"
+HOUR_SECONDS = 3600
 
 
 def story_with_graphify(new_story, tmp_path):
@@ -27,8 +28,9 @@ def test_turning_graphify_off_removes_its_managed_hooks(new_story, tmp_path):
     story.expect_rows(tool_hooks(story) == [])
 
 
-def test_no_second_update_starts_while_one_runs_in_this_or_another_folder(new_story, tmp_path):
+def test_one_update_at_a_time_at_most_every_few_minutes_and_grouping_on_its_own_interval(new_story, tmp_path):
     story, repo = story_with_graphify(new_story, tmp_path)
+    story.expect_success("tool on graphify", actor=story.user)
     other = GraphifyRepo(tmp_path, "other")
     repo.block_graphify()
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
@@ -40,9 +42,19 @@ def test_no_second_update_starts_while_one_runs_in_this_or_another_folder(new_st
     story.expect_rows(repo.call_count() == 1, not (other.folder / "graphify-out/.journal-running").exists())
     repo.release_graphify()
     repo.wait(repo.folder / "graphify-out", lambda: not (repo.folder / "graphify-out/.journal-running").exists())
+    repo.age_graph(story.clock.epoch_seconds(), HOUR_SECONDS)
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
     repo.poll_refresh()
     story.expect_rows(repo.call_count() == 2)
+    for message in ("third", "fourth", "fifth", "sixth", "seventh"):
+        repo.commit(message)
+        story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
+    story.expect_rows(repo.call_count() == 2)
+    repo.age_graph(story.clock.epoch_seconds(), 3 * HOUR_SECONDS)
+    story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
+    repo.poll_refresh()
+    story.expect_rows(repo.arguments()[-3:] == ["update .", "update . --no-cluster", "update ."])
+
 
 
 def test_the_card_shows_installed_on_and_the_last_refresh_and_refresh_now_updates_the_project(new_story, tmp_path):
@@ -104,9 +116,9 @@ def test_a_new_worktree_gets_a_copy_of_the_graph_files_without_the_cache_only_wh
     (source / "graphify-out/cache/chunk.json").write_text("cached")
     target.mkdir()
     tools = story.container.get(Tools)
-    story.expect_rows(tools.worktree_graph(str(source), str(target)) == [], not (target / "graphify-out").exists())
+    story.expect_rows(tools.worktree_outputs(str(source), str(target)) == [], not (target / "graphify-out").exists())
     story.expect_success("tool on graphify", actor=story.user)
-    story.expect_rows(tools.worktree_graph(str(source), str(target)) == ["graphify-out"], (target / "graphify-out/graph.json").read_text() == "graph",
+    story.expect_rows(tools.worktree_outputs(str(source), str(target)) == ["graphify-out"], (target / "graphify-out/graph.json").read_text() == "graph",
                       not (target / "graphify-out/.journal-running").exists(), not (target / "graphify-out/.rebuild.lock").exists(),
                       not (target / "graphify-out/cache").exists())
 
@@ -118,7 +130,7 @@ def test_a_removed_worktree_folder_is_not_made_again_for_the_graph(new_story, tm
     (source / "graphify-out").mkdir(parents=True)
     (source / "graphify-out/graph.json").write_text("graph")
     story.expect_success("tool on graphify", actor=story.user)
-    story.expect_rows(story.container.get(Tools).worktree_graph(str(source), str(target)) == [], not target.exists())
+    story.expect_rows(story.container.get(Tools).worktree_outputs(str(source), str(target)) == [], not target.exists())
 
 
 def test_the_tools_window_is_a_project_page_that_reads_the_list_and_runs_its_buttons(new_story):

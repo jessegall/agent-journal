@@ -18,7 +18,7 @@ def test_second(new_story):
 def configure_run(pytester, monkeypatch):
     root = Path(__file__).resolve().parents[5]
     monkeypatch.setenv("PYTHONPATH", os.pathsep.join(dict.fromkeys([str(root / "src"), str(root), *sys.path])))
-    pytester.makeconftest('pytest_plugins = ["engine.testing.stories.pytest_plugin"]')
+    pytester.makeconftest('pytest_plugins = ["engine.testing.pytest_plugin"]')
     pytester.makepyfile(test_shared=STORIES)
 
 

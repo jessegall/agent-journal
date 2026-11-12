@@ -111,4 +111,10 @@ class CodeMap:
     def folder_names(self, folder: Path) -> list[str]:
         if not folder.is_dir():
             return []
-        return sorted(path.name for path in folder.iterdir() if path.is_dir() and path.name not in SKIPPED_FOLDERS)
+        return sorted(path.name for path in folder.iterdir() if path.is_dir() and path.name not in SKIPPED_FOLDERS and not self.holds_only_caches(path))
+
+    @staticmethod
+    def holds_only_caches(folder: Path) -> bool:
+        """A folder left with nothing but caches after its files moved is no part of the code, as git keeps no such folder."""
+        entries = [child.name for child in folder.iterdir()]
+        return bool(entries) and all(name in SKIPPED_FOLDERS for name in entries)

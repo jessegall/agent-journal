@@ -23,6 +23,6 @@ OUTSIDE_STARTS = (
     OutsideStart("src/core/modules/plugins/support/plugin_services.py", "a plugin service is started once and kept running, not a run with an end"),
     OutsideStart("src/core/modules/processes/support/group_cpu_time.py", "a ps read inside the clock tick every second; a row for each would be the journal's own bookkeeping"),
     OutsideStart("src/core/modules/processes/support/reader_run.py", "a reader script runs inside the clock tick for every running output; a row for each would be the journal's own bookkeeping"),
-    OutsideStart("src/core/modules/tools/support/graphify_tool.py", "its HEAD read runs on every clock tick and its refresh is a detached background job; the install goes through the door"),
+    OutsideStart("src/suites/coding/support/graphify_tool.py", "its HEAD read runs on every clock tick and its refresh is a detached background job; the install goes through the door"),
     OutsideStart("src/core/modules/triggers/support/trigger_action_process.py", "starts a trigger's action detached, to keep running after the request ends"),
 )

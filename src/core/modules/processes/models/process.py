@@ -9,7 +9,8 @@ from engine.model.model import Model
 from engine.time.timestamp import MINUTE_SECONDS, Timestamp
 from engine.time.duration import Duration
 from core.modules.processes.models.enums.process_state import ProcessState
-from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
+from core.modules.processes.models.enums.queue_priority import QueuePriority
+from core.modules.processes.models.lifecycles.process_lifecycle import OPEN, ProcessLifecycle
 
 FINISHED_PROGRESS = 100
 ENDING_PHRASES = {ProcessState.RUNNING: "is running", ProcessState.BACKGROUND: "is running", ProcessState.STOPPED: "was stopped", ProcessState.ORPHANED: "was lost"}
@@ -56,6 +57,7 @@ class Process(EnvironmentScoped, Model):
     timeout_seconds: int | None = None
     expired_at: Timestamp | None = None
     sandbox_level: SandboxLevel = SandboxLevel.NONE
+    priority: QueuePriority = QueuePriority.NORMAL
 
     def ending_phrase(self) -> str:
         if self.expired_at is not None:
@@ -78,6 +80,10 @@ class Process(EnvironmentScoped, Model):
     @property
     def takes_part_in_queue(self) -> bool:
         return self.is_queue_run or self.slot_assigned or self.queued_at is not None
+
+    def is_admitted_since(self, earlier: "Process") -> bool:
+        """The queue gave this run its place since the earlier row was saved."""
+        return earlier.queued_at is not None and self.queued_at is None and self.state in OPEN
 
     def has_expired_timeout(self, timestamp: Timestamp) -> bool:
         if self.timeout_seconds is None or self.started_at is None:

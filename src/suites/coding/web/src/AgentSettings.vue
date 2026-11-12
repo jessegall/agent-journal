@@ -1,10 +1,9 @@
 <script setup>
 import {computed, onBeforeUnmount, onMounted, ref, watch} from "vue";
-import {InnerTabs, SwitchCase, TabBody, WindowRoom, useWindow} from "@journal/window-kit";
+import {InnerTabs, SwitchCase, WindowRoom, useWindow} from "@journal/window-kit";
 import {ChangeFoot, FindBox, SettingPresetBand, currentPreset, useSettingsDraft} from "@journal/setting-components";
-import AgentSettingsAgents from "./AgentSettingsAgents.vue";
 import AgentSettingsPresets from "./AgentSettingsPresets.vue";
-import AgentSettingsScreen from "./AgentSettingsScreen.vue";
+import AgentSettingsTab from "./AgentSettingsTab.vue";
 import {CAP_SIZES, CONTEXT_PROFILES, CONTEXT_TOKENS, entryOf, fullCount, useHelperRows} from "./helperRows.js";
 
 // the agent settings: the tabs under the environment, the long tabs drawn from the screens the settings declare,
@@ -93,36 +92,7 @@ function pick(entry) {
                     <template v-if="view.readOnly">
                         <p class="note lock" role="note" data-settings-lock>Only a person can change these settings. You can read every value, and ask a person for a change.</p>
                     </template>
-                    <div :class="['settings-body', {flush: tab === 'agents'}]">
-                        <TabBody :tab="active">
-                            <SwitchCase :value="tab">
-                                <template #work>
-                                    <template v-if="isLoaded">
-                                        <AgentSettingsScreen key="work" :nodes="nodesOf('work')" :draft="draft" :read-only="view.readOnly" :found="found" data-agent-settings-work>
-                                            <template #before>
-                                                <template v-if="nothingStarts">
-                                                    <p class="hint" data-work-hint>With Auto off and no workers, nothing starts the work: a person starts tasks or turns one of them on.</p>
-                                                </template>
-                                            </template>
-                                        </AgentSettingsScreen>
-                                    </template>
-                                </template>
-                                <template #agents>
-                                    <AgentSettingsAgents :draft="draft" />
-                                </template>
-                                <template #tests>
-                                    <template v-if="isLoaded">
-                                        <AgentSettingsScreen key="tests" :nodes="nodesOf('tests')" :draft="draft" :read-only="view.readOnly" :found="found" data-agent-settings-tests />
-                                    </template>
-                                </template>
-                                <template #advanced>
-                                    <template v-if="isLoaded">
-                                        <AgentSettingsScreen key="advanced" :nodes="nodesOf('advanced')" :draft="draft" :read-only="view.readOnly" :found="found" :extras="advancedExtras" data-agent-settings-advanced />
-                                    </template>
-                                </template>
-                            </SwitchCase>
-                        </TabBody>
-                    </div>
+                    <AgentSettingsTab :tab="tab" :active="active" :draft="draft" :is-loaded="isLoaded" :nodes="nodesOf" :read-only="view.readOnly" :found="found" :nothing-starts="nothingStarts" :advanced-extras="advancedExtras" />
                 </template>
                 <template #presets>
                     <AgentSettingsPresets :presets="presets" :switches="switches" :now="form" :read-only="view.readOnly" @back="page = 'main'" @fill="fill" />

@@ -5,11 +5,11 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.journal.journal_home import JournalHome
 from engine.agent.enums.role_group import RoleGroup
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from engine.driver.search_category import CODE, SearchCategory
+from engine.driver.search_category import CODE, GRAPHIFY as GRAPHIFY_SEARCH, SearchCategory
 from engine.setting.setting_values import SettingValues
-from core.modules.tools.support.tool_catalogue import GRAPHIFY
-from core.modules.tools.support.tool_nudges import GRAPHIFY_FIRST, USE_GRAPHIFY
-from core.modules.tools.models.enums.tool_setting import GRAPHIFY_BLOCK_AFTER, GRAPHIFY_NUDGE_AFTER
+from suites.coding.support.graphify_tool import GRAPHIFY
+from suites.coding.support.graphify_nudges import GRAPHIFY_FIRST, USE_GRAPHIFY
+from suites.coding.support.graphify_settings import GRAPHIFY_BLOCK_AFTER, GRAPHIFY_NUDGE_AFTER
 
 SCANNED_BLOCK_TOOL_USES = 3
 
@@ -36,9 +36,18 @@ class GraphifySearchRule(DriverRule):
         if SearchCategory.classify(tool, str(hook.event.raw.get("cwd", "")), self.home.project_folder) != CODE:
             return RuleAnswer.allowed()
         block_after = self.settings.number(GRAPHIFY_BLOCK_AFTER)
-        searches = self.hook_calls.code_searches_after_graphify(hook.agent_id, block_after * SCANNED_BLOCK_TOOL_USES)
+        searches = self.code_searches_after_graphify(hook.agent_id, block_after * SCANNED_BLOCK_TOOL_USES)
         if searches >= block_after:
             return RuleAnswer.refused(GRAPHIFY_FIRST.nudge(count=searches))
         if searches + 1 >= self.settings.number(GRAPHIFY_NUDGE_AFTER):
             return RuleAnswer.with_nudges(USE_GRAPHIFY.nudge(count=searches + 1))
         return RuleAnswer.allowed()
+
+    def code_searches_after_graphify(self, agent_id: int, tool_uses: int) -> int:
+        """The searches of the code among the agent's newest tool uses since its last use of Graphify."""
+        count = 0
+        for call in self.hook_calls.newest_calls(agent_id, HookEventName.PRE_TOOL_USE, tool_uses):
+            if call.search_category == GRAPHIFY_SEARCH:
+                break
+            count += call.search_category == CODE
+        return count

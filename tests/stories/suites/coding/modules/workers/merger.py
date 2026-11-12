@@ -25,6 +25,7 @@ from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.helper_program_choice import HelperProgramChoice
 from core.modules.helpers.commands.start_helper.start_helper_handler import StartHelperHandler
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
+from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from core.modules.agents.testing.fake_launcher import FakeLauncher
@@ -276,23 +277,23 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
         story.hook(merger.session, HookSamples.stop())
         story.expect_success(f"agent exited {merger.id} 0")
         story.run_listeners()
-        jobs = story.container.get(HelperJobRows)
-        job_count = len(jobs.helper_jobs(merger.id))
+        queries = story.container.get(Queries)
+        job_count = queries.query(HelperJob).filter(helper_id=merger.id).count()
         MergerRetry()(story.container)
         MergerRetry()(story.container)
-        story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count)
+        story.expect_rows(queries.query(HelperJob).filter(helper_id=merger.id).count() == job_count)
         reported_messages = [row for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows() if "The merge waits for cart.py to be committed" in row.text]
         story.expect_rows(len(reported_messages) == 1, detail=str(reported_messages))
         repository.git("add", "cart.py")
         repository.git("commit", "-m", "Commit main change")
         repository.checkout("main")
         MergerRetry()(story.container)
-        story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count)
+        story.expect_rows(queries.query(HelperJob).filter(helper_id=merger.id).count() == job_count)
         repository.checkout(ENVIRONMENT_BRANCH)
         MergerRetry()(story.container)
-        story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count + 1)
+        story.expect_rows(queries.query(HelperJob).filter(helper_id=merger.id).count() == job_count + 1)
         MergerRetry()(story.container)
-        story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count + 1)
+        story.expect_rows(queries.query(HelperJob).filter(helper_id=merger.id).count() == job_count + 1)
         story.expect_text("merger next", agent_label(story, worker.id), actor=actor)
         story.expect_success(f"merger merge {agent_number(story, worker.id)}", actor=actor)
         story.expect_text("task show 1", "state: completed", actor=story.agent)

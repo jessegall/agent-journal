@@ -12,6 +12,9 @@ from core.modules.developer.models.hook_request import HookRequest
 from engine.enums.hook_answer import HookAnswer
 from engine.setting.setting_values import SettingValues
 
+LOG_REASON = "The window lists every request the log keeps, a number the log size setting bounds."
+
+
 class HookRequestLog:
     """Keeps the configured number of completed requests and reads their display view."""
 
@@ -20,13 +23,13 @@ class HookRequestLog:
         self.agents = agents
 
     def read(self) -> list[HookRequest]:
-        return list(self.queries.query(HookRequest).descending("id").all_rows())
+        return list(self.queries.query(HookRequest).descending("id").full_table(LOG_REASON).all_rows())
 
     def filter_options(self) -> list[tuple[str, str]]:
         return self.table.filter_options()
 
     def filtered(self, categories: list[str], families: list[str], senders: list[str]) -> list[HookRequest]:
-        query = self.queries.query(HookRequest).descending("id")
+        query = self.queries.query(HookRequest).descending("id").full_table(LOG_REASON)
         for column, values in (("category", categories), ("family", families), ("sender", senders)):
             if values:
                 query = query.matching(Among(column, values))

@@ -8,6 +8,7 @@ from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.subcommand.render_value import render_value
 
 
+SUCCESS_CODE = 0
 C = TypeVar("C", bound=Command[object], covariant=True)
 R = TypeVar("R", covariant=True)
 class Subcommand(Generic[C, R]):
@@ -15,7 +16,7 @@ class Subcommand(Generic[C, R]):
     how the result is printed. It holds no rule; the command's guards do. A subcommand that sets background is
     run in the background at once when an agent types it. One that sets outward reaches past the journal, so
     a read-only agent may not run it. An answer that waits on what the commit listeners started is printed by
-    after_listeners."""
+    after_listeners, which also answers the line's exit code."""
 
     disabled_scopes: ClassVar[WholeScopes] = ()
     allows_pipes: ClassVar[bool] = False
@@ -35,7 +36,8 @@ class Subcommand(Generic[C, R]):
     def write_output(self, value: object, output: Output) -> None:
         render_value(value, output)
 
-    def after_listeners(self, value: object, output: Output) -> None:
-        return None
+    def after_listeners(self, value: object, output: Output) -> int:
+        """Prints what waits on the commit listeners and answers the exit code of the line."""
+        return SUCCESS_CODE
 def is_subcommand_class(class_type: type) -> TypeIs[type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]]:
     return issubclass(class_type, (Subcommand, ReadSubcommand))

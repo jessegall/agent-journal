@@ -17,6 +17,7 @@ SELECT id,
        payload -> '$.body' AS body_json,
        json_extract(payload, '$.duration_ms') AS duration_ms,
        coalesce(json_extract(payload, '$.queued_ms'), 0) AS queued_ms,
+       CAST(coalesce(json_extract(payload, '$.headers."X-Journal-Retries"'), 0) AS INTEGER) AS retries,
        CASE json_extract(payload, '$.role')
            WHEN 'viewer' THEN 'Viewer'
            WHEN 'cli' THEN 'Command line'

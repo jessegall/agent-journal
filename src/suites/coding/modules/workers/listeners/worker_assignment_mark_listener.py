@@ -24,7 +24,7 @@ class WorkerAssignmentMarkListener(MarkListener[Created[WorkerAssignment]]):
         ids = json.loads(assignment.task_ids)
         rows = self.event_rows.required_index(Task, ids)
         tasks = [rows[task_id] for task_id in ids]
-        name = worker.given_name or f"Worker {worker.id}"
+        name = worker.display_name
         given = f"task {tasks[0].id}" if len(tasks) == 1 else f"{len(tasks)} tasks"
         detail = "\n".join(f"Task {task.id}: {task.title}" for task in tasks)
         self.show(logged, WorkerMarkType.WORKER, WorkerMarkVariant.ASSIGNED, f"{name} was given {given}", None, AGENTS_TABLE, worker.id, detail=detail)

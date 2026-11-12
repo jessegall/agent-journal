@@ -23,7 +23,7 @@ class EscalationCounter:
 
     def runs_without_change(self, command_keys: Sequence[str]) -> dict[str, int]:
         keys = tuple(dict.fromkeys(command_keys))
-        ended = self.decisions.matching(Among("command_key", keys)).filter(moment=ReadingMoment.END).descending("decided_at", "id").limited(RUNS_READ * len(keys))
+        ended = self.decisions.matching(Among("command_key", keys)).filter(moment=ReadingMoment.END).descending("decided_at", "id").limit(RUNS_READ * len(keys), "the newest ended runs of each command counted").get()
         rows = {key: [row for row in ended if row.command_key == key][:RUNS_READ] for key in keys}
         marked = self.resets.last_marked_among(keys)
         return {key: self.counted_runs(key, rows[key], marked[key]) for key in keys}

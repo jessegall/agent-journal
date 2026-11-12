@@ -3,8 +3,12 @@ from engine.database.statement import Statement
 from collections.abc import Sequence
 
 
+KEPT_EVENTS = "('Stop', 'SessionEnd')"
+
+
 class HookRequestsTable:
-    """Stores completed requests without creating command events."""
+    """Stores completed requests without creating command events. Of the newest requests it keeps the number the
+    size names, and of the Stop and SessionEnd requests, which are few and slow to explain, as many again."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
@@ -20,8 +24,9 @@ class HookRequestsTable:
             for payload in payloads:
                 self.database.insert(Statement("INSERT INTO hook_requests (payload) VALUES (?)", [payload]))
             self.database.update(Statement(
-                "DELETE FROM hook_requests WHERE id NOT IN (SELECT id FROM hook_requests ORDER BY id DESC LIMIT ?)",
-                [size],
+                "DELETE FROM hook_requests WHERE id NOT IN (SELECT id FROM hook_requests ORDER BY id DESC LIMIT ?)"
+                f" AND id NOT IN (SELECT id FROM hook_requests WHERE json_extract(payload, '$.body.hook_event_name') IN {KEPT_EVENTS} ORDER BY id DESC LIMIT ?)",
+                [size, size],
             ))
 
     def kept_row_count(self) -> int:

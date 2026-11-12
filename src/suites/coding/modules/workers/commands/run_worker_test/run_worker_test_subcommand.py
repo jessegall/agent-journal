@@ -2,7 +2,7 @@ from argparse import REMAINDER, ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.subcommand.output import Output
-from engine.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import SUCCESS_CODE, Subcommand
 from engine.driver.shell_line import JOURNAL_PROGRAM
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.output_folder import OutputFolder
@@ -38,18 +38,19 @@ class RunWorkerTestSubcommand(Subcommand[RunWorkerTest, WorkerTestRun]):
     def write_output(self, value: object, output: Output) -> None:
         return None
 
-    def after_listeners(self, value: object, output: Output) -> None:
+    def after_listeners(self, value: object, output: Output) -> int:
         if not isinstance(value, WorkerTestRun):
-            return
+            return SUCCESS_CODE
         process_id = value.process.id
         exit_code = self.wait.exit_code(process_id)
         if exit_code is None:
             output.line(f"test run in the background: output {process_id}; {self.run_answer.test_instruction(value.process.session_agent_id)}")
-            return
+            return SUCCESS_CODE
         for line in self.folder.last_lines(process_id, PIPED_LINES) if value.piped else self.short_lines(process_id):
             output.line(line)
         output.line(f"output {process_id} ended with exit code {exit_code}")
         output.line(f"full output saved as output {process_id}")
+        return SUCCESS_CODE
 
     def is_piped(self, caller: Caller) -> bool:
         if caller.process_id is None:
