@@ -43,7 +43,7 @@ from server.request.server_context import ServerContext
 from server.tick.server_plugin_services import ServerPluginServices
 from server.tick.server_tunnel import ServerTunnel
 from server.hook.hook_database import HookDatabase
-from server.request.request_log import SETTINGS_REFRESH_SECONDS
+from server.request.request_trace import SETTINGS_REFRESH_SECONDS
 from server.work.journal_round import JournalRound
 from server.work.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
 from engine.process.plugin_script_processes import PluginScriptProcesses
@@ -178,7 +178,7 @@ def main(argv: list[str]) -> int:
     ticker.register(TickHandler(TickInterval(seconds=BACKUP_CHECK_SECONDS), lambda container: backup.follow(), "database copies", starts_immediately=True))
     server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, clock.timestamp(), listener_thread, hook_database, viewer, tunnel, reported_findings, journal_door),
                            waiting_server.journal_socket() if waiting_server else None)
-    ticker.register(TickHandler(TickInterval(seconds=SETTINGS_REFRESH_SECONDS), lambda container: server.context.request_log.refresh(container), "request log settings"))
+    ticker.register(TickHandler(TickInterval(seconds=SETTINGS_REFRESH_SECONDS), lambda container: server.context.request_trace.refresh(container), "request log settings"))
     if waiting_server is not None:
         waiting_server.wait_turn()
         begin_files(home, files)
@@ -188,7 +188,7 @@ def main(argv: list[str]) -> int:
     files.log_line(f"listening on {files.socket}")
     if threading.current_thread() is threading.main_thread():
         signal.signal(signal.SIGTERM, lambda signal_number, frame: server.request_stop())
-        faulthandler.register(signal.SIGUSR1, file=home.stacks_file.open("a"), all_threads=True)
+        faulthandler.register(signal.SIGUSR1, file=FileAccess.shared().lifetime_writer(home.stacks_file), all_threads=True)
     for starting_round in (JournalRound(home, "code sync", CodeSyncWork(), opened_container),JournalRound(home, "booting", BootingWork())):
         try:
             starting_round.run()
@@ -199,7 +199,7 @@ def main(argv: list[str]) -> int:
             plugin_services.follow()
         except Exception as error:
             files.log_line(f"the plugin services could not be started: {error}", LogLevel.ERROR)
-    server.context.request_log.refresh(synced_database_container(home, hook_database.databases[0]))
+    server.context.request_trace.refresh(synced_database_container(home, hook_database.databases[0]))
     listener_thread.wake()
     listener_thread.start()
     urgent_thread.start()
@@ -227,7 +227,7 @@ def main(argv: list[str]) -> int:
         for thread in threads:
             thread.join(deadline - time.monotonic())
         ticker.join(deadline - time.monotonic())
-        server.context.request_log.close()
+        server.context.request_trace.close()
         hook_database.close()
         if not server.is_handing_over:
             files.remove_server_files()

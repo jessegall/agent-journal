@@ -1,11 +1,13 @@
 from core.modules.processes.models.request_run import RequestRun
 from core.modules.processes.migrations.m067_request_runs import RequestRunsMigration
 from engine.process.door.run_placement import RunPlacement
+from engine.process.door.run_pauses import RunPauses
 from engine.process.door.request_records import RequestRecords
 from core.modules.processes.support.process_row_wrapper import ProcessRowWrapper
 from core.modules.processes.commands.record_request_run.record_request_run_handler import RecordRequestRunHandler
 from core.modules.processes.commands.record_request_runs.record_request_runs_handler import RecordRequestRunsHandler
 from core.modules.processes.support.process_run_placement import ProcessRunPlacement
+from core.modules.processes.support.agent_run_pauses import AgentRunPauses
 from core.modules.processes.migrations.m065_environment_index import ReadersEnvironmentIndexMigration
 from core.modules.processes.migrations.m066_process_kind import ProcessKindMigration
 from core.modules.processes.migrations.m069_stock_digest import StockDigestMigration
@@ -296,7 +298,7 @@ class ProcessesModule(Module):
     driver_rules = [ReadingRule, RetryLoopRule, ReaderRequestRule, LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReadAdviceRule, RunTitleRule, SleepPollRule, JournalChainRule, ReadCommandOutputRule, JournalPipeRule, SilentRunHoldRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule, RunQueueHaltedRule]
     listeners = [EndDecisionListener, EndedRunLineListener, FullOutputReadListener, StockReadersPublishListener, StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, ProcessFolderRemovalListener, RunSlotListener, RunningTestsMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, ProcessPruneListener, ProcessRemovalListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, ProcessPartStartMarkListener, ProcessMoveMarkListener, ProcessOutputMarkListener, ProcessOutputListener]
     marks = PROCESS_MARKS
-    bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets, RunOwners: ProcessRunOwners, RunPlacement: ProcessRunPlacement, RequestRecords: ProcessRowWrapper}
+    bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets, RunOwners: ProcessRunOwners, RunPlacement: ProcessRunPlacement, RunPauses: AgentRunPauses, RequestRecords: ProcessRowWrapper}
     docks = PROCESS_DOCKS
     window_extensions = [WindowExtension(name, reads=["queue list", "output page"], events=["output.*"],
                                          tabs=[WindowTab("processes", "Processes", "queue list", component="/modules/journal.core.processes/agent-processes.js")])

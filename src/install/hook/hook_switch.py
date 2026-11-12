@@ -5,6 +5,7 @@ from pathlib import Path
 from engine.provider.program_hooks import ProgramHooks
 from install.hook.hook_writer import HookWriter
 from install.backup.version_four_backup import BACKUP_FOLDER
+from engine.file.file_access import FileAccess
 
 SETTINGS_FILES = (Path(".claude") / "settings.json", Path(".claude") / "settings.local.json", Path(".codex") / "hooks.json")
 SAVED_FOLDER = "hooks"
@@ -36,7 +37,7 @@ class HookSwitch:
 
     def restore(self) -> list[str]:
         (self.root / VERSION_FOUR_SWITCH).parent.mkdir(parents=True, exist_ok=True)
-        (self.root / VERSION_FOUR_SWITCH).touch()
+        FileAccess.shared().update_timestamp(self.root / VERSION_FOUR_SWITCH)
         restored = [name for name in SETTINGS_FILES if (self.saved / name).is_file()]
         for name in SETTINGS_FILES:
             path = self.root / name

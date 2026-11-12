@@ -98,7 +98,7 @@ def test_a_queue_file_that_is_not_json_is_set_aside_as_the_plugins_fault_and_the
     expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] two sins in c.py")
 
 
-def test_the_starts_of_one_hook_read_the_login_path_once(new_story, monkeypatch):
+def test_a_hook_with_several_held_events_starts_each_plugin_program_once_and_reads_the_login_path_once(new_story, monkeypatch):
     story = install_runner(event_plugin_story(new_story, program="see.sh", hears=["command_starting"], holds=["command_starting"]))
     install_event_plugin(story, program="see.sh", hears=["command_starting"], holds=["command_starting"], name="second")
     story.run("setting set journal.core.plugins.hold_window_ms 5000 --project", actor=story.user)
@@ -109,7 +109,7 @@ def test_the_starts_of_one_hook_read_the_login_path_once(new_story, monkeypatch)
     starts = start_counter(monkeypatch, "see.sh")
     line = HookSamples.shell("ls && pwd", *(ShellPart(name, CommandCategory.READ, []) for name in ("ls", "pwd")))
     story.expect_hook_allowed("s-1", line)
-    story.expect_rows(sorted(starts) == ["events", "events", "second", "second"], reads == [login_path.file.resolve()])
+    story.expect_rows(sorted(starts) == ["events", "second"], reads == [login_path.file.resolve()])
 
 
 def test_a_hook_starts_no_script_for_an_edit_the_plugin_hears_and_does_not_hold(new_story, monkeypatch):

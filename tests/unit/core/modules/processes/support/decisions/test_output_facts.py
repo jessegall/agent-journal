@@ -1,6 +1,6 @@
 from engine.enums.command_category import CommandCategory
 from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
-from core.modules.processes.support.reading.output_facts import OutputFacts
+from core.modules.processes.support.decisions.output_facts import OutputFacts
 
 TEST_OUTPUT = b"collected 3 items\n\ntests/cart.py ... [100%]\n\n===== 3 passed in 0.10s =====\n"
 

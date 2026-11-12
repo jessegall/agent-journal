@@ -408,7 +408,7 @@ const ct = {
 }, jt = "journal.suites.coding.auto-mode", Lt = "journal.suites.coding.workers.main-dispatches-workers", Ft = 1200, qt = {
   __name: "AgentSettings",
   setup(t) {
-    const l = { work: "work-screen", tests: "tests-screen", advanced: "advanced-screen" }, e = G(), o = _("work"), i = [{ key: "work", label: "Work" }, { key: "agents", label: "Helpers", count_field: "full" }, { key: "tests", label: "Tests" }, { key: "advanced", label: "Advanced" }], p = c(() => i.find((r) => r.key === o.value)), m = () => Object.values(l).map((r) => e.props[r].data.value), w = c(() => m().every(Boolean)), s = Ue({
+    const l = { work: "work-screen", tests: "tests-screen", advanced: "advanced-screen", "helper-types": "helper-types-screen" }, e = G(), o = _("work"), i = [{ key: "work", label: "Work" }, { key: "agents", label: "Helpers", count_field: "full" }, { key: "tests", label: "Tests" }, { key: "advanced", label: "Advanced" }], p = c(() => i.find((r) => r.key === o.value)), m = () => Object.values(l).map((r) => e.props[r].data.value), w = c(() => m().every(Boolean)), s = Ue({
       run: (r) => e.run(r),
       reload: async () => {
         const r = "type-screen.type" in e.state;
@@ -559,7 +559,7 @@ const ct = {
       _: 1
     }));
   }
-}, Vt = /* @__PURE__ */ q(qt, [["__scopeId", "data-v-810340dc"]]);
+}, Vt = /* @__PURE__ */ q(qt, [["__scopeId", "data-v-6d0deb31"]]);
 export {
   Vt as A
 };

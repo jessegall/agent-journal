@@ -9,8 +9,8 @@ from suites.coding.modules.workers.listeners.behind_check_gone_listener import B
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.support.behind_check_closing import BehindCheckClosing
-from tests.unit.suites.coding.modules.workers.test_behind_check_closing import WORKTREE
-from tests.unit.suites.coding.modules.workers.test_behind_check_closing import Store as Checks
+from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import WORKTREE
+from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import Store as Checks
 from tests.unit.suites.coding.modules.workers.test_update_reminders import ORDERED_AT, NoMarkers, Numbers, Settings, Store
 
 NEW_OWNER = 9

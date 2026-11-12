@@ -140,14 +140,10 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         return None if status.context_percent is None else self.share.reading_within(ContextWindow(status.context_percent, status.context_tokens), cap).percent
 
     def model(self, card: AgentCard, status: SessionStatus) -> str:
-        if status.is_reported:
-            return status.model
-        return self.providers.reported_model(card.program, self.home, card.session)
+        return status.model or self.providers.reported_model(card.program, self.home, card.session)
 
     def effort(self, card: AgentCard, status: SessionStatus) -> str:
-        if status.is_reported:
-            return status.effort
-        return self.providers.session_effort(card.program, self.home, card.session)
+        return status.effort or self.providers.session_effort(card.program, self.home, card.session)
 
     @staticmethod
     def waiting_state(card: AgentCard, blocked_reason: str) -> str:
