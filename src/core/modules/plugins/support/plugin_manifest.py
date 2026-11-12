@@ -19,6 +19,8 @@ from core.modules.plugins.support.manifest_config import ManifestConfig
 from core.modules.plugins.support.manifest_dashboard import ManifestDashboard
 from core.modules.plugins.support.manifest_instruction_block import ManifestInstructionBlock
 from core.modules.plugins.support.manifest_service import ManifestService
+from core.modules.plugins.support.manifest_process_kind import ManifestProcessKind
+from engine.enums.command_category import CommandCategory
 from core.modules.plugins.support.manifest_setting import ManifestSetting
 from core.modules.plugins.support.plugin_health import PluginHealth
 from core.modules.plugins.support.plugin_requirement import PluginRequirement
@@ -40,8 +42,8 @@ class PluginManifest:
     the services it keeps running, and what its install requires, sets up and reads back, how its services
     answer a health check, which helpers besides the main agent each event reaches, the aliases it ships,
     the dashboard it writes, what it says it is for, the folders of the project a limited agent's shell
-    line may read for it, and the scripts it runs for event keys, and the stamp its own project hooks
-    carry."""
+    line may read for it, and the scripts it runs for event keys, the stamp its own project hooks
+    carry, and the kinds of run it starts through the journal."""
 
     name: str
     title: str
@@ -71,6 +73,7 @@ class PluginManifest:
     hook_stamp: str = ""
     instruction_blocks: tuple[ManifestInstructionBlock, ...] = ()
     injected_instructions: tuple[str, ...] = ()
+    process_kinds: tuple[ManifestProcessKind, ...] = ()
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -96,7 +99,8 @@ class PluginManifest:
                    str(fields["description"]) if "description" in fields else "",
                    tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners, (), cls.read_protocol(fields["protocol"] if "protocol" in fields else None), cls.read_listed_files(listed),
                    cls.read_config(fields["config"] if "config" in fields else None), str(fields["hook_stamp"]) if "hook_stamp" in fields else "",
-                   cls.read_instruction_blocks(fields["instruction_blocks"] if "instruction_blocks" in fields else None), cls.read_listed_files(injected))
+                   cls.read_instruction_blocks(fields["instruction_blocks"] if "instruction_blocks" in fields else None), cls.read_listed_files(injected),
+                   cls.read_process_kinds(fields["processes"] if "processes" in fields else None))
 
     @classmethod
     def loaded_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object]:
@@ -172,6 +176,16 @@ class PluginManifest:
         return tuple(ManifestService(str(entry["name"]), tuple(str(part) for part in command) if is_list(command := entry["command"]) else (),
                                      str(entry["when"]) if "when" in entry else "", cls.restart_rule(entry["restart"] if "restart" in entry else None),
                                      entry["answers"] is True if "answers" in entry else False) for entry in entries)
+
+    @staticmethod
+    def read_process_kinds(processes: object) -> tuple[ManifestProcessKind, ...]:
+        categories = {category.value: category for category in CommandCategory}
+        entries = [entry for entry in processes if is_mapping(entry) and "kind" in entry and str(entry.get("category", "")) in categories] if is_list(processes) else []
+        return tuple(ManifestProcessKind(str(entry["kind"]), str(entry["title"]) if "title" in entry else str(entry["kind"]), categories[str(entry["category"])],
+                                         str(entry["at_once"]) if "at_once" in entry else "") for entry in entries)
+
+    def process_kind(self, kind: str) -> ManifestProcessKind | None:
+        return next((declared for declared in self.process_kinds if declared.kind == kind), None)
 
     @staticmethod
     def read_card_tones(cards: object) -> dict[str, str]:

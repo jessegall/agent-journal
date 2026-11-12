@@ -43,7 +43,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
         process = self.repository.save(Process(session_agent_id=agent.id, hook_call_id=command.hook_call_id, creator_id=context.actor.id,
                                                line=command.line, folder=command.folder, shell=command.shell, category=command.category,
                                                limit_seconds=command.limit_seconds, is_full_test_run=command.is_full_test_run,
-                                               queued_at=context.timestamp, plugin=command.plugin, is_queue_run=bool(command.plugin) or any(part.category.is_queued for part in command.parts) and all(part.category.is_queued or part.category is CommandCategory.JOURNAL for part in command.parts),
+                                               queued_at=context.timestamp, plugin=command.plugin, kind=command.kind, is_queue_run=bool(command.plugin) or any(part.category.is_queued for part in command.parts) and all(part.category.is_queued or part.category is CommandCategory.JOURNAL for part in command.parts),
                                                owner_agent_id=command.owner_agent_id, task_id=command.task_id, timeout_seconds=min(timeouts, default=None)), context)
         readers = self.readers.all() if command.category.has_reader else ()
         layers = self.readers.layers()
