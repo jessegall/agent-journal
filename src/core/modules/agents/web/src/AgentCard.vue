@@ -7,6 +7,8 @@ import AgentTaskLine from "./AgentTaskLine.vue";
 import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
 
 const IN_HAND_STATES = new Set(["started", "testing", "blocked"]);
+// a task moved to testing counts as done for the tasks per hour
+const DONE_STATES = ["completed", "testing"];
 const FALLBACK_TITLES = {helper: "Helper", reviewer: "Reviewer", main: "Main agent"};
 // the words for the standing the server works out for an agent's program
 const STANDING_WORDS = {running: "Working", starting: "Starting", stopping: "Stopping", ended: "Idle: its process has stopped", failed: "Could not start", never_started: "Not started"};
@@ -42,7 +44,7 @@ const clockTime = (text) => new Date(text).toLocaleTimeString([], {hour: "2-digi
 const limitText = computed(() => (props.row.halted_at ? `Stopped at the usage limit since ${clockTime(props.row.halted_at)}, goes on at ${clockTime(props.facts.usage_limit_ends_at)}` : `At usage limit: starts again ${new Date(props.facts.usage_limit_ends_at).toLocaleString()}`));
 const dotState = computed(() => (props.row.retired_at || props.row.state === "retired" ? "retired" : limited.value || pendingWork.value || props.waitReason || stoppedWithWork.value ? "waiting" : props.row.state === "running" ? props.facts?.state || props.row.state : props.row.state));
 const workStatus = computed(() => limited.value ? limitText.value : pendingWork.value ? `Status: ${pendingWork.value}` : props.waitReason ? `Waiting: ${props.waitReason}` : dotState.value === "blocked" ? (props.facts?.blocked_reason ? `Blocked: ${props.facts.blocked_reason}` : "Blocked") : stoppedWithWork.value ? "Stopped with work left" : "");
-const completedCount = computed(() => props.progress?.completed_count ?? tasks.value.filter((task) => task.state === "completed").length);
+const completedCount = computed(() => props.progress?.completed_count ?? tasks.value.filter((task) => DONE_STATES.includes(task.state)).length);
 const perHourRate = computed(() => perHour(completedCount.value, props.progress?.started_at || props.row.created_at, props.progress ? props.progress.finished_at : props.row.ended_at, now.value));
 const rate = computed(() => (props.row.role === "main" ? 0 : perHourRate.value));
 const retired = computed(() => Boolean(props.row.retired_at) || props.row.state === "retired");
