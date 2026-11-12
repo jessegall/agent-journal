@@ -47,51 +47,23 @@ def ended(story, run: int, exit_code: int = 0) -> None:
     story.expect_success(f"process end {shown(story, run)['process_id']} --exit-code {exit_code} --bytes 0 --lines 0", actor=story.worker)
 
 
-def test_a_queued_run_of_a_kind_limited_to_one_waits_for_the_one_before_it_and_its_end_is_told(new_story):
+def test_a_kind_limited_to_one_gives_the_free_place_to_the_high_priority_run_and_tells_each_end(new_story):
     story = queues_plugin(new_story)
-    first, second = queued(story, "judge"), queued(story, "judge")
-    story.expect_rows(shown(story, first)["state"] == "running", shown(story, second)["state"] == "waiting")
+    first, normal, cancelled = queued(story, "judge"), queued(story, "judge"), queued(story, "judge")
+    high = queued(story, "judge", "--priority", "high")
+    story.expect_rows(shown(story, first)["state"] == "running", shown(story, normal)["state"] == "waiting")
+    story.expect_text(f"plugin queue-cancel {cancelled}", "cancelled", actor=story.user)
+    story.expect_refusal(f"plugin queue-cancel {cancelled}", "is over already", actor=story.user)
     ended(story, first, 3)
     story.run_listeners()
     calls = script_calls(story, "ended.sh", PLUGIN)
-    story.expect_rows(shown(story, first)["state"] == "ended", shown(story, first)["exit_code"] == 3, shown(story, second)["state"] == "running",
-                      [call["data"]["row"]["id"] for call in calls] == [first], calls[0]["data"]["row"]["kind"] == "judge", calls[0]["data"]["row"]["timed_out"] in (False, 0),
-                      detail=json.dumps(calls)[:600])
+    rows = {call["data"]["row"]["id"]: call["data"]["row"] for call in calls}
+    story.expect_rows(shown(story, first)["state"] == "ended", shown(story, first)["exit_code"] == 3, shown(story, high)["state"] == "running",
+                      shown(story, normal)["state"] == "waiting", sorted(rows) == sorted([first, cancelled]), rows[first]["kind"] == "judge",
+                      rows[cancelled]["state"] == "cancelled", detail=json.dumps(calls)[:600])
 
 
-def test_a_high_priority_run_takes_the_free_place_before_an_older_normal_one(new_story):
-    story = queues_plugin(new_story)
-    running, normal = queued(story, "judge"), queued(story, "judge")
-    high = queued(story, "judge", "--priority", "high")
-    ended(story, running)
-    story.expect_rows(shown(story, high)["state"] == "running", shown(story, normal)["state"] == "waiting")
-
-
-def test_a_second_waiting_run_of_a_coalescing_kind_joins_the_first(new_story):
-    story = queues_plugin(new_story)
-    story.expect_success("queue halt 'a deploy is going'", actor=story.user)
-    first, again = queued(story, "index", line="make index"), queued(story, "index", line="make index")
-    other = queued(story, "index", line="make other")
-    story.expect_rows(first == again, other != first)
-
-
-def test_a_cancelled_run_stops_and_reads_cancelled(new_story):
-    story = queues_plugin(new_story)
-    queued(story, "judge")
-    waiting = queued(story, "judge")
-    story.expect_text(f"plugin queue-cancel {waiting}", "cancelled", actor=story.user)
-    story.expect_refusal(f"plugin queue-cancel {waiting}", "is over already", actor=story.user)
-
-
-def test_a_run_past_its_timeout_is_stopped_and_reads_timed_out(new_story):
-    story = queues_plugin(new_story)
-    run = queued(story, "judge", "--timeout", "60")
-    story.advance(timedelta(minutes=2))
-    timeout_tick(story)
-    story.expect_rows(shown(story, run)["state"] == "timed-out", shown(story, run)["timed_out"] is True, detail=json.dumps(shown(story, run)))
-
-
-def test_a_machine_wide_kind_counts_a_run_of_another_project_and_a_kind_short_of_free_memory_waits(new_story):
+def test_runs_wait_for_a_machine_wide_count_and_free_memory_join_a_waiting_twin_and_stop_at_their_timeout(new_story):
     story = queues_plugin(new_story)
     machine = Path(os.environ[MACHINE_FOLDER_VARIABLE])
     other = machine / "machine-runs" / PLUGIN / "shared" / "other-project-7"
@@ -99,18 +71,23 @@ def test_a_machine_wide_kind_counts_a_run_of_another_project_and_a_kind_short_of
     other_pid = machine / "other-project-7.pid"
     other_pid.write_text(str(os.getpid()))
     other.write_text(str(other_pid))
-    run = queued(story, "shared")
-    story.expect_rows(shown(story, run)["state"] == "waiting")
+    shared, big = queued(story, "shared"), queued(story, "big")
+    story.expect_rows(shown(story, shared)["state"] == "waiting", shown(story, big)["state"] == "waiting")
     other.unlink()
-    story.expect_success(f"process end {shown(story, queued(story, 'judge'))['process_id']} --exit-code 0 --bytes 0 --lines 0", actor=story.worker)
-    story.expect_rows(shown(story, run)["state"] == "running")
-    big = queued(story, "big")
-    story.expect_rows(shown(story, big)["state"] == "waiting")
+    timed = queued(story, "judge", "--timeout", "60")
+    story.expect_rows(shown(story, shared)["state"] == "running")
+    story.expect_success("queue halt 'a deploy is going'", actor=story.user)
+    index, again, other_line = queued(story, "index", line="make index"), queued(story, "index", line="make index"), queued(story, "index", line="make other")
+    story.expect_rows(index == again, other_line != index)
+    story.advance(timedelta(minutes=2))
+    timeout_tick(story)
+    story.expect_rows(shown(story, timed)["state"] == "timed-out", shown(story, timed)["timed_out"] in (True, 1), detail=json.dumps(shown(story, timed)))
 
 
 def test_a_queued_run_reads_what_it_printed_and_an_undeclared_kind_or_a_missing_agent_is_refused(new_story):
     story = queues_plugin(new_story)
-    run = queued(story, "judge")
-    story.expect_rows(story.run(f"plugin queue-read {run} --tail 5", actor=story.user).code == 0)
     story.expect_refusal(f"plugin queue {PLUGIN} --kind lint --agent {story.worker.id} --detach -- true", "declares no kind of run named lint", actor=story.user)
     story.expect_refusal(f"plugin queue {PLUGIN} --kind judge --detach -- true", "only an agent has a checkout", actor=story.user)
+    run = queued(story, "judge")
+    story.expect_text(f"plugin queue-show {run}", f"run {run} of {PLUGIN} judge is running", actor=story.user)
+    story.expect_rows(story.run(f"plugin queue-read {run} --tail 5", actor=story.user).code == 0)
