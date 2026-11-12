@@ -13,28 +13,16 @@ HINT_EXAMPLES = {
     "xcodebuild*": "xcodebuild test", "npm*run *": "npm run build", "pnpm*run *": "pnpm run build", "yarn *": "yarn build", "*python*": "python3 tools/deploy.py",
 }
 TOOLS_WITHOUT_STOCK_READER = {
-    "*-m unittest*": "unittest has no stock reader yet; the four-readers task adds it",
-    "*gotestsum*": "gotestsum has no stock reader yet; the four-readers task adds it",
-    "*playwright test*": "playwright test has no stock reader yet; the four-readers task adds it",
-    "xcodebuild*": "xcodebuild has no stock reader yet; the four-readers task adds it",
     "pnpm*run *": "a script run: what it prints is the output of the tool the script runs",
     "yarn *": "a script run: what it prints is the output of the tool the script runs",
     "*python*": "any Python program: there is no one output a reader could know",
 }
-SAMPLES_STILL_MISSING = (
-    "go-vet", "php-lint", "mypy", "ruff", "curl", "wget", "docker-pull", "composer-install", "bundle-install", "gem-install", "uv-install",
-    "yarn-install", "pnpm-install", "brew-install", "git-clone",
-)
 HINT_PATTERNS = tuple(pattern for patterns, _ in STREAMING_HINTS for pattern in patterns.split(","))
 
 
-def test_every_stock_reader_has_a_recorded_sample_or_is_listed_as_missing():
+def test_every_stock_reader_has_a_recorded_sample():
     names = {sample.name for sample in STOCK_SAMPLES}
-    assert [reader.name for reader in STOCK_READERS if (reader.name in names) == (reader.name in SAMPLES_STILL_MISSING)] == []
-
-
-def test_the_list_of_missing_samples_names_only_stock_readers():
-    assert set(SAMPLES_STILL_MISSING) <= {reader.name for reader in STOCK_READERS} and len(SAMPLES_STILL_MISSING) == len(set(SAMPLES_STILL_MISSING))
+    assert [reader.name for reader in STOCK_READERS if reader.name not in names] == []
 
 
 def test_every_sample_says_where_its_output_came_from_and_has_a_stock_reader():

@@ -1,4 +1,5 @@
 from tests.stories.core.support.fixtures import UserJoined
+from server.work.booting_work import BootingWork
 from core.modules.processes.models.reader import Reader
 from engine.query.queries import Queries
 import pytest
@@ -25,14 +26,18 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 @pytest.mark.parametrize("sample", STOCK_SAMPLES, ids=[sample.name for sample in STOCK_SAMPLES])
 def test_a_stock_reader_is_proper_on_a_recorded_output(new_story, sample):
     story = new_story(fixture=BuilderStarted)
+    BootingWork().run(story.container)
+    story.run_listeners()
     process = start_process(story, sample.command, category=sample.category)
     end_run(story, process, sample.output)
     reader = story.container.get(ReaderQuery).filter(name=sample.name).page(1, 1).rows[0]
     part = PartSpec(sample.command, sample.command.split()[0], category=sample.category)
     story.expect_rows(ReaderSelection.reads_command(reader, sample.command, sample.category))
     story.expect_rows(bool(story.container.get(ReaderRun).summary(reader, sample.output)))
-    story.expect_rows(story.container.get(ReaderDemands).reason(part, reader, ReaderSampleScope(story.agent.id, part.text)) == "")
-    story.expect_rows(story.container.get(ReaderJudge).judged(reader, sample.category).is_valid)
+    reason = story.container.get(ReaderDemands).reason(part, reader, ReaderSampleScope(story.agent.id, part.text))
+    story.expect_rows(reason == "", detail=reason)
+    judgement = story.container.get(ReaderJudge).judged(reader, sample.category)
+    story.expect_rows(judgement.is_valid, detail=judgement.text)
 
 
 def test_the_catalog_upgrade_keeps_a_project_reader_with_the_same_name(new_story):
