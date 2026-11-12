@@ -30,5 +30,7 @@ class EnvironmentGrantGuard(Guard[Changed[Environment]]):
         if not changed or (environment.test, environment.test_agent_id) == (False, None) or context.actor.type in PERSONS:
             return
         if environment.test_agent_id is None:
-            raise UserApprovalRefusal(f"Mark {environment.name} as a test environment?")
-        raise UserApprovalRefusal(f"Let agent {self.numbers.number(AGENT_MODEL_NAME, environment.test_agent_id)} work in test environment {environment.name}?")
+            raise UserApprovalRefusal(f"Mark {environment.name} as a test environment?", ("environment", "edit", str(environment.id), "--test"))
+        agent_number = self.numbers.number(AGENT_MODEL_NAME, environment.test_agent_id)
+        raise UserApprovalRefusal(f"Let agent {agent_number} work in test environment {environment.name}?",
+                                  ("environment", "edit", str(environment.id), "--test", "--test-agent-id", str(environment.test_agent_id)))
