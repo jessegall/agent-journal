@@ -1,8 +1,11 @@
 import json
 from collections.abc import Mapping
+from pathlib import PurePath
 
 from engine.types.type_guards import is_mapping
 from core.modules.messages.models.message import Message
+
+IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".webp")
 
 
 class MessageCaptions:
@@ -17,3 +20,9 @@ class MessageCaptions:
     @staticmethod
     def adding(message: Message, file: str, text: str) -> str:
         return json.dumps({**json.loads(message.captions), file: text}, sort_keys=True)
+
+    @staticmethod
+    def untagged_images(message: Message) -> tuple[str, ...]:
+        """The attached pictures of the message that have no caption yet."""
+        captions = MessageCaptions.decoded(message)
+        return tuple(name for name in message.files if PurePath(name).suffix.lower() in IMAGE_SUFFIXES and name not in captions)
