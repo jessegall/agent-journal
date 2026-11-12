@@ -6,6 +6,8 @@ from core.modules.usage.commands.agent_cards.agent_cards_subcommand import Agent
 from core.modules.usage.commands.agent_tip.agent_tip_subcommand import AgentTipSubcommand
 from core.modules.usage.commands.agent_limits.agent_limits_subcommand import AgentLimitsSubcommand
 from core.modules.usage.commands.set_profile_limits.set_profile_limits_handler import SetProfileLimitsHandler
+from core.modules.usage.commands.set_context_cap.set_context_cap_handler import SetContextCapHandler
+from core.modules.usage.commands.set_context_cap.set_context_cap_subcommand import SetContextCapSubcommand
 from core.modules.usage.commands.set_profile_limits.set_profile_limits_subcommand import SetProfileLimitsSubcommand
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
@@ -47,8 +49,8 @@ class UsageModule(Module):
     views = [AgentCard, AgentListing, AgentFilterOptionsView, AgentCounts]
     listeners = [EndedAgentStatusListener]
     moves = [StatisticsMove]
-    handlers = [CountProfileUseHandler, SetProfileLimitsHandler]
-    subcommands = [ProfileListSubcommand, AgentLimitsSubcommand, SetProfileLimitsSubcommand, AgentCardsSubcommand, AgentTipSubcommand, UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, UsageOwnMessagesSubcommand, UsageAgentSubcommand, UsageInspectorSubcommand, StatisticListSubcommand]
+    handlers = [CountProfileUseHandler, SetProfileLimitsHandler, SetContextCapHandler]
+    subcommands = [ProfileListSubcommand, AgentLimitsSubcommand, SetProfileLimitsSubcommand, SetContextCapSubcommand, AgentCardsSubcommand, AgentTipSubcommand, UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, UsageOwnMessagesSubcommand, UsageAgentSubcommand, UsageInspectorSubcommand, StatisticListSubcommand]
     windows = [WindowDeclaration("usage.usage", "Usage", "usage.js", WindowLoading.COMPONENT, skeleton=USAGE_USAGE_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show", "usage-limit list"], runs=["usage-limit set", "usage-limit delete"], events=["usage_limit.*"], keys=[WindowKey("usage", "usage show", reload_seconds=30), WindowKey("limits", "usage-limit list", events=["usage_limit.*"])]),
                WindowDeclaration("usage.cost", "Cost", "cost.js", WindowLoading.COMPONENT, skeleton=USAGE_COST_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"], keys=[WindowKey("usage", "usage show", reload_seconds=30)]),
                WindowDeclaration("usage.fitness", "Fitness", "fitness.js", WindowLoading.COMPONENT, skeleton=USAGE_FITNESS_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT, reads=["usage fitness"], keys=[WindowKey("fitness", "usage fitness", arguments=["agent"])]),

@@ -1,5 +1,6 @@
 from engine.provider.context_window import ContextWindow
-from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, ContextShare
+from core.modules.settings.bindings.support.context_caps import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, ContextCaps
+from core.modules.settings.bindings.support.context_share import ContextShare
 
 USED_TOKENS = 126000
 
@@ -14,9 +15,13 @@ class FakeSettings:
     def number(self, key: str) -> int:
         return self.values[key]
 
+    def texts(self, key: str) -> tuple[str, ...]:
+        return tuple(self.values.get(key, ()))
+
 
 def share(enabled: bool, limit: int) -> ContextShare:
-    return ContextShare(FakeSettings(enabled, limit), None, None)
+    settings = FakeSettings(enabled, limit)
+    return ContextShare(settings, None, None, ContextCaps(settings))
 
 
 def test_a_limit_above_the_window_leaves_the_window_as_the_maximum_and_caps_nothing():

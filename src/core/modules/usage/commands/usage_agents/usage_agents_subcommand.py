@@ -121,8 +121,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         if self.is_context_unknown(card):
             return None
         if not status.is_reported:
-            return self.share.percent(card.program, card.session)
-        return None if status.context_percent is None else self.share.reading(ContextWindow(status.context_percent, status.context_tokens)).percent
+            return self.share.percent(card.program, card.session, card.role, card.profile or card.job_profile)
+        return None if status.context_percent is None else self.share.reading(ContextWindow(status.context_percent, status.context_tokens), card.role, card.profile or card.job_profile).percent
 
     def reported_model(self, card: AgentCard) -> str:
         return self.providers.reported_model(card.program, self.home, card.session)

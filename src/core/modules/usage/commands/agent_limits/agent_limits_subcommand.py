@@ -18,6 +18,7 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.usage.support.agent_limit_counts import AgentLimitCounts
 from core.modules.usage.support.agent_profile_limit_counts import AgentProfileLimitCounts
 from core.modules.settings.support.setting_reader import SettingReader
+from core.modules.settings.bindings.support.context_caps import CONTEXT_LIMIT_PROFILES, ContextCaps
 
 
 class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
@@ -27,8 +28,8 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
     name = "limits"
     environment_refusal = "agent limits are shown for one environment"
 
-    def __init__(self, queries: Queries, registry: Registry, limits: AgentTypeLimits, profiles: ProfileFiles, settings: SettingReader, work: AgentWork) -> None:
-        self.work = work
+    def __init__(self, queries: Queries, registry: Registry, limits: AgentTypeLimits, profiles: ProfileFiles, settings: SettingReader, work: AgentWork, caps: ContextCaps) -> None:
+        self.work, self.caps = work, caps
         self.queries, self.registry, self.limits, self.profiles = queries, registry, limits, profiles
         self.settings = settings
 
@@ -39,6 +40,7 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
         installed_profiles = {profile.name: profile for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
         titles = {name: profile.display_title for name, profile in installed_profiles.items()}
         counts: list[AgentLimitCounts] = []
+        context_caps = self.caps.entries(CONTEXT_LIMIT_PROFILES)
         for entry in self.registry.helper_types:
             if not entry.run_limit_key:
                 continue
@@ -50,7 +52,7 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
             for profile in sorted({agent.profile for agent in agents if agent.profile and entry.profile_limits_key} | installed):
                 matching = tuple(agent for agent in agents if agent.profile == profile)
                 profile_limits = self.limits.read(entry, profile)
-                profiles.append(AgentProfileLimitCounts(profile, titles.get(profile, profile), sum(agent.running for agent in matching) + sum(agent.profile == profile for agent in extra), sum(agent.kept for agent in matching), profile_limits.run, profile_limits.kept, self.group_key(entry.key, profile)))
+                profiles.append(AgentProfileLimitCounts(profile, titles.get(profile, profile), sum(agent.running for agent in matching) + sum(agent.profile == profile for agent in extra), sum(agent.kept for agent in matching), profile_limits.run, profile_limits.kept, self.group_key(entry.key, profile), context_caps.get(profile, "")))
             counts.append(AgentLimitCounts(entry.key, entry.label, sum(agent.running for agent in agents) + len(extra), sum(agent.kept for agent in agents), limits.run, limits.kept,
                                           entry.run_limit_key, entry.kept_limit_key, bool(entry.profile_limits_key), tuple(profiles),
                                           self.settings.current(entry.run_limit_key).source, self.settings.current(entry.kept_limit_key).source))

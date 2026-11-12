@@ -4,7 +4,7 @@ from engine.setting.setting_value import SettingValue
 from engine.setting.list_rule import ListRule
 from engine.setting.number_rule import NumberRule
 
-from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
+from core.modules.settings.bindings.support.context_caps import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_KINDS, CONTEXT_LIMIT_PROFILES, CONTEXT_LIMIT_TOKENS
 
 MODULE_KEY = "journal.core.helpers"
 HELPER_RUN_LIMIT = f"{MODULE_KEY}.read-only-helper-run-limit"
@@ -25,8 +25,6 @@ CONTEXT_LIMIT_FINISH_TASK = f"{MODULE_KEY}.context-limit-finish-task"
 CONTEXT_LIMIT_HARD_TOKENS = f"{MODULE_KEY}.context-limit-hard-tokens"
 CONTEXT_LIMIT_ACTION = f"{MODULE_KEY}.context-limit-action"
 CONTEXT_LIMIT_GROWTH_PERCENT = f"{MODULE_KEY}.context-limit-growth-percent"
-CONTEXT_LIMIT_KINDS = f"{MODULE_KEY}.context-limit-kinds"
-CONTEXT_LIMIT_PROFILES = f"{MODULE_KEY}.context-limit-profiles"
 CONTEXT_ACTIONS = ("compact", "clear")
 HELPER_SETTING_VALUES = [SettingValue("unstarted-helper-seconds", "Seconds before a helper counts as failed", "Seconds after a helper starts with no sign of its program before its launch counts as failed.", SettingType.NUMBER, default=60),
                    SettingValue("agent-use-days", "Days of agent use counted", "Days of jobs counted when suggesting which kept agent to retire.", SettingType.NUMBER, default=14),

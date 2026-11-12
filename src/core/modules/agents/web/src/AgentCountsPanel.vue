@@ -3,6 +3,7 @@ import {computed, ref, watch} from "vue";
 import {age, Btn, Icon, useNow, useWindow} from "@journal/window-kit";
 import AgentRetireForm from "./AgentRetireForm.vue";
 import AgentLimitEditor from "./AgentLimitEditor.vue";
+import AgentContextCap from "./AgentContextCap.vue";
 import {countEntries, isFull as full} from "./agentCounts.js";
 
 const emit = defineEmits(["open-agent", "close"]);
@@ -66,6 +67,16 @@ async function change(kind, value) {
     else failure.value = answer.error;
     pending.value = false;
 }
+async function changeCap(cap) {
+    if (pending.value || view.readOnly) return;
+    if (cap !== "default" && cap !== "none" && !/^[0-9]+$/.test(cap)) { failure.value = "Use a whole number of tokens, or none."; return; }
+    pending.value = true;
+    failure.value = "";
+    const answer = await view.run(["agent", "context-cap", chosen.value.profile, cap, "--environment", view.environment]);
+    if (answer.ok) await view.reload("limits");
+    else failure.value = answer.error;
+    pending.value = false;
+}
 async function retire(agent) {
     if (!reason.value.trim() || pending.value) return;
     pending.value = true;
@@ -84,6 +95,7 @@ function openAgent(agent) { close(); emit("open-agent", agent); }
             <template v-if="readFailure"><strong>The counts could not be read</strong><p>The journal did not answer.</p><Btn small @click="view.reload('limits')">Try again</Btn></template>
             <template v-else-if="chosen">
                 <AgentLimitEditor :row="chosen" :pending="pending" :read-only="view.readOnly" :environment="view.environment" @change="change" />
+                <template v-if="chosen.profile"><AgentContextCap :row="chosen" :pending="pending" :read-only="view.readOnly" @change="changeCap" /></template>
                 <p><strong>{{ chosen.running }} of {{ chosen.run_limit }}</strong> running, <strong>{{ chosen.kept }}<template v-if="chosen.kept_limit"> of {{ chosen.kept_limit }}</template></strong> kept</p><p>{{ models }}</p>
                 <template v-if="!chosenAgents.length"><strong>No agents here yet</strong><p>An agent shows here as soon as one of this type starts.</p></template>
                 <template v-for="agent in chosenAgents" :key="agent.id"><div class="person" :data-count-agent="agent.id">
