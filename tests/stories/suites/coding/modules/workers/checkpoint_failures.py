@@ -52,8 +52,9 @@ def expect_returned(worker: StoryWorker, *task_ids: int) -> None:
 @pytest.fixture
 def failed_cart_proof(running_checkpoint) -> StoryWorker:
     """The run of the checkpoint of phase 1 has ended: the proof test of task 1 failed, the proof test of task
-    3 and the checkpoint's own test passed."""
-    end_run(running_checkpoint, CART_COMMAND)
+    3 and the checkpoint's own test passed. The worker is woken to fix it, so a launcher runs."""
+    with running_launcher(running_checkpoint.story):
+        end_run(running_checkpoint, CART_COMMAND)
     return running_checkpoint
 
 
