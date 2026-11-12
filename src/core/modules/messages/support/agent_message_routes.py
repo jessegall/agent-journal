@@ -12,8 +12,9 @@ HELPER_ROUTES = "message your main agent and the merger"
 
 
 class AgentMessageRoutes:
-    """Who may message whom: a main agent and its own helpers, in both directions, and an agent that takes
-    messages from its siblings (the merger) with the helpers under the same main agent. A sender that is
+    """Who may message whom: a main agent and its own helpers, in both directions, the environment's running main
+    agent and a helper whose main agent has ended, and an agent that takes messages from its siblings (the merger)
+    with the helpers under the same main agent. A sender that is
     not an agent is not limited. An agent of another environment is not found at all, so it is never
     reached."""
 
@@ -32,7 +33,15 @@ class AgentMessageRoutes:
     def is_related(self, agent: Agent, peer: Agent) -> bool:
         if agent.parent_id == peer.id or peer.parent_id == agent.id:
             return True
+        if self.stands_for_parent(peer, agent) or self.stands_for_parent(agent, peer):
+            return True
         return agent.parent_id is not None and agent.parent_id == peer.parent_id and (self.takes_siblings(agent) or self.takes_siblings(peer))
+
+    def stands_for_parent(self, main: Agent, helper: Agent) -> bool:
+        if main.role != AgentRole.MAIN or helper.parent_id is None or main.environment_id != helper.environment_id:
+            return False
+        running_main = self.agents.main_agent()
+        return running_main is not None and running_main.id == main.id and self.agents.find(helper.parent_id).role == AgentRole.MAIN
 
     def takes_siblings(self, agent: Agent) -> bool:
         profile = self.profiles.registered(agent.profile)
