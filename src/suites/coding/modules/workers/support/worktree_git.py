@@ -19,7 +19,7 @@ from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from engine.errors.refusal import Refusal
 from core.modules.environments.models.environment import Environment
 from suites.coding.models.enums.ask_topic import AskTopic
-from suites.coding.modules.workers.models.base_commit import BaseCommit
+from suites.coding.modules.workers.models.base_commit import NAME_SEPARATOR, BaseCommit
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_update import WorktreeUpdate
 from engine.enums.file_status import FileStatus
@@ -40,7 +40,6 @@ GIT_FOLDER_PREFIX = "gitdir:"
 BUILT_FOLDER = "/web/dist/"
 HASHED_BUILT_FILE = re.compile(r"(.+)-[\w-]{8}\.[^.]+")
 # git quotes a name with a space, a quote or another letter it finds odd, unless it separates names with NUL
-NAME_SEPARATOR = "\0"
 COMMIT_SEPARATOR = "\x1e"
 COMMIT_FORMAT = "--format=%h%x00%B%x1e"
 # A base commit: its record separator, then short id, parents and subject split by the unit separator, then its files.

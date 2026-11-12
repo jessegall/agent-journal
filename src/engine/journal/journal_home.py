@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 HOME_VARIABLE = "JOURNAL_HOME"
+JOURNAL_FOLDER = ".journal"
 
 SOCKET_PATH_LIMIT_CHARACTERS = 100
 SHORT_SOCKET_FOLDER = Path("/tmp")

@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
-from core.modules.tools.support.graph_files import OUTPUT_FOLDER
-from core.modules.tools.support.graph_status import GraphStatus
+from core.modules.tools.support.graph.graph_files import OUTPUT_FOLDER
+from core.modules.tools.support.graph.graph_status import GraphStatus
 from core.modules.tools.support.graphify_tool import GraphifyTool
 from core.modules.tools.support.tool_card import ToolCard
 from core.modules.tools.support.tool_catalogue import ToolCatalogue

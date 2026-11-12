@@ -13,9 +13,9 @@ from engine.time.clock import Clock
 from engine.git.hook_files_git import GIT_LIMIT_SECONDS
 from engine.errors.refusal import Refusal
 from engine.setting.setting_values import SettingValues
-from core.modules.tools.support.graph_files import FAILED_FILE, REBUILD_LOCK_FILE, RUNNING_FILE, GraphFiles
-from core.modules.tools.support.graph_status import GraphStatus
-from core.modules.tools.support.project_graph_claim import ProjectGraphClaim
+from core.modules.tools.support.graph.graph_files import FAILED_FILE, REBUILD_LOCK_FILE, RUNNING_FILE, GraphFiles
+from core.modules.tools.support.graph.graph_status import GraphStatus
+from core.modules.tools.support.graph.project_graph_claim import ProjectGraphClaim
 from engine.journal.journal_home import JournalHome
 from core.modules.tools.models.enums.tool_setting import ToolSetting
 

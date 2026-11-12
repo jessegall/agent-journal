@@ -7,7 +7,7 @@ from suites.coding.modules.workers.commands.remind_behind_updates.remind_behind_
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
 from suites.coding.modules.workers.support.behind_checks import BehindChecks
 from suites.coding.modules.workers.support.worker_settings import BEHIND_COMMITS_TO_CHECK, UPDATE_REMINDERS, UPDATE_WAIT_MINUTES
-from tests.unit.suites.coding.modules.workers.test_behind_checks import Queries, Settings as LookSettings, check, worktree
+from tests.unit.suites.coding.modules.workers.support.test_behind_checks import Queries, Settings as LookSettings, check, worktree
 from tests.unit.suites.coding.modules.workers.test_update_reminders import ORDERED_AT, Lines, NoMarkers, Numbers, Rows, Settings, Store
 
 
