@@ -25,8 +25,7 @@ class UnreadableMarks:
 
     def marked_among(self, commands: Sequence[str]) -> frozenset[str]:
         """The commands a standing mark covers, from one read of the marks of all of them."""
-        covering = {command: UnreadableMarks.covering_words(command) for command in dict.fromkeys(commands)}
-        words = sorted({word for leading in covering.values() for word in leading})
+        covering, words = UnreadableMarks.covered_by(commands)
         marked = {mark.words for mark in self.marks.standing().of_words(words).all_rows()} if words else set()
         return frozenset(command for command, leading in covering.items() if marked.intersection(leading))
 
@@ -37,8 +36,7 @@ class UnreadableMarks:
     def last_marked_among(self, commands: Sequence[str]) -> dict[str, Timestamp | None]:
         """When the newest mark covering each command was made, lifted or not, from one read of the marks of all of
         them; none for a command never marked."""
-        covering = {command: UnreadableMarks.covering_words(command) for command in dict.fromkeys(commands)}
-        words = sorted({word for leading in covering.values() for word in leading})
+        covering, words = UnreadableMarks.covered_by(commands)
         newest: dict[str, Timestamp] = {}
         for mark in (self.marks.of_words(words).all_rows() if words else []):
             made_at = mark.creation_timestamp()
@@ -75,6 +73,12 @@ class UnreadableMarks:
         """The leading words a mark covering the command can have: its first word, its first two, and so on."""
         terms = command.split()[:MOST_LEADING_WORDS]
         return [" ".join(terms[:count]) for count in range(1, len(terms) + 1)]
+
+    @staticmethod
+    def covered_by(commands: Sequence[str]) -> tuple[dict[str, list[str]], list[str]]:
+        """The leading words that can cover each command, and all of those words once, sorted, for one read of the marks."""
+        covering = {command: UnreadableMarks.covering_words(command) for command in dict.fromkeys(commands)}
+        return covering, sorted({word for leading in covering.values() for word in leading})
 
     @staticmethod
     def covers(words: str, command: str) -> bool:

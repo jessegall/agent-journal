@@ -1,7 +1,7 @@
 import { openBlock as d, createElementBlock as O, withModifiers as $e, createElementVNode as v, createVNode as k, unref as a, withCtx as h, createTextVNode as U, ref as _, computed as c, onMounted as Y, toDisplayString as B, createBlock as $, createCommentVNode as C, Fragment as te, renderList as fe, normalizeClass as ve, watch as ne, nextTick as Se, renderSlot as Oe, onBeforeUnmount as _e } from "vue";
 import { TextInput as Ce, Btn as V, useWindow as G, useNow as Ae, age as Te, WindowRoom as Ne, SwitchCase as oe, InnerTabs as xe, TabBody as Re } from "@journal/window-kit";
 import { SettingEmptyState as Ee, isFull as re, SettingBackPath as Ie, SettingPerTypeOverrideRow as le, SettingsScreen as me, SettingRow as Pe, SettingThreeWayCap as Be, SettingBanner as je, SettingHelperTypeTable as Le, SettingPresetCard as ie, SettingPresetCompareTable as Fe, sectionsOf as qe, SettingSectionList as Me, useSettingsDraft as Ue, currentPreset as We, SettingPresetBand as De, FindBox as Ve, ChangeFoot as Ke } from "@journal/setting-components";
-import { _ as q } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+import { _ as q } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
 const ze = { class: "action-buttons" }, He = {
   __name: "AgentRetireForm",
   props: { reason: String, pending: Boolean },
@@ -44,7 +44,7 @@ const ze = { class: "action-buttons" }, He = {
       ])
     ], 32));
   }
-}, Ye = /* @__PURE__ */ q(He, [["__scopeId", "data-v-92de7dd6"]]), Ge = {
+}, Ye = /* @__PURE__ */ q(He, [["__scopeId", "data-v-818a34c9"]]), Ge = {
   class: "type-agents",
   "data-type-agents": ""
 }, Xe = { class: "models" }, Ze = ["data-count-agent"], Je = { class: "person-text" }, Qe = {
@@ -149,7 +149,7 @@ const ze = { class: "action-buttons" }, He = {
       R.value ? (d(), O("p", Qe, B(R.value), 1)) : E.value ? (d(), O("p", et, B(E.value), 1)) : C("", !0)
     ]));
   }
-}, nt = /* @__PURE__ */ q(tt, [["__scopeId", "data-v-91280b9f"]]), M = "journal.core.helpers", st = `${M}.context-limit-on`, se = `${M}.context-limit-tokens`, ye = `${M}.context-limit-kinds`, K = `${M}.context-limit-profiles`, Z = `${M}.read-only-helper-profile-limits`, at = `${M}.read-only-helper-run-limit`, ot = `${M}.read-only-helper-kept-limit`, rt = "none", ge = (t) => `${t / 1e3}k`, ke = (t) => {
+}, nt = /* @__PURE__ */ q(tt, [["__scopeId", "data-v-3a22e7ae"]]), M = "journal.core.helpers", st = `${M}.context-limit-on`, se = `${M}.context-limit-tokens`, ye = `${M}.context-limit-kinds`, K = `${M}.context-limit-profiles`, Z = `${M}.read-only-helper-profile-limits`, at = `${M}.read-only-helper-run-limit`, ot = `${M}.read-only-helper-kept-limit`, rt = "none", ge = (t) => `${t / 1e3}k`, ke = (t) => {
   const l = t.lastIndexOf(":");
   return { name: t.slice(0, l).trim(), value: t.slice(l + 1).trim() };
 }, H = (t, l) => {
@@ -280,7 +280,7 @@ const ct = {
       ])
     ]));
   }
-}, yt = /* @__PURE__ */ q(mt, [["__scopeId", "data-v-51bee498"]]), gt = {
+}, yt = /* @__PURE__ */ q(mt, [["__scopeId", "data-v-12fb5c41"]]), gt = {
   class: "agents",
   "data-agent-settings-agents": ""
 }, kt = {
@@ -311,7 +311,7 @@ const ct = {
       }, null, 8, ["rows"]))
     ]));
   }
-}, wt = /* @__PURE__ */ q(kt, [["__scopeId", "data-v-05cc036a"]]), bt = {
+}, wt = /* @__PURE__ */ q(kt, [["__scopeId", "data-v-c7e6716c"]]), bt = {
   class: "page",
   "data-agent-settings-presets": ""
 }, ht = { class: "crumb" }, $t = { class: "body" }, St = { class: "cards" }, Ot = "Any other mix of the eight switches. The form shows Custom as soon as the switches match neither preset.", _t = {
@@ -353,7 +353,7 @@ const ct = {
       ])
     ]));
   }
-}, Ct = /* @__PURE__ */ q(_t, [["__scopeId", "data-v-2cf94460"]]), At = { class: "screen" }, Tt = { class: "rail" }, Nt = {
+}, Ct = /* @__PURE__ */ q(_t, [["__scopeId", "data-v-ca088ff4"]]), At = { class: "screen" }, Tt = { class: "rail" }, Nt = {
   __name: "AgentSettingsScreen",
   props: { nodes: { type: Array, required: !0 }, draft: { type: Object, required: !0 }, readOnly: { type: Boolean, default: !1 }, extras: { type: Object, default: () => ({}) }, found: { type: String, default: "" } },
   setup(t) {
@@ -390,7 +390,7 @@ const ct = {
       ], 512)
     ]));
   }
-}, Q = /* @__PURE__ */ q(Nt, [["__scopeId", "data-v-1cab27ca"]]), xt = {
+}, Q = /* @__PURE__ */ q(Nt, [["__scopeId", "data-v-ab3a8dd5"]]), xt = {
   class: "settings",
   "data-agent-settings": ""
 }, Rt = { class: "head" }, Et = {
@@ -559,7 +559,7 @@ const ct = {
       _: 1
     }));
   }
-}, Vt = /* @__PURE__ */ q(qt, [["__scopeId", "data-v-810340dc"]]);
+}, Vt = /* @__PURE__ */ q(qt, [["__scopeId", "data-v-55fe7d19"]]);
 export {
   Vt as A
 };
