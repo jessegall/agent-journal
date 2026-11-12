@@ -1,4 +1,4 @@
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -17,6 +17,7 @@ class ExecutionRequest:
     title: str = ""
     stdin: str | None = None
     variables: Mapping[str, str] | None = None
+    on_line: Callable[[str], None] | None = None
 
     @property
     def text(self) -> str:
