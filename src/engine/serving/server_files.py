@@ -1,5 +1,6 @@
 import fcntl
 import os
+from engine.serving.server_phase import ServerPhase
 from collections.abc import Generator
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
@@ -108,6 +109,13 @@ class ServerFiles:
 
     def clear_tunnel_pid(self) -> None:
         self.tunnel_pid_file.unlink(missing_ok=True)
+
+    def phase(self) -> ServerPhase:
+        if self.maintenance.exists() or self.restart_mark.exists():
+            return ServerPhase.UPDATING
+        if self.start_mark.exists():
+            return ServerPhase.STARTING
+        return ServerPhase.READY
 
     def mark_maintenance(self) -> None:
         FileAccess.shared().write(self.maintenance, str(os.getpid()))
