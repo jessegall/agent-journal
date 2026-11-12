@@ -11,7 +11,7 @@ import {CAP_SIZES, CONTEXT_PROFILES, CONTEXT_TOKENS, entryOf, fullCount, useHelp
 // and one foot for the changes of all of them; a viewer who may only read sees a note that only a person changes them
 const AUTO = "journal.suites.coding.auto-mode";
 const DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers";
-const SCREEN_KEYS = {work: "work-screen", tests: "tests-screen", advanced: "advanced-screen"};
+const SCREEN_KEYS = {work: "work-screen", tests: "tests-screen", advanced: "advanced-screen", "helper-types": "helper-types-screen"};
 const view = useWindow();
 const tab = ref("work");
 const tabs = [{key: "work", label: "Work"}, {key: "agents", label: "Helpers", count_field: "full"}, {key: "tests", label: "Tests"}, {key: "advanced", label: "Advanced"}];

@@ -204,10 +204,10 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(200, asdict(viewer.routes.session_route.answer(token)))
             return
         if route.path == READ_LINES_ROUTE:
-            self.answer(200, {"reads": viewer.routes.line_route.read_lines(), "recording": viewer.routes.request_log.status()["enabled"]})
+            self.answer(200, {"reads": viewer.routes.line_route.read_lines(), "recording": viewer.routes.request_trace.status()["enabled"]})
             return
         if route.path == REQUEST_LOG_STATUS_ROUTE:
-            self.answer(200, viewer.routes.request_log.status())
+            self.answer(200, viewer.routes.request_trace.status())
             return
         if route.path == SHARE_COMMENTS_ROUTE:
             self.answer_share_comments(viewer, viewer.login.session(token), None)
@@ -286,7 +286,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
                 return
             self.answer(200, {"received": len(receipts)})
             self.wfile.flush()
-            viewer.routes.request_log.complete_reads(viewer.login.person_id(token), receipts)
+            viewer.routes.request_trace.complete_reads(viewer.login.person_id(token), receipts)
             return
         if urlsplit(self.path).path != LINE_ROUTE:
             self.answer(404, {"error": f"no route {self.path}"})
@@ -312,7 +312,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         http = ViewerHttpRequest(request_id, received_at, None, duration_ms, self.payload_bytes(body), viewer.login.person_id(token))
         self.answer(200, asdict(answered), {"X-Journal-Request-Id": request_id})
         self.wfile.flush()
-        viewer.routes.request_log.record_viewer(ViewerRequestRecord(http, request, 0, timed.duration_ms, queued_ms, answered.code, timed.points))
+        viewer.routes.request_trace.record_viewer(ViewerRequestRecord(http, request, 0, timed.duration_ms, queued_ms, answered.code, timed.points))
 
     def answer_notices(self, viewer: ViewerServer, token: str, body: bytes | None) -> None:
         notices = viewer.routes.notices_route
@@ -388,7 +388,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
     def finish_request(self, viewer: ViewerServer, body: Mapping[str, object], request_id: str, records: Sequence[ViewerRequestRecord]) -> None:
         self.answer(200, body, {"X-Journal-Request-Id": request_id})
         self.wfile.flush()
-        viewer.routes.request_log.record_viewers(records)
+        viewer.routes.request_trace.record_viewers(records)
 
     def stamped(self) -> tuple[str, str]:
         return self.viewer().routes.clock.timestamp().text, str(uuid4())

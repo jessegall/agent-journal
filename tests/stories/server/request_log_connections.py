@@ -24,7 +24,7 @@ def test_a_batch_uses_no_logging_connection_when_off_and_one_reused_connection_w
     story.expect_success(f"setting set journal.core.developer.tools.hooks.request-log {str(enabled).lower()} --project", actor=story.user)
     with server_story(story, listener_thread_started=False) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-        log = server.context.request_log
+        log = server.context.request_trace
         connected, original_save = log.connected, log.save_many
         connections = []
         saved, release = Event(), Event()
@@ -65,7 +65,7 @@ def test_a_batch_uses_no_logging_connection_when_off_and_one_reused_connection_w
 
 def test_cli_requests_keep_the_same_logger_counts_and_epoch(logging_server, monkeypatch):
     server = logging_server
-    log = server.context.request_log
+    log = server.context.request_trace
     epoch = log.epoch
     recorded = Event()
     record = log.record
@@ -82,14 +82,14 @@ def test_cli_requests_keep_the_same_logger_counts_and_epoch(logging_server, monk
     recorded.clear()
     server.expect_cli_exit("agent list", "/", 0, "")
     server.story.expect_rows(recorded.wait(3))
-    server.story.expect_rows(server.context.request_log is server.context.viewer.routes.request_log)
+    server.story.expect_rows(server.context.request_trace is server.context.viewer.routes.request_trace)
     server.story.expect_rows(log.epoch == epoch)
     server.story.expect_rows(log.counts["recorded"] == 2)
 
 
 def test_a_locked_request_log_counts_dropped_rows_without_a_warning(logging_server):
     server = logging_server
-    log = server.context.request_log
+    log = server.context.request_trace
     with log.connected():
         pass
     previous_log = server.story.system_log_text()
@@ -109,7 +109,7 @@ def test_a_locked_request_log_counts_dropped_rows_without_a_warning(logging_serv
 def test_a_viewer_setting_change_refreshes_recording_before_the_next_request(logging_server, monkeypatch):
     server = logging_server
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-    log = server.context.request_log
+    log = server.context.request_trace
     completed = Event()
     original_save = log.save_many
 
@@ -131,7 +131,7 @@ def test_a_viewer_setting_change_refreshes_recording_before_the_next_request(log
 
 def test_the_status_never_shows_a_request_that_is_attempted_and_not_yet_recorded(logging_server, monkeypatch):
     server = logging_server
-    log = server.context.request_log
+    log = server.context.request_trace
     connected = log.connected
     writing, release = Event(), Event()
 

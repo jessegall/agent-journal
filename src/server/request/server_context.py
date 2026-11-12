@@ -11,7 +11,7 @@ from server.work.listener_thread import ListenerThread
 from engine.serving.server_files import ServerFiles
 from server.tick.server_tunnel import ServerTunnel
 from server.viewer.viewer_endpoint import ViewerEndpoint
-from server.request.request_log import RequestLog
+from server.request.request_trace import RequestTrace
 
 HOOK_LIMIT_SECONDS = 3.5
 STOP_LIMIT_SECONDS = 20.0
@@ -43,5 +43,5 @@ class ServerContext:
     clock: Clock = field(default_factory=Clock)
 
     @property
-    def request_log(self) -> RequestLog:
-        return self.viewer.routes.request_log
+    def request_trace(self) -> RequestTrace:
+        return self.viewer.routes.request_trace

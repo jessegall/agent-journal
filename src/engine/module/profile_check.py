@@ -30,8 +30,9 @@ class ProfileCheck:
 
     def profile_problems(self, module: str, profile: AgentProfile, types: dict[str, HelperType], claimed: dict[str, str], bases: ProfileBases) -> list[str]:
         problems: list[str] = []
-        if bases.problem(profile):
-            problems.append(bases.problem(profile))
+        base_problem = bases.problem(profile)
+        if base_problem:
+            problems.append(base_problem)
         if profile.name in claimed:
             problems.append(f"the modules {claimed[profile.name]} and {module} both register the profile {profile.name}")
         claimed[profile.name] = module

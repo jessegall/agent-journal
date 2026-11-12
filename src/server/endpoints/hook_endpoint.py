@@ -115,7 +115,7 @@ class HookEndpoint:
             return reply
         finally:
             database.set_busy_timeout(REQUEST_LOG_BUSY_SECONDS)
-            self.context.request_log.record_hook(lambda: container.get(HookRequestLog).record_hook(program, headers, data, (perf_counter() - started_at) * 1000, outcome, queued_ms, sender.session))
+            self.context.request_trace.record_hook(lambda: container.get(HookRequestLog).record_hook(program, headers, data, (perf_counter() - started_at) * 1000, outcome, queued_ms, sender.session))
 
     def prepared_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, container: Container, deadline: float, sender: HookSender) -> HookReply:
         event = self.event(data, program, headers, container.get(Providers))

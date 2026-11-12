@@ -68,6 +68,10 @@ class Agent(EnvironmentScoped, Model):
         return self.paused_at is None and self.ended_at is None and self.retired_at is None
 
     @property
+    def is_paused(self) -> bool:
+        return self.paused_at is not None
+
+    @property
     def is_main(self) -> bool:
         return self.role == MAIN_ROLE
 

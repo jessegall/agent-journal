@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import IO
 from engine.time.clock import Clock
 from engine.journal.journal_home import SERVER_SOCKET, JournalHome
+from engine.file.append_log import AppendLog
 from engine.file.file_access import FileAccess
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
@@ -129,16 +130,10 @@ class ServerFiles:
             return False
 
     def hold_session(self, session: str) -> None:
-        with FileAccess.shared().writer(self.held_sessions_file, "a") as held:
-            held.write(session + "\n")
+        self.held_sessions().append(session)
 
-    def released_sessions(self) -> tuple[str, ...]:
-        if not self.held_sessions_file.exists():
-            return ()
-        released = FileAccess.shared().replace(self.held_sessions_file, self.held_sessions_file.with_suffix(".released"))
-        sessions = tuple(dict.fromkeys(line for line in FileAccess.shared().read(released).splitlines() if line))
-        released.unlink()
-        return sessions
+    def held_sessions(self) -> AppendLog:
+        return AppendLog(self.held_sessions_file, self.held_sessions_file.with_suffix(".released"), FileAccess.shared())
 
     def mark_maintenance(self) -> None:
         FileAccess.shared().write(self.maintenance, str(os.getpid()))

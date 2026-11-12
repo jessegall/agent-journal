@@ -44,3 +44,8 @@ def test_a_base_that_is_not_registered_is_refused():
 def test_bases_that_lead_back_to_the_profile_are_refused():
     with pytest.raises(Refusal, match="lead back to it: a -> b -> a"):
         built(AgentProfile("a", "A", "A.", base="b"), AgentProfile("b", "B", "B.", base="a"))
+
+
+def test_a_profile_sets_a_setting_back_to_its_default_over_its_base_by_naming_it():
+    child = built(BASE, AgentProfile("child", "Child", "Own.", base="base", default_fields=("model", "tier")))["child"]
+    assert (child.model, child.tier, child.skills) == ("", None, ("journal", "journal-tasks"))

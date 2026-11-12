@@ -1,4 +1,7 @@
+from dataclasses import replace
+
 from engine.command.bus import Bus
+from engine.enums.event_form import EventForm
 from engine.command.errors.server_stopping_error import ServerStoppingError
 from engine.module.module_actors import ModuleActors
 from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
@@ -6,6 +9,7 @@ from core.modules.plugins.support.hook_facts import HookFacts
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.errors.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_program import PluginProgram
+from core.modules.plugins.support.plugin_queued_judge import PluginQueuedJudge
 from core.modules.plugins.support.plugin_run_outcome import PluginRunOutcome
 from core.modules.plugins.support.plugin_run_request import PluginRunRequest
 from core.modules.plugins.errors.plugin_service_closed_error import PluginServiceClosedError
@@ -15,10 +19,12 @@ from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 
 class PluginRun:
     """The one way to run a plugin's program for an event: it runs it, and says or records its fault or its clean
-    run. A driver rule only answers, so it takes the records from the outcome instead."""
+    run. A recorded guard run whose plugin queued a judge run answers with that judge run's answer, so every guard
+    outside a hook settles a queue answer in this one place. A driver rule only answers, so it takes the records
+    from the outcome of a plain run instead and runs no judge."""
 
-    def __init__(self, program: PluginProgram, settings: PluginSettings, bus: Bus, actors: ModuleActors) -> None:
-        self.program, self.settings, self.bus, self.actors = program, settings, bus, actors
+    def __init__(self, program: PluginProgram, settings: PluginSettings, bus: Bus, actors: ModuleActors, judge: PluginQueuedJudge) -> None:
+        self.program, self.settings, self.bus, self.actors, self.judge = program, settings, bus, actors, judge
 
     def run(self, request: PluginRunRequest) -> PluginRunOutcome:
         plugin = request.runnable.plugin
@@ -31,10 +37,12 @@ class PluginRun:
             return PluginRunOutcome(None, str(fault), fault.is_late, fault.is_server_stop, tuple([fault.fault_record(plugin.id, request.location)]))
         return PluginRunOutcome(answer, records=tuple([ClearPluginFaults(plugin.id)]) if plugin.last_fault else ())
 
-    def recorded_run(self, request: PluginRunRequest, cause_id: int | None = None) -> PluginRunOutcome:
+    def recorded_run(self, request: PluginRunRequest, environment_id: int | None) -> PluginRunOutcome:
         outcome = self.run(request)
-        self.record(request, outcome, cause_id)
-        return outcome
+        self.record(request, outcome)
+        if request.form is not EventForm.GUARD or outcome.answer is None:
+            return outcome
+        return replace(outcome, answer=self.judge.settled(outcome.answer, request.runnable.plugin.name, request.agent_id, environment_id))
 
     def record(self, request: PluginRunRequest, outcome: PluginRunOutcome, cause_id: int | None = None) -> None:
         if outcome.is_server_stop:

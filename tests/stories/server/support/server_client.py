@@ -374,8 +374,8 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         reported = ReportedFindings()
         context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, clock.timestamp(), listener_thread,
                                 hook_database, viewer_factory(login, ViewerRoutes(home, listener_thread, login, reported, hook_database.queue, clock)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS)
-        context.request_log.refresh(synced_database_container(home, hook_database.databases[0]))
-        context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported, completion_callback=context.request_log.completed)
+        context.request_trace.refresh(synced_database_container(home, hook_database.databases[0]))
+        context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported, completion_callback=context.request_trace.completed)
         context.viewer.routes.line_route.line_run.request_queue = hook_database.queue
         server = JournalServer(str(files.socket), RequestHandler, context)
         if listener_thread_started:
@@ -392,7 +392,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
             server.request_stop()
             thread.join(TIMEOUT_SECONDS)
             server.drain(DRAIN_LIMIT_SECONDS)
-            context.request_log.close()
+            context.request_trace.close()
             context.hook_database.close()
             files.remove_server_files()
             server.server_close()

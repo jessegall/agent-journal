@@ -10,7 +10,7 @@ UNSET = AgentProfile("")
 
 class ProfileBases:
     """Builds each profile on the base profile it names: the body is the body of the base followed by its own lines,
-    and each setting it leaves unset is the setting of its base. A base that is not registered, or bases that
+    and each setting it leaves unset is the setting of its base, unless the profile names it in default_fields. A base that is not registered, or bases that
     lead back to the profile, are refused."""
 
     def __init__(self, profiles: Sequence[AgentProfile]) -> None:
@@ -39,6 +39,6 @@ class ProfileBases:
         if not profile.base:
             return profile
         base = self.on_base(self.profiles[profile.base])
-        inherited = {name: getattr(base, name) for name in INHERITED_FIELDS if getattr(profile, name) == getattr(UNSET, name)}
+        inherited = {name: getattr(base, name) for name in INHERITED_FIELDS if name not in profile.default_fields and getattr(profile, name) == getattr(UNSET, name)}
         body = "\n\n".join(part for part in (base.body.strip(), profile.body.strip()) if part)
         return replace(profile, body=body, **inherited)
