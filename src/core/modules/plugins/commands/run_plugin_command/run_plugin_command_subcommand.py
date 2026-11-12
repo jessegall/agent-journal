@@ -27,6 +27,7 @@ class RunPluginCommandSubcommand(Subcommand[RunPluginCommand, PluginCommandRun])
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--agent", type=int)
         parser.add_argument("--read-only", action="store_true")
+        parser.add_argument("--kind", default="")
         parser.add_argument("line", nargs=argparse.REMAINDER)
 
     def command(self, arguments: Namespace, caller: Caller) -> RunPluginCommand:
@@ -35,7 +36,7 @@ class RunPluginCommandSubcommand(Subcommand[RunPluginCommand, PluginCommandRun])
         command_args = arguments.line[1:] if arguments.line[:1] == [LINE_SEPARATOR] else arguments.line
         if not command_args:
             raise UsageError("name the command to run after --")
-        return RunPluginCommand(self.access.agent_id(arguments.agent, caller), shlex.join(command_args), arguments.read_only, caller.plugin_script)
+        return RunPluginCommand(self.access.agent_id(arguments.agent, caller), shlex.join(command_args), arguments.read_only, caller.plugin_script, arguments.kind)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PluginCommandRun):

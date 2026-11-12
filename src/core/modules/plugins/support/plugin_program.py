@@ -9,7 +9,6 @@ from collections.abc import Callable, Mapping
 
 from engine.agent.agent_checkouts import AgentCheckouts
 from engine.checkout.checkout import Checkout
-from engine.enums.command_category import CommandCategory
 from engine.event.event_log import HIDDEN
 from engine.journal.journal_home import JournalHome
 from engine.enums.event_form import EventForm
@@ -24,8 +23,6 @@ from core.modules.plugins.support.agent_facts import AgentFacts
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.errors.plugin_fault_error import PluginFaultError
-from core.modules.plugins.errors.plugin_late_error import PluginLateError
-from core.modules.plugins.support.plugin_places import PluginPlaces
 from core.modules.plugins.errors.plugin_service_closed_error import PluginServiceClosedError
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX
@@ -41,17 +38,16 @@ from core.modules.plugins.support.script_pipes import ScriptPipes
 PASSED_VARIABLES = ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER")
 SETTINGS_FILE = ".journal-settings.json"
 STOP_LIMIT_SECONDS = 1
-PLACE_LIMIT_SECONDS = 3600
 
 
 class PluginProgram:
     """Runs a plugin event through its service or a time-limited process."""
 
     def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths, skills: LoadedSkills, checkouts: AgentCheckouts, scripts: PluginScriptProcesses, agents: AgentRows,
-                 plugins: PluginQuery, places: PluginPlaces, scopes: Scopes, environments: EnvironmentRows, waits: PluginServiceWaits) -> None:
+                 plugins: PluginQuery, scopes: Scopes, environments: EnvironmentRows, waits: PluginServiceWaits) -> None:
         self.waits = waits
         self.home, self.folders, self.sockets, self.skills, self.checkouts, self.scripts, self.agents = home, folders, sockets, skills, checkouts, scripts, agents
-        self.plugins, self.places, self.scopes, self.environments = plugins, places, scopes, environments
+        self.plugins, self.scopes, self.environments = plugins, scopes, environments
         self.written_settings: dict[Path, str] = {}
 
     def run(self, call: PluginCall, limit_ms: int | None, wait_callback: Callable[[], None] | None = None) -> PluginAnswer:
@@ -73,17 +69,7 @@ class PluginProgram:
             raise PluginFaultError(f"its service {explicit_service} is not answering")
         if self.scripts.server_stopped:
             raise PluginStoppedError(ScriptStop.SERVER)
-        wait_seconds = PLACE_LIMIT_SECONDS if limit_ms is None else limit_ms / 1000
-        place = self.places.queue_place(manifest.name, str(folder / program), CommandCategory.UNKNOWN if limit_ms is None else CommandCategory.BACKGROUND_JOB, str(folder), call.agent_id, call.environment)
-        failed = True
-        try:
-            if not place.wait(wait_seconds):
-                raise PluginLateError(f"it got no place in the process queue within {wait_seconds} s")
-            answer = self.program_answer(call, program, line, limit_ms, wait_callback)
-            failed = False
-            return answer
-        finally:
-            place.leave(int(failed))
+        return self.program_answer(call, program, line, limit_ms, wait_callback)
 
     def program_answer(self, call: PluginCall, program: str, line: str, limit_ms: int | None, wait_callback: Callable[[], None] | None) -> PluginAnswer:
         manifest = call.manifest
