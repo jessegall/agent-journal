@@ -1,5 +1,6 @@
 from collections.abc import Iterator, Sequence
 from copy import copy
+from dataclasses import replace
 from typing import Generic, Self, TypeVar
 from engine.database.constraint_refusals import ENVIRONMENT_COLUMN
 from engine.database.database import Database
@@ -30,6 +31,9 @@ from engine.query.select import Select
 from engine.row.row_owner import RowOwner
 from engine.query.errors.unknown_column_error import UnknownColumnError
 from engine.query.errors.query_limit_error import QueryLimitError
+from engine.model.table import Table
+from engine.query.errors.unknown_table_error import UnknownTableError
+from engine.query.join import Join
 from engine.query.errors.unknown_operator_error import UnknownOperatorError
 from engine.query.errors.unnamed_column_error import UnnamedColumnError
 
@@ -45,6 +49,7 @@ VERSION_COLUMN = "version"
 ALL_COLUMNS = "*"
 DEFAULT_LIMIT_ROWS = 50
 MOST_NAMED_LIMIT_ROWS = 1000
+WALK_ROWS = 50
 COMPARISONS: dict[str, type[Condition]] = {">": Greater, "<": Less, ">=": Minimum, "<=": Maximum}
 OPERATORS = ("=", "!=", "<", "<=", ">", ">=")
 
@@ -54,7 +59,8 @@ class Query(Generic[M]):
     """
 
     def __init__(self, database: Database, tables: Tables, model: type[M]) -> None:
-        self.database, self.model, self.table = database, model, tables.table(model)
+        self.database, self.model, self.tables, self.table = database, model, tables, tables.table(model)
+        self.joined_tables: tuple[Table[Model], ...] = ()
         self.select = Select(self.table.name)
         self.shows_removed = False
 
@@ -159,22 +165,89 @@ class Query(Generic[M]):
         return self.with_select(self.select.matching(condition))
 
     def newest(self) -> Self:
-        return self.with_select(self.select.ordered("id", True))
+        return self.order_by("id", "desc")
 
     def oldest(self) -> Self:
-        return self.with_select(self.select.ordered("id", False))
+        return self.order_by("id")
 
     def ordered(self, *columns: str) -> Self:
-        select = self.select
+        query = self
         for column in columns:
-            select = select.ordered(column, False)
-        return self.with_select(select)
+            query = query.order_by(column)
+        return query
 
     def descending(self, *columns: str) -> Self:
-        select = self.select
+        query = self
         for column in columns:
-            select = select.ordered(column, True)
-        return self.with_select(select)
+            query = query.order_by(column, "desc")
+        return query
+
+    def order_by(self, column: str, direction: str = "asc") -> Self:
+        """Orders the rows by a column, ascending or descending."""
+        if direction not in ("asc", "desc"):
+            raise UnknownOperatorError("a direction is asc or desc")
+        if "." in column:
+            self.checked_qualified(column)
+        else:
+            self.checked(column)
+        return self.with_select(self.select.ordered(column, direction == "desc"))
+
+    def join(self, model: type[Model], first: str, operator: str, second: str) -> Self:
+        """Reads the rows together with the rows of another model whose columns compare so."""
+        return self.joining(model, first, operator, second, False)
+
+    def left_join(self, model: type[Model], first: str, operator: str, second: str) -> Self:
+        """Reads the rows together with the rows of another model whose columns compare so, keeping rows that have none."""
+        return self.joining(model, first, operator, second, True)
+
+    def joining(self, model: type[Model], first: str, operator: str, second: str, left: bool) -> Self:
+        if operator not in OPERATORS:
+            raise UnknownOperatorError(f"unknown operator {operator}; use one of {' '.join(OPERATORS)}")
+        table = self.tables.table(model)
+        query = self.with_select(self.select.joined(Join(table.name, left, first, operator, second)))
+        query.joined_tables = (*self.joined_tables, table)
+        query.checked_qualified(first, second)
+        if owner := self.database.row_owner:
+            if issubclass(model, EnvironmentScoped) and owner.environment_id is not None:
+                query = query.matching(Equal(f"{table.name}.{ENVIRONMENT_COLUMN}", owner.environment_id))
+        if issubclass(model, Removable):
+            query = query.matching(IsNull(f"{table.name}.{REMOVED_COLUMN}"))
+        return query
+
+    def checked_qualified(self, *names: str) -> None:
+        """Refuses a table.column name whose table this read does not read or whose column that table lacks."""
+        tables = {self.table.name: self.table, **{table.name: table for table in self.joined_tables}}
+        for name in names:
+            table_name, _, column = name.partition(".")
+            if table_name not in tables:
+                raise UnknownTableError(f"{table_name} is not a table of this read")
+            if column != "*" and not tables[table_name].has_column(column):
+                raise UnknownColumnError(f"{table_name} has no column {column}")
+
+    def group_by(self, *columns: str) -> Self:
+        """Groups the rows by the given columns, for count_by."""
+        self.checked(*columns)
+        return self.with_select(self.select.grouped(*columns))
+
+    def count_by(self) -> dict[object, int]:
+        """How many rows each value of the group columns has; a key is a tuple when there are several columns."""
+        select = self.scoped(self.select)
+        if select.is_empty:
+            return {}
+        width = len(select.group_columns)
+        return {(tuple(row[:width]) if width > 1 else row[0]): row[width] for row in self.database.rows(select.group_count_statement())}
+
+    def pluck(self, column: str) -> list[object]:
+        """The values of one column of the rows, at most the limit of the read."""
+        self.checked(column)
+        limit = self.select.limit or DEFAULT_LIMIT_ROWS
+        select = self.scoped(self.select.column(column).sliced(limit + 1, 0).named(limit + 1))
+        if select.is_empty:
+            return []
+        values = [row[0] for row in self.database.rows(select.statement())]
+        if len(values) > limit:
+            self.database.report_cut(select.statement().sql, limit)
+        return values[:limit]
 
     def full_table(self, reason: str) -> Self:
         return self.with_select(self.select.full_table(reason))
@@ -224,6 +297,26 @@ class Query(Generic[M]):
             if len(rows) < size:
                 return
             offset += size
+
+    def every_row(self, reason: str) -> Iterator[M]:
+        """Every matching row in the order of the key, read 50 at a time past the last key read, never by offset: an
+        order the caller set is not used, and a row added during the walk with a higher key comes at its end."""
+        if not reason.strip():
+            raise QueryLimitError("say why every row is needed")
+        if not self.table.key or not self.table.has_column(self.table.key):
+            raise QueryLimitError("every_row needs a key column to read in order")
+        return self.walked(self.table.key)
+
+    def walked(self, key: str) -> Iterator[M]:
+        start = replace(self.select, orders=(), limit=0, offset=0).ordered(key, False)
+        last: object = None
+        while True:
+            select = start if last is None else start.matching(Greater(key, last))
+            rows = self.rows(select.sliced(WALK_ROWS, 0).named(WALK_ROWS))
+            yield from rows
+            if len(rows) < WALK_ROWS:
+                return
+            last = getattr(rows[-1], key)
 
     def count(self) -> int:
         select = self.scoped(self.select)
