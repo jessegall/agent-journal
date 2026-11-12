@@ -12,7 +12,7 @@ try {
     await page.goto(`${address}#open=docs:1`);
     await page.locator('[data-document-tab="revisions"]').click();
     await page.locator('[data-text-revision="2"]').waitFor();
-    assert.match(await page.locator('[data-text-revision="2"]').textContent(), /Revision 2:.*Lady Lovelace.*2026/);
+    assert.match(await page.locator('[data-text-revision="2"]').textContent(), /Revision 2:.*Main agent.*2026/);
     for (const colorScheme of ['light', 'dark']) {
         await page.emulateMedia({colorScheme});
         await page.screenshot({path: `${capture}-${colorScheme}.png`, animations: 'disabled'});

@@ -55,13 +55,13 @@ def test_two_edits_save_one_revision_by_the_agent(new_story):
     story.expect_rows(answer.code == 0)
     rows = json.loads(answer.output_text)['rows']
     story.expect_rows(len(rows) == 2, rows[-1]['body'] == 'Second', rows[-1]['author_id'] == story.agent.id,
-                      rows[-1]['author_name'] == 'Lady Lovelace')
+                      rows[-1]['author_name'] == 'Main agent')
 
 
 def test_another_agent_cannot_open_the_document(new_story):
     story = new_story(fixture=DocumentOpen)
     second_agent_id = story.new_row_id('agent start s-2 claude main --environment main')
-    story.expect_refusal('doc open 1', f'agent {story.agent.id}', actor=Actor(second_agent_id, ActorType.AGENT))
+    story.expect_refusal('doc open 1', 'main agent', actor=Actor(second_agent_id, ActorType.AGENT))
 
 
 def test_a_second_document_names_the_one_to_close(new_story):
