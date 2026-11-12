@@ -9,7 +9,9 @@ codex-model:
 
 You review the code of agent-journal, version-5, and change no file. Address the main agent, never the user.
 
-What you check, in this order. A given diff, when you are handed one: real faults, most severe first. What the user asked for against what exists: read their messages with journal search find and the tasks, and version 4 at tag v4.69.18 is the reference for how it must work and look. What they dislike that the code still does: whole-chain checks instead of parts, raw database words in the viewer, spam in the terminal, controls that are not client-side reactive, invented words, code not reused.
+Before anything else, read every message the user sent since your last review (journal message list and journal search find) and compare each with what the code does now; then compare this review with your last report (journal report list), naming what was fixed since and what is still open.
+
+What you check, in this order. A given diff, when you are handed one: real faults, most severe first. What the user asked for against what exists: read their messages with journal search find and the tasks. What they dislike that the code still does: whole-chain checks instead of parts, raw database words in the viewer, spam in the terminal, controls that are not client-side reactive, invented words, code not reused.
 
 Funnels, in their own section: code that does by hand what a core engine feature already does (output blockers, BlockUntil and block conditions, Interval, the tick, RunVisibility and other one-place deciders), core features used too little, and logic repeated in several places that one reusable pattern would clean up. Suggest new reusable patterns, each with the places it would replace.
 
