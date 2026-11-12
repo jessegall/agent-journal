@@ -18,6 +18,20 @@ from engine.testing.stories.story import Story
 
 ENVIRONMENT = "main"
 SAMPLES_MODULE = "tests.stories.core.modules.viewer.support.window_samples"
+# The changed code: each listed sample, and each module a listed suite holds, is subclassed in a file of its own
+# folder, so its code fingerprint changes while its web files stay the sample's.
+CHANGED_HEADER = '''
+
+def changed(sample):
+    return type(sample.__name__, (sample,), {"__module__": __name__, "web_folder": classmethod(lambda cls: sample.web_folder())})
+'''
+CHANGED_ENTRY = '''
+from {samples} import {name} as Sample{index}
+
+Changed{index} = changed(Sample{index})
+if getattr(Sample{index}, "modules", None):
+    Changed{index}.modules = tuple(changed(module) for module in Sample{index}.modules)
+'''
 
 
 class WindowStory:
@@ -62,9 +76,7 @@ class WindowStory:
         module_name = "changed_" + hashlib.sha256(str(folder).encode()).hexdigest()[:12]
         modules = json.loads(self.story.home.module_list.read_text())
         changed = [path for path in modules if path.startswith(SAMPLES_MODULE)]
-        (folder / f"{module_name}.py").write_text("".join(f"from {SAMPLES_MODULE} import {path.split(':')[1]} as Sample{index}\n" for index, path in enumerate(changed))
-                                                  + "".join(f"\n\nclass Changed{index}(Sample{index}):\n    @classmethod\n    def web_folder(cls):\n        return Sample{index}.web_folder()\n"
-                                                          for index, _ in enumerate(changed)))
+        (folder / f"{module_name}.py").write_text(CHANGED_HEADER + "".join(CHANGED_ENTRY.format(samples=SAMPLES_MODULE, name=path.split(":")[1], index=index) for index, path in enumerate(changed)))
         sys.path.insert(0, str(folder))
         try:
             renamed = {path: f"{module_name}:Changed{index}" for index, path in enumerate(changed)}
