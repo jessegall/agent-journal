@@ -3,8 +3,8 @@ import subprocess
 from pathlib import Path
 
 from engine.enums.process_kind import ProcessKind
-from engine.process.execution_request import ExecutionRequest
-from engine.process.process_executor import ProcessExecutor
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.process_executor import ProcessExecutor
 
 LIMIT_SECONDS = 30
 

@@ -2,7 +2,7 @@ import subprocess
 from pathlib import Path
 
 from engine.enums.process_kind import ProcessKind
-from engine.process.execution_request import ExecutionRequest
+from engine.process.door.execution_request import ExecutionRequest
 
 LIMIT_SECONDS = 60
 

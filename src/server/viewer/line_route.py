@@ -3,7 +3,7 @@ import json
 import shlex
 
 from engine.enums.process_kind import ProcessKind
-from engine.process.request_records import RequestRecords
+from engine.process.door.request_records import RequestRecords
 from time import perf_counter
 
 from engine.database.repeated_lines import RepeatedLines

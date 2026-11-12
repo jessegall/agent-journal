@@ -76,7 +76,7 @@
     "sin": {
         "name": "program-started-outside-the-door",
         "description": "A file starts a program itself instead of through the one door, so the run gets no row, no time limit from the door and no place in the queue.",
-        "rule": "Run a program with ProcessExecutor.execute(ExecutionRequest(...)); a file that must start one itself is named in OUTSIDE_STARTS (src/engine/process/outside_starts.py) with its reason, and in the outside_starts list of .commandments/custom/lists.json.",
+        "rule": "Run a program with ProcessExecutor.execute(ExecutionRequest(...)); a file that must start one itself is named in OUTSIDE_STARTS (src/engine/process/door/outside_starts.py) with its reason, and in the outside_starts list of .commandments/custom/lists.json.",
         "skill": "processes-architecture"
     }
 }

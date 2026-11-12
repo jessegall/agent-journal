@@ -2,9 +2,9 @@ import json
 import re
 from pathlib import Path
 
-from engine.process.outside_starts import OUTSIDE_STARTS
+from engine.process.door.outside_starts import OUTSIDE_STARTS
 
-SOURCE = Path(__file__).resolve().parents[4] / "src"
+SOURCE = Path(__file__).resolve().parents[5] / "src"
 DOOR_LISTS = SOURCE.parent / ".commandments" / "custom" / "lists.json"
 START = re.compile(r"subprocess\.(run|Popen|check_output|call)\(")
 

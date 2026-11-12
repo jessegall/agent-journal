@@ -3,7 +3,7 @@ from engine.file.file_access import FileAccess
 from collections.abc import Sequence
 
 from engine.time.clock import Clock
-from engine.agent.agent_group_entry import AgentGroupEntry
+from engine.agent.groups.agent_group_entry import AgentGroupEntry
 from engine.helper_type.helper_type_entry import HelperTypeEntry
 from engine.registry.profile_entry import ProfileEntry
 from engine.command.delete_command import DeleteCommand

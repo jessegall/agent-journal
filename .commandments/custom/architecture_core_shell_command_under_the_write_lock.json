@@ -18,7 +18,7 @@
                         }
                     },
                     {
-                        "nameMatches": "^engine\\.process\\.(process_executor|execution_request)$"
+                        "nameMatches": "^engine\\.process\\.(door\\.)?(process_executor|execution_request)$"
                     },
                     {
                         "descendant": {

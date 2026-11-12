@@ -1477,7 +1477,7 @@
         "SILENT_SAVED_PACKAGES"
     ],
     "outside_starts": [
-        "engine/process/runner_program.py",
+        "engine/process/door/runner_program.py",
         "core/modules/processes/support/queued_process_launch.py",
         "install/update/install_journal.py",
         "install/update/chat_update_steps.py",

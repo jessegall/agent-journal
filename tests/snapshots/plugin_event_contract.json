@@ -325,6 +325,7 @@
     ],
     "fields": [
       "access",
+      "announced_at",
       "creator_id",
       "ended_at",
       "environment_id",
@@ -359,6 +360,7 @@
     ],
     "fields": [
       "access",
+      "announced_at",
       "creator_id",
       "ended_at",
       "environment_id",
@@ -393,6 +395,7 @@
     ],
     "fields": [
       "access",
+      "announced_at",
       "creator_id",
       "ended_at",
       "environment_id",
@@ -427,6 +430,7 @@
     ],
     "fields": [
       "access",
+      "announced_at",
       "creator_id",
       "ended_at",
       "environment_id",
@@ -461,6 +465,7 @@
     ],
     "fields": [
       "access",
+      "announced_at",
       "creator_id",
       "ended_at",
       "environment_id",
@@ -4683,6 +4688,7 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
+      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -4718,6 +4724,7 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
+      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -4753,6 +4760,7 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
+      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -4788,6 +4796,7 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
+      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -4823,6 +4832,7 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
+      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -4858,6 +4868,7 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
+      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -4893,6 +4904,7 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
+      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -4928,6 +4940,7 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
+      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -5211,6 +5224,54 @@
       "process_id",
       "reason",
       "state"
+    ]
+  },
+  "core.processes.request_run.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "exit_code",
+      "kind",
+      "line",
+      "session_agent_id"
+    ]
+  },
+  "core.processes.request_run.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "exit_code",
+      "kind",
+      "line",
+      "session_agent_id"
+    ]
+  },
+  "core.processes.request_run.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "exit_code",
+      "kind",
+      "line",
+      "session_agent_id"
     ]
   },
   "core.processes.watch.created": {
@@ -9321,6 +9382,88 @@
     ]
   },
   "suites.coding.workers.worker_worktree.merge": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "libraries_dropped_at",
+      "library_copies",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merge_ready_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "returned_at",
+      "route_reason",
+      "session_agent_id",
+      "starts_program",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.merge_part_cut": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "libraries_dropped_at",
+      "library_copies",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merge_ready_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "returned_at",
+      "route_reason",
+      "session_agent_id",
+      "starts_program",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.merge_part_delivered": {
     "forms": [
       "commit",
       "guard",
