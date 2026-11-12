@@ -1,4 +1,3 @@
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from dataclasses import dataclass
 
 import pytest
@@ -62,14 +61,6 @@ def failed_checkpoint(new_story, monkeypatch, output: str, *failing_lines: str) 
     return FailedOwnTest(worker, Actor(merger.id, ActorType.AGENT))
 
 
-def merge_again(worker: StoryWorker) -> None:
-    """The task handed in again changed nothing, so its branch has no commit ahead of the base: the ask takes it
-    in as merged with no merge to run, and the worker is left with no worktree."""
-    asked_for_merge(worker.story, worker.worker)
-    worker.story.run_listeners()
-    worker.story.expect_text(f"worker status {agent_number(worker.story, worker.worker.id)}", "idle with no worktree", actor=worker.story.agent)
-
-
 @pytest.fixture
 def later_stories_failed(new_story, monkeypatch) -> FailedOwnTest:
     """The own test of checkpoint phase 1 failed only on the stories of the later task; task 3, completed
@@ -100,11 +91,10 @@ def test_214_a_merger_defers_the_stories_of_a_later_task_the_own_test_of_a_check
 
 @pytest.fixture
 def handed_in_again(deferred) -> FailedOwnTest:
-    """After the deferral the worker handed its returned task in again and that work is merged: the checkpoint
-    of phase 1 is reached a second time and its second run goes."""
+    """After the deferral the worker handed its returned task in again on its own commit: the checkpoint of
+    phase 1 is reached a second time and its second run goes."""
     deferred.story.expect_success(REPEATED_HAND_IN, actor=deferred.worker.worker)
     deferred.story.run_listeners()
-    merge_again(deferred.worker)
     return deferred
 
 
