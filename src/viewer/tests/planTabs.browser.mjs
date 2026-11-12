@@ -79,6 +79,7 @@ async function check(width, height, name) {
             titles: rows.map((row) => getComputedStyle(row.querySelector(".plan-title")).whiteSpace),
             agentsWidth: rows.map((row, at) => Math.round(row.querySelector("[data-plan-agents]").getBoundingClientRect().width - rects[at].width)),
             agentsText: rows.map((row) => row.querySelector("[data-plan-agents]").textContent.trim()),
+            columns: new Set(rects.map((rect) => Math.round(rect.left))).size, widths: [...new Set(rects.map((rect) => Math.round(rect.width)))], gridWidth: Math.round(grid.getBoundingClientRect().width),
             gridLeft: grid.getBoundingClientRect().left, roomLeft: grid.closest("[data-window-room]").getBoundingClientRect().left,
             beyond: Math.round(grid.getBoundingClientRect().right - innerWidth),
         };
@@ -94,6 +95,8 @@ async function check(width, height, name) {
     assert.deepEqual([...new Set(cards.agentsText)], ["No agent assigned"]);
     // the agents row runs across the cell, short of it only by the one line on the cell's right
     assert.deepEqual([...new Set(cards.agentsWidth)], [-1]);
+    assert.equal(cards.columns, 1, "one card per row");
+    assert.ok(cards.widths.length === 1 && Math.abs(cards.widths[0] - cards.gridWidth) <= 1, `cards ${cards.widths} in a grid ${cards.gridWidth}`);
     assert.equal(cards.gridLeft, cards.roomLeft);
     // the plan cards fit the width; the other windows of the page are not this test's
     assert.ok(cards.beyond <= 1, `the cards reach ${cards.beyond}px past the page`);

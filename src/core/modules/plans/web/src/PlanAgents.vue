@@ -13,7 +13,6 @@ const openAgent = (agent) => peekRef(`agents:${agent.id}`);
 <template>
     <span class="plan-agents" data-plan-agents @click.stop @keydown.enter.stop>
         <template v-if="assignee">
-            <span class="plan-agents-label">Works this plan:</span>
             <AgentTip as="button" :agent-id="assignee.id" :label="agentLabel(assignee.name, assignee.main)" class="plan-agents-button" data-plan-assignee @click="openAgent(assignee)"><AgentBadge :name="assignee.name" :main="assignee.main" /></AgentTip>
         </template>
         <template v-if="!named.length">
@@ -52,11 +51,6 @@ const openAgent = (agent) => peekRef(`agents:${agent.id}`);
     border-top: 1px solid var(--border-inner);
     color: var(--text-3);
     font-size: 12px;
-}
-
-.plan-agents-label {
-    margin-right: 6px;
-    color: var(--text-4);
 }
 
 .plan-agents-none {
