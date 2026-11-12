@@ -47,7 +47,7 @@ const scenes = {
         await run(["plan", "edit", "1", "--title", "Cart safety"]);
         await section(panel, "plan_notes.notes").getByText("Notes on Cart safety").waitFor();
         await openRow(page, "plans", 2);
-        await section(page.locator("[data-plan-inspector]"), "plan_notes.notes").getByText("Notes on Tax rules").waitFor();
+        await section(page.locator("[data-inspector]"), "plan_notes.notes").getByText("Notes on Tax rules").waitFor();
     },
 
     // a section on every inspector the sample names, and none on a plan
@@ -125,7 +125,7 @@ page.on("pageerror", (error) => problems.push(error.message));
 try {
     await page.goto(address);
     await openRow(page, "plans", 1);
-    const panel = page.locator("[data-plan-inspector]");
+    const panel = page.locator("[data-inspector]");
     await panel.waitFor({timeout: 15000});
     await scenes[scene](page, panel);
     assert.deepEqual(problems.filter((problem) => !problem.includes("this section broke")), []);
