@@ -98,8 +98,19 @@ def database(tmp_path_factory) -> Iterator[Database]:
     opened.close()
 
 
-def sorted_rows(database: Database, sql: str) -> list[tuple[object, ...]]:
-    return sorted((tuple(row) for row in database.connection.execute(sql)), key=repr)
+def sorted_rows(database: Database, sql: str) -> list[tuple[tuple[str, object], ...]]:
+    """The rows of a read in one order, each cell with the name of its type, so 1 and 1.0 and '1' differ."""
+    return sorted((tuple((type(cell).__name__, cell) for cell in row) for row in database.connection.execute(sql)), key=repr)
+
+
+def column_names(database: Database, sql: str) -> list[str]:
+    return [column[0] for column in database.connection.execute(f"SELECT * FROM ({sql}) LIMIT 0").description]
+
+
+def plan_steps(database: Database, view: str) -> list[str]:
+    """The steps SQLite plans to read a view, with the view's own name and the numbers of its subqueries left out."""
+    steps = database.connection.execute(f"EXPLAIN QUERY PLAN SELECT * FROM {view}")
+    return [re.sub(r"\d+", "", row[3].replace(view, "the view")) for row in steps]
 
 
 def test_the_old_views_are_kept_for_every_view(database):
@@ -109,5 +120,8 @@ def test_the_old_views_are_kept_for_every_view(database):
 
 @pytest.mark.parametrize("view", sorted(OLD_VIEWS))
 def test_the_view_gives_the_rows_it_gave_before(database, view):
-    old_rows = sorted_rows(database, OLD_VIEWS[view])
-    assert sorted_rows(database, f"SELECT * FROM {view}") == old_rows
+    """The same rows with cells of the same types, the same columns in their order, and the same plan to read them."""
+    database.connection.execute(f"CREATE TEMP VIEW IF NOT EXISTS {view}_old AS {OLD_VIEWS[view]}")
+    assert sorted_rows(database, f"SELECT * FROM {view}") == sorted_rows(database, OLD_VIEWS[view])
+    assert column_names(database, f"SELECT * FROM {view}") == column_names(database, OLD_VIEWS[view])
+    assert plan_steps(database, view) == plan_steps(database, f"{view}_old")

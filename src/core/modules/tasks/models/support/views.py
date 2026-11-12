@@ -65,7 +65,7 @@ AUTOMATIC_TASK_WAIT = Exists(open_task_waits().matching(AnyOf([Comparison(Column
                                                                 Comparison(Column("target"), ComparisonOperator.NOT_EQUAL, Literal("user"))])))
 AUTOMATIC_ONLY = Aliased(Inlined(AllOf([AUTOMATIC_TASK_WAIT, Excluding(USER_TASK_WAIT)])), "automatic")
 TASK_TAGS = Aliased(ScalarSubselect(Select("words").reading(ScalarSubselect(
-    Select("task_tags").selecting(Column("word")).matching(ColumnCompare("task_id", "=", "tasks.id")).ordered("word", False))).named_as("words")
+    Select("task_tags").selecting(Column("word")).matching(ColumnCompare("task_id", "=", "tasks.id")).ordered("word", False)))
     .selecting(JsonList(Column("word")))), "tags")
 
 
