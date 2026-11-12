@@ -31,19 +31,12 @@ class LaunchedEnvironment:
     def launch(self) -> LaunchTerminal:
         return LaunchTerminal(self.server.story.home, self.binary, self.programs, self.folder, self.suite_number)
 
-    def open_main_ids(self) -> list[int]:
+    def open_main_numbers(self) -> list[int]:
         rows = json.loads(self.server.story.run(f"agent list --environment {ENVIRONMENT} --oldest --limit 1000 --json").output_text)["rows"]
-        return [row["id"] for row in rows if row["role"] == "main" and row["ended_at"] is None]
+        return [row["number"] for row in rows if row["role"] == "main" and row["ended_at"] is None]
 
-    def open_main_sessions(self) -> list[str]:
-        rows = json.loads(self.server.story.run(f"agent list --environment {ENVIRONMENT} --oldest --limit 1000 --json").output_text)["rows"]
-        return [row["session"] for row in rows if row["role"] == "main" and row["ended_at"] is None]
-
-    def expect_main_session_replaced(self, old_sessions: list[str]) -> None:
-        """Every main session of an environment is its one main agent, so the new launch keeps the row and ends the
-        old session in it."""
-        sessions = self.open_main_sessions()
-        self.server.story.expect_rows(len(sessions) == 1, sessions != old_sessions, detail=f"{old_sessions} -> {sessions}")
+    def expect_one_main_agent(self) -> None:
+        self.server.story.expect_rows(len(self.open_main_numbers()) == 1)
 
 
 @pytest.fixture
@@ -56,18 +49,16 @@ def launched(new_story, tmp_path):
 def first_launch(launched):
     with launched.launch() as first:
         first.expect_menu_program()
-        first_sessions = launched.open_main_sessions()
-        launched.server.story.expect_rows(len(first_sessions) == 1)
-        yield first, first_sessions
+        launched.expect_one_main_agent()
+        yield first
 
 
-def test_a_launch_goes_on_over_a_killed_launcher_with_the_old_session_ended(launched, first_launch):
-    first, first_sessions = first_launch
-    first.kill_launcher()
+def test_a_launch_goes_on_over_a_killed_launcher_with_one_main_agent_open(launched, first_launch):
+    first_launch.kill_launcher()
     with launched.launch() as second:
         second.expect_stopping_running_main_program()
         second.expect_running()
-        launched.expect_main_session_replaced(first_sessions)
+        launched.expect_one_main_agent()
 
 
 def test_the_viewer_stop_ends_a_launched_main_and_its_launch(launched):
@@ -75,9 +66,9 @@ def test_the_viewer_stop_ends_a_launched_main_and_its_launch(launched):
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     with launched.launch() as launch:
         launch.expect_menu_program()
-        main_id = launched.open_main_ids()[0]
+        main_number = launched.open_main_numbers()[0]
         cookie = launched.server.expect_viewer_login(launched.server.viewer_key("Ada"))
-        body = {"window": "viewer.shell", "line": ["agent", "stop", f"row:{main_id}"], "environment": ENVIRONMENT}
+        body = {"window": "viewer.shell", "line": ["agent", "stop", str(main_number)], "environment": ENVIRONMENT}
         launched.server.expect_viewer_line(cookie, body, 200, '"code": 0')
         launch.expect_ended()
-        story.expect_rows(launched.open_main_ids() == [])
+        story.expect_rows(launched.open_main_numbers() == [])

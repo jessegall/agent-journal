@@ -32,6 +32,7 @@ COMMAND_AUDIT_EVENT = "subprocess.Popen"
 OPEN_REQUEST: ContextVar["RepeatedWork | None"] = ContextVar("open_request", default=None)
 SCAN_TABLE = re.compile(r"\bSCAN(?: TABLE)? (\w+)")
 SCAN_INDEX = re.compile(r"\bUSING INDEX (\w+)")
+VIRTUAL_TABLE = "VIRTUAL TABLE INDEX"
 BOUNDED_PAGE = re.compile(r"^SELECT \* FROM (\w+)(?: ORDER BY id (?:ASC|DESC))? LIMIT ([1-9]\d*|\?)(?: OFFSET (\d+|\?))?$", re.IGNORECASE)
 UNFILTERED_COUNT = re.compile(r"^SELECT count\(\*\) FROM \w+$", re.IGNORECASE)
 SMALL_TABLES = {
@@ -213,7 +214,7 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def is_logical_scan(table: str, plans: Sequence[str]) -> bool:
-        if any(plan.startswith(f"SCAN {table} VIRTUAL TABLE INDEX") for plan in plans):
+        if any(plan.startswith(f"SCAN {table} ") and VIRTUAL_TABLE in plan for plan in plans):
             return True
         return any(plan in (f"CO-ROUTINE {table}", f"MATERIALIZE {table}") for plan in plans)
 
