@@ -4,6 +4,7 @@ from engine.command.bus import Bus
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
+from engine.database.database import Database
 from engine.query.queries import Queries
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
@@ -17,6 +18,9 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, start_process
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
 from tests.stories.core.support.coding_fixtures import UserBuilder
+
+
+READS_BESIDE_THE_PRUNING = 1
 
 
 class ProcessLog(StoryFixture):
@@ -113,3 +117,19 @@ def test_each_environment_keeps_its_own_process_count(new_story):
     queries = story.container.get(Queries)
     story.expect_rows(queries.query(Process).filter(environment_id=1).count() == 2,
                       queries.query(Process).filter(environment_id=2).count() == 1)
+
+
+def test_pruning_twenty_ended_runs_at_once_reads_each_table_that_names_them_once_for_all_of_them(new_story):
+    story = new_story(fixture=UserBuilder)
+    for number in range(22):
+        ended_run(story, f"make step-{number}", "done\n")
+        story.run_listeners()
+    story.run("setting set journal.core.processes.processes-kept 2 --environment main", actor=story.user)
+    connection = story.container.get(Database).connection
+    statements: list[str] = []
+    connection.set_trace_callback(statements.append)
+    ended_run(story, "make last", "done\n")
+    connection.set_trace_callback(None)
+    tables = ("worker_operations", "merger_lines", "worker_worktrees", "trigger_action_runs", "reader_requests")
+    reads = {table: sum(1 for statement in statements if statement.lstrip().upper().startswith("SELECT") and f"FROM {table} " in statement) for table in tables}
+    story.expect_rows(story.container.get(Queries).query(Process).count() == 2, all(count <= READS_BESIDE_THE_PRUNING + 1 for count in reads.values()), detail=str(reads))

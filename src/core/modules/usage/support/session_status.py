@@ -36,6 +36,13 @@ class SessionStatus:
                    float(spent) if isinstance(spent, int | float) else None, windows, str(effort.get("level", "")) if is_mapping(effort) else "",
                    ContextWindow.number(context, "total_input_tokens"))
 
+    def context_window(self) -> ContextWindow:
+        return ContextWindow(self.context_percent, self.context_tokens, self.read_at)
+
+    @property
+    def is_read(self) -> bool:
+        return self.read_at is not None
+
     @property
     def is_reported(self) -> bool:
         return bool(self.model) or self.context_percent is not None or bool(self.cost_dollars)

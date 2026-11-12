@@ -127,8 +127,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         return next((line.strip()[:100] for line in card.helper_job_brief.splitlines() if line.strip()), "")
 
     def is_context_unknown(self, card: AgentCard, status: SessionStatus) -> bool:
-        if status.is_reported:
-            return not CurrentContextWindow.is_read_after(card.compaction_ended_at, ContextWindow(status.context_percent, status.context_tokens, status.read_at))
+        if status.is_read:
+            return not CurrentContextWindow.is_read_after(card.compaction_ended_at, status.context_window())
         return self.current_window.is_session_unknown(card.program, card.session, card.compaction_ended_at)
 
     def context_percent(self, card: AgentCard, status: SessionStatus) -> int | None:
