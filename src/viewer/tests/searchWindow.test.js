@@ -65,7 +65,9 @@ test("a search that holds nothing says so", async () => {
 });
 
 test("a search where no row holds every word says so in one line and lists the closest rows", async () => {
-    const {element} = await search({...HITS, closest: true}, "cart euros");
+    const closest = {...HITS, closest: true, hits: HITS.hits.map((hit) => ({...hit, matched_words: ["cart"]}))};
+    const {element} = await search(closest, "cart euros");
+    expect([...element.querySelectorAll("[data-hit-words]")].map((words) => words.textContent)).toEqual(["holds: cart", "holds: cart"]);
     expect(element.querySelector("[data-closest]").textContent).toBe("No result holds all these words: cart euros, these hold most of them, the closest first");
     expect(element.querySelector("[data-total]")).toBeNull();
     expect(element.querySelectorAll("[data-hit]")).toHaveLength(2);
