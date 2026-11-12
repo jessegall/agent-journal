@@ -49,8 +49,10 @@ def test_each_shipped_profile_gets_the_skills_of_its_job_and_not_those_of_anothe
 def test_every_skill_a_shipped_profile_names_exists_and_every_profile_names_some(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     recorded = {skill.folder for skill in story.container.get(SkillCatalogue).skills()}
-    unknown = {profile.name: set(profile.skills) - recorded for profile in SHIPPED_PROFILES if set(profile.skills) - recorded}
-    anonymous = [profile.name for profile in SHIPPED_PROFILES if not profile.skills]
+    registry = Registry.read(story.container.get(Database))
+    shipped = [registry.profile(profile.name).profile for profile in SHIPPED_PROFILES]
+    unknown = {profile.name: set(profile.skills) - recorded for profile in shipped if set(profile.skills) - recorded}
+    anonymous = [profile.name for profile in shipped if not profile.skills]
     story.expect_rows(not unknown, not anonymous, detail=f"{unknown} {anonymous}")
 
 
