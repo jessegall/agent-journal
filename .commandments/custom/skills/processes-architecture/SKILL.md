@@ -47,6 +47,8 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
 - **`nudge-carries-row-data`** - a nudge declaration of the processes or aliases module puts a command, a title, a line
   or a text of a stored row into the line an agent receives. A nudge names the row and its number; the agent reads the
   rest by command (rule 8). A count of lines (`{lines} lines`) is a number, not data.
+- **`stock-reader-outside-the-stock-file`** - a `StockReader` is built away from `support/stock_reader.py`. Add a
+  shipped reader to `STOCK_READERS` there, with a recorded sample in the stock sample store; nowhere else.
 - **`output-measured-outside-output-facts`** - code outside `OutputFacts` and the cadence funnel measures an output
   through `OutputFolder`: its size, its silence or its text. Measure it in `OutputFacts` (what it is) or
   `RunCadence`/`RunSilences` (how it prints); everything else asks them.
