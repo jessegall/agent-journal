@@ -1,8 +1,11 @@
+from datetime import timedelta
+
 import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from suites.coding.modules.workers.listeners.worker_test_listener import WorkerTestListener
+from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from suites.coding.modules.workers.ticks.unlaunched_worker_test_runs import UnlaunchedWorkerTestRuns
 from suites.coding.modules.workers.workers_module import WorkersModule
@@ -34,6 +37,18 @@ def test_a_queued_test_a_server_update_left_behind_is_started_by_the_tick(two_ta
     story.expect_text("proof show 1 --environment main", "state: queued")
     StalledWorkerTestRuns()(story.container)
     story.expect_text("proof show 1", "state: running", actor=story.agent)
+
+
+def test_a_proof_run_past_the_limit_is_ended_marked_stuck_and_the_worker_and_the_main_agent_are_told(two_tasks):
+    story, worker, _ = two_tasks
+    story.expect_success(COMMIT, actor=worker)
+    story.run_listeners()
+    story.expect_text("proof show 1", "state: running", actor=story.agent)
+    story.advance(timedelta(minutes=31))
+    StalledWorkerTestRuns()(story.container)
+    story.expect_text("proof show 1", "state: short", "stuck: the run went past 30 minutes", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {worker.id}", "your tests failed")
+    story.expect_rows(any("went past 30 minutes and was ended as stuck" in line.text for line in story.story_rows(MergerLine)), detail=str([line.text for line in story.story_rows(MergerLine)]))
 
 
 def test_a_proof_with_a_test_the_main_agent_checked_needs_no_run_and_the_worker_goes_on(two_tasks):

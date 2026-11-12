@@ -43,6 +43,7 @@ MERGER_ENABLED = f"{MODULE_KEY}.merger-on"
 MERGER_WAIT_MINUTES = f"{MODULE_KEY}.merger-wait-minutes"
 UNSTARTED_WORKER_SECONDS = f"{MODULE_KEY}.unstarted-worker-seconds"
 STOPPED_WORKER_RUN_MINUTES = f"{MODULE_KEY}.stopped-worker-run-minutes"
+STUCK_PROOF_RUN_MINUTES = f"{MODULE_KEY}.stuck-proof-run-minutes"
 MERGER_COMMANDS = f"{MODULE_KEY}.merger-commands"
 DELIVERY_FAILURE_LIMIT = f"{MODULE_KEY}.hand-in-failures-to-flag"
 WORKER_RUN_FAILURE_LIMIT = f"{MODULE_KEY}.own-test-failures-to-flag"
@@ -84,6 +85,7 @@ WORKER_SETTING_VALUES = [
     SettingValue("own-test-failures-to-flag", "Failed own tests to flag", "Failures of one test file in a worker's own runs after which the main agent must read a line about it.", SettingType.NUMBER, default=5, person_set=True, screen="tests", section="Telling the main agent"),
     SettingValue("merger-on", "Merger takes in workers", "A helper merges workers whose tests passed, and passes on what the main agent must judge.", SettingType.FLAG, default=True, person_set=True, required_settings=[DISPATCHES_WORKERS_SETTING], screen="work", section="Workers"),
     SettingValue("unstarted-worker-seconds", "Seconds before an unstarted worker", "Seconds after a worker is dispatched with no sign of its program before its main agent is told.", SettingType.NUMBER, default=60, person_set=True, screen="advanced", section="Silent agents"),
+    SettingValue("stuck-proof-run-minutes", "Minutes before a proof run is stuck", "Minutes a proof's test run may go on before it is ended as failed and the worker and merger are told.", SettingType.NUMBER, default=30, person_set=True, screen="advanced", section="Silent agents"),
     SettingValue("stopped-worker-run-minutes", "Minutes before a stopped worker's run", "Minutes after a worker stopped with tasks left, while a command it started still runs, before its main agent is told.", SettingType.NUMBER, default=30, person_set=True, screen="advanced", section="Silent agents"),
     SettingValue("merger-wait-minutes", "Merger wait minutes", "Minutes the merger has to take in a worker whose tests passed, before the main agent is told to merge it.", SettingType.NUMBER, default=15, person_set=True, screen="helper-type.merger", section="Waiting"),
     SettingValue("merger-commands", "Merger commands", "Lines the merger runs after each merge, sending what they find to the worker. {commit} is the commit before it.", SettingType.LIST, default=(), person_set=True, required_settings=[MERGER_ENABLED], screen="helper-type.merger", section="Commands"),
@@ -142,6 +144,7 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         MERGER_WAIT_MINUTES: NumberRule(1),
                         UNSTARTED_WORKER_SECONDS: NumberRule(1),
                         STOPPED_WORKER_RUN_MINUTES: NumberRule(1),
+                        STUCK_PROOF_RUN_MINUTES: NumberRule(1),
                         BEHIND_COMMITS_TO_CHECK: NumberRule(0),
                         BEHIND_CHECK_MINUTES: NumberRule(1),
                         BEHIND_RECHECK_COMMITS: NumberRule(0),
