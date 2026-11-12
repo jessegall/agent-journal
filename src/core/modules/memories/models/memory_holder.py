@@ -19,7 +19,7 @@ class MemoryHolder(EnvironmentScoped, ViewModel):
     agent_id: int
     environment_id: int
     role: str
-    given_name: str
+    name: str
     started_at: Timestamp
     ended_at: Timestamp | None
     active_memories: int

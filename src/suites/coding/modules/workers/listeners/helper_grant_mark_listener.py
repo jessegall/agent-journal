@@ -18,6 +18,6 @@ class HelperGrantMarkListener(MarkListener[Created[HelperGrant]]):
     def handle(self, event: Created[HelperGrant], logged: LoggedEvent) -> None:
         grant = event.row
         helper = self.event_rows.required(Agent, grant.helper_id)
-        name = helper.given_name or f"Helper {helper.id}"
+        name = helper.display_name
         detail = f"Program: {grant.program}\nSubcommands: {grant.subcommands}\nArguments: {grant.arguments}"
         self.show(logged, WorkerMarkType.WORKER, WorkerMarkVariant.TEST_ALLOWED, f"{name} may run {grant.program}", None, AGENTS_TABLE, helper.id, detail=detail)

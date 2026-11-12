@@ -31,7 +31,7 @@ class DocRevisionsSubcommand(ReadSubcommand[Sequence[DocRevision]]):
         revisions = [row for row in value if isinstance(row, DocRevision)] if is_tuple(value) else []
         author_ids = [row.author_id for row in revisions if row.author_id is not None]
         actors = {actor.id: actor.name for actor in self.queries.query(ActorRecord).find_many(author_ids)}
-        agents = {agent.id: agent.given_name for agent in self.queries.query(Agent).matching(Among("id", author_ids)).all_rows() if agent.given_name}
+        agents = {agent.id: agent.display_name for agent in self.queries.query(Agent).matching(Among("id", author_ids)).all_rows()}
         names = {**actors, **agents}
 
         def author_name(author_id: int | None) -> str:
