@@ -3,9 +3,9 @@ from pathlib import Path
 from engine.journal.journal_home import JournalHome
 from engine.module.module import Module
 from engine.module.module_finder import ModuleFinder
-from engine.module.setting_view_check import SettingViewCheck
 from engine.enums.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
+from tests.unit.support.setting_view_check import SettingViewCheck
 
 PROJECT_FOLDER = Path(__file__).resolve().parents[4]
 # the view files that read a setting key for something other than drawing its row, each with its reason
@@ -69,3 +69,11 @@ def test_the_tree_names_no_declared_setting_in_a_view_but_the_allowed_ones():
 def test_every_declared_setting_has_a_component_that_can_draw_its_kind():
     modules = ModuleFinder(JournalHome(PROJECT_FOLDER / ".journal")).default_modules()
     assert SettingViewCheck(PROJECT_FOLDER, modules, {}).component_failures() == []
+
+
+def test_a_view_of_the_core_viewer_and_a_typescript_view_are_judged_too(tmp_path):
+    for relative in ("src/viewer/src/Row.vue", "src/core/modules/x/web/src/rows.ts"):
+        view = tmp_path / relative
+        view.parent.mkdir(parents=True)
+        view.write_text('"journal.sample.auto"\n')
+    assert [problem.split(" ")[0] for problem in checked(tmp_path).failures()] == ["src/core/modules/x/web/src/rows.ts", "src/viewer/src/Row.vue"]

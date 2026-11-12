@@ -8,9 +8,10 @@ from engine.module.module import Module
 from engine.registry.setting_entry import SettingEntry
 from engine.registry.setting_tree import SettingTree
 
-VIEW_SUFFIXES = (".vue", ".js")
+VIEW_SUFFIXES = (".vue", ".js", ".ts")
 SKIPPED_PARTS = frozenset({"node_modules", "dist"})
 SETTING_COMPONENTS_FOLDER = "src/core/modules/setting_components/"
+VIEWER_FOLDER = "src/viewer/src/"
 SETTING_KEY = re.compile(r"journal(?:\.[a-z0-9_-]+)+")
 
 
@@ -28,7 +29,7 @@ class SettingViewCheck:
     def view_files(self) -> Iterable[Path]:
         for path in sorted((self.project_folder / "src").rglob("*")):
             relative = path.relative_to(self.project_folder).as_posix()
-            if path.suffix in VIEW_SUFFIXES and "/web/src/" in relative and not SKIPPED_PARTS.intersection(path.parts) and not relative.startswith(SETTING_COMPONENTS_FOLDER):
+            if path.suffix in VIEW_SUFFIXES and ("/web/src/" in relative or relative.startswith(VIEWER_FOLDER)) and not SKIPPED_PARTS.intersection(path.parts) and not relative.startswith(SETTING_COMPONENTS_FOLDER):
                 yield path
 
     def named_keys(self, text: str, keys: frozenset[str]) -> list[str]:

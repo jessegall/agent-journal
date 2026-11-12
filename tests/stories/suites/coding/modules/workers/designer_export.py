@@ -52,3 +52,4 @@ def test_a_designer_job_ends_with_its_page_and_picture_committed(new_story):
     story.expect_rows(committed[0] == f"designer {designer.id}: saved docs/designs",
                       sorted(committed[2:]) == [f"{DESIGN_FOLDER}/agent-settings.html", f"{DESIGN_FOLDER}/agent-settings.png"],
                       repository.git("status", "--porcelain").stdout.strip() == "?? cart.py")
+    story.expect_success("agent list --environment main", actor=story.user)

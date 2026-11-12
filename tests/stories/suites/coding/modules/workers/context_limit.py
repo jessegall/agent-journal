@@ -240,6 +240,10 @@ def test_an_agent_left_at_its_prompt_by_a_compaction_is_woken(agent):
     agent.advance(timedelta(seconds=40))
     agent.tick(SESSION)
     agent.expect_rows(len(agent.typing.typed) == 1, detail="woken once")
+    agent.hook(SESSION, HookSamples.prompt("go on"))
+    agent.advance(timedelta(seconds=40))
+    agent.tick(SESSION)
+    agent.expect_rows(len(agent.typing.typed) == 1, detail="not woken again once it was prompted")
 
 
 @pytest.fixture

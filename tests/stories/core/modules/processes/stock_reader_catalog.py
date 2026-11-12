@@ -119,7 +119,7 @@ def test_every_tool_with_a_streaming_hint_has_a_stored_stock_reader_or_says_why_
     story = new_story(fixture=BuilderStarted)
     BootingWork().run(story.container)
     story.run_listeners()
-    stored = story.container.get(ReaderQuery).filter(creator_id=CORE_ACTOR_ID).limit(200).get()
+    stored = story.container.get(ReaderQuery).filter(creator_id=CORE_ACTOR_ID).limit(200, "a story reads 200 rows").get()
     patterns = [pattern for patterns, _ in STREAMING_HINTS for pattern in patterns.split(",")]
     wrong = [pattern for pattern in patterns
              if any(ReaderSelection.matches(reader.commands, HINT_EXAMPLES[pattern]) for reader in stored) == (pattern in TOOLS_WITHOUT_STOCK_READER)]
