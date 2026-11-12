@@ -160,3 +160,13 @@ def test_the_command_help_and_task_skill_name_worker_waits(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_text("task block --help", "worker:<n>", actor=story.agent)
     story.expect_text("skill show journal-workers", "--on worker:<number>", actor=story.agent)
+
+
+def test_a_worker_that_committed_and_queued_its_tests_keeps_the_task_waiting_through_a_restart_of_its_session(new_story, monkeypatch):
+    story, _, worker, processes = queued_story(new_story, monkeypatch)
+    task_id = waiting_task(story, worker)
+    story.run_listeners()
+    story.expect_success(f"task show {task_id}", "state: blocked", actor=story.agent)
+    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.expect_success(f"task show {task_id}", "state: blocked", actor=story.agent)
+    story.expect_rows(len(processes) == 1)

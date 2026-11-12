@@ -17,5 +17,5 @@ class SettingTree:
             key = f"{prefix}.{node.key}"
             declared = node.declaration()
             yield SettingEntry(key, module_name, parent, declared.title, declared.description, declared.type, declared.default, declared.secret, declared.scope,
-                               tuple(declared.choices), declared.toggleable, declared.enabled, declared.target, declared.person_set, declared.rule, declared.requires_main_agent, declared.required_settings)
+                               tuple(declared.choices), declared.toggleable, declared.enabled, declared.target, declared.person_set, declared.rule, declared.requires_main_agent, declared.required_settings, declared.screen, declared.section, declared.component)
             yield from self.walked(module_name, key, key, node.members())

@@ -1,4 +1,11 @@
+from collections import defaultdict
+from collections.abc import Sequence
+
 from engine.module.task_assigner import TaskAssigner
+from engine.query.conditions.among import Among
+from core.modules.assignments.queries.conditions.assignee_among import AssigneeAmong
+from core.modules.assignments.support.assignments import Assignments
+from core.modules.tasks.models.enums.task_state import TaskState
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.plans.support.focus.focused_plan_tasks import FocusedPlanTasks
@@ -7,10 +14,12 @@ from core.modules.plans.support.plan_task_order import PlanTaskOrder
 from engine.setting.setting_values import SettingValues
 from core.modules.tasks.models.support.task_priority import URGENT_PRIORITY
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.queries.task_query import TaskQuery
+from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
 from core.modules.tasks.support.next_task_choices import NextTaskChoices
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from suites.coding.support.context_limit_check import ContextLimitCheck
+
+BLOCKED_TASK_PAGE_SIZE = 10
 
 
 class NextTask(TaskAssigner[Task]):
@@ -21,11 +30,13 @@ class NextTask(TaskAssigner[Task]):
     and is never one the agent released just now. A task reserved for the agent that is work of its focus
     is given at the focus step. An agent with tasks still in hand
     is given only the task above high. Auto mode turns it on, and an agent past its context limit is given
-    nothing until its stop has compacted it."""
+    nothing until its stop has compacted it. It also says which unfinished tasks are an agent's own: those assigned
+    to it, and those it holds that are assigned to nobody else, never a task queued on another agent; and which
+    tasks wait blocked with nothing to open them."""
 
-    def __init__(self, tasks: TaskQuery, plan_tasks: NextPlanTasks, queries: Queries, settings: SettingValues, context_limit: ContextLimitCheck, plan_order: PlanTaskOrder, choices: NextTaskChoices, focused: FocusedPlanTasks) -> None:
+    def __init__(self, tasks: TaskQuery, plan_tasks: NextPlanTasks, queries: Queries, settings: SettingValues, context_limit: ContextLimitCheck, plan_order: PlanTaskOrder, choices: NextTaskChoices, focused: FocusedPlanTasks, assignments: Assignments) -> None:
         self.tasks, self.plan_tasks, self.queries, self.settings, self.context_limit = tasks, plan_tasks, queries, settings, context_limit
-        self.plan_order, self.choices, self.focused = plan_order, choices, focused
+        self.plan_order, self.choices, self.focused, self.assignments = plan_order, choices, focused, assignments
 
     def is_automatic(self) -> bool:
         return self.settings.flag(AUTO_MODE_SETTING)
@@ -54,3 +65,21 @@ class NextTask(TaskAssigner[Task]):
         if planned is not None:
             return planned
         return open_task if open_task is not None else self.reserved(agent_id, excluded_id)
+
+    def own_tasks(self, agent_ids: Sequence[int]) -> dict[int, tuple[int, ...]]:
+        tasks = self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).ordered("id")
+        held = tuple(tasks.matching(Among("holder_id", agent_ids)).all_rows(TASK_PAGE_ROWS))
+        assigned = tuple(tasks.matching(AssigneeAmong(Task, tuple(agent_ids))).all_rows(TASK_PAGE_ROWS))
+        actor_ids = self.assignments.row_actor_ids(Task, sorted({task.id for task in (*held, *assigned)}))
+        own: dict[int, set[int]] = defaultdict(set)
+        for task in held:
+            assignees = actor_ids.get(task.id, ())
+            if not assignees or task.holder_id in assignees:
+                own[task.holder_id].add(task.id)
+        for task in assigned:
+            for agent_id in set(actor_ids.get(task.id, ())).intersection(agent_ids):
+                own[agent_id].add(task.id)
+        return {agent_id: tuple(sorted(ids)) for agent_id, ids in own.items()}
+
+    def blocked_tasks(self) -> tuple[int, ...]:
+        return tuple(task.id for task in self.tasks.unopenable_blocks().oldest().page(1, BLOCKED_TASK_PAGE_SIZE).rows)

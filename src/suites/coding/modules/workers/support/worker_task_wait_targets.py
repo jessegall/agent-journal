@@ -19,9 +19,9 @@ from engine.cli.row_numbers import RowNumbers
 class WorkerTaskWaitTargets(TaskWaitTargets):
     """Validates worker wait targets and resolves them after the worker finishes."""
 
-    def __init__(self, database: Database, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, waits: TaskWaits, numbers: RowNumbers) -> None:
+    def __init__(self, database: Database, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, waits: TaskWaits, numbers: RowNumbers, tasks: TaskQuery) -> None:
         super().__init__(database, queries, numbers)
-        self.queries, self.worktrees, self.proofs, self.waits = queries, worktrees, proofs, waits
+        self.queries, self.worktrees, self.proofs, self.waits, self.tasks = queries, worktrees, proofs, waits, tasks
 
     @property
     def target_types(self) -> tuple[str, ...]:
@@ -44,15 +44,20 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
         return self.worker_target(agent) if agent.role == CodingHelperRole.WORKER else super().helper_target(row_id)
 
     def is_finished(self, worker: Agent) -> bool:
+        if self.holds_work(worker):
+            return False
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is None or worktree.state in (WorktreeState.MERGED, WorktreeState.ABANDONED, WorktreeState.REMOVED):
             return True
         if self.proofs.tests_waiting(worktree.id) or self.proofs.has_short_proof(worktree.id):
             return False
-        if worker.ended_at is None or self.queries.query(Task).matching(TaskQuery.assignee(worker.id)).filter(state=TaskState.OPEN).exists():
+        if worker.ended_at is None:
             return False
         task = self.queries.query(Task).find(worktree.task_id)
         return task.started_at is None or task.started_at.value <= worker.ended_at.value
+
+    def holds_work(self, worker: Agent) -> bool:
+        return any(task.state is TaskState.OPEN or worker.ended_at is None for task in self.tasks.unfinished_assigned(worker.id))
 
     def resolve_waits(self, worker_id: int, context: Context) -> None:
         waits = self.waits.pending_target(f"workers:{worker_id}")

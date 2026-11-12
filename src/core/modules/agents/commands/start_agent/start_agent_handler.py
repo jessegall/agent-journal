@@ -67,7 +67,8 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
         agent = Agent(id=actor.id, parent_id=command.parent_id, creator_id=context.actor.id, access=command.access,
                       session=command.session, program=command.program, role=command.role, pid=command.pid,
                       process_started_at=command.process_started_at or self.chain.start_timestamp(command.pid),
-                      program_model=command.program_model, profile=command.profile, given_name=command.given_name)
+                      program_model=command.program_model, profile=command.profile, given_name=command.given_name,
+                      announced_at=context.timestamp if command.is_announced else None)
         try:
             created = self.numbered(agent, context)
         except ExistingRowRefusal:
