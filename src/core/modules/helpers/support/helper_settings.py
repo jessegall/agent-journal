@@ -25,6 +25,8 @@ CONTEXT_LIMIT_FINISH_TASK = f"{MODULE_KEY}.context-limit-finish-task"
 CONTEXT_LIMIT_HARD_TOKENS = f"{MODULE_KEY}.context-limit-hard-tokens"
 CONTEXT_LIMIT_ACTION = f"{MODULE_KEY}.context-limit-action"
 CONTEXT_LIMIT_GROWTH_PERCENT = f"{MODULE_KEY}.context-limit-growth-percent"
+CONTEXT_LIMIT_TOKENS_BY_KIND = f"{MODULE_KEY}.context-limit-tokens-by-kind"
+CONTEXT_LIMIT_TOKENS_BY_PROFILE = f"{MODULE_KEY}.context-limit-tokens-by-profile"
 CONTEXT_ACTIONS = ("compact", "clear")
 HELPER_SETTING_VALUES = [SettingValue("unstarted-helper-seconds", "Seconds before a helper counts as failed", "Seconds after a helper starts with no sign of its program before its launch counts as failed.", SettingType.NUMBER, default=60),
                    SettingValue("agent-use-days", "Days of agent use counted", "Days of jobs counted when suggesting which kept agent to retire.", SettingType.NUMBER, default=14),
@@ -41,6 +43,10 @@ HELPER_SETTING_VALUES = [SettingValue("unstarted-helper-seconds", "Seconds befor
                    SettingValue("cold-session-context-percent", "Context too large to resume cold", "A cold agent whose context fills this percent or more starts a new session. At 0 this check is off.", SettingType.NUMBER, default=20, person_set=True),
                    SettingValue("context-limit-on", "Compact agents at a context size", "Compact an agent between its turns once its context reaches the size set here.", SettingType.FLAG, default=False, person_set=True),
                    SettingValue("context-limit-tokens", "Compact at this context size", "An agent with this many tokens in its context is compacted between turns.", SettingType.NUMBER, default=400000, person_set=True, required_settings=tuple([CONTEXT_LIMIT_ENABLED])),
+                   SettingValue("context-limit-tokens-by-kind", "Context size per kind of agent", "One line per kind, such as worker=200000; 0 caps none. A kind not named uses the size for all.",
+                                SettingType.LIST, default=(), person_set=True),
+                   SettingValue("context-limit-tokens-by-profile", "Context size per helper type", "One line per profile, such as journal-researcher=150000; 0 caps none. It goes before its kind.",
+                                SettingType.LIST, default=(), person_set=True),
                    SettingValue("context-limit-finish-task", "Let it finish its task first", "An agent past the limit first finishes the task in hand, and is compacted when it ends.", SettingType.FLAG, default=True, person_set=True, required_settings=tuple([CONTEXT_LIMIT_ENABLED])),
                    SettingValue("context-limit-hard-tokens", "Compact anyway at this context size", "Past this many tokens an agent is compacted even with a task in hand.", SettingType.NUMBER, default=600000, person_set=True, required_settings=tuple([CONTEXT_LIMIT_ENABLED])),
                    SettingValue("context-limit-growth-percent", "Growth before compacting again", "After a compaction that left the context at or over the limit, it must grow by this percent of the limit first.", SettingType.NUMBER, default=10, person_set=True, required_settings=tuple([CONTEXT_LIMIT_ENABLED])),
