@@ -21,6 +21,7 @@ from core.modules.environments.models.environment import Environment
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.base_commit import BaseCommit
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.models.worktree_update import WorktreeUpdate
 from engine.enums.file_status import FileStatus
 from suites.coding.modules.workers.support.commit_subject import subject_search
 from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
@@ -338,6 +339,35 @@ class WorktreeGit:
     def is_own_merge(self, worktree: Worktree, parents: list[str]) -> bool:
         return len(parents) > 1 and self.is_ancestor(worktree.folder, parents[1], "HEAD")
 
+    def update(self, worktree: Worktree) -> WorktreeUpdate:
+        """Brings the worktree up to its base branch, keeping the worker's uncommitted changes: a rebase, and when it
+        clashes a merge of the base into the stashed, clean tree. A clean merge gets the changes back; a conflicting
+        one leaves its markers and keeps the changes in their stash, since a stash does not apply over unmerged paths."""
+        self.restore_stashes(worktree)
+        self.refuse_conflicts(worktree)
+        if self.is_merging(worktree.folder):
+            raise Refusal("a merge is in progress, settle it and commit first", AskTopic.CONFLICT.hint("an update would start a second merge inside it"))
+        tip = self.tip(worktree.folder, worktree.base_branch)
+        if self.is_ancestor(worktree.folder, tip, "HEAD"):
+            return WorktreeUpdate.current(tip)
+        if self.rebase(worktree):
+            return WorktreeUpdate(tip)
+        return self.merged_update(worktree, tip)
+
+    def merged_update(self, worktree: Worktree, tip: str) -> WorktreeUpdate:
+        stash = self.stash(worktree)
+        try:
+            conflicts = self.sync(worktree)
+        except Refusal:
+            if stash:
+                self.unstash(worktree, stash)
+            raise
+        if conflicts:
+            return WorktreeUpdate(tip, conflicts, stash)
+        if stash:
+            self.unstash(worktree, stash)
+        return WorktreeUpdate(tip)
+
     def rebase(self, worktree: Worktree) -> bool:
         stash = self.stash(worktree)
         rebased = False
@@ -385,7 +415,7 @@ class WorktreeGit:
         applied = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash).returncode == 0
         has_markers = bool(self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip())
         if not applied and not has_markers and not self.head_contains(worktree.folder, stash):
-            raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of the worker", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: the worker applies them"))
+            raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of the worker", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: apply them with git stash apply {stash}"))
         with self.stash_stack_lock(worktree):
             entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
             for entry in (line.split() for line in entries):
