@@ -48,7 +48,7 @@ class RunnerProgram:
             group.finish()
         if group.expired:
             raise RunTimeLimitError.passed(request.text, request.limit_seconds)
-        return Execution(placed.process_id, child.returncode, "".join(lines), "")
+        return Execution.printed(placed.process_id, child.returncode, "".join(lines))
 
     @staticmethod
     def stop_group(child: "subprocess.Popen[str]") -> None:

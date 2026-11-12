@@ -28,13 +28,13 @@ class ProcessExecutor:
             with self.placement.admitted(placed):
                 execution = self.runner.run(placed)
         except RunTimeLimitError as error:
-            self.recorded(placed, Execution(placed.process_id, TIME_LIMIT_EXIT_CODE, "", str(error)))
+            self.recorded(placed, Execution.failed(placed.process_id, TIME_LIMIT_EXIT_CODE, str(error)))
             raise
         except Refusal as refusal:
-            self.recorded(placed, Execution(placed.process_id, Refusal.exit_code, "", str(refusal)))
+            self.recorded(placed, Execution.failed(placed.process_id, Refusal.exit_code, str(refusal)))
             raise
         except BaseException:
-            self.recorded(placed, Execution(placed.process_id, 1, "", "the run failed to start"))
+            self.recorded(placed, Execution.failed(placed.process_id, 1, "the run failed to start"))
             raise
         return replace(execution, process_id=self.recorded(placed, execution))
 
