@@ -17,18 +17,15 @@ function sourceFiles(folder) {
 
 const WINDOW_SOURCES = [join(SOURCE_ROOT, "viewer/src"), join(SOURCE_ROOT, "viewer/kit"), join(SOURCE_ROOT, "core/modules"), join(SOURCE_ROOT, "suites")];
 
-test("a worker is a Worker with its profile title and its number beside it", () => {
-    expect(agentTitle({id: 900, role: "worker", number: 848, given_name: "Ada"}, {profile_title: "Medior"})).toEqual({title: "Worker", subtext: "Medior · worker 848", text: "Worker Medior · worker 848", name: "Worker 848"});
-});
-
-test("a read-only helper is a Helper whatever its profile and given name", () => {
-    expect(agentTitle({id: 7, role: "helper", number: 820, profile: "journal-merger"}, {given_name: "Madame Curie", profile_title: "Merger"})).toEqual({title: "Helper", subtext: "Merger · helper 820", text: "Helper Merger · helper 820", name: "Helper 820"});
-    expect(agentTitle({id: 8, role: "helper", number: 5, profile_title: "Researcher", given_name: "Noah"}).subtext).toBe("Researcher · helper 5");
+test("an agent is titled by its profile's name and has its role and number beside it", () => {
+    expect(agentTitle({id: 900, role: "worker", number: 848, given_name: "Ada"}, {profile: "journal-worker-senior"})).toEqual({title: "Worker senior", subtext: "worker 848", text: "Worker senior · worker 848", name: "Worker 848"});
+    expect(agentTitle({id: 7, role: "helper", number: 820, profile: "journal-planner"}, {given_name: "Madame Curie"})).toEqual({title: "Planner", subtext: "helper 820", text: "Planner · helper 820", name: "Helper 820"});
+    expect(agentTitle({id: 8, role: "helper", number: 5, profile: "journal-merger", given_name: "Noah"}).title).toBe("Merger");
 });
 
 test("an agent with no profile shows its role and number, and the main agent only its title", () => {
     expect(agentTitle({id: 3, role: "worker", number: 3}).text).toBe("Worker 3");
-    expect(agentTitle({id: 1, role: "main", number: 1}, {profile_title: "Orchestrator"})).toEqual({title: "Main agent", subtext: "", text: "Main agent", name: "Main agent"});
+    expect(agentTitle({id: 1, role: "main", number: 1}, {profile: "journal-orchestrator"})).toEqual({title: "Main agent", subtext: "", text: "Main agent", name: "Main agent"});
     expect(agentNumber({role: "helper", number: 12})).toBe("helper 12");
 });
 
