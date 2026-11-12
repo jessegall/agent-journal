@@ -20,9 +20,9 @@ from core.modules.processes.support.cadence.run_cadence import RunCadence
 from core.modules.processes.support.cadence.run_cadences import RunCadences
 from core.modules.processes.support.cadence.run_notices import RunNotices
 from core.modules.processes.support.cadence.run_silences import RunSilences
-from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.output_folder import CPU_FILE, OutputFolder
 from core.modules.processes.support.silent_start_runs import SilentStartRuns
-from core.modules.processes.ticks.hang_watch import CPU_FILE, HangWatch
+from core.modules.processes.ticks.hang_watch import HangWatch
 
 
 class CadenceWatch:

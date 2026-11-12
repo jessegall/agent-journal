@@ -7,9 +7,9 @@ from engine.command.request_user_approval import RequestUserApproval
 from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.setting_requests.commands.request_setting.request_setting import RequestSetting
-from core.modules.settings.commands.set_setting.set_setting_handler import SetSettingHandler
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_reader import SettingReader
+from core.modules.settings.support.setting_store import SettingStore
 from core.modules.settings.support.setting_revision import SettingRevision
 from core.modules.settings.support.setting_text import SettingText
 
@@ -34,7 +34,7 @@ class RequestSettingHandler(Handler[RequestSetting, ApprovalRequest]):
         if not command.reason.strip():
             raise Refusal("say why the setting should change", "--reason '<why>'")
         value = SettingText().value(entry, command.text)
-        SetSettingHandler.environment(entry, command.project, context.environment_id)
+        SettingStore.environment(entry, command.project, context.environment_id)
         details = f"{entry.title} ({entry.key}) would change from {self.values.current(entry.key).value} to {value}."
         arguments = ("setting", "set", entry.key, command.text)
         if command.project:

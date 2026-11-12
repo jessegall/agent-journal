@@ -4,7 +4,7 @@ from core.modules.phone.commands.ensure_push_keys.ensure_push_keys import Ensure
 from core.modules.phone.commands.support.push_key_pair import PushKeyPair
 from core.modules.phone.support.push_keys import PushKeys
 from engine.setting.setting_values import SettingValues
-from core.modules.settings.commands.support.setting_store import SettingStore
+from core.modules.settings.support.setting_store import SettingStore
 
 PRIVATE_KEY = "journal.core.phone.push-private-key"
 PUBLIC_KEY = "journal.core.phone.push-public-key"

@@ -20,6 +20,7 @@ FIRST_STARTED_FILE = "1.started"
 HEARTBEAT_FILE = "heartbeat"
 SLOT_FILE = "slot"
 READER_LINES_FILE = "reader.lines"
+CPU_FILE = "cpu"
 TAIL_BYTES = 8192
 BLOCK_BYTES = 64 * 1024
 

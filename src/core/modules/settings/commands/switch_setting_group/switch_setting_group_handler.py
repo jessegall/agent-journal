@@ -3,7 +3,7 @@ from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from engine.setting.setting_declaration import GROUP_TYPE
 from core.modules.settings.commands.switch_setting_group.switch_setting_group import SwitchSettingGroup
-from core.modules.settings.commands.support.setting_store import SettingStore
+from core.modules.settings.support.setting_store import SettingStore
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_reader import SettingReader
 from core.modules.settings.support.current_setting import CurrentSetting
