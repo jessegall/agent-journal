@@ -1,5 +1,5 @@
 from core.modules.processes.models.enums.notice_kind import NoticeKind
-from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
+from core.modules.processes.support.unreadable.unreadable_marks import UnreadableMarks
 
 
 class MarkedCommands:

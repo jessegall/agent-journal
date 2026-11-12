@@ -3,7 +3,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.processes.queries.output_query import OutputQuery
-from core.modules.processes.support.reading.read_advice import ReadAdvice
+from core.modules.processes.support.reading_notices.read_advice import ReadAdvice
 
 
 class ReadAdviceRule(DriverRule):
