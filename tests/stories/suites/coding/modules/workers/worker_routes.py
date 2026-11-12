@@ -252,6 +252,15 @@ def test_agent_naming_another_program_is_refused_before_git(protected_route_stor
     story.expect_rows(not list((story.home.folder.parent / 'project' / '.journal' / 'worktrees').glob('*/*')))
 
 
+def test_agent_naming_another_program_goes_through_once_the_user_switches_the_route_guard_off(protected_route_story):
+    story, route = protected_route_story
+    story.use_fixture_environment(None)
+    story.expect_success('setting make journal.core.settings.guard.workers.route-holds false', actor=story.user)
+    story.use_fixture_environment('main')
+    worker = dispatch(story, flags='--program claude')
+    expect_program(story, worker, 'claude')
+
+
 def test_agent_naming_another_program_is_refused_before_git_explicit_skip_is_logged(protected_route_story):
     story, route = protected_route_story
     story.expect_refusal('worker dispatch --test-command python=pytest 1 --program claude', 'route 1', actor=story.agent)
