@@ -44,6 +44,10 @@ class WorktreeBehindCheck(EnvironmentScoped, Model):
     def passed(self, by: int, reason: str) -> "WorktreeBehindCheck":
         return self.taken(BehindCheckLifecycle.pass_on, decided_by=by, reason=reason)
 
+    def passed_to_main_agent(self, reason: str) -> "WorktreeBehindCheck":
+        """Goes to the main agent with no one having decided, when the worktree is too far behind for the merger."""
+        return self.taken(BehindCheckLifecycle.pass_on, decided_by=None, reason=reason)
+
     def conflicted(self) -> "WorktreeBehindCheck":
         return self.taken(BehindCheckLifecycle.conflict)
 

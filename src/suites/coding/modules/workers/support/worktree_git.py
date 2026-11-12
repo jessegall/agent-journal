@@ -336,6 +336,16 @@ class WorktreeGit:
         counts = (line.split("\t")[:2] for line in listing.splitlines() if line)
         return sum(int(added) + int(deleted) for added, deleted in counts if added.isdigit() and deleted.isdigit())
 
+    def has_own_work(self, worktree: Worktree) -> bool:
+        """Whether the worktree holds a commit of its own past its base or a change not committed yet."""
+        own = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-list", "--count", f"{worktree.base_branch}..HEAD").stdout.strip()
+        return own != "0" or bool(self.uncommitted_files(worktree.folder))
+
+    def fast_forward(self, worktree: Worktree, tip: str) -> bool:
+        """Moves a worktree with nothing of its own onto the base tip, never by a rebase or a merge commit; answers
+        whether git could."""
+        return self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "merge", "--ff-only", tip).returncode == 0
+
     def is_own_merge(self, worktree: Worktree, parents: list[str]) -> bool:
         return len(parents) > 1 and self.is_ancestor(worktree.folder, parents[1], "HEAD")
 

@@ -88,6 +88,13 @@ class MemoryWorktreeGit(WorktreeGit):
         start, end = self.history.commits[self.history.merge_base(head, base)].tree, self.history.commits[base].tree
         return sum(len(set(start.get(name, "").splitlines()) ^ set(end.get(name, "").splitlines())) for name in names)
 
+    def has_own_work(self, worktree: Worktree) -> bool:
+        head = self.history.branches[self.history.folder_branch(Path(worktree.folder))]
+        return not self.history.is_ancestor(head, self.tip(worktree.folder, worktree.base_branch)) or bool(self.uncommitted_names(worktree.folder))
+
+    def fast_forward(self, worktree: Worktree, tip: str) -> bool:
+        raise GitStoryRequired("a fast-forward of a worktree needs real git")
+
     def cut(self, folder: str, worktree: Worktree, start: str) -> None:
         path = Path(worktree.folder)
         if path.exists() or path.is_symlink():

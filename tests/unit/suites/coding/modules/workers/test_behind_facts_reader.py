@@ -6,6 +6,22 @@ from tests.unit.suites.coding.modules.workers.test_worktree_git_behind import cu
 from tests.unit.suites.coding.modules.workers.test_worktree_git_own_files import SampleRepository
 
 
+class NoChecks:
+    """Queries of a worktree no earlier look has decided about."""
+
+    def query(self, model: type) -> "NoChecks":
+        return self
+
+    def filter(self, **values: object) -> "NoChecks":
+        return self
+
+    def oldest(self) -> "NoChecks":
+        return self
+
+    def all_rows(self) -> list[object]:
+        return []
+
+
 def worker() -> Agent:
     return Agent(id=7, creator_id=1, session="s-7", program="claude", role="worker", program_model="sonnet")
 
@@ -21,7 +37,7 @@ def facts(tmp_path, worker_files: dict[str, str], base_files: dict[str, str], un
         repository.committed(name, text, f"Base changes {name}")
     for name, text in (uncommitted or {}).items():
         (own.folder / name).write_text(text)
-    return BehindFactsReader(WorktreeGit(None, plain_executor())).read(worktree, worker())
+    return BehindFactsReader(WorktreeGit(None, plain_executor()), NoChecks()).read(worktree, worker())
 
 
 def test_a_file_both_changed_is_the_overlap_with_the_lines_the_base_changed_in_it(tmp_path):
