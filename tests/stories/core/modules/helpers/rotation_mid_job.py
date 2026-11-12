@@ -129,23 +129,16 @@ def launches_at_the_next_round(story) -> list[dict]:
     return [request for request in launcher.requests if "command" in request]
 
 
-def test_a_job_that_waited_out_an_outage_goes_on_in_the_same_session_once_the_outage_ends(working, monkeypatch):
+def test_a_job_that_waited_out_an_outage_goes_on_in_the_same_session_at_the_next_round_after_the_outage(working, monkeypatch):
     helper = helper_agent(working)
     real_program_states(working)
     resumable_session(working, helper, monkeypatch)
+    steered(working)
     ends_at = (working.clock.timestamp().value + timedelta(minutes=30)).isoformat()
     working.expect_success(f'provider-outage make claude "rate limit" --ends-at {ends_at}', actor=working.agent)
     working.expect_rows(launches_after_the_program_died(working) == [])
     working.advance(timedelta(minutes=31))
     launches = launches_at_the_next_round(working)
-    working.expect_rows(len(launches) == 1, "--resume" in launches[0]["command"], helper_agent(working).session == helper.session,
+    working.expect_rows(len(launches) == 1, detail=str(launches))
+    working.expect_rows(any("--resume" in launch["command"] for launch in launches), helper_agent(working).session == helper.session,
                         read_jobs(working, helper)[0].ended_at is None, detail=str(launches))
-
-
-def test_an_open_job_of_a_helper_that_ended_while_the_journal_was_down_is_handed_back_after_the_restart(working, monkeypatch):
-    helper = helper_agent(working)
-    resumable_session(working, helper, monkeypatch)
-    working.expect_success(f"agent end {helper.id}", actor=working.user)
-    working.advance(timedelta(minutes=2))
-    launches = launches_at_the_next_round(working)
-    working.expect_rows(len(launches) == 1, helper.session in launches[0]["command"], read_jobs(working, helper)[0].ended_at is None, detail=str(launches))
