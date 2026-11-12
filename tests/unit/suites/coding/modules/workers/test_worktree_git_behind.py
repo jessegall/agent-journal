@@ -97,3 +97,24 @@ def test_base_changes_lists_the_files_of_each_base_commit_merges_included(tmp_pa
         ("Tax on the base", ("tax.py",)),
     ]
     assert all(len(change.short_id) >= 7 for change in changes)
+
+
+class CountingGit(WorktreeGit):
+    """Keeps the git command of every call, so a look can be held to its count."""
+
+    def __init__(self) -> None:
+        super().__init__(None, plain_executor())
+        self.commands: list[str] = []
+
+    def git(self, folder, limit_seconds, *arguments):
+        self.commands.append(arguments[0])
+        return super().git(folder, limit_seconds, *arguments)
+
+
+def test_counting_a_worktree_takes_one_rev_list_and_no_walk_of_the_whole_history(tmp_path):
+    repository, worktree = cut_worktree(tmp_path)
+    for number in range(4):
+        repository.committed(f"base_{number}.py", "B\n", f"Base {number}")
+    counting = CountingGit()
+    assert counting.behind(worktree) == 4
+    assert counting.commands == ["rev-parse", "rev-list"]
