@@ -103,3 +103,11 @@ def test_a_part_asked_before_a_rebase_is_merged_by_its_tasks(new_story, monkeypa
     commit_each(worker, (2,))
     merge_ask = worker.story.run(MERGE_ASK, actor=worker.story.agent).output_text
     worker.story.expect_rows("task_ids: 1" in merge_ask, "is_whole: false" in merge_ask.lower(), detail=merge_ask)
+
+
+def test_the_merge_commit_of_a_unit_names_every_task_it_brings_in(new_story, monkeypatch):
+    worker = asked_list(new_story, monkeypatch)
+    worker.story.expect_success("worker-worktree list --json", actor=worker.story.agent)
+    merge(worker)
+    title = worker.repository.history.tip(ENVIRONMENT_BRANCH).message.splitlines()[0]
+    worker.story.expect_rows(title.startswith("tasks 1, 2, 3: "), detail=title)

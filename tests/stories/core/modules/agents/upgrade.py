@@ -16,3 +16,10 @@ def test_a_session_that_made_rows_but_has_no_version_4_agent_row_moves_as_an_end
     story.expect_text("question show 5", "What did the session with no row ask?")
     expect_upgrade_without_text(story, "skipped questions 5")
     expect_upgrade_text(story, "4 sessions that made rows but had no version 4 agent row moved as ended agents")
+
+
+def test_each_environment_keeps_one_main_agent_with_its_older_main_sessions_as_past_sessions(new_story):
+    story = upgraded_story(new_story)
+    mains = json.loads(story.run("agent list --role main --json").output_text)["rows"]
+    environments = [row["environment_id"] for row in mains]
+    story.expect_rows(len(environments) == len(set(environments)), detail=str(mains))

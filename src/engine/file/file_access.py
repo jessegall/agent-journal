@@ -37,6 +37,12 @@ class FileAccess:
         with io.TextIOWrapper(io.BytesIO(self.binary(file)), encoding=encoding, errors=errors, newline=newline) as text:
             return text.read()
 
+    def current(self, file: Path | str) -> str:
+        """The text of a file as it is now, never from the cache: for a file the system changes on its own, such as one under /proc."""
+        path = Path(file).resolve()
+        sys.audit(FILE_READ_EVENT, str(path))
+        return path.read_text()
+
     def bytes_range(self, file: Path | str, start: int, length: int) -> bytes:
         path = Path(file).resolve()
         sys.audit(FILE_READ_EVENT, str(path))

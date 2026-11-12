@@ -9,6 +9,7 @@ from engine.process.door.process_executor import ProcessExecutor
 from pathlib import Path
 
 from engine.time.clock import Clock
+from engine.time.timestamp import MINUTE_SECONDS
 from engine.git.hook_files_git import GIT_LIMIT_SECONDS
 from engine.errors.refusal import Refusal
 from engine.setting.setting_values import SettingValues
@@ -36,7 +37,7 @@ REFRESH_SCRIPT = (
 )
 CLUSTER = "cluster"
 NO_CLUSTER = "no-cluster"
-MINUTE_SECONDS = 60
+
 
 SHORT_COMMIT = 7
 GRAPHIFY = ToolDefinition("graphify", "Graphify", "Keeps a graph of the project's code in graphify-out, refreshed after each new commit without an LLM, so agents read it warm.",

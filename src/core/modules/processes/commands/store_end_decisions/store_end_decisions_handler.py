@@ -18,6 +18,4 @@ class StoreEndDecisionsHandler(Handler[StoreEndDecisions, None]):
 
     def handle(self, command: StoreEndDecisions, context: Context) -> None:
         process = self.rows.required(Process, command.process_id)
-        if process.is_journal_merge:
-            return
-        self.shadow.store(process, self.visibility.parts(process.id), ReadingMoment.END, context)
+        self.shadow.store(process, self.visibility.shown_parts(process), ReadingMoment.END, context)
