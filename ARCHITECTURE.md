@@ -82,7 +82,7 @@ A suite is a set of drivers for one sort of work, with the modules it lists. An 
 | Change a row | A command with its handler; a person or an agent reaches it through its subcommand | `architecture_core_handler_runs_twice` |
 | Answer a hook | A driver rule that only answers; it runs no command | `architecture_drivers_rule_runs_a_command` |
 | Read or write a file | `FileAccess.shared()` in `src/engine/file/file_access.py` | `FileReadsDetector`, `FileWritesDetector` |
-| SQL | In the database layer under `src/engine/database` | `architecture_core_sql_outside_database_layer` |
+| SQL | Built with the query builder; SQL text only in `src/engine/database`, `src/engine/query` and migrations | `architecture_queries_sql_text_in_a_builder`, `architecture_queries_statement_outside_the_builder` |
 | The time | The clock of `src/engine/time` | `architecture_core_wall_clock_outside_clock` |
 | A line in the system log | `SystemLogWriter` | `architecture_core_log_outside_system_log_writer` |
 | A line to an agent | The nudger; a nudge names a row and carries no data of it | `architecture_nudges_agent_line_outside_nudger`, `architecture_nudges_command_in_a_nudge` |

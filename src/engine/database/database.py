@@ -1,4 +1,5 @@
 import sqlite3
+from pathlib import Path
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
@@ -166,6 +167,23 @@ class Database:
     def is_partial_index(self, name: str) -> bool:
         row = self.connection.execute("SELECT partial FROM pragma_index_list((SELECT tbl_name FROM sqlite_master WHERE type = 'index' AND name = ?)) WHERE name = ?", (name, name)).fetchone()
         return row is not None and bool(row[0])
+
+    def defer_checkpoints(self) -> None:
+        """Keeps the writes of this connection in its write-ahead log, also when it closes, so the file stays as it was
+        until the log is taken in or thrown away."""
+        self.connection.execute("PRAGMA wal_autocheckpoint = 0")
+        self.connection.setconfig(sqlite3.SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE, True)
+
+    @staticmethod
+    def file_integrity(path: Path) -> str:
+        """What sqlite's integrity check says of a database file opened only to read it: 'ok', or what is wrong."""
+        connection = sqlite3.connect(f"{path.resolve().as_uri()}?mode=ro", uri=True)
+        try:
+            return str(connection.execute("PRAGMA integrity_check").fetchone()[0])
+        except sqlite3.DatabaseError as error:
+            return str(error)
+        finally:
+            connection.close()
 
     def row_state(self, table: str, row_id: int) -> str | None:
         """The state of one row by its key, or None when the table has no such row."""

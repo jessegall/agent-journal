@@ -1,8 +1,8 @@
 import shutil
-import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
+from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
 from engine.provider.hook_manager import HookManager
 from engine.provider.managed_hooks import ManagedHooks
@@ -28,20 +28,11 @@ class RestoreVersionFour:
         backup = VersionFourBackup(self.home.folder).latest()
         if backup is None:
             return UpgradeOutcome(1, f"no backup of version 4 in {self.home.folder / 'version-4'}: nothing to restore")
-        if self.integrity(backup) != INTEGRITY_PASS:
+        if Database.file_integrity(backup) != INTEGRITY_PASS:
             return UpgradeOutcome(1, f"the backup {backup} fails its integrity check: it is not restored")
         lines: list[str] = []
         CodeReplacement(self.home).run([lambda: self.restore(backup, lines)])
         return UpgradeOutcome(0, "\n".join(lines))
-
-    def integrity(self, backup: Path) -> str:
-        connection = sqlite3.connect(f"{backup.resolve().as_uri()}?mode=ro", uri=True)
-        try:
-            return str(connection.execute("PRAGMA integrity_check").fetchone()[0])
-        except sqlite3.DatabaseError as error:
-            return str(error)
-        finally:
-            connection.close()
 
     def restore(self, backup: Path, lines: list[str]) -> None:
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
