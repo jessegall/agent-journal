@@ -16,4 +16,8 @@ BEHIND_PASSED = NudgeDeclaration("workers.worktree_behind_passed", NudgeType.STE
     "worker:{worker} is {count} behind {base}, {overlap} files overlap, model {model}: the merger thinks {reason}. Decide with journal worker update {worker} or journal merger leave {worker} --why", turn_limited=False, wakes_agent=True, full_text=True)
 BEHIND_CHOICES = NudgeDeclaration("workers.worktree_behind_choices", NudgeType.STEERING,
     "worker:{worker} is {count} commits behind {base}: journal merger behind {worker}, then journal worker update {worker}, journal merger leave {worker} --why, or journal merger pass {worker}", turn_limited=False, wakes_agent=True, full_text=True)
-BEHIND_NUDGES = [FAST_FORWARDED, BEHIND_FOR_MERGER, BEHIND_FOR_MAIN_AGENT, UPDATE_FAILED_FOR_MERGER, UPDATE_ORDERED, BEHIND_PASSED, BEHIND_CHOICES]
+UPDATE_REMINDER = NudgeDeclaration("workers.worktree_update_reminder", NudgeType.STEERING,
+    "reminder: run journal worker update when you are at a stopping point; {count} commits behind {base}", turn_limited=False, wakes_agent=True)
+UPDATE_NOT_RUN = NudgeDeclaration("workers.worktree_update_not_run", NudgeType.STEERING,
+    "worker:{worker} has not run the ordered update", turn_limited=False, wakes_agent=True)
+BEHIND_NUDGES = [UPDATE_REMINDER, UPDATE_NOT_RUN, FAST_FORWARDED, BEHIND_FOR_MERGER, BEHIND_FOR_MAIN_AGENT, UPDATE_FAILED_FOR_MERGER, UPDATE_ORDERED, BEHIND_PASSED, BEHIND_CHOICES]

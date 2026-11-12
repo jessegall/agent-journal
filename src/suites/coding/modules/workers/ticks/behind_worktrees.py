@@ -13,6 +13,7 @@ from suites.coding.modules.workers.commands.announce_behind_checks.announce_behi
 from suites.coding.modules.workers.commands.check_worktree_behind.check_worktree_behind import CheckWorktreeBehind
 from suites.coding.modules.workers.models.enums.behind_route import BehindRoute
 from suites.coding.modules.workers.commands.record_behind_look.record_behind_look import RecordBehindLook
+from suites.coding.modules.workers.commands.remind_behind_updates.remind_behind_updates import RemindBehindUpdates
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.behind_checks import BehindChecks
@@ -21,11 +22,13 @@ from suites.coding.modules.workers.support.behind_checks import BehindChecks
 class BehindWorktrees:
     """Looks, once the minutes between looks have passed, at how far each cut worktree of an environment is behind
     its base branch, and opens a check for one far enough behind. A worktree whose count fails is logged and the
-    look goes on with the others. The worktrees one look leaves to the merger start it once."""
+    look goes on with the others. The worktrees one look leaves to the merger start it once. Each tick also reminds
+    the workers of an ordered update they have not run."""
 
     def __call__(self, container: Container) -> None:
         cut = (row for row in container.get(WorktreeQuery).all_worktrees() if row.state is WorktreeState.CUT)
         for environment_id in dict.fromkeys(row.environment_id for row in cut):
+            container.get(Bus).run(RemindBehindUpdates(), Actor.core(), environment_id=environment_id)
             with container.get(Scopes).opened(None, environment_id):
                 due = container.get(BehindChecks).due_worktrees(container.get(Clock).timestamp())
             routes = {worktree.id: self.checked(container, worktree.id, environment_id) for worktree in due}
