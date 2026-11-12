@@ -17,7 +17,7 @@ from engine.sandbox.agent_sandbox_choice import AgentSandboxChoice
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.caller.caller import Caller
 from engine.time.clock import Clock
-from engine.time.timestamp import Timestamp
+from engine.agent.merged_work import MergedWork
 from core.modules.tasks.models.enums.task_state import TaskState
 from engine.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity
@@ -83,7 +83,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         sandboxes = self.sandboxes(cards_read, read_rows)
         session_costs = self.spend.session_costs(agent_id) if agent_id is not None else ()
         unit_names = self.activity.work.unit_names([card.id for card in cards_read])
-        merges = self.last_merges(cards_read)
+        merges = self.merged_work(cards_read)
         return AgentFactsList(tuple(replace(self.facts(card, policy, titles, pending.get(card.id), statuses[card.session], account, sandboxes.get(card.id, True), merges.get(card.id)), session_costs=session_costs,
                                             unit_name=unit_names.get(card.id, ""))
                                     for card in cards_read))
@@ -94,22 +94,22 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         unread = sorted(separate_folder_ids - {row.id for row in rows})
         return self.sandbox.sandboxed_among([*rows, *(self.queries.query(Agent).find_many(unread) if unread else ())])
 
-    def last_merges(self, cards: Sequence[AgentCard]) -> Mapping[int, Timestamp]:
-        return self.activity.work.last_merges([card.id for card in cards])
+    def merged_work(self, cards: Sequence[AgentCard]) -> Mapping[int, MergedWork]:
+        return self.activity.work.merged_work([card.id for card in cards])
 
     @staticmethod
-    def current_round(tasks: Sequence[Mapping[str, object]], last_merge: Timestamp | None) -> tuple[Mapping[str, object], ...]:
-        if last_merge is None:
+    def current_round(tasks: Sequence[Mapping[str, object]], merged: MergedWork | None) -> tuple[Mapping[str, object], ...]:
+        if merged is None:
             return tuple(tasks)
-        return tuple(task for task in tasks if task["state"] != TaskState.COMPLETED or str(task["closed_at"]) > last_merge.text)
+        return tuple(task for task in tasks if task["state"] != TaskState.COMPLETED or not merged.includes(int(str(task["id"])), str(task["closed_at"])))
 
     def statuses(self, cards: Sequence[AgentCard]) -> Mapping[str, SessionStatus]:
         return {card.session: self.files.status(card.session) for card in cards}
 
-    def facts(self, card: AgentCard, policy: AgentPolicy, titles: dict[str, str], work_status: str | None, status: SessionStatus, account: tuple[PlanWindow, ...], sandboxed: bool, last_merge: Timestamp | None) -> AgentFacts:
+    def facts(self, card: AgentCard, policy: AgentPolicy, titles: dict[str, str], work_status: str | None, status: SessionStatus, account: tuple[PlanWindow, ...], sandboxed: bool, merged: MergedWork | None) -> AgentFacts:
         blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp(), policy)
         return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
-                          self.current_round(json.loads(card.tasks), last_merge), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
+                          self.current_round(json.loads(card.tasks), merged), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
                           card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), card.helper_job_title, titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.usage_limit_ends_at.text if card.usage_limit_ends_at is not None else None,
                           helper_job_program=card.helper_job_program, occupant_launch=self.occupant_launch(card), is_helper_job_open=card.is_helper_job_open, is_context_unknown=self.is_context_unknown(card))
 

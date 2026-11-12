@@ -52,8 +52,10 @@ class WorktreeQuery(Query[Worktree]):
     def has_merge(self, agent_id: int, earliest_at: Timestamp) -> bool:
         return self.with_removed().filter(session_agent_id=agent_id).matching(Minimum("merged_at", earliest_at.text)).exists()
 
-    def last_merged(self, agent_id: int) -> Worktree | None:
-        return self.with_removed().filter(session_agent_id=agent_id).matching(Greater("merged_at", "")).newest().first()
+    def merged_among(self, agent_ids: Sequence[int]) -> tuple[Worktree, ...]:
+        """The worktrees of these agents that a merge took work from, a whole one or a part."""
+        merged = self.with_removed().matching(Among("session_agent_id", agent_ids))
+        return tuple({worktree.id: worktree for column in ("merged_at", "merged_task_ids") for worktree in merged.matching(Greater(column, "")).all_rows()}.values())
 
     def open_worktrees(self) -> list[Worktree]:
         return list(self.kept.scoped_read(self.table.name, lambda: tuple(self.oldest().all_rows()), "removed_at IS NULL", name="workers.open_worktrees"))
