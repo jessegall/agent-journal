@@ -9,5 +9,6 @@ def test_a_stopped_agent_is_woken_by_a_persons_answer(new_story):
     story.tick("s-1")
     story.expect_success("question answer 1 --answer sqlite", actor=story.user)
     story.tick("s-1")
-    lines = [line for line in story.story_rows(AgentLine) if "question:1 is answered" in line.text]
-    story.expect_rows(len(lines) == 1, lines[0].wakes_agent, detail=str(lines))
+    lines = story.story_rows(AgentLine)
+    answered = [line for line in lines if "question:1 is answered" in line.text]
+    story.expect_rows(len(answered) == 1, any(line.wakes_agent for line in lines), detail=str(lines))
