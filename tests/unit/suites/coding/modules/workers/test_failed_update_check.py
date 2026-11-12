@@ -3,7 +3,7 @@ from suites.coding.modules.workers.commands.record_failed_update.record_failed_u
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
 from suites.coding.modules.workers.support.behind_check_closing import BehindCheckClosing
 from suites.coding.modules.workers.support.behind_nudges import UPDATE_FAILED_FOR_MERGER
-from tests.unit.suites.coding.modules.workers.test_behind_check_closing import WORKTREE, Store
+from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import WORKTREE, Store
 
 REASONS = ("branch version-5 does not exist in /work", "after the rebase, git stash apply failed: they stay in its stash abc123", "git rebase took longer than 60 seconds")
 

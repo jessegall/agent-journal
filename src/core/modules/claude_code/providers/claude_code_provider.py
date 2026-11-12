@@ -45,6 +45,7 @@ from core.modules.claude_code.providers.support.claude_inbox import ClaudeInbox
 from core.modules.claude_code.providers.support.claude_kept_skills import ClaudeKeptSkills
 from core.modules.claude_code.providers.support.claude_peer_notes import ClaudePeerNotes
 from core.modules.claude_code.providers.support.claude_trust import ClaudeTrust
+from engine.journal.journal_home import JOURNAL_FOLDER
 
 CONFIG_VARIABLE = "CLAUDE_CONFIG_DIR"
 SYNTHETIC_MODEL = "<synthetic>"
@@ -58,7 +59,6 @@ EFFORT_CHOICES = (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhig
 
 SETTINGS_FLAGS = ("--settings", "--setting-sources")
 SETTING_SOURCES = "project"
-JOURNAL_FOLDER = ".journal"
 CARRIED_SETTINGS = ("env", "apiKeyHelper", "awsAuthRefresh", "awsCredentialExport", "forceLoginMethod", "forceLoginOrgUUID", "otelHeadersHelper",
                     "includeCoAuthoredBy", "skipDangerousModePermissionPrompt")
 BYPASS_PERMISSIONS = {"defaultMode": "bypassPermissions"}

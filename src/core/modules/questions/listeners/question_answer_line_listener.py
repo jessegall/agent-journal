@@ -7,7 +7,6 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.questions.models.lifecycles.question_lifecycle import QuestionLifecycle
 from core.modules.questions.models.question import Question
 from core.modules.questions.support.question_nudges import QUESTION_ANSWER_SOURCE, QUESTION_ANSWERED, QUESTION_CLOSED
-from engine.query.conditions.among import Among
 from core.modules.waits.listeners.wait_end_listener import WORK_CONTINUED
 from core.modules.waits.models.wait import Wait
 from core.modules.waits.models.wait_target import WaitTarget
@@ -40,7 +39,5 @@ class QuestionAnswerLineListener(SaveListener[Moved[Question]]):
                              reference=f"question:{question.id} message:{question.message_id}")
 
     def has_waking_wait(self, question: Question) -> bool:
-        wait_ids = [target.wait_id for target in self.queries.query(WaitTarget).filter(row_table="questions", row_id=question.id).all_rows()]
-        if not wait_ids:
-            return False
-        return any(wait.outcome != WORK_CONTINUED for wait in self.queries.query(Wait).matching(Among("id", wait_ids)).all_rows())
+        targeted = self.queries.query(WaitTarget).filter(row_table="questions", row_id=question.id).select_columns("wait_id")
+        return self.queries.query(Wait).where_in("id", targeted).where("outcome", "!=", WORK_CONTINUED).exists()
