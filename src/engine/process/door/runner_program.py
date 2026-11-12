@@ -1,11 +1,10 @@
-import os
-import signal
 import subprocess
 import threading
 
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution import Execution
 from engine.process.door.placed_run import PlacedRun
+from engine.process.door.run_group import RunGroup
 
 
 class RunnerProgram:
@@ -31,8 +30,8 @@ class RunnerProgram:
         request = placed.request
         child = subprocess.Popen(list(request.line), cwd=request.folder, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
                                  errors="replace", start_new_session=True, env=None if request.variables is None else dict(request.variables))
-        expired = threading.Event()
-        limit = threading.Timer(request.limit_seconds, self.expire, [child, expired])
+        group = RunGroup(child)
+        limit = threading.Timer(request.limit_seconds, group.expire)
         limit.start()
         lines: list[str] = []
         try:
@@ -42,22 +41,15 @@ class RunnerProgram:
                     request.on_line(line)
             child.wait()
         except BaseException:
-            self.stop_group(child)
+            group.stop()
             raise
         finally:
             limit.cancel()
-        if expired.is_set() and child.returncode != 0:
+            group.finish()
+        if group.expired:
             raise RunTimeLimitError.passed(request.text, request.limit_seconds)
         return Execution(placed.process_id, child.returncode, "".join(lines), "")
 
-    def expire(self, child: "subprocess.Popen[str]", expired: threading.Event) -> None:
-        expired.set()
-        self.stop_group(child)
-
     @staticmethod
     def stop_group(child: "subprocess.Popen[str]") -> None:
-        try:
-            os.killpg(child.pid, signal.SIGKILL)
-        except (ProcessLookupError, PermissionError):
-            pass
-        child.communicate()
+        RunGroup(child).stop()

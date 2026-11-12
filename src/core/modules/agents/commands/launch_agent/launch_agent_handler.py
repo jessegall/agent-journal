@@ -9,6 +9,8 @@ from engine.command.handler import Handler
 from engine.journal.journal_home import JournalHome
 from engine.provider.launch import Launch
 from engine.provider.providers import Providers
+from engine.provider.program_settings_sync import ProgramSettingsSync
+from engine.actor.actor import Actor
 from engine.provider.session_start import SessionStart
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
@@ -25,8 +27,12 @@ class LaunchAgentHandler(Handler[LaunchAgent, Agent]):
 
     command = LaunchAgent
 
-    def __init__(self, bus: Bus, queries: Queries, providers: Providers, home: JournalHome, link: LauncherLink, lockdown: ProgramLockdown) -> None:
-        self.bus, self.queries, self.providers, self.home, self.link, self.lockdown = bus, queries, providers, home, link, lockdown
+    def __init__(self, bus: Bus, queries: Queries, providers: Providers, home: JournalHome, link: LauncherLink, lockdown: ProgramLockdown,
+                 sync: ProgramSettingsSync) -> None:
+        self.bus, self.queries, self.providers, self.home, self.link, self.lockdown, self.sync = bus, queries, providers, home, link, lockdown, sync
+
+    def prepare(self, command: LaunchAgent, actor: Actor) -> None:
+        self.sync.prepare(command.program)
 
     def handle(self, command: LaunchAgent, context: Context) -> Agent:
         provider = self.providers.provider(command.program)

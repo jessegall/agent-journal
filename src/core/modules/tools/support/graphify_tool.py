@@ -15,9 +15,12 @@ from engine.errors.refusal import Refusal
 from engine.setting.setting_values import SettingValues
 from core.modules.tools.support.graph_files import FAILED_FILE, REBUILD_LOCK_FILE, RUNNING_FILE, GraphFiles
 from core.modules.tools.support.graph_status import GraphStatus
+from core.modules.tools.support.project_graph_claim import ProjectGraphClaim
+from engine.journal.journal_home import JournalHome
 from core.modules.tools.models.enums.tool_setting import ToolSetting
 
 INSTALL_LIMIT_SECONDS = 600
+CLAIM_VARIABLE = "JOURNAL_GRAPH_CLAIM"
 # Runs Graphify's incremental update, which re-extracts code with no LLM, then stamps the commit it ran for; the
 # claim is released whatever happens, and a failure is recorded for its commit so a tick does not start it again.
 REFRESH_SCRIPT = (
@@ -25,16 +28,18 @@ REFRESH_SCRIPT = (
     'if "$@" update .; then '
     'printf "%s %s\\n" "$commit" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > graphify-out/.journal-refresh; rm -f graphify-out/.journal-failed; '
     'else printf "%s\\n" "$commit" > graphify-out/.journal-failed; fi; '
-    "rm -f graphify-out/.journal-running"
+    'rm -f graphify-out/.journal-running "$JOURNAL_GRAPH_CLAIM"'
 )
 
 
 class GraphifyTool:
     """Graphify as the journal runs it: installed with its install command, and refreshing one folder's graph
-    in the background with its incremental update, never two at once for the folder."""
+    in the background with its incremental update, one update at a time across the project. A tick updates the
+    main checkout's graph only; a worktree takes that graph by copy."""
 
-    def __init__(self, settings: SettingValues, clock: Clock, executor: ProcessExecutor) -> None:
-        self.settings, self.clock, self.executor = settings, clock, executor
+    def __init__(self, settings: SettingValues, clock: Clock, home: JournalHome, executor: ProcessExecutor) -> None:
+        self.settings, self.clock, self.home, self.executor = settings, clock, home, executor
+        self.project_claim = ProjectGraphClaim(home)
 
     def command(self) -> list[str]:
         return shlex.split(self.settings.project.text(ToolSetting.GRAPHIFY_COMMAND.key))
@@ -87,7 +92,8 @@ class GraphifyTool:
     def tick(self, folder: Path) -> GraphStatus:
         self.checked_folder(folder)
         status = self.status(folder)
-        skips_refresh = not self.is_installed() or not status.commit or status.is_current or status.is_running or self.is_failed(folder)
+        is_worktree = self.home.worktrees_folder.resolve() in folder.resolve().parents
+        skips_refresh = is_worktree or not self.is_installed() or not status.commit or status.is_current or status.is_running or self.is_failed(folder)
         if skips_refresh:
             return status
         return self.after_start(folder, status)
@@ -97,15 +103,21 @@ class GraphifyTool:
 
     def started(self, folder: Path, commit: str) -> bool:
         files = GraphFiles(folder)
+        if not self.project_claim.claim(self.clock):
+            return False
         if not files.claim():
+            self.project_claim.release()
             return False
         try:
-            process = subprocess.Popen(["sh", "-c", REFRESH_SCRIPT, "sh", commit, *self.command()], cwd=folder, env=os.environ.copy(), stdin=subprocess.DEVNULL,
+            environment = {**os.environ, CLAIM_VARIABLE: str(self.project_claim.path)}
+            process = subprocess.Popen(["sh", "-c", REFRESH_SCRIPT, "sh", commit, *self.command()], cwd=folder, env=environment, stdin=subprocess.DEVNULL,
                                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
         except OSError:
             files.release()
+            self.project_claim.release()
             return False
         files.record_owner(process.pid)
+        self.project_claim.record_owner(process.pid)
         return True
 
     @staticmethod

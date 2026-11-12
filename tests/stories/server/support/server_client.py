@@ -61,6 +61,8 @@ SYSTEM_CLOCK = Clock()
 TIMEOUT_SECONDS = 10
 POLL_SECONDS = 0.05
 STORY_HOOK_LIMIT_SECONDS = 0.5
+# Longer than the hook limit, as the twenty seconds of a real stop are longer than its three and a half.
+STORY_STOP_LIMIT_SECONDS = 2.0
 STORY_RUNNING_HOOKS_COUNT = 1
 LOCKED_HOOK_WAIT_SECONDS = 1.0
 
@@ -85,8 +87,8 @@ class ServerStory:
     def __init__(self, story: Story, socket_path: Path, context: ServerContext) -> None:
         self.story, self.socket_path, self.context = story, socket_path, context
 
-    def expect_locked_hook_answer(self, body: object, text: str) -> None:
-        with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, LOCKED_HOOK_WAIT_SECONDS):
+    def expect_locked_hook_answer(self, body: object, text: str, locked_seconds: float = LOCKED_HOOK_WAIT_SECONDS) -> None:
+        with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, locked_seconds):
             self.expect_hook_answer("/hook", body, 200, text)
 
     def post_hook_disconnect(self, body: dict[str, object]) -> None:
@@ -371,7 +373,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock))
         reported = ReportedFindings()
         context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, clock.timestamp(), listener_thread,
-                                hook_database, viewer_factory(login, ViewerRoutes(home, listener_thread, login, reported, hook_database.queue, clock)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS)
+                                hook_database, viewer_factory(login, ViewerRoutes(home, listener_thread, login, reported, hook_database.queue, clock)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS)
         context.request_log.refresh(synced_database_container(home, hook_database.databases[0]))
         context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported, completion_callback=context.request_log.completed)
         context.viewer.routes.line_route.line_run.request_queue = hook_database.queue

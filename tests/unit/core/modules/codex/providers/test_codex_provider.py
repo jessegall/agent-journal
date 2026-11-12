@@ -133,3 +133,28 @@ def test_a_model_with_an_effort_entry_starts_at_it_and_a_launch_that_names_one_k
     other = provider.helper_command(HelperLaunch(ROOT, FOLDER, "gpt-6.1-mini", "worker-8", ResumedSession("t-3"), VARIABLES, brief="Write the tests"))
     efforts = [[argument for argument in command.arguments if "model_reasoning_effort" in argument] for command in (session, named, helper, other)]
     assert efforts == [["model_reasoning_effort=high"], [], ["model_reasoning_effort=high"], []]
+
+
+JOURNAL_CODEX_HOME = str(ROOT / ".journal" / "programs" / "codex")
+
+
+def test_a_session_command_sets_the_journal_codex_home(provider):
+    command = provider.session_command(Launch(ROOT, FOLDER, "gpt-6.1-sol", "launch-1", SessionStart(""), VARIABLES))
+    assert command.variables["CODEX_HOME"] == JOURNAL_CODEX_HOME
+    assert command.variables["JOURNAL_ENV"] == "main"
+
+
+def test_a_helper_command_sets_the_journal_codex_home(provider):
+    command = provider.helper_command(HelperLaunch(ROOT, FOLDER, "gpt-6.1-sol", "worker-7", SessionStart(""), VARIABLES, brief="Go"))
+    assert command.variables["CODEX_HOME"] == JOURNAL_CODEX_HOME
+
+
+def test_the_journal_codex_home_wins_over_a_launch_variable(provider):
+    command = provider.session_command(Launch(ROOT, FOLDER, "gpt-6.1-sol", "launch-1", SessionStart(""), {"CODEX_HOME": "/Users/someone/.codex"}))
+    assert command.variables["CODEX_HOME"] == JOURNAL_CODEX_HOME
+
+
+def test_ask_prompts_asks_for_approval_on_request_in_a_writable_workspace(provider):
+    arguments = list(provider.session_command(Launch(ROOT, FOLDER, "gpt-6.1-sol", "launch-1", SessionStart(""), VARIABLES, skip_prompts=False)).arguments)
+    assert "--dangerously-bypass-approvals-and-sandbox" not in arguments
+    assert ["-c", 'approval_policy="on-request"', "-c", 'sandbox_mode="workspace-write"'] == arguments[arguments.index('approval_policy="on-request"') - 1:arguments.index('approval_policy="on-request"') + 3]

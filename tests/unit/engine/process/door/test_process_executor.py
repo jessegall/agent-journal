@@ -122,3 +122,10 @@ def test_a_row_that_cannot_be_written_after_a_program_that_does_not_start_does_n
     with pytest.raises(FileNotFoundError):
         door.execute(ExecutionRequest(["no-such-program-here"], tmp_path, ProcessKind.QUICK, 5))
     assert [argv for argv, _ in errors.noted] == [["record-run", "no-such-program-here"]]
+
+
+def test_a_byte_that_is_not_utf8_on_either_pipe_is_replaced_and_the_run_still_ends(tmp_path: Path):
+    door, placement = executor()
+    execution = door.execute(ExecutionRequest(["sh", "-c", r"printf 'a\377b'; printf 'c\377d' >&2"], tmp_path, ProcessKind.SHELL, 5))
+    assert (execution.stdout, execution.stderr, placement.ended_runs[0][1].exit_code) == ("a�b", "c�d", 0)
+

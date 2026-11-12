@@ -9,6 +9,8 @@ from core.modules.processes.support.run_visibility import RunVisibility
 
 
 class StoreEndDecisionsHandler(Handler[StoreEndDecisions, None]):
+    """Keeps the reading decision of an ended run of an agent; a merge the journal ran itself has no reader to judge."""
+
     command = StoreEndDecisions
 
     def __init__(self, rows: EventRows, visibility: RunVisibility, shadow: ShadowDecisions) -> None:
@@ -16,4 +18,6 @@ class StoreEndDecisionsHandler(Handler[StoreEndDecisions, None]):
 
     def handle(self, command: StoreEndDecisions, context: Context) -> None:
         process = self.rows.required(Process, command.process_id)
+        if process.is_journal_merge:
+            return
         self.shadow.store(process, self.visibility.parts(process.id), ReadingMoment.END, context)

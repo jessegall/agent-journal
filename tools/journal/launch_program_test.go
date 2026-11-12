@@ -47,3 +47,17 @@ func TestALaunchTakesTheWorktreeFlagAndKeepsEveryOtherArgumentForTheProgram(t *t
 		t.Fatalf("a bare worktree flag leaves the next flag to the program: %+v", bare)
 	}
 }
+
+func TestTheJournalCodexHomeOverridesThePersons(t *testing.T) {
+	programCommand := launch.ProgramCommand{Arguments: []string{"codex"}, Variables: map[string]string{"CODEX_HOME": "/journal"}}
+	command := programExec(programCommand, launch.Choice{Folder: "/work/shop"}, "launch-1", []string{"CODEX_HOME=/person", "PATH=/usr/bin"})
+	last := ""
+	for _, entry := range command.Env {
+		if len(entry) > len("CODEX_HOME=") && entry[:len("CODEX_HOME=")] == "CODEX_HOME=" {
+			last = entry
+		}
+	}
+	if last != "CODEX_HOME=/journal" || command.Dir != "/work/shop" {
+		t.Fatalf("the program's environment is %v in %s", command.Env, command.Dir)
+	}
+}

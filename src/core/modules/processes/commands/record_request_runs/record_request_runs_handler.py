@@ -25,9 +25,8 @@ class RecordRequestRunsHandler(Handler[RecordRequestRuns, None]):
         self.repository, self.agents, self.request_runs, self.settings = repository, agents, request_runs, settings
 
     def handle(self, command: RecordRequestRuns, context: Context) -> None:
-        main_agent = self.agents.main_agent()
         for entry in command.entries:
-            agent_id = self.owner_id(entry, main_agent)
+            agent_id = self.owner_id(entry, self.agents.environment_main_agent(entry.environment_id))
             if agent_id is None:
                 continue
             self.repository.save(RequestRun(session_agent_id=agent_id, creator_id=context.actor.id, kind=entry.kind, line=entry.line, exit_code=entry.exit_code,

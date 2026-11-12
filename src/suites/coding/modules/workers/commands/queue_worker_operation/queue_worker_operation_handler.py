@@ -15,12 +15,14 @@ from suites.coding.modules.workers.commands.queue_worker_operation.queue_worker_
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
+from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
 from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
 from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 
 
 class QueueWorkerOperationHandler(Handler[QueueWorkerOperation, WorkerOperation]):
-    """Reserves one worker and starts its command through the existing process queue. The open and blocked tasks of a
+    """Reserves one worker and starts its command through the existing process queue; an update is accepted while
+    another command of the worker runs and waits for it when it runs. The open and blocked tasks of a
     send are assigned to the worker here, so its unit names them while the send waits for the worker."""
 
     command = QueueWorkerOperation
@@ -34,7 +36,8 @@ class QueueWorkerOperationHandler(Handler[QueueWorkerOperation, WorkerOperation]
         self.sources = sources
 
     def handle(self, command: QueueWorkerOperation, context: Context) -> WorkerOperation:
-        self.operations.check_available(command.worker_id)
+        if command.name is not WorkerOperationName.UPDATE:
+            self.operations.check_available(command.worker_id)
         self.bus.handler(command.command).check_rows(command.command, context.actor)
         worker = self.rows.required(Agent, command.worker_id)
         if isinstance(command.command, SendWorker):

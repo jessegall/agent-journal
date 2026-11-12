@@ -37,7 +37,6 @@ class HookManager:
             self.managed.added(detected)
             stripped = {**settings, "hooks": kept}
             ProgramHooks.store(path, stripped)
-            provider.hooks_rewritten(path, settings.get("hooks"), kept)
         return self.managed.all()
 
     def unmanaged(self, provider: type[Provider], folder: Path) -> list[ManagedHook]:

@@ -22,7 +22,8 @@ class HookSender:
     limit_seconds: float
 
     @classmethod
-    def parsed(cls, data: object, main_limit_seconds: float = HOOK_LIMIT_SECONDS, agent_limit_seconds: float = AGENT_HOOK_LIMIT_SECONDS) -> "HookSender":
+    def parsed(cls, data: object, main_limit_seconds: float = HOOK_LIMIT_SECONDS, agent_limit_seconds: float = AGENT_HOOK_LIMIT_SECONDS,
+               stop_limit_seconds: float = STOP_LIMIT_SECONDS) -> "HookSender":
         fields: Mapping[object, object] = data if is_mapping(data) else {}
         role = str(fields.get("role") or AgentRole.MAIN)
         session = str(fields.get("session", fields.get("session_id", "")))
@@ -33,7 +34,7 @@ class HookSender:
         priority = QueuePriority.MAIN_AGENT_HOOK if is_main else QueuePriority.AGENT_HOOK
         limit_seconds = main_limit_seconds if is_main else agent_limit_seconds
         if event is HookEventName.STOP:
-            limit_seconds = max(limit_seconds, STOP_LIMIT_SECONDS)
+            limit_seconds = max(limit_seconds, stop_limit_seconds)
         return cls(role, session, event_name, event, priority, limit_seconds)
 
     @property

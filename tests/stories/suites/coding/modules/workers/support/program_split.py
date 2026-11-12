@@ -10,10 +10,8 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.journal.journal_home import JournalHome
 from engine.module.module import Module
 from engine.enums.hook_trust import HookTrust
-from engine.provider.managed_hooks import ManagedHooks
 from engine.enums.model_tier import ModelTier
 from engine.provider.program_model import ProgramModel
 from engine.provider.providers import Providers
@@ -48,7 +46,7 @@ def split_story(new_story, monkeypatch):
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     monkeypatch.setattr(shutil, 'which', lambda name: name)
     for provider in story.container.get(Providers).all():
-        monkeypatch.setattr(provider, 'hook_trust', lambda folder: HookTrust.READY)
+        monkeypatch.setattr(provider, 'journal_trust', lambda home: HookTrust.READY)
     real_program_states(story)
     return story
 
@@ -87,8 +85,8 @@ def exit_program(story, worker, code=1, text='API Error: 429 rate limit reached'
 
 def real_program_checks(story):
     for provider in story.container.get(Providers).all():
-        provider.__dict__.pop('hook_trust', None)
-    story.container.bind(HelperPrograms, HelperPrograms(story.container.get(JournalHome), story.container.get(Providers), story.container.get(ManagedHooks)))
+        provider.__dict__.pop('journal_trust', None)
+    story.container.bind(HelperPrograms, story.container.constructed(HelperPrograms))
     real_program_states(story)
 
 

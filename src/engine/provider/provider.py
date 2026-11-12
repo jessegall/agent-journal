@@ -1,9 +1,10 @@
+import os
 from engine.provider.context_window import ContextWindow
 from abc import ABC, abstractmethod
 from dataclasses import replace
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
@@ -19,6 +20,7 @@ from engine.enums.hook_trust import HookTrust
 from engine.provider.launch import Launch
 from engine.provider.launch_command import LaunchCommand
 from engine.provider.program_folders import ProgramFolders
+from engine.provider.program_settings import ProgramSettings
 from engine.enums.model_tier import ModelTier
 from engine.provider.peer_note import PeerNote
 from engine.provider.program_model import ProgramModel
@@ -32,7 +34,10 @@ from engine.provider.transcript_tail import TranscriptTail
 from engine.provider.transcript_entry import TranscriptEntry
 from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
+from engine.file.kept_bytes import KeptBytes
 
+if TYPE_CHECKING:
+    from engine.provider.managed_hook import ManagedHook
 
 class Provider(ABC):
     """The base of every agent program's provider: how the journal starts the program, which hooks it sends
@@ -60,6 +65,7 @@ class Provider(ABC):
     hook_file: ClassVar[HookFile]
     hook_files: ClassVar[tuple[Path, ...]] = ()
     worktree_hook_files: ClassVar[tuple[Path, ...]] = ()
+    person_file_note: ClassVar[str] = ""
     controls: ClassVar[Sequence[ControlGroup]] = ()
     compacts_headless: ClassVar[bool] = False
     session_variable: ClassVar[str]
@@ -166,19 +172,7 @@ class Provider(ABC):
         pass
 
     @abstractmethod
-    def hook_trust(self, project: Path) -> HookTrust: ...
-
-    @classmethod
-    def hooks_rewritten(cls, path: Path, original_hooks: object, updated_hooks: object) -> None:
-        pass
-
-    @classmethod
-    def record_hook_write(cls, path: Path, hooks: Mapping[str, object]) -> None:
-        pass
-
-    @classmethod
-    def hooks_copied(cls, source: Path, target: Path) -> None:
-        pass
+    def journal_trust(self, home: JournalHome) -> HookTrust: ...
 
     def user_hook_files(self) -> tuple[Path, ...]:
         return ()
@@ -216,6 +210,20 @@ class Provider(ABC):
     def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
         return {}
 
+    def launch_variables(self, home: JournalHome) -> Mapping[str, str]:
+        return {}
+
+    def journal_hook_file(self, home: JournalHome) -> Path:
+        return home.project_folder / self.hook_file.path
+
+
     @classmethod
     def hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]:
         return {}
+
+    def journal_settings(self, home: JournalHome, runner: str, managed: Sequence["ManagedHook"], folders: Sequence[Path]) -> ProgramSettings:
+        raise NotImplementedError
+
+    def person_data(self) -> dict[Path, bytes]:
+        return {path: KeptBytes.read(path) for path in self.user_hook_files() if path.is_file() and os.access(path, os.R_OK)}
+

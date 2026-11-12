@@ -9,7 +9,7 @@ from core.modules.drivers.support.block_conditions.agent_resumed import AgentRes
 class PausedAgentRule(DriverRule):
     """A paused agent's tool calls are refused until it is resumed, except read tools, read commands and journal
     message commands, so it can still look things up and answer in the chat; any other journal command waits for
-    the resume too (message 117878)."""
+    the resume too (message 117878), also one nested in the line of another program, such as bash -c."""
 
     name = "drivers.paused-agent"
     hook = HookEventName.PRE_TOOL_USE
@@ -24,4 +24,4 @@ class PausedAgentRule(DriverRule):
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None:
             return False
-        return any(part.arguments[:1] != ("message",) for part in shell.parts_running_journal_command())
+        return any(line[:1] != ("message",) for line in shell.journal_argument_lines())

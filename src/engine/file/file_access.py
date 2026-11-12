@@ -131,6 +131,15 @@ class FileAccess:
                 self.invalidate(path)
                 path.unlink(missing_ok=True)
 
+    def write_whole(self, file: Path | str, data: bytes, mode: int) -> None:
+        path = Path(file)
+        with self.temporary_writer(path.parent, "wb") as writing:
+            writing.write(data)
+            writing.flush()
+            os.fsync(writing.fileno())
+            os.chmod(writing.name, mode)
+            self.replace(writing.name, path)
+
     def replace(self, source: Path | str, target: Path | str) -> Path:
         source_path, target_path = Path(source), Path(target)
         with self.lock:

@@ -27,15 +27,17 @@ def test_turning_graphify_off_removes_its_managed_hooks(new_story, tmp_path):
     story.expect_rows(tool_hooks(story) == [])
 
 
-def test_no_second_update_starts_while_one_runs(new_story, tmp_path):
+def test_no_second_update_starts_while_one_runs_in_this_or_another_folder(new_story, tmp_path):
     story, repo = story_with_graphify(new_story, tmp_path)
+    other = GraphifyRepo(tmp_path, "other")
     repo.block_graphify()
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
     repo.poll_calls(1)
     repo.commit("second")
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
+    story.expect_success(f"{TICK} {other.folder}", actor=story.agent)
     story.expect_text(f"tool refresh graphify --folder {repo.folder}", "refreshing", actor=story.agent)
-    story.expect_rows(repo.call_count() == 1)
+    story.expect_rows(repo.call_count() == 1, not (other.folder / "graphify-out/.journal-running").exists())
     repo.release_graphify()
     repo.wait(repo.folder / "graphify-out", lambda: not (repo.folder / "graphify-out/.journal-running").exists())
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
@@ -127,3 +129,4 @@ def test_the_tools_window_is_a_project_page_that_reads_the_list_and_runs_its_but
     window.expect_window_allowed("tools.tools", "tool off graphify")
     window.expect_window_allowed("tools.tools", "tool install graphify")
     window.expect_window_allowed("tools.tools", "tool refresh graphify")
+
