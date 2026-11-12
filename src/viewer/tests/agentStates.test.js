@@ -17,7 +17,7 @@ test("an older idle agent keeps the details returned on its page", async () => {
     const card = cardOf(element, helper.id);
     expect(card.querySelector("[data-agent-name]").textContent).toBe("Lady Lovelace");
     expect(card.querySelector("[data-agent-title]").textContent).toBe("Researcher");
-    expect([...card.querySelector("[data-agent-job]").childNodes].filter((node) => node.nodeType === 3).map((node) => node.textContent).join("").trim()).toBe("Job");
+    expect([...card.querySelector("[data-agent-job]").childNodes].filter((node) => node.nodeType === 3).map((node) => node.textContent).join("").trim()).toBe("Read the cart");
     expect(card.querySelector("[data-agent-job] [role='tooltip']").textContent).toBe("Read the cart");
     expect(card.querySelector("[data-agent-count]")).toBeNull();
     expect(card.querySelector("[data-agent-bar]")).toBeNull();
@@ -26,7 +26,7 @@ test("an older idle agent keeps the details returned on its page", async () => {
     await settle();
     expect(card.querySelector("[data-agent-report]")).toBeNull();
     expect(card.querySelector("[data-agent-last-heard]")).not.toBeNull();
-    expect(card.querySelector("[data-agent-resume-reason]").textContent).toContain("cannot resume");
+    expect(card.querySelector("[data-agent-resume-reason]")).toBeNull();
 });
 
 test("retired agents show their reason and the upgrade count", async () => {

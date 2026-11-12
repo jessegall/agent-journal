@@ -56,7 +56,7 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
         for task in tasks:
             if task.state is TaskState.TESTING:
                 self.repository.save_change(task, task.close(context.timestamp, context.actor, reasons[task.id]), context)
-        return MergeOutcome(worktree, ())
+        return MergeOutcome(self.repository.save_change(worktree, worktree.part_merged([task.id for task in tasks]), context), ())
 
     def target_commit(self, worktree: Worktree, target: str) -> str:
         if self.range.names_task(target):

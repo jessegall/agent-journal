@@ -6,11 +6,15 @@ from core.modules.drivers.models.enums.dispatch_mark_type import DispatchMarkTyp
 from core.modules.drivers.models.enums.dispatch_mark_variant import DispatchMarkVariant
 from core.modules.drivers.models.helper_job import HelperJob
 from engine.event.changed import Changed
+from engine.query.conditions.less import Less
+from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class HelperJobMarkListener(MarkListener[Changed[HelperJob]]):
     """A helper's job shows as one mark in the chat with its instruction, which ends in place with what the helper
-    returned, and a click opens the helper once it has started."""
+    returned, and a click opens the helper once it has started. The first job of a helper says Started; a job sent
+    to a running helper says Steered, and one sent to a helper that had ended says Sent a job."""
 
     name = "helpers.job-mark"
     disabled_scopes = [ActorScope]
@@ -21,6 +25,14 @@ class HelperJobMarkListener(MarkListener[Changed[HelperJob]]):
         key = f"dispatch:{row.id}"
         table = AGENTS_TABLE if row.helper_id is not None else ""
         if row.ended_at is None:
-            self.show(logged, DispatchMarkType.DISPATCH, DispatchMarkVariant.DISPATCHED, f"Started {row.profile} . {row.program_model}: {row.description}", row.session_agent_id, table, row.helper_id, detail=row.instruction, key=key, ended=False)
+            self.show(logged, DispatchMarkType.DISPATCH, DispatchMarkVariant.DISPATCHED, self.opening_words(row), row.session_agent_id, table, row.helper_id, detail=row.instruction, key=key, ended=False)
         else:
             self.show(logged, DispatchMarkType.DISPATCH, DispatchMarkVariant.FINISHED, f"Agent {row.helper_id} reported back" if row.report_message_id else f"Finished {row.profile}", row.session_agent_id, table, row.helper_id, detail=row.returned, key=key, ended=True)
+
+    def opening_words(self, row: HelperJob) -> str:
+        if row.helper_id is None or not self.queries.query(HelperJob).filter(helper_id=row.helper_id).matching(Less("id", row.id)).exists():
+            return f"Started {row.profile} . {row.program_model}: {row.description}"
+        helper = AgentLabel.from_agent(self.queries.query(Agent).find(row.helper_id)).text
+        if row.source_line_id is not None:
+            return f"Steered {helper}: {row.instruction}"
+        return f"Sent {helper} a job: {row.instruction}"

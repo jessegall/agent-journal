@@ -146,10 +146,8 @@ test("worker identity stays the same when opened", async () => {
     expect(live.querySelector("[data-agent-last-heard]").textContent).toContain("Seen:");
     expect(live.querySelector("[data-agent-run-time]").textContent).toBe("Run time: 1m");
     expect(live.previousElementSibling).toBe(opened.querySelector(".agent-head"));
-    const dispatched = opened.querySelector("[data-agent-first-dispatched]");
-    expect(dispatched.textContent).toBe("6m ago");
-    expect(dispatched.querySelector("[data-icon]")).toBeNull();
-    expect(dispatched.querySelector("time").dateTime).toBe(row.created_at);
+    expect(opened.querySelector("[data-agent-first-dispatched]")).toBeNull();
+    expect(opened.querySelector("[data-agent-session-count]")).toBeNull();
     const bar = opened.querySelector("[data-information-bar]");
     expect(bar.querySelector("[data-fact='agent']").textContent).toMatch(/codex/i);
     expect(bar.querySelector("[data-fact='model']").textContent).toContain("gpt-6.1-sol");
@@ -293,6 +291,19 @@ test("a running worker's card names the command it runs", async () => {
     await vi.waitFor(() => expect(element.querySelector("[data-agent-command]").textContent.trim()).toBe("Bash make test"));
 });
 
+test("the command of an open card is the last thing in it, under the tab body, whichever tab is chosen", async () => {
+    const worker = {id: 4, number: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null};
+    const lines = {"agent cards": page([worker]), "agent running": page([worker]), "usage agents --closed": page([]), "usage tool --agent 4": {ok: true, value: {tool: "Bash make test"}}};
+    const element = await mounted({render: () => h(AgentRows, {line: "agent cards", empty: "No agents yet"})}, context(lines));
+    cardOf(element, 4).click();
+    await settle();
+    await vi.waitFor(() => expect(element.querySelector("[data-agent-command]")).not.toBeNull());
+    const more = element.querySelector("[data-agent-more]");
+    expect(more.lastElementChild).toBe(element.querySelector("[data-agent-command]"));
+    expect(element.querySelector("[data-agent-command]").previousElementSibling).toBe(element.querySelector(".agent-tab-body"));
+    expect(element.querySelector(".agent-tab-body [data-agent-command]")).toBeNull();
+});
+
 test("a running helper's card names the command it runs", async () => {
     const helper = {id: 6, number: 6, session: "s-1", program: "claude", role: "helper", access: "read-only", ended_at: null};
     const lines = {"agent cards": page([helper]), "agent running": page([helper]), "usage agents --closed": page([]), "usage tool --agent 6": {ok: true, value: {tool: "Read src/cart.py", note: ""}}};
@@ -314,7 +325,7 @@ test("an open helper has transcript and terminal tabs with its instruction folde
     const helper = {id: 6, number: 6, session: "s-1", program: "claude", role: "helper", access: "read-only", ended_at: null};
     const lines = {"usage tool --agent 6": {ok: true, value: {tool: "", note: ""}}, "agent transcript 6": page([])};
     const element = await mounted({render: () => h(AgentCard, {row: helper, facts: {instruction: "Read the cart"}, open: true})}, {...context(lines), tabs: TABS});
-    expect([...element.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["transcript", "terminal", "reports"]);
+    expect([...element.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["tasks", "transcript", "terminal", "file-feed", "reports"]);
     expect(element.querySelector('[data-agent-tab-body="transcript"]')).not.toBeNull();
     expect(element.querySelector("[data-agent-section='instruction']").textContent).toContain("Instruction");
     expect(element.querySelector("[data-agent-instruction]")).toBeNull();
