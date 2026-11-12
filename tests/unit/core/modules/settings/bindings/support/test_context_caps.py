@@ -1,7 +1,5 @@
-from types import SimpleNamespace
-
-from core.modules.helpers.support.context_caps import ContextCaps
-from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_KINDS, CONTEXT_LIMIT_PROFILES, CONTEXT_LIMIT_TOKENS
+from core.modules.settings.bindings.support.context_caps import ContextCaps
+from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_KINDS, CONTEXT_LIMIT_PROFILES, CONTEXT_LIMIT_TOKENS
 
 
 class Settings:
@@ -25,17 +23,13 @@ def caps(**values: object) -> ContextCaps:
                                  CONTEXT_LIMIT_KINDS: ("worker:200000", "main:none"), CONTEXT_LIMIT_PROFILES: ("journal-planner:150000",), **values}))
 
 
-def agent(role: str, profile: str = "") -> SimpleNamespace:
-    return SimpleNamespace(role=role, profile=profile)
-
-
 def test_a_worker_is_capped_while_the_main_agent_is_not():
-    assert (caps().tokens(agent("worker")), caps().tokens(agent("main"))) == (200000, None)
+    assert (caps().tokens("worker", ""), caps().tokens("main", "")) == (200000, None)
 
 
 def test_a_helper_type_entry_wins_over_its_kind_and_an_unlisted_kind_uses_the_size_for_every_agent():
-    assert (caps().tokens(agent("helper", "journal-planner")), caps().tokens(agent("helper", "journal-researcher"))) == (150000, 400000)
+    assert (caps().tokens("helper", "journal-planner"), caps().tokens("helper", "journal-researcher")) == (150000, 400000)
 
 
 def test_no_agent_is_capped_while_the_context_limit_is_off():
-    assert caps(**{CONTEXT_LIMIT_ENABLED: False}).tokens(agent("worker")) is None
+    assert caps(**{CONTEXT_LIMIT_ENABLED: False}).tokens("worker", "") is None

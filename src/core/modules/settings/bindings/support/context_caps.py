@@ -1,6 +1,5 @@
 from engine.setting.setting_values import SettingValues
-from core.modules.agents.models.agent import Agent
-from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_KINDS, CONTEXT_LIMIT_PROFILES, CONTEXT_LIMIT_TOKENS
+from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_KINDS, CONTEXT_LIMIT_PROFILES, CONTEXT_LIMIT_TOKENS
 
 NO_CAP = "none"
 
@@ -12,10 +11,10 @@ class ContextCaps:
     def __init__(self, settings: SettingValues) -> None:
         self.settings = settings
 
-    def tokens(self, agent: Agent) -> int | None:
+    def tokens(self, role: str, profile: str) -> int | None:
         if not self.settings.flag(CONTEXT_LIMIT_ENABLED):
             return None
-        for key, name in ((CONTEXT_LIMIT_PROFILES, agent.profile), (CONTEXT_LIMIT_KINDS, agent.role)):
+        for key, name in ((CONTEXT_LIMIT_PROFILES, profile), (CONTEXT_LIMIT_KINDS, role)):
             entry = self.entries(key).get(name) if name else None
             if entry is not None:
                 return None if entry == NO_CAP else int(entry)
