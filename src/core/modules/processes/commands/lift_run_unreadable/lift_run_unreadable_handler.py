@@ -5,7 +5,7 @@ from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.commands.lift_run_unreadable.lift_run_unreadable import LiftRunUnreadable
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.unreadable_mark import UnreadableMark
-from core.modules.processes.support.process_nudges import UNREADABLE_LIFTED
+from core.modules.processes.support.reading.reading_notices import ReadingNotices
 from core.modules.processes.support.reading.run_command_words import RunCommandWords
 from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
 
@@ -24,5 +24,6 @@ class LiftRunUnreadableHandler(Handler[LiftRunUnreadable, UnreadableMark]):
     def handle(self, command: LiftRunUnreadable, context: Context) -> UnreadableMark:
         process = self.rows.required(Process, command.process_id)
         mark = self.marks.lift(self.words.words(process), context.actor.id, context)
-        self.nudger.send(process.session_agent_id, UNREADABLE_LIFTED, SOURCE, context, name=mark.words)
+        for nudge in ReadingNotices.mark_nudges(process, (mark,)):
+            self.nudger.send_nudge(process.session_agent_id, nudge, SOURCE, context)
         return mark

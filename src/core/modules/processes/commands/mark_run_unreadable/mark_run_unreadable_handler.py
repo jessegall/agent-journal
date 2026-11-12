@@ -6,7 +6,7 @@ from core.modules.processes.commands.mark_run_unreadable.mark_run_unreadable imp
 from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.unreadable_mark import UnreadableMark
-from core.modules.processes.support.process_nudges import UNREADABLE_DECLARED
+from core.modules.processes.support.reading.reading_notices import ReadingNotices
 from core.modules.processes.support.reading.run_command_words import RunCommandWords
 from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
 
@@ -25,5 +25,6 @@ class MarkRunUnreadableHandler(Handler[MarkRunUnreadable, UnreadableMark]):
     def handle(self, command: MarkRunUnreadable, context: Context) -> UnreadableMark:
         process = self.rows.required(Process, command.process_id)
         mark = self.marks.mark(context.actor.id, self.words.words(process), UnreadableReason.DECLARED, "", context)
-        self.nudger.send(process.session_agent_id, UNREADABLE_DECLARED, SOURCE, context, name=mark.words)
+        for nudge in ReadingNotices.mark_nudges(process, (mark,)):
+            self.nudger.send_nudge(process.session_agent_id, nudge, SOURCE, context)
         return mark

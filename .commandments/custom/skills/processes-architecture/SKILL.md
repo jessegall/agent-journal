@@ -34,6 +34,8 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
   `BlockUntil` in the processes module, or a refusal with a reading declaration (`READER_BLOCK`, `READING_PREVENTED`,
   `SILENT_START_REFUSED`, `REDIRECTED_RUN`...). The enforcer is the only code that presses and states the exits; the
   silent-run hold keeps its own rule and the alias rules keep their own refusals.
+- **`reading-nudge-outside-the-notices`** - a rule, a listener or a tick says a reading or cadence notice itself (a
+  declaration of the `reading_declarations` list). `ReadingNotices` and `WarnCadenceHandler` are the only senders.
 - **`output-measured-outside-output-facts`** - code outside `OutputFacts` and the cadence funnel measures an output
   through `OutputFolder`: its size, its silence or its text. Measure it in `OutputFacts` (what it is) or
   `RunCadence`/`RunSilences` (how it prints); everything else asks them.
