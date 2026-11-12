@@ -213,9 +213,6 @@ class Provider(ABC):
     def reported_model(self, home: JournalHome, session: str) -> str:
         return ""
 
-    def effort(self, model: str) -> str:
-        return ""
-
     def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
         return {}
 
