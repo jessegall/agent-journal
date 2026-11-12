@@ -20,6 +20,7 @@ class Reader(Model):
     name: str
     type: ReaderType
     commands: str
+    shipped_digest: str = ""
     lines_pattern: str = ""
     script: str = ""
     progress_pattern: str = ""

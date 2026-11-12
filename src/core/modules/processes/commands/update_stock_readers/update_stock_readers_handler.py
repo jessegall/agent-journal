@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from dataclasses import replace
 
 from engine.actor.actor import CORE_ACTOR_ID
 from engine.command.context import Context
@@ -12,6 +13,7 @@ from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.support.stock_reader import STOCK_READERS
 from core.modules.processes.support.stock_reader_rows import StockReaderRows
+from core.modules.processes.support.stock_digest import StockDigest
 from core.modules.processes.support.stock_retirement import StockRetirement
 from core.modules.processes.support.reading.stock_reader_edits import StockReaderEdits
 
@@ -29,7 +31,7 @@ class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
             reader = rows.readers.get(stock.name)
             if reader is not None and (reader.creator_id != CORE_ACTOR_ID or reader.id in rows.edited_ids):
                 continue
-            updated = stock.applied(reader)
+            updated = replace(stock.applied(reader), shipped_digest=StockDigest.of(stock))
             if updated != reader:
                 saved = self.repository.save_change(reader, updated, context)
                 self.kept.update("readers", self.with_saved(saved), name="processes.stock_readers")
