@@ -5,7 +5,7 @@ import {ChangeFoot, FindBox, SettingPresetBand, currentPreset, useSettingsDraft}
 import AgentSettingsAgents from "./AgentSettingsAgents.vue";
 import AgentSettingsPresets from "./AgentSettingsPresets.vue";
 import AgentSettingsScreen from "./AgentSettingsScreen.vue";
-import {fullCount, useHelperRows} from "./helperRows.js";
+import {CAP_SIZES, CONTEXT_PROFILES, CONTEXT_TOKENS, entryOf, fullCount, useHelperRows} from "./helperRows.js";
 
 // the agent settings: the tabs under the environment, the long tabs drawn from the screens the settings declare,
 // and one foot for the changes of all of them; a viewer who may only read sees a note that only a person changes them
@@ -34,6 +34,12 @@ const {rows: helperTable} = useHelperRows(view, draft);
 const full = computed(() => fullCount(helperTable.value));
 const tabAnswer = computed(() => (full.value ? {full: `${full.value} full`} : {}));
 onMounted(() => view.reload("limits"));
+
+// the context caps by kind of agent: a row for each kind, the sizes to choose from, the size for every agent, and the types that have a cap of their own
+const KIND_ROWS = [{key: "main", name: "Main agent"}, {key: "worker", name: "Workers"}, {key: "helper", name: "Read-only helpers"}];
+const titleOf = (profile) => helperTable.value.find((entry) => entry.profile === profile)?.name ?? profile;
+const ownCaps = computed(() => (draft.value(CONTEXT_PROFILES) ?? []).map(entryOf).map(({name, value}) => ({name: titleOf(name), value: value === "none" ? "no cap" : `${Number(value) / 1000}k`})));
+const advancedExtras = computed(() => ({"keyed-cap-table": {rows: KIND_ROWS, sizes: CAP_SIZES, defaultCap: Number(draft.value(CONTEXT_TOKENS)) || CAP_SIZES[0], ownCaps: ownCaps.value}}));
 
 const nodesOf = (name) => view.props[SCREEN_KEYS[name]].data.value?.nodes ?? [];
 const nothingStarts = computed(() => draft.value(AUTO) === false && draft.value(DISPATCHES) === false);
@@ -111,7 +117,7 @@ function pick(entry) {
                                 </template>
                                 <template #advanced>
                                     <template v-if="isLoaded">
-                                        <AgentSettingsScreen key="advanced" :nodes="nodesOf('advanced')" :draft="draft" :read-only="view.readOnly" :found="found" data-agent-settings-advanced />
+                                        <AgentSettingsScreen key="advanced" :nodes="nodesOf('advanced')" :draft="draft" :read-only="view.readOnly" :found="found" :extras="advancedExtras" data-agent-settings-advanced />
                                     </template>
                                 </template>
                             </SwitchCase>

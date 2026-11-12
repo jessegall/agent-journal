@@ -7,6 +7,7 @@ import SettingEmptyState from "./SettingEmptyState.vue";
 import SettingEntryList from "./SettingEntryList.vue";
 import SettingHelperTypeTable from "./SettingHelperTypeTable.vue";
 import SettingKeyedCapTable from "./SettingKeyedCapTable.vue";
+import SettingLayoutNote from "./SettingLayoutNote.vue";
 import SettingNestedGroup from "./SettingNestedGroup.vue";
 import SettingNumberField from "./SettingNumberField.vue";
 import SettingNumberList from "./SettingNumberList.vue";
@@ -45,6 +46,7 @@ export {
     SettingEntryList,
     SettingHelperTypeTable,
     SettingKeyedCapTable,
+    SettingLayoutNote,
     SettingNestedGroup,
     SettingNumberField,
     SettingNumberList,

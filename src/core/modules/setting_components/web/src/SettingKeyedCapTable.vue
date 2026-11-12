@@ -1,5 +1,6 @@
 <script setup>
 import SettingChoiceField from "./SettingChoiceField.vue";
+import SettingLayoutNote from "./SettingLayoutNote.vue";
 import SettingSegments from "./SettingSegments.vue";
 
 // the context size of each kind of agent: a row for each kind with three choices, the size set for every agent, a size
@@ -11,6 +12,7 @@ const props = defineProps({
     sizes: {type: Array, required: true},
     defaultCap: {type: Number, required: true},
     disabled: {type: Boolean, default: false},
+    ownCaps: {type: Array, default: () => []},
 });
 const emit = defineEmits(["update:modelValue"]);
 
@@ -58,6 +60,7 @@ function change(key, mode, size) {
                 </template>
             </div>
         </template>
+        <SettingLayoutNote :entries="ownCaps" />
     </div>
 </template>
 

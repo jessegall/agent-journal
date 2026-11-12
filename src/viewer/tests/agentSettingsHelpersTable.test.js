@@ -40,7 +40,8 @@ test("the context cap column says the value and where it comes from", async () =
     const {element} = await helpers();
     const cap = (key) => [...row(element, key).querySelectorAll(".cap > span, .cap small")].map((part) => part.textContent);
     expect(cap("worker")).toEqual(["200k", "Set for its kind"]);
-    expect(cap("helper:journal-researcher")).toEqual(["400k", "Set for every agent"]);
+    expect(cap("helper:journal-researcher")).toEqual(["150k", "Own value"]);
+    expect(cap("helper:journal-designer")).toEqual(["400k", "Set for every agent"]);
 });
 
 test("the line of the read-only helpers carries the limits every profile shares and a way to change them", async () => {

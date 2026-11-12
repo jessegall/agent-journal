@@ -13,11 +13,11 @@ export const READ_ONLY_KEPT = `${CORE}.read-only-helper-kept-limit`;
 const NO_CAP = "none";
 const sizeWord = (tokens) => `${tokens / 1000}k`;
 // the name and the value of an entry such as worker:200000 or journal-planner:none
-const entryOf = (text) => {
+export const entryOf = (text) => {
     const at = text.lastIndexOf(":");
     return {name: text.slice(0, at).trim(), value: text.slice(at + 1).trim()};
 };
-const valueOf = (entries, name) => (entries ?? []).map(entryOf).find((entry) => entry.name === name)?.value;
+export const valueOf = (entries, name) => (entries ?? []).map(entryOf).find((entry) => entry.name === name)?.value;
 const worded = (value) => (value === NO_CAP ? "No cap" : sizeWord(Number(value)));
 
 // the context cap of an agent type or a profile and where it comes from: the entry of the profile, else the entry of
@@ -25,7 +25,7 @@ const worded = (value) => (value === NO_CAP ? "No cap" : sizeWord(Number(value))
 export function capOf(value, role, profile) {
     if (value(CONTEXT_ON) !== true) return {text: "Off", where: "Context limit is off", own: false};
     const own = profile ? valueOf(value(CONTEXT_PROFILES), profile) : undefined;
-    if (own !== undefined) return {text: worded(own), where: "Own cap", own: true};
+    if (own !== undefined) return {text: worded(own), where: "Own value", own: true};
     const kind = valueOf(value(CONTEXT_KINDS), role);
     if (kind !== undefined) return {text: worded(kind), where: "Set for its kind", own: false};
     return {text: sizeWord(Number(value(CONTEXT_TOKENS))), where: "Set for every agent", own: false};
@@ -44,7 +44,7 @@ function rowOf(key, name, line, counts, cap, extra = {}) {
 // the rows of the helper type table in the order of the design: the types that have no profiles, the merger and the
 // designer, then the line for the limits every read-only profile shares and a row for each profile under it
 export function helperRows(limits, value) {
-    const types = limits.filter((row) => !row.per_profile).map((row) => rowOf(row.key, row.label, row.line, row, capOf(value, row.key, ""), {screen: SCREEN_OF_TYPE[row.key] ?? "read-only", role: row.key, profile: ""}));
+    const types = limits.filter((row) => !row.per_profile).map((row) => rowOf(row.key, row.label, row.line, row, capOf(value, row.key, ""), {screen: SCREEN_OF_TYPE[row.key] ?? "read-only", role: row.key, profile: "", defaultProfile: row.default_profile}));
     const helper = limits.find((row) => row.per_profile);
     if (!helper) return types;
     const named = (profile) => rowOf(`${helper.key}:${profile.profile}`, profile.title, profile.line, profile, capOf(value, helper.key, profile.profile), {screen: profile.group === MERGER_GROUP ? MERGER_GROUP : "read-only", role: helper.key, profile: profile.profile});
@@ -53,6 +53,8 @@ export function helperRows(limits, value) {
     const line = {key: helper.key, name: "Read-only helpers", group: true, screen: "read-only", role: helper.key, profile: "", line: `${helper.running} running, ${helper.kept} kept. Every profile runs up to ${helper.run_limit} and keeps ${helper.kept_limit ? `up to ${helper.kept_limit}` : "any number"} unless it has limits of its own.`};
     return [...types, ...special, line, ...rest];
 }
+
+export const CAP_SIZES = Array.from({length: 10}, (_, place) => (place + 1) * 100000);
 
 export const fullCount = (rows) => rows.filter((row) => !row.group && (isFull(row.running, row.runLimit) || isFull(row.kept, row.keptLimit ?? 0))).length;
 

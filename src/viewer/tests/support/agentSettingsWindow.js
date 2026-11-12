@@ -14,6 +14,8 @@ export const READ_ONLY_RUN = "journal.core.helpers.read-only-helper-run-limit";
 export const READ_ONLY_KEPT = "journal.core.helpers.read-only-helper-kept-limit";
 export const PROFILE_LIMITS = "journal.core.helpers.read-only-helper-profile-limits";
 const CONTEXT = "journal.core.helpers.context-limit";
+export const CONTEXT_KINDS = `${CONTEXT}-kinds`;
+export const CONTEXT_PROFILES = `${CONTEXT}-profiles`;
 
 const KEYS = {
     work: {line: "work-settings show", events: ["setting.*"]},
@@ -36,8 +38,8 @@ export const SCREENS = () => ({
         node("journal.core.helpers.example", "flag", false, {section: "Another section"}),
         node(`${CONTEXT}-on`, "flag", true, {section: "Context size"}),
         node(`${CONTEXT}-tokens`, "number", 400000, {section: "Context size", rule: RULE}),
-        node(`${CONTEXT}-kinds`, "list", ["worker:200000"], {section: "Context size"}),
-        node(`${CONTEXT}-profiles`, "list", ["journal-planner:none"], {section: "Context size"}),
+        node(`${CONTEXT}-kinds`, "list", ["worker:200000"], {section: "Context size", component: "keyed-cap-table"}),
+        node(`${CONTEXT}-profiles`, "list", ["journal-researcher:150000"], {section: "Context size", component: "entry-list"}),
     ]},
 });
 
@@ -45,12 +47,12 @@ export const SCREENS = () => ({
 export const TYPE_SCREENS = () => ({
     workers: {screen: "helper-type.workers", revision: "hw1", nodes: [node(WORKER_RUN, "number", 1, {section: "Workers", title: "Workers running", rule: RULE}), node(WORKER_KEPT, "number", 3, {section: "Workers", title: "Workers kept", rule: RULE})]},
     merger: {screen: "helper-type.merger", revision: "hm1", nodes: [node("journal.suites.coding.workers.merger-wait-minutes", "number", 10, {section: "Merger", rule: RULE})]},
-    "read-only": {screen: "helper-type.read-only", revision: "hr1", nodes: [node(READ_ONLY_RUN, "number", 4, {section: "Every profile", rule: RULE}), node(READ_ONLY_KEPT, "number", 8, {section: "Every profile", rule: RULE}), node(PROFILE_LIMITS, "list", ["journal-researcher:2:5"], {section: "Every profile"})]},
+    "read-only": {screen: "helper-type.read-only", revision: "hr1", nodes: [node(READ_ONLY_RUN, "number", 4, {section: "Every profile", rule: RULE}), node(READ_ONLY_KEPT, "number", 8, {section: "Every profile", rule: RULE}), node(PROFILE_LIMITS, "list", ["journal-researcher:2:5"], {section: "Every profile", component: "entry-list"})]},
 });
 
 // the agent limits read: workers at their running limit, and the read-only helpers with a researcher, the merger and the designer
 export const LIMITS = () => [
-    {key: "worker", label: "Worker", line: "Writes the code of a task.", running: 1, kept: 3, run_limit: 1, kept_limit: 3, run_setting: WORKER_RUN, kept_setting: WORKER_KEPT, per_profile: false, profiles: []},
+    {key: "worker", label: "Worker", line: "Writes the code of a task.", default_profile: "journal-worker", running: 1, kept: 3, run_limit: 1, kept_limit: 3, run_setting: WORKER_RUN, kept_setting: WORKER_KEPT, per_profile: false, profiles: []},
     {key: "helper", label: "Read-only helper", line: "Reads and reports.", running: 1, kept: 3, run_limit: 4, kept_limit: 8, run_setting: READ_ONLY_RUN, kept_setting: READ_ONLY_KEPT, per_profile: true, profiles: [
         {profile: "journal-researcher", title: "Researcher", line: "Finds out and reports.", running: 1, kept: 2, run_limit: 4, kept_limit: 8, group: "helpers"},
         {profile: "journal-merger", title: "Merger", line: "Takes in workers.", running: 0, kept: 1, run_limit: 1, kept_limit: 0, group: "merger"},
