@@ -38,12 +38,13 @@ def test_each_failed_update_keeps_the_check_where_it_was_and_notes_why():
             assert (store.states(), store.rows[1].failure) == ([state], reason)
 
 
-def test_the_merger_hears_once_per_failure_with_the_worker_and_the_reason_and_the_stash():
+def test_the_merger_hears_once_per_failure_with_the_worker_and_the_check_that_keeps_the_reason():
     store, inbox = Store(State.ORDERED), Inbox()
     failed(store, inbox, REASONS[1])
+    assert "stash abc123" in store.rows[1].failure
     failed(store, inbox, REASONS[2])
     assert [nudge.key for nudge in inbox.sent] == [UPDATE_FAILED_FOR_MERGER.key] * 2
-    assert "worker:4" in inbox.sent[0].text and "stash abc123" in inbox.sent[0].text
+    assert "worker:4" in inbox.sent[0].text and "journal behind-check show 1 says why" in inbox.sent[0].text
 
 
 def test_with_no_check_to_settle_a_failure_tells_no_one():

@@ -52,11 +52,11 @@ class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
         if self.moved:
             self.repository.save_change(check, check.updated(), context)
             self.repository.save_change(worktree, worktree.updated(self.tip), context)
-            self.nudger.send(worktree.session_agent_id, FAST_FORWARDED, BEHIND_SOURCE, context, base=worktree.base_branch, commit=self.tip[:10])
+            self.nudger.send(worktree.session_agent_id, FAST_FORWARDED, BEHIND_SOURCE, context)
             return BehindRoute.FAST_FORWARDED
         to_main = self.settings.number(UPDATE_TO_MAIN_COMMITS)
         if to_main > 0 and self.behind >= to_main:
             self.repository.save_change(check, check.passed_to_main_agent(f"{self.behind} commits behind, at least {to_main}"), context)
-            self.main_line.send_nudge(BEHIND_FOR_MAIN_AGENT.nudge(worker=worker, count=self.behind, base=worktree.base_branch), BEHIND_SOURCE, context)
+            self.main_line.send_nudge(BEHIND_FOR_MAIN_AGENT.nudge(worker=worker, count=self.behind), BEHIND_SOURCE, context)
             return BehindRoute.MAIN_AGENT
         return BehindRoute.MERGER

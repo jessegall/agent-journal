@@ -35,24 +35,14 @@ class Numbers:
         return 3
 
 
-class Worktrees:
-    def required_worker_worktree(self, worker_id: int) -> object:
-        return object()
-
-
-class Git:
-    def conflict_files(self, worktree: object) -> tuple[str, ...]:
-        return ("cart.py",)
-
-
 def listener() -> WorkerRunEndedListener:
-    return WorkerRunEndedListener(None, Worktrees(), None, None, None, None, None, Numbers(), Git())
+    return WorkerRunEndedListener(None, None, None, None, None, None, None, Numbers())
 
 
 def test_the_finished_line_of_an_update_follows_its_result_and_a_clash_ending_with_exit_code_0_is_a_clash():
     assert listener().update_nudge(operation(result=UpdateResult.UPDATED), ended(0)).text == "worker:3 is up to date: output 40"
     assert listener().update_nudge(operation(result=UpdateResult.CURRENT), ended(0)).text == "worker:3 is up to date: output 40"
-    assert listener().update_nudge(operation(result=UpdateResult.CONFLICTS), ended(0)).text == "worker:3 update clashes in cart.py: output 40"
+    assert listener().update_nudge(operation(result=UpdateResult.CONFLICTS), ended(0)).text == "worker:3 update clashes: output 40; settle the conflict markers, then commit"
     assert listener().update_nudge(operation(result=None), ended(1)).text == "worker:3 update failed and changed nothing: output 40"
 
 

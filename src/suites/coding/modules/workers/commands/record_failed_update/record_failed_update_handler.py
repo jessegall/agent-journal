@@ -22,6 +22,8 @@ class RecordFailedUpdateHandler(Handler[RecordFailedUpdate, None]):
 
     def handle(self, command: RecordFailedUpdate, context: Context) -> None:
         worktree = self.worktrees.required_worker_worktree(command.worker_id)
-        if not self.closing.failed(worktree, command.reason, context):
+        failed = self.closing.failed(worktree, command.reason, context)
+        if not failed:
             return
-        self.inbox.send_nudge(UPDATE_FAILED_FOR_MERGER.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, command.worker_id), reason=command.reason), BEHIND_SOURCE, context)
+        worker = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
+        self.inbox.send_nudge(UPDATE_FAILED_FOR_MERGER.nudge(worker=worker, check=max(check.id for check in failed)), BEHIND_SOURCE, context)

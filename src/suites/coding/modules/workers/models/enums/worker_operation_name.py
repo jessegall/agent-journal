@@ -23,7 +23,7 @@ WORKER_OPERATION_STARTED = NudgeDeclaration("workers.operation_started", NudgeTy
 WORKER_OPERATION_UPDATED = NudgeDeclaration("workers.operation_updated", NudgeType.STEERING,
     'worker:{worker} is up to date: output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_UPDATE_CONFLICT = NudgeDeclaration("workers.operation_update_conflict", NudgeType.STEERING,
-    'worker:{worker} update clashes in {files}: output {output}', turn_limited=False, wakes_agent=True)
+    'worker:{worker} update clashes: output {output}; settle the conflict markers, then commit', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_UPDATE_FAILED = NudgeDeclaration("workers.operation_update_failed", NudgeType.STEERING,
     'worker:{worker} update failed and changed nothing: output {output}', turn_limited=False, wakes_agent=True)
 
