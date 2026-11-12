@@ -1,6 +1,6 @@
 import { openBlock as a, createElementBlock as o, withModifiers as ge, unref as h, createTextVNode as b, toDisplayString as g, createVNode as M, createBlock as z, createElementVNode as C, createCommentVNode as m, withCtx as x, Fragment as H, renderList as ae, computed as d, ref as W, watch as ce, onUnmounted as xe, defineAsyncComponent as Je, createSlots as Ye, resolveDynamicComponent as Qe, normalizeClass as se, normalizeStyle as _e, renderSlot as $e, onMounted as Xe, Teleport as et, mergeProps as tt, toRef as Re, withKeys as Ee, nextTick as Ne } from "vue";
 import { peekRef as Se, Icon as Oe, RunningCommand as at, TimeAgo as Fe, FoldGroup as Pe, TaskStatusIcon as nt, useWindow as Ve, loadWindowComponent as ot, coalesced as st, READ_RATES as lt, eventMayBeChildOf as rt, InnerTabs as it, TabBody as ct, SwitchCase as dt, EmptyState as ze, HoverTip as be, TaskBar as ut, useNow as Ge, age as ht, perHour as gt, sinceWords as pt, seenWords as vt, AgentTip as ft, SearchBar as mt, Segmented as kt, MenuLabel as Be, MenuItem as Le, Btn as yt, RowList as wt, toggleFilter as bt } from "@journal/window-kit";
-import { _ as Z, T as Mt } from "./TranscriptRows-h-id2yIe.mjs";
+import { _ as Z, T as Mt } from "./TranscriptRows-Crmxs6Un.js";
 const xt = {
   class: "agent-command",
   "data-agent-command": ""
@@ -32,7 +32,7 @@ const xt = {
       }, null, 8, ["text", "idle"]))
     ]));
   }
-}, Ct = /* @__PURE__ */ Z(St, [["__scopeId", "data-v-bb905922"]]), Tt = {
+}, Ct = /* @__PURE__ */ Z(St, [["__scopeId", "data-v-1b371fb5"]]), Tt = {
   key: 0,
   class: "lasting-facts",
   "data-agent-lasting-facts": ""
@@ -55,7 +55,7 @@ const xt = {
       ])) : m("", !0)
     ])) : m("", !0);
   }
-}, Rt = /* @__PURE__ */ Z(_t, [["__scopeId", "data-v-900483a5"]]), Bt = ["data-agent-delegated", "onClick"], Ot = { class: "agent-task-number" }, zt = { class: "agent-task-title" }, Vt = ["title"], It = {
+}, Rt = /* @__PURE__ */ Z(_t, [["__scopeId", "data-v-abc8e12a"]]), Bt = ["data-agent-delegated", "onClick"], Ot = { class: "agent-task-number" }, zt = { class: "agent-task-title" }, Vt = ["title"], It = {
   __name: "AgentTaskGroup",
   props: { section: { type: Object, required: !0 }, open: Boolean },
   emits: ["toggle"],
@@ -92,7 +92,7 @@ const xt = {
       _: 1
     }, 8, ["label", "count", "open", "data-agent-section"]));
   }
-}, Ht = /* @__PURE__ */ Z(It, [["__scopeId", "data-v-dbdcae3e"]]), Et = {
+}, Ht = /* @__PURE__ */ Z(It, [["__scopeId", "data-v-ea4ccd6b"]]), Et = {
   key: 0,
   class: "agent-summary",
   "data-agent-retirement-reason": ""
@@ -269,7 +269,7 @@ const xt = {
       ]);
     };
   }
-}, Kt = /* @__PURE__ */ Z(Ut, [["__scopeId", "data-v-83e4209c"]]), Zt = { class: "line" }, Jt = {
+}, Kt = /* @__PURE__ */ Z(Ut, [["__scopeId", "data-v-fabbecdf"]]), Zt = { class: "line" }, Jt = {
   key: 0,
   class: "line",
   "data-agent-since": ""
@@ -303,7 +303,7 @@ const xt = {
       _: 1
     }, 8, ["class", "data-state", "aria-label"]));
   }
-}, Xt = /* @__PURE__ */ Z(Qt, [["__scopeId", "data-v-a51f28ad"]]), ea = { started: { words: "started" }, testing: { words: "being tested" }, blocked: { words: "blocked" } }, ta = (e) => e.filter((s) => s.state !== "cancelled"), We = (e, s) => e.filter((n) => n.state === s).length, aa = 5, na = (e, s) => e || s.split(/\s+/).slice(0, aa).join(" ");
+}, Xt = /* @__PURE__ */ Z(Qt, [["__scopeId", "data-v-1a0bc478"]]), ea = { started: { words: "started" }, testing: { words: "being tested" }, blocked: { words: "blocked" } }, ta = (e) => e.filter((s) => s.state !== "cancelled"), We = (e, s) => e.filter((n) => n.state === s).length, aa = 5, na = (e, s) => e || s.split(/\s+/).slice(0, aa).join(" ");
 function oa({ tasks: e, inHand: s, perHour: n }) {
   const i = ta(e), r = We(i, "completed"), t = ea[s == null ? void 0 : s.state], f = i.filter((V) => V.state === "started").map((V) => ({ number: V.id, title: V.title })), $ = Math.max(f.length, s && s.state !== "completed" ? 1 : 0), A = i.length - r - $, T = r === i.length;
   return {
@@ -435,7 +435,7 @@ const sa = {
       }, null, 8, ["total", "done", "testing"])
     ], 64)) : m("", !0);
   }
-}, ga = /* @__PURE__ */ Z(ha, [["__scopeId", "data-v-4fdd9e5c"]]), pa = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', va = ["data-icon", "stroke-width", "innerHTML"], J = {
+}, ga = /* @__PURE__ */ Z(ha, [["__scopeId", "data-v-e51f5781"]]), pa = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', va = ["data-icon", "stroke-width", "innerHTML"], J = {
   __name: "Icon",
   props: {
     name: { type: String, default: "dot" },
@@ -620,13 +620,13 @@ const sa = {
       ])) : $e(s.$slots, "default", {}, void 0, !0, 2)
     ], 2));
   }
-}, fe = /* @__PURE__ */ Z(ka, [["__scopeId", "data-v-9c67fe37"]]), ya = {}, wa = { class: "menu-label" };
+}, fe = /* @__PURE__ */ Z(ka, [["__scopeId", "data-v-fec99974"]]), ya = {}, wa = { class: "menu-label" };
 function ba(e, s) {
   return a(), o("span", wa, [
     $e(e.$slots, "default", {}, void 0, !0)
   ]);
 }
-const Me = /* @__PURE__ */ Z(ya, [["render", ba], ["__scopeId", "data-v-71c11156"]]), Ma = {
+const Me = /* @__PURE__ */ Z(ya, [["render", ba], ["__scopeId", "data-v-aa955b3e"]]), Ma = {
   class: "skills-menu",
   "data-agent-skills-menu": ""
 }, xa = {
@@ -687,7 +687,7 @@ const Me = /* @__PURE__ */ Z(ya, [["render", ba], ["__scopeId", "data-v-71c11156
       })
     ]));
   }
-}, Sa = /* @__PURE__ */ Z($a, [["__scopeId", "data-v-27140adf"]]), Ca = ["disabled", "title"], Ta = { class: "gauge usage" }, Aa = {
+}, Sa = /* @__PURE__ */ Z($a, [["__scopeId", "data-v-be514d47"]]), Ca = ["disabled", "title"], Ta = { class: "gauge usage" }, Aa = {
   __name: "AllowanceBar",
   props: { windows: { type: Array, default: () => [] }, disabled: Boolean },
   emits: ["open"],
@@ -718,7 +718,7 @@ const Me = /* @__PURE__ */ Z(ya, [["render", ba], ["__scopeId", "data-v-71c11156
       b(" " + g(f.value ? "At usage limit" : `${t.value}%`), 1)
     ], 8, Ca)) : m("", !0);
   }
-}, La = /* @__PURE__ */ Z(Aa, [["__scopeId", "data-v-82d641a0"]]), ja = {
+}, La = /* @__PURE__ */ Z(Aa, [["__scopeId", "data-v-a36f09dc"]]), ja = {
   __name: "DashboardBadge",
   props: { text: { type: String, required: !0 }, tone: { type: String, default: "" } },
   setup(e) {
@@ -726,7 +726,7 @@ const Me = /* @__PURE__ */ Z(ya, [["render", ba], ["__scopeId", "data-v-71c11156
       class: se(["badge", e.tone])
     }, g(e.text), 3));
   }
-}, _a = /* @__PURE__ */ Z(ja, [["__scopeId", "data-v-6ef74765"]]), Ra = (e, s, n) => Math.max(s, Math.min(n, e)), Ue = /* @__PURE__ */ new WeakMap(), Ba = (e, s) => Ue.set(e, s);
+}, _a = /* @__PURE__ */ Z(ja, [["__scopeId", "data-v-9e7e1157"]]), Ra = (e, s, n) => Math.max(s, Math.min(n, e)), Ue = /* @__PURE__ */ new WeakMap(), Ba = (e, s) => Ue.set(e, s);
 function Oa(e, s) {
   for (let n = s; n; n = Ue.get(n) ?? n.parentElement) if (n === e) return !0;
   return !1;
@@ -823,7 +823,7 @@ const ve = 8, Va = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       ], 16)
     ], 8, ["disabled"]));
   }
-}), Ia = /* @__PURE__ */ Z(Va, [["__scopeId", "data-v-7f046e0d"]]);
+}), Ia = /* @__PURE__ */ Z(Va, [["__scopeId", "data-v-3d203970"]]);
 async function Ha(e, s, n) {
   if (!e) return n(s);
   const { target: i, fields: r } = e, t = Object.fromEntries(Object.keys(r).map((A) => [A, i[A]])), f = () => Object.assign(i, t);
@@ -1220,7 +1220,7 @@ const Da = ["disabled", "title"], Fa = ["disabled", "title"], Pa = { class: "gau
       ], 2);
     };
   }
-}, ln = /* @__PURE__ */ Z(sn, [["__scopeId", "data-v-f3afd1a9"]]), rn = ["data-agent-open", "aria-expanded", "role", "tabindex"], cn = {
+}, ln = /* @__PURE__ */ Z(sn, [["__scopeId", "data-v-d7113347"]]), rn = ["data-agent-open", "aria-expanded", "role", "tabindex"], cn = {
   class: "agent-head",
   "data-agent-head": ""
 }, dn = {
@@ -1434,7 +1434,7 @@ const Da = ["disabled", "title"], Fa = ["disabled", "title"], Pa = { class: "gau
       ], 42, rn);
     };
   }
-}, Mn = /* @__PURE__ */ Z(bn, [["__scopeId", "data-v-661c80b0"]]), xn = {
+}, Mn = /* @__PURE__ */ Z(bn, [["__scopeId", "data-v-fc9af29f"]]), xn = {
   key: 1,
   class: "agents-upgrade",
   "data-agents-upgrade": ""
@@ -1665,7 +1665,7 @@ const Da = ["disabled", "title"], Fa = ["disabled", "title"], Pa = { class: "gau
       ], 2)
     ], 2));
   }
-}, Ln = /* @__PURE__ */ Z(Sn, [["__scopeId", "data-v-9815d431"]]);
+}, Ln = /* @__PURE__ */ Z(Sn, [["__scopeId", "data-v-fceb20c3"]]);
 export {
   Ln as A
 };

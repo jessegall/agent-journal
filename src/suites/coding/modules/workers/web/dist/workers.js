@@ -1,15 +1,15 @@
-if (!document.getElementById("window-styles-5eb4ed552c4a")) { const style = document.createElement("style"); style.id = "window-styles-5eb4ed552c4a"; style.textContent = ".worker-models[data-v-8506c219]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-8506c219]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-8506c219]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-8506c219]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-8506c219]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-8506c219]{display:flex;gap:8px;align-items:center}.number[data-v-6eb6af04]{color:var(--text-3);font-size:12px}.main[data-v-6eb6af04]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-6eb6af04]{color:var(--text-3);font-size:12px}.main[data-v-a11fd403]{flex:1}.note[data-v-a11fd403]{color:var(--text-3);font-size:12px}.worker-moment[data-v-826dfb51]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-826dfb51]{flex:none;color:var(--text-3);font-size:12px}.program[data-v-1b768aad]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}.share[data-v-1b768aad]{display:flex;align-items:center;gap:8px}input[data-v-1b768aad]{min-width:0;flex:1}output[data-v-1b768aad]{min-width:36px;text-align:right}small[data-v-1b768aad]{color:var(--text-3)}p[data-v-1b768aad]{margin:0}.actions[data-v-1b768aad]{display:flex;gap:6px}.route[data-v-928533ab]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}p[data-v-928533ab]{margin:0}small[data-v-928533ab]{color:var(--text-3)}.actions[data-v-928533ab]{display:flex;flex-wrap:wrap;gap:6px}.route-form[data-v-1c28c310]{display:flex;flex-direction:column;gap:8px;margin-top:12px}h4[data-v-1c28c310]{margin:0}label[data-v-1c28c310]{display:flex;align-items:center;gap:8px}select[data-v-1c28c310],input[type=number][data-v-1c28c310]{min-width:0;flex:1;background:var(--bg);color:var(--text);border:1px solid var(--border);padding:4px}.outage[data-v-079b94a1]{display:flex;flex-direction:column;gap:8px;padding:10px 0}label[data-v-079b94a1]{display:flex;gap:8px}input[data-v-079b94a1]{min-width:0;flex:1}.split[data-v-29716346]{display:flex;flex-direction:column;gap:8px}p[data-v-29716346],h3[data-v-29716346]{margin:0}p[data-v-29716346]{color:var(--text-3);font-size:12px}h3[data-v-29716346]{margin-top:12px;font-size:13px}label[data-v-29716346]{display:flex;align-items:center;gap:8px}input[data-v-29716346]{width:54px}[role=alert][data-v-29716346]{color:var(--danger)}.worker-tab-body[data-v-f8b83cb6]{padding:14px 16px}.worktree[data-v-158c53fa]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-158c53fa]{flex:1;min-width:0}.worktree-holder[data-v-158c53fa]{font-weight:500}.worktree-folder[data-v-158c53fa]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-158c53fa]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-228cf601261e")) { const style = document.createElement("style"); style.id = "window-styles-228cf601261e"; style.textContent = ".worker-models[data-v-f2e1dbd2]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-f2e1dbd2]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-f2e1dbd2]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-f2e1dbd2]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-f2e1dbd2]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-f2e1dbd2]{display:flex;gap:8px;align-items:center}.number[data-v-d52c1a26]{color:var(--text-3);font-size:12px}.main[data-v-d52c1a26]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-d52c1a26]{color:var(--text-3);font-size:12px}.main[data-v-dca1eb21]{flex:1}.note[data-v-dca1eb21]{color:var(--text-3);font-size:12px}.worker-moment[data-v-774d56be]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-774d56be]{flex:none;color:var(--text-3);font-size:12px}.program[data-v-dbeb4641]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}.share[data-v-dbeb4641]{display:flex;align-items:center;gap:8px}input[data-v-dbeb4641]{min-width:0;flex:1}output[data-v-dbeb4641]{min-width:36px;text-align:right}small[data-v-dbeb4641]{color:var(--text-3)}p[data-v-dbeb4641]{margin:0}.actions[data-v-dbeb4641]{display:flex;gap:6px}.route[data-v-de22f389]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}p[data-v-de22f389]{margin:0}small[data-v-de22f389]{color:var(--text-3)}.actions[data-v-de22f389]{display:flex;flex-wrap:wrap;gap:6px}.route-form[data-v-0362f63d]{display:flex;flex-direction:column;gap:8px;margin-top:12px}h4[data-v-0362f63d]{margin:0}label[data-v-0362f63d]{display:flex;align-items:center;gap:8px}select[data-v-0362f63d],input[type=number][data-v-0362f63d]{min-width:0;flex:1;background:var(--bg);color:var(--text);border:1px solid var(--border);padding:4px}.outage[data-v-7ea51616]{display:flex;flex-direction:column;gap:8px;padding:10px 0}label[data-v-7ea51616]{display:flex;gap:8px}input[data-v-7ea51616]{min-width:0;flex:1}.split[data-v-ab331a12]{display:flex;flex-direction:column;gap:8px}p[data-v-ab331a12],h3[data-v-ab331a12]{margin:0}p[data-v-ab331a12]{color:var(--text-3);font-size:12px}h3[data-v-ab331a12]{margin-top:12px;font-size:13px}label[data-v-ab331a12]{display:flex;align-items:center;gap:8px}input[data-v-ab331a12]{width:54px}[role=alert][data-v-ab331a12]{color:var(--danger)}.worker-tab-body[data-v-8fe373bc]{padding:14px 16px}.worktree[data-v-a10f9f34]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-a10f9f34]{flex:1;min-width:0}.worktree-holder[data-v-a10f9f34]{font-weight:500}.worktree-folder[data-v-a10f9f34]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-a10f9f34]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
 import { openBlock as d, createBlock as V, unref as a, withCtx as S, createElementVNode as l, toDisplayString as b, createVNode as w, createElementBlock as v, createTextVNode as m, Fragment as U, renderList as q, createCommentVNode as C, ref as x, withModifiers as z, withDirectives as W, vModelSelect as j, vModelText as F, vModelCheckbox as Z, computed as T, watch as _ } from "vue";
 import { useWindow as P, RowList as H, peekRef as ee, TimeAgo as te, dated as G, Btn as R, WindowRoom as oe, InnerTabs as le, TabBody as ae, SwitchCase as re, AgentRowList as ne } from "@journal/window-kit";
-import { _ as N } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+import { _ as N } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const se = ["onClick"], ie = { class: "worker-moment-text" }, ue = {
   __name: "WorkerRecent",
   setup(e) {
-    const r = P(), { rows: o, failure: i, loaded: g, older: y, more: p } = r.props.recent;
-    return (n, f) => (d(), V(a(H), {
+    const r = P(), { rows: o, failure: i, loaded: f, older: y, more: p } = r.props.recent;
+    return (n, g) => (d(), V(a(H), {
       rows: a(o),
       failure: a(i),
-      loaded: a(g),
+      loaded: a(f),
       older: a(y),
       more: a(p),
       empty: "No worker has done anything noteworthy yet",
@@ -31,7 +31,7 @@ const se = ["onClick"], ie = { class: "worker-moment-text" }, ue = {
       _: 1
     }, 8, ["rows", "failure", "loaded", "older", "more"]));
   }
-}, de = /* @__PURE__ */ N(ue, [["__scopeId", "data-v-826dfb51"]]), me = ["data-split-program"], ve = { class: "share" }, be = ["value", "aria-label", "disabled"], ge = { key: 0 }, fe = { key: 1 }, pe = { class: "actions" }, ke = {
+}, de = /* @__PURE__ */ N(ue, [["__scopeId", "data-v-774d56be"]]), me = ["data-split-program"], ve = { class: "share" }, be = ["value", "aria-label", "disabled"], fe = { key: 0 }, ge = { key: 1 }, pe = { class: "actions" }, ke = {
   __name: "WorkerSplitProgram",
   props: { row: { type: Object, required: !0 }, share: { type: Number, required: !0 }, disabled: Boolean },
   emits: ["share", "save", "back", "out"],
@@ -58,13 +58,13 @@ const se = ["onClick"], ie = { class: "worker-moment-text" }, ue = {
       ]),
       l("small", null, b(e.row.recent) + " recent worker tasks · " + b(e.row.helpers_recent) + " recent read-only helper tasks", 1),
       (d(!0), v(U, null, q(e.row.windows, (i) => (d(), v("small", { key: i }, b(i), 1))), 128)),
-      e.row.is_ready ? C("", !0) : (d(), v("p", ge, [
+      e.row.is_ready ? C("", !0) : (d(), v("p", fe, [
         m(b(e.row.line), 1),
         e.row.ends_at ? (d(), v(U, { key: 0 }, [
           m(" · Until " + b(a(G)(e.row.ends_at)), 1)
         ], 64)) : C("", !0)
       ])),
-      e.row.outage && e.row.outage_reason !== e.row.line ? (d(), v("p", fe, b(e.row.outage_reason) + " · Until " + b(a(G)(e.row.outage_ends_at)), 1)) : C("", !0),
+      e.row.outage && e.row.outage_reason !== e.row.line ? (d(), v("p", ge, b(e.row.outage_reason) + " · Until " + b(a(G)(e.row.outage_ends_at)), 1)) : C("", !0),
       l("div", pe, [
         e.row.outage ? (d(), V(a(R), {
           key: 0,
@@ -90,7 +90,7 @@ const se = ["onClick"], ie = { class: "worker-moment-text" }, ue = {
       ])
     ], 8, me));
   }
-}, we = /* @__PURE__ */ N(ke, [["__scopeId", "data-v-1b768aad"]]), ye = ["data-split-route"], $e = { key: 0 }, ce = { key: 1 }, Se = { class: "actions" }, he = {
+}, we = /* @__PURE__ */ N(ke, [["__scopeId", "data-v-dbeb4641"]]), ye = ["data-split-route"], $e = { key: 0 }, ce = { key: 1 }, Se = { class: "actions" }, he = {
   __name: "WorkerRouteRow",
   props: { row: { type: Object, required: !0 }, count: { type: Number, required: !0 }, disabled: Boolean },
   emits: ["move", "delete"],
@@ -142,15 +142,15 @@ const se = ["onClick"], ie = { class: "worker-moment-text" }, ue = {
       ])
     ], 8, ye));
   }
-}, xe = /* @__PURE__ */ N(he, [["__scopeId", "data-v-928533ab"]]), Ce = ["disabled"], We = ["value"], Re = ["disabled"], Me = ["disabled"], Ne = ["disabled"], Ae = ["value"], Be = ["disabled"], Oe = ["disabled"], Ue = {
+}, xe = /* @__PURE__ */ N(he, [["__scopeId", "data-v-de22f389"]]), Ce = ["disabled"], We = ["value"], Re = ["disabled"], Me = ["disabled"], Ne = ["disabled"], Ae = ["value"], Be = ["disabled"], Oe = ["disabled"], Ue = {
   __name: "WorkerRouteForm",
   props: { programs: { type: Array, required: !0 }, tags: { type: Array, required: !0 }, disabled: Boolean },
   emits: ["submit"],
   setup(e, { emit: r }) {
-    const o = r, i = x([]), g = x(""), y = x(""), p = x(""), n = x(""), f = x(!1);
+    const o = r, i = x([]), f = x(""), y = x(""), p = x(""), n = x(""), g = x(!1);
     function $() {
       const h = ["worker-route", "make"];
-      i.value.length && h.push("--tags", i.value.join(",")), g.value && h.push("--program", g.value), y.value && h.push("--tier", y.value), p.value !== "" && h.push("--complexity-from", String(p.value)), n.value !== "" && h.push("--complexity-to", String(n.value)), f.value && h.push("--strict"), o("submit", h);
+      i.value.length && h.push("--tags", i.value.join(",")), f.value && h.push("--program", f.value), y.value && h.push("--tier", y.value), p.value !== "" && h.push("--complexity-from", String(p.value)), n.value !== "" && h.push("--complexity-to", String(n.value)), g.value && h.push("--strict"), o("submit", h);
     }
     return (h, t) => (d(), v("form", {
       class: "route-form",
@@ -203,7 +203,7 @@ const se = ["onClick"], ie = { class: "worker-moment-text" }, ue = {
       l("label", null, [
         t[10] || (t[10] = m("Program ", -1)),
         W(l("select", {
-          "onUpdate:modelValue": t[3] || (t[3] = (s) => g.value = s),
+          "onUpdate:modelValue": t[3] || (t[3] = (s) => f.value = s),
           "aria-label": "Route program",
           disabled: e.disabled
         }, [
@@ -213,7 +213,7 @@ const se = ["onClick"], ie = { class: "worker-moment-text" }, ue = {
             value: s.id
           }, b(s.title), 9, Ae))), 128))
         ], 8, Ne), [
-          [j, g.value]
+          [j, f.value]
         ])
       ]),
       l("label", null, [
@@ -233,11 +233,11 @@ const se = ["onClick"], ie = { class: "worker-moment-text" }, ue = {
       ]),
       l("label", null, [
         W(l("input", {
-          "onUpdate:modelValue": t[5] || (t[5] = (s) => f.value = s),
+          "onUpdate:modelValue": t[5] || (t[5] = (s) => g.value = s),
           type: "checkbox",
-          disabled: e.disabled || !g.value
+          disabled: e.disabled || !f.value
         }, null, 8, Oe), [
-          [Z, f.value]
+          [Z, g.value]
         ]),
         t[13] || (t[13] = m(" Wait for this program when it is out", -1))
       ]),
@@ -252,14 +252,14 @@ const se = ["onClick"], ie = { class: "worker-moment-text" }, ue = {
       }, 8, ["disabled"])
     ], 32));
   }
-}, Ve = /* @__PURE__ */ N(Ue, [["__scopeId", "data-v-1c28c310"]]), Ie = ["disabled"], Te = ["disabled"], qe = {
+}, Ve = /* @__PURE__ */ N(Ue, [["__scopeId", "data-v-0362f63d"]]), Ie = ["disabled"], Te = ["disabled"], qe = {
   __name: "WorkerOutageForm",
   props: { program: { type: String, required: !0 }, disabled: Boolean },
   emits: ["submit", "cancel"],
   setup(e, { emit: r }) {
-    const o = r, i = x(""), g = x("");
+    const o = r, i = x(""), f = x("");
     function y() {
-      o("submit", i.value, new Date(g.value).toISOString());
+      o("submit", i.value, new Date(f.value).toISOString());
     }
     return (p, n) => (d(), v("form", {
       class: "outage",
@@ -270,7 +270,7 @@ const se = ["onClick"], ie = { class: "worker-moment-text" }, ue = {
       l("label", null, [
         n[3] || (n[3] = m("Reason ", -1)),
         W(l("input", {
-          "onUpdate:modelValue": n[0] || (n[0] = (f) => i.value = f),
+          "onUpdate:modelValue": n[0] || (n[0] = (g) => i.value = g),
           required: "",
           "aria-label": "Outage reason",
           disabled: e.disabled
@@ -281,13 +281,13 @@ const se = ["onClick"], ie = { class: "worker-moment-text" }, ue = {
       l("label", null, [
         n[4] || (n[4] = m("Until ", -1)),
         W(l("input", {
-          "onUpdate:modelValue": n[1] || (n[1] = (f) => g.value = f),
+          "onUpdate:modelValue": n[1] || (n[1] = (g) => f.value = g),
           type: "datetime-local",
           required: "",
           "aria-label": "Outage ends at",
           disabled: e.disabled
         }, null, 8, Te), [
-          [F, g.value]
+          [F, f.value]
         ])
       ]),
       l("div", null, [
@@ -303,7 +303,7 @@ const se = ["onClick"], ie = { class: "worker-moment-text" }, ue = {
         n[7] || (n[7] = m()),
         w(a(R), {
           disabled: e.disabled,
-          onClick: n[2] || (n[2] = (f) => p.$emit("cancel"))
+          onClick: n[2] || (n[2] = (g) => p.$emit("cancel"))
         }, {
           default: S(() => [...n[6] || (n[6] = [
             m("Cancel", -1)
@@ -313,13 +313,13 @@ const se = ["onClick"], ie = { class: "worker-moment-text" }, ue = {
       ])
     ], 32));
   }
-}, Fe = /* @__PURE__ */ N(qe, [["__scopeId", "data-v-079b94a1"]]);
+}, Fe = /* @__PURE__ */ N(qe, [["__scopeId", "data-v-7ea51616"]]);
 function De(e, r, o) {
   if (!e.some((t) => t.id === r)) return e;
   if (e.length === 1) return e.map((t) => ({ ...t, share: 100 }));
-  const i = Math.max(0, Math.min(100, Math.round(Number(o) / 5) * 5)), g = e.filter((t) => t.id !== r), y = g.reduce((t, s) => t + s.share, 0), p = (100 - i) / 5, n = g.map((t) => ({ id: t.id, units: p * (y ? t.share / y : 1 / g.length) })), f = new Map(n.map((t) => [t.id, Math.floor(t.units)])), $ = p - [...f.values()].reduce((t, s) => t + s, 0), h = [...n].sort((t, s) => s.units % 1 - t.units % 1);
-  for (const t of h.slice(0, $)) f.set(t.id, f.get(t.id) + 1);
-  return e.map((t) => ({ ...t, share: t.id === r ? i : f.get(t.id) * 5 }));
+  const i = Math.max(0, Math.min(100, Math.round(Number(o) / 5) * 5)), f = e.filter((t) => t.id !== r), y = f.reduce((t, s) => t + s.share, 0), p = (100 - i) / 5, n = f.map((t) => ({ id: t.id, units: p * (y ? t.share / y : 1 / f.length) })), g = new Map(n.map((t) => [t.id, Math.floor(t.units)])), $ = p - [...g.values()].reduce((t, s) => t + s, 0), h = [...n].sort((t, s) => s.units % 1 - t.units % 1);
+  for (const t of h.slice(0, $)) g.set(t.id, g.get(t.id) + 1);
+  return e.map((t) => ({ ...t, share: t.id === r ? i : g.get(t.id) * 5 }));
 }
 const je = {
   class: "split",
@@ -330,7 +330,7 @@ const je = {
 }, Le = { key: 1 }, Ee = ["value", "disabled"], Ge = { key: 3 }, ze = {
   __name: "WorkerSplit",
   setup(e) {
-    const r = P(), { rows: o, failure: i, loaded: g, act: y } = r.props.split, { rows: p, failure: n } = r.props.routes, { rows: f, failure: $ } = r.props.tags, { rows: h, failure: t } = r.props["split-limits"], s = x([]), L = x(""), D = x(!1), A = x(""), I = T(() => h.value.find((k) => k.key === "worker")), B = T(() => D.value || r.readOnly), E = T(() => L.value || i.value || n.value || $.value || t.value);
+    const r = P(), { rows: o, failure: i, loaded: f, act: y } = r.props.split, { rows: p, failure: n } = r.props.routes, { rows: g, failure: $ } = r.props.tags, { rows: h, failure: t } = r.props["split-limits"], s = x([]), L = x(""), D = x(!1), A = x(""), I = T(() => h.value.find((k) => k.key === "worker")), B = T(() => D.value || r.readOnly), E = T(() => L.value || i.value || n.value || $.value || t.value);
     _(o, (k) => {
       s.value = k.map((u) => ({ ...u }));
     }, { immediate: !0 });
@@ -380,7 +380,7 @@ const je = {
       w(a(H), {
         rows: a(o),
         failure: a(i),
-        loaded: a(g),
+        loaded: a(f),
         empty: "No agent programs",
         hint: "Installed program modules appear here."
       }, {
@@ -417,24 +417,24 @@ const je = {
       a(p).length ? C("", !0) : (d(), v("p", Ge, "No routes. New tasks follow the split.")),
       w(Ve, {
         programs: a(o),
-        tags: a(f),
+        tags: a(g),
         disabled: B.value,
         onSubmit: M
       }, null, 8, ["programs", "tags", "disabled"])
     ]));
   }
-}, He = /* @__PURE__ */ N(ze, [["__scopeId", "data-v-29716346"]]), Je = {
+}, He = /* @__PURE__ */ N(ze, [["__scopeId", "data-v-ab331a12"]]), Je = {
   __name: "WorkerDropdown",
   setup(e) {
     var p;
     const r = P();
     r.state.tab = ((p = r.tabs[0]) == null ? void 0 : p.key) ?? "workers";
-    const o = T({ get: () => r.tabs.find((n) => n.key === r.state.tab), set: (n) => r.state.tab = n.key }), { rows: i, failure: g, loaded: y } = r.props.workers;
-    return (n, f) => (d(), V(a(oe), { padding: "0" }, {
+    const o = T({ get: () => r.tabs.find((n) => n.key === r.state.tab), set: (n) => r.state.tab = n.key }), { rows: i, failure: f, loaded: y } = r.props.workers;
+    return (n, g) => (d(), V(a(oe), { padding: "0" }, {
       default: S(() => [
         w(a(le), {
           active: o.value,
-          onChoose: f[0] || (f[0] = ($) => o.value = $)
+          onChoose: g[0] || (g[0] = ($) => o.value = $)
         }, null, 8, ["active"]),
         w(a(ae), {
           class: "worker-tab-body",
@@ -449,7 +449,7 @@ const je = {
                 workers: S(() => [
                   w(a(ne), {
                     rows: a(i),
-                    failure: a(g),
+                    failure: a(f),
                     loaded: a(y),
                     none: "No workers have been sent from here"
                   }, null, 8, ["rows", "failure", "loaded"])
@@ -470,7 +470,7 @@ const je = {
       _: 1
     }));
   }
-}, Ye = /* @__PURE__ */ N(Je, [["__scopeId", "data-v-f8b83cb6"]]);
+}, Ye = /* @__PURE__ */ N(Je, [["__scopeId", "data-v-8fe373bc"]]);
 export {
   Ye as default
 };
