@@ -24,6 +24,8 @@ from core.modules.drivers.rules.readonly_rule import ReadonlyRule
 from core.modules.drivers.support.access_nudges import LIMITED_TOOL, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, UNJUDGED_LINE
 from core.modules.profiles.support.profile_files import ProfileFiles
 
+ALLOWED_REQUESTS_REASON = "a tool use is matched against every permission the agent was given, oldest first"
+
 MCP_PREFIX = "mcp__"
 LIMITED_TOOL_TYPES = (ToolType.QUESTION, ToolType.UNCATEGORISED)
 
@@ -96,7 +98,7 @@ class AccessRule(ReadonlyRule):
         return (SESSION_VARIABLE, RUNNER_VARIABLE, *(provider.session_variable for provider in self.providers.all()))
 
     def permitted(self, hook: AgentHook, tool: Tool) -> PermissionRequest | None:
-        allowed = self.queries.query(PermissionRequest).filter(asker_id=hook.agent_id, state=PermissionState.ALLOWED).oldest().all_rows()
+        allowed = self.queries.query(PermissionRequest).filter(asker_id=hook.agent_id, state=PermissionState.ALLOWED).every_row(ALLOWED_REQUESTS_REASON)
         return next((request for request in allowed if self.is_requested(request.action, tool)), None)
 
     @staticmethod

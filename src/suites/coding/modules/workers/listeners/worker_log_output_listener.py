@@ -29,9 +29,9 @@ class WorkerLogOutputListener(SaveListener[Updated[Output]]):
         process = self.queries.query(Process).find(event.row.process_id)
         if process.session_agent_id != context.actor.id:
             return
-        lines = self.queries.query(MergerLine).filter(read_output_id=process.id).all_rows()
+        lines = self.queries.query(MergerLine).filter(read_output_id=process.id).get()
         for line in lines:
             self.repository.save_change(line, replace(line, read_at=context.timestamp, read_output_id=None), context)
-        worktrees = self.queries.query(Worktree).filter(logs_output_id=process.id, state=WorktreeState.DELIVERED).all_rows()
+        worktrees = self.queries.query(Worktree).filter(logs_output_id=process.id, state=WorktreeState.DELIVERED).get()
         for worktree in worktrees:
             self.repository.save_change(worktree, logs_read(worktree, context.timestamp, None), context)

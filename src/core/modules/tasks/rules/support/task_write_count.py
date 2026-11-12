@@ -1,6 +1,5 @@
 from engine.driver.agent_hook import AgentHook
 from engine.database.kept_rows import KeptRows
-from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.tasks.rules.support.current_task import CurrentTask
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
@@ -19,7 +18,6 @@ class TaskWriteCount:
         current = self.current_tasks.current(hook.agent_id) if tool is not None and tool.is_writing_files() else None
         if current is None:
             return None
-        count = self.kept.read("hook_calls", lambda: self.calls.write_count(hook.agent_id, current.count_start),
-                               "session_agent_id = ? AND writes_files = ? AND answer = ? AND created_at >= ?",
-                               [hook.agent_id, True, HookAnswer.ALLOWED, current.count_start.text], name="tasks.write_count")
+        writes = self.calls.writes_since(hook.agent_id, current.count_start)
+        count = self.kept.read(writes, writes.count, name="tasks.write_count")
         return current, count + 1

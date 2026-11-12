@@ -53,6 +53,9 @@ func main() {
 // carries the timing main started, stamped go_sent before the post and go_resent before the one resend.
 func Run(requestTiming *timing.Timing, argv []string, stdout, stderr io.Writer) int {
 	home := JournalHome()
+	if len(argv) > 0 && argv[0] == "panic" {
+		return WritePanic(home, argv[1:], stdout, stderr)
+	}
 	if len(argv) == 1 && argv[0] == "launcher-service" {
 		return RunLauncherService(home, false, stderr)
 	}

@@ -9,6 +9,8 @@ from core.modules.messages.support.work_source_copy import WorkSourceCopy
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.support.task_source_copy import TaskSourceCopy
 
+COPIES_REASON = "every task of the unit gets the source copy of the message it came from"
+
 
 class WorkerTaskCopies:
     """Captures the request behind each task handed to a worker: the task's own subject message, or the fallback."""
@@ -22,9 +24,9 @@ class WorkerTaskCopies:
 
     def copy_rows(self, tasks: list[Task], fallback: WorkSourceCopy) -> tuple[TaskSourceCopy, ...]:
         links = self.queries.query(Link).filter(source_model=Message.model_name, target_model=Task.model_name, link_type=LinkType.SUBJECT)
-        edges = tuple(links.matching(Among("target_id", [task.id for task in tasks])).newest().all_rows())
+        edges = tuple(sorted(links.matching(Among("target_id", [task.id for task in tasks])).every_row(COPIES_REASON), key=lambda edge: edge.id, reverse=True))
         messages = self.queries.query(Message).matching(Among("type", PERSON_MESSAGE_TYPES))
-        available = {message.id for message in messages.matching(Among("id", tuple({edge.source_id for edge in edges}))).all_rows()}
+        available = {message.id for message in messages.matching(Among("id", tuple({edge.source_id for edge in edges}))).every_row(COPIES_REASON)}
         task_copies: dict[int, WorkSourceCopy] = {}
         for link in edges:
             task_copies.setdefault(link.target_id, WorkSourceCopy(link.source_id, 0, fallback.environment_id, link.source_id not in available))

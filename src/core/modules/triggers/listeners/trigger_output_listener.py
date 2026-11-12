@@ -18,5 +18,5 @@ class TriggerOutputListener(CommitListener[Moved[Process]]):
         self.queries, self.bus, self.actors = queries, bus, actors
 
     def handle(self, event: Moved[Process], logged: LoggedEvent) -> None:
-        for run in self.queries.query(TriggerActionRun).filter(process_id=logged.row_id, notify_agent=True, delivered_at=None).all_rows():
+        for run in self.queries.query(TriggerActionRun).filter(process_id=logged.row_id, notify_agent=True, delivered_at=None).get():
             self.bus.run(DeliverTriggerOutput(run.id), self.actors.actor("journal.core.triggers"), cause_id=logged.id)

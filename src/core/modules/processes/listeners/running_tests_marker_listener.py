@@ -26,8 +26,7 @@ class RunningTestsMarkerListener(CommitListener[Changed[Process]]):
         def updated(ids: set[int]) -> set[int]:
             return (ids - {process.id}) | active_ids
 
-        self.kept.update("processes", updated,
-                         "state IN (?, ?) AND category = ?", [*OPEN, CommandCategory.TEST_RUN], name="processes.running_tests")
-        running = self.kept.read("processes", lambda: {row.id for row in self.processes.running().filter(category=CommandCategory.TEST_RUN).all_rows()},
-                                 "state IN (?, ?) AND category = ?", [*OPEN, CommandCategory.TEST_RUN], name="processes.running_tests")
+        test_runs = self.processes.running().filter(category=CommandCategory.TEST_RUN)
+        self.kept.update(test_runs, updated, name="processes.running_tests")
+        running = self.kept.read(test_runs, lambda: set(test_runs.pluck("id", int)), name="processes.running_tests")
         self.tools.keep_tests_running(bool(running))

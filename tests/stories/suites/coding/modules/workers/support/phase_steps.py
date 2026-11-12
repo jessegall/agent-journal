@@ -23,6 +23,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 PLAN_DISPATCH = "worker dispatch --test-command python=pytest --model sonnet --plan 1"
 PHASE_DISPATCH = "worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1"
 EXTERNAL_DISPATCH = "worker dispatch --test-command python=pytest --model sonnet 1 2"
@@ -173,7 +175,7 @@ class StoryWorker:
 
 def agent_lines(story: Story, agent: Actor) -> tuple[str, ...]:
     story.run_listeners()
-    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=agent.id).all_rows()
+    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=agent.id).every_row(TEST_ROWS_REASON)
     return tuple(line.text for line in lines)
 
 

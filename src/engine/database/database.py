@@ -1,4 +1,5 @@
 import sqlite3
+from pathlib import Path
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -35,6 +36,8 @@ class Database:
         self.kept_rows: "KeptRows | None" = None
         self.read_limit_rows: int | None = None
         self.collected_large_reads: list[ReadLimitError | ReadCutError] | None = None
+        self.read_cuts: list[ReadCutError] = []
+        self.cuts_raise = False
 
     @property
     def scope_environment_id(self) -> int | None:
@@ -166,11 +169,14 @@ class Database:
         self.collected_large_reads.append(error)
 
     def report_cut(self, sql: str, limit: int) -> None:
-        if self.collected_large_reads is None:
-            return
+        """Keeps a report of a read the query builder cut at its limit, once per statement and calling line, with
+        the developer read limit on or off; a cut fails only where cuts raise, as under the story kit."""
         report = ReadCutError.cut(limit, sql)
-        if all(str(known) != str(report) for known in self.collected_large_reads):
-            self.collected_large_reads.append(report)
+        if self.cuts_raise:
+            raise report
+        for reports in (self.read_cuts, self.collected_large_reads):
+            if reports is not None and all(str(known) != str(report) for known in reports):
+                reports.append(report)
 
     def query_plan(self, statement: Statement) -> tuple[str, ...]:
         return tuple(row[3] for row in self.connection.execute(f"EXPLAIN QUERY PLAN {statement.sql}", statement.parameters))
@@ -178,6 +184,28 @@ class Database:
     def is_partial_index(self, name: str) -> bool:
         row = self.connection.execute("SELECT partial FROM pragma_index_list((SELECT tbl_name FROM sqlite_master WHERE type = 'index' AND name = ?)) WHERE name = ?", (name, name)).fetchone()
         return row is not None and bool(row[0])
+
+    def defer_checkpoints(self) -> None:
+        """Keeps the writes of this connection in its write-ahead log, also when it closes, so the file stays as it was
+        until the log is taken in or thrown away."""
+        self.connection.execute("PRAGMA wal_autocheckpoint = 0")
+        self.connection.setconfig(sqlite3.SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE, True)
+
+    @staticmethod
+    def file_integrity(path: Path) -> str:
+        """What sqlite's integrity check says of a database file opened only to read it: 'ok', or what is wrong."""
+        connection = sqlite3.connect(f"{path.resolve().as_uri()}?mode=ro", uri=True)
+        try:
+            return str(connection.execute("PRAGMA integrity_check").fetchone()[0])
+        except sqlite3.DatabaseError as error:
+            return str(error)
+        finally:
+            connection.close()
+
+    def row_state(self, table: str, row_id: int) -> str | None:
+        """The state of one row by its key, or None when the table has no such row."""
+        rows = self.rows(Statement(f"SELECT state FROM {table} WHERE id = ?", [row_id]))
+        return rows[0]["state"] if rows else None
 
     def insert(self, statement: Statement) -> int:
         self.repeated_work.count_write(statement.sql)

@@ -32,13 +32,13 @@ class RuleDockListener(CommitListener[Changed[ProjectRule] | RegistrySynced]):
         self.bus, self.actors, self.queries, self.items = bus, actors, queries, items
 
     def handle(self, event: Changed[ProjectRule] | RegistrySynced, logged: LoggedEvent) -> None:
-        rules = tuple(self.queries.query(ProjectRule).filter(state=RuleState.PROPOSED).all_rows()) if isinstance(event, RegistrySynced) else tuple([event.row])
+        rules = tuple(self.queries.query(ProjectRule).filter(state=RuleState.PROPOSED).get()) if isinstance(event, RegistrySynced) else tuple([event.row])
         for rule in rules:
             self.update_request(rule, logged)
 
     def update_request(self, rule: ProjectRule, logged: LoggedEvent) -> None:
         actor = self.actors.actor(MODULE_NAME)
-        docked = list(self.items.type_items(RuleDockType.PROPOSED.value).row_items(ProjectRule.model_name, rule.id).filter(state=DockItemState.DOCKED).all_rows())
+        docked = self.items.type_items(RuleDockType.PROPOSED.value).row_items(ProjectRule.model_name, rule.id).filter(state=DockItemState.DOCKED).get()
         docks = {dock.id: dock for dock in self.queries.query(Dock).find_many([item.dock_id for item in docked])}
         for item in docked:
             self.bus.run(RemoveDockItem(item.id), actor, cause_id=logged.id, environment_id=docks[item.dock_id].environment_id)

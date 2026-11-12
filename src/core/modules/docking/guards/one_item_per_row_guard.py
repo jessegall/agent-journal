@@ -20,5 +20,5 @@ class OneItemPerRowGuard(Guard[Changed[DockItem]]):
         if item is None:
             return
         matching = self.items.docked(item.dock_id).type_items(item.type).row_items(item.target_model, item.target_id)
-        if any(sibling.id != item.id for sibling in matching.all_rows()):
+        if matching.where("id", "!=", item.id).exists():
             raise CompletedCommandError(f"{item.target_model} {item.target_id} is docked already as {item.type}", "it is docked once for each type")

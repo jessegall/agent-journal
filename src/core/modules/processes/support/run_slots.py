@@ -9,6 +9,7 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.has_value import HasValue
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
+from engine.query.query import Query
 from engine.repository.repository import Repository
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
@@ -21,6 +22,8 @@ from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from core.modules.processes.support.run_admission import RunAdmission
 from core.modules.processes.support.process_kind_limits import ProcessKindLimits
+
+SLOT_RUNS_REASON = "the run slots are shared out over every running and queued run"
 
 
 class RunSlots:
@@ -36,15 +39,15 @@ class RunSlots:
     def grant(self, context: Context) -> None:
         queued = sorted((process for process in self.running() if process.queued_at is not None), key=lambda process: (process.priority.rank, process.id))
         parts = self.admission.waiting_parts(queued)
-        self.rows.prepare(Process, [waiting.id for waiting in queued])
-        self.rows.prepare(Agent,[waiting.session_agent_id for waiting in queued])
+        processes = self.rows.required_index(Process, [waiting.id for waiting in queued])
+        agents = self.rows.required_index(Agent, [waiting.session_agent_id for waiting in queued])
         kinds = self.kind_limits.pass_over(queued)
         for waiting in queued:
-            agent = self.rows.required(Agent, waiting.session_agent_id)
+            agent = agents[waiting.session_agent_id]
             needs_slot = self.admission.needs_slot(waiting, agent)
             if not self.admission.may_start(waiting, agent, parts[waiting.id], self.clock.timestamp()) or kinds.is_held(waiting, self.admitted_runs()):
                 continue
-            process = self.rows.required(Process, waiting.id)
+            process = processes[waiting.id]
             used_slots = sum(self.admission.uses_slot(run) for run in self.running() if run.queued_at is None)
             room = self.settings.integer(ProcessSetting.RUN_BATCH_SIZE) - used_slots
             if needs_slot and (self.halt.is_halted or room <= 0):
@@ -62,20 +65,23 @@ class RunSlots:
         def with_process(runs: tuple[Process, ...]) -> tuple[Process, ...]:
             return tuple(sorted([run for run in runs if run.id != process.id] + ([process] if process.state in RUNNING_STATES else []), key=lambda run: run.id))
 
-        self.kept.scoped_update("processes", with_process, "state IN (?, ?)", [*RUNNING_STATES], name="processes.slot_runs")
+        self.kept.update(self.slot_runs(), with_process, name="processes.slot_runs")
 
     def running(self) -> tuple[Process, ...]:
-        return self.kept.scoped_read("processes", lambda: tuple(self.queries.query(Process).matching(Among("state", RUNNING_STATES)).oldest().all_rows()),
-                                       "state IN (?, ?)", [*RUNNING_STATES], name="processes.slot_runs")
+        runs = self.slot_runs()
+        return self.kept.read(runs, lambda: tuple(runs.every_row(SLOT_RUNS_REASON)), name="processes.slot_runs")
+
+    def slot_runs(self) -> Query[Process]:
+        return self.queries.query(Process).matching(Among("state", RUNNING_STATES)).oldest()
 
     def grant_all_environments(self, context: Context) -> None:
-        queued = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(HasValue("queued_at")).oldest().all_rows()
+        queued = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(HasValue("queued_at")).every_row(SLOT_RUNS_REASON)
         for environment_id in dict.fromkeys(process.environment_id for process in tuple(queued)):
             with self.scopes.opened(None, environment_id):
                 self.grant(context)
 
     def take_counts(self, context: Context) -> None:
-        started = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(IsNull("queued_at")).filter(is_queue_run=True).oldest().all_rows()
+        started = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(IsNull("queued_at")).filter(is_queue_run=True).every_row(SLOT_RUNS_REASON)
         for process in tuple(started):
             if self.folder.is_count_taken(process.id) or self.folder.count_status(process.id) is None:
                 continue

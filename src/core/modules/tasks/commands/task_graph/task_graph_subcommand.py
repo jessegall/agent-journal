@@ -24,9 +24,9 @@ class TaskGraphSubcommand(ReadSubcommand[TaskGraph]):
         self.queries = queries
 
     def read(self, arguments: Namespace, caller: Caller) -> TaskGraph:
-        waits = tuple(self.queries.query(TaskEdge).full_table(GRAPH_REASON).all_rows())
+        waits = tuple(self.queries.query(TaskEdge).every_row(GRAPH_REASON))
         task_ids = sorted({task_id for edge in waits for task_id in (edge.task_id, edge.blocker_id)})
-        tasks = {task.id: task for task in self.queries.query(TaskCard).matching(Among("id", task_ids)).matching(Among("state", UNFINISHED_STATES)).full_table(GRAPH_REASON).all_rows()}
+        tasks = {task.id: task for task in self.queries.query(TaskCard).matching(Among("id", task_ids)).matching(Among("state", UNFINISHED_STATES)).every_row(GRAPH_REASON)}
         edges = tuple(edge for edge in waits if edge.task_id in tasks and edge.blocker_id in tasks)
         linked = {task_id for edge in edges for task_id in (edge.task_id, edge.blocker_id)}
         return TaskGraph(tuple(tasks[task_id] for task_id in sorted(linked)), edges)

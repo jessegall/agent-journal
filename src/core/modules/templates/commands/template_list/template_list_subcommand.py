@@ -30,7 +30,7 @@ class TemplateListSubcommand(ReadSubcommand[Sequence[Template]]):
             query = query.matching(TemplateTarget(arguments.target))
         if arguments.purpose is not None:
             query = query.filter(purpose=arguments.purpose)
-        return tuple(query.all_rows())
+        return tuple(query.get())
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [row for row in value if isinstance(row, Template)] if is_tuple(value) else []

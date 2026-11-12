@@ -45,7 +45,7 @@ class PlanWaitWalk:
 
     def unblockers(self, end_tasks: Mapping[int, Task], facts: UnblockerFacts) -> Unblockers:
         lines = dict(self.chain_lines)
-        candidates = []
+        candidates: list[Unblocker] = []
         for end_id in sorted(self.waiting_tasks):
             line = facts.waiting_line(end_tasks[end_id])
             if line is None:

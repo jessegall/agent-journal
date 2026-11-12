@@ -14,6 +14,8 @@ from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID
 from tests.stories.suites.coding.modules.workers.queued_commands import worker_command
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 __all__ = ["missing_program", "running_worker", "worker_command", "worker_story"]
 
 MAIN_SESSION = "s-1"
@@ -44,7 +46,7 @@ def main_agent_lines(story) -> str:
 
 
 def waiting_lines_entered(story) -> None:
-    rows = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.worker.id, state=AgentLineState.WAITING).all_rows()
+    rows = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.worker.id, state=AgentLineState.WAITING).every_row(TEST_ROWS_REASON)
     for row in rows:
         story.container.get(Bus).run(EnterAgentLine(row.id), Actor.core(), environment_id=1)
 

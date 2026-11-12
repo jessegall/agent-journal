@@ -38,3 +38,20 @@ def expect_absent_query_plan(new_story, query: str, expected) -> None:
 
 def test_the_open_tasks_assigned_to_an_actor_are_read_through_the_index_on_the_actor(new_story):
     expect_value_with(query_plan(new_story, HOT_QUERIES[3]), "assignments_actor")
+
+
+FIXED_READS = ("SELECT * FROM helper_jobs WHERE profile = 'journal-researcher' AND session_agent_id IN (SELECT id FROM agents WHERE role = 'main') AND ended_at IS NOT NULL"
+               " AND helper_id IS NOT NULL ORDER BY id DESC LIMIT 50",
+               "SELECT * FROM helper_jobs WHERE ended_at IS NULL AND helper_id = 1 LIMIT 1",
+               "SELECT * FROM helper_jobs WHERE profile = 'journal-researcher' AND ended_at IS NOT NULL ORDER BY id DESC LIMIT 50",
+               "SELECT * FROM aliases WHERE category = 'build' AND id > 0 ORDER BY id LIMIT 50",
+               "SELECT * FROM hook_calls WHERE session_agent_id = 1 AND answer = 'refused' AND created_at > '2026-11-12' LIMIT 1",
+               "SELECT * FROM agents WHERE parent_id = 1 AND role = 'helper' AND ended_at > '' ORDER BY id LIMIT 50",
+               "SELECT * FROM agent_skills WHERE session_agent_id = 1 AND state = 'due' ORDER BY id LIMIT 50")
+
+
+@pytest.mark.parametrize("query", FIXED_READS)
+def test_a_read_moved_off_the_whole_table_uses_an_index(new_story, query):
+    plan = query_plan(new_story, query)
+    expect_value_with(plan, "USING")
+    expect_value_with(plan, "INDEX")

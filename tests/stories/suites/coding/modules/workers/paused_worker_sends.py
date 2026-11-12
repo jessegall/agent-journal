@@ -8,6 +8,8 @@ from suites.coding.modules.workers.models.worker_operation import WorkerOperatio
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 PAUSED_LINE = "is paused"
 
 
@@ -22,7 +24,7 @@ def paused_worker(new_story, monkeypatch):
 
 
 def main_agent_lines(story) -> str:
-    return "\n".join(line.text for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).oldest().all_rows())
+    return "\n".join(line.text for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON))
 
 
 def test_an_unblocked_task_of_a_paused_worker_tells_its_main_agent_the_worker_is_paused_and_queues_no_job(paused_worker):

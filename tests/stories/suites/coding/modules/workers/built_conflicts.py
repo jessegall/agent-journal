@@ -17,7 +17,7 @@ def test_a_hand_in_that_deletes_built_files_whose_sources_stay_is_refused_with_t
     expect_returncode_git_repository_2(repository, "rm", BUILT_FILE, repository.worktree_folder(worker.id), 0)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story"', actor=worker)
-    story.expect_refusal("worker commit --wait --differences none", f"it deletes 1 built files under web/dist while their sources stay, such as {BUILT_FILE}", actor=worker)
+    story.expect_refusal("worker commit --wait --differences none", f"it deletes 1 built files under app/web/dist while their sources stay, such as {BUILT_FILE}", actor=worker)
     story.expect_refusal("worker commit --wait --differences none", "npm --prefix src/viewer run build", actor=worker)
 
 

@@ -9,6 +9,8 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.waiting_proofs import WaitingProofs
 
+WAITING_PROOFS_REASON = "the proof line counts every waiting proof of the held tasks"
+
 
 class MakeProofSubcommand(Subcommand[MakeProof, Proof]):
     """Creates a proof for a task point."""
@@ -32,4 +34,4 @@ class MakeProofSubcommand(Subcommand[MakeProof, Proof]):
     def write_output(self, value: Proof, output: Output) -> None:
         super().write_output(value, output)
         held = {task.id for task in self.tasks.started_tasks(value.creator_id)}
-        output.line(WaitingProofs(tuple(proof for proof in self.proofs.waiting_proofs(value.worktree_id).all_rows() if proof.task_id in held)).text())
+        output.line(WaitingProofs(tuple(proof for proof in self.proofs.waiting_proofs(value.worktree_id).every_row(WAITING_PROOFS_REASON) if proof.task_id in held)).text())

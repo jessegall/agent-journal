@@ -19,6 +19,8 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 READS_BESIDE_THE_PRUNING = 1
 
@@ -98,7 +100,7 @@ def test_a_reader_request_loses_its_sample_when_the_sample_is_removed(new_story)
     ended_run(story, "make second", "second\n")
     ended_run(story, "make third", "third\n")
     queries = story.container.get(Queries)
-    requests = tuple(queries.query(ReaderRequest).all_rows())
+    requests = tuple(queries.query(ReaderRequest).every_row(TEST_ROWS_REASON))
     story.expect_rows(not queries.query(Process).filter(id=sample.id).exists(),
                       len(requests) == 1, requests[0].sample_process_id is None)
 

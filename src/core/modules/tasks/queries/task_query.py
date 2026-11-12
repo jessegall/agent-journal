@@ -1,8 +1,6 @@
 from collections.abc import Sequence
 from engine.enums.agent_role import AgentRole
-from engine.database.statement import Statement
 from engine.time.timestamp import Timestamp
-from core.modules.tasks.models.support.views import closed_task_counts_select
 from typing import Self
 
 from engine.database.database import Database
@@ -29,6 +27,8 @@ from core.modules.assignments.queries.conditions.unassigned import Unassigned
 FOLLOWED_PLAN_STATES = ("approved", "started")
 
 TASK_PAGE_ROWS = 50
+HELD_TASKS_REASON = "an agent's current tasks are every task it holds started, which its open-task setting bounds"
+ASSIGNED_TASKS_REASON = "the tasks assigned to an agent are its whole unit of work, which can hold more than fifty tasks"
 
 class TaskQuery(Query[Task], KeptRowChanges[Task]):
     """Reads tasks with named filters. The open tasks assigned to an actor are that actor's work, and the open
@@ -39,8 +39,11 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
         self.kept = kept
 
     def started_tasks(self, agent_id: int) -> tuple[Task, ...]:
-        return self.kept.read(self.table.name, lambda: self.newest_current(self.holder(agent_id).started().oldest().all_rows(TASK_PAGE_ROWS)),
-                              "holder_id = ? AND state = ?", [agent_id, TaskState.STARTED], name="tasks.current_tasks")
+        tasks = self.held_started(agent_id)
+        return self.kept.read(tasks, lambda: self.newest_current(tuple(tasks.every_row(HELD_TASKS_REASON))), name="tasks.current_tasks")
+
+    def held_started(self, agent_id: int) -> Self:
+        return self.holder(agent_id).started().oldest()
 
     @staticmethod
     def assignee(actor_id: int) -> AssigneeAmong:
@@ -50,20 +53,16 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
         return self.matching(self.assignee(actor_id))
 
     def assigned(self, actor_id: int) -> tuple[Task, ...]:
-        assignee = self.assignee(actor_id).statement()
-        return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(self.assignee(actor_id)).oldest().all_rows(TASK_PAGE_ROWS)),
-                              f"state = ? AND {assignee.sql}", [TaskState.OPEN, *assignee.parameters], name="tasks.queued_tasks")
+        tasks = self.open_tasks().matching(self.assignee(actor_id)).oldest()
+        return self.kept.owner_read(tasks, lambda: tuple(tasks.every_row(ASSIGNED_TASKS_REASON)), name="tasks.queued_tasks")
 
     def unfinished_assigned(self, actor_id: int) -> tuple[Task, ...]:
-        assignee = self.assignee(actor_id).statement()
-        states = [TaskState.OPEN, TaskState.STARTED]
-        return self.kept.owner_read(self.table.name, lambda: tuple(self.assignee_tasks(actor_id).matching(Among("state", states)).oldest().all_rows(TASK_PAGE_ROWS)),
-                                    f"state IN (?, ?) AND {assignee.sql}", [*states, *assignee.parameters], name="tasks.unfinished_assigned")
+        tasks = self.assignee_tasks(actor_id).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).oldest()
+        return self.kept.owner_read(tasks, lambda: tuple(tasks.every_row(ASSIGNED_TASKS_REASON)), name="tasks.unfinished_assigned")
 
     def assigned_ready(self, actor_id: int) -> tuple[Task, ...]:
-        assignee, dependency_free = self.assignee(actor_id).statement(), self.no_open_dependency().statement()
-        return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(self.assignee(actor_id)).matching(self.no_open_dependency()).oldest().all_rows(TASK_PAGE_ROWS)),
-                              f"state = ? AND {assignee.sql} AND {dependency_free.sql}", [TaskState.OPEN, *assignee.parameters, *dependency_free.parameters], name="tasks.next_delegated")
+        tasks = self.open_tasks().matching(self.assignee(actor_id)).matching(self.no_open_dependency()).oldest()
+        return self.kept.owner_read(tasks, lambda: tuple(tasks.every_row(ASSIGNED_TASKS_REASON)), name="tasks.next_delegated")
 
     def free(self) -> Self:
         return self.open_tasks().matching(Unassigned(Task))
@@ -74,7 +73,7 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
             return self.newest_current([row for row in tasks if row.id != task.id] + started)
 
         if task.holder_id is not None:
-            self.kept.update(self.table.name, with_started, "holder_id = ? AND state = ?", [task.holder_id, TaskState.STARTED], name="tasks.current_tasks")
+            self.kept.update(self.held_started(task.holder_id), with_started, name="tasks.current_tasks")
 
     @staticmethod
     def newest_current(tasks: Sequence[Task]) -> tuple[Task, ...]:
@@ -134,8 +133,4 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
         return self.free().matching(self.no_open_dependency()).matching(exclusion)
 
     def closed_counts(self, starts: Sequence[Timestamp]) -> list[int]:
-        if not starts:
-            return []
-        parameters = (*(start.text for start in starts), self.database.scope_environment_id, min(start.text for start in starts))
-        row = self.database.rows(Statement(closed_task_counts_select(len(starts)), parameters))[0]
-        return [int(count) for count in row]
+        return self.counts_after("closed_at", [start.text for start in starts])

@@ -53,7 +53,8 @@ class CheckpointFolders:
         return merged[0].commit_before_merge if merged else ""
 
     def link(self, reach: CheckpointReach) -> WorktreeReach | None:
-        return self.kept.read("worktree_reaches", self.queries.query(WorktreeReach).filter(reach_id=reach.id).first, "reach_id = ?", [reach.id], name="workers.reach_link")
+        links = self.queries.query(WorktreeReach).filter(reach_id=reach.id)
+        return self.kept.read(links, links.first, name="workers.reach_link")
 
     def merged_worktrees(self, reach: CheckpointReach) -> tuple[Worktree, ...]:
         task_ids = set(reach.tasks())

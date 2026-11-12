@@ -5,9 +5,10 @@ class SampleMove:
         # @sin architecture_upgrade_version_four_source_written
         source.insert(rows)
         # @sin architecture_upgrade_version_four_source_written
+        # @sin architecture_queries_statement_outside_the_builder
         source.connection.execute(rows)
         # @righteous architecture_upgrade_version_four_source_written
         target.insert(rows)
         # @righteous architecture_upgrade_version_four_table_in_sql
-        # @sin architecture_core_sql_outside_database_layer
+        # @sin architecture_queries_sql_text_in_a_builder
         return "SELECT * FROM users"

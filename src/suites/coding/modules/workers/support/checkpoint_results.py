@@ -17,6 +17,8 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.checkpoint_failures import CheckpointFailures
 from suites.coding.modules.workers.support.phase_test_deferrals import PhaseTestDeferrals
 
+REACH_TESTS_REASON = "a checkpoint result counts every test of its reach"
+
 
 class CheckpointResults:
     """Ends the run of a reached checkpoint once none of its tests waits or runs: the proofs of its window,
@@ -59,4 +61,4 @@ class CheckpointResults:
         return tuple([*proof_processes, *(test.process_id for test in self.tests(reach) if test.state in RUNNING_STATES)])
 
     def tests(self, reach: CheckpointReach) -> tuple[CheckpointTest, ...]:
-        return tuple(self.queries.query(CheckpointTest).filter(reach_id=reach.id).oldest().all_rows())
+        return tuple(self.queries.query(CheckpointTest).filter(reach_id=reach.id).every_row(REACH_TESTS_REASON))

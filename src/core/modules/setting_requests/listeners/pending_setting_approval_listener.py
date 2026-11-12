@@ -13,6 +13,8 @@ from core.modules.questions.models.question import Question
 from core.modules.setting_requests.commands.request_setting.request_setting_handler import APPROVE_OPTION, REFUSE_OPTION
 from core.modules.setting_requests.models.setting_request import SettingRequest
 
+SETTING_REQUESTS_REASON = "at a start every setting request is checked for its approval"
+
 
 class PendingSettingApprovalListener(CommitListener[RegistrySynced]):
     """Moves existing unanswered setting questions into the shared approval dock after an upgrade."""
@@ -24,7 +26,7 @@ class PendingSettingApprovalListener(CommitListener[RegistrySynced]):
         self.bus, self.actors, self.queries = bus, actors, queries
 
     def handle(self, event: RegistrySynced, logged: LoggedEvent) -> None:
-        requests = tuple(self.queries.query(SettingRequest).all_rows())
+        requests = tuple(self.queries.query(SettingRequest).every_row(SETTING_REQUESTS_REASON))
         questions = {question.id: question for question in self.queries.query(Question).find_many([request.question_id for request in requests])}
         pending = tuple(request for request in requests if questions[request.question_id].state is QuestionState.OPEN)
         for request in pending:

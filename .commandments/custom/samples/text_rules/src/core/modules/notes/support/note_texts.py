@@ -20,8 +20,9 @@ def refuse_skip(name: str, count: int) -> None:
 # @righteous naming_column_word_in_text
 ROW_ORDER = "rows are ordered by created_at"
 # @righteous naming_column_word_in_text
+# @sin architecture_queries_sql_text_in_a_builder
 OPEN_ROWS = "state = ? AND ended_at IS NULL"
-# @sin architecture_core_sql_outside_database_layer
+# @sin architecture_queries_sql_text_in_a_builder
 SELECT_ALL = "SELECT * FROM notes WHERE id = 1"
-# @righteous architecture_core_sql_outside_database_layer
+# @righteous architecture_queries_sql_text_in_a_builder
 GREETING = "Select a note"

@@ -11,8 +11,8 @@ class AgentSkillRows:
         self.queries, self.kept = queries, kept
 
     def find(self, agent_id: int, skill: str) -> AgentSkill | None:
-        return self.kept.read("agent_skills", self.queries.query(AgentSkill).filter(session_agent_id=agent_id, skill=skill).first,
-                              "session_agent_id = ? AND skill = ?", [agent_id, skill], name="skills.agent_skill")
+        skills = self.queries.query(AgentSkill).filter(session_agent_id=agent_id, skill=skill)
+        return self.kept.read(skills, skills.first, name="skills.agent_skill")
 
     def is_loaded(self, agent_id: int, skill: str, digest: str) -> bool:
         row = self.find(agent_id, skill)

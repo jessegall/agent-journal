@@ -46,10 +46,10 @@ class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
         opened, closed = plans.matching(Among("state", self.open_states())), plans.matching(Among("state", CLOSED_STATES))
         started = plans.matching(Among("state", (PlanState.STARTED,)))
         if arguments.started:
-            return PlanBoard(opened.count(), started.count(), closed.count(), tuple(started.descending("changed_at", "id").limited(arguments.limit)))
+            return PlanBoard(opened.count(), started.count(), closed.count(), tuple(started.descending("changed_at", "id").take(arguments.limit)))
         shown = closed if arguments.closed else opened
         older = shown.matching(Less("id", arguments.before_id)) if arguments.before_id is not None else shown
-        return PlanBoard(opened.count(), started.count(), closed.count(), tuple(older.newest().limited(arguments.limit)))
+        return PlanBoard(opened.count(), started.count(), closed.count(), tuple(older.newest().take(arguments.limit)))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PlanBoard):

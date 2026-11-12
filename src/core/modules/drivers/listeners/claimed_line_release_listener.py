@@ -8,6 +8,8 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from engine.event.journal_booting import JournalBooting
 
+TYPING_LINES_REASON = "at a start every line left typing is released"
+
 
 class ClaimedLineReleaseListener(CommitListener[JournalBooting]):
     """As the journal starts, a line left in typing by a server that stopped during the typing waits again for a
@@ -19,5 +21,5 @@ class ClaimedLineReleaseListener(CommitListener[JournalBooting]):
         self.queries, self.bus = queries, bus
 
     def handle(self, event: JournalBooting, logged: LoggedEvent) -> None:
-        for line in self.queries.query(AgentLine).filter(state=AgentLineState.TYPING).all_rows():
+        for line in self.queries.query(AgentLine).filter(state=AgentLineState.TYPING).every_row(TYPING_LINES_REASON):
             self.bus.run(ReleaseAgentLine(line.id), Actor.core())

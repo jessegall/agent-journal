@@ -16,6 +16,8 @@ from core.modules.processes.models.output import Output
 from core.modules.processes.queries.conditions.part_output import PartOutput
 from core.modules.processes.queries.process_query import OPEN
 
+PROCESS_OUTPUTS_REASON = "the output of every process asked about is read"
+
 
 class OutputQuery(Query[Output]):
     """Reads outputs, with the filters the processes module and its rules use by name."""
@@ -25,16 +27,17 @@ class OutputQuery(Query[Output]):
         self.cached = cached
 
     def process_outputs(self, process_ids: tuple[int, ...]) -> tuple[Output, ...]:
-        return tuple(self.matching(Among("process_id", process_ids)).all_rows())
+        return tuple(self.matching(Among("process_id", process_ids)).every_row(PROCESS_OUTPUTS_REASON))
 
     def process_output(self, process_id: int) -> Output | None:
-        return self.cached.read(self.table.name, self.process(process_id).first, "process_id = ?", [process_id], name="processes.process_output")
+        outputs = self.process(process_id)
+        return self.cached.read(outputs, outputs.first, name="processes.process_output")
 
     def remember(self, output: Output) -> None:
-        self.cached.update(self.table.name, lambda previous: output, "process_id = ?", [output.process_id], name="processes.process_output")
+        self.cached.update(self.process(output.process_id), lambda previous: output, name="processes.process_output")
 
     def remove(self, output: Output) -> None:
-        self.cached.update(self.table.name, lambda previous: None, "process_id = ?", [output.process_id], name="processes.process_output")
+        self.cached.update(self.process(output.process_id), lambda previous: None, name="processes.process_output")
 
     def kept(self) -> Self:
         return self.filter(state=OutputState.KEPT)

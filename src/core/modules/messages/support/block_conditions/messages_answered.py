@@ -12,5 +12,5 @@ class MessagesAnswered(BlockCondition):
     name = "messages-answered"
 
     def is_true(self, check: BlockCheck) -> bool:
-        messages = tuple(check.container.get(Queries).query(Message).matching(Among("id", tuple(self.numbers))).all_rows())
+        messages = tuple(check.container.get(Queries).query(Message).matching(Among("id", tuple(self.numbers))).get())
         return len(check.container.get(MessageReplies).answered_ids(check.hook.agent_id, messages)) == len(messages)

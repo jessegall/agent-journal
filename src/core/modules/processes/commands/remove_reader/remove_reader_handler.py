@@ -9,6 +9,8 @@ from core.modules.processes.queries.reader_request_query import ReaderRequestQue
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.reader_writers import ReaderWriters
 
+READER_USES_REASON = "a removed reader is taken off every output and request that used it"
+
 
 class RemoveReaderHandler(Handler[RemoveReader, Reader]):
     """Deletes the reader; the guard says whose it may be."""
@@ -23,12 +25,12 @@ class RemoveReaderHandler(Handler[RemoveReader, Reader]):
         reader = self.readers.with_name(command.name).first()
         if reader is None:
             raise Refusal(f"there is no reader {command.name}", "journal reader list shows them")
-        outputs = tuple(self.outputs.filter(reader_id=reader.id).all_rows())
+        outputs = tuple(self.outputs.filter(reader_id=reader.id).every_row(READER_USES_REASON))
         if any(output.ended_at is None for output in outputs):
             raise Refusal(f"reader {reader.name} is in use by a running output", "wait for the output to end")
         for output in outputs:
             self.repository.update(output, context, reader_id=None)
-        for request in self.requests.filter(reader_id=reader.id).all_rows():
+        for request in self.requests.filter(reader_id=reader.id).every_row(READER_USES_REASON):
             if request.completed_at is not None:
                 self.repository.update(request, context, reader_id=None)
         self.repository.delete(reader, context)

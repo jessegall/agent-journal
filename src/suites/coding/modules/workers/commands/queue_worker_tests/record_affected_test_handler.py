@@ -19,6 +19,8 @@ from suites.coding.modules.workers.models.enums.affected_test_state import Affec
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 
+REOPENED_REASON = "a failed affected test reopens every testing task the worktree proved"
+
 
 class RecordAffectedTestHandler(Handler[RecordAffectedTest, None]):
     """Records picker and selected test results and resumes the worker queue. A failed run sends every task
@@ -48,6 +50,6 @@ class RecordAffectedTestHandler(Handler[RecordAffectedTest, None]):
 
     def fail(self, first_answer: AffectedTest, worktree: Worktree, process_id: int, context: Context) -> None:
         self.repository.save_change(first_answer, first_answer.changed(state=AffectedTestState.FAILED), context)
-        tested_ids = {proof.task_id for proof in self.queries.query(Proof).filter(worktree_id=worktree.id).all_rows()}
-        testing = self.queries.query(Task).matching(Among("id", sorted(tested_ids | {first_answer.task_id}))).filter(state=TaskState.TESTING).ordered("id").all_rows()
+        tested_ids = {proof.task_id for proof in self.queries.query(Proof).filter(worktree_id=worktree.id).every_row(REOPENED_REASON)}
+        testing = self.queries.query(Task).matching(Among("id", sorted(tested_ids | {first_answer.task_id}))).filter(state=TaskState.TESTING).every_row(REOPENED_REASON)
         self.results.reopen_tasks(worktree, [task.id for task in testing] or [first_answer.task_id], str(process_id), context)

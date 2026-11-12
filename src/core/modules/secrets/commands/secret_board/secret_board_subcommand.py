@@ -19,7 +19,7 @@ class SecretBoardSubcommand(ReadSubcommand[SecretBoard]):
         self.secrets = secrets
 
     def read(self, arguments: Namespace, caller: Caller) -> SecretBoard:
-        return SecretBoard(tuple(self.secrets.active().oldest().all_rows()), tuple(self.secrets.deleted().oldest().all_rows()))
+        return SecretBoard(tuple(self.secrets.active().oldest().get()), tuple(self.secrets.deleted().oldest().get()))
 
     def write_output(self, value: object, output: Output) -> None:
         assert isinstance(value, SecretBoard)

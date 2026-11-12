@@ -8,6 +8,8 @@ from core.modules.plans.models.phase import Phase
 from core.modules.tasks.models.task_log import TaskLog
 from core.modules.documents.support.link_endpoint import LinkEndpoint
 
+ENDPOINTS_REASON = "every row a page of links points at is read for its title"
+
 
 PARENT_COLUMNS = {TaskLog.model_name: ("task", "task_id"), Phase.model_name: ("plan", "plan_id")}
 
@@ -33,7 +35,7 @@ class LinkEndpointReader:
             ids = tuple(reference.row_id for reference in references if reference.model == name)
             query = self.queries.query(model).matching(Among("id", ids))
             query = query.with_select(query.select.column(LinkEndpointColumns.columns(query.table.columns)))
-            rows.update((RowRef(name, row.id), row) for row in query.limited(len(ids)))
+            rows.update((RowRef(name, row.id), row) for row in query.every_row(ENDPOINTS_REASON))
         return rows
 
     def endpoint(self, reference: RowRef, rows: dict[RowRef, Model]) -> LinkEndpoint:

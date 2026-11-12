@@ -12,6 +12,8 @@ from tests.stories.core.modules.viewer.support.window_samples import NOTES
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 @pytest.fixture
 def phone_request(new_story):
@@ -39,7 +41,7 @@ def test_a_missing_open_card_is_restored_after_a_registry_refresh(phone_request,
     phone_viewer.value("messages.chat", ["dock", "remove", str(item.id)])
     story.expect_sync_success(UPGRADE)
     story.run_listeners()
-    items = tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=request.id, state=DockItemState.DOCKED).all_rows())
+    items = tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=request.id, state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON))
     story.expect_rows(len(items) == 1, items[0].kept)
 
 

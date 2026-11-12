@@ -28,7 +28,7 @@ class ApprovalDockListener(CommitListener[Changed[ApprovalRequest]]):
 
     def handle(self, event: Changed[ApprovalRequest], logged: LoggedEvent) -> None:
         request = event.row
-        items = tuple(self.items.type_items(ApprovalDockType.REQUEST.value).row_items(ApprovalRequest.model_name, request.id).filter(state=DockItemState.DOCKED).all_rows())
+        items = tuple(self.items.type_items(ApprovalDockType.REQUEST.value).row_items(ApprovalRequest.model_name, request.id).filter(state=DockItemState.DOCKED).get())
         actor = self.actors.actor("journal.core.approvals")
         if self.shows_card(event, request):
             if not items:

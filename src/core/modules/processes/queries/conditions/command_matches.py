@@ -3,6 +3,10 @@ from dataclasses import dataclass
 
 from engine.database.statement import Statement
 
+PART_COMMAND = "coalesce(nullif(command, ''), text)"
+from engine.query.conditions.glob_match import GlobMatch
+from engine.query.conditions.any_of import AnyOf
+
 
 @dataclass(frozen=True)
 class CommandMatches:
@@ -11,5 +15,4 @@ class CommandMatches:
     patterns: Sequence[str]
 
     def statement(self) -> Statement:
-        tests = " OR ".join("coalesce(nullif(command, ''), text) GLOB ?" for _ in self.patterns)
-        return Statement(f"({tests})", list(self.patterns))
+        return AnyOf([GlobMatch(PART_COMMAND, pattern) for pattern in self.patterns]).statement()

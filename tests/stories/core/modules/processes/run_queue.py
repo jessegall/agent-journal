@@ -11,11 +11,13 @@ from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.modules.processes.support.queue_fixtures import QueueAgents
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 def queued(story, line: str, category: CommandCategory = CommandCategory.TEST_RUN) -> Process:
     queries = story.container.get(Queries)
     agent = queries.query(Agent).find(story.agent.id)
-    workers = tuple(queries.query(Agent).filter(environment_id=agent.environment_id, role=CodingHelperRole.WORKER).oldest().all_rows())
+    workers = tuple(queries.query(Agent).filter(environment_id=agent.environment_id, role=CodingHelperRole.WORKER).every_row(TEST_ROWS_REASON))
     worker = Actor(workers[0].id, ActorType.AGENT)
     return story.container.get(Bus).run(StartProcess.single_part(worker.id, line, "/work", category, 30), story.agent, environment_id=agent.environment_id)
 

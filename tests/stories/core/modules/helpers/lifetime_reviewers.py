@@ -15,6 +15,8 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import set_split
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 __all__ = ["helper_split_story", "helper_viewer"]
 
 REVIEWER = "journal-plan-reviewer"
@@ -47,7 +49,7 @@ def refusal_text(story, line: str) -> str:
 
 
 def reviewers(story) -> list[Agent]:
-    return sorted(story.container.get(Queries).query(Agent).filter(profile=REVIEWER).all_rows(), key=lambda reviewer: reviewer.number)
+    return sorted(story.container.get(Queries).query(Agent).filter(profile=REVIEWER).every_row(TEST_ROWS_REASON), key=lambda reviewer: reviewer.number)
 
 
 def review_job(story, reviewer: Agent, plan: int) -> str:

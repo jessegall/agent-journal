@@ -9,6 +9,8 @@ from engine.query.queries import Queries
 from engine.query.conditions.among import Among
 from engine.listener.rows.cached_event_row import CachedEventRow
 
+EVENT_ROWS_REASON = "every row the logged events name is read once for the listeners"
+
 M = TypeVar("M", bound=Model | ViewModel)
 
 
@@ -68,7 +70,7 @@ class EventRows:
         missing = [row_id for row_id in dict.fromkeys(row_ids) if name not in self.known.get((model, row_id), {})]
         if not missing:
             return
-        rows = {self.row_key(row): row for row in self.queries.query(model).with_removed().matching(Among("id", missing)).all_rows()}
+        rows = {self.row_key(row): row for row in self.queries.query(model).with_removed().matching(Among("id", missing)).every_row(EVENT_ROWS_REASON)}
         for row_id in missing:
             self.known.setdefault((model, row_id), {})[name] = CachedEventRow(rows.get(row_id), generation)
 

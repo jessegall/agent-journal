@@ -26,6 +26,8 @@ from core.modules.processes.support.group_cpu_time import GroupCpuTime
 from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 CADENCE_TICK = "cadence watch"
 TICK = timedelta(seconds=TICK_SECONDS)
 WORKER_SESSION = "s-worker"
@@ -184,7 +186,7 @@ def printed(story: Story, process: Process, text: str) -> None:
 
 
 def running_run(story: Story) -> Process:
-    return next(iter(story.container.get(ProcessQuery).agent(story.agent.id).running().all_rows()))
+    return next(iter(story.container.get(ProcessQuery).agent(story.agent.id).running().every_row(TEST_ROWS_REASON)))
 
 
 def cadence_lines(lines: list[str]) -> list[str]:

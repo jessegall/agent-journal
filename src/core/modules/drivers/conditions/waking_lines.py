@@ -2,6 +2,9 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
+from engine.query.conditions.among import Among
+from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.equal import Equal
 
 
 @dataclass(frozen=True)
@@ -11,5 +14,4 @@ class WakingLines:
     sources: Sequence[str]
 
     def statement(self) -> Statement:
-        marks = ", ".join("?" for _ in self.sources)
-        return Statement(f"(wakes_agent = 1 OR source IN ({marks}))", list(self.sources))
+        return AnyOf([Equal("wakes_agent", True), Among("source", list(self.sources))]).statement()

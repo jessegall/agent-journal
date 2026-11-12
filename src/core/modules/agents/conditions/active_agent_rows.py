@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
+from engine.query.conditions.is_null import IsNull
+from engine.query.select import Select
+from engine.query.conditions.subquery_match import SubqueryMatch
 
 
 @dataclass(frozen=True)
@@ -10,4 +13,4 @@ class ActiveAgentRows:
     column: str
 
     def statement(self) -> Statement:
-        return Statement(f"{self.column} IN (SELECT id FROM agents WHERE ended_at IS NULL AND retired_at IS NULL)")
+        return SubqueryMatch(self.column, Select("agents").matching(IsNull("ended_at")).matching(IsNull("retired_at")).column("id")).statement()

@@ -27,6 +27,8 @@ from core.modules.helpers.support.profile_model import ProfileModel
 import json
 from tests.stories.core.support.agent_labels import agent_label
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 REASON = '--reason "Its question is answered"'
 
 
@@ -72,7 +74,7 @@ def test_helper_form_offers_send_for_an_idle_helper_through_the_viewer(helper_fo
     server.story.expect_rows(not availability["can_start"] and availability["can_start_fresh"])
     server.story.expect_rows([row["id"] for row in availability["idle_helpers"]] == [helper.id])
     profile_line(server, cookie, ["helper", "send", str(agent_number(server.story, helper.id)), "Read src/tax.py"])
-    jobs = tuple(server.story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).all_rows())
+    jobs = tuple(server.story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).every_row(TEST_ROWS_REASON))
     server.story.expect_rows(jobs[-1].brief == "Read src/tax.py")
     server.story.expect_rows(len({job.helper_id for job in jobs}) == 1)
 
@@ -259,7 +261,7 @@ def test_two_sends_to_one_idle_helper_run_one_session(new_story, monkeypatch):
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.expect_success(f'helper send {agent_number(story, helper.id)} "One more job"', actor=story.agent)
     story.expect_refusal(f'helper send {agent_number(story, helper.id)} "And another"', "is busy with a job", actor=story.agent)
-    open_jobs = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).matching(IsNull("ended_at")).all_rows()
+    open_jobs = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).matching(IsNull("ended_at")).every_row(TEST_ROWS_REASON)
     story.expect_rows(len(tuple(open_jobs)) == 1)
     launcher.server.close()
     story.home.socket("launcher").unlink()
@@ -284,7 +286,7 @@ def test_steering_or_new_job(new_story):
     helper = helper_agent(story)
     story.expect_refusal(f'helper send {agent_number(story, helper.id)} "Unrelated work"', f"helper {agent_number(story, helper.id)} is busy", actor=story.agent)
     story.expect_success(f'helper send {agent_number(story, helper.id)} "Also read the tax" --steer', actor=story.agent)
-    jobs = tuple(story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).all_rows())
+    jobs = tuple(story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).every_row(TEST_ROWS_REASON))
     story.expect_rows(len(jobs) == 1, "Also read the tax" in jobs[0].brief)
 
 

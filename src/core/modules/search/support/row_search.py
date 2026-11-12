@@ -46,7 +46,7 @@ class RowSearch:
             places = HIT_LIMIT_ROWS - len(hits)
             if not places:
                 break
-            ranked = [SearchHit.matched(row, terms) for model, query in model_queries.items() if model.search_rank == rank for row in query.newest().limited(places)]
+            ranked = [SearchHit.matched(row, terms) for model, query in model_queries.items() if model.search_rank == rank for row in query.newest().take(places)]
             hits.extend(sorted(ranked, key=lambda hit: -hit.created_at.value.timestamp())[:places])
         return hits
 
@@ -56,7 +56,7 @@ class RowSearch:
         hits: dict[tuple[str, int], SearchHit] = {}
         for words in range(len(terms) - 1, (len(terms) + 1) // 2 - 1, -1):
             for model in search_models:
-                for row in self.searchable(model).matching(ContainsMost(model.search_fields, terms, words)).newest().limited(HIT_LIMIT_ROWS):
+                for row in self.searchable(model).matching(ContainsMost(model.search_fields, terms, words)).newest().take(HIT_LIMIT_ROWS):
                     hits.setdefault((row.cli_name, row.id), SearchHit.matched(row, terms))
             if len(hits) >= HIT_LIMIT_ROWS:
                 break

@@ -84,8 +84,8 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         conflicts = self.git.rebased_commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
         if conflicts:
             return self.bus.run_with_context(RecordWorktreeMerge(worktree.id, conflicts), context)
-        self.git.refuse_deleted_built_files(worktree, self.git.comparison(worktree))
         self.git.rebuild(worktree, environment.folder)
+        self.git.refuse_deleted_built_files(worktree, self.git.comparison(worktree))
         commit_before_merge = self.git.tip(environment.folder, worktree.base_branch)
         refusal = self.refused_merge(worktree, environment, commit_before_merge, context)
         if refusal:

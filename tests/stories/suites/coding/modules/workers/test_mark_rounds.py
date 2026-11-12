@@ -10,6 +10,8 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 def test_a_second_test_round_of_the_same_task_gets_its_own_mark(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
@@ -32,7 +34,7 @@ def test_a_second_test_round_of_the_same_task_gets_its_own_mark(new_story, monke
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.run_listeners()
 
-    marks = list(story.container.get(Queries).query(ChatMark).filter(type="workers.tests").oldest().all_rows())
+    marks = list(story.container.get(Queries).query(ChatMark).filter(type="workers.tests").every_row(TEST_ROWS_REASON))
     story.expect_rows(len(marks) == 2)
     story.expect_rows(marks[0].key == first.key, marks[1].key != first.key, marks[1].state is ChatMarkState.SHOWN)
     ended(story, started[1], 0)

@@ -11,6 +11,7 @@ from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES
 from core.modules.tasks.models.task_edge import TaskEdge
 from core.modules.tasks.models.task_wait import TaskWait
 
+WAITS_REASON = "a circle is found only by following every wait of the tasks and plans reached"
 TASK = "task"
 PLAN = "plan"
 TARGET_KINDS = {"tasks": TASK, "plans": PLAN}
@@ -61,16 +62,16 @@ class WaitCircle:
         plan_ids = {node.row_id: node for node in nodes if node.kind == PLAN}
         found: list[tuple[WaitNode, WaitNode]] = []
         if task_ids:
-            for edge in self.queries.query(TaskEdge).matching(Among("task_id", list(task_ids))).all_rows():
+            for edge in self.queries.query(TaskEdge).matching(Among("task_id", list(task_ids))).every_row(WAITS_REASON):
                 found.append((task_ids[edge.task_id], WaitNode(TASK, edge.blocker_id)))
-            for wait in self.queries.query(TaskWait).matching(Among("task_id", list(task_ids))).matching(IsNull("ended_at")).all_rows():
+            for wait in self.queries.query(TaskWait).matching(Among("task_id", list(task_ids))).matching(IsNull("ended_at")).every_row(WAITS_REASON):
                 kind, _, row_id = wait.target.partition(":")
                 if kind in TARGET_KINDS and row_id.isdigit():
                     found.append((task_ids[wait.task_id], WaitNode(TARGET_KINDS[kind], int(row_id))))
         if plan_ids:
-            for wait in self.queries.query(PlanWait).matching(Among("plan_id", list(plan_ids))).matching(IsNull("ended_at")).all_rows():
+            for wait in self.queries.query(PlanWait).matching(Among("plan_id", list(plan_ids))).matching(IsNull("ended_at")).every_row(WAITS_REASON):
                 found.append((plan_ids[wait.plan_id], WaitNode(PLAN, wait.blocker_id)))
-            for place in self.queries.query(PlanTask).matching(Among("plan_id", list(plan_ids))).matching(Among("state", list(UNFINISHED_STATES))).all_rows():
+            for place in self.queries.query(PlanTask).matching(Among("plan_id", list(plan_ids))).matching(Among("state", list(UNFINISHED_STATES))).every_row(WAITS_REASON):
                 found.append((plan_ids[place.plan_id], WaitNode(TASK, place.task_id)))
         return found
 

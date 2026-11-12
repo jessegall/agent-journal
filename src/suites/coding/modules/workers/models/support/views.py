@@ -1,72 +1,111 @@
-from core.modules.tasks.models.support.views import TASK_ACTOR_SQL
-WORKER_WORK_REVIEW_SELECT = """
-SELECT worktree.session_agent_id AS agent_id, worktree.environment_id,
-       CASE
-           WHEN worktree.state = 'cut' THEN 'changes requested'
-           WHEN worktree.returned_at IS NOT NULL THEN 'with the main agent'
-           WHEN EXISTS (SELECT 1 FROM proofs JOIN processes ON processes.id = proofs.process_id
-                        WHERE proofs.worktree_id = worktree.id AND proofs.state = 'running' AND processes.queued_at IS NULL) THEN 'tests running'
-           WHEN EXISTS (SELECT 1 FROM proofs WHERE proofs.worktree_id = worktree.id AND proofs.state IN ('queued', 'running')) THEN 'tests queued'
-           WHEN worktree.merge_ready_at IS NULL THEN 'judging'
-           ELSE 'waiting for the merge'
-       END AS status
-FROM worker_worktrees AS worktree
-JOIN agents ON agents.id = worktree.session_agent_id
-WHERE worktree.delivered_at IS NOT NULL
-  AND worktree.state IN ('cut', 'delivered')
-  AND worktree.removed_at IS NULL AND agents.retired_at IS NULL
-"""
+from engine.query.condition import Condition
+from engine.query.condition_join import ConditionJoin
+from engine.query.conditions.all_of import AllOf
+from engine.query.conditions.among import Among
+from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.column_compare import ColumnCompare
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.exists import Exists
+from engine.query.conditions.has_value import HasValue
+from engine.query.conditions.is_null import IsNull
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.enums.comparison_operator import ComparisonOperator
+from engine.query.enums.sql_function import SqlFunction
+from engine.query.expressions.aliased import Aliased
+from engine.query.expressions.case_when import CaseWhen
+from engine.query.expressions.column import Column
+from engine.query.expressions.comparison import Comparison
+from engine.query.expressions.function_call import FunctionCall
+from engine.query.expressions.json_object import JsonObject
+from engine.query.expressions.literal import Literal
+from engine.query.expressions.scalar_subselect import ScalarSubselect
+from engine.query.select import Select
+from core.modules.assignments.models.support.views import assigned_row_ids
+from core.modules.tasks.models.support.views import TASK_ACTOR
 
-WORKER_POINTS_SELECT = (
-    "SELECT worker_worktrees.id AS worktree_id, worker_worktrees.session_agent_id, tasks.title AS task_title, tasks.brief AS task_brief,"
-    " (SELECT json_group_array(json_object('point', proofs.point, 'state', proofs.state, 'text', proofs.text, 'shortfall', proofs.shortfall))"
-    " FROM proofs WHERE proofs.worktree_id = worker_worktrees.id AND proofs.task_id = worker_worktrees.task_id) AS proofs"
-    " FROM worker_worktrees"
-    " JOIN tasks ON tasks.id = worker_worktrees.task_id"
-)
+RUNNING_STATES = ("running", "background")
+WAITING_PROOF_STATES = ("queued", "running")
+UNFINISHED_STATES = ("open", "started", "testing", "blocked")
+WORKER = "worktree.session_agent_id"
+WORKER_AGENT = ConditionJoin("agents", condition=ColumnCompare("agents.id", "=", WORKER))
+STARTED_AT = FunctionCall(SqlFunction.COALESCE, [Column("worktree.cut_at"), Column("worktree.created_at")])
+LATEST_WORKTREE = Comparison(Column("worktree.id"), ComparisonOperator.EQUAL, ScalarSubselect(
+    Select("worker_worktrees").named_as("latest").selecting(FunctionCall(SqlFunction.MAX, [Column("latest.id")]))
+    .matching(ColumnCompare("latest.session_agent_id", "=", WORKER))))
 
-WORKER_WAITS_SELECT = """
-SELECT worktree.session_agent_id AS agent_id, worktree.environment_id,
-       CASE
-           WHEN EXISTS (SELECT 1 FROM tasks WHERE tasks.holder_id = worktree.session_agent_id AND tasks.state = 'started')
-               THEN CASE
-                   WHEN agents.ended_at IS NULL THEN ''
-                   WHEN EXISTS (SELECT 1 FROM reader_requests WHERE reader_requests.creator_id = worktree.session_agent_id AND reader_requests.completed_at IS NULL)
-                       THEN 'reader'
-                   WHEN EXISTS (SELECT 1 FROM processes WHERE processes.session_agent_id = worktree.session_agent_id AND processes.state IN ('running', 'background') AND processes.queued_at IS NOT NULL)
-                       THEN 'place in the queue'
-                   WHEN EXISTS (SELECT 1 FROM processes WHERE processes.session_agent_id = worktree.session_agent_id AND processes.state IN ('running', 'background'))
-                       THEN 'command to finish'
-                   ELSE 'next start'
-               END
-           WHEN EXISTS (SELECT 1 FROM proofs WHERE proofs.worktree_id = worktree.id AND proofs.state IN ('queued', 'running'))
-               THEN 'tests'
-           WHEN worktree.state = 'delivered' AND EXISTS (
-               SELECT 1 FROM proofs WHERE proofs.worktree_id = worktree.id AND proofs.state = 'shown')
-               THEN 'proof check'
-           WHEN worktree.state = 'delivered' THEN 'merge'
-           WHEN worktree.state = 'cut' AND NOT EXISTS (
-               SELECT 1 FROM tasks WHERE TASK_ACTOR_PLACE = worktree.session_agent_id AND tasks.state IN ('open', 'started', 'testing', 'blocked'))
-               THEN 'a job'
-           WHEN agents.ended_at IS NOT NULL THEN 'a job'
-           ELSE ''
-       END AS reason
-FROM worker_worktrees AS worktree
-JOIN agents ON agents.id = worktree.session_agent_id
-WHERE worktree.removed_at IS NULL
-  AND worktree.id = (SELECT max(latest.id) FROM worker_worktrees AS latest WHERE latest.session_agent_id = worktree.session_agent_id)
-""".replace("TASK_ACTOR_PLACE", TASK_ACTOR_SQL)
 
-WORKER_PROGRESS_SELECT = """
-SELECT worktree.session_agent_id AS agent_id, worktree.environment_id, worktree.branch, worktree.task_id,
-       coalesce(worktree.cut_at, worktree.created_at) AS started_at,
-       worktree.removed_at AS finished_at,
-       count(tasks.id) AS task_count,
-       count(CASE WHEN tasks.state IN ('completed', 'testing') THEN 1 END) AS completed_count
-FROM worker_worktrees AS worktree
-LEFT JOIN tasks ON tasks.id IN (SELECT assignments.subject_id FROM assignments WHERE assignments.subject_model = 'task' AND assignments.actor_id = worktree.session_agent_id
-                                UNION SELECT held.id FROM tasks AS held WHERE held.holder_id = worktree.session_agent_id)
-    AND (tasks.closed_at IS NULL OR tasks.closed_at >= coalesce(worktree.cut_at, worktree.created_at))
-WHERE worktree.id = (SELECT max(latest.id) FROM worker_worktrees AS latest WHERE latest.session_agent_id = worktree.session_agent_id)
-GROUP BY worktree.environment_id, worktree.id
-""".replace("TASK_ACTOR_PLACE", TASK_ACTOR_SQL)
+def worktrees() -> Select:
+    return Select("worker_worktrees").named_as("worktree")
+
+
+def worktree_proofs(condition: Condition) -> Exists:
+    return Exists(Select("proofs").matching(ColumnCompare("proofs.worktree_id", "=", "worktree.id")).matching(condition))
+
+
+def worker_rows(table: str, column: str) -> Select:
+    """The rows of a table that belong to the worker of the outer worktree by the given column."""
+    return Select(table).matching(ColumnCompare(f"{table}.{column}", "=", WORKER))
+
+
+def worktree_state(state: str) -> Equal:
+    return Equal("worktree.state", state)
+
+
+RUNNING_PROOF = Exists(Select("proofs").joined(ConditionJoin("processes", condition=ColumnCompare("processes.id", "=", "proofs.process_id")))
+                       .matching(ColumnCompare("proofs.worktree_id", "=", "worktree.id")).matching(Equal("proofs.state", "running"))
+                       .matching(IsNull("processes.queued_at")))
+
+WORKER_WORK_REVIEW_SELECT = worktrees().selecting(
+    Aliased(Column(WORKER), "agent_id"), Column("worktree.environment_id"),
+    Aliased(CaseWhen([
+        (worktree_state("cut"), Literal("changes requested")),
+        (HasValue("worktree.returned_at"), Literal("with the main agent")),
+        (RUNNING_PROOF, Literal("tests running")),
+        (worktree_proofs(Among("proofs.state", WAITING_PROOF_STATES)), Literal("tests queued")),
+        (IsNull("worktree.merge_ready_at"), Literal("judging")),
+    ], Literal("waiting for the merge")), "status"),
+).joined(WORKER_AGENT).matching(HasValue("worktree.delivered_at")).matching(Among("worktree.state", ("cut", "delivered"))).matching(
+    IsNull("worktree.removed_at")).matching(IsNull("agents.retired_at")).view_sql()
+
+WORKER_POINTS_SELECT = Select("worker_worktrees").selecting(
+    Aliased(Column("worker_worktrees.id"), "worktree_id"), Column("worker_worktrees.session_agent_id"),
+    Aliased(Column("tasks.title"), "task_title"), Aliased(Column("tasks.brief"), "task_brief"),
+    Aliased(ScalarSubselect(Select("proofs").selecting(FunctionCall(SqlFunction.JSON_GROUP_ARRAY, [JsonObject({
+        "point": Column("proofs.point"), "state": Column("proofs.state"), "text": Column("proofs.text"), "shortfall": Column("proofs.shortfall")})]))
+        .matching(ColumnCompare("proofs.worktree_id", "=", "worker_worktrees.id")).matching(ColumnCompare("proofs.task_id", "=", "worker_worktrees.task_id"))),
+        "proofs"),
+).joined(ConditionJoin("tasks", condition=ColumnCompare("tasks.id", "=", "worker_worktrees.task_id"))).view_sql()
+
+RUNNING_PROCESSES = worker_rows("processes", "session_agent_id").matching(Among("processes.state", RUNNING_STATES))
+STARTED_WAIT = CaseWhen([
+    (IsNull("agents.ended_at"), Literal("")),
+    (Exists(worker_rows("reader_requests", "creator_id").matching(IsNull("reader_requests.completed_at"))), Literal("reader")),
+    (Exists(RUNNING_PROCESSES.matching(HasValue("processes.queued_at"))), Literal("place in the queue")),
+    (Exists(RUNNING_PROCESSES), Literal("command to finish")),
+], Literal("next start"))
+UNFINISHED_ASSIGNED = Exists(Select("tasks").matching(Comparison(TASK_ACTOR, ComparisonOperator.EQUAL, Column(WORKER)))
+                             .matching(Among("tasks.state", UNFINISHED_STATES)), negated=True)
+
+WORKER_WAITS_SELECT = worktrees().selecting(
+    Aliased(Column(WORKER), "agent_id"), Column("worktree.environment_id"),
+    Aliased(CaseWhen([
+        (Exists(worker_rows("tasks", "holder_id").matching(Equal("tasks.state", "started"))), STARTED_WAIT),
+        (worktree_proofs(Among("proofs.state", WAITING_PROOF_STATES)), Literal("tests")),
+        (AllOf([worktree_state("delivered"), worktree_proofs(Equal("proofs.state", "shown"))]), Literal("proof check")),
+        (worktree_state("delivered"), Literal("merge")),
+        (AllOf([worktree_state("cut"), UNFINISHED_ASSIGNED]), Literal("a job")),
+        (HasValue("agents.ended_at"), Literal("a job")),
+    ], Literal("")), "reason"),
+).joined(WORKER_AGENT).matching(IsNull("worktree.removed_at")).matching(LATEST_WORKTREE).view_sql()
+
+WORKER_TASK_IDS = assigned_row_ids("task", WORKER).union(Select("tasks").named_as("held").selecting(Column("held.id"))
+                                                         .matching(ColumnCompare("held.holder_id", "=", WORKER)), every=False)
+WORKER_PROGRESS_SELECT = worktrees().selecting(
+    Aliased(Column(WORKER), "agent_id"), Column("worktree.environment_id"), Column("worktree.branch"), Column("worktree.task_id"),
+    Aliased(STARTED_AT, "started_at"), Aliased(Column("worktree.removed_at"), "finished_at"),
+    Aliased(FunctionCall(SqlFunction.COUNT, [Column("tasks.id")]), "task_count"),
+    Aliased(FunctionCall(SqlFunction.COUNT, [CaseWhen([(Among("tasks.state", ("completed", "testing")), Literal(1))])]), "completed_count"),
+).joined(ConditionJoin("tasks", left=True, condition=AllOf([
+    SubqueryMatch("tasks.id", WORKER_TASK_IDS),
+    AnyOf([IsNull("tasks.closed_at"), Comparison(Column("tasks.closed_at"), ComparisonOperator.AT_LEAST, STARTED_AT)])]))).matching(
+    LATEST_WORKTREE).grouped("worktree.environment_id", "worktree.id").view_sql()

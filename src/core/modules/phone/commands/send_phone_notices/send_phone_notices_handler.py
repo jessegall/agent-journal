@@ -24,7 +24,7 @@ class SendPhoneNoticesHandler(Handler[SendPhoneNotices, int]):
     def handle(self, command: SendPhoneNotices, context: Context) -> int:
         if context.actor.type is not ActorType.CORE:
             raise Refusal("only the journal's own round sends notices to phones")
-        phones = list(self.queries.query(Phone).filter(state=PhoneState.PAIRED, notice_waiting=True).all_rows())
+        phones = self.queries.query(Phone).filter(state=PhoneState.PAIRED, notice_waiting=True).get()
         for phone in phones:
             endpoint = phone.endpoint
             unknown = endpoint is not None and self.service.send(endpoint) in UNKNOWN_STATUSES

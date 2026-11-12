@@ -51,7 +51,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
 
     def read(self, arguments: Namespace, caller: Caller) -> EnvironmentUsage:
         activity = self.activity.current()
-        opened = tuple(self.agents.matching(activity).oldest().full_table(RUNNING_AGENTS_REASON).all_rows())
+        opened = tuple(self.agents.matching(activity).every_row(RUNNING_AGENTS_REASON))
         counted = opened if arguments.open_only else (*opened, *self.ended_helpers(self.agents, opened))
         statuses = {agent.session: self.with_share(agent) for agent in counted}
         return EnvironmentUsage(tuple((agent, statuses[agent.session]) for agent in counted), self.files.plan_windows(statuses), activity.pending)
@@ -68,7 +68,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
     @staticmethod
     def ended_helpers(agents: Query[Agent], opened: tuple[Agent, ...]) -> tuple[Agent, ...]:
         helpers = agents.filter(role=HelperRole.HELPER).matching(Greater("ended_at", "")).matching(Among("parent_id", tuple(agent.id for agent in opened))).matching(Excluding(Among("id", tuple(agent.id for agent in opened))))
-        return tuple(helpers.newest().limited(ENDED_HELPERS_COUNTED)[::-1])
+        return tuple(helpers.newest().take(ENDED_HELPERS_COUNTED)[::-1])
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, EnvironmentUsage):
@@ -90,7 +90,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
                  "halted_count": sum(1 for agent in agents if agent.program == program and agent.halted_at is not None and agent.ended_at is None)} for program, lockdown in active.items()]
 
     def last_compactions(self, agents: Sequence[Agent]) -> dict[int, Compaction]:
-        calls = self.queries.query(HookCall).matching(Among("hook", (HookEventName.COMPACT, HookEventName.SESSION_START))).matching(Among("session_agent_id", tuple(agent.id for agent in agents))).newest().limited(RECENT_COMPACTION_CALLS)[::-1]
+        calls = self.queries.query(HookCall).matching(Among("hook", (HookEventName.COMPACT, HookEventName.SESSION_START))).matching(Among("session_agent_id", tuple(agent.id for agent in agents))).newest().take(RECENT_COMPACTION_CALLS)[::-1]
         compactions = {agent.id: Compaction.last([call for call in calls if call.session_agent_id == agent.id]) for agent in agents}
         return {agent_id: compaction for agent_id, compaction in compactions.items() if compaction is not None}
 

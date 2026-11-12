@@ -3,11 +3,10 @@ from engine.database.kept_rows import KeptRows
 from engine.enums.hook_answer import HookAnswer
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.watched_runs import WatchedRuns
-from engine.model.tables import Tables
 from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.processes.models.process import Process
-from core.modules.processes.queries.process_query import OPEN, ProcessQuery
+from core.modules.processes.queries.process_query import ProcessQuery
 
 MONITOR_TOOL = "Monitor"
 MONITOR_LIFE_SECONDS = 1800
@@ -17,18 +16,16 @@ class MonitoredRuns(WatchedRuns):
     """An agent watches a run when one of its runs is going and a Monitor it was allowed to start since that
     run began can still be alive."""
 
-    def __init__(self, processes: ProcessQuery, queries: Queries, clock: Clock, kept: KeptRows, tables: Tables) -> None:
-        self.processes, self.queries, self.clock, self.kept, self.tables = processes, queries, clock, kept, tables
+    def __init__(self, processes: ProcessQuery, queries: Queries, clock: Clock, kept: KeptRows) -> None:
+        self.processes, self.queries, self.clock, self.kept = processes, queries, clock, kept
 
     def newest_run(self, agent_id: int) -> Process | None:
-        return self.kept.scoped_read(self.tables.table(Process).name, self.processes.agent(agent_id).running().newest().first,
-                                     "session_agent_id = ? AND state IN (?, ?)", [agent_id, *OPEN], name="processes.newest_run")
+        runs = self.processes.agent(agent_id).running().newest()
+        return self.kept.read(runs, runs.first, name="processes.newest_run")
 
     def newest_monitor(self, agent_id: int) -> HookCall | None:
-        return self.kept.scoped_read(self.tables.table(HookCall).name,
-                                     self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE, tool=MONITOR_TOOL, answer=HookAnswer.ALLOWED).newest().first,
-                                     "session_agent_id = ? AND hook = ? AND tool = ? AND answer = ?",
-                                     [agent_id, HookEventName.PRE_TOOL_USE, MONITOR_TOOL, HookAnswer.ALLOWED], name="processes.newest_monitor")
+        monitors = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE, tool=MONITOR_TOOL, answer=HookAnswer.ALLOWED).newest()
+        return self.kept.read(monitors, monitors.first, name="processes.newest_monitor")
 
     def is_watching(self, agent_id: int) -> bool:
         run = self.newest_run(agent_id)

@@ -17,6 +17,8 @@ from tests.stories.core.modules.processes.support.reader_block_fixtures import F
 from tests.stories.core.modules.processes.support.reading_scenarios import agent_number, end_decision, ended_after_a_while
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 EDIT = HookSamples.edit("cart.py")
 READ = HookSamples.tool_use("Read", ToolType.READ, ["cart.py"], None)
 BUNDLE = "zork-build bundle"
@@ -32,7 +34,7 @@ def unread_run(story: Story, line: str = BUNDLE) -> Process:
 
 
 def open_blocks(story: Story, agent_id: int) -> tuple[AgentBlock, ...]:
-    return tuple(story.container.get(Queries).query(AgentBlock).filter(session_agent_id=agent_id, closed_at=None).all_rows())
+    return tuple(story.container.get(Queries).query(AgentBlock).filter(session_agent_id=agent_id, closed_at=None).every_row(TEST_ROWS_REASON))
 
 
 class TwoUnreadBuilds(StoryFixture):

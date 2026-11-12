@@ -1,9 +1,15 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
+from engine.query.conditions.among import Among
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.is_null import IsNull
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.select import Select
 from core.modules.tasks.models.enums.task_state import TaskState
 
 UNFINISHED_WORK_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.TESTING)
+TASK_MODEL = "task"
 
 
 @dataclass(frozen=True)
@@ -11,7 +17,6 @@ class UnfinishedTaskHolder:
     """Matches agents that an open, started or testing task is assigned to."""
 
     def statement(self) -> Statement:
-        marks = ", ".join("?" for _ in UNFINISHED_WORK_STATES)
-        return Statement("id IN (SELECT assignments.actor_id FROM assignments JOIN tasks ON tasks.id = assignments.subject_id"
-                         f" WHERE assignments.subject_model = 'task' AND tasks.closed_at IS NULL AND tasks.state IN ({marks}))",
-                         [state.value for state in UNFINISHED_WORK_STATES])
+        unfinished = Select("tasks").matching(IsNull("closed_at")).matching(Among("state", [state.value for state in UNFINISHED_WORK_STATES])).column("id")
+        holders = Select("assignments").matching(Equal("subject_model", TASK_MODEL)).matching(SubqueryMatch("subject_id", unfinished)).column("actor_id")
+        return SubqueryMatch("id", holders).statement()

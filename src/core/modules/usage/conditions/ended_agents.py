@@ -1,8 +1,9 @@
 from engine.database.statement import Statement
+from engine.query.conditions.has_value import HasValue
 
 
 class EndedAgents:
     """Agents explicitly retired, regardless of their last process."""
 
     def statement(self) -> Statement:
-        return Statement("retired_at IS NOT NULL")
+        return HasValue("retired_at").statement()

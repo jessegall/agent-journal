@@ -8,6 +8,8 @@ from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.dumps.models.dump import Dump
 from core.modules.dumps.models.dump_item import DumpItem
 
+DUMP_ITEMS_REASON = "the item list shows every item of the dump"
+
 
 class DumpItemsSubcommand(ReadSubcommand[list[DumpItem]]):
     """`journal dump items <dump>`: each item of the dump with where it stands."""
@@ -23,7 +25,7 @@ class DumpItemsSubcommand(ReadSubcommand[list[DumpItem]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> list[DumpItem]:
         dump = self.queries.query(Dump).find(arguments.dump_id)
-        return list(self.queries.query(DumpItem).filter(dump_id=dump.id).oldest().all_rows())
+        return list(self.queries.query(DumpItem).filter(dump_id=dump.id).every_row(DUMP_ITEMS_REASON))
 
     def write_output(self, value: object, output: Output) -> None:
         if is_list(value):

@@ -5,6 +5,8 @@ from engine.repository.repository import Repository
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.reader_file import ReaderFile
 
+PLUGIN_READERS_REASON = "a removed plugin takes every reader it brought with it"
+
 READERS_FOLDER = ".journal-plugin/readers"
 
 
@@ -21,5 +23,5 @@ class PluginReaders:
                 self.repository.save(reader_file.reader(context.actor.id, plugin_name), context)
 
     def remove(self, plugin_name: str, context: Context) -> None:
-        for reader in tuple(self.readers.filter(plugin_name=plugin_name).all_rows()):
+        for reader in tuple(self.readers.filter(plugin_name=plugin_name).every_row(PLUGIN_READERS_REASON)):
             self.repository.delete(reader, context)

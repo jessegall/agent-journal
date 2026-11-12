@@ -4,6 +4,16 @@ from engine.database.statement import Statement
 from engine.enums.command_category import CommandCategory
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.processes.models.enums.process_dock_type import ProcessDockType
+from engine.query.conditions.less import Less
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.among import Among
+from engine.query.conditions.exists import Exists
+from engine.query.conditions.greater import Greater
+from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.all_of import AllOf
+from engine.query.conditions.column_compare import ColumnCompare
+from engine.query.select import Select
 
 
 
@@ -17,10 +27,8 @@ class LongRunCandidate:
     start_cutoff: str
 
     def statement(self) -> Statement:
-        file_categories = ", ".join("?" for _ in FILE_CATEGORIES)
-        return Statement("((started_at < ? AND (creator_id != session_agent_id OR EXISTS "
-                         "(SELECT 1 FROM process_parts WHERE process_id = processes.id AND is_visible = 1) OR (moved_at > '' AND EXISTS "
-                         f"(SELECT 1 FROM process_parts WHERE process_id = processes.id AND category NOT IN ({file_categories}))))) "
-                         "OR id IN (SELECT target_id FROM dock_items "
-                         "WHERE type = ? AND target_model = ? AND state = ?))",
-                         [self.start_cutoff, *FILE_CATEGORIES, ProcessDockType.OUTPUT.value, "process", DockItemState.DOCKED.value])
+        parts = Select("process_parts").matching(ColumnCompare("process_id", "=", "processes.id"))
+        moved_with_other_work = AllOf([Greater("moved_at", ""), Exists(parts.matching(Among("category", FILE_CATEGORIES, negated=True)))])
+        old_enough = AllOf([Less("started_at", self.start_cutoff), AnyOf([ColumnCompare("creator_id", "!=", "session_agent_id"), Exists(parts.matching(Equal("is_visible", 1))), moved_with_other_work])])
+        docked = Select("dock_items").matching(Equal("type", ProcessDockType.OUTPUT.value)).matching(Equal("target_model", "process")).matching(Equal("state", DockItemState.DOCKED.value))
+        return AnyOf([old_enough, SubqueryMatch("id", docked.column("target_id"))]).statement()

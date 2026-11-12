@@ -25,4 +25,5 @@ class LineTranscriptAuthors(TranscriptAuthors):
         return MAIN_AGENT_AUTHOR if self.is_agent(line.creator_id) else JOURNAL_AUTHOR
 
     def is_agent(self, actor_id: int) -> bool:
-        return self.kept.read("agents", self.queries.query(Agent).filter(id=actor_id).exists, "id = ?", [actor_id], name="drivers.transcript_agent")
+        agents = self.queries.query(Agent).filter(id=actor_id)
+        return self.kept.read(agents, agents.exists, name="drivers.transcript_agent")

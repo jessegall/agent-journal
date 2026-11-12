@@ -15,6 +15,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import G
 from tests.stories.suites.coding.modules.workers.worktree_behind_check import base_commits, behind_lines, checks, look, setting
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState
 
+TEST_ROWS_REASON = "the test reads every row it checks"
 MANY_WORKERS = 5
 
 
@@ -55,7 +56,7 @@ def g57_five_worktrees_in_one_look_start_the_merger_once(story, repository: GitR
         own_commits(repository, each.id, 1)
     base_commits(repository, 3)
     look(story)
-    mergers = [agent for agent in story.container.get(Queries).query(Agent).all_rows() if agent.profile == "journal-merger"]
+    mergers = [agent for agent in story.container.get(Queries).query(Agent).every_row(TEST_ROWS_REASON) if agent.profile == "journal-merger"]
     story.expect_rows(len(checks(story)) == MANY_WORKERS, len(behind_lines(story)) == MANY_WORKERS, len(mergers) <= 1, detail=f"{len(checks(story))} {behind_lines(story)} {mergers}")
 
 

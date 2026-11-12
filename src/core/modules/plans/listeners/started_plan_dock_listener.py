@@ -44,5 +44,5 @@ class StartedPlanDockListener(CommitListener[Created[Plan] | Moved[Plan]]):
 
     def undock(self, plan: Plan, actor: Actor, cause_id: int) -> None:
         items = self.items.row_items("plan", plan.id).filter(state=DockItemState.DOCKED).matching(Among("type", tuple(dock_type.value for dock_type in PlanDockType)))
-        for item in items.all_rows():
+        for item in items.get():
             self.bus.run(RemoveDockItem(item.id), actor, cause_id=cause_id)

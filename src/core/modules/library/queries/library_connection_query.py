@@ -13,10 +13,11 @@ class LibraryConnectionQuery(Query[LibraryConnection]):
         self.kept = kept
 
     def current(self) -> LibraryConnection | None:
-        return self.kept.read(self.table.name, self.oldest().first, name="library.current_connection")
+        connections = self.oldest()
+        return self.kept.read(connections, connections.first, name="library.current_connection")
 
     def remember(self, connection: LibraryConnection) -> None:
-        self.kept.update(self.table.name, lambda previous: connection, name="library.current_connection")
+        self.kept.update(self.oldest(), lambda previous: connection, name="library.current_connection")
 
     def remove(self) -> None:
-        self.kept.update(self.table.name, lambda previous: None, name="library.current_connection")
+        self.kept.update(self.oldest(), lambda previous: None, name="library.current_connection")

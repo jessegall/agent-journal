@@ -19,6 +19,8 @@ from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
 from tests.stories.suites.coding.modules.workers.worker_ask import asking_worker
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 @pytest.fixture
 def waiting_worker(new_story, monkeypatch):
@@ -96,7 +98,7 @@ def merger_that_read_the_line(unread_line):
 
 
 def expect_unread_lines(story, count: int) -> None:
-    unread = tuple(story.container.get(Queries).query(MergerLine).matching(IsNull("read_at")).matching(IsNull("read_output_id")).all_rows())
+    unread = tuple(story.container.get(Queries).query(MergerLine).matching(IsNull("read_at")).matching(IsNull("read_output_id")).every_row(TEST_ROWS_REASON))
     story.expect_rows(len(unread) == count, detail=str(unread))
 
 

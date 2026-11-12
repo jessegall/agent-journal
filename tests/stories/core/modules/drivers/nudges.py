@@ -29,6 +29,8 @@ from tests.stories.core.support.fixtures import UserJoined
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_answers, expect_outcome_with, expect_value, expect_value_with
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 def test_a_declared_nudge_fills_its_fields_and_keeps_its_key_and_type():
     nudge = NudgeDeclaration("shop.total", NudgeType.STEERING, "the total is {total}").nudge(total=12)
@@ -81,7 +83,7 @@ def test_a_clock_nudge_going_back_to_an_older_text_keeps_one_row_for_that_text(n
     write(Nudge("sample.clock", NudgeType.STEERING, "first text", turn_limited=False))
     write(Nudge("sample.clock", NudgeType.STEERING, "second text", turn_limited=False))
     write(Nudge("sample.clock", NudgeType.STEERING, "first text", interval=Interval(Seconds(60)), turn_limited=False))
-    rows = story.container.get(Queries).query(NudgeRecord).filter(session_agent_id=story.agent.id, key="sample.clock").all_rows()
+    rows = story.container.get(Queries).query(NudgeRecord).filter(session_agent_id=story.agent.id, key="sample.clock").every_row(TEST_ROWS_REASON)
     expect_delivery_count(rows, [("first text", 2), ("second text", 1)])
 
 

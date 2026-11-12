@@ -7,6 +7,8 @@ from engine.repository.repository import Repository
 from core.modules.documents.models.link import Link
 from core.modules.documents.models.link_correction import LinkCorrection
 
+STORED_LINKS_REASON = "the links to write are compared with every stored link of the row"
+
 STORED_LINK_TARGETS = 25
 
 
@@ -44,7 +46,7 @@ class RowLinkWriter:
             distinct = sorted(set(ids))
             for first in range(0, len(distinct), STORED_LINK_TARGETS):
                 targets = Among("target_id", distinct[first:first + STORED_LINK_TARGETS])
-                rows = self.queries.query(Link).filter(source_model=source_model, source_id=source_id).matching(targets).all_rows()
+                rows = self.queries.query(Link).filter(source_model=source_model, source_id=source_id).matching(targets).every_row(STORED_LINKS_REASON)
                 stored_links.update({self.key(row): row for row in rows})
         return stored_links
 

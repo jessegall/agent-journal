@@ -64,6 +64,9 @@ func main() {
 	if err != nil {
 		os.Exit(0)
 	}
+	if IsMainRole(context.Role) && IsPanicLine(body) {
+		os.Exit(panicLineAnswered(os.Stdout, os.Stderr, context.Programs.Programs[program], body))
+	}
 	requestTiming.Stamp("go_stdin")
 	prepared, skip, err := preparedHook(program, root, body, context)
 	if err != nil && mustBeChecked(context.Role) {

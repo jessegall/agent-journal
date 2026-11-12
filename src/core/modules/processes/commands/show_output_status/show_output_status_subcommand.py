@@ -33,7 +33,7 @@ class ShowOutputStatusSubcommand(ReadSubcommand[OutputLines]):
         query = self.processes.newest()
         if self.access.has_private_outputs(caller.actor):
             query = query.agent(caller.actor.id)
-        return OutputLines([self.line(process) for process in reversed(query.limited(OUTPUTS_SHOWN))])
+        return OutputLines([self.line(process) for process in reversed(query.take(OUTPUTS_SHOWN))])
 
     def line(self, process: Process) -> str:
         if process.state in RUNNING_STATES:

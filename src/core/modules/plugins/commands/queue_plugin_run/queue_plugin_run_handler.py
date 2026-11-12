@@ -18,6 +18,7 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.process import Process
 
+WAITING_RUNS_REASON = "every waiting run of the kind is weighed against the new one"
 
 
 class QueuePluginRunHandler(Handler[QueuePluginRun, QueuedRunStart]):
@@ -37,7 +38,7 @@ class QueuePluginRunHandler(Handler[QueuePluginRun, QueuedRunStart]):
             raise Refusal(f"plugin {command.plugin} declares no kind of run named {command.kind}", "name a kind its manifest lists under processes")
         folder = command.folder or str(self.checkouts.checkout(command.agent_id).root)
         if declared.coalesce:
-            for waiting in self.queries.query(QueuedRun).filter(plugin=command.plugin, kind=command.kind, state=QueuedRunState.WAITING).all_rows():
+            for waiting in self.queries.query(QueuedRun).filter(plugin=command.plugin, kind=command.kind, state=QueuedRunState.WAITING).every_row(WAITING_RUNS_REASON):
                 process = self.queries.query(Process).find(waiting.process_id)
                 if process.queued_at is not None and (process.folder, process.line) == (folder, command.line):
                     return QueuedRunStart(waiting, process, True, command.is_detached)

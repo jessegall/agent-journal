@@ -19,7 +19,7 @@ def read_rows(query, ids):
         # @sin architecture_queries_read_in_a_loop
         total = query.matching(row_id).count()
     # @righteous architecture_queries_read_in_a_loop
-    held = [row for row in query.filter(id=1).all_rows()]
+    held = [row for row in query.where(id=1).take(25)]
     # @righteous architecture_queries_read_in_a_loop
     present = [path for path in paths if path.exists()]
     # @righteous architecture_queries_read_in_a_loop
@@ -31,11 +31,13 @@ def read_rows(query, ids):
     # @sin architecture_queries_one_row_page
     page = query.page(1, 1).rows
     # @sin architecture_queries_one_row_page
-    latest = query.newest().limited(1)
+    latest = query.newest().take(1)
     # @righteous architecture_queries_one_row_page
-    recent_rows = query.newest().limited(5)
+    recent_rows = query.newest().take(5)
     # @righteous architecture_queries_one_row_page
     page_rows = query.page(1, 25).rows
+    # @sin architecture_queries_one_row_page
+    only = query.limit(1).get()
     # @righteous architecture_queries_one_row_page
     second_page = query.page(2, 1).rows
     # @sin architecture_model_loaded_outside_table

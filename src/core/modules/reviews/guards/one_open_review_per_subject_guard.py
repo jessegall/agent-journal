@@ -16,7 +16,7 @@ class OneOpenReviewPerSubjectGuard(Guard[Created[Review]]):
 
     def check(self, event: Created[Review], context: Context) -> None:
         review = event.row
-        open_review = next(self.reviews.subject(review.subject_model, review.subject_id).unfinished().oldest().all_rows(1), None)
+        open_review = self.reviews.subject(review.subject_model, review.subject_id).unfinished().oldest().first()
         if open_review:
             raise Refusal(f"{review.subject_model} {review.subject_id} already has an unfinished review, review {open_review.id}",
                           f"wait for review {open_review.id} to be reported, or end it with journal review abandon {open_review.id}")

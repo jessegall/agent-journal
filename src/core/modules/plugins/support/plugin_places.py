@@ -19,6 +19,8 @@ from core.modules.processes.commands.stop_process.stop_process import StopProces
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
 
+PLUGIN_RUNS_REASON = "every running run of a plugin no longer wanted is stopped"
+
 PLACE_POLL_SECONDS = 0.05
 
 
@@ -42,7 +44,7 @@ class PluginPlaces:
     def session_agents(self, agent_id: int | None, environment: str) -> tuple[Agent, ...]:
         if agent_id is not None:
             return tuple([self.queries.query(Agent).find(agent_id)])
-        environments = tuple(self.queries.query(Environment).filter(name=environment).all_rows()) if environment else ()
+        environments = tuple(self.queries.query(Environment).filter(name=environment).get()) if environment else ()
         if not environments:
             return MainAgentFinder.rows(self.queries)
         with self.scopes.opened(None, environments[0].id):
@@ -70,7 +72,7 @@ class PluginPlaces:
         self.stop_rows(process for process in self.running() if process.plugin not in wanted)
 
     def running(self) -> list[Process]:
-        return [process for process in self.queries.query(Process).matching(Among("state", RUNNING_STATES)).all_rows() if process.plugin]
+        return [process for process in self.queries.query(Process).matching(Among("state", RUNNING_STATES)).every_row(PLUGIN_RUNS_REASON) if process.plugin]
 
     def stop_rows(self, processes: Iterable[Process]) -> None:
         for process in processes:

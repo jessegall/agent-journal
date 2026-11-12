@@ -25,6 +25,8 @@ from core.modules.processes.commands.request_count_reader.request_count_reader i
 from suites.coding.modules.workers.support.worker_test_limit_nudges import TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE
 from suites.coding.modules.workers.support.part_test_listing import PartTestListing
 
+LISTINGS_REASON = "the count of a test command comes from the newest kept output of it that holds one"
+
 
 class WorkerTestListings(RunCounts):
     """Builds per-part listings and adds their counts for a queued worker run."""
@@ -100,7 +102,7 @@ class WorkerTestListings(RunCounts):
         return self.rows.required(Reader, output.reader_id)
 
     def previous_count(self, command: str) -> int:
-        outputs = self.outputs.kept().matching_part(command).newest().all_rows()
+        outputs = sorted(self.outputs.kept().matching_part(command).every_row(LISTINGS_REASON), key=lambda output: output.id, reverse=True)
         for output in outputs:
             count = self.recorded_count(output, command)
             if count is not None:
@@ -116,7 +118,7 @@ class WorkerTestListings(RunCounts):
                 count = self.run.count(listing.reader, listing.output_text(self.folder.count_text(process.id)), 0)
                 if count > 0:
                     return count
-        parts = self.queries.query(ProcessPart).filter(process_id=process.id, text=command).all_rows()
+        parts = self.queries.query(ProcessPart).filter(process_id=process.id, text=command).get()
         if any(output.reader_position in (0, part.position) for part in parts):
             return output.test_count
         return None

@@ -15,6 +15,8 @@ MODULE_ACTOR_IDS = Statement("SELECT id, name FROM actors WHERE type = 'module'"
 ACTOR_ROW = Statement("SELECT 1 FROM actors WHERE id = ? AND type = ?")
 AGENT_OWNER = Statement("SELECT role, environment_id FROM agents WHERE id = ?")
 TEST_ENVIRONMENT_GRANT = Statement("SELECT 1 FROM environments WHERE id = ? AND test = 1 AND test_agent_id = ?")
+MODULE_ACTORS_SIGNATURE = Statement("SELECT count(*), coalesce(sum(id), 0), coalesce(sum(version), 0), max(updated_at) FROM actors WHERE type = 'module'")
+ENVIRONMENT_SIGNATURE = Statement("SELECT id, version, updated_at FROM environments WHERE id = ?")
 NEWEST_MAIN_AGENT_ID = Statement("SELECT id FROM agents WHERE environment_id = ? AND role = 'main' ORDER BY id DESC LIMIT 1")
 
 
@@ -36,12 +38,11 @@ class ActorTable:
     def module_actors(self, modules: Sequence[str], timestamp: str) -> dict[str, int]:
         for module in modules:
             self.database.update(Statement(MODULE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.MODULE.value, module, timestamp, timestamp)))
-        actors = self.kept.read("actors", self.module_actor_ids, "type = ?", [ActorType.MODULE.value], name="base.module_actors")
+        actors = self.kept.read_signed(MODULE_ACTORS_SIGNATURE, self.module_actor_ids, name="base.module_actors")
         return {module: actors[module] for module in modules}
 
     def module_actor_id(self, module: str) -> int:
-        return self.kept.read("actors", self.module_actor_ids, "type = ?", [ActorType.MODULE.value],
-                                            name="base.module_actors")[module]
+        return self.kept.read_signed(MODULE_ACTORS_SIGNATURE, self.module_actor_ids, name="base.module_actors")[module]
 
     def module_actor_ids(self) -> dict[str, int]:
         return {row["name"]: row["id"] for row in self.database.rows(MODULE_ACTOR_IDS)}
@@ -70,8 +71,8 @@ class ActorTable:
         return RowOwner(agent, rows[0]["environment_id"])
 
     def is_granted_test_environment(self, actor_id: int, environment_id: int) -> bool:
-        return self.kept.read("environments", lambda: bool(self.database.rows(Statement(TEST_ENVIRONMENT_GRANT.sql, [environment_id, actor_id]))),
-                              "id = ?", [environment_id], name=f"actors.test_grant.{actor_id}")
+        return self.kept.read_signed(Statement(ENVIRONMENT_SIGNATURE.sql, [environment_id]), lambda: bool(self.database.rows(Statement(TEST_ENVIRONMENT_GRANT.sql, [environment_id, actor_id]))),
+                                     name=f"actors.test_grant.{actor_id}")
 
     def newest_main_agent_id(self, environment_id: int) -> int | None:
         rows = self.database.rows(Statement(NEWEST_MAIN_AGENT_ID.sql, [environment_id]))

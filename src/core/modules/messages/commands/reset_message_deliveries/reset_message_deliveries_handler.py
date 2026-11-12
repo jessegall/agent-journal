@@ -7,6 +7,8 @@ from core.modules.messages.commands.reset_message_deliveries.reset_message_deliv
 from core.modules.messages.models.message import Message
 from core.modules.messages.queries.message_query import MessageQuery
 
+DELIVERED_REASON = "a reset delivers again every message delivered at that hook"
+
 
 class ResetMessageDeliveriesHandler(Handler[ResetMessageDeliveries, tuple[Message, ...]]):
     """Clears the delivery a hook call gave each message, which carries the hook call's own time, so the next hook
@@ -19,5 +21,5 @@ class ResetMessageDeliveriesHandler(Handler[ResetMessageDeliveries, tuple[Messag
 
     def handle(self, command: ResetMessageDeliveries, context: Context) -> tuple[Message, ...]:
         call = self.queries.query(HookCall).find(command.hook_call_id)
-        messages = tuple(self.messages.delivered(call.session_agent_id, call.creation_timestamp()).all_rows())
+        messages = tuple(self.messages.delivered(call.session_agent_id, call.creation_timestamp()).every_row(DELIVERED_REASON))
         return tuple(self.repository.update(message, context, delivered_at=None) for message in messages)

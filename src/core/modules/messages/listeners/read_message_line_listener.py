@@ -28,6 +28,6 @@ class ReadMessageLineListener(CommitListener[Updated[Message]]):
         agent = self.targets.recipient(message)
         if agent is None:
             return
-        for line in tuple(self.lines.waiting(agent.id).all_rows()):
+        for line in tuple(self.lines.waiting(agent.id).get()):
             if self.lines.names(line, message):
                 self.lines.drop(line, logged)

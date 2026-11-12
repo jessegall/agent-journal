@@ -7,6 +7,7 @@ from engine.driver.nudger import Nudger
 from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
+from engine.query.query import Query
 from engine.query.kept_row_changes import KeptRowChanges
 from core.modules.assignments.support.assignments import Assignments
 from engine.repository.repository import Repository
@@ -35,7 +36,7 @@ class TaskWaits(KeptRowChanges[TaskWait]):
     def resolved(self, waits: Sequence[TaskWait], context: Context) -> None:
         for wait in waits:
             self.repository.update(wait, context, ended_at=context.timestamp)
-        opened = [task for task in self.queries.query(Task).matching(Among("id", list(dict.fromkeys(wait.task_id for wait in waits)))).oldest().full_table(ENDED_WAITS_REASON).all_rows()
+        opened = [task for task in self.queries.query(Task).matching(Among("id", list(dict.fromkeys(wait.task_id for wait in waits)))).every_row(ENDED_WAITS_REASON)
                   if task.state is TaskState.BLOCKED and not self.pending_task(task.id)]
         if not opened:
             return
@@ -64,8 +65,11 @@ class TaskWaits(KeptRowChanges[TaskWait]):
         return tuple(wait for wait in self.pending_rows() if wait.target == target)
 
     def pending_rows(self) -> tuple[TaskWait, ...]:
-        return self.kept.read("task_waits", lambda: tuple(self.queries.query(TaskWait).matching(IsNull("ended_at")).oldest().full_table(KEPT_WAITS_REASON).all_rows()),
-                              "ended_at IS NULL", name="tasks.pending_waits")
+        waits = self.pending_waits()
+        return self.kept.read(waits, lambda: tuple(waits.every_row(KEPT_WAITS_REASON)), name="tasks.pending_waits")
+
+    def pending_waits(self) -> Query[TaskWait]:
+        return self.queries.query(TaskWait).matching(IsNull("ended_at")).oldest()
 
     def kept_rows(self, wait: TaskWait) -> tuple[TaskWait, ...]:
         return tuple([wait]) if wait.ended_at is None else ()
@@ -74,4 +78,4 @@ class TaskWaits(KeptRowChanges[TaskWait]):
         def with_pending(waits: tuple[TaskWait, ...]) -> tuple[TaskWait, ...]:
             return tuple(sorted([row for row in waits if row.id != wait.id] + list(pending), key=lambda row: row.id))
 
-        self.kept.update("task_waits", with_pending, "ended_at IS NULL", name="tasks.pending_waits")
+        self.kept.update(self.pending_waits(), with_pending, name="tasks.pending_waits")

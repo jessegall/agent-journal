@@ -23,7 +23,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, install_runner, moved_run, start_process
+from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from tests.stories.support.story_checks import expect_value_line, expect_value_with, expect_value_without_line
 
@@ -248,6 +248,14 @@ def test_a_persons_message_asks_the_main_agents_foreground_run_to_move_to_the_ba
     story.run('message send "are you there" --environment main', actor=story.user)
     story.run_listeners()
     expect_folder(folder, process, "move", "1")
+
+
+def test_a_persons_message_leaves_a_running_journal_command_in_the_foreground(new_story):
+    story = new_story(fixture=UserBuilder)
+    process = start_process(story, "journal message react 1")
+    story.run('message send "are you there" --environment main', actor=story.user)
+    story.run_listeners()
+    expect_folder(story.container.get(OutputFolder), process, "move", "")
 
 
 @pytest.fixture

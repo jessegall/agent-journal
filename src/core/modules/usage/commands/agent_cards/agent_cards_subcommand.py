@@ -30,6 +30,8 @@ from core.modules.usage.models.agent_listing import AgentListing
 from core.modules.usage.models.support.agent_listing_state import AgentListingState
 from core.modules.usage.models.enums.agent_list_state import AgentListState
 
+CARD_STATES_REASON = "every agent card on the page is marked running or idle"
+
 
 class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterOptions]):
     """Reads the agents list in creation order, with its filters applied in SQLite and, for each agent on the
@@ -99,8 +101,8 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             rows = rows.matching(ContainsEvery(("session", "program", "role", "program_model", "profile", "given_name", "job_profile", "job_description"), arguments.search.split()))
         page = rows.ordered("created_at", "id").page(arguments.page, arguments.limit)
         selected = self.queries.query(AgentListing).matching(Among("id", tuple(row.id for row in page.rows)))
-        running = {row.id for row in selected.matching(activity).all_rows()}
-        idle = {row.id for row in selected.matching(AvailableAgents(activity)).all_rows()}
+        running = {row.id for row in selected.matching(activity).every_row(CARD_STATES_REASON)}
+        idle = {row.id for row in selected.matching(AvailableAgents(activity)).every_row(CARD_STATES_REASON)}
         states = {**dict.fromkeys(running, AgentListState.RUNNING), **dict.fromkeys(idle, AgentListState.IDLE)}
         agents = {agent.id: agent for agent in self.queries.query(Agent).find_many(tuple(row.id for row in page.rows))}
         locations = self.folders.resume_locations(tuple(agents[row.id] for row in page.rows if row.id in idle))

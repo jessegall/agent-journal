@@ -28,10 +28,8 @@ class WorkerTaskSources(AssignedWorkSources):
             return None
         if worktree.state is not WorktreeState.CUT:
             return WorkSourceCopy(None, 0, worktree.environment_id)
-        source = self.kept.read_newest("worker_task_sources",
-                                lambda: self.queries.query(WorkerTaskSource).filter(worktree_id=worktree.id, task_id=worktree.task_id)
-                                .matching(HasValue("started_at")).newest().first(),
-                                "worktree_id = ? AND task_id = ? AND started_at IS NOT NULL", [worktree.id, worktree.task_id], name="workers.current-task-source")
+        sources = self.queries.query(WorkerTaskSource).filter(worktree_id=worktree.id, task_id=worktree.task_id).matching(HasValue("started_at")).newest()
+        source = self.kept.read_newest(sources, sources.first, name="workers.current-task-source")
         if source is None:
             return WorkSourceCopy(None, 0, worktree.environment_id)
         return WorkSourceCopy(source.source_message_id, source.source_version, source.environment_id, source.source_unavailable,

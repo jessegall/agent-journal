@@ -19,7 +19,7 @@ class RunTitleRule(DriverRule):
         self.outputs = outputs
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        titled = self.outputs.running_titles(hook.agent_id).all_rows()
+        titled = self.outputs.running_titles(hook.agent_id).get()
         identical: defaultdict[str, list[str]] = defaultdict(list)
         for output in titled:
             identical[output.title].append(str(output.process_id))

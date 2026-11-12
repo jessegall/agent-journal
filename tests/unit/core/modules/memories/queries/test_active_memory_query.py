@@ -3,6 +3,8 @@ from engine.time.timestamp import Timestamp
 from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery
 from tests.unit.core.modules.memories.support.memory_journal import FIXED_TIME, MemoryJournal
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 def memories(tmp_path) -> tuple[MemoryJournal, ActiveMemoryQuery]:
     journal = MemoryJournal.synced(tmp_path)
@@ -19,7 +21,7 @@ def memories(tmp_path) -> tuple[MemoryJournal, ActiveMemoryQuery]:
 
 
 def texts(query: ActiveMemoryQuery) -> list[str]:
-    return [memory.text for memory in query.all_rows()]
+    return [memory.text for memory in query.every_row(TEST_ROWS_REASON)]
 
 
 def test_a_memory_at_weight_0_no_longer_stands(tmp_path):

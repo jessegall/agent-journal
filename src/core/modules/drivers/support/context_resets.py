@@ -20,7 +20,7 @@ class ContextResets:
         return self.created_text(call)
 
     def last_clear(self, agent_id: int) -> str:
-        starts = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.SESSION_START).descending("id").limited(RECENT_STARTS)
+        starts = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.SESSION_START).descending("id").take(RECENT_STARTS)
         return self.created_text(next((start for start in starts if start.is_clear_start), None))
 
     @staticmethod

@@ -6,6 +6,7 @@ from suites.coding.modules.workers.models.enums.behind_check_state import Behind
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 
+CHECKS_REASON = "every behind check of the worktree is weighed"
 UPDATED_FROM = (BehindCheckState.OPEN, BehindCheckState.ORDERED, BehindCheckState.CONFLICTED)
 CONFLICTED_FROM = (BehindCheckState.OPEN, BehindCheckState.ORDERED)
 GONE_FROM = (BehindCheckState.OPEN, BehindCheckState.ORDERED, BehindCheckState.CONFLICTED, BehindCheckState.PASSED)
@@ -35,4 +36,4 @@ class BehindCheckClosing:
             self.repository.save_change(check, check.gone(), context)
 
     def checks(self, worktree: Worktree, states: tuple[BehindCheckState, ...]) -> tuple[WorktreeBehindCheck, ...]:
-        return tuple(self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).matching(Among("state", states)).all_rows())
+        return tuple(self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).matching(Among("state", states)).every_row(CHECKS_REASON))

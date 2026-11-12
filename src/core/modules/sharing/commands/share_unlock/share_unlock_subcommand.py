@@ -27,7 +27,7 @@ class ShareUnlockSubcommand(ReadSubcommand[ShareLink]):
     def read(self, arguments: Namespace, caller: Caller) -> ShareLink:
         if caller.actor.type is not ActorType.CORE:
             raise Refusal("only the viewer checks a link's password")
-        links = list(self.queries.query(ShareLink).filter(token_digest=arguments.token_digest).all_rows())
+        links = self.queries.query(ShareLink).filter(token_digest=arguments.token_digest).get()
         if not links or links[0].password_digest is None or not SharePassword.matches(arguments.password, links[0].password_digest):
             raise Refusal("this is not the link's password")
         return links[0]

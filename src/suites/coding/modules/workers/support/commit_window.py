@@ -22,6 +22,6 @@ class CommitWindow:
 
     def test_runs_available(self, worktree: Worktree) -> int:
         worker_id, window_key = worktree.session_agent_id, self.key(worktree)
-        used = self.kept.read("worker_test_runs", self.queries.query(WorkerTestRun).filter(worker_id=worker_id, group_key=window_key).count,
-                              "worker_id = ? AND group_key = ?", [worker_id, window_key], name="workers.test_run_count")
+        runs = self.queries.query(WorkerTestRun).filter(worker_id=worker_id, group_key=window_key)
+        used = self.kept.read(runs, runs.count, name="workers.test_run_count")
         return self.settings.number(WORKER_PHASE_TEST_RUNS) - used

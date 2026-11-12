@@ -8,6 +8,8 @@ from core.modules.reviews.commands.end_reviewer.end_reviewer import EndReviewer
 from core.modules.reviews.queries.review_query import ReviewQuery
 from core.modules.reviews.queries.reviewer_query import ReviewerQuery
 
+ABANDONED_REASON = "an ended reviewer abandons every review it was working on"
+
 MODULE_NAME = "journal.core.reviews"
 
 
@@ -25,6 +27,6 @@ class ReviewerEndedListener(CommitListener[AgentEnded]):
         if not self.reviewers.filter(id=reviewer_id).active().exists():
             return
         actor = self.actors.actor(MODULE_NAME)
-        for review in tuple(self.reviews.reviewer(reviewer_id).reviewing().all_rows()):
+        for review in tuple(self.reviews.reviewer(reviewer_id).reviewing().every_row(ABANDONED_REASON)):
             self.bus.run(AbandonReview(review.id), actor, cause_id=logged.id)
         self.bus.run(EndReviewer(reviewer_id), actor, cause_id=logged.id)

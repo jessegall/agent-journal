@@ -20,6 +20,7 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_settings import UPDATE_REMINDERS, UPDATE_WAIT_MINUTES
 
+CHECKS_REASON = "every behind check in that state is reminded of"
 CLASH_LINES = (CLASH_OPEN, CLASH_STILL_OPEN)
 
 
@@ -39,7 +40,7 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
     def handle(self, command: RemindBehindUpdates, context: Context) -> None:
         wait = timedelta(minutes=self.settings.number(UPDATE_WAIT_MINUTES))
         limit = self.settings.number(UPDATE_REMINDERS)
-        for check in self.queries.query(WorktreeBehindCheck).filter(state=BehindCheckState.ORDERED).all_rows():
+        for check in self.queries.query(WorktreeBehindCheck).filter(state=BehindCheckState.ORDERED).every_row(CHECKS_REASON):
             if check.reminders > limit:
                 continue
             worktree = self.rows.required(Worktree, check.worktree_id)
@@ -48,7 +49,7 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
                 self.repository.save_change(check, check.held(), context)
             elif context.timestamp.value - check.updated_at.value >= wait:
                 self.remind(check, worktree, limit, context)
-        for check in self.queries.query(WorktreeBehindCheck).filter(state=BehindCheckState.CONFLICTED).all_rows():
+        for check in self.queries.query(WorktreeBehindCheck).filter(state=BehindCheckState.CONFLICTED).every_row(CHECKS_REASON):
             if check.reminders < len(CLASH_LINES) and context.timestamp.value - check.updated_at.value >= wait:
                 self.clash_still_open(check, context)
 

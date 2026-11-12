@@ -20,6 +20,6 @@ class PrivateDataTick:
             return
         findings = container.get(PrivateDataPass).run()
         actor = container.get(ModuleActors).actor("journal.core.chat")
-        for environment in container.get(Queries).query(Environment).all_rows():
+        for environment in container.get(Queries).query(Environment).get():
             for finding in findings:
                 container.get(Bus).run(RecordPrivateDataFinding(finding.key, finding.text), actor, environment_id=environment.id)

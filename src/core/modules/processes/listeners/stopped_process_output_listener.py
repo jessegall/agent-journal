@@ -22,6 +22,6 @@ class StoppedProcessOutputListener(SaveListener[Moved[Process]]):
 
     def handle(self, event: Moved[Process], context: Context) -> None:
         process = event.row
-        for output in tuple(self.outputs.process(process.id).all_rows()):
+        for output in tuple(self.outputs.process(process.id).get()):
             if output.ended_at is None:
                 self.repository.save(replace(output, ended_at=context.timestamp), context)

@@ -20,7 +20,7 @@ class PinListSubcommand(ReadSubcommand[Sequence[Pin]]):
         self.pins = pins
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[Pin]:
-        return tuple(self.pins.open_pins().oldest().all_rows())
+        return tuple(self.pins.open_pins().oldest().get())
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [row for row in value if isinstance(row, Pin)] if is_tuple(value) else []

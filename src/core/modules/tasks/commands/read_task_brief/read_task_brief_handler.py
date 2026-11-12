@@ -32,7 +32,7 @@ class ReadTaskBriefHandler(Handler[ReadTaskBrief, TaskBrief]):
                                for comment in self.comments.newest(task, 1600, 5))
         logs = self.queries.query(TaskLog).filter(task_id=task.id)
         log_total = logs.count()
-        log_lines = tuple(log.line for log in reversed(logs.newest().limited(5)))
+        log_lines = tuple(log.line for log in reversed(logs.newest().take(5)))
         if context.actor.type is ActorType.AGENT:
             self.bus.run_with_context(RecordTaskRead(task.id), context)
         return TaskBrief(task=task, comments=recent_comments, context=conversation, log_lines=log_lines,

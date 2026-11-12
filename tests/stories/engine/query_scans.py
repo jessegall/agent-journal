@@ -15,6 +15,8 @@ from engine.scope.scopes import Scopes
 from engine.database.errors.repeated_calls_error import RepeatedCallsError
 from tests.stories.support.story_checks import expect_value
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 def test_a_full_table_scan_is_reported_even_when_no_row_is_loaded(new_story):
     story = new_story()
@@ -101,7 +103,7 @@ def test_an_empty_id_filter_needs_no_database_read(new_story):
     query = story.container.get(Queries).query(Message).matching(Among("id", []))
     with patch.object(story.container.get(Database), "rows", wraps=story.container.get(Database).rows) as rows:
         with story.repeated_work.request():
-            expect_value(list(query.all_rows()), [])
+            expect_value(list(query.every_row(TEST_ROWS_REASON)), [])
             expect_value(query.count(), 0)
             expect_value(query.exists(), False)
     expect_value(rows.call_count, 0)
@@ -122,7 +124,7 @@ def test_a_required_agent_column_has_no_null_branch(new_story, model):
         statement = query.scoped(query.select).statement()
         expect_value("OR agent_id IS NULL" in statement.sql, False)
         with story.repeated_work.request():
-            list(query.all_rows())
+            list(query.every_row(TEST_ROWS_REASON))
 
 
 def test_output_list_by_creator_does_not_scan_outputs(new_story):

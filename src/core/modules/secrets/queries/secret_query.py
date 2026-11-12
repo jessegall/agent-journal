@@ -22,7 +22,7 @@ class SecretQuery(Query[Secret]):
         return self.matching(Greater("deleted_at", ""))
 
     def find_title(self, text: str) -> Secret:
-        secret = next((row for row in self.active().oldest().all_rows() if str(row.id) == text or row.title.lower() == text.lower()), None)
+        secret = next((row for row in self.active().oldest().get() if str(row.id) == text or row.title.lower() == text.lower()), None)
         if secret is None:
             raise Refusal(f"no secret is numbered or titled {text!r}", "journal secret list shows them")
         return secret

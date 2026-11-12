@@ -18,14 +18,15 @@ class QueueMembershipMigration(Migration):
 
     def run(self, database: Database) -> None:
         super().run(database)
-        database_file = database.rows(Statement("PRAGMA database_list"))[0][2]
+        database_file = self.database_file(database)
         if not database_file:
             return
         folder = OutputFolder(JournalHome(Path(database_file).parent))
         last_id = 0
-        while rows := database.rows(Statement("SELECT id FROM processes WHERE id > ? AND state IN ('running', 'background')"
-                                              " AND is_queue_run = 0 ORDER BY id LIMIT ?", [last_id, READ_SIZE])):
+        while rows := self.selected(database, ("SELECT id FROM processes WHERE id > ? AND state IN ('running', 'background')"
+                                              " AND is_queue_run = 0 ORDER BY id LIMIT ?"), [last_id, READ_SIZE]):
             for row in rows:
-                if folder.has_slot(row[0]):
+                process_id = row[0]
+                if isinstance(process_id, int) and folder.has_slot(process_id):
                     database.update(Statement("UPDATE processes SET is_queue_run = 1 WHERE id = ?", [row[0]]))
             last_id = rows[-1][0]

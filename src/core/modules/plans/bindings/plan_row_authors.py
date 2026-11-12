@@ -9,6 +9,8 @@ from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_task import PlanTask
 
+EDITED_ROWS_REASON = "every edit asked about is matched to the plan it belongs to"
+
 
 class PlanRowAuthors(PlanAuthors):
     """Finds the plans some lines change, through the plan, phase or task each names, and whether the agent made
@@ -27,8 +29,8 @@ class PlanRowAuthors(PlanAuthors):
         return plan_id is not None and plan_id in plans and plans[plan_id].creator_id == agent_id
 
     def plans(self, plan_ids: Sequence[int]) -> dict[int, Plan]:
-        marks = ", ".join("?" for _ in plan_ids)
-        rows = self.kept.scoped_read("plans", lambda: tuple(self.queries.query(Plan).matching(Among("id", list(plan_ids))).all_rows()), f"id IN ({marks})", list(plan_ids), name="plans.author_plans")
+        plans = self.queries.query(Plan).matching(Among("id", list(plan_ids)))
+        rows = self.kept.read(plans, lambda: tuple(plans.every_row(EDITED_ROWS_REASON)), name="plans.author_plans")
         return {plan.id: plan for plan in rows}
 
     def plan_ids(self, edits: Sequence[PlanEdit]) -> dict[PlanEdit, int | None]:
@@ -45,7 +47,7 @@ class PlanRowAuthors(PlanAuthors):
         return tasks.get(edit.row_id)
 
     def plan_ids_by_phase(self, phase_ids: Sequence[int]) -> dict[int, int]:
-        return {phase.id: phase.plan_id for phase in self.queries.query(Phase).matching(Among("id", phase_ids)).all_rows()} if phase_ids else {}
+        return {phase.id: phase.plan_id for phase in self.queries.query(Phase).matching(Among("id", phase_ids)).every_row(EDITED_ROWS_REASON)} if phase_ids else {}
 
     def plan_ids_by_task(self, task_ids: Sequence[int]) -> dict[int, int]:
-        return {place.task_id: place.plan_id for place in self.queries.query(PlanTask).matching(Among("task_id", list(task_ids))).all_rows()} if task_ids else {}
+        return {place.task_id: place.plan_id for place in self.queries.query(PlanTask).matching(Among("task_id", list(task_ids))).every_row(EDITED_ROWS_REASON)} if task_ids else {}

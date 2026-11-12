@@ -55,10 +55,10 @@ def test_order_by_desc_then_oldest_orders_by_priority_desc_then_id_asc(entries: 
 
 
 def test_newest_oldest_ordered_descending_still_work(entries: Query[LogEntry]):
-    assert [row.id for row in entries.newest().limited(3)] == [7, 6, 5]
-    assert [row.id for row in entries.oldest().limited(2)] == [1, 2]
-    assert [row.id for row in entries.ordered("shelf_id", "id").limited(2)] == [1, 3]
-    assert [row.id for row in entries.descending("id").limited(1)] == [7]
+    assert [row.id for row in entries.newest().take(3)] == [7, 6, 5]
+    assert [row.id for row in entries.oldest().take(2)] == [1, 2]
+    assert [row.id for row in entries.ordered("shelf_id", "id").take(2)] == [1, 3]
+    assert [row.id for row in entries.descending("id").take(1)] == [7]
 
 
 def test_page_two_gives_25_rows_and_the_total(entries: Query[LogEntry]):

@@ -25,7 +25,7 @@ class WorkerTestNames:
         self.queries, self.kept = queries, kept
 
     def rows(self, worker_id: int) -> tuple[WorkerTestCommand, ...]:
-        return self.kept.scoped_current(lambda: tuple(self.queries.query(WorkerTestCommand).filter(worker_id=worker_id).oldest().all_rows()), name=f"workers.test_names:{worker_id}")
+        return self.kept.scoped_current(lambda: tuple(self.queries.query(WorkerTestCommand).filter(worker_id=worker_id).oldest().get()), name=f"workers.test_names:{worker_id}")
 
     def names_text(self, worker_id: int) -> str:
         return ", ".join(sorted(row.name for row in self.rows(worker_id)))

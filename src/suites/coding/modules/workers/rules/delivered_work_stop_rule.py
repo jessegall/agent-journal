@@ -13,6 +13,8 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
 from engine.enums.agent_role import AgentRole
 
+DELIVERED_PROOFS_REASON = "the main agent checks every proof a worker delivered"
+
 
 class DeliveredWorkStopRule(DriverRule):
     """A main agent that stops while a worker's delivered work waits for its checks is refused once per
@@ -30,12 +32,12 @@ class DeliveredWorkStopRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         for worktree in self.delivered.main_worktrees():
-            untested = list(self.proofs.delivered_proofs(worktree.id).filter(test_command="").oldest().all_rows())
+            untested = list(self.proofs.delivered_proofs(worktree.id).filter(test_command="").every_row(DELIVERED_PROOFS_REASON))
             if untested:
                 return RuleAnswer.refused_for_each(self.nudges(worktree, untested))
         refused_at = self.hook_history.last_answer(self.name, hook)
         for worktree in self.delivered.delivered():
-            proofs = list(self.proofs.delivered_proofs(worktree.id).oldest().all_rows())
+            proofs = list(self.proofs.delivered_proofs(worktree.id).every_row(DELIVERED_PROOFS_REASON))
             if proofs and (refused_at is None or worktree.updated_at is None or refused_at < worktree.updated_at):
                 return RuleAnswer.refused_for_each(self.nudges(worktree, proofs))
         return RuleAnswer.allowed("no committed proof needs a check at this stop")

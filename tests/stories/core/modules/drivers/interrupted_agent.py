@@ -11,6 +11,8 @@ from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 WAKE = "you were interrupted: go on with your work"
 
 
@@ -30,7 +32,7 @@ def interrupted_story(new_story, silent_answer: bytes) -> tuple[Story, FakeLaunc
 
 
 def wake_lines(story: Story) -> list[AgentLine]:
-    return list(story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source="drivers.interrupted").all_rows())
+    return list(story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source="drivers.interrupted").every_row(TEST_ROWS_REASON))
 
 
 def wake_after(story: Story, seconds: int) -> None:

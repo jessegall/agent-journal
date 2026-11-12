@@ -12,6 +12,8 @@ from core.modules.reviews.models.enums.step_outcome import StepOutcome
 from core.modules.reviews.models.review_point import ReviewPoint
 from core.modules.reviews.models.review import Review
 
+POINTS_REASON = "a reported review files every point it made, in their order"
+
 OUTCOMES = {PointFinding.PASSED: StepOutcome.PASSED, PointFinding.SHORT: StepOutcome.FAILED, PointFinding.UNDECIDED: StepOutcome.NONE}
 HANDOFF = "Handed the report to the agent that asked"
 
@@ -28,7 +30,7 @@ class ReviewReportedStepListener(CommitListener[Moved[Review]]):
 
     def handle(self, event: Moved[Review], logged: LoggedEvent) -> None:
         actor = self.actors.actor(MODULE_NAME)
-        for point in tuple(self.queries.query(ReviewPoint).filter(review_id=logged.row_id).ordered("number").all_rows()):
+        for point in sorted(self.queries.query(ReviewPoint).filter(review_id=logged.row_id).every_row(POINTS_REASON), key=lambda point: point.number):
             reason = f": {point.reason}" if point.reason else ""
             self.bus.run(MakeReviewStep(logged.row_id, f"{point.number} {point.finding}{reason}", OUTCOMES[point.finding]), actor, cause_id=logged.id)
         self.bus.run(MakeReviewStep(logged.row_id, HANDOFF), actor, cause_id=logged.id)

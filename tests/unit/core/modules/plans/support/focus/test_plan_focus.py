@@ -36,7 +36,7 @@ class StartedPlanRows:
     def ordered(self, *columns):
         return self
 
-    def all_rows(self):
+    def get(self):
         return self.plans
 
 

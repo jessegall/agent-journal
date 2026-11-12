@@ -1,3 +1,4 @@
+from engine.query.query import Query
 from engine.database.kept_rows import KeptRows
 from engine.event.moved import Moved
 from engine.command.context import Context
@@ -12,7 +13,7 @@ from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSo
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 
-UNSTARTED = "started_at IS NULL AND source_line_id IS NOT NULL"
+UNSTARTED_REASON = "every source not yet started is matched against the delivered line"
 UNSTARTED_NAME = "workers.unstarted_task_sources"
 
 
@@ -36,11 +37,11 @@ class WorkerJobSourceListener(SaveListener[Moved[AgentLine]]):
         if worktree is None or worktree.id != source.worktree_id or worktree.task_id != source.task_id:
             return
         self.repository.update(source, context, started_at=context.timestamp)
-        self.kept.scoped_update(self.table(), lambda sources: tuple(unstarted for unstarted in sources if unstarted.id != source.id), UNSTARTED, name=UNSTARTED_NAME)
+        self.kept.update(self.unstarted_sources(), lambda sources: tuple(unstarted for unstarted in sources if unstarted.id != source.id), name=UNSTARTED_NAME)
 
     def unstarted(self) -> tuple[WorkerTaskSource, ...]:
-        return self.kept.scoped_read(self.table(), lambda: tuple(self.queries.query(WorkerTaskSource).matching(IsNull("started_at")).matching(HasValue("source_line_id")).all_rows()),
-                                     UNSTARTED, name=UNSTARTED_NAME)
+        sources = self.unstarted_sources()
+        return self.kept.read(sources, lambda: tuple(sources.every_row(UNSTARTED_REASON)), name=UNSTARTED_NAME)
 
-    def table(self) -> str:
-        return self.queries.query(WorkerTaskSource).table.name
+    def unstarted_sources(self) -> Query[WorkerTaskSource]:
+        return self.queries.query(WorkerTaskSource).matching(IsNull("started_at")).matching(HasValue("source_line_id"))

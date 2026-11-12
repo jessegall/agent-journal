@@ -1,7 +1,6 @@
 import pytest
 
 from engine.database.database import Database
-from engine.database.kept_rows import KeptRows
 from engine.database.shared_tables import SharedTables
 from engine.database.statement import Statement
 from engine.journal.journal_home import JournalHome
@@ -28,7 +27,7 @@ def home(tmp_path):
 
 
 def table_signature(database):
-    return tuple(tuple(row) for row in database.rows(KeptRows.signature_read("notes", "1 = 1", ())))
+    return tuple(tuple(row) for row in database.rows(Statement("SELECT count(*), coalesce(sum(id), 0), coalesce(sum(version), 0), max(updated_at) FROM notes")))
 
 
 def read_table(home, tables, loader):
