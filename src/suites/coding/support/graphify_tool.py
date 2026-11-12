@@ -13,7 +13,7 @@ from engine.git.hook_files_git import GIT_LIMIT_SECONDS
 from engine.errors.refusal import Refusal
 from engine.setting.setting_values import SettingValues
 from suites.coding.support.graph_files import FAILED_FILE, OUTPUT_FOLDER, REBUILD_LOCK_FILE, RUNNING_FILE, GraphFiles
-from suites.coding.support.graphify_settings import GRAPHIFY_COMMAND, GRAPHIFY_GROUP, GRAPHIFY_INSTALL_COMMAND, GRAPHIFY_SETTINGS
+from suites.coding.support.graphify_settings import GRAPHIFY_CLUSTER_MINUTES, GRAPHIFY_COMMAND, GRAPHIFY_GROUP, GRAPHIFY_INSTALL_COMMAND, GRAPHIFY_REFRESH_MINUTES, GRAPHIFY_SETTINGS
 from suites.coding.support.project_graph_claim import ProjectGraphClaim
 from engine.journal.journal_home import JournalHome
 from core.modules.tools.support.tool_definition import ToolDefinition
@@ -22,15 +22,21 @@ from core.modules.tools.support.tool_status import ToolStatus
 
 INSTALL_LIMIT_SECONDS = 600
 CLAIM_VARIABLE = "JOURNAL_GRAPH_CLAIM"
-# Runs Graphify's incremental update, which re-extracts code with no LLM, then stamps the commit it ran for; the
-# claim is released whatever happens, and a failure is recorded for its commit so a tick does not start it again.
+# Runs Graphify's incremental update, which re-extracts code with no LLM, with or without grouping the code into
+# communities as its first argument says, then stamps the commit it ran for and, after a grouping, when it grouped;
+# the claim is released whatever happens, and a failure is recorded for its commit so a tick does not start it again.
 REFRESH_SCRIPT = (
-    'commit="$1"; shift; '
-    'if "$@" update .; then '
+    'grouping="$1"; commit="$2"; shift 2; '
+    'if [ "$grouping" = cluster ]; then set -- "$@" update .; else set -- "$@" update . --no-cluster; fi; '
+    'if "$@"; then '
     'printf "%s %s\\n" "$commit" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > graphify-out/.journal-refresh; rm -f graphify-out/.journal-failed; '
+    'if [ "$grouping" = cluster ]; then touch graphify-out/.journal-clustered; fi; '
     'else printf "%s\\n" "$commit" > graphify-out/.journal-failed; fi; '
     'rm -f graphify-out/.journal-running "$JOURNAL_GRAPH_CLAIM"'
 )
+CLUSTER = "cluster"
+NO_CLUSTER = "no-cluster"
+MINUTE_SECONDS = 60
 
 SHORT_COMMIT = 7
 GRAPHIFY = ToolDefinition("graphify", "Graphify", "Keeps a graph of the project's code in graphify-out, refreshed after each new commit without an LLM, so agents read it warm.",
@@ -114,9 +120,18 @@ class GraphifyTool(ToolRunner):
         status = self.status(folder)
         is_worktree = self.home.worktrees_folder.resolve() in folder.resolve().parents
         skips_refresh = is_worktree or not self.is_installed() or not status.commit or status.is_current or status.is_running or self.is_failed(folder)
-        if skips_refresh:
+        if skips_refresh or self.refreshed_lately(folder):
             return status
         return self.after_start(folder, status)
+
+    def refreshed_lately(self, folder: Path) -> bool:
+        elapsed = GraphFiles(folder).seconds_since_refresh(self.clock)
+        return elapsed is not None and elapsed < self.settings.project.number(GRAPHIFY_REFRESH_MINUTES) * MINUTE_SECONDS
+
+    def grouping(self, folder: Path) -> str:
+        elapsed = GraphFiles(folder).seconds_since_clustering(self.clock)
+        is_due = elapsed is None or elapsed >= self.settings.project.number(GRAPHIFY_CLUSTER_MINUTES) * MINUTE_SECONDS
+        return CLUSTER if is_due else NO_CLUSTER
 
     def after_start(self, folder: Path, status: ToolStatus) -> ToolStatus:
         if not self.started(folder, status.commit):
@@ -132,7 +147,7 @@ class GraphifyTool(ToolRunner):
             return False
         try:
             environment = {**os.environ, CLAIM_VARIABLE: str(self.project_claim.path)}
-            process = subprocess.Popen(["sh", "-c", REFRESH_SCRIPT, "sh", commit, *self.command()], cwd=folder, env=environment, stdin=subprocess.DEVNULL,
+            process = subprocess.Popen(["sh", "-c", REFRESH_SCRIPT, "sh", self.grouping(folder), commit, *self.command()], cwd=folder, env=environment, stdin=subprocess.DEVNULL,
                                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
         except OSError:
             files.release()

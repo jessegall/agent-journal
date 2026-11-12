@@ -7,6 +7,7 @@ from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 
 TICK = "tool tick graphify --folder"
+HOUR_SECONDS = 3600
 
 
 def story_with_graphify(new_story, tmp_path):
@@ -27,8 +28,9 @@ def test_turning_graphify_off_removes_its_managed_hooks(new_story, tmp_path):
     story.expect_rows(tool_hooks(story) == [])
 
 
-def test_no_second_update_starts_while_one_runs_in_this_or_another_folder(new_story, tmp_path):
+def test_one_update_at_a_time_at_most_every_few_minutes_and_grouping_on_its_own_interval(new_story, tmp_path):
     story, repo = story_with_graphify(new_story, tmp_path)
+    story.expect_success("tool on graphify", actor=story.user)
     other = GraphifyRepo(tmp_path, "other")
     repo.block_graphify()
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
@@ -40,9 +42,19 @@ def test_no_second_update_starts_while_one_runs_in_this_or_another_folder(new_st
     story.expect_rows(repo.call_count() == 1, not (other.folder / "graphify-out/.journal-running").exists())
     repo.release_graphify()
     repo.wait(repo.folder / "graphify-out", lambda: not (repo.folder / "graphify-out/.journal-running").exists())
+    repo.age_graph(story.clock.epoch_seconds(), HOUR_SECONDS)
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
     repo.poll_refresh()
     story.expect_rows(repo.call_count() == 2)
+    for message in ("third", "fourth", "fifth", "sixth", "seventh"):
+        repo.commit(message)
+        story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
+    story.expect_rows(repo.call_count() == 2)
+    repo.age_graph(story.clock.epoch_seconds(), 3 * HOUR_SECONDS)
+    story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
+    repo.poll_refresh()
+    story.expect_rows(repo.arguments()[-3:] == ["update .", "update . --no-cluster", "update ."])
+
 
 
 def test_the_card_shows_installed_on_and_the_last_refresh_and_refresh_now_updates_the_project(new_story, tmp_path):

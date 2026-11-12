@@ -12,6 +12,7 @@ STAMP_FILE = ".journal-refresh"
 RUNNING_FILE = ".journal-running"
 FAILED_FILE = ".journal-failed"
 REBUILD_LOCK_FILE = ".rebuild.lock"
+CLUSTERED_FILE = ".journal-clustered"
 
 
 class GraphFiles:
@@ -35,6 +36,13 @@ class GraphFiles:
         if not self.stamp_path.is_file():
             return None
         return GraphStamp.read(FileAccess.shared().read(self.stamp_path))
+
+    def seconds_since_refresh(self, clock: Clock) -> float | None:
+        return clock.epoch_seconds() - self.stamp_path.stat().st_mtime if self.stamp_path.is_file() else None
+
+    def seconds_since_clustering(self, clock: Clock) -> float | None:
+        path = self.output / CLUSTERED_FILE
+        return clock.epoch_seconds() - path.stat().st_mtime if path.is_file() else None
 
     def failed_commit(self) -> str:
         path = self.output / FAILED_FILE

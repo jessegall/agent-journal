@@ -1,3 +1,4 @@
+import os
 import subprocess
 from pathlib import Path
 
@@ -53,6 +54,15 @@ class GraphifyRepo:
 
     def poll_refresh(self) -> None:
         self.wait(self.folder / "graphify-out", lambda: self.refreshed() == self.head() and not (self.folder / "graphify-out/.journal-running").is_file())
+
+    def age_graph(self, now: float, seconds: int) -> None:
+        for name in (".journal-refresh", ".journal-clustered"):
+            path = self.folder / "graphify-out" / name
+            if path.is_file():
+                os.utime(path, (now - seconds, now - seconds))
+
+    def arguments(self) -> list[str]:
+        return [line.split(" ", 1)[1] for line in self.calls.read_text().splitlines()] if self.calls.is_file() else []
 
     def wait(self, folder: Path, ready) -> None:
         folder.mkdir(exist_ok=True)
