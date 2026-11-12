@@ -8,7 +8,7 @@ from core.modules.processes.commands.record_request_runs.record_request_runs_han
 from core.modules.processes.support.process_run_placement import ProcessRunPlacement
 from core.modules.processes.migrations.m065_environment_index import ReadersEnvironmentIndexMigration
 from core.modules.processes.migrations.m066_process_kind import ProcessKindMigration
-from core.modules.processes.migrations.m070_stock_digest import StockDigestMigration
+from core.modules.processes.migrations.m071_stock_digest import StockDigestMigration
 from core.modules.processes.migrations.m062_watch_agent_index import WatchAgentIndexMigration
 from core.modules.processes.listeners.ended_run_line_listener import EndedRunLineListener
 from engine.driver.run_owners import RunOwners

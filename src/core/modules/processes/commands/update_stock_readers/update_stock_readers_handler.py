@@ -25,7 +25,7 @@ class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
         self.outputs, self.requests = outputs, requests
 
     def handle(self, command: UpdateStockReaders, context: Context) -> None:
-        rows = self.kept.read("readers", self.loaded_rows, name="processes.stock_readers")
+        rows = self.kept.read(self.readers, self.loaded_rows, name="processes.stock_readers")
         for stock in STOCK_READERS:
             reader = rows.readers.get(stock.name)
             if reader is not None and (not reader.is_stock or reader.id in rows.edited_ids):
@@ -33,7 +33,7 @@ class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
             updated = replace(stock.applied(reader), shipped_digest=StockDigest.of(stock))
             if updated != reader:
                 saved = self.repository.save_change(reader, updated, context)
-                self.kept.update("readers", self.with_saved(saved), name="processes.stock_readers")
+                self.kept.update(self.readers, self.with_saved(saved), name="processes.stock_readers")
         shipped_names = {stock.name for stock in STOCK_READERS}
         for reader in tuple(rows.readers.values()):
             if StockRetirement.retires(reader, shipped_names, reader.id in rows.edited_ids):

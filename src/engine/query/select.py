@@ -75,10 +75,14 @@ class Select:
         return self.filtered(Statement(f"SELECT {columns}, count(*) FROM {self.source}")).joined(Statement(f" GROUP BY {columns}"), "")
 
     def signature_statement(self) -> Statement:
-        """How many rows match, the sums of their ids and versions and their newest change: what a kept read
-        compares to know its rows changed."""
-        table = self.table
-        return self.filtered(Statement(f"SELECT count(*), coalesce(sum({table}.id), 0), coalesce(sum({table}.version), 0), max({table}.updated_at) FROM {self.source}"))
+        """How many rows match, and for the table and each table it joins the sums of their ids and versions and
+        their newest change: what a kept read compares to know its rows changed."""
+        sums = ", ".join(f"coalesce(sum({table}.id), 0), coalesce(sum({table}.version), 0), max({table}.updated_at)" for table in self.read_tables)
+        return self.filtered(Statement(f"SELECT count(*), {sums} FROM {self.source}"))
+
+    @property
+    def read_tables(self) -> tuple[str, ...]:
+        return (self.table, *(join.table for join in self.joins))
 
     def newest_signature_statement(self) -> Statement:
         """The key, version and change time of the newest matching row: what a kept read of the newest row compares."""

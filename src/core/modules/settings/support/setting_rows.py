@@ -22,7 +22,7 @@ class SettingRows:
         return self.kept_table(model).get((key, environment_id))
 
     def kept_table(self, model: SettingModel) -> dict[tuple[str, int | None], Setting | SecretSetting]:
-        return self.kept.read_matching_signature(TABLES[model], lambda signature: self.shared.read(self.database, TABLES[model], signature, lambda: self.table(model)), name="settings.rows")
+        return self.kept.read_matching_signature(self.queries.query(model), lambda signature: self.shared.read(self.database, TABLES[model], signature, lambda: self.table(model)), name="settings.rows")
 
     def table(self, model: SettingModel) -> dict[tuple[str, int | None], Setting | SecretSetting]:
         return {(row.key, row.environment_id): row for row in self.queries.query(model).full_table(KEPT_SETTINGS_REASON).all_rows()}
@@ -31,13 +31,13 @@ class SettingRows:
         def with_row(rows: dict[tuple[str, int | None], Setting | SecretSetting]) -> dict[tuple[str, int | None], Setting | SecretSetting]:
             return {**rows, (row.key, row.environment_id): row}
 
-        self.kept.update(TABLES[type(row)], with_row, name="settings.rows")
+        self.kept.update(self.queries.query(type(row)), with_row, name="settings.rows")
 
     def remove(self, row: Setting | SecretSetting) -> None:
         def without_row(rows: dict[tuple[str, int | None], Setting | SecretSetting]) -> dict[tuple[str, int | None], Setting | SecretSetting]:
             return {key: value for key, value in rows.items() if key != (row.key, row.environment_id)}
 
-        self.kept.update(TABLES[type(row)], without_row, name="settings.rows")
+        self.kept.update(self.queries.query(type(row)), without_row, name="settings.rows")
 
     def stored_keys(self) -> list[str]:
         return list(dict.fromkeys(key for model in (Setting, SecretSetting) for key, _ in self.kept_table(model)))

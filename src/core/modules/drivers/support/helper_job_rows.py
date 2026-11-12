@@ -13,10 +13,12 @@ class HelperJobRows:
         self.queries, self.kept = queries, kept
 
     def helper_jobs(self, helper_id: int) -> tuple[HelperJob, ...]:
-        return self.kept.read("helper_jobs", lambda: tuple(self.queries.query(HelperJob).filter(helper_id=helper_id).oldest().all_rows()), "helper_id = ?", [helper_id], name="drivers.helper_jobs")
+        jobs = self.queries.query(HelperJob).filter(helper_id=helper_id).oldest()
+        return self.kept.read(jobs, lambda: tuple(jobs.all_rows()), name="drivers.helper_jobs")
 
     def open_job(self, helper_id: int) -> HelperJob | None:
-        return self.kept.read("helper_jobs", lambda: self.queries.query(HelperJob).filter(helper_id=helper_id).matching(IsNull("ended_at")).matching(HasValue("started_at")).oldest().first(), "helper_id = ?", [helper_id], name="drivers.open_helper_job")
+        jobs = self.queries.query(HelperJob).filter(helper_id=helper_id)
+        return self.kept.read(jobs, lambda: jobs.matching(IsNull("ended_at")).matching(HasValue("started_at")).oldest().first(), name="drivers.open_helper_job")
 
     def open_job_helpers(self) -> Query[HelperJob]:
         """The helpers with an open job that has started, as a column to match an agent's id against."""

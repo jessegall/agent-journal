@@ -10,6 +10,7 @@ from engine.errors.refusal import Refusal
 from engine.query.conditions.has_value import HasValue
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
+from engine.query.query import Query
 from engine.repository.repository import Repository
 from engine.setting.setting_values import SettingValues
 from engine.time.timestamp import Timestamp
@@ -39,14 +40,17 @@ class WorkerQuestions:
         self.queries, self.repository, self.bus, self.settings, self.numbers, self.kept = queries, repository, bus, settings, numbers, kept
 
     def open_lines(self) -> tuple[MergerLine, ...]:
-        return tuple(self.queries.query(MergerLine).matching(HasValue("worker_id")).matching(IsNull("outcome")).oldest().all_rows())
+        return tuple(self.open_line_rows().all_rows())
+
+    def open_line_rows(self) -> Query[MergerLine]:
+        return self.queries.query(MergerLine).matching(HasValue("worker_id")).matching(IsNull("outcome")).oldest()
 
     def worker_lines(self, worker_id: int) -> tuple[MergerLine, ...]:
-        return self.kept.read("merger_lines", lambda: tuple(self.queries.query(MergerLine).filter(worker_id=worker_id).matching(IsNull("outcome")).oldest().all_rows()),
-                              "worker_id = ? AND outcome IS NULL", [worker_id], name="workers.open_worker_lines")
+        lines = self.queries.query(MergerLine).filter(worker_id=worker_id).matching(IsNull("outcome")).oldest()
+        return self.kept.read(lines, lambda: tuple(lines.all_rows()), name="workers.open_worker_lines")
 
     def task_lines(self, task_id: int) -> tuple[MergerLine, ...]:
-        open_lines = self.kept.scoped_read("merger_lines", self.open_lines, "worker_id IS NOT NULL AND outcome IS NULL", [], name="workers.open_questions")
+        open_lines = self.kept.read(self.open_line_rows(), self.open_lines, name="workers.open_questions")
         return tuple(line for line in open_lines if line.task_id == task_id)
 
     def find_line(self, line_id: int) -> MergerLine:

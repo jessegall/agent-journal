@@ -18,7 +18,8 @@ class AliasQuery(Query[Alias]):
         self.kept = kept
 
     def saved(self, name: str) -> Alias | None:
-        return self.kept.read(self.table.name, self.with_name(name).first, "name = ?", [name], name="aliases.row")
+        aliases = self.with_name(name)
+        return self.kept.read(aliases, aliases.first, name="aliases.row")
 
     def with_name(self, name: str) -> Self:
         return self.filter(name=name)

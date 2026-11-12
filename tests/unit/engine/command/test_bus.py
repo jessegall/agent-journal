@@ -213,9 +213,9 @@ class KeptItemHandler(OutsideWorkCreateItemHandler):
         self.kept, self.queries = kept, queries
 
     def handle(self, command: KeptItem, context: Context) -> Item:
-        CACHED_COUNTS.append(self.kept.read("items", self.queries.query(Item).count, name="items.count"))
+        CACHED_COUNTS.append(self.kept.read(self.queries.query(Item), self.queries.query(Item).count, name="items.count"))
         item = super().handle(command, context)
-        CACHED_COUNTS.append(self.kept.read("items", self.queries.query(Item).count, name="items.count"))
+        CACHED_COUNTS.append(self.kept.read(self.queries.query(Item), self.queries.query(Item).count, name="items.count"))
         return item
 
 

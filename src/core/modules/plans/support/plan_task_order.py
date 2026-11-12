@@ -58,8 +58,8 @@ class PlanTaskOrder:
         return min(ready_tasks, key=lambda task: self.order(task, positions), default=None)
 
     def plan_rows(self, task_ids: tuple[int, ...]) -> tuple[PlanTask, ...]:
-        condition = SharedPlanTasks(task_ids).statement()
-        return self.kept.owner_read("tasks", lambda: self.loaded_plan_rows(task_ids), condition.sql, condition.parameters, name=f"plans.plan_rows:{task_ids}")
+        tasks = self.queries.query(Task).matching(SharedPlanTasks(task_ids))
+        return self.kept.owner_read(tasks, lambda: self.loaded_plan_rows(task_ids), name=f"plans.plan_rows:{task_ids}")
 
     def loaded_plan_rows(self, task_ids: tuple[int, ...]) -> tuple[PlanTask, ...]:
         places = self.queries.query(PlanTask).matching(Among("task_id", task_ids)).ordered("task_id").all_rows(TASK_PAGE_ROWS)

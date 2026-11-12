@@ -25,8 +25,8 @@ class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
         self.kept = kept
 
     def worker_worktree(self, agent_id: int) -> Worktree | None:
-        return self.kept.read(self.table.name, self.filter(session_agent_id=agent_id).first,
-                              "session_agent_id = ? AND removed_at IS NULL", [agent_id], name="workers.worker_worktree")
+        worktrees = self.filter(session_agent_id=agent_id)
+        return self.kept.read(worktrees, worktrees.first, name="workers.worker_worktree")
 
     def required_worker_worktree(self, agent_id: int) -> Worktree:
         worktree = self.worker_worktree(agent_id)
@@ -44,7 +44,8 @@ class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
         return not self.with_removed().filter(session_agent_id=worktree.session_agent_id).matching(Less("id", worktree.id)).exists()
 
     def newest_worktree(self, agent_id: int) -> Worktree | None:
-        return self.kept.read_newest(self.table.name, self.with_removed().filter(session_agent_id=agent_id).newest().first, "session_agent_id = ?", [agent_id], name="workers.newest_worktree")
+        worktrees = self.with_removed().filter(session_agent_id=agent_id).newest()
+        return self.kept.read_newest(worktrees, worktrees.first, name="workers.newest_worktree")
 
     def worker_worktrees(self, agent_id: int) -> tuple[Worktree, ...]:
         return tuple(self.with_removed().filter(session_agent_id=agent_id).oldest().all_rows())
@@ -58,18 +59,19 @@ class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
         return tuple(worktree for worktree in worktrees if worktree.merged_at is not None or worktree.merged_task_ids)
 
     def open_worktrees(self) -> list[Worktree]:
-        return list(self.kept.scoped_read(self.table.name, lambda: tuple(self.oldest().all_rows()), "removed_at IS NULL", name="workers.open_worktrees"))
+        worktrees = self.oldest()
+        return list(self.kept.read(worktrees, lambda: tuple(worktrees.all_rows()), name="workers.open_worktrees"))
 
     def folder_worktrees(self, folders: Sequence[str]) -> tuple[Worktree, ...]:
         return tuple(self.with_removed().matching(Among("folder", folders)).oldest().all_rows())
 
     def all_worktrees(self) -> tuple[Worktree, ...]:
-        return self.kept.scoped_read(self.table.name, lambda: tuple(self.with_removed().oldest().all_rows()), name="workers.all_worktrees")
+        worktrees = self.with_removed().oldest()
+        return self.kept.read(worktrees, lambda: tuple(worktrees.all_rows()), name="workers.all_worktrees")
 
     def update_kept(self, worktree: Worktree, present: tuple[Worktree, ...]) -> None:
         active = [row for row in present if row.removed_at is None]
-        self.kept.update(self.table.name, lambda previous: next(iter(active), None), "session_agent_id = ? AND removed_at IS NULL",
-                         [worktree.session_agent_id], name="workers.worker_worktree")
+        self.kept.update(self.filter(session_agent_id=worktree.session_agent_id), lambda previous: next(iter(active), None), name="workers.worker_worktree")
 
         def with_active(worktrees: tuple[Worktree, ...]) -> tuple[Worktree, ...]:
             return replaced_rows(worktrees, worktree.id, active)
@@ -77,5 +79,5 @@ class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
         def with_present(worktrees: tuple[Worktree, ...]) -> tuple[Worktree, ...]:
             return replaced_rows(worktrees, worktree.id, present)
 
-        self.kept.scoped_update(self.table.name, with_active, "removed_at IS NULL", name="workers.open_worktrees")
-        self.kept.scoped_update(self.table.name, with_present, name="workers.all_worktrees")
+        self.kept.update(self.oldest(), with_active, name="workers.open_worktrees")
+        self.kept.update(self.with_removed().oldest(), with_present, name="workers.all_worktrees")

@@ -8,7 +8,7 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from engine.query.query import Query
 from engine.errors.refusal import Refusal
-from core.modules.agents.models.agent import AGENTS_TABLE, Agent
+from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.helpers.support.profile_model import ProfileModel
@@ -32,8 +32,8 @@ class KeptHelpers:
 
     def with_open_jobs(self, profile: str) -> set[int]:
         """The helpers of a profile with an open job, at most the 50 newest: more than any run limit."""
-        return self.kept_rows.scoped_read("helper_jobs", lambda: set(self.open_jobs().where(profile=profile).where_not_null("helper_id").newest().pluck("helper_id")),
-                                   "profile = ? AND ended_at IS NULL", [profile], name="helpers.with_open_jobs")
+        jobs = self.open_jobs().where(profile=profile).where_not_null("helper_id").newest()
+        return self.kept_rows.read(jobs, lambda: set(jobs.pluck("helper_id")), name="helpers.with_open_jobs")
 
     def has_open_job(self, helper: Agent) -> bool:
         return self.open_jobs().where(helper_id=helper.id).exists()
@@ -42,10 +42,8 @@ class KeptHelpers:
         return self.queries.query(HelperJob).where_null("ended_at")
 
     def kept(self, profile: str) -> tuple[Agent, ...]:
-        return self.kept_rows.scoped_read(AGENTS_TABLE, lambda: self.query_kept(profile), "role = ? AND profile = ? AND retired_at IS NULL", [HelperRole.HELPER, profile], name="helpers.kept")
-
-    def query_kept(self, profile: str) -> tuple[Agent, ...]:
-        return tuple(self.queries.query(Agent).filter(role=HelperRole.HELPER, profile=profile).matching(IsNull("retired_at")).newest().all_rows())
+        helpers = self.queries.query(Agent).filter(role=HelperRole.HELPER, profile=profile).matching(IsNull("retired_at")).newest()
+        return self.kept_rows.read(helpers, lambda: tuple(helpers.all_rows()), name="helpers.kept")
 
     def idle(self, selection: ProfileModel, occupant: Occupant) -> tuple[Agent, ...]:
         """The stopped helpers of a profile that can take a job on the model chosen for it; one on another model is

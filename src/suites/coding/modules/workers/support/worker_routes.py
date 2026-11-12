@@ -21,8 +21,8 @@ class WorkerRoutes:
         self.queries, self.providers, self.kept = queries, providers, kept
 
     def listed(self) -> tuple[WorkerRoute, ...]:
-        return self.kept.scoped_read("worker_routes", lambda: tuple(self.queries.query(WorkerRoute).matching(Minimum("position", 1)).ordered("position").all_rows()),
-                                     "position >= ?", [1], name="workers.routes")
+        routes = self.queries.query(WorkerRoute).matching(Minimum("position", 1)).ordered("position")
+        return self.kept.read(routes, lambda: tuple(routes.all_rows()), name="workers.routes")
 
     def task_matches(self, tasks: Sequence[Task]) -> RouteTasks:
         programs = {provider.name for provider in self.providers.all()}
@@ -30,9 +30,8 @@ class WorkerRoutes:
         task_tags: dict[int, list[str]] = {task.id: [] for task in tasks}
         if routes:
             task_ids = tuple(task_tags)
-            tags = self.kept.read("task_tags",
-                                 lambda: tuple(self.queries.query(TaskTag).matching(Among("task_id", task_ids)).all_rows()),
-                                 f"task_id IN ({', '.join('?' for _ in task_ids)})", task_ids, name="workers.route_tags")
+            route_tags = self.queries.query(TaskTag).matching(Among("task_id", task_ids))
+            tags = self.kept.read(route_tags, lambda: tuple(route_tags.all_rows()), name="workers.route_tags")
             for tag in tags:
                 task_tags[tag.task_id].append(tag.word)
         return RouteTasks(routes, task_tags)

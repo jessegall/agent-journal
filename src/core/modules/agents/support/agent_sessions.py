@@ -69,8 +69,8 @@ class AgentSessions:
 
     def current(self, session_agent_id: int) -> AgentSession | None:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            return self.kept.read_newest("agent_sessions", lambda: self.queries.query(AgentSession).filter(session_agent_id=session_agent_id).descending("id").first(),
-                                         "session_agent_id = ?", [session_agent_id], name="agent_sessions.current")
+            sessions = self.queries.query(AgentSession).filter(session_agent_id=session_agent_id).descending("id")
+            return self.kept.read_newest(sessions, sessions.first, name="agent_sessions.current")
 
     def earlier_session_count(self, session_agent_id: int) -> int:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):

@@ -31,8 +31,8 @@ class ContextCompactions:
         self.queries, self.repository, self.kept = queries, repository, kept
 
     def newest(self, agent_id: int) -> ContextCompaction | None:
-        return self.kept.read_newest("context_compactions", lambda: self.queries.query(ContextCompaction).filter(session_agent_id=agent_id).descending("id").first(),
-                                     "session_agent_id = ?", [agent_id], name="context_compactions.newest")
+        compactions = self.queries.query(ContextCompaction).filter(session_agent_id=agent_id).descending("id")
+        return self.kept.read_newest(compactions, compactions.first, name="context_compactions.newest")
 
     def open_compaction(self, agent_id: int) -> ContextCompaction | None:
         newest = self.newest(agent_id)

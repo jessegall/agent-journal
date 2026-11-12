@@ -1,5 +1,4 @@
 from engine.database.kept_rows import KeptRows
-from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.support.message_tokens import MessageTokens
@@ -21,8 +20,8 @@ class RepeatedMessages:
     def repeated(self, creator_id: int, text: str, new_id: int | None = None) -> Message | None:
         if "?" in text or len(MessageTokens.tokens(text)) < MINIMUM_TOKENS:
             return None
-        newest = self.kept.read_newest("messages", lambda: self.messages.agent_messages().filter(creator_id=creator_id).newest().limited(COMPARED_MESSAGES + 1),
-                                       "type = ? AND creator_id = ?", [MessageType.AGENT.value, creator_id], name="messages.newest_of_agent")
+        written = self.messages.agent_messages().filter(creator_id=creator_id).newest()
+        newest = self.kept.read_newest(written, lambda: written.limited(COMPARED_MESSAGES + 1), name="messages.newest_of_agent")
         previous = [row for row in newest if row.id != new_id][:COMPARED_MESSAGES]
         return next((row for row in previous if self.repeats_previous(row.text, text)), None)
 

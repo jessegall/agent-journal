@@ -11,7 +11,7 @@ from engine.errors.refusal import Refusal
 from engine.listener.rows.event_rows import EventRows
 from engine.scope.actor_scope import ActorScope
 from engine.scope.scopes import Scopes
-from core.modules.agents.models.agent import AGENTS_TABLE, Agent
+from core.modules.agents.models.agent import Agent
 from core.modules.usage.support.agent_type_limits import UNLIMITED_AGENT_COUNT, AgentTypeLimits
 from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.drivers.models.agent_line import AgentLine
@@ -20,7 +20,6 @@ from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from core.modules.agents.support.agent_rows import AgentRows
 
-AGENT_LINES_TABLE = "agent_lines"
 JOB_DELIVERY_SECONDS = 120
 KEPT_NAMES_SHOWN = 5
 
@@ -39,10 +38,8 @@ class WorkerPlaces:
         return tuple({worker.id: worker for worker in (*running, *pending)}.values())
 
     def kept_workers(self) -> tuple[Agent, ...]:
-        return self.kept.scoped_read(AGENTS_TABLE, self.kept_rows, "role = ?", [CodingHelperRole.WORKER.value], name="workers.kept")
-
-    def kept_rows(self) -> tuple[Agent, ...]:
-        return tuple(self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(IsNull("retired_at")).newest().all_rows())
+        workers = self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(IsNull("retired_at")).newest()
+        return self.kept.read(workers, lambda: tuple(workers.all_rows()), name="workers.kept")
 
     def kept_limit(self) -> int:
         return self.limits.required(CodingHelperRole.WORKER).kept
@@ -72,10 +69,8 @@ class WorkerPlaces:
         cutoff_value_at = self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)
         cutoff_at = Timestamp(cutoff_value_at.replace(second=0, microsecond=0)).text
         with self.scopes.opened(self.scopes.actor_id, self.scopes.environment_id, [ActorScope]):
-            return self.kept.read(AGENT_LINES_TABLE, lambda: self.entered_lines(cutoff_at), "state = ? AND updated_at > ?", [AgentLineState.ENTERED, cutoff_at], name=f"workers.resuming_lines.{self.scopes.environment_id}")
-
-    def entered_lines(self, cutoff_at: str) -> tuple[AgentLine, ...]:
-        return tuple(self.queries.query(AgentLine).filter(state=AgentLineState.ENTERED).matching(Greater("updated_at", cutoff_at)).all_rows())
+            lines = self.queries.query(AgentLine).filter(state=AgentLineState.ENTERED).matching(Greater("updated_at", cutoff_at))
+            return self.kept.read(lines, lambda: tuple(lines.all_rows()), name=f"workers.resuming_lines.{self.scopes.environment_id}")
 
     def resuming_count(self) -> int:
         pending = self.work.pending()

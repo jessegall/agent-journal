@@ -6,6 +6,7 @@ from engine.model.state_book import StateBook
 from engine.model.tables import Tables
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
+from engine.query.query import Query
 from engine.repository.repository import Repository
 from core.modules.waits.models.wait import Wait
 from core.modules.waits.models.enums.wait_state import WaitState
@@ -34,7 +35,7 @@ class TargetResolutionListener(SaveListener[Changed[Model]]):
             def with_pending(targets: tuple[WaitTarget, ...]) -> tuple[WaitTarget, ...]:
                 return tuple(sorted([target for target in targets if target.id != row.id] + list(pending), key=lambda target: target.id))
 
-            self.kept.update("wait_targets", with_pending, "resolved_at IS NULL", name="waits.open_targets")
+            self.kept.update(self.open_targets(), with_pending, name="waits.open_targets")
             return
         lifecycle = self.book.lifecycle(type(row))
         if isinstance(row, Wait) or lifecycle is None or getattr(row, "state", None) in lifecycle.editable:
@@ -52,5 +53,8 @@ class TargetResolutionListener(SaveListener[Changed[Model]]):
             self.repository.save_change(wait, wait.end(context.timestamp, context.actor, outcome), context)
 
     def pending_targets(self) -> tuple[WaitTarget, ...]:
-        return self.kept.read("wait_targets", lambda: tuple(self.queries.query(WaitTarget).matching(IsNull("resolved_at")).oldest().full_table(OPEN_TARGETS_REASON).all_rows()),
-                              "resolved_at IS NULL", name="waits.open_targets")
+        targets = self.open_targets()
+        return self.kept.read(targets, lambda: tuple(targets.full_table(OPEN_TARGETS_REASON).all_rows()), name="waits.open_targets")
+
+    def open_targets(self) -> Query[WaitTarget]:
+        return self.queries.query(WaitTarget).matching(IsNull("resolved_at")).oldest()

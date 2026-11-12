@@ -22,16 +22,18 @@ class ReaderRequestQuery(Query[ReaderRequest]):
         return self.filter(completed_at=None)
 
     def open_rows(self) -> tuple[ReaderRequest, ...]:
-        return self.kept.scoped_read(self.table.name, lambda: tuple(self.open().full_table(OPEN_REQUESTS_REASON).all_rows()), "completed_at IS NULL", name="processes.open_reader_requests")
+        requests = self.open()
+        return self.kept.read(requests, lambda: tuple(requests.full_table(OPEN_REQUESTS_REASON).all_rows()), name="processes.open_reader_requests")
 
     def agent_open_rows(self, agent_id: int) -> tuple[ReaderRequest, ...]:
-        return self.kept.scoped_read(self.table.name, lambda: tuple(self.open().agent(agent_id).oldest().all_rows()), "creator_id = ? AND completed_at IS NULL", [agent_id], name="processes.agent_reader_requests")
+        requests = self.open().agent(agent_id).oldest()
+        return self.kept.read(requests, lambda: tuple(requests.all_rows()), name="processes.agent_reader_requests")
 
     def remove_completed(self, completed: ReaderRequest) -> None:
         def remaining(requests: tuple[ReaderRequest, ...]) -> tuple[ReaderRequest, ...]:
             return tuple(request for request in requests if request.id != completed.id)
 
-        self.kept.scoped_update(self.table.name, remaining, "completed_at IS NULL", name="processes.open_reader_requests")
+        self.kept.update(self.open(), remaining, name="processes.open_reader_requests")
 
     def agent(self, agent_id: int) -> Self:
         return self.filter(creator_id=agent_id)

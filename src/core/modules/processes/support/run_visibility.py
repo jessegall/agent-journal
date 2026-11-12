@@ -28,8 +28,8 @@ class RunVisibility:
         return next((part for part in parts if not part.category.is_short), None)
 
     def parts(self, process_id: int) -> tuple[ProcessPart, ...]:
-        return self.kept.read("process_parts", lambda: tuple(self.queries.query(ProcessPart).filter(process_id=process_id).oldest().all_rows()),
-                              "process_id = ?", [process_id], name="processes.visible_parts")
+        parts = self.queries.query(ProcessPart).filter(process_id=process_id).oldest()
+        return self.kept.read(parts, lambda: tuple(parts.all_rows()), name="processes.visible_parts")
 
     def processes_parts(self, process_ids: tuple[int, ...]) -> dict[int, tuple[ProcessPart, ...]]:
         parts: dict[int, list[ProcessPart]] = {process_id: [] for process_id in process_ids}

@@ -27,6 +27,5 @@ class WorkerStaging:
     def cancelled(self, task_ids: list[int]) -> tuple[Task, ...]:
         if not task_ids:
             return ()
-        condition = f"state = ? AND id IN ({', '.join('?' for _ in task_ids)})"
-        return self.kept.read("tasks", lambda: tuple(self.queries.query(Task).matching(Among("id", task_ids)).filter(state=TaskState.CANCELLED).ordered("id").all_rows()),
-                              condition, [TaskState.CANCELLED, *task_ids], name="workers.cancelled_shown_tasks")
+        cancelled = self.queries.query(Task).matching(Among("id", task_ids)).filter(state=TaskState.CANCELLED).ordered("id")
+        return self.kept.read(cancelled, lambda: tuple(cancelled.all_rows()), name="workers.cancelled_shown_tasks")

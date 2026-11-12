@@ -27,8 +27,8 @@ class PlanRowAuthors(PlanAuthors):
         return plan_id is not None and plan_id in plans and plans[plan_id].creator_id == agent_id
 
     def plans(self, plan_ids: Sequence[int]) -> dict[int, Plan]:
-        marks = ", ".join("?" for _ in plan_ids)
-        rows = self.kept.scoped_read("plans", lambda: tuple(self.queries.query(Plan).matching(Among("id", list(plan_ids))).all_rows()), f"id IN ({marks})", list(plan_ids), name="plans.author_plans")
+        plans = self.queries.query(Plan).matching(Among("id", list(plan_ids)))
+        rows = self.kept.read(plans, lambda: tuple(plans.all_rows()), name="plans.author_plans")
         return {plan.id: plan for plan in rows}
 
     def plan_ids(self, edits: Sequence[PlanEdit]) -> dict[PlanEdit, int | None]:

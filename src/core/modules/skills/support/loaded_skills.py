@@ -13,6 +13,6 @@ class LoadedSkills:
 
     def names(self, agent_id: int) -> tuple[str, ...]:
         digests = {skill.folder: skill.digest for skill in self.catalogue.skills()}
-        rows = self.kept.read("agent_skills", lambda: list(self.queries.query(AgentSkill).filter(session_agent_id=agent_id, state=AgentSkillState.LOADED).all_rows()),
-                              "session_agent_id = ?", [agent_id], name="skills.loaded")
+        loaded = self.queries.query(AgentSkill).filter(session_agent_id=agent_id, state=AgentSkillState.LOADED)
+        rows = self.kept.read(loaded, lambda: list(loaded.all_rows()), name="skills.loaded")
         return tuple(sorted(row.skill for row in rows if digests.get(row.skill) == row.digest))

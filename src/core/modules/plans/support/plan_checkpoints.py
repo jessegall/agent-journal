@@ -1,7 +1,10 @@
 from engine.command.context import Context
 from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
-from core.modules.plans.conditions.plan_window_tables import PlanWindowTables
+from engine.query.query import Query
+from core.modules.plans.conditions.plan_tasks_condition import PlanTasksCondition
+from core.modules.plans.models.phase_task import PhaseTask
+from core.modules.tasks.models.task import Task
 from engine.repository.repository import Repository
 from core.modules.plans.models.checkpoint_pass import CheckpointPass
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
@@ -29,7 +32,13 @@ class PlanCheckpoints:
         self.queries, self.repository, self.moves, self.kept = queries, repository, moves, kept
 
     def windows(self, plan_id: int) -> CheckpointWindows:
-        return self.kept.read_across(PlanWindowTables(plan_id).tables(), lambda: self.loaded_windows(plan_id), name="plans.checkpoint_windows")
+        return self.kept.read_across(self.window_sources(plan_id), lambda: self.loaded_windows(plan_id), name="plans.checkpoint_windows")
+
+    def window_sources(self, plan_id: int) -> tuple[Query[Task] | Query[Phase] | Query[PhaseTask], ...]:
+        """The rows the checkpoint windows of a plan are worked out from: its tasks, its phases and the places of its tasks."""
+        phases = self.queries.query(Phase).filter(plan_id=plan_id)
+        return (self.queries.query(Task).matching(PlanTasksCondition(tuple([plan_id]))), phases,
+                self.queries.query(PhaseTask).where_in("phase_id", phases.select_columns("id")))
 
     def loaded_windows(self, plan_id: int) -> CheckpointWindows:
         phases = tuple(self.queries.query(Phase).filter(plan_id=plan_id).ordered("position").all_rows())

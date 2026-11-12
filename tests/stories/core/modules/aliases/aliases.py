@@ -61,6 +61,7 @@ def test_a_variable_without_its_value_is_refused(new_story):
 def test_an_alias_line_is_changed_and_an_alias_removed(new_story):
     story = new_story(fixture=UserJoined)
     story.run('alias add greet "echo hello"', actor=story.agent)
+    story.expect_success("greet", "hello", actor=story.agent)
     story.expect_success('alias edit greet --line "echo bye"', "alias greet changed", actor=story.agent)
     story.expect_success("greet", "bye", actor=story.agent)
     story.expect_success("alias remove greet", "alias greet removed", actor=story.agent)

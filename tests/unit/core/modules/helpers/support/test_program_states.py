@@ -31,8 +31,7 @@ def readiness():
     clock.timestamp.return_value = now
     kept_rows, limits = Mock(), Mock()
     limits.reached_limit_ends.return_value = None
-    kept_rows.scoped_read.side_effect = lambda table, loader, *args, **kwargs: loader()
-    kept_rows.read.side_effect = kept_rows.scoped_read.side_effect
+    kept_rows.read.side_effect = lambda source, loader, **kwargs: loader()
     states = ProgramStates(providers, programs, queries, settings, statuses, clock, agents, scopes, kept_rows, limits)
     return SimpleNamespace(states=states, provider=provider, providers=providers, programs=programs,
                            queries=queries, settings=settings, statuses=statuses, clock=clock, now=now)

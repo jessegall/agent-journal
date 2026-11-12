@@ -44,9 +44,8 @@ class WorkSources:
                 self.authorized_sources[key] = previous
 
     def current(self, context: Context | Caller) -> MessageWorkSource | None:
-        return self.kept.read("message_work_sources",
-                              lambda: self.queries.query(MessageWorkSource).filter(agent_id=context.actor.id, environment_id=context.environment_id).first(),
-                              "agent_id = ? AND environment_id = ?", [context.actor.id, context.environment_id], name="messages.work-source")
+        sources = self.queries.query(MessageWorkSource).filter(agent_id=context.actor.id, environment_id=context.environment_id)
+        return self.kept.read(sources, sources.first, name="messages.work-source")
 
     def select(self, message: Message, origin: WorkSourceOrigin, context: Context) -> MessageWorkSource:
         if context.actor.type is not ActorType.AGENT or context.environment_id is None:

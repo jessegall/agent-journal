@@ -28,13 +28,14 @@ class OutputQuery(Query[Output]):
         return tuple(self.matching(Among("process_id", process_ids)).all_rows())
 
     def process_output(self, process_id: int) -> Output | None:
-        return self.cached.read(self.table.name, self.process(process_id).first, "process_id = ?", [process_id], name="processes.process_output")
+        outputs = self.process(process_id)
+        return self.cached.read(outputs, outputs.first, name="processes.process_output")
 
     def remember(self, output: Output) -> None:
-        self.cached.update(self.table.name, lambda previous: output, "process_id = ?", [output.process_id], name="processes.process_output")
+        self.cached.update(self.process(output.process_id), lambda previous: output, name="processes.process_output")
 
     def remove(self, output: Output) -> None:
-        self.cached.update(self.table.name, lambda previous: None, "process_id = ?", [output.process_id], name="processes.process_output")
+        self.cached.update(self.process(output.process_id), lambda previous: None, name="processes.process_output")
 
     def kept(self) -> Self:
         return self.filter(state=OutputState.KEPT)

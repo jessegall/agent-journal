@@ -23,8 +23,8 @@ class WorkerWorktrees:
         owner_ids = sorted(worktree_index)
         if not owner_ids:
             return []
-        workers = self.kept.scoped_read("agents", lambda: tuple(self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(Among("id", owner_ids)).oldest().all_rows()),
-                                        "role = ?", [CodingHelperRole.WORKER], name=f"workers.main_workers:{owner_ids}")
+        owners = self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(Among("id", owner_ids)).oldest()
+        workers = self.kept.read(owners, lambda: tuple(owners.all_rows()), name=f"workers.main_workers:{owner_ids}")
         return [worktree_index[worker.id] for worker in workers]
 
     def delivered(self) -> list[Worktree]:

@@ -15,13 +15,11 @@ class NudgeRecords:
 
     def newest_row(self, agent_id: int, key: str) -> NudgeRecord | None:
         newest = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id, key=key).descending("last_delivered_at")
-        return self.kept.read("nudge_records", newest.first, "session_agent_id = ? AND key = ?", [agent_id, key], name="drivers.nudges.newest")
+        return self.kept.read(newest, newest.first, name="drivers.nudges.newest")
 
     def nudge_rows(self, agent_id: int, nudges: Sequence[Nudge]) -> list[NudgeRecord]:
-        keys = sorted({nudge.key for nudge in nudges})
-        condition = f"session_agent_id = ? AND key IN ({', '.join('?' for _ in keys)})"
-        return self.kept.read("nudge_records", lambda: self.loaded_rows(agent_id, nudges), condition, [agent_id, *keys],
-                              name=f"drivers.nudges:{sorted({nudge.text for nudge in nudges})}")
+        records = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id).matching(Among("key", tuple(sorted({nudge.key for nudge in nudges}))))
+        return self.kept.read(records, lambda: self.loaded_rows(agent_id, nudges), name=f"drivers.nudges:{sorted({nudge.text for nudge in nudges})}")
 
     def loaded_rows(self, agent_id: int, nudges: Sequence[Nudge]) -> list[NudgeRecord]:
         clock_keys = sorted({nudge.key for nudge in nudges if nudge.interval})

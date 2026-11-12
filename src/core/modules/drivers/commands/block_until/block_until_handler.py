@@ -23,13 +23,9 @@ class BlockUntilHandler(Handler[BlockUntil, AgentBlock]):
     def handle(self, command: BlockUntil, context: Context) -> AgentBlock:
         line_blocks = self.queries.query(AgentBlock).filter(session_agent_id=command.agent_id, nudge_key=command.nudge.key).matching(IsNull("closed_at"))
         query = line_blocks.filter(condition_text=command.condition.text) if command.condition.subject_scoped else line_blocks
-        condition, parameters = "session_agent_id = ? AND nudge_key = ? AND closed_at IS NULL", [command.agent_id, command.nudge.key]
-        if command.condition.subject_scoped:
-            condition += " AND condition_text = ?"
-            parameters.append(command.condition.text)
-        existing = self.kept.read("agent_blocks", query.first, condition, parameters, name="drivers.open_block")
+        existing = self.kept.read(query, query.first, name="drivers.open_block")
         saved = self.save_block(command, context, existing)
-        self.kept.update("agent_blocks", lambda previous: saved, condition, parameters, name="drivers.open_block")
+        self.kept.update(query, lambda previous: saved, name="drivers.open_block")
         return saved
 
     def save_block(self, command: BlockUntil, context: Context, existing: AgentBlock | None) -> AgentBlock:

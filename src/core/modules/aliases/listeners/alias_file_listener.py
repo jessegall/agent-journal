@@ -12,7 +12,6 @@ from core.modules.aliases.support.alias_names import AliasNames
 from core.modules.aliases.support.alias_shell_aliases import AliasShellAliases
 from engine.event.file_publishing import FilePublishing
 from engine.event.touched import Touched
-from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.models.command_type import CommandType
 from engine.query.queries import Queries
 
@@ -33,13 +32,14 @@ class AliasFileListener(CommitListener[FilePublishing | Touched[Alias] | Touched
 
     def handle(self, event: FilePublishing | Touched[Alias] | Touched[CommandType], logged: LoggedEvent) -> None:
         commands = self.names.command_names()
-        aliases = self.kept.read("aliases", lambda: tuple(self.aliases.all_rows()), name="aliases.file_rows")
+        aliases = self.kept.read(self.aliases, lambda: tuple(self.aliases.all_rows()), name="aliases.file_rows")
         lines = {alias.name: self.line(alias) for alias in aliases if alias.name not in commands}
         self.home.alias_file.parent.mkdir(parents=True, exist_ok=True)
         FileAccess.shared().write(self.home.alias_file, json.dumps(lines))
         FileAccess.shared().write(self.home.saved_command_file, json.dumps([alias.name for alias in aliases if alias.name in lines and alias.category and alias.category.is_long_running]))
         FileAccess.shared().write(self.home.alias_category_file, json.dumps({alias.name: alias.category.value for alias in aliases if alias.name in lines and alias.category}))
-        types = self.kept.read("command_types", lambda: tuple(self.queries.query(CommandType).all_rows()), name="aliases.command_types")
+        command_types = self.queries.query(CommandType)
+        types = self.kept.read(command_types, lambda: tuple(command_types.all_rows()), name="aliases.command_types")
         FileAccess.shared().write(self.home.command_type_file, json.dumps({command_type.words: command_type.category.value for command_type in types}))
 
     def line(self, alias: Alias) -> str:

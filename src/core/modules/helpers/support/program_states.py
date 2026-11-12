@@ -87,8 +87,8 @@ class ProgramStates:
 
     def windows(self, program: str) -> tuple[PlanWindow, ...]:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            agents = self.kept_rows.scoped_read("agents", lambda: tuple(self.agents.running().filter(program=program).all_rows()),
-                                               "ended_at IS NULL AND program = ?", [program], name="helpers.program_sessions")
+            running = self.agents.running().filter(program=program)
+            agents = self.kept_rows.read(running, lambda: tuple(running.all_rows()), name="helpers.program_sessions")
         return self.statuses.newest_status([agent.session for agent in agents], self.clock.timestamp()).windows
 
     def outage_state(self, program: str) -> ProgramState:
@@ -97,8 +97,8 @@ class ProgramStates:
         except UnknownProgramError:
             return ProgramState.unavailable(f"{program} has no installed provider module")
         checked_at = self.clock.timestamp()
-        outages = self.kept_rows.read("provider_outages", lambda: tuple(self.queries.query(ProviderOutage).filter(program=program).descending("ends_at").all_rows()),
-                                     "program = ?", [program], name="helpers.program_outages")
+        program_outages = self.queries.query(ProviderOutage).filter(program=program).descending("ends_at")
+        outages = self.kept_rows.read(program_outages, lambda: tuple(program_outages.all_rows()), name="helpers.program_outages")
         outage = next((row for row in outages if row.ends_at > checked_at), None)
         if outage is None:
             return ProgramState.ready()

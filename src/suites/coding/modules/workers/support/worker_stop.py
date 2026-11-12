@@ -10,6 +10,7 @@ from engine.time.timestamp import Timestamp
 from engine.query.conditions.among import Among
 from engine.query.conditions.minimum import Minimum
 from engine.query.queries import Queries
+from engine.query.query import Query
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import ENDED_FIELD, Agent
 from core.modules.waits.models.enums.wait_state import WaitState
@@ -32,7 +33,7 @@ class WorkerStop:
         return actor_id != worker.id and self.queries.query(ActorRecord).find(actor_id).type in STOPPING_ACTOR_TYPES
 
     def was_stopped(self, worker: Agent) -> bool:
-        return self.kept.read(self.tables.table(Agent).name, lambda: self.has_final_ending(worker), "id = ?", [worker.id], name="workers.worker_stopped")
+        return self.kept.read(self.queries.query(Agent).filter(id=worker.id), lambda: self.has_final_ending(worker), name="workers.worker_stopped")
 
     def has_final_ending(self, worker: Agent) -> bool:
         events = self.log.newest_row_events(RowHistory(self.tables.table(Agent).name, worker.id, names=AGENT_ENDING_EVENTS))
@@ -46,9 +47,12 @@ class WorkerStop:
         return not self.was_stopped(worker)
 
     def has_open_help_request(self, worker_id: int) -> bool:
-        return self.kept.read(self.tables.table(Wait).name, self.queries.query(Wait).filter(session_agent_id=worker_id, state=WaitState.OPEN).matching(Among("type", WORK_ENDED_TYPES)).exists,
-                              "session_agent_id = ? AND state = ? AND type IN (?, ?)", [worker_id, WaitState.OPEN, *WORK_ENDED_TYPES], name="workers.open_help_request")
+        requests = self.open_help_requests(worker_id)
+        return self.kept.read(requests, requests.exists, name="workers.open_help_request")
+
+    def open_help_requests(self, worker_id: int) -> Query[Wait]:
+        return self.queries.query(Wait).filter(session_agent_id=worker_id, state=WaitState.OPEN).matching(Among("type", WORK_ENDED_TYPES))
 
     def has_help_request_opened_after(self, worker_id: int, opened_after: Timestamp) -> bool:
-        return self.kept.read(self.tables.table(Wait).name, self.queries.query(Wait).filter(session_agent_id=worker_id, state=WaitState.OPEN).matching(Among("type", WORK_ENDED_TYPES)).matching(Minimum("opened_at", opened_after.text)).exists,
-                              "session_agent_id = ? AND state = ? AND type IN (?, ?) AND opened_at >= ?", [worker_id, WaitState.OPEN, *WORK_ENDED_TYPES, opened_after.text], name="workers.help_request_opened_after")
+        requests = self.open_help_requests(worker_id).matching(Minimum("opened_at", opened_after.text))
+        return self.kept.read(requests, requests.exists, name="workers.help_request_opened_after")

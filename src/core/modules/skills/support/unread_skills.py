@@ -17,8 +17,8 @@ class UnreadSkills:
         self.queries, self.catalogue, self.kept, self.profile_skills = queries, catalogue, kept, profile_skills
 
     def names(self, agent_id: int) -> list[str]:
-        rows = self.kept.read("agent_skills", lambda: tuple(self.queries.query(AgentSkill).filter(session_agent_id=agent_id, state=AgentSkillState.DUE).every_row(DUE_SKILLS_REASON)),
-                              "session_agent_id = ? AND state = ?", [agent_id, AgentSkillState.DUE], name="skills.due")
+        due = self.queries.query(AgentSkill).filter(session_agent_id=agent_id, state=AgentSkillState.DUE)
+        rows = self.kept.read(due, lambda: tuple(due.every_row(DUE_SKILLS_REASON)), name="skills.due")
         if not rows:
             return []
         declared = {skill.folder for skill in self.catalogue.skills()}

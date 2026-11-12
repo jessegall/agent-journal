@@ -22,8 +22,8 @@ class UsageLimits:
         self.queries, self.kept_rows = queries, kept_rows
 
     def program_limits(self, program: str) -> tuple[UsageLimit, ...]:
-        return self.kept_rows.read("usage_limits", lambda: tuple(self.queries.query(UsageLimit).filter(program=program).oldest().all_rows()),
-                                   "program = ?", [program], name="helpers.program-limits")
+        limits = self.queries.query(UsageLimit).filter(program=program).oldest()
+        return self.kept_rows.read(limits, lambda: tuple(limits.all_rows()), name="helpers.program-limits")
 
     @staticmethod
     def matching_window(limit: UsageLimit, windows: Sequence[PlanWindow]) -> PlanWindow | None:

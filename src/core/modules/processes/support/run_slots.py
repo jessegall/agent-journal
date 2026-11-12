@@ -9,6 +9,7 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.has_value import HasValue
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
+from engine.query.query import Query
 from engine.repository.repository import Repository
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
@@ -61,11 +62,14 @@ class RunSlots:
         def with_process(runs: tuple[Process, ...]) -> tuple[Process, ...]:
             return tuple(sorted([run for run in runs if run.id != process.id] + ([process] if process.state in RUNNING_STATES else []), key=lambda run: run.id))
 
-        self.kept.scoped_update("processes", with_process, "state IN (?, ?)", [*RUNNING_STATES], name="processes.slot_runs")
+        self.kept.update(self.slot_runs(), with_process, name="processes.slot_runs")
 
     def running(self) -> tuple[Process, ...]:
-        return self.kept.scoped_read("processes", lambda: tuple(self.queries.query(Process).matching(Among("state", RUNNING_STATES)).oldest().all_rows()),
-                                       "state IN (?, ?)", [*RUNNING_STATES], name="processes.slot_runs")
+        runs = self.slot_runs()
+        return self.kept.read(runs, lambda: tuple(runs.all_rows()), name="processes.slot_runs")
+
+    def slot_runs(self) -> Query[Process]:
+        return self.queries.query(Process).matching(Among("state", RUNNING_STATES)).oldest()
 
     def grant_all_environments(self, context: Context) -> None:
         queued = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(HasValue("queued_at")).oldest().all_rows()

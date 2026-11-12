@@ -74,7 +74,7 @@ class Query(Generic[M]):
         if kept is None or self.table.key != ROW_KEY or not self.table.has_column(VERSION_COLUMN):
             return self.find_many([row_id])[0]
         statement = self.with_removed().scoped(self.select).conditions
-        return kept.read_newest(self.table.name, lambda: self.find_many([row_id])[0], f"{self.table.key} = ?", [row_id], name=f"query.find:{statement}")
+        return kept.read_newest(self.with_removed().matching(Equal(self.table.key, row_id)), lambda: self.find_many([row_id])[0], name=f"query.find:{statement}")
 
     def find_many(self, row_ids: Sequence[int]) -> list[M]:
         row_index = {getattr(row, self.table.key): row for row in self.with_removed().rows(self.select.matching(Among(self.table.key, row_ids)))}

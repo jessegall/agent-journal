@@ -10,6 +10,7 @@ from engine.model.children import Children
 from engine.model.model import Model
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
+from engine.query.query import Query
 from engine.repository.repository import Repository
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent
@@ -55,7 +56,7 @@ class Assignments:
             self.kept_assignments(model.model_name, row_id, lambda row_id=row_id: tuple(assignment for assignment in loaded if assignment.subject_id == row_id))
 
     def kept_assignments(self, model_name: str, row_id: int, loader: Callable[[], tuple[Assignment, ...]]) -> tuple[Assignment, ...]:
-        return self.kept.read("assignments", loader, "subject_model = ? AND subject_id = ?", [model_name, row_id], name="assignments.row_assignments")
+        return self.kept.read(self.queries.query(Assignment).filter(subject_model=model_name, subject_id=row_id), loader, name="assignments.row_assignments")
 
     def actors(self, row: Model) -> tuple[int, ...]:
         return tuple(assignment.actor_id for assignment in self.assignments(row))
@@ -63,14 +64,13 @@ class Assignments:
     def row_actor_ids(self, model: type[Model], row_ids: Sequence[int]) -> dict[int, tuple[int, ...]]:
         if not row_ids:
             return {}
-        marks = ", ".join("?" for _ in row_ids)
-        return self.kept.read("assignments", lambda: self.loaded_actor_ids(model, tuple(row_ids)), f"subject_model = ? AND subject_id IN ({marks})",
-                              [model.model_name, *row_ids], name="assignments.row_actor_ids")
+        assigned = self.queries.query(Assignment).filter(subject_model=model.model_name).matching(Among("subject_id", list(row_ids))).oldest()
+        return self.kept.read(assigned, lambda: self.loaded_actor_ids(assigned, tuple(row_ids)), name="assignments.row_actor_ids")
 
-    def loaded_actor_ids(self, model: type[Model], row_ids: tuple[int, ...]) -> dict[int, tuple[int, ...]]:
+    @staticmethod
+    def loaded_actor_ids(assigned: Query[Assignment], row_ids: tuple[int, ...]) -> dict[int, tuple[int, ...]]:
         actor_ids: dict[int, tuple[int, ...]] = {row_id: () for row_id in row_ids}
-        assigned = self.queries.query(Assignment).filter(subject_model=model.model_name).matching(Among("subject_id", list(row_ids)))
-        for assignment in assigned.oldest().all_rows(ASSIGNMENT_PAGE_ROWS):
+        for assignment in assigned.all_rows(ASSIGNMENT_PAGE_ROWS):
             actor_ids[assignment.subject_id] = (*actor_ids[assignment.subject_id], assignment.actor_id)
         return actor_ids
 
@@ -83,7 +83,8 @@ class Assignments:
         actor_id = self.actor(row)
         if actor_id is None:
             return None
-        return self.kept.read("agents", lambda: self.queries.query(Agent).filter(id=actor_id).first(), "id = ?", [actor_id], name="assignments.assigned_agent")
+        agents = self.queries.query(Agent).filter(id=actor_id)
+        return self.kept.read(agents, agents.first, name="assignments.assigned_agent")
 
     def assign(self, row: Assignable, actor_id: int, context: Context, *, cascade: bool = True, override: bool = False) -> Cascade:
         self.require_working_actor(actor_id)
@@ -202,7 +203,8 @@ class Assignments:
             self.repository.save(Assignment(creator_id=context.actor.id, subject_model=row.model_name, subject_id=row.id, actor_id=actor_id), context)
 
     def actor_exists(self, actor_id: int) -> bool:
-        return self.kept.read("actors", self.queries.query(ActorRecord).filter(id=actor_id).exists, "id = ?", [actor_id], name="assignments.actor_exists")
+        actors = self.queries.query(ActorRecord).filter(id=actor_id)
+        return self.kept.read(actors, actors.exists, name="assignments.actor_exists")
 
     def require_working_actor(self, actor_id: int) -> None:
         actor = self.queries.query(ActorRecord).filter(id=actor_id).first()

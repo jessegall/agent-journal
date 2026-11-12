@@ -27,6 +27,6 @@ class WorkerOpenTasks:
         return tuple(task for task in ready if task.id not in waiting_ids)
 
     def dependent_ids(self, task_ids: tuple[int, ...]) -> tuple[int, ...]:
-        condition = f"id IN ({', '.join('?' for _ in task_ids)})"
-        return self.kept.read("tasks", lambda: tuple(dependency.task_id for dependency in self.queries.query(OpenDependency).matching(Among("task_id", task_ids)).all_rows()),
-                              condition, task_ids, name="workers.startable_dependent_ids")
+        tasks = self.queries.query(Task).matching(Among("id", task_ids))
+        return self.kept.read(tasks, lambda: tuple(dependency.task_id for dependency in self.queries.query(OpenDependency).matching(Among("task_id", task_ids)).all_rows()),
+                              name="workers.startable_dependent_ids")

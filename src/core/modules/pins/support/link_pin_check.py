@@ -116,8 +116,7 @@ class LinkPinCheck:
             return None
         variants = self.with_trailing_slashes(tuple(url.rstrip("/") for url in links))
         pins = self.queries.query(Pin).matching(IsNull("closed_at")).matching(Among("link", variants))
-        pinned = self.kept.scoped_read("pins", lambda: {pin.link for pin in pins.all_rows()},
-                                       f"closed_at IS NULL AND link IN ({', '.join('?' * len(variants))})", list(variants), name="pins.open_links")
+        pinned = self.kept.read(pins, lambda: {pin.link for pin in pins.all_rows()}, name="pins.open_links")
         return next((url for url in links if url.rstrip("/") not in pinned and f"{url.rstrip('/')}/" not in pinned), None)
 
     def claims_missing_pin(self, text: str) -> bool:

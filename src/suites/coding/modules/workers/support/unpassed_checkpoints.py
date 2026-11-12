@@ -2,6 +2,7 @@ from collections.abc import Sequence
 
 from core.modules.plans.conditions.plan_tasks_condition import PlanTasksCondition
 from core.modules.plans.models.plan_task import PlanTask
+from core.modules.tasks.models.task import Task
 from core.modules.plans.support.plan_checkpoints import PlanCheckpoints
 from core.modules.plans.support.task_plans import TaskPlans
 from engine.database.kept_rows import KeptRows
@@ -41,8 +42,8 @@ class UnpassedCheckpoints:
         return bool(open_ids) and set(open_ids).issubset(self.units.unit(actor_id).task_ids)
 
     def first_unpassed(self, plan_id: int) -> PlanTask | None:
-        condition = PlanTasksCondition(tuple([plan_id])).statement()
-        return self.kept.read("tasks", lambda: self.loaded_first_unpassed(plan_id), condition.sql, condition.parameters, name="workers.first_unpassed_checkpoint")
+        tasks = self.queries.query(Task).matching(PlanTasksCondition(tuple([plan_id])))
+        return self.kept.read(tasks, lambda: self.loaded_first_unpassed(plan_id), name="workers.first_unpassed_checkpoint")
 
     def loaded_first_unpassed(self, plan_id: int) -> PlanTask | None:
         checkpoints = self.queries.query(PlanTask).filter(plan_id=plan_id, checkpoint=True).ordered("phase_position")

@@ -12,6 +12,7 @@ from core.modules.plans.support.task_plans import TaskPlans
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.support.work_unit import WorkUnit
@@ -34,18 +35,16 @@ class WorkUnits:
         return agent if agent is not None and agent.role == CodingHelperRole.WORKER and agent.retired_at is None else None
 
     def unit(self, worker_id: int) -> WorkUnit:
-        assignee = TaskQuery.assignee(worker_id).statement()
         worktree = self.worktrees.worker_worktree(worker_id)
         cut_text = worktree.cut_at.text if worktree is not None and worktree.cut_at is not None else CLOSED_NEVER
-        task_ids, uncommitted_count = self.kept.read("tasks", lambda: self.open_work(worker_id, cut_text), f"(closed_at IS NULL OR closed_at >= ?) AND {assignee.sql}",
-                                                     [cut_text, *assignee.parameters], name="workers.work_unit_tasks")
+        task_ids, uncommitted_count = self.kept.read(self.tasks.assignee_tasks(worker_id), lambda: self.open_work(worker_id, cut_text), name=f"workers.work_unit_tasks:{cut_text}")
         self.plans.prepare(task_ids)
         plan = self.assigned_plan(worker_id, task_ids)
         phase = None if plan is not None else self.shared_phase(task_ids)
         if plan is None:
             return WorkUnit(plan, phase, task_ids, uncommitted_count, len(task_ids), uncommitted_count)
-        plan_tasks = PlanTasksCondition(tuple([plan.id])).statement()
-        progress = self.kept.read("tasks", lambda: self.queries.query(PlanProgress).find(plan.id), plan_tasks.sql, plan_tasks.parameters, name="workers.unit_plan_progress")
+        plan_tasks = self.queries.query(Task).matching(PlanTasksCondition(tuple([plan.id])))
+        progress = self.kept.read(plan_tasks, lambda: self.queries.query(PlanProgress).find(plan.id), name="workers.unit_plan_progress")
         return WorkUnit(plan, phase, task_ids, uncommitted_count, progress.task_count, progress.task_count - progress.completed_count - progress.testing_count)
 
     def open_work(self, worker_id: int, cut_text: str) -> tuple[tuple[int, ...], int]:

@@ -32,9 +32,8 @@ class MessageReplies:
                 or (message.type is MessageType.AGENT and newest_reply_ids[message.creator_id] > message.id)}
 
     def replied_ids(self, agent_id: int, message_ids: tuple[int, ...]) -> set[int | None]:
-        condition = f"type = ? AND creator_id = ? AND parent_id IN ({', '.join('?' for _ in message_ids)})"
-        replies = self.kept.read("messages", lambda: tuple(self.messages_by(agent_id).matching(Among("parent_id", message_ids)).oldest().all_rows(REPLY_PAGE_ROWS)),
-                                 condition, (MessageType.AGENT.value, agent_id, *message_ids), name="messages.written_replies")
+        written = self.messages_by(agent_id).matching(Among("parent_id", message_ids)).oldest()
+        replies = self.kept.read(written, lambda: tuple(written.all_rows(REPLY_PAGE_ROWS)), name="messages.written_replies")
         return {reply.parent_id for reply in replies}
 
     def newest_reply_ids(self, agent_id: int, messages: Sequence[Message]) -> dict[int, int]:
@@ -44,10 +43,10 @@ class MessageReplies:
         return {sender_id: self.newest_reply_id(agent_id, sender_id, main_id) for sender_id in sender_ids}
 
     def newest_reply_id(self, agent_id: int, sender_id: int, main_id: int | None) -> int:
-        targeted = self.kept.read_newest("messages", lambda: self.messages_by(agent_id).filter(target_agent_id=sender_id).newest().first(),
-                                         "type = ? AND creator_id = ? AND target_agent_id = ?", (MessageType.AGENT.value, agent_id, sender_id), name="messages.newest_targeted_reply")
-        untargeted = self.kept.read_newest("messages", lambda: self.messages_by(agent_id).matching(IsNull("target_agent_id")).newest().first(),
-                                           "type = ? AND creator_id = ? AND target_agent_id IS NULL", (MessageType.AGENT.value, agent_id), name="messages.newest_untargeted_reply") if sender_id == main_id else None
+        targeted_replies = self.messages_by(agent_id).filter(target_agent_id=sender_id).newest()
+        targeted = self.kept.read_newest(targeted_replies, targeted_replies.first, name="messages.newest_targeted_reply")
+        untargeted_replies = self.messages_by(agent_id).matching(IsNull("target_agent_id")).newest()
+        untargeted = self.kept.read_newest(untargeted_replies, untargeted_replies.first, name="messages.newest_untargeted_reply") if sender_id == main_id else None
         return max((reply.id for reply in (targeted, untargeted) if reply is not None), default=0)
 
     def messages_by(self, agent_id: int) -> Query[Message]:
