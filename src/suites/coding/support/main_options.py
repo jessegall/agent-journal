@@ -3,6 +3,7 @@ from dataclasses import dataclass
 BUILDER = (True, True, False, True, True, False, True, True)
 ORCHESTRATOR = (False, True, True, True, True, False, True, False)
 PRESETS = {"builder": BUILDER, "orchestrator": ORCHESTRATOR}
+PRESET_LINES = {"builder": "The main agent writes code itself and sends workers for the rest.", "orchestrator": "The main agent plans, sends workers and merges their work, and writes no code itself."}
 
 
 @dataclass(frozen=True)

@@ -3,3 +3,6 @@ globalThis.ResizeObserver ??= class {
     observe() {}
     disconnect() {}
 };
+
+// jsdom cannot scroll, so a component that brings a row into view finds the call there and nothing moves
+Element.prototype.scrollIntoView ??= function scrollIntoView() {};

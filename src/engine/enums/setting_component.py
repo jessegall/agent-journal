@@ -29,7 +29,7 @@ class SettingComponent(StrEnum):
             case SettingComponent.NUMBER_LIST:
                 return (SettingType.NUMBER_LIST,)
             case SettingComponent.TEXT:
-                return (SettingType.TEXT,)
+                return (SettingType.TEXT, SettingType.ANY)
             case SettingComponent.KEYED_CAP_TABLE | SettingComponent.THREE_WAY_CAP:
                 return (SettingType.LIST,)
 

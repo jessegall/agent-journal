@@ -50,10 +50,10 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
             for profile in sorted({agent.profile for agent in agents if agent.profile and entry.profile_limits_key} | installed):
                 matching = tuple(agent for agent in agents if agent.profile == profile)
                 profile_limits = self.limits.read(entry, profile)
-                profiles.append(AgentProfileLimitCounts(profile, titles.get(profile, profile), sum(agent.running for agent in matching) + sum(agent.profile == profile for agent in extra), sum(agent.kept for agent in matching), profile_limits.run, profile_limits.kept, self.group_key(entry.key, profile)))
+                profiles.append(AgentProfileLimitCounts(profile, titles.get(profile, profile), sum(agent.running for agent in matching) + sum(agent.profile == profile for agent in extra), sum(agent.kept for agent in matching), profile_limits.run, profile_limits.kept, self.group_key(entry.key, profile), installed_profiles[profile].description if profile in installed_profiles else ""))
             counts.append(AgentLimitCounts(entry.key, entry.label, sum(agent.running for agent in agents) + len(extra), sum(agent.kept for agent in agents), limits.run, limits.kept,
                                           entry.run_limit_key, entry.kept_limit_key, bool(entry.profile_limits_key), tuple(profiles),
-                                          self.settings.current(entry.run_limit_key).source, self.settings.current(entry.kept_limit_key).source))
+                                          self.settings.current(entry.run_limit_key).source, self.settings.current(entry.kept_limit_key).source, entry.line, entry.default_profile))
         return tuple(counts)
 
     def group_key(self, agent_type: str, profile: str) -> str:

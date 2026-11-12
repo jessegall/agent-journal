@@ -316,7 +316,7 @@ def expect_next_open_tasks(tasks, number, text, expected) -> None:
 
 def expect_ready_plan_tasks(story, plans, plan_id, expected) -> None:
     agent = story.container.get(Queries).query(Agent).find(story.agent.id)
-    actual = [place.task_id for place in plans.ready(plan_id, agent)]
+    actual = [place.task_id for place in plans.ready([plan_id], agent)[plan_id]]
     assert actual == expected, actual
 
 

@@ -23,3 +23,4 @@ class HelperType:
     profile_limits_key: str = ""
     job_command: tuple[str, ...] = ()
     job_task_flag: str = ""
+    line: str = ""

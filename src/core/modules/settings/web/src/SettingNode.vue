@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
 import {Btn, Switch} from "@journal/window-kit";
+import {itemsOfLines, listLines, sentList, shownList} from "@journal/setting-components";
 import SettingNode from "./SettingNode.vue";
 
 // one setting or group: a group draws its title, its switch when it can be switched off, and each child as a node
@@ -22,7 +23,7 @@ const UNITS = {seconds: "seconds", minutes: "minutes", hours: "hours", days: "da
 // a quantity's key names its unit, so the field can say it
 const unit = computed(() => (props.row.type === "number" ? UNITS[props.row.key.split(/[-_.]/).at(-1)] ?? "" : ""));
 const isList = computed(() => props.row.type === "list" || props.row.type === "number list");
-const listText = computed(() => (props.row.value ? JSON.parse(props.row.value).join("\n") : ""));
+const listText = computed(() => listLines(props.row.value));
 const isChanged = computed(() => CHANGED_SOURCES.has(props.row.source));
 const resettable = computed(() => !props.readOnly && !props.row.secret && !isGroup.value && isChanged.value && props.row.default !== null && props.row.default !== undefined);
 const defaultWords = computed(() => (typeof props.row.default === "boolean" ? (props.row.default ? "on" : "off") : Array.isArray(props.row.default) ? props.row.default.join(",") : String(props.row.default)));
@@ -31,10 +32,7 @@ const defaultWords = computed(() => (typeof props.row.default === "boolean" ? (p
 function shownAs(text) {
     if (props.row.type === "flag") return text === "on";
     if (props.row.type === "number") return Number.isNaN(Number(text)) ? text : Number(text);
-    if (props.row.type === "list" || props.row.type === "number list") {
-        const items = text.startsWith("[") ? JSON.parse(text) : text.split(",").map((item) => item.trim()).filter(Boolean);
-        return JSON.stringify(props.row.type === "number list" ? items.map(Number) : items);
-    }
+    if (isList.value) return shownList(text, props.row.type === "number list");
     return text;
 }
 
@@ -56,8 +54,7 @@ function changed(event) {
 }
 
 function listChanged(event) {
-    const items = event.target.value.split("\n").map((item) => item.trim()).filter(Boolean);
-    saveValue(props.row.type === "list" ? JSON.stringify(items) : items.join(","));
+    saveValue(sentList(itemsOfLines(event.target.value), props.row.type === "number list"));
 }
 
 function savedSecret() {
