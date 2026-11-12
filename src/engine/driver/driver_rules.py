@@ -121,7 +121,7 @@ class DriverRules:
         self.timings.note(hook.agent_id, entry.name, elapsed)
         if elapsed >= SLOW_RULE_SECONDS:
             self.system_log.write(LogLevel.INFORMATION, f"rule {entry.name} took {elapsed * 1000:.0f} ms on a {hook.hook_name} hook")
-        return outcome
+        return replace(outcome, milliseconds=round(elapsed * 1000))
 
     def rule_outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome:
         try:
