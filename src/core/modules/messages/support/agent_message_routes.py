@@ -9,13 +9,15 @@ from core.modules.agents.support.agent_label import AgentLabel
 
 MAIN_AGENT_ROUTES = "message your own helpers"
 HELPER_ROUTES = "message your main agent and the merger"
+MAIN_KEY = "main"
 
 
 class AgentMessageRoutes:
     """Who may message whom: a main agent and its own helpers, in both directions, and an agent that takes
-    messages from its siblings (the merger) with the helpers under the same main agent. A sender that is
-    not an agent is not limited. An agent of another environment is not found at all, so it is never
-    reached."""
+    messages from its siblings (the merger) with the helpers under the same main agent. Every main session of an
+    environment counts as the one main agent, so a helper started by a session that ended reaches the main agent
+    running now. A sender that is not an agent is not limited. An agent of another environment is not found at
+    all, so it is never reached."""
 
     def __init__(self, agents: AgentRows, profiles: ProfileFiles) -> None:
         self.agents, self.profiles = agents, profiles
@@ -30,9 +32,17 @@ class AgentMessageRoutes:
             raise Refusal(f"{AgentLabel.from_agent(receiver).text} is not yours to message", MAIN_AGENT_ROUTES if agent.role == AgentRole.MAIN else HELPER_ROUTES)
 
     def is_related(self, agent: Agent, peer: Agent) -> bool:
-        if agent.parent_id == peer.id or peer.parent_id == agent.id:
+        if self.parent_key(agent) == self.own_key(peer) or self.parent_key(peer) == self.own_key(agent):
             return True
-        return agent.parent_id is not None and agent.parent_id == peer.parent_id and (self.takes_siblings(agent) or self.takes_siblings(peer))
+        return agent.parent_id is not None and self.parent_key(agent) == self.parent_key(peer) and (self.takes_siblings(agent) or self.takes_siblings(peer))
+
+    def own_key(self, agent: Agent) -> int | tuple[str, int]:
+        return (MAIN_KEY, agent.environment_id) if agent.role == AgentRole.MAIN else agent.id
+
+    def parent_key(self, agent: Agent) -> int | tuple[str, int] | None:
+        if agent.parent_id is None:
+            return None
+        return self.own_key(self.agents.find(agent.parent_id))
 
     def takes_siblings(self, agent: Agent) -> bool:
         profile = self.profiles.registered(agent.profile)
