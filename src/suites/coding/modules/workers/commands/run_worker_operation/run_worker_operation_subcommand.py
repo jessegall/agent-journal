@@ -32,11 +32,9 @@ class RunWorkerOperationSubcommand(Subcommand[RunWorkerOperation, str]):
     def command(self, arguments: Namespace, caller: Caller) -> RunWorkerOperation:
         if caller.process_id is None:
             raise Refusal("only the queued process runs this worker command")
-        process_id = caller.process_id
-        queued = self.operations.filter(worker_id=arguments.worker_id, process_id=process_id).first()
-        if queued is not None and queued.name is WorkerOperationName.UPDATE:
-            self.waited_turn(queued)
-        operation = self.bus.run(ClaimWorkerOperation(arguments.worker_id, process_id), caller.actor, environment_id=caller.environment_id)
+        operation = self.bus.run(ClaimWorkerOperation(arguments.worker_id, caller.process_id), caller.actor, environment_id=caller.environment_id)
+        if operation.name is WorkerOperationName.UPDATE:
+            self.waited_turn(operation)
         return RunWorkerOperation(operation)
 
     def waited_turn(self, operation: WorkerOperation) -> None:

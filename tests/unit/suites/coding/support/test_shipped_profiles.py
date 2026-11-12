@@ -30,3 +30,7 @@ def test_no_shipped_worker_text_names_a_program_of_one_project():
     skill = (Path(__file__).resolve().parents[5] / "src/suites/coding/modules/workers/skills/journal-workers/SKILL.md").read_text()
     shipped = [*(profile.body for profile in (*HELPER_PROFILES, *WORKER_PROFILES)), *WorkerDriver.opening_lines, WORKER_COMMANDS, WORKER_RULES, skill]
     assert not [text for text in shipped if "python3" in text]
+
+
+def test_the_rules_every_worker_reads_name_journal_worker_update():
+    assert "journal worker update" in WORKER_RULES

@@ -34,6 +34,7 @@ WORKER_UNIT_RULES = (
     "It takes every task whose points are all proved; a task still missing points stays started. Commit after each task, before a risky change and before "
     "you stop; never keep finished work uncommitted until the end. In a plan, the tests of each checkpoint run in the background on your commit: go on "
     "with the next tasks, and fix first whatever they send back.\n\n"
+    "Run journal worker update when you are told your base branch moved, or at a stopping point, never in the middle of an edit: it brings your worktree up to the branch it was cut from and keeps your uncommitted changes. When it clashes, read the clashing files and settle their markers before your next commit.\n\n"
     "A merge puts your commits on the shared branch, once, after the merger checks them. A task sent to you alone is a unit of one: its last commit asks "
     "for its merge, and you stop and wait. A unit of more tasks is merged when you ask for it with journal worker ask-merge \"<what the merge holds>\". "
     "You decide when. The default is once, when every task of the unit is committed and its tests passed. Ask earlier, with --up-to <task>, only when a "
