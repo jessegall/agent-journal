@@ -1,6 +1,10 @@
 import os
 import re
 import subprocess
+from engine.enums.process_kind import ProcessKind
+from engine.errors.run_time_limit_error import RunTimeLimitError
+from engine.process.execution_request import ExecutionRequest
+from engine.process.process_executor import ProcessExecutor
 from pathlib import Path
 
 from engine.version.version_numbers import VersionNumbers
@@ -18,17 +22,20 @@ class PluginReleases:
     """Reads the newest release of a plugin's source: the version in a folder's manifest, or the highest
     version tag of a repository."""
 
+    def __init__(self, executor: ProcessExecutor) -> None:
+        self.executor = executor
+
     def latest(self, name: str, installed: str, source: str) -> PluginLatest:
         newest = PluginManifest.read(Path(source)).version if Path(source).is_dir() else self.newest_tag(source)
         return PluginLatest(name, installed, newest, newest is not None and VersionNumbers.parsed(newest) > VersionNumbers.parsed(installed))
 
     def newest_tag(self, source: str) -> str | None:
         try:
-            finished = subprocess.run(["git", "ls-remote", "--tags", self.address(source)], capture_output=True, text=True, timeout=GIT_LIMIT_SECONDS, check=False, stdin=subprocess.DEVNULL,
-                                      env={**os.environ, "GIT_TERMINAL_PROMPT": "0"})
-        except subprocess.TimeoutExpired as timeout:
+            finished = self.executor.execute(ExecutionRequest(["git", "ls-remote", "--tags", self.address(source)], Path.cwd(), ProcessKind.QUICK, GIT_LIMIT_SECONDS,
+                                                              variables={**os.environ, "GIT_TERMINAL_PROMPT": "0"}))
+        except RunTimeLimitError as timeout:
             raise Refusal(f"{source} did not answer within {GIT_LIMIT_SECONDS} seconds", "try again once the network is back") from timeout
-        if finished.returncode != 0:
+        if not finished.succeeded:
             raise Refusal(f"the releases of {source} could not be read", finished.stderr.strip())
         tags = [match.group(1) for match in map(RELEASE_TAG.search, finished.stdout.splitlines()) if match]
         return max(tags, key=VersionNumbers.parsed, default=None)
