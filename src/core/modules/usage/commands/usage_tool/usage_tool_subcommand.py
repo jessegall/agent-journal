@@ -59,23 +59,23 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
     def agent_tool(self, agent_id: int, question_lines: Sequence[str]) -> ToolFacts:
         latest_call = self.queries.query(HookCall).filter(session_agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().first()
         if latest_call is not None and latest_call.hook == HookEventName.PRE_TOOL_USE:
-            latest_run = self.run_after(latest_call)
-            text = " ".join(part for part in (latest_call.tool, ProjectPaths.short_paths(self.running_part_text(latest_run) or latest_call.summary), self.line_changes(latest_call)) if part)
-            return ToolFacts(text, running=latest_run is not None and latest_run.ended_at is None)
+            newest_process = self.run_after(latest_call)
+            text = " ".join(part for part in (latest_call.tool, ProjectPaths.short_paths(self.running_part_text(newest_process) or latest_call.summary), self.line_changes(latest_call)) if part)
+            return ToolFacts(text, running=newest_process is not None and newest_process.ended_at is None)
         wait_target = " and ".join(dict.fromkeys((*self.monitor_descriptions(agent_id), *self.running_titles(agent_id), *question_lines)))
         has_run_command = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE).exists()
         return ToolFacts(wait_target=wait_target, note="" if wait_target or has_run_command else IDLE_NOTE, thinking=latest_call is not None and latest_call.hook == HookEventName.PROMPT, asking=bool(question_lines))
 
     def run_after(self, call: HookCall) -> Process | None:
-        latest_run = self.processes.agent(call.session_agent_id).newest().first()
-        return None if latest_run is None or latest_run.creation_timestamp().value < call.creation_timestamp().value else latest_run
+        newest_process = self.processes.agent(call.session_agent_id).newest().first()
+        return None if newest_process is None or newest_process.creation_timestamp().value < call.creation_timestamp().value else newest_process
 
-    def running_part_text(self, latest_run: Process | None) -> str:
-        if latest_run is None:
+    def running_part_text(self, newest_process: Process | None) -> str:
+        if newest_process is None:
             return ""
-        if latest_run.queued_at is not None:
+        if newest_process.queued_at is not None:
             return QUEUE_LINE
-        parts = tuple(self.queries.query(ProcessPart).filter(process_id=latest_run.id).ordered("position").all_rows())
+        parts = tuple(self.queries.query(ProcessPart).filter(process_id=newest_process.id).ordered("position").all_rows())
         return next((part.text for state in (PartState.RUNNING, PartState.WAITING) for part in parts if part.state is state), parts[-1].text if parts else "")
 
     def line_changes(self, call: HookCall) -> str:

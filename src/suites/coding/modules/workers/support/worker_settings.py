@@ -11,6 +11,7 @@ MODULE_KEY = "journal.suites.coding.workers"
 DISPATCHES_WORKERS_SETTING = f"{MODULE_KEY}.main-dispatches-workers"
 LIBRARY_LINKS = f"{MODULE_KEY}.library-links"
 LIBRARY_COPIES = f"{MODULE_KEY}.library-copies"
+PRESET_TEST_COMMANDS = f"{MODULE_KEY}.preset-test-commands"
 WORKTREE_COMMANDS_NAME = "worktree-commands"
 WORKTREE_COMMANDS = f"{MODULE_KEY}.{WORKTREE_COMMANDS_NAME}"
 MERGE_COMMANDS_NAME = "merge-commands"
@@ -90,6 +91,8 @@ WORKER_SETTING_VALUES = [
     SettingValue("quiet-helper-minutes", "Quiet helper minutes", "Minutes between the reminders to the main agent, until the helper is stopped or back at work.", SettingType.NUMBER, default=5, person_set=True, screen="advanced", section="Quiet helpers"),
     SettingValue("library-links", "Library links", "Folders each worker's worktree links from the main checkout.", SettingType.LIST, default=()),
     SettingValue("library-copies", "Library copies", "Folders each worker's worktree gets a copy of.", SettingType.LIST, default=()),
+    SettingValue("preset-test-commands", "Preset test commands", "Test commands each worker gets, as name=command; a name replaces the one found in the project's manifests.",
+                 SettingType.LIST, default=(), person_set=True),
     SettingValue(WORKTREE_COMMANDS_NAME, "Worktree commands", "Commands run in each new worker worktree before the worker starts.",
                  SettingType.LIST, default=()),
     SettingValue(MERGE_COMMANDS_NAME, "Merge commands", "Commands run in the main checkout after each worker merge, such as a push. The task closes only when they all succeed.",

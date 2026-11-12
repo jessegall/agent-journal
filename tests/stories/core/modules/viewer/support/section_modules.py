@@ -55,7 +55,6 @@ class SuiteNamesSectionModule(Module):
     name = "section_suite"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.plans"]
-    suites = [SectionSuite]
     windows = [section("section_suite.notes", "inspector.plan")]
 
 
@@ -71,3 +70,7 @@ class GoodSectionModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.plans"]
     windows = [section("good_section.notes", "inspector.plan")]
+
+
+class SectionSuiteOfSuiteNamesSectionModule(SectionSuite):
+    modules = [SuiteNamesSectionModule]

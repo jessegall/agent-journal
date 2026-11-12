@@ -4,6 +4,7 @@ from engine.event.moved import Moved
 from engine.command.bus import Bus
 from engine.listener.commit.commit_listener import CommitListener
 from engine.setting.setting_values import SettingValues
+from suites.coding.modules.workers.commands.close_taken_in_worktree.close_taken_in_worktree import CloseTakenInWorktree
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -14,7 +15,8 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 class MergeReadyListener(CommitListener[Moved[Worktree]]):
     """Starts the merger when a worktree can be merged: when its tests passed, or, in a started plan, when its
-    work was committed for the last time and no worker run of it still goes or failed."""
+    work was committed for the last time and no worker run of it still goes or failed. A worktree whose branch has
+    no commit ahead of its base is closed as merged and no merger is sent."""
 
     name = "workers.merge-ready"
     moves = [WorktreeLifecycle.mark_tests_passed, WorktreeLifecycle.deliver]
@@ -24,5 +26,7 @@ class MergeReadyListener(CommitListener[Moved[Worktree]]):
 
     def handle(self, event: Moved[Worktree], logged: LoggedEvent) -> None:
         if not self.settings.flag(MERGER_ENABLED) or not event.row.is_merge_ready or self.runs.holds_merge(event.row.id):
+            return
+        if self.bus.run(CloseTakenInWorktree(event.row.id), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id):
             return
         self.bus.run(StartMerger(self.lines.nudge(event.row), event.row.merge_ready_at), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)

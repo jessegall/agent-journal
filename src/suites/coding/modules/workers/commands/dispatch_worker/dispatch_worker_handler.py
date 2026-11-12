@@ -1,5 +1,6 @@
 from core.modules.plans.commands.assign_plan.assign_plan import AssignPlan
 from uuid import uuid4
+from suites.coding.modules.workers.support.worker_test_presets import WorkerTestPresets
 from suites.coding.modules.workers.commands.report_worker_route_fallback.report_worker_route_fallback import ReportWorkerRouteFallback
 import json
 
@@ -58,8 +59,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     command = DispatchWorker
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: HelperTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission, release: StartedTaskRelease, reservations: MainReservedTasks) -> None:
-        self.release, self.reservations = release, reservations
+                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: HelperTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission, release: StartedTaskRelease, reservations: MainReservedTasks, presets: WorkerTestPresets) -> None:
+        self.release, self.reservations, self.presets = release, reservations, presets
         self.places, self.copies, self.available_workers, self.admission = places, copies, available_workers, admission
         self.queries, self.bus, self.settings = queries, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.models = git, worker_command, worktrees, providers, models
@@ -109,7 +110,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise
         if command.plan_id is not None:
             self.bus.run_with_context(AssignPlan(command.plan_id, opened.worker.id, command.phase_id), context)
-        self.configure(command, opened.worker, choice.fallback, context)
+        self.configure(command, opened.worker, environment, choice.fallback, context)
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
 
     def taken_over(self, command: DispatchWorker, start: StartAgent, choice: WorkerChoice, environment: Environment, context: Context) -> WorkerLaunch:
@@ -120,12 +121,13 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.places.check_new_place()
         worker = self.bus.dispatch(start, context)
         taken = self.bus.run_with_context(RecordWorktreeTakeover(worktree.id, worker.id), context)
-        self.configure(command, worker, choice.fallback, context)
+        self.configure(command, worker, environment, choice.fallback, context)
         return WorkerLaunch(worker, taken, self.worker_command.command(worker, taken, environment, self.queries.query(Task).find(taken.task_id)))
 
-    def configure(self, command: DispatchWorker, worker: Agent, fallback: WorkerRouteFallback | None, context: Context) -> None:
-        if command.test_commands:
-            self.bus.run_with_context(NameWorkerTests(worker.id, command.test_commands), context)
+    def configure(self, command: DispatchWorker, worker: Agent, environment: Environment, fallback: WorkerRouteFallback | None, context: Context) -> None:
+        test_commands = self.presets.with_named(environment.folder, command.test_commands)
+        if test_commands:
+            self.bus.run_with_context(NameWorkerTests(worker.id, test_commands), context)
         if not command.sandboxed:
             self.bus.run_with_context(SwitchWorkerSandbox(worker.id, False), context)
         if fallback is not None:

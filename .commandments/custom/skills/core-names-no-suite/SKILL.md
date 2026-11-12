@@ -28,6 +28,29 @@ Classify findings before moving code. A browser service worker and a pytest exec
 ordinary technical terms, not coding-suite agents. The exact pytest protocol fields `workeroutput` and `workerinput` are
 allowed. Suite-owned migrations preserve old suite columns; core's schema declares only generic data.
 
+## Coding words in core
+
+**`core-names-no-coding-word`** flags worktree, test run, pytest, code review, graphify and git as a name, a text or
+a comment in a file under `src/core/modules` or `src/engine`. Say it in core's words: a checkout, a separate copy of
+the project, a command type, version control. Commit is left out: in core it is the database commit of a write.
+These files may name the words, each for its reason:
+
+- Recorded migrations (`src/core/modules/*/migrations/`): a migration keeps the text it ran with.
+- Graphify, until task 8851 moves it to the coding suite: `src/core/modules/tools/`,
+  `drivers/queries/hook_call_query.py`, `src/engine/driver/tool.py`, `src/engine/driver/search_category.py`.
+- The runner's command types and the stock readers of test tools: `src/core/modules/processes/`,
+  `src/engine/enums/command_category.py`, `src/engine/driver/part.py`, `src/engine/driver/shell_line.py`,
+  `src/engine/text/run_target.py`, `aliases/seeders/aliases_seeder.py`. Test run is a command type the shell
+  classifier gives any line, and a stock reader names its tool.
+- Git as the program and the version control the engine reads: `src/engine/git/`, `src/engine/provider/hook_manager.py`,
+  `src/engine/provider/provider.py`, `codex/providers/codex_provider.py`, `src/engine/file/conflict_files.py`,
+  `src/engine/instruction/instruction_imports.py`, `src/engine/checkout/checkout.py`, `src/engine/enums/checkout_type.py`,
+  `src/engine/enums/window_icon.py`, `src/core/modules/plugins/` (a plugin is fetched and compared with git),
+  `developer/support/private_data_pass.py`, `secrets/support/secret_programs.py` (git as a program that needs a
+  login), `src/core/modules/voices/` (the git user name).
+- Pytest of the journal's own stories: `src/engine/testing/`, `src/engine/journal/journal.py`,
+  `src/engine/database/repeated_work.py`, `src/engine/module/code_fingerprint.py`.
+
 ## Example
 
 Core must not test `agent.role == "worker"` to decide whether to queue a process. The coding suite

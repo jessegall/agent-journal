@@ -4,6 +4,7 @@ from datetime import timedelta
 import pytest
 
 from core.modules.agents.testing.fake_launcher import FakeLauncher
+from core.modules.helpers.ticks.unstarted_job_starts import UnstartedJobStarts
 from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.occupant_rotation import job_launch
 from tests.stories.core.modules.helpers.support.rotating_helper import SAVE_ROTATING, EndedEachLaunchHelper, StartedEachLaunchHelper, real_program_states, story_with_profile_file
@@ -77,7 +78,7 @@ def test_a_paused_main_agent_that_resumes_gets_the_same_session_of_its_helper_ba
     working.expect_rows(len(launcher.requests) == 1, helper_agent(working).session == helper.session, helper.session in launcher.requests[0]["command"], detail=str(launcher.requests))
 
 
-def test_a_program_that_goes_out_in_a_job_makes_the_job_wait_and_never_changes_program(working, monkeypatch):
+def test_a_program_that_goes_out_in_a_job_makes_the_job_wait_never_changes_program_and_goes_on_once_the_outage_ends(working, monkeypatch):
     helper = helper_agent(working)
     real_program_states(working)
     resumable_session(working, helper, monkeypatch)
@@ -86,6 +87,10 @@ def test_a_program_that_goes_out_in_a_job_makes_the_job_wait_and_never_changes_p
     working.expect_success(f'provider-outage make claude "rate limit" --ends-at {ends_at}', actor=working.agent)
     during_outage = launches_after_the_program_died(working)
     working.expect_rows(during_outage == [], helper_agent(working).program == "claude", read_jobs(working, helper)[0].ended_at is None, detail=str(during_outage))
+    working.advance(timedelta(minutes=31))
+    after_outage = launches_at_the_next_round(working)
+    working.expect_rows(len(after_outage) == 1, any("--resume" in launch["command"] for launch in after_outage), helper_agent(working).session == helper.session,
+                        read_jobs(working, helper)[0].ended_at is None, detail=str(after_outage))
 
 
 def test_a_changed_occupant_leaves_the_open_job_alone_and_decides_the_next_launch(working, monkeypatch):
@@ -116,3 +121,13 @@ def test_a_stopped_helper_ends_its_job_as_stopped_and_the_next_send_makes_a_new_
     working.expect_rows(read_jobs(working, helper)[0].returned == "Stopped", detail=str(read_jobs(working, helper)[0]))
     command = job_launch(working)["command"]
     working.expect_rows(helper_agent(working).session != helper.session, "--resume" not in command, detail=str(command[-4:]))
+
+
+def launches_at_the_next_round(story) -> list[dict]:
+    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"started 702\n")
+    UnstartedJobStarts()(story.container)
+    story.run_listeners()
+    launcher.drain_requests()
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
+    return [request for request in launcher.requests if "command" in request]

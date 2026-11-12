@@ -18,7 +18,7 @@ from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 
-NOTES = "tests.stories.core.modules.viewer.support.window_samples:NotesModule"
+NOTES = "tests.stories.core.modules.viewer.support.window_samples:NotesSuiteOfNotesModule"
 GRANTING_NOTES = "tests.stories.core.modules.viewer.support.window_samples:GrantingNotesModule"
 WIDER_NOTES = "tests.stories.core.modules.viewer.support.window_samples:WiderNotesModule"
 
@@ -50,7 +50,6 @@ class NotesModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.tasks", "journal.core.viewer", "journal.core.drivers"]
     guards = [NotesStartCheck]
-    suites = [NotesSuite]
     windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], reads=["task list"], runs=["task start"]),
                WindowDeclaration("notes.summary", "Notes summary", "task list", WindowLoading.DOCUMENT, skeleton=[SkeletonPart.line()], reads=["task list"]),
                WindowDeclaration("notes.planner", "Notes planner", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], reads=["task list"], icon=WindowIcon.PLAN,
@@ -70,3 +69,7 @@ class GrantingNotesModule(NotesModule):
 
     windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], reads=["task list"],
                                  runs=["window allow", "window trust", "setting make", "setting edit", "viewer-layout save"])]
+
+
+class NotesSuiteOfNotesModule(NotesSuite):
+    modules = [NotesModule]

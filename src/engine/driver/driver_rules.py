@@ -130,7 +130,7 @@ class DriverRules:
                 return RuleOutcome.answered(RuleAnswer.allowed())
             control_return = rule.history and self.history.control_return(RuleHistoryKey(hook.agent_id, entry.name, hook.layer_ref))
             with self.scopes.read_scope(rule.disabled_scopes, hook.agent_id, hook.environment_id):
-                answer = self.skippable(rule.answer(replace(hook, control_return=control_return)), entry, hook)
+                answer = self.skippable(rule.answer(replace(hook, control_return=control_return)).for_role(hook.role), entry, hook)
         except Exception as error:
             self.errors.reported(["driver rule", entry.name], error, hook.environment_id)
             return RuleOutcome.raised(f"the journal's rule {entry.name} failed and was passed by: {type(error).__name__}")

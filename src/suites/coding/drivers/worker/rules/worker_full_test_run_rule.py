@@ -1,4 +1,4 @@
-from core.modules.drivers.rules.no_full_test_run_rule import NoFullTestRunRule
+from suites.coding.rules.no_full_test_run_rule import NoFullTestRunRule
 from suites.coding.support.coding_nudges import WORKER_FULL_TEST_RUN
 
 

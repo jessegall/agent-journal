@@ -10,6 +10,7 @@ from engine.database.errors.schema_mismatch_error import SchemaMismatchError
 from engine.dotted_path.dotted_path import DottedPath
 from engine.journal.journal_home import JournalHome
 from engine.module.module import Module
+from engine.module.suite import Suite
 from engine.module.errors.module_error import ModuleError
 from engine.module.module_finder import ModuleFinder
 from engine.module.module_sync import ModuleSync
@@ -67,4 +68,10 @@ class ModuleAddition:
                         and item is not Module and item.__module__ == source]
         if len(declarations) != 1:
             raise ModuleError(f"{source} must declare exactly one Module; found {len(declarations)}")
-        return DottedPath.class_path(self.finder.module(declarations[0], source)).text
+        suites = [item for item in vars(imported).values() if isinstance(item, type) and issubclass(item, Suite) and item is not Suite and item.__module__ == source]
+        if len(suites) > 1:
+            raise ModuleError(f"{source} declares {len(suites)} suites; a package ships at most one")
+        module = self.finder.module(declarations[0], source)
+        if suites and module not in suites[0].modules:
+            raise ModuleError(f"suite {suites[0].name} in {source} does not list module {module.name}")
+        return DottedPath.class_path(suites[0] if suites else module).text

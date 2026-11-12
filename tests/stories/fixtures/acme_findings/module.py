@@ -1,3 +1,4 @@
+from engine.module.suite import Suite
 from engine.module.module import Module
 from engine.viewer.button_declaration import ButtonCondition, ButtonDeclaration
 from engine.viewer.skeleton_part import SkeletonPart
@@ -13,7 +14,6 @@ from .note_plan_subcommand import NotePlanSubcommand
 class AcmeFindingsModule(Module):
     name = "acme.findings"
     requires_core = ">=5,<6"
-    parent_suite = "acme"
     dependencies = ["acme.suite", "journal.core.plans", "journal.core.viewer"]
     handlers = [NotePlanHandler]
     subcommands = [NotePlanSubcommand]
@@ -23,3 +23,9 @@ class AcmeFindingsModule(Module):
     windows = [WindowDeclaration("findings.findings", "Findings", "findings.js", WindowLoading.COMPONENT,
                                  place=WindowPlace.PAGE, icon=WindowIcon.PLAN, reads=["plan list", "plan show"], events=["plan.*"],
                                  skeleton=tuple([SkeletonPart.line()]))]
+
+
+class AcmeFindingsModuleJoining(Suite):
+    name = "acme.findings"
+    joins = "acme"
+    modules = [AcmeFindingsModule]

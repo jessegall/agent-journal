@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from engine.query.conditions.among import Among
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -30,20 +31,20 @@ class DecisionSample:
 @dataclass
 class DecisionsSample:
     rows: list[DecisionSample]
-    key: str = ""
+    keys: tuple[object, ...] = ()
     moment: ReadingMoment | None = None
 
-    def for_command_key(self, key: str) -> "DecisionsSample":
-        return DecisionsSample(self.rows, key)
+    def matching(self, condition: Among) -> "DecisionsSample":
+        return DecisionsSample(self.rows, tuple(condition.values))
 
     def filter(self, moment: ReadingMoment) -> "DecisionsSample":
-        return DecisionsSample(self.rows, self.key, moment)
+        return DecisionsSample(self.rows, self.keys, moment)
 
     def descending(self, *columns: str) -> "DecisionsSample":
         return self
 
     def limited(self, size: int) -> list[DecisionSample]:
-        matching = [row for row in self.rows if row.command_key == self.key and row.moment is self.moment]
+        matching = [row for row in self.rows if row.command_key in self.keys and row.moment is self.moment]
         return sorted(matching, key=lambda row: row.decided_at, reverse=True)[:size]
 
 
@@ -77,27 +78,27 @@ def counter(rows: list[DecisionSample], readers: tuple[Reader, ...] = (), resets
 
 @pytest.mark.parametrize("runs", [0, 1, 2, 3])
 def test_each_ended_run_without_a_reader_counts_one(runs):
-    assert counter(missing_runs("make build", runs)).runs_without_change("make build") == runs
+    assert counter(missing_runs("make build", runs)).runs_without_change(["make build"])["make build"] == runs
 
 
 def test_two_commands_do_not_count_against_each_other():
     counted = counter(missing_runs("make build", 2) + missing_runs("make test", 3))
-    assert (counted.runs_without_change("make build"), counted.runs_without_change("make test")) == (2, 3)
+    assert counted.runs_without_change(["make build", "make test"]) == {"make build": 2, "make test": 3}
 
 
 def test_a_reader_saved_after_a_run_resets_the_count():
     reader = Reader(id=1, creator_id=7, name="builds", type=ReaderType.PATTERN, commands="make build*", updated_at=Timestamp(START + timedelta(minutes=2, seconds=30)))
-    assert counter(missing_runs("make build", 3), (reader,)).runs_without_change("make build") == 1
+    assert counter(missing_runs("make build", 3), (reader,)).runs_without_change(["make build"])["make build"] == 1
 
 
 def test_a_mark_that_the_output_cannot_be_read_resets_the_count():
     resets = ResetsSample(marked_at={"make build": Timestamp(START + timedelta(minutes=1, seconds=30))})
-    assert counter(missing_runs("make build", 3), resets=resets).runs_without_change("make build") == 2
+    assert counter(missing_runs("make build", 3), resets=resets).runs_without_change(["make build"])["make build"] == 2
 
 
 def test_a_skip_with_a_reason_resets_the_count():
     resets = ResetsSample(skipped_at={"make build": Timestamp(START + timedelta(minutes=3, seconds=30))})
-    assert counter(missing_runs("make build", 3), resets=resets).runs_without_change("make build") == 0
+    assert counter(missing_runs("make build", 3), resets=resets).runs_without_change(["make build"])["make build"] == 0
 
 
 def test_only_runs_that_lacked_a_good_reader_count():
