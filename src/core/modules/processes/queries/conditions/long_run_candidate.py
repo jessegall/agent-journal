@@ -6,7 +6,6 @@ from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.processes.models.enums.process_dock_type import ProcessDockType
 
 
-SHORT_CATEGORIES = tuple(category.value for category in CommandCategory if category.is_short)
 
 
 @dataclass(frozen=True)
@@ -16,10 +15,9 @@ class LongRunCandidate:
     start_cutoff: str
 
     def statement(self) -> Statement:
-        short = ", ".join("?" for _ in SHORT_CATEGORIES)
         return Statement("((started_at < ? AND (creator_id != session_agent_id OR EXISTS "
                          "(SELECT 1 FROM process_parts WHERE process_id = processes.id AND is_visible = 1) OR (moved_at > '' AND EXISTS "
-                         f"(SELECT 1 FROM process_parts WHERE process_id = processes.id AND category NOT IN ({short}))))) "
+                         "(SELECT 1 FROM process_parts WHERE process_id = processes.id AND category != ?)))) "
                          "OR id IN (SELECT target_id FROM dock_items "
                          "WHERE type = ? AND target_model = ? AND state = ?))",
-                         [self.start_cutoff, *SHORT_CATEGORIES, ProcessDockType.OUTPUT.value, "process", DockItemState.DOCKED.value])
+                         [self.start_cutoff, CommandCategory.JOURNAL.value, ProcessDockType.OUTPUT.value, "process", DockItemState.DOCKED.value])
