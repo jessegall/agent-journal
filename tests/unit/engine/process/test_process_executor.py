@@ -114,3 +114,11 @@ def test_a_row_that_cannot_be_written_after_a_run_past_its_limit_does_not_hide_t
     with pytest.raises(RunTimeLimitError, match="sleep 5 ran past its limit"):
         door.execute(ExecutionRequest(["sleep", "5"], tmp_path, ProcessKind.SHELL, 0.2))
     assert [argv for argv, _ in errors.noted] == [["record-run", "sleep 5"]]
+
+
+def test_a_row_that_cannot_be_written_after_a_program_that_does_not_start_does_not_hide_the_os_error(tmp_path: Path):
+    errors = NotedErrors()
+    door = ProcessExecutor(BrokenPlacement(), RunnerProgram(), OpenGate(), errors)
+    with pytest.raises(FileNotFoundError):
+        door.execute(ExecutionRequest(["no-such-program-here"], tmp_path, ProcessKind.QUICK, 5))
+    assert [argv for argv, _ in errors.noted] == [["record-run", "no-such-program-here"]]
