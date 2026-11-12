@@ -11,7 +11,7 @@ from suites.coding.modules.workers.models.enums.behind_check_state import Behind
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.support.behind_decisions import BehindDecisions
 from suites.coding.modules.workers.support.behind_nudges import UPDATE_ORDERED
-from tests.unit.suites.coding.modules.workers.test_behind_check_closing import WORKTREE
+from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import WORKTREE
 
 MERGER, MAIN, OTHER, WORKER = 12, 1, 30, 7
 

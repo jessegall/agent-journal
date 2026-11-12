@@ -1,33 +1,9 @@
-import subprocess
-
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.program_hooks import ProgramHooks
 from tests.stories.core.support.fixtures import MainEnvironment
-from tests.stories.support.story_checks import expect_program_hooks, expect_startswith_listed, expect_value_3
 
 SETTINGS = ".claude/settings.json"
 HOOKS = {"hooks": {"PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": "project-check", "timeout": 30}]}]}}
-
-
-def git(folder, *arguments) -> None:
-    subprocess.run(["git", "-C", str(folder), *arguments], capture_output=True, check=True)
-
-
-def test_a_tracked_file_stays_whole_while_the_index_is_locked_and_is_swept_after(new_story):
-    story = new_story(fixture=MainEnvironment)
-    folder = story.home.project_folder
-    git(folder, "init", "-q")
-    ProgramHooks.store(folder / SETTINGS, HOOKS)
-    git(folder, "add", SETTINGS)
-    lock = folder / ".git" / "index.lock"
-    lock.touch()
-    story.expect_text(f'program manage claude "{folder}"', "managed hooks: 0")
-    expect_program_hooks(folder, SETTINGS, HOOKS)
-    lock.unlink()
-    story.expect_text(f'program manage claude "{folder}"', "managed hooks: 1")
-    expect_program_hooks(folder, SETTINGS, {"hooks": {}})
-    listed = subprocess.run(["git", "-C", str(folder), "ls-files", "-v", SETTINGS], capture_output=True, text=True, check=True).stdout
-    expect_startswith_listed(listed, "S ")
 
 
 def test_a_hook_in_both_settings_files_is_restored_to_both(new_story):

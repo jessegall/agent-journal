@@ -9,7 +9,7 @@ from suites.coding.modules.workers.models.enums.behind_check_state import Behind
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.support.behind_nudges import UPDATE_NOT_RUN, UPDATE_REMINDER
 from suites.coding.modules.workers.support.worker_settings import UPDATE_REMINDERS, UPDATE_WAIT_MINUTES
-from tests.unit.suites.coding.modules.workers.test_behind_check_closing import WORKTREE
+from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import WORKTREE
 
 ORDERED_AT = datetime(2026, 11, 12, 9, 0, tzinfo=timezone.utc)
 

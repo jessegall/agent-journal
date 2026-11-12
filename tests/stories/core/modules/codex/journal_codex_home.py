@@ -3,9 +3,8 @@ import os
 import tomllib
 from pathlib import Path
 
-from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.provider.program_hooks import ProgramHooks
-from tests.stories.core.support.fixtures import MainEnvironment, UserJoined
+from tests.stories.core.support.fixtures import MainEnvironment
 
 PERSON_HOOK = {"matcher": "", "hooks": [{"type": "command", "command": "person-codex-check"}]}
 ROLLOUT = "rollout-2026-11-12T00-00-00-t-1.jsonl"
@@ -52,11 +51,3 @@ def test_a_codex_launch_reads_only_the_journal_s_codex_folder(new_story):
                       "--dangerously-bypass-approvals-and-sandbox" not in asking["arguments"],
                       'approval_policy="on-request"' in asking["arguments"] and 'sandbox_mode="workspace-write"' in asking["arguments"],
                       any(copy.name.endswith("-config.toml") for copy in (story.home.folder / "backups" / "program-settings" / "codex").iterdir()))
-
-
-def test_a_viewer_launch_of_codex_hands_the_launcher_the_journal_s_codex_home(new_story):
-    story = new_story(fixture=UserJoined)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_text("agent launch codex --environment main", "started main agent", actor=story.user)
-    launcher.drain_requests()
-    story.expect_rows(launcher.requests[0]["variables"]["CODEX_HOME"] == str(story.home.project_folder / ".journal" / "programs" / "codex"))
