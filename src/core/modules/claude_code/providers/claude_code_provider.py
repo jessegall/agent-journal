@@ -56,6 +56,9 @@ MODEL_CHOICES = (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("f
 FALLBACK_EFFORT = "high"
 EFFORT_CHOICES = (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhigh", "Extra high"), ("max", "Maximum"))
 
+SETTINGS_FLAGS = ("--settings", "--setting-sources")
+SETTING_SOURCES = "project"
+JOURNAL_FOLDER = ".journal"
 CARRIED_SETTINGS = ("env", "apiKeyHelper", "awsAuthRefresh", "awsCredentialExport", "forceLoginMethod", "forceLoginOrgUUID", "otelHeadersHelper",
                     "includeCoAuthoredBy", "skipDangerousModePermissionPrompt")
 BYPASS_PERMISSIONS = {"defaultMode": "bypassPermissions"}
@@ -130,16 +133,21 @@ class ClaudeCodeProvider(Provider):
         return replace(super().with_profile_model(profile, model), model=model)
 
     def session_command(self, launch: Launch) -> LaunchCommand:
-        skip = ["--dangerously-skip-permissions"] if launch.skip_prompts else []
+        launch.refuse_flags(self.title, *SETTINGS_FLAGS)
+        permission = ["--dangerously-skip-permissions"] if launch.skip_prompts else ["--permission-mode", "default"]
         model = [] if launch.names_flag("--model") else ["--model", launch.model]
         effort = [] if launch.names_flag("--effort") else ["--effort", launch.effort or self.effort(launch.model)]
-        arguments = [self.executable, *model, *effort, *skip, *launch.program_arguments, *launch.session.arguments(self), *launch.prompt_arguments]
+        arguments = [self.executable, *self.settings_arguments(launch.root), *model, *effort, *permission, *launch.program_arguments,
+                     *launch.session.arguments(self), *launch.prompt_arguments]
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:
-        arguments = [self.executable, "-p", launch.brief, "--model", launch.model, "--effort", self.effort(launch.model), "--dangerously-skip-permissions",
+        arguments = [self.executable, *self.settings_arguments(launch.root), "-p", launch.brief, "--model", launch.model, "--effort", self.effort(launch.model), "--dangerously-skip-permissions",
                      "--output-format", "stream-json", "--verbose", *launch.session.arguments(self)]
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
+
+    def settings_arguments(self, root: Path) -> list[str]:
+        return ["--settings", str(JournalHome(root / JOURNAL_FOLDER).program_settings_file(self.name)), "--setting-sources", SETTING_SOURCES]
 
     def effort(self, model: str) -> str:
         return self.efforts.effort(MODEL_EFFORTS, model) or FALLBACK_EFFORT
