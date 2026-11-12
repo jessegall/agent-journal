@@ -261,7 +261,7 @@ class DriversModule(Module):
     marks = [*BYPASS_MARKS, *DISPATCH_MARKS, *COMPACTION_MARKS]
     performance_tools = [HookCostTool]
     tick_handlers = [TickHandler(TickInterval(seconds=3), InterruptedAgentWake(), "interrupted agents"), TickHandler(TickInterval(seconds=60), AgentTicks(), "agent ticks", starts_immediately=True), TickHandler(TickInterval(seconds=60), EndSilentHelpersTick(), "silent helpers"), TickHandler(TickInterval(seconds=60), CompactionFaultsTick(), "compaction faults"), TickHandler(TickInterval(seconds=2), PanicWatch(), "panic watch"), TickHandler(TickInterval(seconds=5), HeldSessionWake(), "held session wake"),
-                     TickHandler(TickInterval(seconds=60 * 60), HookPruning(), "hook pruning", starts_immediately=True),
+                     TickHandler(TickInterval(seconds=60 * 60), HookPruning(), "hook pruning"),
                      TickHandler(TickInterval(seconds=60), EventPruning(), "event pruning")]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
     driver_rules = [RepeatedFileReadRule, SafeguardsStopRule, PanicFileRule, BlockStopRule, LongOutputRule, ForeignHooksRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, ContinuedSessionRule, AgentBlockRule, TakeoverRule, AccessRule, NativeSubagentRule, PrivateCorpusRule]

@@ -49,6 +49,8 @@ class ForeignHooksRule(DriverRule):
                           terminal="\n".join(answer.terminal for answer in answers if answer.terminal))
 
     def new_lines(self, hook: AgentHook, name: str, reported: Sequence[str]) -> list[str]:
+        if not reported:
+            return []
         prefix = f"{name}: "
         last = self.queries.query(HookCall).filter(session_agent_id=hook.agent_id).matching(ContainsSome(["lines"], [prefix])).newest().first()
         previous_lines = last.lines.splitlines() if last is not None else []
