@@ -39,7 +39,7 @@ class ReadingEnforcer:
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is None or shell.parse_error or ReadingEnforcer.answers_exit(hook):
+        if shell is None or shell.parse_error or ReadingEnforcer.is_exit_command(hook):
             return RuleAnswer.allowed()
         redirected = list(dict.fromkeys(part.program for part in shell.parts if self.is_redirected(part, shell)))
         if redirected:
@@ -99,6 +99,6 @@ class ReadingEnforcer:
         return selected is not None and run.process.created_at is not None and selected.reader.update_timestamp().value > run.process.created_at.value
 
     @staticmethod
-    def answers_exit(hook: AgentHook) -> bool:
+    def is_exit_command(hook: AgentHook) -> bool:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         return shell is not None and shell.is_journal_command_line(*EXIT_COMMANDS)

@@ -10,6 +10,14 @@ class Execution:
     stdout: str
     stderr: str
 
+    @classmethod
+    def failed(cls, process_id: int | None, exit_code: int, reason: str) -> "Execution":
+        return cls(process_id, exit_code, stdout="", stderr=reason)
+
+    @classmethod
+    def printed(cls, process_id: int | None, exit_code: int, output: str) -> "Execution":
+        return cls(process_id, exit_code, stdout=output, stderr="")
+
     @property
     def succeeded(self) -> bool:
         return self.exit_code == 0

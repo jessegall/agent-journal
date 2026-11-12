@@ -34,7 +34,15 @@ class PlanRowAuthors(PlanAuthors):
     def plan_ids(self, edits: Sequence[PlanEdit]) -> dict[PlanEdit, int | None]:
         phases = self.plan_ids_by_phase([edit.row_id for edit in edits if edit.line.startswith("phase")])
         tasks = self.plan_ids_by_task([edit.row_id for edit in edits if edit.line.startswith("task")])
-        return {edit: edit.row_id if edit.line.startswith("plan") else phases.get(edit.row_id) if edit.line.startswith("phase") else tasks.get(edit.row_id) for edit in edits}
+        return {edit: self.plan_id_of(edit, phases, tasks) for edit in edits}
+
+    @staticmethod
+    def plan_id_of(edit: PlanEdit, phases: dict[int, int], tasks: dict[int, int]) -> int | None:
+        if edit.line.startswith("plan"):
+            return edit.row_id
+        if edit.line.startswith("phase"):
+            return phases.get(edit.row_id)
+        return tasks.get(edit.row_id)
 
     def plan_ids_by_phase(self, phase_ids: Sequence[int]) -> dict[int, int]:
         return {phase.id: phase.plan_id for phase in self.queries.query(Phase).matching(Among("id", phase_ids)).all_rows()} if phase_ids else {}

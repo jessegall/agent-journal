@@ -26,7 +26,7 @@ class MergeAskScope:
         self.units, self.worktrees, self.tasks, self.runs, self.steps, self.queries = units, worktrees, tasks, runs, steps, queries
         self.range = merge_range
 
-    def checked(self, worker_id: int, note: str, up_to: str = "") -> MergeAskPart:
+    def checked(self, worker_id: int, note: str, up_to: str) -> MergeAskPart:
         unit = self.units.unit(worker_id)
         worktree = self.worktrees.required_worker_worktree(worker_id)
         if not unit.has_several_tasks:
@@ -50,7 +50,7 @@ class MergeAskScope:
     def part(self, worktree: Worktree, unit: WorkUnit, up_to: str) -> MergeAskPart:
         if not up_to:
             return MergeAskPart(worktree, unit, worktree.commit_short_id, unit.task_ids, True)
-        commit = self.range.task_commit(worktree, int(up_to)) if self.range.names_task(up_to) else up_to
+        commit = self.range.task_commit(worktree, int(up_to)) if self.range.is_task_number(up_to) else up_to
         if commit is None:
             committed = self.range.tasks_up_to(worktree, worktree.branch)
             last = committed[-1].id if committed else "none yet"

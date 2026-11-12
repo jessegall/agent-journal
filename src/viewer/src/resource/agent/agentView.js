@@ -1,7 +1,6 @@
 import {contextChangeRows} from "../../domain/compaction.js";
 import {dated, elapsed, perHour} from "../../format/time.js";
 
-const MAIN_TITLE = "Main agent";
 const NOT_KNOWN = "Not known";
 const HIGH_CONTEXT_PERCENT = 80;
 const MILLISECONDS_PER_SECOND = 1000;
@@ -11,13 +10,6 @@ const WAITING_STATES = new Set(["waiting", "blocked", "at usage limit"]);
 
 // the rows a list read gave; a read that failed gave none
 export const rowsOf = (answer) => (answer.ok ? answer.value.rows : []);
-
-const capital = (word) => word.slice(0, 1).toUpperCase() + word.slice(1);
-
-// the title band says the role and the number once; the main agent has no number to say
-export const agentTitle = (row) => (row.role === MAIN_ROLE ? MAIN_TITLE : `${capital(row.role)} ${row.number}`);
-
-export const givenName = (row, facts) => facts?.given_name || capital(facts?.profile_title || facts?.profile || row.role);
 
 // what its dot shows: it ended, it waits for something, or it runs
 export const agentState = (row, facts) => (row.ended_at ? "ended" : row.paused_at || WAITING_STATES.has(facts?.state) ? "waiting" : "running");

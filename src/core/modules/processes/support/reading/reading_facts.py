@@ -60,7 +60,7 @@ class ReadingFacts:
         reader = self.reader(part)
         policy = self.suites.agent_policy()
         return ReadingCase(command_key=command_key, category=part.category, classification_known=part.category is not CommandCategory.UNKNOWN,
-                           has_asking_flag=ReaderDemands.asks_about_itself(command), output_hidden=part.piped, is_saved_command=bool(part.saved_command),
+                           has_asking_flag=ReaderDemands.is_help_request(command), output_hidden=part.piped, is_saved_command=bool(part.saved_command),
                            is_plugin_run=bool(process.plugin), moment=moment, age_seconds=self.age_seconds(process), run_state=process.state,
                            cadence_state=self.cadences.for_process(process, self.clock.timestamp()).state(),
                            exit_code=part.exit_code, reader_layer=self.layer(reader), reader_judgement=self.judgement(process, part, reader),

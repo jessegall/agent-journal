@@ -147,11 +147,11 @@ def test_an_empty_note_is_refused():
 
 
 def test_a_whole_ask_is_accepted_after_phase_1_of_9():
-    assert scope().checked(1, "phase 1 of 9 is done") == MergeAskPart(WORKTREE, LIST_UNIT, "c0ffee1", (7, 8), True)
+    assert scope().checked(1, "phase 1 of 9 is done", "") == MergeAskPart(WORKTREE, LIST_UNIT, "c0ffee1", (7, 8), True)
 
 
 def test_any_note_length_is_accepted():
-    assert scope().checked(1, "x" * 5000).unit == LIST_UNIT
+    assert scope().checked(1, "x" * 5000, "").unit == LIST_UNIT
 
 
 def test_an_ask_up_to_a_task_carries_every_earlier_commit():

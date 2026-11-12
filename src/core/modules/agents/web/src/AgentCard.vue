@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {age, perHour, seenWords, sinceWords, AgentTip, Btn, Icon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import {age, agentNumber, agentTitle, perHour, seenWords, sinceWords, AgentTip, Btn, Icon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
 import AgentActions from "./AgentActions.vue";
 import AgentCardDetails from "./AgentCardDetails.vue";
 import AgentStatusDot from "./AgentStatusDot.vue";
@@ -10,28 +10,20 @@ import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
 const IN_HAND_STATES = new Set(["started", "testing", "blocked"]);
 // a task moved to testing counts as done for the tasks per hour
 const DONE_STATES = ["completed", "testing"];
-const FALLBACK_TITLES = {helper: "Helper", reviewer: "Reviewer", main: "Main agent"};
 // the words for the standing the server works out for an agent's program
 const STANDING_WORDS = {running: "Working", starting: "Starting", stopping: "Stopping", ended: "Idle: its process has stopped", failed: "Could not start", never_started: "Not started"};
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
 const emit = defineEmits(["toggle"]);
 const now = useNow();
 const menuOpen = ref(false);
-const title = computed(() => {
-    if (props.facts?.profile_title) return props.facts.profile_title;
-    if (props.facts?.profile) return props.facts.profile;
-    const name = FALLBACK_TITLES[props.row.role] || props.row.role;
-    return name.slice(0, 1).toUpperCase() + name.slice(1);
-});
+const named = computed(() => agentTitle(props.row, props.facts));
 const tasks = computed(() => props.facts?.tasks ?? []);
 const queuedTasks = computed(() => tasks.value.filter((task) => task.state === "open"));
 const currentTask = computed(() => tasks.value.find((task) => task.id === props.progress?.task_id && task.state === "started"));
 const jobTask = computed(() => currentTask.value || tasks.value.find((task) => task.id === props.facts?.task_id) || tasks.value.find((task) => IN_HAND_STATES.has(task.state)) || queuedTasks.value[0] || tasks.value.at(-1));
 const job = computed(() => props.row.role === "helper" ? props.facts?.helper_job || "" : (props.facts?.job_enabled ? currentTask.value?.title || props.facts?.task_title || queuedTasks.value[0]?.title || tasks.value.at(-1)?.title || "" : ""));
-const roleLabel = computed(() => `${props.row.role} ${props.row.number}`);
+const roleLabel = computed(() => agentNumber(props.row));
 const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, roleLabel.value].filter(Boolean).join(" · "));
-// an opened card names who the agent is once: its role and number, and no number for the main agent
-const openTitle = computed(() => (props.row.role === "main" ? title.value : `${title.value} ${props.row.number}`));
 const context = useWindow();
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
@@ -69,14 +61,14 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
         <div class="agent-head" data-agent-head>
             <template v-if="open"><button type="button" class="agent-back" title="Back" aria-label="Back" @click.stop="emit('toggle')"><Icon name="chevronRight" facing="left" :size="14" /></button></template>
             <template v-if="open">
-                <span class="agent-title" data-agent-title data-agent-motion>{{ openTitle }}</span>
-                <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
+                <span class="agent-title" data-agent-title data-agent-motion>{{ named.title }}</span>
+                <span class="agent-name" data-agent-name data-agent-motion>{{ named.subtext }}</span>
                 <Btn variant="ghost" small class="agent-menu-button" data-agent-menu :aria-expanded="menuOpen" @click.stop="menuOpen = !menuOpen">Actions</Btn>
             </template>
             <template v-else>
-                <AgentTip :agent-id="row.id" :label="title" class="agent-who">
-                    <span class="agent-title" data-agent-title data-agent-motion>{{ title }}</span>
-                    <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
+                <AgentTip :agent-id="row.id" :label="named.text" class="agent-who">
+                    <span class="agent-title" data-agent-title data-agent-motion>{{ named.title }}</span>
+                    <span class="agent-name" data-agent-name data-agent-motion>{{ named.subtext }}</span>
                 </AgentTip>
                 <Icon class="agent-chevron" name="chevronRight" :size="12" />
             </template>

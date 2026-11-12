@@ -1,3 +1,4 @@
+from typing import TypeIs
 import base64
 import binascii
 import hashlib
@@ -177,6 +178,10 @@ class WorkContextReader:
             raise Refusal("this ancestry cursor is beyond the conversation")
         return start
 
+    @staticmethod
+    def keeps_original(original: Message | None, primary: Message, size: int) -> TypeIs[Message]:
+        return original is not None and original.id != primary.id and size > 1
+
     def page_rows(self, conversation: MessageQuery, primary: Message | None, request: WorkContextRequest) -> tuple[Message, ...]:
         pool = conversation.with_text_segment(0, CONTEXT_CHARACTERS)
         pool = pool.descending("created_at", "id") if request.order is WorkContextOrder.NEWEST else pool.ordered("created_at", "id")
@@ -187,7 +192,7 @@ class WorkContextReader:
             anchors: tuple[Message, ...] = (primary,)
             if request.order is WorkContextOrder.NEWEST:
                 original = conversation.with_text_segment(0, CONTEXT_CHARACTERS).ordered("created_at", "id").first()
-                if original is not None and original.id != primary.id and size > 1:
+                if self.keeps_original(original, primary, size):
                     anchors = (primary, original)
             pool = pool.matching(Among("id", tuple(message.id for message in anchors), negated=True))
             if request.page == 1:

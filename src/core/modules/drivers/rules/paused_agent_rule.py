@@ -16,12 +16,12 @@ class PausedAgentRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if self.runs_journal_work(hook):
+        if self.is_journal_work(hook):
             return RuleAnswer.refused(PAUSED_REFUSAL.nudge())
         return RuleAnswer.blocked(hook, PAUSED_REFUSAL.nudge(), AgentResumed())
 
     @staticmethod
-    def runs_journal_work(hook: AgentHook) -> bool:
+    def is_journal_work(hook: AgentHook) -> bool:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None:
             return False

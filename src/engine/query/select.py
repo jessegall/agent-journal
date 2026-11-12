@@ -58,9 +58,15 @@ class Select:
             return statement
         return statement.joined(Statement.all_joined(tuple(condition.statement() for condition in self.conditions), " AND "), " WHERE ")
 
+    def page_clause(self) -> str:
+        if not self.limit:
+            return ""
+        offset = f" OFFSET {self.offset}" if self.offset else ""
+        return f" LIMIT {self.limit}{offset}"
+
     def statement(self) -> Statement:
         order = f" ORDER BY {', '.join(order.sql for order in self.orders)}" if self.orders else ""
-        page = (f" LIMIT {self.limit}" + (f" OFFSET {self.offset}" if self.offset else "")) if self.limit else ""
+        page = self.page_clause()
         statement = self.filtered(Statement(f"SELECT {self.columns} FROM {self.source}")).joined(Statement(order + page), "")
         return replace(statement, full_table_reason=self.full_table_reason, named_limit_rows=self.named_limit or None)
 

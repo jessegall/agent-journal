@@ -118,7 +118,7 @@ class AgentHookRoute(HookRoute):
         agent = self.open_agent(event.session)
         if agent is None or agent.role != AgentRole.MAIN:
             return False
-        return event.event is HookEventName.PROMPT or (event.event is HookEventName.PRE_TOOL_USE and PanicFileRule.names_panic_file(event))
+        return event.event is HookEventName.PROMPT or (event.event is HookEventName.PRE_TOOL_USE and PanicFileRule.is_panic_file_line(event))
 
     def halted(self, event: HookEvent, lockdown: Lockdown) -> HookReply:
         agent = self.open_agent(event.session) or self.launch_name_agent(event)

@@ -59,7 +59,7 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
         return MergeOutcome(self.repository.save_change(worktree, worktree.part_merged([task.id for task in tasks]), context), ())
 
     def target_commit(self, worktree: Worktree, target: str) -> str:
-        if self.range.names_task(target):
+        if self.range.is_task_number(target):
             commit = self.range.task_commit(worktree, int(target))
             if commit is None:
                 raise Refusal(f"task {target} has no commit on the branch of {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text}", "name a task the worker has handed in")

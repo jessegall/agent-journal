@@ -154,14 +154,13 @@ class ClaudeCodeProvider(Provider):
         return self.efforts.effort(MODEL_EFFORTS, model) or FALLBACK_EFFORT
 
     def session_effort(self, home: JournalHome, session: str) -> str:
-        return self.status_text(home, session, "effort", "level") or self.effort(self.reported_model(home, session))
+        return self.status_text(home.status_file(session), "effort", "level") or self.effort(self.reported_model(home, session))
 
     def reported_model(self, home: JournalHome, session: str) -> str:
-        return self.status_text(home, session, "model", "id")
+        return self.status_text(home.status_file(session), "model", "id")
 
     @staticmethod
-    def status_text(home: JournalHome, session: str, group: str, name: str) -> str:
-        path = home.status_file(session)
+    def status_text(path: Path, group: str, name: str) -> str:
         if not path.is_file():
             return ""
         fields = StatusFileFields.read(path, FileAccess.shared().version(path)).get(group)

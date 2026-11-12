@@ -62,7 +62,7 @@ class WorkerSteps:
         if worktree.state is not WorktreeState.CUT or worker_round.started:
             return False
         unit = self.units.unit(worker_round.worker_id)
-        return unit.has_several_tasks and unit.is_committed
+        return unit.is_committed_unit
 
     @staticmethod
     def working_step(worker_round: WorkerRound) -> WorkerStep:

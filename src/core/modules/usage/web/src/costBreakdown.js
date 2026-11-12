@@ -1,3 +1,5 @@
+import {agentTitle} from "../../../../../viewer/src/domain/agentTitle.js";
+
 const NO_MODEL = "Model not reported";
 
 const dollars = (amount) => `$${Number(amount || 0).toFixed(2)}`;
@@ -10,6 +12,6 @@ function grouped(agents, keyOf) {
 }
 
 export const byModel = (agents) => grouped(agents, (agent) => agent.model || NO_MODEL);
-export const byAgent = (agents) => grouped(agents, (agent) => `${agent.role} ${agent.number}`);
+export const byAgent = (agents) => grouped(agents, (agent) => agentTitle(agent).text);
 export const byProfile = (agents) => grouped(agents.filter((agent) => agent.profile), (agent) => agent.profile);
 export {dollars};

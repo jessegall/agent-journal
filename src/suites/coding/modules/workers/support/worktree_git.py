@@ -151,7 +151,7 @@ class WorktreeGit:
             self.checked(folder, GIT_LIMIT_SECONDS, "restore", "--", *skipped)
 
     def skipped_files(self, folder: str, *paths: str) -> list[str]:
-        listing = self.checked(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "-z", *(("--", *paths) if paths else ())).stdout
+        listing = self.checked(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "-z", "--", *paths).stdout
         return [record[len(SKIP_WORKTREE_MARK):] for record in listing.split(NAME_SEPARATOR) if record.startswith(SKIP_WORKTREE_MARK)]
 
     @staticmethod

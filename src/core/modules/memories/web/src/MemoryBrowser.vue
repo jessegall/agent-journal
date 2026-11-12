@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {READ_RATES, coalesced, useWindow, wordLabel} from "@journal/window-kit";
+import {READ_RATES, agentTitle, coalesced, useWindow} from "@journal/window-kit";
 import AgentColumn from "./AgentColumn.vue";
 import MemoryPane from "./MemoryPane.vue";
 import {EVERYONE, MAIN, OTHERS, agentIdOf, isAgent} from "./memoryScope.js";
@@ -26,7 +26,7 @@ async function readAgent() {
     if (agentIdOf(who.value) !== id) return;
     const selected = context.props.selected;
     const value = selected.data.value;
-    agent.value = selected.failure.value ? null : {id, role: value.role, ended_at: value.ended_at, name: value.given_name || `${wordLabel(value.role)} ${id}`};
+    agent.value = selected.failure.value ? null : {id, role: value.role, ended_at: value.ended_at, name: agentTitle(value).text};
 }
 
 const pick = (chosen) => {

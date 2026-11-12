@@ -62,9 +62,17 @@ class ReadingNotices:
 
     @staticmethod
     def mark_nudges(process: Process, changes: tuple[UnreadableMark, ...]) -> tuple[Nudge, ...]:
-        return tuple(UNREADABLE_LIFTED.nudge(name=mark.words) if mark.lifted_at is not None
-                     else UNREADABLE_DECLARED.nudge(name=mark.words) if mark.reason is UnreadableReason.DECLARED
-                     else MARK_NUDGES[mark.reason].nudge(output=process.id) for mark in changes)
+        """The one line about each mark made or lifted at the end of a run: a lifted mark names its command, a mark
+        the engine made names the output, and a declared mark names its command."""
+        return tuple(ReadingNotices.mark_nudge(process, mark) for mark in changes)
+
+    @staticmethod
+    def mark_nudge(process: Process, mark: UnreadableMark) -> Nudge:
+        if mark.lifted_at is not None:
+            return UNREADABLE_LIFTED.nudge(name=mark.words)
+        if mark.reason is UnreadableReason.DECLARED:
+            return UNREADABLE_DECLARED.nudge(name=mark.words)
+        return MARK_NUDGES[mark.reason].nudge(output=process.id)
 
     @staticmethod
     def silent_failure_nudges(process: Process, output: Output | None, parts: tuple[ProcessPart, ...]) -> tuple[Nudge, ...]:

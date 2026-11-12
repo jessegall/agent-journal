@@ -40,7 +40,7 @@ class ReadingDecider:
 
     @staticmethod
     def level(case: ReadingCase) -> PressureLevel:
-        if case.role_must_have_reader and case.request_is_waiting:
+        if case.is_request_waiting_for_reader:
             return PressureLevel.BLOCK
         if case.output_hidden:
             return PressureLevel.PREVENT
@@ -60,7 +60,7 @@ class ReadingDecider:
     def reason(case: ReadingCase, state: ReaderState) -> ReasonCode:
         if case.output_hidden:
             return ReasonCode.REDIRECTED
-        if case.role_must_have_reader and case.request_is_waiting:
+        if case.is_request_waiting_for_reader:
             return ReasonCode.REQUEST_WAITING
         if case.count_missing:
             return ReasonCode.COUNT_MISSING

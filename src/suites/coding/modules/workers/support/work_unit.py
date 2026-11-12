@@ -22,6 +22,10 @@ class WorkUnit:
         return len(self.task_ids) == 1 and self.plan is None
 
     @property
+    def is_committed_unit(self) -> bool:
+        return self.has_several_tasks and self.is_committed
+
+    @property
     def has_several_tasks(self) -> bool:
         return self.plan is not None or len(self.task_ids) > 1
 
