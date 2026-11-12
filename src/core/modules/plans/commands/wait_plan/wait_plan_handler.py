@@ -42,6 +42,4 @@ class WaitPlanHandler(Handler[WaitPlan, Plan]):
         blocker = self.queries.query(Plan).find(int(row_id))
         if blocker.state in ENDED_STATES:
             raise Refusal(f"plan {blocker.id} is {blocker.state.value} already", "nothing waits on it; carry on with the plan")
-        if self.waits.reaches(blocker.id, plan_id):
-            raise Refusal(f"plan {blocker.id} waits on plan {plan_id} already, so this would be a loop", "end one of the two waits first")
         return blocker
