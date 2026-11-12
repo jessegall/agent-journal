@@ -1,3 +1,18 @@
+from core.modules.agents.conditions.active_agent_rows import ActiveAgentRows
+from core.modules.agents.conditions.kept_agent_rows import KeptAgentRows
+from core.modules.agents.conditions.main_agent_rows import MainAgentRows
+from core.modules.drivers.conditions.waking_lines import WakingLines
+from core.modules.processes.queries.conditions.command_matches import CommandMatches
+from core.modules.processes.queries.conditions.kept_output_part import KeptOutputPart
+from core.modules.processes.queries.conditions.part_output import PartOutput
+from core.modules.processes.queries.conditions.part_run_seconds import PartRunSeconds
+from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
+from core.modules.usage.conditions.agent_activity_condition import AgentActivityCondition
+from core.modules.usage.conditions.agent_role_profile_condition import AgentRoleProfileCondition
+from core.modules.usage.conditions.ended_agents import EndedAgents
+from suites.coding.modules.checks.conditions.interval_passed import IntervalPassed
+from suites.coding.modules.checks.queries.conditions.task_wait_command_failure import TaskWaitCommandFailure
+from suites.coding.modules.workers.conditions.proof_task_testing import ProofTaskTesting
 from core.modules.assignments.queries.conditions.assignee_among import AssigneeAmong
 from core.modules.assignments.queries.conditions.unassigned import Unassigned
 from core.modules.chat.queries.conditions.mark_round_key import MarkRoundKey
@@ -50,3 +65,24 @@ def test_plan_docking_and_template_conditions_write_the_statements_they_wrote_by
     assert said(SameChat(5)) == ("(session_agent_id = ? OR (NOT EXISTS (SELECT 1 FROM agents WHERE id = ? AND role IS NOT ?) AND (session_agent_id IS NULL OR session_agent_id IN (SELECT id FROM agents WHERE role = ?))))", [5, 5, "main", "main"])
     assert said(TemplateTarget("x")) == ("(json_array_length(targets) = 0 OR EXISTS (SELECT 1 FROM json_each(targets) WHERE value = ?))", ["x"])
     assert said(ExcludedTemplateModules(("a",))) == ("NOT (module IN (?))", ["a"])
+
+
+def test_agent_and_usage_conditions_write_the_statements_they_wrote_by_hand():
+    assert said(MainAgentRows()) == ("session_agent_id IN (SELECT id FROM agents WHERE role = ?)", ["main"])
+    assert said(KeptAgentRows("agent_id")) == ("agent_id IN (SELECT id FROM agents WHERE retired_at IS NULL)", [])
+    assert said(ActiveAgentRows("creator_id")) == ("creator_id IN (SELECT id FROM agents WHERE ended_at IS NULL AND retired_at IS NULL)", [])
+    assert said(AgentRoleProfileCondition(["worker"], ["planner"])) == ("(role IN (?) OR coalesce(nullif(profile, ''), job_profile) IN (?))", ["worker", "planner"])
+    assert said(AgentActivityCondition({3: "testing"})) == ("((ended_at IS NULL OR id IN (?)) AND retired_at IS NULL)", [3])
+    assert said(EndedAgents()) == ("retired_at IS NOT NULL", [])
+
+
+def test_process_driver_and_suite_conditions_write_the_statements_they_wrote_by_hand():
+    assert said(CommandMatches(["pytest*"])) == ("(coalesce(nullif(command, ''), text) GLOB ?)", ["pytest*"])
+    assert said(ReaderSampleScope(1, "make")) == ("(process_id IN (SELECT id FROM processes WHERE session_agent_id = ?) AND coalesce(nullif(command, ''), text) = ?)", [1, "make"])
+    assert said(PartOutput(2, "make")) == ("EXISTS (SELECT 1 FROM process_parts AS part JOIN processes AS process ON process.id = part.process_id WHERE part.process_id = outputs.process_id AND process.environment_id = ? AND part.text = ?)", [2, "make"])
+    assert said(KeptOutputPart()) == ("process_id IN (SELECT outputs.process_id FROM outputs JOIN processes ON processes.id = outputs.process_id WHERE outputs.state = ? AND outputs.line_count > ?)", ["kept", 0])
+    assert said(PartRunSeconds(60)) == ("started_at > '' AND ended_at > '' AND (julianday(ended_at) - julianday(started_at)) * 86400 >= ?", [60])
+    assert said(WakingLines(["typed"])) == ("(wakes_agent = ? OR source IN (?))", [True, "typed"])
+    assert said(TaskWaitCommandFailure()) == ("(instr(last_output, ?) > 0 OR instr(last_output, ?) > 0)", ["not found", "syntax error"])
+    assert said(IntervalPassed("2026")) == ("(interval_minutes > ? AND (last_run_at IS NULL OR datetime(last_run_at, '+' || interval_minutes || ' minutes') <= datetime(?)))", [0, "2026"])
+    assert said(ProofTaskTesting())[0] == "EXISTS (SELECT 1 FROM tasks WHERE tasks.id = proofs.task_id AND tasks.state = ?)"

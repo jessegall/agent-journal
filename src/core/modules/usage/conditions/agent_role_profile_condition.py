@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from engine.database.statement import Statement
 from engine.query.conditions.among import Among
+from engine.query.conditions.any_of import AnyOf
 
 
 @dataclass(frozen=True)
@@ -10,9 +11,5 @@ class AgentRoleProfileCondition:
     profiles: list[str]
 
     def statement(self) -> Statement:
-        statements: list[Statement] = []
-        if self.roles:
-            statements.append(Among("role", self.roles).statement())
-        if self.profiles:
-            statements.append(Among("coalesce(nullif(profile, ''), job_profile)", self.profiles).statement())
-        return Statement("(" + " OR ".join(item.sql for item in statements) + ")", [value for item in statements for value in item.parameters])
+        conditions = [*([Among("role", self.roles)] if self.roles else []), *([Among("coalesce(nullif(profile, ''), job_profile)", self.profiles)] if self.profiles else [])]
+        return AnyOf(conditions).statement()
