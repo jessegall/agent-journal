@@ -1,3 +1,7 @@
+from datetime import timedelta
+from engine.model.prunable import Prunable
+from engine.query.conditions.excluding import Excluding
+from engine.query.conditions.is_null import IsNull
 from engine.container.container import Container
 from engine.driver.agent_hook import AgentHook
 from engine.driver.block_check import BlockCheck
@@ -16,11 +20,13 @@ OPEN_BLOCKS_REASON = "the open blocks of one agent are few: each is closed or sk
 
 
 @dataclass(frozen=True, kw_only=True)
-class AgentBlock(Model):
+class AgentBlock(Prunable, Model):
     """An agent held from all but reading and journal commands: the line its refused tools are told, what ends
     the block and when it ended. A block with a grace holds only after that many tool uses or seconds, says
     its countdown line meanwhile, and may be skipped with a reason; so may a block declared skippable. A block
     that holds the stop only leaves the agent's tools alone."""
+
+    kept_for = timedelta(days=3)
 
     model_name = "agent_block"
     cli_name = "agent-block"
@@ -57,3 +63,7 @@ class AgentBlock(Model):
     def grace(self) -> Interval | None:
         spans = [span for span in (ToolUseSpan(self.grace_tool_uses), Seconds(self.grace_seconds)) if span.count]
         return Interval(*spans) if spans else None
+
+    @classmethod
+    def prunable(cls, query, now):
+        return super().prunable(query, now).matching(Excluding(IsNull("closed_at")))

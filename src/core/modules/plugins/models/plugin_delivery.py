@@ -1,3 +1,5 @@
+from datetime import timedelta
+from engine.model.prunable import Prunable
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -5,8 +7,10 @@ from engine.model.model import Model
 
 
 @dataclass(frozen=True, kw_only=True)
-class PluginDelivery(Model):
+class PluginDelivery(Prunable, Model):
     """A queued plugin event; system events have no environment."""
+
+    kept_for = timedelta(days=1)
 
     model_name = "plugin_delivery"
     event_forms = ()
