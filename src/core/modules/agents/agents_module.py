@@ -69,6 +69,7 @@ from core.modules.agents.commands.stop_unused_launcher.stop_unused_launcher_hand
 from core.modules.agents.rules.unused_launcher_rule import UnusedLauncherRule
 from core.modules.agents.commands.check_agent_programs.check_agent_programs_handler import CheckAgentProgramsHandler
 from core.modules.agents.ticks.agent_reconcile import AgentReconcile
+from core.modules.agents.ticks.program_settings_tick import ProgramSettingsTick
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from core.modules.agents.commands.start_agent_program.start_agent_program_handler import StartAgentProgramHandler
@@ -154,7 +155,8 @@ class AgentsModule(Module):
     migrations = [AgentLaunchFailureColumnMigration, MainAgentParentMigration, AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
     nudges = [AGENT_START_FAILED, *REPORT_NUDGES]
     guards = [AgentNameGuard, NumberGuard, RetiredRowGuard, RetiredDeleteGuard, AgentChatGuard]
-    tick_handlers = [TickHandler(TickInterval(seconds=30), AgentReconcile(), "agent rows and their programs")]
+    tick_handlers = [TickHandler(TickInterval(seconds=30), AgentReconcile(), "agent rows and their programs"),
+                     TickHandler(TickInterval(seconds=2), ProgramSettingsTick(), "program settings", starts_immediately=True)]
     driver_rules = [UnusedLauncherRule]
     handlers = [StopUnusedLauncherHandler, CheckAgentProgramsHandler, StartAgentProgramHandler, StopAgentProgramHandler, HaltAgentHandler, EndAgentHaltHandler, ReplaceAgentSessionHandler, WarnInstructionImportsHandler, RemoveInstructionImportHandler, RecordAgentInterruptHandler, SetAgentUsageLimitHandler, RetireAgentHandler, EndReplacedMainHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
     subcommands = [RemoveInstructionImportSubcommand, RecordAgentInterruptSubcommand, RetireAgentSubcommand, ShowMainAgentsSubcommand, MainSessionsSubcommand, AgentSessionsSubcommand, AgentStandingSubcommand, StartAgentProgramSubcommand, StopAgentProgramSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, AgentPeopleSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]

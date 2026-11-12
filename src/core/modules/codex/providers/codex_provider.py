@@ -41,12 +41,16 @@ from core.modules.codex.providers.support.codex_token_count import CodexTokenCou
 from core.modules.codex.providers.support.codex_session_effort import CodexSessionEffort
 from core.modules.codex.providers.support.codex_event import CodexEvent
 from core.modules.codex.providers.support.codex_trust import CodexTrust
+from core.modules.codex.providers.support.codex_journal_config import CodexJournalConfig
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.program_settings import ProgramSettings, SettingsFile
 from core.modules.codex.models.enums.codex_hook_event import CodexHookEvent
 
 HOME_VARIABLE = "CODEX_HOME"
 DEVELOPER_ROLE = "developer"
 CODEX_CONTEXT_OPENINGS = ("# AGENTS.md instructions", "<environment_context>", "<permissions instructions>", "<skills_instructions>", "<collaboration_mode>", "<recommended_plugins>", "<apps_instructions>")
 HOOK_PROMPT_TAG = re.compile(r"</?hook_prompt[^>]*>")
+PERSON_LINKS = ("auth.json", "sessions", "history.jsonl")
 
 
 class CodexProvider(Provider):
@@ -208,6 +212,16 @@ class CodexProvider(Provider):
 
     def trust_record(self) -> CodexTrust:
         return CodexTrust(self.folders.folder(HOME_VARIABLE, ".codex") / "config.toml")
+
+    def journal_settings(self, home: JournalHome, runner: str, managed: Sequence[ManagedHook], folders: Sequence[Path]) -> ProgramSettings:
+        folder = home.program_folder(self.name)
+        person = self.folders.folder(HOME_VARIABLE, ".codex")
+        hooks_file = folder / "hooks.json"
+        blocks = ProgramHooks.journal(type(self), hooks_file).journal_blocks(runner, home.project_folder, managed)
+        config = CodexJournalConfig(person / "config.toml", folders, hooks_file.resolve(), blocks)
+        files = (SettingsFile(folder / "config.toml", config.text()), SettingsFile(hooks_file, json.dumps({"hooks": blocks}, indent=2, sort_keys=True) + "\n"))
+        links = {folder / name: person / name for name in PERSON_LINKS}
+        return ProgramSettings(self.name, files, links, self.user_hook_files())
 
     def user_hook_files(self) -> tuple[Path, ...]:
         folder = self.folders.folder(HOME_VARIABLE, ".codex")

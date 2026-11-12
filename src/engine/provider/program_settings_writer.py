@@ -9,10 +9,10 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from engine.file.file_access import FileAccess
+from engine.file.private_folders import PrivateFolders
 from engine.journal.journal_home import JournalHome
 from engine.provider.program_settings import ProgramSettings, SettingsFile
 
-FOLDER_MODE = 0o700
 DIGESTS_MODE = 0o600
 LOCK_NAME = ".lock"
 LINK_SUFFIX = ".link"
@@ -28,11 +28,11 @@ class ProgramSettingsWriter:
     def write(self, settings: ProgramSettings) -> tuple[Path, ...]:
         with self._locked():
             for folder in self._folders(settings):
-                self._created(folder)
+                PrivateFolders.made(folder)
                 self._remove_stale_temporaries(folder)
             changed_files = tuple(file for file in settings.files if self._differs(file))
             for file in changed_files:
-                self._publish(file.path, file.data, file.mode)
+                FileAccess.shared().write_whole(file.path, file.data, file.mode)
             changed_links = tuple(link for link, target in settings.links.items() if self._link_differs(link, target))
             for link in changed_links:
                 self._relink(link, settings.links[link])
@@ -50,7 +50,7 @@ class ProgramSettingsWriter:
 
     @contextmanager
     def _locked(self) -> Generator[None]:
-        self._created(self.home.programs_folder)
+        PrivateFolders.made(self.home.programs_folder)
         with FileAccess.shared().writer(self.home.programs_folder / LOCK_NAME, "a") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
             try:
@@ -61,12 +61,6 @@ class ProgramSettingsWriter:
     @staticmethod
     def _folders(settings: ProgramSettings) -> tuple[Path, ...]:
         return tuple(dict.fromkeys([*(file.path.parent for file in settings.files), *(link.parent for link in settings.links)]))
-
-    @staticmethod
-    def _created(folder: Path) -> None:
-        for missing in reversed([folder, *folder.parents]):
-            if not missing.exists():
-                missing.mkdir(mode=FOLDER_MODE, exist_ok=True)
 
     @staticmethod
     def _remove_stale_temporaries(folder: Path) -> None:
@@ -95,18 +89,9 @@ class ProgramSettingsWriter:
         finally:
             temporary_link.unlink(missing_ok=True)
 
-    @staticmethod
-    def _publish(path: Path, data: bytes, mode: int) -> None:
-        with FileAccess.shared().temporary_writer(path.parent, "wb") as writing:
-            writing.write(data)
-            writing.flush()
-            os.fsync(writing.fileno())
-            os.chmod(writing.name, mode)
-            FileAccess.shared().replace(writing.name, path)
-
     def _record_digests(self, files: tuple[SettingsFile, ...]) -> None:
         if not files:
             return
         digests: Mapping[str, str] = {**self.recorded_digests(), **{str(file.path): hashlib.sha256(file.data).hexdigest() for file in files}}
-        self._created(self.home.program_settings_digests.parent)
-        self._publish(self.home.program_settings_digests, (json.dumps(digests, indent=2, sort_keys=True) + "\n").encode(), DIGESTS_MODE)
+        PrivateFolders.made(self.home.program_settings_digests.parent)
+        FileAccess.shared().write_whole(self.home.program_settings_digests, (json.dumps(digests, indent=2, sort_keys=True) + "\n").encode(), DIGESTS_MODE)
