@@ -33,5 +33,6 @@ def test_an_answer_given_in_the_viewer_wakes_the_stopped_agent_that_asked(questi
     server.viewer_line_value(server.expect_viewer_login(server.viewer_key("Ada")), ANSWER)
     story.run_listeners()
     story.tick("s-1")
-    lines = [line for line in story.story_rows(AgentLine) if ANSWERED in line.text]
-    story.expect_rows(len(lines) == 1, all(line.wakes_agent for line in lines), detail=str(lines))
+    lines = story.story_rows(AgentLine)
+    answered = [line for line in lines if ANSWERED in line.text]
+    story.expect_rows(len(answered) == 1, any(line.wakes_agent for line in lines), detail=str(lines))

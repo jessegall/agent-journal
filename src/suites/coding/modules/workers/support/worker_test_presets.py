@@ -38,7 +38,8 @@ class WorkerTestPresets:
         seen: set[str] = set()
         kept: list[WorkerTestCommandEntry] = []
         for entry in entries:
-            if entry.command not in seen:
-                seen.add(entry.command)
-                kept.append(entry)
+            if entry.command in seen:
+                continue
+            seen.add(entry.command)
+            kept.append(entry)
         return tuple(kept)

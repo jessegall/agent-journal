@@ -62,9 +62,12 @@ def test_settings_changed_elsewhere_since_the_modal_opened_refuse_the_save_with_
     story, screens = modal
     opened = screens.revisions("work", "tests")
     story.expect_success(f"setting set {AUTO} off --environment main", actor=story.user)
+    story.expect_text("work-settings show --environment main", "workflow:", actor=story.user)
     number = screens.first_of_kind("tests", "number")
     screens.expect_refused({number["key"]: str(int(number["value"]) + 1)}, opened, "changed since you read them")
     assert screens.value("tests", number["key"]) == number["value"]
+    screens.save({number["key"]: str(int(number["value"]) + 1)}, "tests")
+    assert (screens.value("work", AUTO), screens.value("tests", number["key"])) == (False, int(number["value"]) + 1)
 
 
 def test_a_reader_that_is_not_a_person_sees_every_value_and_cannot_save(modal):

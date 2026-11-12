@@ -5,7 +5,7 @@ from engine.enums.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from engine.driver.search_category import JOURNAL_FOLDER
+from engine.journal.journal_home import JOURNAL_FOLDER
 from engine.listener.rows.event_rows import EventRows
 from core.modules.environments.models.environment import Environment
 from engine.enums.agent_role import AgentRole

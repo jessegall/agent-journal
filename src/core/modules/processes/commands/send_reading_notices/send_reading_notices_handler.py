@@ -6,7 +6,7 @@ from core.modules.processes.commands.send_reading_notices.send_reading_notices i
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.reading_notices.reading_notices import ReadingNotices
-from core.modules.processes.support.unreadable.unreadable_marker import UnreadableMarker
+from core.modules.processes.support.reading.unreadable_marker import UnreadableMarker
 from core.modules.processes.support.run_visibility import RunVisibility
 
 SOURCE = "processes.reading-notices"
@@ -14,7 +14,8 @@ SOURCE = "processes.reading-notices"
 
 class SendReadingNoticesHandler(Handler[SendReadingNotices, None]):
     """The one sender of the lines that tell an agent how to read its runs better, after the marks of unreadable
-    commands are made or lifted at the run's end; the lines wait for the agent's next hook and never wake it."""
+    commands are made or lifted at the run's end; the lines wait for the agent's next hook and never wake it. A
+    merge the journal ran itself has no reader, so it gets none."""
 
     command = SendReadingNotices
 
@@ -23,6 +24,8 @@ class SendReadingNoticesHandler(Handler[SendReadingNotices, None]):
 
     def handle(self, command: SendReadingNotices, context: Context) -> None:
         process = self.rows.required(Process, command.process_id)
+        if process.is_journal_merge:
+            return
         parts = self.visibility.parts(process.id)
         changes = self.marker.changes(process, parts, context)
         for nudge in (*self.notices.mark_nudges(process, changes), *self.notices.nudges(process, self.outputs.process_output(process.id), parts)):

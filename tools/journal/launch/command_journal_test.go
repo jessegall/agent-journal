@@ -1,6 +1,7 @@
 package launch
 
 import (
+	"errors"
 	"strings"
 	"testing"
 )
@@ -71,5 +72,38 @@ func TestACodexLaunchNamesTheTrustStepOnlyWhenItsHooksAreUntrustedOrChanged(t *t
 		if line := HookTrustLine(trust); (line != "") != lineWanted || (lineWanted && !strings.Contains(line, "/hooks")) {
 			t.Fatalf("hook trust %s gave the line %q", trust, line)
 		}
+	}
+}
+
+func TestProgramCommandReadsArgumentsAndVariables(t *testing.T) {
+	var requests []string
+	journal := CommandJournal{Run: func(argv ...string) (string, error) {
+		requests = append(requests, strings.Join(argv, " "))
+		return `{"arguments": ["codex", "--no-daemon"], "variables": {"CODEX_HOME": "/work/shop/.journal/programs/codex"}}`, nil
+	}}
+	command, err := journal.ProgramCommand(Request{Program: "codex"}, Choice{Folder: "/work/shop", SkipPrompts: true}, "launch-1")
+	if err != nil || strings.Join(command.Arguments, " ") != "codex --no-daemon" || command.Variables["CODEX_HOME"] != "/work/shop/.journal/programs/codex" {
+		t.Fatalf("the command read is %+v, %v", command, err)
+	}
+	if len(requests) != 1 || requests[0] != "program command codex /work/shop --launch launch-1 --format json" {
+		t.Fatalf("the journal was asked %v", requests)
+	}
+}
+
+func TestProgramCommandFallsBackToLinesForAnOlderJournal(t *testing.T) {
+	var requests []string
+	journal := CommandJournal{Run: func(argv ...string) (string, error) {
+		requests = append(requests, strings.Join(argv, " "))
+		if argv[len(argv)-1] == "json" {
+			return "", errors.New("unrecognized arguments: --format json")
+		}
+		return "claude\n--model\nopus\n", nil
+	}}
+	command, err := journal.ProgramCommand(Request{Program: "claude"}, Choice{Folder: "/work/shop", SkipPrompts: true}, "launch-1")
+	if err != nil || strings.Join(command.Arguments, " ") != "claude --model opus" || len(command.Variables) != 0 {
+		t.Fatalf("the command read is %+v, %v", command, err)
+	}
+	if len(requests) != 2 || requests[1] != "program command claude /work/shop --launch launch-1" {
+		t.Fatalf("the journal was asked %v", requests)
 	}
 }

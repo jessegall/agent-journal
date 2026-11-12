@@ -12,13 +12,11 @@ from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.group_cpu_time import GroupCpuTime
 from core.modules.processes.support.look_asks import LookAsks
-from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.output_folder import CPU_FILE, OutputFolder
 from core.modules.processes.support.cadence.run_silences import RunSilences
 from core.modules.processes.support.process_settings import ProcessSettings
 
 RUNNING_REASON = "the tick looks at every run that is running"
-
-CPU_FILE = "cpu"
 LOOKS_BEFORE_STOP = 3
 
 

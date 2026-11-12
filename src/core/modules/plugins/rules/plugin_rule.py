@@ -61,18 +61,27 @@ class PluginRule(DriverRule):
             plugin, manifest = runnable.plugin, runnable.manifest
             if hook.event.accepts_lines:
                 self.queued(hook, plugin, lines, commands)
-            for event in [event for event in events if event.name in manifest.event_names and self.reaches(hook, manifest, event.name)]:
+            reached = [event for event in events if event.name in manifest.event_names and self.reaches(hook, manifest, event.name)]
+            for event in reached:
                 commit = manifest.declared_event(event.name, EventForm.COMMIT)
                 if event.name not in manifest.window_names() or commit is not None:
                     commands.append(DeliverPluginEvent(plugin.id, hook.agent_id, commit.key if commit else event.name, json.dumps(dict(event.data)), commit.script if commit else ""))
-                if event.name not in manifest.window_names():
-                    continue
-                refusal = self.refusal_text(hook, runnable, event, lines, commands, facts)
+            for group in self.window_groups(manifest, [event for event in reached if event.name in manifest.window_names()]):
+                refusal = self.refusal_text(hook, runnable, group, lines, commands, facts)
                 if refusal:
                     notice = PLUGIN_REFUSAL.nudge(plugin=plugin.id)
                     commands.extend(RecordAgentNotice(hook.agent_id, line, self.name) for line in [*lines, refusal])
                     return RuleAnswer(refusal=notice.text, nudges=tuple([notice]), commands=tuple(commands))
         return RuleAnswer.allowed().running(*commands, *(RecordAgentNotice(hook.agent_id, line, self.name) for line in lines))
+
+    def window_groups(self, manifest: PluginManifest, events: list[PluginEvent]) -> list[list[PluginEvent]]:
+        """The held events of one hook that one script judges within one limit: the plugin's program runs once for each group."""
+        groups: dict[tuple[str, int], list[PluginEvent]] = {}
+        ceiling = self.setting_values.number(CEILING_SETTING)
+        for event in events:
+            guard = manifest.declared_event(event.name, EventForm.GUARD)
+            groups.setdefault((guard.script if guard else "", manifest.window_ms(event.name, ceiling)), []).append(event)
+        return list(groups.values())
 
     def queued(self, hook: AgentHook, plugin: Plugin, lines: list[str], commands: list[Command[object]]) -> None:
         queue = PluginQueue(self.folders.data(plugin.name))
@@ -89,11 +98,13 @@ class PluginRule(DriverRule):
     def reaches(hook: AgentHook, manifest: PluginManifest, event: str) -> bool:
         return hook.role == AgentRole.MAIN or manifest.reaches_role(event, hook.role)
 
-    def refusal_text(self, hook: AgentHook, runnable: RunnablePlugin, event: PluginEvent, lines: list[str], commands: list[Command[object]], facts: HookFacts) -> str:
+    def refusal_text(self, hook: AgentHook, runnable: RunnablePlugin, group: list[PluginEvent], lines: list[str], commands: list[Command[object]], facts: HookFacts) -> str:
         plugin, manifest = runnable.plugin, runnable.manifest
+        event = group[0]
         guard = manifest.declared_event(event.name, EventForm.GUARD)
-        request = PluginRunRequest(runnable, PluginEvent(guard.key, event.data) if guard else event, EventForm.GUARD, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING)),
-                                   f"at {event.name}", hook.event.environment, hook.timestamp, hook.agent_id, guard.script if guard else "", hook_waits=True, facts=facts.value)
+        sent = tuple(PluginEvent(declared.key, member.data) if (declared := manifest.declared_event(member.name, EventForm.GUARD)) else member for member in group)
+        request = PluginRunRequest(runnable, sent[0], EventForm.GUARD, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING)),
+                                   f"at {event.name}", hook.event.environment, hook.timestamp, hook.agent_id, guard.script if guard else "", hook_waits=True, facts=facts.value, events=sent)
         outcome = self.runs.run(request)
         if outcome.is_late:
             return ""
@@ -105,7 +116,7 @@ class PluginRule(DriverRule):
             commands.append(AddPluginOutput(plugin.id, hook.agent_id, answer.output))
         answer_text = answer.reason if answer.is_refusal() else answer.line
         journal_line = hook.event.tool is not None and hook.event.tool.is_journal_line
-        refusing = answer.is_refusal() and event.name in [refusable.value for refusable in RefusableEvent]
+        refusing = answer.is_refusal() and any(member.name in [refusable.value for refusable in RefusableEvent] for member in group)
         if refusing and not journal_line:
             return f"[plugin {plugin.name}] {answer_text}"
         if answer_text:

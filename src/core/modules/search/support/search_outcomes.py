@@ -13,7 +13,7 @@ KEPT_SECONDS = 30
 
 class SearchOutcomes:
     """The result a search's chat mark worked out, handed to the run of that same search so the two read the
-    rows once. It is kept in a file, since each command line builds new objects, and it is read_once only once and
+    rows once. It is kept in a file, since each command line builds new objects, and it is read only once and
     only for a short while, so a later search reads the rows as they are then."""
 
     def __init__(self, home: JournalHome, clock: Clock) -> None:
@@ -32,7 +32,10 @@ class SearchOutcomes:
         file.unlink(missing_ok=True)
         if kept["terms"] != list(terms) or kept["models"] != list(models) or Timestamp.parsed(kept["kept_at"]).elapsed_seconds(self.clock.timestamp()) > KEPT_SECONDS:
             return None
-        return SearchResult.restored(kept)
+        try:
+            return SearchResult.restored(kept)
+        except KeyError:
+            return None
 
     def file(self, agent_id: int) -> Path:
         return self.home.folder / "runtime" / "search_outcomes" / f"{agent_id}.json"

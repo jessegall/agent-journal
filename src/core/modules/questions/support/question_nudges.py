@@ -2,7 +2,7 @@ from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.enums.nudge_type import NudgeType
 
 QUESTION_ANSWERED = NudgeDeclaration("questions.question_answered", NudgeType.NOTICE,
-                                   "question:{question} is answered", wakes_agent=True,
+                                   "question:{question} is answered",
                                    plural_text="questions {question} are answered", id_field="question")
 QUESTION_ANSWER_SOURCE = NudgeDeclaration("questions.answer_source", NudgeType.NOTICE,
                                         "question:{question} answer source message:{message}",

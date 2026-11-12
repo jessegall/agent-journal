@@ -161,5 +161,14 @@ def test_a_file_that_lists_the_modules_of_a_top_folder_is_in_a_layer_and_may_imp
     assert failures(tmp_path, declared("tasks", "core.modules.tasks")) == []
 
 
+def test_a_suite_declaration_is_a_module_list_and_may_import_the_modules_it_lists(tmp_path):
+    module_folder(tmp_path, "suites.coding", "coding")
+    module_folder(tmp_path, "suites.coding.modules.workers", "workers", "from suites.coding.coding_module import CodingModule\n")
+    (tmp_path / "src" / "suites" / "coding" / "coding_suite.py").write_text("from suites.coding.coding_module import CodingModule\nfrom suites.coding.modules.workers.workers_module import WorkersModule\n")
+    coding, workers = declared("coding", "suites.coding"), declared("workers", "suites.coding.modules.workers", ["coding"])
+    assert LayerTable().file_layer("src/suites/coding/coding_suite.py").label == "module list suites/coding"
+    assert failures(tmp_path, coding, workers) == []
+
+
 def test_no_hand_written_layer_is_left():
     assert "python/NamespaceDependencyDetector" not in json.loads(CONFIG_FILE.read_text())["configure"]

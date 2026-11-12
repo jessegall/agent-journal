@@ -18,7 +18,8 @@ from engine.query.expressions.json_object import JsonObject
 from engine.query.expressions.literal import Literal
 from engine.query.expressions.scalar_subselect import ScalarSubselect
 from engine.query.select import Select
-from core.modules.tasks.models.support.views import AUTOMATIC_ONLY, HELPER_COLUMNS, TASK_TAGS, agent_label, is_main, json_rows, or_zero, task_helper_match
+from engine.agent.agent_name import agent_name
+from core.modules.tasks.models.support.views import AUTOMATIC_ONLY, HELPER_COLUMNS, TASK_TAGS, is_main, json_rows, or_zero, task_helper_match
 
 TASK_OF_PLACE = ConditionJoin("tasks", condition=ColumnCompare("tasks.id", "=", "plan_tasks.task_id"))
 ASSIGNEE_PATH = '$."journal.core.plans".assignee_id'
@@ -66,12 +67,12 @@ PLAN_CARDS_SELECT = Select("plans").selecting(
             "changed_at"),
     Aliased(json_rows(plan_places().joined(TASK_OF_PLACE).joined(ConditionJoin("agents", condition=task_helper_match(), alias="helper"))
                          .matching(IsNull("plan_tasks.closed_at")),
-                         {"id": Column("helper.id"), "name": agent_label("helper"), "main": is_main("helper"), "task_id": Column("tasks.id"),
+                         {"id": Column("helper.id"), "name": agent_name("helper"), "main": is_main("helper"), "task_id": Column("tasks.id"),
                           "task_title": Column("tasks.title")}), "agents"),
     Aliased(json_rows(plan_places().joined(TASK_OF_PLACE).matching(place_state(ComparisonOperator.EQUAL, "started")),
                          {"id": Column("tasks.id"), "title": Column("tasks.title")}), "working"),
     Aliased(ScalarSubselect(Select("agents").named_as("assignee")
-                            .selecting(JsonObject({"id": Column("assignee.id"), "name": agent_label("assignee"), "main": is_main("assignee")}))
+                            .selecting(JsonObject({"id": Column("assignee.id"), "name": agent_name("assignee"), "main": is_main("assignee")}))
                             .matching(Comparison(Column("assignee.id"), ComparisonOperator.EQUAL,
                                                  FunctionCall(SqlFunction.JSON_EXTRACT, [Column("plans.metadata"), Literal(ASSIGNEE_PATH)])))), "assignee"),
 ).joined(ConditionJoin("plan_progress", condition=ColumnCompare("plan_progress.plan_id", "=", "plans.id"))).view_sql()

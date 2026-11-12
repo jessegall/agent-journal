@@ -1,5 +1,6 @@
 import json
 
+from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
@@ -56,7 +57,7 @@ def test_a_dispatch_for_a_phase_shows_a_mark_that_the_plan_was_handed_over(new_s
     recording_launch(monkeypatch)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1", actor=story.agent), ActorType.AGENT)
     story.run_listeners()
-    expect_marks_text(story, f"Worker {worker.id} was given 3 tasks")
+    expect_marks_text(story, f"Worker {agent_number(story, worker.id)} was given 3 tasks")
     marks = tuple(story.container.get(Queries).query(ChatMark).filter(variant=WorkerMarkVariant.ASSIGNED).every_row(TEST_ROWS_REASON))
     story.expect_rows(len(marks) == 1, marks[0].target_id == worker.id,
                       all(text in marks[0].detail for text in ("Task 1: Fix the cart", "Task 2: Tax", "Task 3: Totals")))

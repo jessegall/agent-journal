@@ -12,6 +12,7 @@ WORKER_RUN = "journal.suites.coding.workers.worker-run-limit"
 WORKER_KEPT = "journal.suites.coding.workers.worker-kept-limit"
 READ_ONLY_RUN = "journal.core.helpers.read-only-helper-run-limit"
 PROFILE_LIMITS = "journal.core.helpers.read-only-helper-profile-limits"
+HELPER_TYPES = "helper-type"
 READING = {"context_window": {"used_percentage": 20, "total_input_tokens": 60000}}
 
 
@@ -94,8 +95,9 @@ def test_a_profiles_own_limits_leave_the_line_of_every_profile_and_the_line_leav
 
 def test_a_context_cap_set_on_the_screen_of_a_type_is_the_cap_its_agent_bar_counts_against(helpers):
     story, tab = helpers
-    tab.modal.save({CONTEXT_ON: "on", CONTEXT_PROFILES: '["journal-designer:150000"]'}, "advanced")
-    assert json.loads(tab.modal.value("advanced", CONTEXT_PROFILES)) == ["journal-designer:150000"]
+    tab.modal.save({CONTEXT_ON: "on", CONTEXT_PROFILES: '["journal-designer:150000"]'}, "advanced", HELPER_TYPES)
+    assert json.loads(tab.modal.value(HELPER_TYPES, CONTEXT_PROFILES)) == ["journal-designer:150000"]
+    assert CONTEXT_PROFILES not in tab.modal.nodes("advanced")
     read_by_agents(story)
     designer = tab.contexts()["journal-designer"]
     assert designer == (40, 150000)
@@ -104,7 +106,7 @@ def test_a_context_cap_set_on_the_screen_of_a_type_is_the_cap_its_agent_bar_coun
 
 def test_a_type_set_to_no_cap_shows_no_percent_of_a_cap(helpers):
     story, tab = helpers
-    tab.modal.save({CONTEXT_ON: "on", CONTEXT_PROFILES: '["journal-designer:none"]'}, "advanced")
+    tab.modal.save({CONTEXT_ON: "on", CONTEXT_PROFILES: '["journal-designer:none"]'}, "advanced", HELPER_TYPES)
     read_by_agents(story)
     percent, limit = tab.contexts()["journal-designer"]
     assert limit is None and percent == 20
@@ -112,7 +114,7 @@ def test_a_type_set_to_no_cap_shows_no_percent_of_a_cap(helpers):
 
 def test_the_kind_table_sets_the_workers_cap_and_a_type_with_a_cap_of_its_own_uses_that_instead(helpers):
     story, tab = helpers
-    tab.modal.save({CONTEXT_ON: "on", CONTEXT_KINDS: '["worker:200000"]', CONTEXT_PROFILES: '["journal-designer:150000"]'}, "advanced")
+    tab.modal.save({CONTEXT_ON: "on", CONTEXT_KINDS: '["worker:200000"]', CONTEXT_PROFILES: '["journal-designer:150000"]'}, "advanced", HELPER_TYPES)
     read_by_agents(story)
     shown = tab.contexts()
     assert shown["worker"] == (30, 200000)

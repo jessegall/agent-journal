@@ -67,6 +67,7 @@ HOOK_REQUEST_ROWS_SELECT = Select("hook_requests").selecting(
     Aliased(JsonPath(Column("payload"), "$.body"), "body_json"),
     Aliased(payload("$.duration_ms"), "duration_ms"),
     Aliased(first_of(payload("$.queued_ms"), Literal(0)), "queued_ms"),
+    Aliased(CastInteger(first_of(payload('$.headers."X-Journal-Retries"'), Literal(0))), "retries"),
     Aliased(CaseWhen([(role_is("viewer"), Literal("Viewer")), (role_is("cli"), Literal("Command line"))], first_of(HELPER_LABEL, Literal("Main agent"))),
             "sender"),
     Aliased(payload("$.outcome"), "outcome"),

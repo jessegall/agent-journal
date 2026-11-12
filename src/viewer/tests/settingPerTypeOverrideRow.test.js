@@ -1,14 +1,9 @@
 import {expect, test} from "vitest";
 import {SettingPerTypeOverrideRow} from "@journal/setting-components";
-import {drawnSettingComponent} from "./support/settingComponent.js";
+import {drawnSettingComponent, typedInto as typed} from "./support/settingComponent.js";
 
 const row = (props) => drawnSettingComponent(SettingPerTypeOverrideRow, {label: "Helpers running", everyValue: 4, ownValue: null, ...props});
 const source = (drawn) => drawn.element.querySelector("[data-setting-source]").textContent;
-const typed = (drawn, text) => {
-    const input = drawn.element.querySelector("input");
-    input.value = text;
-    input.dispatchEvent(new Event("input"));
-};
 
 test("with no own value the row shows the value of every profile and says so", () => {
     const drawn = row({});

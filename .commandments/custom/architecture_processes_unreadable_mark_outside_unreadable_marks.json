@@ -36,7 +36,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(^|/)core/modules/processes/(support/reading/unreadable_marks\\.py|models/unreadable_mark\\.py|migrations/m064_unreadable_marks\\.py)$"
+                "fileMatches": "(^|/)core/modules/processes/(support/unreadable/unreadable_marks\\.py|models/unreadable_mark\\.py|migrations/m064_unreadable_marks\\.py)$"
             },
             {
                 "fileMatches": "(^|/)core/modules/processes/commands/(mark_unreadable|lift_unreadable)/"

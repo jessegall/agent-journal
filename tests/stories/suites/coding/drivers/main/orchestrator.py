@@ -32,10 +32,10 @@ def test_a_main_agent_with_auto_off_with_nothing_open_stops(new_story):
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
-def test_a_main_agent_with_auto_off_at_the_worker_limit_may_stop(new_story):
+def test_a_main_agent_that_keeps_going_at_the_worker_limit_takes_the_open_task_itself(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.run("setting make journal.suites.coding.workers.worker-run-limit 0")
-    story.expect_hook_allowed("s-1", HookSamples.stop())
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "is yours now")
 
 
 def test_tasks_a_running_worker_has_queued_let_the_main_agent_stop(new_story):

@@ -30,6 +30,6 @@ class WorkerStopMarkListener(MarkListener[E]):
         self.unfinished, self.detail = unfinished, detail
 
     def show_stop(self, logged: LoggedEvent, worker: Agent, variant: WorkerMarkVariant, move: str, tasks: tuple[Task, ...]) -> None:
-        name = worker.given_name or f"Worker {worker.id}"
+        name = worker.display_name
         detail = self.detail.text(worker, tasks)
         self.show(logged, WorkerMarkType.WORKER, variant, f"{name} {move}", None, AGENTS_TABLE, worker.id, detail=detail, outcome=MarkOutcome.WARNED)

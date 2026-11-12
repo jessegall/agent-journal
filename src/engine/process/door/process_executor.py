@@ -1,5 +1,6 @@
 from dataclasses import replace
 
+from engine.errors.refusal import Refusal
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.log.error_log import ErrorLog
 from engine.process.door.execution import Execution
@@ -14,7 +15,7 @@ TIME_LIMIT_EXIT_CODE = 124
 
 class ProcessExecutor:
     """The one door every program the journal runs goes through: the queue admits it as its row, the gate holds it
-    while the server starts or updates, the runner runs it, and its end is recorded, also when it fails or passes
+    while the server starts or updates and refuses it for a paused agent, the runner runs it, and its end is recorded, also when it fails or passes
     its time limit."""
 
     def __init__(self, placement: RunPlacement, runner: RunnerProgram, gate: ExecutionGate, errors: ErrorLog) -> None:
@@ -22,14 +23,18 @@ class ProcessExecutor:
 
     def execute(self, request: ExecutionRequest) -> Execution:
         placed = self.placement.placed(request)
-        self.gate.opened()
         try:
-            execution = self.runner.run(placed)
+            self.gate.opened(placed)
+            with self.placement.admitted(placed):
+                execution = self.runner.run(placed)
         except RunTimeLimitError as error:
-            self.recorded(placed, Execution(placed.process_id, TIME_LIMIT_EXIT_CODE, "", str(error)))
+            self.recorded(placed, Execution.failed(placed.process_id, TIME_LIMIT_EXIT_CODE, str(error)))
+            raise
+        except Refusal as refusal:
+            self.recorded(placed, Execution.failed(placed.process_id, Refusal.exit_code, str(refusal)))
             raise
         except BaseException:
-            self.recorded(placed, Execution(placed.process_id, 1, "", "the run failed to start"))
+            self.recorded(placed, Execution.failed(placed.process_id, 1, "the run failed to start"))
             raise
         return replace(execution, process_id=self.recorded(placed, execution))
 

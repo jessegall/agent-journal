@@ -72,17 +72,12 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 	} else {
 		fmt.Fprintln(stderr, "the viewer link could not be asked: "+err.Error())
 	}
-	arguments, err := journal.ProgramCommand(request, choice, launchName)
+	programCommand, err := journal.ProgramCommand(request, choice, launchName)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return ErrorCode
 	}
-	command := exec.Command(arguments[0], arguments[1:]...)
-	command.Dir = choice.Folder
-	command.Env = append(os.Environ(), "JOURNAL_LAUNCH="+launchName)
-	for name, value := range choice.Variables {
-		command.Env = append(command.Env, name+"="+value)
-	}
+	command := programExec(programCommand, choice, launchName, os.Environ())
 	watcher := launch.NewMenuWatcher(inputs, agentID, func(question, explanation string) { journal.TellMenuAnswer(agentID, question, explanation) })
 	stopWatching := make(chan struct{})
 	defer close(stopWatching)
@@ -189,4 +184,19 @@ func IsProgramName(word string) bool {
 		}
 	}
 	return false
+}
+
+// programExec builds the program's process: the launcher's environment, then the launch name, the choice's variables
+// and last the journal's own, so the journal's CODEX_HOME wins over one the person exported.
+func programExec(programCommand launch.ProgramCommand, choice launch.Choice, launchName string, environment []string) *exec.Cmd {
+	command := exec.Command(programCommand.Arguments[0], programCommand.Arguments[1:]...)
+	command.Dir = choice.Folder
+	command.Env = append(environment, "JOURNAL_LAUNCH="+launchName)
+	for name, value := range choice.Variables {
+		command.Env = append(command.Env, name+"="+value)
+	}
+	for name, value := range programCommand.Variables {
+		command.Env = append(command.Env, name+"="+value)
+	}
+	return command
 }

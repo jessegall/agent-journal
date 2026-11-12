@@ -1,8 +1,12 @@
 import io
 import contextlib
+import sqlite3
+
+import pytest
 from datetime import timedelta
 
 from engine.enums.process_kind import ProcessKind
+from engine.errors.refusal import Refusal
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
 from engine.actor.actor import Actor
@@ -21,6 +25,8 @@ from core.modules.processes.support.request_log import RequestLog
 from core.modules.processes.support.request_log_entry import RequestLogEntry
 from core.modules.processes.ticks.request_log_import import RequestLogImport
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.core.support.agent_labels import agent_number
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -54,11 +60,12 @@ def test_each_hook_leaves_one_ended_request_row_of_the_hook_kind_and_no_process_
 
 def test_a_quick_run_through_the_door_is_logged_and_the_tick_writes_one_ended_request_row(new_story):
     story = new_story(fixture=BuilderStarted)
+    processes_before = story.container.get(Queries).query(Process).count()
     execution = door_run(story, ExecutionRequest(["echo", "done"], story.home.project_folder, ProcessKind.QUICK, 10))
     logged_only = runs_of_kind(story, ProcessKind.QUICK)
     logged_rows_written(story)
     rows = runs_of_kind(story, ProcessKind.QUICK)
-    story.expect_rows(execution.stdout == "done\n", logged_only == [], len(rows) == 1, rows[0].exit_code == 0, detail=str(rows))
+    story.expect_rows(execution.stdout == "done\n", logged_only == [], len(rows) == 1, rows[0].exit_code == 0, story.container.get(Queries).query(Process).count() == processes_before, detail=str(rows))
 
 
 def test_a_failing_run_through_the_door_keeps_its_code(new_story):
@@ -86,10 +93,10 @@ def test_a_broken_line_in_the_request_log_is_left_out_and_the_rows_around_it_are
     story = new_story(fixture=BuilderStarted)
     log = story.container.get(RequestLog)
     log.append(RequestLogEntry(1, None, ProcessKind.JOURNAL, "journal task list", 0, story.clock.timestamp().text))
-    FileAccess.shared().write(log.path, FileAccess.shared().read(log.path) + "{half a line\n" + "{\"line\": \"journal task done\"}\n")
+    FileAccess.shared().write(log.lines.path, FileAccess.shared().read(log.lines.path) + "{half a line\n" + "{\"line\": \"journal task done\"}\n")
     log.append(RequestLogEntry(1, None, ProcessKind.JOURNAL, "journal task show", 0, story.clock.timestamp().text))
     logged_rows_written(story)
-    story.expect_rows([row.line for row in runs_of_kind(story, ProcessKind.JOURNAL)] == ["journal task list", "journal task show"], not log.taken_path.exists())
+    story.expect_rows([row.line for row in runs_of_kind(story, ProcessKind.JOURNAL)] == ["journal task list", "journal task show"], not log.lines.taken_path.exists())
 
 
 def test_a_failed_environment_in_the_request_log_is_let_go_and_repeats_no_row_of_the_others(new_story, monkeypatch):
@@ -112,6 +119,32 @@ def test_a_failed_environment_in_the_request_log_is_let_go_and_repeats_no_row_of
     story.expect_rows([row.line for row in runs_of_kind(story, ProcessKind.JOURNAL)] == ["journal task list"], log.taken() == ())
 
 
+def test_a_busy_database_keeps_the_rows_of_an_environment_for_the_next_tick_and_a_bad_entry_alone_is_let_go(new_story, monkeypatch):
+    story = new_story(fixture=BuilderStarted)
+    written = RecordRequestRunsHandler.handle
+    outcomes = {"busy": True}
+
+    def failing(handler, command, context):
+        if outcomes["busy"]:
+            busy = sqlite3.OperationalError("database is locked")
+            busy.sqlite_errorcode = sqlite3.SQLITE_BUSY
+            raise busy
+        if any(entry.line == "journal task bad" for entry in command.entries):
+            raise RuntimeError("this entry fails")
+        return written(handler, command, context)
+
+    monkeypatch.setattr(RecordRequestRunsHandler, "handle", failing)
+    log = story.container.get(RequestLog)
+    for line in ("journal task list", "journal task bad", "journal task show"):
+        log.append(RequestLogEntry(1, None, ProcessKind.JOURNAL, line, 0, story.clock.timestamp().text))
+    RequestLogImport()(story.container)
+    story.expect_rows(len(log.taken()) == 3, runs_of_kind(story, ProcessKind.JOURNAL) == [])
+    outcomes["busy"] = False
+    RequestLogImport()(story.container)
+    RequestLogImport()(story.container)
+    story.expect_rows(sorted(row.line for row in runs_of_kind(story, ProcessKind.JOURNAL)) == ["journal task list", "journal task show"], log.taken() == ())
+
+
 def test_a_request_row_older_than_its_days_is_pruned(new_story):
     story = new_story(fixture=BuilderStarted)
     log = story.container.get(RequestLog)
@@ -127,3 +160,26 @@ def test_a_journal_command_an_agent_runs_through_the_cli_leaves_one_row_as_that_
     logged_rows_written(story)
     rows = [row for row in runs_of_kind(story, ProcessKind.JOURNAL) if row.line == "journal task list"]
     story.expect_rows(len(rows) == 1, rows[0].session_agent_id == story.agent.id, detail=str(rows))
+
+
+def owned_run(story, owner: RowOwner, request: ExecutionRequest):
+    story.container.get(Database).row_owner = owner
+    return story.container.get(ProcessExecutor).execute(request)
+
+
+def test_a_paused_agent_or_main_agent_starts_no_run_that_takes_a_place_until_it_is_resumed_and_other_agents_go_on(new_story):
+    story = new_story(fixture=UserJoined)
+    worker = RowOwner(story.new_row_id("agent start s-paused claude worker --environment main"), 1)
+    story.run(f"agent pause {agent_number(story, worker.agent)}", actor=story.user)
+    shell = ExecutionRequest(["sh", "-c", "exit 0"], story.home.project_folder, ProcessKind.SHELL, 10)
+    quick = ExecutionRequest(["sh", "-c", "exit 0"], story.home.project_folder, ProcessKind.QUICK, 10)
+    with pytest.raises(Refusal, match="your agent is paused"):
+        owned_run(story, worker, shell)
+    quick_while_paused = owned_run(story, worker, quick)
+    main_while_worker_paused = owned_run(story, RowOwner(MAIN_AGENT, 1), shell)
+    story.run(f"agent resume {agent_number(story, worker.agent)}", actor=story.user)
+    resumed = owned_run(story, worker, shell)
+    story.run(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
+    with pytest.raises(Refusal, match="your agent is paused"):
+        owned_run(story, RowOwner(MAIN_AGENT, 1), shell)
+    story.expect_rows(quick_while_paused.exit_code == 0, main_while_worker_paused.exit_code == 0, resumed.exit_code == 0)

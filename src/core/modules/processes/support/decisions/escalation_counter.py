@@ -9,7 +9,7 @@ from core.modules.processes.queries.reading_decision_query import ReadingDecisio
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.decisions.escalation_resets import EscalationResets
-from core.modules.processes.support.reading.key_run import KeyRun
+from core.modules.processes.support.decisions.key_run import KeyRun
 
 RUNS_READ = 10
 

@@ -13,6 +13,7 @@ class SqlFunction(StrEnum):
     AVG = "avg"
     ROUND = "round"
     SUBSTR = "substr"
+    UPPER = "upper"
     INSTR = "instr"
     JSON_EXTRACT = "json_extract"
     JSON_ARRAY_LENGTH = "json_array_length"

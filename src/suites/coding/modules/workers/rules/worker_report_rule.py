@@ -15,9 +15,10 @@ from suites.coding.modules.workers.support.work_units import WorkUnits
 
 
 class WorkerReportRule(DriverRule):
-    """What a worker says as it stops with no task started and none queued, every task handed in, is its report
-    to its main agent; with the merger on it is only kept, since the merger reads the hand-in. A worker whose unit
-    of several tasks is all committed stops to wait for its runs or its merge, which is no report."""
+    """What a worker says as it stops with no task started and none queued, every task handed in, is its
+    report to its main agent; with the merger on it is only kept, since the merger reads the hand-in. A worker
+    whose unit of several tasks is all committed stops to wait for its runs or its merge, which is no report.
+    """
 
     name = "workers.report"
     hook = HookEventName.STOP
@@ -34,6 +35,6 @@ class WorkerReportRule(DriverRule):
         if not text or main_agent_id is None or self.tasks.started_tasks(hook.agent_id) or self.next_task.following(hook.agent_id) is not None:
             return RuleAnswer.allowed()
         unit = self.units.unit(hook.agent_id)
-        if unit.has_several_tasks and unit.is_committed:
+        if unit.is_committed_unit:
             return RuleAnswer.allowed()
         return RuleAnswer.allowed().running(RecordParentReport(hook.agent_id, main_agent_id, text, notify_parent=not self.settings.flag(MERGER_ENABLED)))

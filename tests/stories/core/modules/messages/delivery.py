@@ -345,7 +345,7 @@ def test_a_stop_is_refused_while_a_message_is_unread_and_goes_through_once_it_is
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
-READ_NUDGE_START = "act on what you read:"
+READ_NUDGE_START = "Act on the message:"
 
 
 def test_reading_a_message_shows_only_its_text_and_marks_it_read(new_story):
@@ -355,12 +355,12 @@ def test_reading_a_message_shows_only_its_text_and_marks_it_read(new_story):
     story.expect_text("message show 1", "read_at: 2026", actor=story.user)
 
 
-def test_each_new_message_read_in_one_turn_tells_the_agent_how_to_act_and_names_a_memory_as_a_choice(new_story):
+def test_each_new_message_read_in_one_turn_tells_the_agent_how_to_act_and_to_save_memories(new_story):
     story = new_story(SAMPLES, fixture=ReadCartMessage)
     post_message(story, "And the checkout")
     reply = story.hook("s-1", HookSamples.shell("journal message read 2", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "2"], subcommand="message")).with_fields(event="post_tool_use"))
     expect_startswith_lines_reply(READ_NUDGE_START, reply)
-    expect_line_with_parts([READ_NUDGE_START, "a memory worth keeping"], reply)
+    expect_line_with_parts([READ_NUDGE_START, "save memories worth keeping"], reply)
 
 
 def test_the_agent_cannot_show_a_message_it_has_not_read_and_is_told_to_read_it(new_story):

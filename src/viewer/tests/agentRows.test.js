@@ -50,6 +50,7 @@ const answers = {
     "agent transcript 3": page([{id: 1, author: "user", text: "Read the cart"}]),
     "file-edit list --agent 3": page([EDIT]),
 };
+const WORKER_ROWS = AGENTS.map((row) => (row.id === 2 ? {...row, role: "worker"} : row));
 const WORKERS = AGENTS.map((row) => (row.id === 3 ? {...row, role: "worker"} : row));
 const window = (facts = FACTS, options = {}, agents = AGENTS) => ({
     ...context({
@@ -105,8 +106,8 @@ test("an idle helper's card opens its report", async () => {
 test("a closed card shows the profile, name and status without open-card details", async () => {
     const element = await drawn();
     const card = cardOf(element, 3);
-    expect(card.querySelector("[data-agent-title]").textContent).toBe("Researcher");
-    expect(card.querySelector("[data-agent-name]").textContent).toBe("Madame Curie");
+    expect(card.querySelector("[data-agent-title]").textContent).toBe("Helper");
+    expect(card.querySelector("[data-agent-name]").textContent).toBe("Researcher · helper 3");
     expect(card.querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high · helper 3");
     expect(card.querySelector("[data-agent-identity]").parentElement.previousElementSibling.classList.contains("agent-head")).toBe(true);
     expect(card.querySelector(".agent-dot").dataset.state).toBe("blocked");
@@ -116,7 +117,8 @@ test("a closed card shows the profile, name and status without open-card details
     card.click();
     await settle();
     expect(cardOf(element, 3).querySelector("[data-agent-identity]")).toBeNull();
-    expect(cardOf(element, 3).querySelector("[data-agent-title]").textContent).toBe("Researcher 3");
+    expect(cardOf(element, 3).querySelector("[data-agent-title]").textContent).toBe("Helper");
+    expect(cardOf(element, 3).querySelector("[data-agent-name]").textContent).toBe("Researcher · helper 3");
 });
 
 test("closed cards use the shared agent facts read for their identity", async () => {
@@ -140,7 +142,7 @@ test("worker identity stays the same when opened", async () => {
     expect(identity.parentElement.nextElementSibling.querySelector("[data-agent-task]").textContent).toContain("Task 1");
     const opened = await mounted({render: () => h(AgentCard, {row, facts, open: true})}, context({}));
     expect(opened.querySelector("[data-agent-identity]")).toBeNull();
-    expect(opened.querySelector("[data-agent-title]").textContent).toBe("Worker 4");
+    expect(opened.querySelector("[data-agent-title]").textContent).toBe("Worker");
     expect(opened.querySelector("[data-agent-open]").title).toBe("");
     const live = opened.querySelector("[data-information-bar]");
     expect(live.querySelector("[data-agent-last-heard]").textContent).toContain("Seen:");
@@ -271,14 +273,15 @@ test("a worker with a started task does not say it waits for its tests", async (
     expect(cardOf(element, 2).textContent).not.toContain("Waiting: tests");
 });
 
-test("a profile title is shown on its agent card", async () => {
-    const element = await drawn([{...FACTS[0], profile: "journal-worker", profile_title: "Worker"}]);
+test("a profile title is shown beside the role on its agent card", async () => {
+    const element = await drawn([{...FACTS[0], profile: "journal-medior", profile_title: "Medior"}], {}, WORKER_ROWS);
     expect(cardOf(element, 2).querySelector("[data-agent-title]").textContent).toBe("Worker");
+    expect(cardOf(element, 2).querySelector("[data-agent-name]").textContent).toBe("Medior · worker 2");
 });
 
-test("a profile without a title shows its name", async () => {
-    const element = await drawn([{...FACTS[0], profile: "auditor"}]);
-    expect(cardOf(element, 2).querySelector("[data-agent-title]").textContent).toBe("auditor");
+test("a profile without a title shows its name beside the role", async () => {
+    const element = await drawn([{...FACTS[0], profile: "auditor"}], {}, WORKER_ROWS);
+    expect(cardOf(element, 2).querySelector("[data-agent-name]").textContent).toBe("Auditor · worker 2");
 });
 
 test("a running worker's card names the command it runs", async () => {

@@ -31,18 +31,36 @@ class RowSearch:
         if unknown:
             raise Refusal(f"{unknown[0]} is no model search reads", f"name one of: {', '.join(sorted(searched))}")
         search_models = [searched[name] for name in model_names] or list(searched.values())
-        model_queries = [self.searchable(model).matching(ContainsEvery(model.search_fields, terms)) for model in search_models]
-        hits = [SearchHit.matched(row, terms) for query in model_queries for row in query.newest().take(HIT_LIMIT_ROWS)]
-        total = sum(query.count() for query in model_queries)
+        model_queries = {model: self.searchable(model).matching(ContainsEvery(model.search_fields, terms)) for model in search_models}
+        total = sum(query.count() for query in model_queries.values())
         if total or len(terms) < 2:
-            return SearchResult(terms, sorted(hits, key=lambda hit: (-hit.rank, -hit.created_at.value.timestamp()))[:HIT_LIMIT_ROWS], total)
+            return SearchResult(terms, self.ranked_hits(model_queries, terms), total)
         return self.closest(terms, search_models)
 
+    @staticmethod
+    def ranked_hits(model_queries: dict[type[Model], Query[Model]], terms: Sequence[str]) -> list[SearchHit]:
+        """The best hits, the models of the highest rank first and the newest rows first within a rank: a lower rank
+        loads rows only for the places a higher one left, so no row is loaded that could not be shown."""
+        hits: list[SearchHit] = []
+        for rank in sorted({model.search_rank for model in model_queries}, reverse=True):
+            places = HIT_LIMIT_ROWS - len(hits)
+            if not places:
+                break
+            ranked = [SearchHit.matched(row, terms) for model, query in model_queries.items() if model.search_rank == rank for row in query.newest().take(places)]
+            hits.extend(sorted(ranked, key=lambda hit: -hit.created_at.value.timestamp())[:places])
+        return hits
+
     def closest(self, terms: Sequence[str], search_models: Sequence[type[Model]]) -> SearchResult:
-        enough = (len(terms) + 1) // 2
-        rows = [row for model in search_models for row in self.searchable(model).matching(ContainsMost(model.search_fields, terms, enough)).newest().take(HIT_LIMIT_ROWS)]
-        hits = [SearchHit.matched(row, terms) for row in rows]
-        ranked = sorted(hits, key=lambda hit: (-hit.matched_terms, -hit.rank, -hit.created_at.value.timestamp()))
+        """Reads the rows holding the most words first, then those holding one fewer, and so on down to half of them,
+        until enough rows are read, so an older row holding more of the words is not left out by newer ones holding fewer."""
+        hits: dict[tuple[str, int], SearchHit] = {}
+        for words in range(len(terms) - 1, (len(terms) + 1) // 2 - 1, -1):
+            for model in search_models:
+                for row in self.searchable(model).matching(ContainsMost(model.search_fields, terms, words)).newest().take(HIT_LIMIT_ROWS):
+                    hits.setdefault((row.cli_name, row.id), SearchHit.matched(row, terms))
+            if len(hits) >= HIT_LIMIT_ROWS:
+                break
+        ranked = sorted(hits.values(), key=lambda hit: (-hit.matched_terms, -hit.rank, -hit.created_at.value.timestamp()))
         return SearchResult(terms, ranked[:HIT_LIMIT_ROWS], len(ranked), is_closest=True)
 
     def searchable(self, model: type[Model]) -> Query[Model]:

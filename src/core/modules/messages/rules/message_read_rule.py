@@ -1,6 +1,5 @@
 from engine.driver.nudge import Nudge
 from core.modules.messages.support.message_nudges import MESSAGE_NOTE, REPLY_COMMAND, IMAGE_TAG_REQUEST
-from pathlib import PurePath
 
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
@@ -13,8 +12,6 @@ from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_captions import MessageCaptions
 
 UNREAD_REASON = "reading the unread list marks every delivered unread message as read"
-
-IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".webp")
 
 
 class MessageReadRule(DriverRule):
@@ -43,6 +40,4 @@ class MessageReadRule(DriverRule):
         return RuleAnswer.with_nudges(*nudges).running(*(NoteMessageRead(message.id) for message in unread))
 
     def image_nudges(self, message: Message) -> list[Nudge]:
-        captions = MessageCaptions.decoded(message)
-        return [IMAGE_TAG_REQUEST.nudge(message=message.id, name=name)
-                for name in message.files if PurePath(name).suffix.lower() in IMAGE_SUFFIXES and name not in captions]
+        return [IMAGE_TAG_REQUEST.nudge(message=message.id, name=name) for name in MessageCaptions.untagged_images(message)]

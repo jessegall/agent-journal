@@ -10,10 +10,8 @@ from engine.time.clock import Clock
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.support.held_runs import HeldRuns
-from core.modules.processes.support.process_nudges import READER_BLOCK, READER_REQUEST_REFUSAL
+from core.modules.processes.support.reader_block_keys import ReaderBlockKeys
 from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
-
-READING_BLOCK_KEYS = (READER_BLOCK.key, READER_REQUEST_REFUSAL.key)
 
 
 class ListHoldsSubcommand(ReadSubcommand[tuple[str, ...]]):
@@ -35,8 +33,8 @@ class ListHoldsSubcommand(ReadSubcommand[tuple[str, ...]]):
         held = self.held_runs.found(agent_id, self.clock.timestamp())
         lines = [f"hold on output {held.process.id}: {ExitTexts.sentences(PressureLevel.HOLD.exits)}"] if held is not None else []
         blocks = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, closed_at=None).get()
-        lines += [f"block of reader request {block.nudge_key.rsplit('.', 1)[-1]}: {ExitTexts.sentences(PressureLevel.BLOCK.exits)}"
-                  for block in blocks if block.nudge_key.startswith(READING_BLOCK_KEYS)]
+        requests = [request_id for request_id in (ReaderBlockKeys.request_id(block.nudge_key) for block in blocks) if request_id is not None]
+        lines += [f"block of reader request {request_id}: {ExitTexts.sentences(PressureLevel.BLOCK.exits)}" for request_id in requests]
         return tuple(lines)
 
     def write_output(self, value: object, output: Output) -> None:

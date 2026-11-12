@@ -41,18 +41,27 @@ from core.modules.codex.providers.support.codex_token_count import CodexTokenCou
 from core.modules.codex.providers.support.codex_session_effort import CodexSessionEffort
 from core.modules.codex.providers.support.codex_event import CodexEvent
 from core.modules.codex.providers.support.codex_trust import CodexTrust
+from core.modules.codex.providers.support.codex_journal_config import CodexJournalConfig
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.program_settings import ProgramSettings, SettingsFile
 from core.modules.codex.models.enums.codex_hook_event import CodexHookEvent
+from engine.journal.journal_home import JOURNAL_FOLDER
 
 HOME_VARIABLE = "CODEX_HOME"
 DEVELOPER_ROLE = "developer"
 CODEX_CONTEXT_OPENINGS = ("# AGENTS.md instructions", "<environment_context>", "<permissions instructions>", "<skills_instructions>", "<collaboration_mode>", "<recommended_plugins>", "<apps_instructions>")
 HOOK_PROMPT_TAG = re.compile(r"</?hook_prompt[^>]*>")
+PERSON_LINKS = ("auth.json", "sessions", "history.jsonl")
+PERSON_STATE = ("state_5.sqlite", "thread_history_1.sqlite", "session_index.jsonl", "rules", "skills", "plugins")
+PERSON_FOLDER = ".codex"
+PROGRAMS_FOLDER = "programs"
+ASK_PROMPTS = ["-c", 'approval_policy="on-request"', "-c", 'sandbox_mode="workspace-write"']
 
 
 class CodexProvider(Provider):
-    """OpenAI's Codex: hooks in .codex/hooks.json, trusted per file and hook in its config.toml, rollouts
-    under its sessions folder, and a session it names itself, which the first hook brings; a main session
-    starts with the MCP servers' keys in its environment."""
+    """OpenAI's Codex: hooks and their trust in the journal's own Codex folder, passed as CODEX_HOME, rollouts
+    under that folder's sessions link to the person's, and a session it names itself, which the first hook brings;
+    a main session starts with the MCP servers' keys in its environment."""
 
     name = "codex"
     title = "Codex"
@@ -105,11 +114,17 @@ class CodexProvider(Provider):
         return replace(super().with_profile_model(profile, model), codex_model=model)
 
     def session_command(self, launch: Launch) -> LaunchCommand:
-        skip = ["--dangerously-bypass-approvals-and-sandbox"] if launch.skip_prompts else []
+        permission = ["--dangerously-bypass-approvals-and-sandbox"] if launch.skip_prompts else ASK_PROMPTS
         model = [] if launch.names_flag("-m") or launch.names_flag("--model") else ["-m", launch.model]
         effort = [] if launch.effort else self.effort_arguments(launch.model)
-        arguments = [self.executable, "--no-daemon", *model, *effort, *skip, *self.journal_instructions(launch.folder), *launch.program_arguments, *launch.session.arguments(self), *launch.prompt_arguments]
-        return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()})
+        arguments = [self.executable, "--no-daemon", *model, *effort, *permission, *self.journal_instructions(launch.folder), *launch.program_arguments, *launch.session.arguments(self), *launch.prompt_arguments]
+        return LaunchCommand(arguments, launch.folder, self.variables(launch.root, launch.variables))
+
+    def launch_variables(self, home: JournalHome) -> Mapping[str, str]:
+        return {HOME_VARIABLE: str(home.program_folder(self.name))}
+
+    def variables(self, root: Path, given: Mapping[str, str]) -> dict[str, str]:
+        return {**given, **self.keys.all(), **self.launch_variables(JournalHome(root / JOURNAL_FOLDER))}
 
     @staticmethod
     def journal_instructions(folder: Path) -> list[str]:
@@ -121,7 +136,7 @@ class CodexProvider(Provider):
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:
         arguments = [self.executable, "exec", *launch.session.arguments(self), "--json", "--dangerously-bypass-approvals-and-sandbox",
                      "--dangerously-bypass-hook-trust", "-m", launch.model, *self.effort_arguments(launch.model), launch.brief]
-        return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()})
+        return LaunchCommand(arguments, launch.folder, self.variables(launch.root, launch.variables))
 
     def effort_arguments(self, model: str) -> list[str]:
         effort = self.efforts.effort(MODEL_EFFORTS, model)
@@ -144,7 +159,7 @@ class CodexProvider(Provider):
         cached = self.rollouts.get(session)
         if cached is not None and cached.is_file():
             return cached
-        sessions = self.folders.folder(HOME_VARIABLE, ".codex") / "sessions"
+        sessions = self.person_folder() / "sessions"
         located = next(sessions.glob(f"**/rollout-*-{session}.jsonl"), None) if sessions.is_dir() else None
         if located is not None:
             self.rollouts[session] = located
@@ -199,33 +214,37 @@ class CodexProvider(Provider):
         return TranscriptAuthor.row(position, JOURNAL_AUTHOR if role == DEVELOPER_ROLE else role, shown, fields.get("timestamp") if is_mapping(fields) else "")
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
-        ProgramHooks.hooks(type(self), folder).write(runner, root)
+        """The sync of the journal's own Codex folder trusts the folder."""
 
-    def hook_trust(self, project: Path) -> HookTrust:
-        if not ProgramHooks.hooks(type(self), project).is_complete():
+    def journal_hook_file(self, home: JournalHome) -> Path:
+        return home.program_folder(self.name) / "hooks.json"
+
+    def journal_trust(self, home: JournalHome) -> HookTrust:
+        if not ProgramHooks.journal(type(self), self.journal_hook_file(home)).is_complete():
             return HookTrust.UNWRITTEN
-        return self.trust_record().trust(project.resolve() / self.hook_file.path, list(self.hook_events))
+        return self.trust_record(home).trust(self.journal_hook_file(home).resolve(), list(self.hook_events))
 
-    def trust_record(self) -> CodexTrust:
-        return CodexTrust(self.folders.folder(HOME_VARIABLE, ".codex") / "config.toml")
+    def trust_record(self, home: JournalHome) -> CodexTrust:
+        return CodexTrust(home.program_folder(self.name) / "config.toml")
+
+    def journal_settings(self, home: JournalHome, runner: str, managed: Sequence[ManagedHook], folders: Sequence[Path]) -> ProgramSettings:
+        folder = home.program_folder(self.name)
+        person = self.person_folder()
+        hooks_file = folder / "hooks.json"
+        blocks = ProgramHooks.journal(type(self), hooks_file).journal_blocks(runner, home.project_folder, managed)
+        person_data = self.person_data()
+        config = CodexJournalConfig(person_data.get(person / "config.toml", b""), folders, hooks_file.resolve(), blocks)
+        files = (SettingsFile(folder / "config.toml", config.text()), SettingsFile(hooks_file, json.dumps({"hooks": blocks}, indent=2, sort_keys=True) + "\n"))
+        present = tuple(name for name in PERSON_STATE if (person / name).exists())
+        links = {folder / name: person / name for name in (*PERSON_LINKS, *present)}
+        return ProgramSettings(self.name, files, links, self.user_hook_files(), person_data)
 
     def user_hook_files(self) -> tuple[Path, ...]:
-        folder = self.folders.folder(HOME_VARIABLE, ".codex")
+        folder = self.person_folder()
         return (folder / "hooks.json", folder / "config.toml")
 
-    @classmethod
-    def hooks_rewritten(cls, path: Path, original_hooks: object, updated_hooks: object) -> None:
-        cls.configured_trust().remapped(path.resolve(), original_hooks, updated_hooks)
+    def person_folder(self) -> Path:
+        folder = self.folders.folder(HOME_VARIABLE, PERSON_FOLDER)
+        is_journal_folder = folder.resolve().parent.name == PROGRAMS_FOLDER and folder.resolve().parent.parent.name == JOURNAL_FOLDER
+        return Path.home() / PERSON_FOLDER if is_journal_folder else folder
 
-    @classmethod
-    def record_hook_write(cls, path: Path, hooks: Mapping[str, object]) -> None:
-        cls.configured_trust().record_generated(path.resolve(), hooks)
-
-    @classmethod
-    def hooks_copied(cls, source: Path, target: Path) -> None:
-        cls.configured_trust().copied(source.resolve(), target.resolve())
-
-    @staticmethod
-    def configured_trust() -> CodexTrust:
-        config = ProgramFolders().folder(HOME_VARIABLE, ".codex") / "config.toml"
-        return CodexTrust(config)

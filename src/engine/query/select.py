@@ -70,7 +70,6 @@ class Select:
         return " ".join((named, *(join.sql for join in self.joins)))
 
     def named(self, rows: int) -> "Select":
-        """The select names how many rows it may load, which the read limit accepts up to that number."""
         return replace(self, named_limit=rows)
 
     def column(self, column: str) -> "Select":
@@ -81,9 +80,15 @@ class Select:
             return statement
         return statement.joined(Statement.all_joined(tuple(condition.statement() for condition in self.conditions), " AND "), " WHERE ")
 
+    def page_clause(self) -> str:
+        if not self.limit:
+            return ""
+        offset = f" OFFSET {self.offset}" if self.offset else ""
+        return f" LIMIT {self.limit}{offset}"
+
     def statement(self) -> Statement:
         order = f" ORDER BY {', '.join(order.sql for order in self.orders)}" if self.orders else ""
-        page = (f" LIMIT {self.limit}" + (f" OFFSET {self.offset}" if self.offset else "")) if self.limit else ""
+        page = self.page_clause()
         statement = self.core_statement()
         for every, other in self.unions:
             statement = statement.joined(other.core_statement(), " UNION ALL " if every else " UNION ")
@@ -111,7 +116,6 @@ class Select:
         return self.filtered(Statement(f"SELECT {sums} FROM {self.source}", starts))
 
     def group_count_statement(self) -> Statement:
-        """Counts the rows of each value of the group columns."""
         columns = ", ".join(self.group_columns)
         return self.filtered(Statement(f"SELECT {columns}, count(*) FROM {self.source}")).joined(Statement(f" GROUP BY {columns}"), "")
 

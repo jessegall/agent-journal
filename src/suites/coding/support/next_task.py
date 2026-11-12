@@ -28,13 +28,13 @@ class NextTask(TaskAssigner[Task]):
     """The coding suite's task assigner: an agent with empty hands is given the task it was told to take next,
     else a task above high outside any plan, else the next task of its plan focus (a ready task of that plan
     or an open task the plan waits on), else the next task of the oldest started plan, else the most urgent
-    open task outside any plan that waits on nothing, else, last, a task reserved for it, which stays open
-    and is never one the agent released just now. A task reserved for the agent that is work of its focus
-    is given at the focus step. An agent with tasks still in hand
-    is given only the task above high. Auto mode turns it on, and an agent past its context limit is given
-    nothing until its stop has compacted it. It also says which unfinished tasks are an agent's own: those assigned
-    to it, and those it holds that are assigned to nobody else, never a task queued on another agent; and which
-    tasks wait blocked with nothing to open them."""
+    open task outside any plan that waits on nothing, else, last, a task reserved for it, which stays open and
+    is never one the agent released just now. A task reserved for the agent that is work of its focus is given
+    at the focus step. An agent with tasks still in hand is given only the task above high. Auto mode turns it
+    on, and an agent past its context limit is given nothing until its stop has compacted it. It also says
+    which unfinished tasks are an agent's own: those assigned to it, and those it holds that are assigned to
+    nobody else, never a task queued on another agent; and which tasks wait blocked with nothing to open them.
+    """
 
     def __init__(self, tasks: TaskQuery, plan_tasks: NextPlanTasks, queries: Queries, settings: SettingValues, context_limit: ContextLimitCheck, plan_order: PlanTaskOrder, choices: NextTaskChoices, focused: FocusedPlanTasks, assignments: Assignments) -> None:
         self.tasks, self.plan_tasks, self.queries, self.settings, self.context_limit = tasks, plan_tasks, queries, settings, context_limit

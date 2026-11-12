@@ -3,6 +3,8 @@ from typing import Self
 from engine.database.database import Database
 from engine.model.tables import Tables
 from engine.query.conditions.is_null import IsNull
+from engine.query.conditions.less import Less
+from engine.time.timestamp import Timestamp
 from engine.query.query import Query
 from core.modules.agents.models.agent import Agent
 
@@ -15,3 +17,6 @@ class AgentQuery(Query[Agent]):
 
     def running(self) -> Self:
         return self.matching(IsNull("ended_at"))
+
+    def started_before(self, moment: Timestamp) -> Self:
+        return self.matching(Less("created_at", moment.text))

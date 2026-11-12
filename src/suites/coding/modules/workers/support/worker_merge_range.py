@@ -17,7 +17,7 @@ class WorkerMergeRange:
         self.git, self.queries = git, queries
 
     @staticmethod
-    def names_task(target: str) -> bool:
+    def is_task_number(target: str) -> bool:
         return target.isdigit() and len(target) <= TASK_NUMBER_MOST_DIGITS
 
     def task_commit(self, worktree: Worktree, task_id: int) -> str | None:

@@ -31,8 +31,7 @@ class ServerBackup:
             minutes, count = settings.project.number(BACKUP_MINUTES_SETTING), settings.project.number(BACKUP_COUNT_SETTING)
         finally:
             container.get(Database).close()
-        copies = self.copies()
-        if minutes == 0 or (copies and self.clock.epoch_seconds() - copies[0].stat().st_mtime < minutes * MINUTE_SECONDS):
+        if minutes == 0 or self.has_recent_copy(minutes):
             return
         self.write_copy()
         for extra_copy in self.copies()[max(count, LEAST_COPIES):]:
@@ -40,6 +39,10 @@ class ServerBackup:
 
     def folder(self) -> Path:
         return self.home.folder / BACKUP_FOLDER
+
+    def has_recent_copy(self, minutes: int) -> bool:
+        copies = self.copies()
+        return bool(copies) and self.clock.epoch_seconds() - copies[0].stat().st_mtime < minutes * MINUTE_SECONDS
 
     def copies(self) -> list[Path]:
         return sorted(self.folder().glob(f"{COPY_PREFIX}*.db"), reverse=True)

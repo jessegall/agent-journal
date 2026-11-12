@@ -6,12 +6,13 @@ from engine.event.moved import Moved
 from engine.command.context import Context
 from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 from core.modules.plans.models.plan import Plan
+from core.modules.plans.support.finished_plans import TASKS_DONE_GUARD
 
 
 class PlanCloseGuard(Guard[Moved[Plan]]):
     """Refuses to close a plan while a task in it is neither completed nor cancelled."""
 
-    name = "plans.tasks-done"
+    name = TASKS_DONE_GUARD
     moves = tuple([PlanLifecycle.close])
 
     def __init__(self, queries: Queries) -> None:

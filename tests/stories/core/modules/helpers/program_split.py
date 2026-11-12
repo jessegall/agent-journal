@@ -11,6 +11,7 @@ from tests.stories.core.modules.helpers.start_helper import START, started
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, START as FILE_START, helper_agent
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from engine.provider.program_hooks import ProgramHooks
+from engine.provider.providers import Providers
 from core.modules.codex.providers.codex_provider import CodexProvider
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from tests.stories.core.support.coding_fixtures import UserBuilder
@@ -65,7 +66,7 @@ def test_hooks_in_a_worktree_name_the_project_root_where_the_server_runs(helper_
     monkeypatch.setattr('shutil.which', lambda name: name)
     real_program_checks(story)
     folder = tmp_path / 'worktrees' / 'worker-707'
-    hooks = ProgramHooks.hooks(ClaudeCodeProvider, folder)
+    hooks = ProgramHooks.journal(ClaudeCodeProvider, story.container.get(Providers).provider('claude').journal_hook_file(story.home))
     hooks.write('"journal-hook"', folder)
     story.container.get(HelperPrograms).checked('claude', folder)
     story.expect_rows(hooks.names_root(story.home.project_folder), not hooks.names_root(folder))

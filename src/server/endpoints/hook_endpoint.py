@@ -8,6 +8,11 @@ from engine.database.database import Database
 from engine.database.reported_findings import ReportedFindings
 from engine.database.request_watch import RequestWatch
 from engine.enums.log_level import LogLevel
+from engine.enums.process_kind import ProcessKind
+from engine.file.file_access import FileAccess
+from engine.process.door.request_records import REFUSED_HOOK_EXIT_CODE
+from core.modules.processes.support.request_log import RequestLog
+from core.modules.processes.support.request_log_entry import RequestLogEntry
 from engine.container.container import Container
 from engine.driver.hook_event import HookEvent
 from engine.driver.errors.old_hook_runner_error import OldHookRunnerError
@@ -58,10 +63,11 @@ class HookEndpoint:
 
     def answer(self, data: object, program: str, headers: Mapping[str, str]) -> HookReply:
         started_at = perf_counter()
-        sender = HookSender.parsed(data, self.context.hook_limit_seconds, self.context.agent_hook_limit_seconds)
+        sender = HookSender.parsed(data, self.context.hook_limit_seconds, self.context.agent_hook_limit_seconds, self.context.stop_limit_seconds)
         files = ServerFiles(self.context.home)
         if not files.phase().runs_programs:
             files.hold_session(sender.session)
+            self.kept_row(sender, program)
             return self.held(sender)
         try:
             request = QueueRequest.started(sender.name, sender.event_name, sender.session)
@@ -109,7 +115,7 @@ class HookEndpoint:
             return reply
         finally:
             database.set_busy_timeout(REQUEST_LOG_BUSY_SECONDS)
-            self.context.request_log.record_hook(lambda: container.get(HookRequestLog).record_hook(program, headers, data, (perf_counter() - started_at) * 1000, outcome, queued_ms, sender.session))
+            self.context.request_trace.record_hook(lambda: container.get(HookRequestLog).record_hook(program, headers, data, (perf_counter() - started_at) * 1000, outcome, queued_ms, sender.session))
 
     def prepared_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database, container: Container, deadline: float, sender: HookSender) -> HookReply:
         event = self.event(data, program, headers, container.get(Providers))
@@ -144,11 +150,16 @@ class HookEndpoint:
 
     def failure(self, sender: HookSender, error: Exception) -> HookReply:
         self.context.files.log_line("".join(traceback.format_exception(error)), LogLevel.ERROR)
+        self.kept_row(sender, "")
         if sender.is_stop:
             return HookReply(refusal=f"the journal failed on this stop and holds it: {type(error).__name__}: {error}")
         if sender.needs_check:
             return HookReply(refusal=UNCHECKED_TOOL.format(reason=f"{type(error).__name__}: {error}"))
         return HookReply.allowed(f"the journal failed on this hook and let it through: {type(error).__name__}: {error}")
+
+    def kept_row(self, sender: HookSender, program: str) -> None:
+        line = " ".join(word for word in (program, sender.event_name) if word)
+        RequestLog(self.context.home, FileAccess.shared()).append(RequestLogEntry(None, None, ProcessKind.HOOK, line, REFUSED_HOOK_EXIT_CODE, self.context.clock.timestamp().text, sender.session))
 
     @staticmethod
     def held(sender: HookSender) -> HookReply:
@@ -157,6 +168,7 @@ class HookEndpoint:
         return HookReply.allowed(SERVER_UPDATING)
 
     def unchecked(self, sender: HookSender, reason: Exception) -> HookReply:
+        self.kept_row(sender, "")
         if sender.is_stop:
             return HookReply(refusal=f"the journal could not check this stop and holds it: {reason}")
         if sender.needs_check:

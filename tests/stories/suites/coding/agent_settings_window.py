@@ -39,6 +39,10 @@ def test_s45_fixture_a_refused_agent_write_leaves_the_value_the_person_sees(new_
 def test_s01_fixture_a_person_change_in_one_story_is_not_seen_by_the_next(new_story):
     story = new_story(fixture=MainControlsActors)
     story.expect_success(f"setting set {AUTO_MODE} off --environment main", actor=story.user)
+    story.expect_success("task list --environment main", actor=story.user)
+    with person_viewer(story) as viewer:
+        status, auto = window_data(viewer.server, viewer.cookie, keys="auto", window="coding.work-mode")
+        expect_value((status, auto["keys"]["auto"]["value"]["value"]), (200, False))
 
 
 def limit_rows(viewer):

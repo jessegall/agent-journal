@@ -34,7 +34,7 @@ class StartMergerHandler(Handler[StartMerger, None]):
         self.queries, self.bus, self.agents, self.main_line, self.work = queries, bus, agents, main_line, work
 
     def handle(self, command: StartMerger, context: Context) -> None:
-        if not self.work.waits():
+        if not self.work.has_waiting_work():
             return
         main_agent = self.agents.main_agent()
         try:

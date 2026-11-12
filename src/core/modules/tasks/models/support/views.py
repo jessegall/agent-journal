@@ -1,3 +1,4 @@
+from engine.agent.agent_name import agent_name
 from engine.query.condition import Condition
 from engine.query.condition_join import ConditionJoin
 from engine.query.conditions.all_of import AllOf
@@ -31,12 +32,6 @@ from core.modules.assignments.models.support.views import assigned_actor
 UNFINISHED_STATES = ("open", "started", "blocked", "testing")
 TASK_ACTOR = assigned_actor("task", "tasks.id")
 DEPENDENT_ACTOR = assigned_actor("task", "dependent.id")
-
-
-def agent_label(table: str) -> FunctionCall:
-    """The name of an agent row: its given name, or 'Agent' and its id when it has none."""
-    return FunctionCall(SqlFunction.COALESCE, [FunctionCall(SqlFunction.NULLIF, [Column(f"{table}.given_name"), Literal("")]),
-                                               Concat([Literal("Agent "), Column(f"{table}.id")])])
 
 
 def is_main(table: str) -> Comparison:
@@ -93,7 +88,7 @@ def actor_value(column: str) -> ScalarSubselect:
 
 
 ASSIGNED_NAME = ScalarSubselect(Select("actors").selecting(CaseWhen(
-    [(Equal("actors.type", "agent"), ScalarSubselect(Select("agents").selecting(agent_label("agents")).matching(ColumnCompare("agents.id", "=", "actors.id"))))],
+    [(Equal("actors.type", "agent"), ScalarSubselect(Select("agents").selecting(agent_name("agents")).matching(ColumnCompare("agents.id", "=", "actors.id"))))],
     Column("actors.name"))).matching(Comparison(Column("actors.id"), ComparisonOperator.EQUAL, TASK_ACTOR)))
 MAIN_ASSIGNEE = ScalarSubselect(Select("agents").selecting(is_main("agents")).matching(Comparison(Column("agents.id"), ComparisonOperator.EQUAL, TASK_ACTOR)))
 
@@ -111,7 +106,7 @@ TASK_EDGES_SELECT = (
            .matching(IsNull("ended_at")).matching(Comparison(Column("target"), ComparisonOperator.LIKE, Literal("tasks:%"))), every=False)
 ).view_sql()
 
-HELPER_COLUMNS = (Aliased(Column("helper.id"), "helper_id"), Aliased(agent_label("helper"), "helper_name"), Aliased(or_zero(is_main("helper")), "helper_main"))
+HELPER_COLUMNS = (Aliased(Column("helper.id"), "helper_id"), Aliased(agent_name("helper"), "helper_name"), Aliased(or_zero(is_main("helper")), "helper_main"))
 
 TASK_INSPECTIONS_SELECT = Select("tasks").selecting(
     Aliased(Column("tasks.id"), "task_id"), TASK_TAGS,

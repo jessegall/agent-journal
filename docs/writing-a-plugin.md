@@ -31,6 +31,7 @@ command refers to the plugin.
 | `injected_instructions` | Text files inside the plugin, such as `["instructions/briefing.md"]`, whose text every main agent of the project reads. While the plugin is on, the journal writes them into the project's `JOURNAL.md`, after the journal's own text; when it is disabled or deleted the text goes. A plugin never writes `JOURNAL.md`, `AGENTS.md` or `CLAUDE.md` itself: those two hold only the line `@JOURNAL.md`, and Codex, which does not follow an `@` line, is given the text when it starts. A file named here counts as one of the plugin's files. |
 | `instruction_blocks` | Text blocks it offers for the instruction files of a worker's profile, each with a `key`, a `title` for the profile's switch, a `file` of the plugin holding the text and an optional `default` (on). A worker's worktree gets CLAUDE.md and AGENTS.md written for its profile with each block the profile has on, as `<plugin>.<key>`; `journal worker injections <profile>` shows the switches and `journal profile save <profile> --injections '{"<plugin>.<key>": false}'` sets them. |
 | `project_reads` | Folders of the project a worker's shell line may read for it. |
+| `processes` | The kinds of run it queues with `journal plugin queue`. See Queued runs. |
 | `files` | Other files that count as what it runs. Changing one switches the plugin off until a person has read the change. A folder counts every file in it, and a big folder costs time at every step of an agent. |
 
 A wrong entry never stops an install. It shows on the plugin's card, and the rest of the plugin works.
@@ -94,6 +95,7 @@ A script gets one line of JSON on its input:
 - `window_ms`: the limit this call runs under, or null for no limit.
 - `checkout`: the checkout of the agent, with `type`, `root`, `project_root`, `branch`, `base_branch`, `base_commit` and `exists`.
 - `config`: `{"version": <n>}`, for a plugin that declares a config; read the document again when the version is newer than your copy.
+- `events`: only on a held event of a tool step. The held events of one hook that one script judges within one limit, such as `tool_starting` and the `command_starting` of each part of a shell line, come in one run: `event` and `data` are the first, and `events` lists every one, each with its `event` and `data`. The one answer counts for all of them.
 - `data`: for a script named by key, `form`, `final`, `log_name`, `event_id`, `actor`, `command`, `cause_id`, `row`, `old_row` and `changed`. A hidden field reads as hidden. An event about a file also has `file`.
 
 The rules of this line:
@@ -155,11 +157,29 @@ To say you could not judge something, answer with a `tell`, and put the reason i
 | `journal plugin config <name> --set <pointer>=<json value>` or `--stdin` | Changes it: checked against the schema, refused naming each wrong place, written whole. | A plugin, a person or an agent that may write. |
 | `journal plugin file <relative> [--from checkout, project or base]` | The text of a file. A name that is not there exits with code 4. | The same; an agent reads the project only in declared folders. |
 | `journal plugin run [--agent <n>] [--read-only] -- <command>` | Runs a command at the root of a checkout with the sandbox of its agent. | A plugin or a person, never an agent. |
+| `journal plugin queue <name> --kind <kind> [--agent <n> or --checkout <path>] [--timeout <s>] [--priority high, normal or low] [--detach] -- <command>` | Queues a command under one of the plugin's kinds of run. See Queued runs. | A plugin for itself or a person, never an agent. |
+| `journal plugin queue-read <run> [--tail <n>]`, `queue-show <run>`, `queue-cancel <run>` | What a queued run printed, how it stands, and stopping it. | The same. |
 | `journal plugin log <name> [--level info, warning or error] "<text>"` | Writes a line to the system log as `plugin <name>: <text>` at that level, `info` when none is given. Developer mode shows it with the rest of the log, which rolls like the rest. | Anyone. |
 
 A plugin's own alias or command run by an agent gets `JOURNAL_CHECKOUT_TYPE`, `JOURNAL_CHECKOUT_ROOT`, `JOURNAL_PROJECT_ROOT`, `JOURNAL_BRANCH`, `JOURNAL_BASE_BRANCH` and `JOURNAL_BASE_COMMIT` in its environment, so it needs no git call to learn where it runs.
 
 The same alias also gets `JOURNAL_ENV`, the name of the environment the agent runs in, and `JOURNAL_SETTINGS`, the path of a JSON file with the plugin's settings for that environment: the environment's own values over the project's, over each setting's default. The settings object of an event's input line holds the same values.
+
+## Queued runs
+
+A plugin that starts heavy work, such as a judge of the whole project, queues it, so two never run side by side. Each kind it queues is an entry of `processes` in the manifest:
+
+```json
+"processes": [{"kind": "judge", "title": "Judging the project", "at_once": "judge_at_once", "scope": "machine", "memory_mb": 2000, "coalesce": true}]
+```
+
+`kind` names it. `at_once` names a number setting of the plugin: how many runs of the kind may hold a place at once, with no limit when it is left out. `scope` says over what they are counted: `project`, the default, or `machine`, every project of this person on this machine. `memory_mb` holds a run until the machine has that many megabytes free. With `coalesce` true, a run of the same command in the same folder that still waits is joined instead of queued a second time, and both callers get the same run. `category` is the command category it is queued as, `check` when left out. A run also waits for a place in the journal's own queue, like every run.
+
+`journal plugin queue <name> --kind <kind> -- <command>` runs the command in the checkout of the agent named with `--agent`, or in the folder named with `--checkout` for the environment's main agent. Without `--detach` it waits: while the run waits it prints `waiting: N ahead of you` each time that number changes, then the run's lines as they come, and it exits with the run's exit code. With `--detach` it prints `run <n>` at once. `--priority high` gives the run its place before the normal ones that wait, `low` after them. `--timeout <s>` stops a run that holds its place longer.
+
+`journal plugin queue-show <run>` says whether it is `waiting`, `running`, `ended`, `timed-out` or `cancelled`, with its exit code and how long it ran. `journal plugin queue-read <run>` prints what it printed, `--tail <n>` only its last lines. `journal plugin queue-cancel <run>` stops it. A stop, by a cancel or a timeout, sends SIGTERM to the run's process group and SIGKILL ten seconds later.
+
+The end of every queued run is the event `core.plugins.queued_run.ended`. Its `data.row` holds `id`, the run; `plugin` and `kind`; `session_agent_id`, the agent it ran for; `exit_code`; `duration_ms`; `timed_out`; and `state`.
 
 ## The config
 

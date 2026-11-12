@@ -4,7 +4,7 @@ from engine.errors.refusal import Refusal
 from core.modules.drivers.support.driver_settings import SUITE_SETTING
 from core.modules.drivers.commands.choose_suite.choose_suite import ChooseSuite
 from core.modules.settings.models.setting import Setting
-from core.modules.settings.commands.support.setting_store import SettingStore
+from core.modules.settings.support.setting_store import SettingStore
 
 
 class ChooseSuiteHandler(Handler[ChooseSuite, Setting]):

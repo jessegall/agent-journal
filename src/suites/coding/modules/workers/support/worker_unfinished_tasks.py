@@ -13,6 +13,9 @@ from suites.coding.modules.workers.support.worker_steps import WorkerSteps
 UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 
+NAMED_TASKS = 3
+
+
 class WorkerUnfinishedTasks:
     """The tasks a worker still has to do when it stops: none when it holds no task it can go on with, or when
     its tests are waiting. Its committed tasks are those in testing in a started plan, which wait for a
@@ -51,4 +54,8 @@ class WorkerUnfinishedTasks:
 
     @staticmethod
     def names(tasks: tuple[Task, ...]) -> str:
-        return ", ".join(f"task:{task.id}" for task in tasks)
+        shown = ", ".join(f"task:{task.id}" for task in tasks[:NAMED_TASKS])
+        hidden = len(tasks) - NAMED_TASKS
+        if hidden <= 0:
+            return shown
+        return f"{shown} and {hidden} more {'task' if hidden == 1 else 'tasks'}"

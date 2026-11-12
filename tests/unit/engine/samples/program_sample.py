@@ -1,3 +1,4 @@
+import json
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -7,8 +8,12 @@ from engine.provider.helper_launch import HelperLaunch
 from engine.provider.helper_outcome import HelperOutcome
 from engine.provider.hook_file import HookFile
 from engine.enums.hook_trust import HookTrust
+from engine.journal.journal_home import JournalHome
 from engine.provider.launch import Launch
 from engine.provider.launch_command import LaunchCommand
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.program_hooks import ProgramHooks
+from engine.provider.program_settings import ProgramSettings, SettingsFile
 from engine.provider.provider import Provider
 from engine.enums.refusal_style import RefusalStyle
 from engine.provider.transcript_row import TranscriptRow
@@ -17,7 +22,8 @@ HOOK_FILE = Path(".sample/hooks.json")
 
 
 class SampleProgram(Provider):
-    """A third agent program a module adds, with the common decoder and hooks in .sample/hooks.json."""
+    """A third agent program a module adds, with the common decoder, hooks in .sample/hooks.json and the
+    journal's hooks in the settings file the journal writes for it at every start."""
 
     name = "sample"
     title = "Sample program"
@@ -56,5 +62,10 @@ class SampleProgram(Provider):
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
         return None
 
-    def hook_trust(self, project: Path) -> HookTrust:
+    def journal_trust(self, home: JournalHome) -> HookTrust:
         return HookTrust.READY
+
+    def journal_settings(self, home: JournalHome, runner: str, managed: Sequence[ManagedHook], folders: Sequence[Path]) -> ProgramSettings:
+        path = home.program_settings_file(self.name)
+        hooks = ProgramHooks.journal(type(self), path).journal_blocks(runner, home.project_folder, managed)
+        return ProgramSettings(self.name, tuple([SettingsFile(path, json.dumps({"hooks": hooks}) + "\n")]))

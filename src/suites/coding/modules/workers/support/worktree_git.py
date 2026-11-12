@@ -19,7 +19,9 @@ from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from engine.errors.refusal import Refusal
 from core.modules.environments.models.environment import Environment
 from suites.coding.models.enums.ask_topic import AskTopic
+from suites.coding.modules.workers.models.base_commit import NAME_SEPARATOR, BaseCommit
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.models.worktree_update import WorktreeUpdate
 from engine.enums.file_status import FileStatus
 from suites.coding.modules.workers.support.commit_subject import subject_search
 from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
@@ -38,18 +40,22 @@ GIT_FOLDER_PREFIX = "gitdir:"
 BUILT_FOLDER = "/web/dist/"
 HASHED_BUILT_FILE = re.compile(r"(.+)-[\w-]{8}\.[^.]+")
 # git quotes a name with a space, a quote or another letter it finds odd, unless it separates names with NUL
-NAME_SEPARATOR = "\0"
 COMMIT_SEPARATOR = "\x1e"
 COMMIT_FORMAT = "--format=%h%x00%B%x1e"
+# A base commit: its record separator, then short id, parents and subject split by the unit separator, then its files.
+BASE_COMMIT_FORMAT = "--format=%x1e%h%x1f%P%x1f%s%x1f"
+FIELD_SEPARATOR = "\x1f"
 SHORT_ID_CHARACTERS = 10
 SHORT_COMMIT_FLAG = f"--abbrev={SHORT_ID_CHARACTERS}"
 # With -M -z a rename is three fields: status, old name, new name.
 RENAME_STATUS = "R"
 DIFF_STATUSES = {"A": FileStatus.ADDED, "D": FileStatus.DELETED}
 STASH_MESSAGE = "journal merge of "
+CLASHED_STASH_MESSAGE = "journal copy of changes that clashed when put back on "
 STASH_LOCK_FILE = "journal-stash.lock"
 DEPENDENCY_FOLDER_NAMES = {"node_modules", "bower_components", "vendor", ".venv", "venv", "env", ".bundle"}
 SKIP_WORKTREE_MARK = "S "
+LISTING_WORD = "list"
 
 UNTRACKED_STATUS = "?? "
 PUBLISHED_FOLDERS = (".claude", ".agents")
@@ -61,8 +67,9 @@ BRANCH_CHANGES = frozenset({"merge", "rebase", "checkout", "switch", "worktree",
 class WorktreeGit:
     """Runs timed Git operations on worker branches and worktrees. Every worktree of a project shares one
     stash stack, so a worktree finds its stash by its own message, and a lock holds the stack during a push or
-    a drop. Tests run in a detached checkout of their own, of a worktree's commit or of the head of the
-    environment's branch, so no checkout anybody works in is moved."""
+    a drop. A stash is dropped only once it applied cleanly or HEAD already holds it. Tests run in a detached
+    checkout of their own, of a worktree's commit or of the head of the environment's branch, so no checkout
+    anybody works in is moved."""
 
     def __init__(self, runs: WorkerFolderRuns, executor: ProcessExecutor) -> None:
         self.runs, self.executor = runs, executor
@@ -138,11 +145,14 @@ class WorktreeGit:
         return folder
 
     def restore_skipped_files(self, folder: str) -> None:
-        """A reset leaves a tracked file marked skip-worktree as it is, so a test checkout lifts every mark and brings the files back."""
-        skipped = [line[len(SKIP_WORKTREE_MARK):] for line in self.checked(folder, GIT_LIMIT_SECONDS, "ls-files", "-v").stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
+        skipped = self.skipped_files(folder)
         if skipped:
             self.checked(folder, GIT_LIMIT_SECONDS, "update-index", "--no-skip-worktree", "--", *skipped)
             self.checked(folder, GIT_LIMIT_SECONDS, "restore", "--", *skipped)
+
+    def skipped_files(self, folder: str, *paths: str) -> list[str]:
+        listing = self.checked(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "-z", "--", *paths).stdout
+        return [record[len(SKIP_WORKTREE_MARK):] for record in listing.split(NAME_SEPARATOR) if record.startswith(SKIP_WORKTREE_MARK)]
 
     @staticmethod
     def test_folder(worktree: Worktree) -> str:
@@ -193,14 +203,22 @@ class WorktreeGit:
         self.refuse_conflicts(worktree)
         if self.is_merging(worktree.folder):
             self.commit(worktree, message, trailer)
-            return ()
-        moved = self.tip(worktree.folder, worktree.base_branch) != worktree.base_commit
+            return self.committed_stashes(worktree, message, trailer)
+        moved =self.tip(worktree.folder, worktree.base_branch) != worktree.base_commit
         rebased = moved and self.rebase(worktree)
         conflicts = self.without_instruction_conflicts(worktree, self.conflict_files(worktree)) if rebased else ()
         if conflicts:
             return conflicts
         self.commit(worktree, message, trailer)
         return self.sync(worktree) if moved and not rebased else ()
+
+    def committed_stashes(self, worktree: Worktree, message: str, trailer: str) -> tuple[str, ...]:
+        self.restore_stashes(worktree)
+        conflicts = self.conflict_files(worktree)
+        if conflicts:
+            return conflicts
+        self.commit(worktree, message, trailer)
+        return ()
 
     def refuse_conflicts(self, worktree: Worktree) -> None:
         conflicts = self.conflict_files(worktree)
@@ -294,7 +312,7 @@ class WorktreeGit:
 
     @contextmanager
     def without_instruction_files(self, folder: str) -> Generator[None]:
-        skipped_names = [line[len(SKIP_WORKTREE_MARK):] for line in self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "--", *INSTRUCTION_FILES).stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
+        skipped_names = self.skipped_files(folder, *INSTRUCTION_FILES)
         kept = {name: self.git_folder(folder) / f"{name}.kept" for name in skipped_names}
         for name in skipped_names:
             FileAccess.shared().replace(Path(folder) / name, kept[name])
@@ -306,6 +324,70 @@ class WorktreeGit:
             for name in skipped_names:
                 FileAccess.shared().replace(kept[name], Path(folder) / name)
                 self.git(folder, GIT_LIMIT_SECONDS, "update-index", "--skip-worktree", "--", name)
+
+    def behind(self, worktree: Worktree) -> int:
+        return self.behind_tip(worktree, self.tip(worktree.folder, worktree.base_branch))
+
+    def behind_tip(self, worktree: Worktree, base: str) -> int:
+        listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-list", "--first-parent", "--parents", f"HEAD..{base}").stdout
+        return sum(1 for line in listing.splitlines() if line and not self.is_own_merge(worktree, line.split()[1:]))
+
+    def base_changes(self, worktree: Worktree, base: str) -> tuple[BaseCommit, ...]:
+        start = self.merge_base(worktree.folder, base, "HEAD")
+        listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "log", "--first-parent", "-m", "--name-only", "-z", SHORT_COMMIT_FLAG, BASE_COMMIT_FORMAT, f"{start}..{base}").stdout
+        changes = []
+        for record in listing.split(COMMIT_SEPARATOR):
+            fields = record.split(FIELD_SEPARATOR)
+            if len(fields) < 4:
+                continue
+            short_id, parents, subject, names = fields[0].strip(NAME_SEPARATOR + "\n"), fields[1].split(), fields[2], FIELD_SEPARATOR.join(fields[3:])
+            if not self.is_own_merge(worktree, parents):
+                changes.append(BaseCommit.parsed(short_id, subject, names))
+        return tuple(changes)
+
+    def overlap_lines(self, worktree: Worktree, names: tuple[str, ...], base: str) -> int:
+        if not names:
+            return 0
+        start = self.merge_base(worktree.folder, base, "HEAD")
+        listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--numstat", start, base, "--", *names).stdout
+        counts = (line.split("\t")[:2] for line in listing.splitlines() if line)
+        return sum(int(added) + int(deleted) for added, deleted in counts if added.isdigit() and deleted.isdigit())
+
+    def has_own_work(self, worktree: Worktree) -> bool:
+        own = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-list", "--count", f"{worktree.base_branch}..HEAD").stdout.strip()
+        return own != "0" or bool(self.uncommitted_files(worktree.folder))
+
+    def fast_forward(self, worktree: Worktree, tip: str) -> bool:
+        return self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "merge", "--ff-only", tip).returncode == 0
+
+    def is_own_merge(self, worktree: Worktree, parents: list[str]) -> bool:
+        return len(parents) > 1 and self.is_ancestor(worktree.folder, parents[1], "HEAD")
+
+    def update(self, worktree: Worktree) -> WorktreeUpdate:
+        self.restore_stashes(worktree)
+        self.refuse_conflicts(worktree)
+        if self.is_merging(worktree.folder):
+            raise Refusal("a merge is in progress, settle it and commit first", AskTopic.CONFLICT.hint("an update would start a second merge inside it"))
+        tip = self.tip(worktree.folder, worktree.base_branch)
+        if self.is_ancestor(worktree.folder, tip, "HEAD"):
+            return WorktreeUpdate.current(tip)
+        if self.rebase(worktree):
+            return WorktreeUpdate(tip, self.conflict_files(worktree))
+        return self.merged_update(worktree, tip)
+
+    def merged_update(self, worktree: Worktree, tip: str) -> WorktreeUpdate:
+        stash = self.stash(worktree)
+        try:
+            conflicts = self.sync(worktree)
+        except Refusal:
+            if stash:
+                self.unstash(worktree, stash)
+            raise
+        if conflicts:
+            return WorktreeUpdate(tip, conflicts, stash)
+        if stash:
+            self.unstash(worktree, stash)
+        return WorktreeUpdate(tip)
 
     def rebase(self, worktree: Worktree) -> bool:
         stash = self.stash(worktree)
@@ -351,10 +433,27 @@ class WorktreeGit:
                 fcntl.flock(lock, fcntl.LOCK_UN)
 
     def unstash(self, worktree: Worktree, stash: str) -> None:
-        applied = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash).returncode == 0
-        has_markers = bool(self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip())
-        if not applied and not has_markers and not self.head_contains(worktree.folder, stash):
-            raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of the worker", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: the worker applies them"))
+        if self.unmerged_files(worktree.folder):
+            return
+        if self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash).returncode == 0:
+            self.drop_stash(worktree, stash)
+            return
+        if self.unmerged_files(worktree.folder):
+            self.keep_clashed_stash(worktree, stash)
+            return
+        if not self.head_contains(worktree.folder, stash):
+            raise Refusal(f"git stash apply failed for the uncommitted changes of the worker", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: apply them with git stash apply {stash}"))
+        self.drop_stash(worktree, stash)
+
+    def unmerged_files(self, folder: str) -> tuple[str, ...]:
+        return tuple(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.splitlines())
+
+    def keep_clashed_stash(self, worktree: Worktree, stash: str) -> None:
+        self.drop_stash(worktree, stash)
+        with self.stash_stack_lock(worktree):
+            self.checked(worktree.folder, GIT_LIMIT_SECONDS, "stash", "store", "--message", f"{CLASHED_STASH_MESSAGE}{worktree.branch}", stash)
+
+    def drop_stash(self, worktree: Worktree, stash: str) -> None:
         with self.stash_stack_lock(worktree):
             entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
             for entry in (line.split() for line in entries):
@@ -557,6 +656,13 @@ class WorktreeGit:
         return finished
 
     @staticmethod
+    def changes_branches(arguments: Sequence[str]) -> bool:
+        """Whether the git call may move a branch or a checkout; listing worktrees or stashes moves nothing."""
+        command = WorktreeGit.subcommand(arguments)
+        word_after = next(iter(arguments[arguments.index(command) + 1:][:1]), "") if command else ""
+        return command in BRANCH_CHANGES and word_after != LISTING_WORD
+
+    @staticmethod
     def subcommand(arguments: Sequence[str]) -> str:
         """The git command in the arguments, after any options placed before it such as -c name=value."""
         remaining = iter(arguments)
@@ -569,7 +675,7 @@ class WorktreeGit:
 
     def git(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
         line = ["git", "-C", folder, *arguments]
-        kind = ProcessKind.MERGE if self.subcommand(arguments) in BRANCH_CHANGES else ProcessKind.QUICK
+        kind = ProcessKind.MERGE if self.changes_branches(arguments) else ProcessKind.QUICK
         try:
             done = self.executor.execute(ExecutionRequest(line, Path.cwd(), kind, limit_seconds))
             return subprocess.CompletedProcess(line, done.exit_code, done.stdout, done.stderr)

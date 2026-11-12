@@ -20,6 +20,7 @@ FIRST_STARTED_FILE = "1.started"
 HEARTBEAT_FILE = "heartbeat"
 SLOT_FILE = "slot"
 READER_LINES_FILE = "reader.lines"
+CPU_FILE = "cpu"
 TAIL_BYTES = 8192
 BLOCK_BYTES = 64 * 1024
 
@@ -74,6 +75,9 @@ class OutputFolder:
 
     def pid(self, process_id: int) -> int | None:
         return self.number(process_id, PID_FILE)
+
+    def pid_path(self, process_id: int) -> Path:
+        return self.home.folder / FOLDER_NAME / str(process_id) / PID_FILE
 
     def write_status(self, process_id: int, position: int, exit_code: int) -> None:
         self.write_number(process_id, f"{position}.status", exit_code)
@@ -290,6 +294,14 @@ class OutputFolder:
 
     def replace_reader_lines(self, process_id: int, lines: list[str]) -> None:
         self.write(process_id, READER_LINES_FILE, "".join(f"{line}\n" for line in lines))
+
+    def head_output(self, process_id: int, characters: int) -> str:
+        text = ""
+        for position in range(1, len(self.part_texts(process_id)) + 1):
+            if len(text) >= characters:
+                break
+            text += self.part_head(process_id, position, characters - len(text)).decode("utf-8", errors="ignore")
+        return ColourCodes.removed(text)
 
     def all_output(self, process_id: int) -> str:
         return ColourCodes.removed("".join(self.output(process_id, position) for position in range(1, len(self.part_texts(process_id)) + 1)))

@@ -10,7 +10,9 @@ KEPT_AGENTS_TEXT = "agents are kept; a person retires them"
 
 @dataclass(frozen=True)
 class AgentProfile:
-    """Instructions and program settings for one type of agent, with its usage counts."""
+    """Instructions and program settings for one type of agent, with its usage counts. A profile built on a base
+    takes each setting it leaves at its default from that base, except the settings named in default_fields, which
+    it sets to their default over the base's."""
 
     name: str
     description: str = ""
@@ -45,6 +47,7 @@ class AgentProfile:
     injections: Mapping[str, bool] = field(default_factory=dict[str, bool])
     skills: tuple[str, ...] = ()
     required_skills: tuple[str, ...] = ()
+    default_fields: tuple[str, ...] = ()
 
     @property
     def display_title(self) -> str:
@@ -70,4 +73,4 @@ class AgentProfile:
         access = Access(fields["access"]) if fields["access"] is not None else None
         tier = ModelTier.automatic(fields["tier"]) if fields.get("tier") is not None else None
         current = {name: value for name, value in fields.items() if name not in ("independent", "reuse", "occupant")}
-        return replace(cls(**current), occupant=cls.stored_occupant(fields), access=access, tier=tier, mcp_tools=tuple(fields["mcp_tools"]), writable_folders=tuple(fields.get("writable_folders", ())), skills=tuple(fields.get("skills", ())), required_skills=tuple(fields.get("required_skills", ())), fallback_programs=tuple(fields.get("fallback_programs", ())), changed=tuple(fields["changed"]), notes=tuple(fields.get("notes", ())))
+        return replace(cls(**current), occupant=cls.stored_occupant(fields), access=access, tier=tier, mcp_tools=tuple(fields["mcp_tools"]), writable_folders=tuple(fields.get("writable_folders", ())), skills=tuple(fields.get("skills", ())), required_skills=tuple(fields.get("required_skills", ())), default_fields=tuple(fields.get("default_fields", ())), fallback_programs=tuple(fields.get("fallback_programs", ())), changed=tuple(fields["changed"]), notes=tuple(fields.get("notes", ())))

@@ -39,7 +39,7 @@ def test_a_person_assigns_a_task_to_the_main_agent_and_the_board_shows_who_it_wa
     story = planned_story(new_story)
     story.expect_success(f"task assign 1 --to {agent_number(story, story.agent.id)}", actor=story.user)
     card = delegated_cards(story)[0]
-    expect_value((card["id"], card["assigned_actor_id"], card["assigned_name"]), (1, story.agent.id, f"Agent {story.agent.id}"))
+    expect_value((card["id"], card["assigned_actor_id"], card["assigned_name"]), (1, story.agent.id, "Main agent"))
 
 
 def test_a_reserved_task_reaches_a_stopping_main_agent_with_auto_mode_off(new_story):

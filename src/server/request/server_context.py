@@ -1,3 +1,4 @@
+from engine.time.clock import Clock
 from dataclasses import dataclass, field
 from engine.database.reported_findings import ReportedFindings
 from engine.journal.journal_home import JournalHome
@@ -10,7 +11,7 @@ from server.work.listener_thread import ListenerThread
 from engine.serving.server_files import ServerFiles
 from server.tick.server_tunnel import ServerTunnel
 from server.viewer.viewer_endpoint import ViewerEndpoint
-from server.request.request_log import RequestLog
+from server.request.request_trace import RequestTrace
 
 HOOK_LIMIT_SECONDS = 3.5
 STOP_LIMIT_SECONDS = 20.0
@@ -37,8 +38,10 @@ class ServerContext:
     door: JournalDoor
     hook_limit_seconds: float = HOOK_LIMIT_SECONDS
     agent_hook_limit_seconds: float = AGENT_HOOK_LIMIT_SECONDS
+    stop_limit_seconds: float = STOP_LIMIT_SECONDS
     transcript_entries: TranscriptEntries = field(default_factory=TranscriptEntries)
+    clock: Clock = field(default_factory=Clock)
 
     @property
-    def request_log(self) -> RequestLog:
-        return self.viewer.routes.request_log
+    def request_trace(self) -> RequestTrace:
+        return self.viewer.routes.request_trace

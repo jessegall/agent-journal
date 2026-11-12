@@ -14,3 +14,13 @@ export function drawnSettingComponent(component, props = {}, slots = {}) {
     createApp({render: () => h(component, {...state, ...listeners}, slots)}).mount(element);
     return {element, emitted, state, settled: () => nextTick()};
 }
+
+// types text into the input of a drawn component, or into the one the selector finds
+export function typedInto(drawn, text, selector = "input") {
+    const input = drawn.element.querySelector(selector);
+    input.value = text;
+    input.dispatchEvent(new Event("input"));
+}
+
+// types text into one entry of a drawn list of entries
+export const typedEntry = (list, index, text) => typedInto(list, text, `[data-entry="${index}"]`);

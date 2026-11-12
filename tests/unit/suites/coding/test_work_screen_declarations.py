@@ -11,6 +11,7 @@ WORK = {
     "Taking on work": ["auto-mode", "main-writes-code"],
     "Workers": ["main-dispatches-workers", "continue-while-delegatable", "merger-on", "main-agent-may-merge"],
     "Other helpers": ["main-starts-read-only-helpers", "designer-enabled"],
+    "Keeping worktrees up to date": ["keep-worktrees-up-to-date", "behind-commits-to-check", "behind-check-minutes", "behind-recheck-commits", "update-to-main-commits", "update-wait-minutes", "update-reminders", "check-history-days"],
     "Approvals": ["accept-every-approval", "skips-need-approval"],
 }
 TESTS = {
@@ -54,16 +55,14 @@ ADVANCED = {
 }
 
 
-@pytest.mark.xfail(strict=True, reason="task 9327: the per helper type cap still sits on Advanced until each helper type screen holds it")
 def test_every_advanced_setting_of_the_design_is_on_the_advanced_screen_in_its_section():
     assert {section: sorted(keys) for section, keys in placed("advanced").items()} == {section: sorted(keys) for section, keys in ADVANCED.items()}
 
 
-@pytest.mark.xfail(strict=True, reason="task 9327: the per helper type cap still sits on Advanced until each helper type screen holds it")
-def test_the_context_size_per_kind_is_a_keyed_cap_table_and_per_helper_type_is_on_no_screen():
+def test_the_context_size_per_kind_is_a_keyed_cap_table_on_advanced_and_per_helper_type_is_on_the_helper_types_screen():
     by_key = {value.key: value for value in DECLARED}
     kinds, profiles = by_key["context-limit-kinds"], by_key["context-limit-profiles"]
-    assert (kinds.component.value, profiles.component.value, profiles.screen) == ("keyed-cap-table", "three-way-cap", "")
+    assert (kinds.component.value, kinds.screen, profiles.component.value, profiles.screen) == ("keyed-cap-table", "advanced", "three-way-cap", "helper-type")
 
 
 def test_the_settings_of_a_helper_type_screen_are_not_on_advanced():

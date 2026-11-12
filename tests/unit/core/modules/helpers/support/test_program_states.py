@@ -18,7 +18,7 @@ def readiness():
     now = Timestamp(datetime(2026, 11, 6, 9, tzinfo=timezone.utc))
     provider = Mock(name='sample')
     provider.name = 'sample'
-    provider.hook_trust.return_value = HookTrust.READY
+    provider.journal_trust.return_value = HookTrust.READY
     providers, programs, queries, settings, statuses, clock = (Mock() for _ in range(6))
     providers.provider.return_value = provider
     providers.all.return_value = [provider]
@@ -32,7 +32,7 @@ def readiness():
     kept_rows, limits = Mock(), Mock()
     limits.reached_limit_ends.return_value = None
     kept_rows.read.side_effect = lambda source, loader, **kwargs: loader()
-    states = ProgramStates(providers, programs, queries, settings, statuses, clock, agents, scopes, kept_rows, limits)
+    states = ProgramStates(providers, programs, queries, settings, statuses, clock, agents, scopes, kept_rows, limits, Mock())
     return SimpleNamespace(states=states, provider=provider, providers=providers, programs=programs,
                            queries=queries, settings=settings, statuses=statuses, clock=clock, now=now)
 
@@ -41,11 +41,11 @@ def test_missing_executable_is_out_before_trust(readiness):
     readiness.programs.installed.side_effect = Refusal('sample is not installed here')
     state = readiness.states.state('sample', Path('/project'))
     assert not state.is_ready and 'not installed' in state.line
-    readiness.provider.hook_trust.assert_not_called()
+    readiness.provider.journal_trust.assert_not_called()
 
 
 def test_untrusted_hooks_are_out(readiness):
-    readiness.provider.hook_trust.return_value = HookTrust.UNTRUSTED
+    readiness.provider.journal_trust.return_value = HookTrust.UNTRUSTED
     state = readiness.states.state('sample', Path('/project'))
     assert not state.is_ready and '/project' in state.line
     readiness.statuses.newest_status.assert_not_called()

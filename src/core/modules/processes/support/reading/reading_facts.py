@@ -27,9 +27,9 @@ from core.modules.processes.support.reader_writers import ReaderWriters
 from core.modules.processes.support.cadence.run_cadences import RunCadences
 from core.modules.processes.support.decisions.escalation_counter import EscalationCounter
 from core.modules.processes.support.decisions.escalation_resets import EscalationResets
-from core.modules.processes.support.reading.output_facts import SAMPLE_BYTES, OutputFacts
+from core.modules.processes.support.decisions.output_facts import SAMPLE_BYTES, OutputFacts
 from core.modules.processes.models.enums.reader_layer import ReaderLayer
-from core.modules.processes.support.reading.reading_case import ReadingCase
+from core.modules.processes.support.decisions.reading_case import ReadingCase
 from core.modules.processes.support.run_counts import RunCounts
 from core.modules.processes.support.silent_start_runs import SilentStartRuns
 
@@ -60,7 +60,7 @@ class ReadingFacts:
         reader = self.reader(part)
         policy = self.suites.agent_policy()
         return ReadingCase(command_key=command_key, category=part.category, classification_known=part.category is not CommandCategory.UNKNOWN,
-                           has_asking_flag=ReaderDemands.asks_about_itself(command), output_hidden=part.piped, is_saved_command=bool(part.saved_command),
+                           has_asking_flag=ReaderDemands.is_help_request(command), output_hidden=part.piped, is_saved_command=bool(part.saved_command),
                            is_plugin_run=bool(process.plugin), moment=moment, age_seconds=self.age_seconds(process), run_state=process.state,
                            cadence_state=self.cadences.for_process(process, self.clock.timestamp()).state(),
                            exit_code=part.exit_code, reader_layer=self.layer(reader), reader_judgement=self.judgement(process, part, reader),

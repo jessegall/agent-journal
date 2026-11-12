@@ -82,6 +82,7 @@ def test_a_proven_task_in_no_plan_is_committed_with_worker_commit_and_tested_on_
 def test_the_run_allowance_follows_its_setting(phase_worker):
     phase_worker.story.expect_success(RUNS_SETTING, actor=phase_worker.story.user)
     phase_worker.story.expect_text("worker status", "Own test runs left: 5", actor=phase_worker.worker)
+    phase_worker.story.expect_text(f"worker status {agent_number(phase_worker.story, phase_worker.worker.id)}", "Own test runs left: 5", actor=phase_worker.story.agent)
 
 
 def test_a_worker_of_a_task_in_no_plan_has_the_same_count_of_its_own_runs(new_story, monkeypatch):

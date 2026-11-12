@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.time.timestamp import Timestamp
 from core.modules.memories.models.memory_holder import MemoryHolder
 
@@ -19,6 +18,6 @@ class MemoryHolderRow:
     removed_memories: int
 
     @classmethod
-    def built(cls, holder: MemoryHolder, types: HelperTypeBook) -> "MemoryHolderRow":
-        name = holder.given_name or f"{types.label(holder.role)} {holder.agent_id}"
+    def built(cls, holder: MemoryHolder) -> "MemoryHolderRow":
+        name = holder.name
         return cls(holder.agent_id, holder.environment_id, holder.role, name, holder.started_at, holder.ended_at, holder.active_memories, holder.removed_memories)

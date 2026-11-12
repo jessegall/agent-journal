@@ -70,6 +70,11 @@ from core.modules.agents.commands.stop_unused_launcher.stop_unused_launcher_hand
 from core.modules.agents.rules.unused_launcher_rule import UnusedLauncherRule
 from core.modules.agents.commands.check_agent_programs.check_agent_programs_handler import CheckAgentProgramsHandler
 from core.modules.agents.ticks.agent_reconcile import AgentReconcile
+from core.modules.agents.ticks.program_settings_watch import ProgramSettingsWatch
+from core.modules.agents.rules.program_settings_rule import ProgramSettingsRule
+from core.modules.agents.support.program_settings_nudges import PROGRAM_SETTINGS_BAN
+from core.modules.agents.support.agent_program_sessions import AgentProgramSessions
+from engine.agent.program_sessions import ProgramSessions
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from core.modules.agents.commands.start_agent_program.start_agent_program_handler import StartAgentProgramHandler
@@ -153,18 +158,19 @@ class AgentsModule(Module):
               ModelDeclaration(AgentSession, excluded_subcommands=["make", "edit", "delete"])]
     moves = [AgentsMove]
     migrations = [AgentAnnouncedColumnMigration, AgentLaunchFailureColumnMigration, MainAgentParentMigration, AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
-    nudges = [AGENT_START_FAILED, *REPORT_NUDGES]
+    nudges = [AGENT_START_FAILED, *REPORT_NUDGES, PROGRAM_SETTINGS_BAN]
     guards = [AgentNameGuard, NumberGuard, RetiredRowGuard, RetiredDeleteGuard, AgentChatGuard]
-    tick_handlers = [TickHandler(TickInterval(seconds=30), AgentReconcile(), "agent rows and their programs")]
-    driver_rules = [UnusedLauncherRule]
+    tick_handlers = [TickHandler(TickInterval(seconds=30), AgentReconcile(), "agent rows and their programs"),
+                     TickHandler(TickInterval(seconds=2), ProgramSettingsWatch(), "program settings watch", starts_immediately=True)]
+    driver_rules = [UnusedLauncherRule, ProgramSettingsRule]
     handlers = [StopUnusedLauncherHandler, CheckAgentProgramsHandler, StartAgentProgramHandler, StopAgentProgramHandler, HaltAgentHandler, EndAgentHaltHandler, ReplaceAgentSessionHandler, WarnInstructionImportsHandler, RemoveInstructionImportHandler, RecordAgentInterruptHandler, SetAgentUsageLimitHandler, RetireAgentHandler, EndReplacedMainHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
     subcommands = [RemoveInstructionImportSubcommand, RecordAgentInterruptSubcommand, RetireAgentSubcommand, ShowMainAgentsSubcommand, MainSessionsSubcommand, AgentSessionsSubcommand, AgentStandingSubcommand, StartAgentProgramSubcommand, StopAgentProgramSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, AgentPeopleSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
-    bindings = {ProgramTransport: LocalLauncherTransport, CallerResolver: AgentCallerResolver, AgentCheckouts: AgentProjectCheckouts, AgentRoleReader: AgentRoleRows, RowNumbers: AgentRowNumbers}
+    bindings = {ProgramSessions: AgentProgramSessions, ProgramTransport: LocalLauncherTransport, CallerResolver: AgentCallerResolver, AgentCheckouts: AgentProjectCheckouts, AgentRoleReader: AgentRoleRows, RowNumbers: AgentRowNumbers}
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, skeleton=AGENTS_AGENTS_SKELETON, search=WindowSearch(AgentSearcher, "Search the agents"), icon=WindowIcon.AGENT, reads=["agent show", *CARD_READS], runs=["setting set", "message send", "helper send", "helper stop", "agent retire", "agent driver", "agent pause", "agent stop"], events=CARD_EVENTS, tabs=CARD_TABS, keys=CARD_KEYS),
                WindowDeclaration("agents.helpers", "Helpers", "helpers.js", WindowLoading.COMPONENT, skeleton=AGENTS_HELPERS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, search=WindowSearch(AgentSearcher, "Search the agents"), reads=CARD_READS, runs=["setting set", "message send", "helper send", "helper stop", "agent retire", "agent driver"],
                                  events=CARD_EVENTS, tabs=CARD_TABS, keys=CARD_KEYS),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, skeleton=AGENTS_TRANSCRIPT_SKELETON, icon=WindowIcon.DOCUMENT, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,
-                                 reads=["agent transcript", "hook-call feed"], runs=["message send"], events=["hook_call.*"], keys=[WindowKey("transcript.*", "agent transcript row:{id}", arguments=["before-id"], page_size=50)]),
+                                 reads=["agent transcript", "hook-call feed"], runs=["message send", "helper send"], events=["hook_call.*"], keys=[WindowKey("transcript.*", "agent transcript row:{id}", arguments=["before-id"], page_size=50)]),
                WindowDeclaration("agents.agent-detail", "Agent", "agent-detail.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.AGENT, skeleton=[SkeletonPart.line()],
                                  reads=["usage inspector", "agent list", "agent-skill list"], events=["agent.*"])]
     inspectors = [AGENT_INSPECTOR]

@@ -27,3 +27,4 @@ def test_a_redirected_build_is_prevented_at_each_start_with_the_exit_to_drop_the
     story = new_story(fixture=ForcedReaders)
     story.expect_hook_refusal("s-reader", REDIRECTED_BUILD, REDIRECT_EXIT)
     story.expect_hook_refusal("s-reader", REDIRECTED_BUILD, "journal refusal skip processes.reading --reason")
+    story.expect_success("process list --environment main", actor=story.agent)

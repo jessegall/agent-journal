@@ -115,7 +115,7 @@ def test_a_finished_task_leaves_the_graph(new_story):
 def test_a_block_that_would_make_a_loop_is_refused(new_story):
     story = new_story(fixture=TwoTasks)
     story.run("task block 1 --on task:2")
-    story.expect_refusal("task block 2 --on task:1", "would be a loop")
+    story.expect_refusal("task block 2 --on task:1", "closes a circle")
 
 
 def test_deleting_the_task_it_waits_on_opens_a_task(new_story):

@@ -13,8 +13,8 @@ def test_a_guard_switched_off_by_its_setting_lets_the_refused_command_through(ne
 
 def test_a_safety_guard_stays_on_whatever_its_setting_says(new_story):
     story = new_story(fixture=DependencyChain)
-    story.expect_success("setting make journal.core.settings.guard.tasks.no-dependency-loop false", "created: setting:1")
-    story.expect_refusal(lines.THIRD_TASK_DEPENDENCY, "refused by tasks.no-dependency-loop")
+    story.expect_success("setting make journal.core.settings.guard.plans.task-dependency-circle false", "created: setting:1")
+    story.expect_refusal(lines.THIRD_TASK_DEPENDENCY, "refused by plans.task-dependency-circle")
 
 
 def test_the_lifecycle_guard_stays_on_whatever_its_setting_says(new_story):
@@ -25,5 +25,5 @@ def test_the_lifecycle_guard_stays_on_whatever_its_setting_says(new_story):
 
 def test_a_switch_written_for_one_environment_leaves_the_guard_on_since_switches_are_project_wide(new_story):
     story = new_story(fixture=DependencyChain)
-    story.run("setting make journal.core.settings.guard.tasks.no-dependency-loop false --environment main")
-    story.expect_refusal(lines.THIRD_TASK_DEPENDENCY, "refused by tasks.no-dependency-loop")
+    story.run("setting make journal.core.settings.guard.plans.task-dependency-circle false --environment main")
+    story.expect_refusal(lines.THIRD_TASK_DEPENDENCY, "refused by plans.task-dependency-circle")

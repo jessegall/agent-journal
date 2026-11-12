@@ -26,7 +26,7 @@ class ApplySettingScreenSubcommand(Subcommand[ApplySettingScreen, ScreenReading]
     def command(self, arguments: Namespace, caller: Caller) -> ApplySettingScreen:
         pairs = [change.partition("=") for change in arguments.changes]
         if any(not separator or not key for key, separator, _ in pairs):
-            raise Refusal("a change is written key=value", "for example journal.suites.coding.auto-mode=off")
+            raise Refusal("a change is written key=value", "for example journal.core.project-rules.agents-make-rules=on")
         also = [screen.partition("=") for screen in arguments.also]
         if any(not separator or not name or not revision for name, separator, revision in also):
             raise Refusal("a further screen is written screen=revision", "for example --also tests=3f9a1c2b7d4e")

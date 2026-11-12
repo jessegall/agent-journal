@@ -5,7 +5,6 @@ from engine.event.moved import Moved
 from engine.listener.commit.commit_listener import CommitListener
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
-from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.commands.record_checkpoint_test.record_checkpoint_test import RecordCheckpointTest
@@ -26,5 +25,5 @@ class CheckpointTestEndListener(CommitListener[Moved[Process]]):
         test = self.queries.query(CheckpointTest).filter(process_id=process.id).matching(Among("state", RUNNING_STATES)).first()
         if test is None or process.ended_at is None:
             return
-        passed = process.state is ProcessState.FINISHED and process.exit_code == 0
+        passed = process.succeeded
         self.bus.run(RecordCheckpointTest(test.id, passed), Actor.core(), cause_id=logged.id, environment_id=process.environment_id)

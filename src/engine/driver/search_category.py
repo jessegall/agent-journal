@@ -2,10 +2,10 @@ import os
 from pathlib import Path
 
 from engine.driver.tool import Tool
+from engine.journal.journal_home import JOURNAL_FOLDER
 
 GRAPHIFY = "graphify"
 CODE = "code"
-JOURNAL_FOLDER = ".journal"
 WORKTREES_FOLDER = "worktrees"
 
 

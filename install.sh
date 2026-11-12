@@ -13,10 +13,11 @@
 # goes on to place the programs and write the hooks as an install does. Nothing is started.
 #
 # The hook program built for this machine is downloaded from the release into .journal/bin/journal-hook, its
-# checksum is checked against the release's checksums.txt, and it is run once to see that it starts. The hooks of
-# Claude Code (.claude/settings.local.json) and Codex (.codex/hooks.json) then call it by its full path; the rest of
-# those files stays as it was. When no binary is built for this machine, the release has none, or it does not start,
-# the hooks call .journal/hooks/hook.sh instead, which hands the server the raw hook body, and the install says so.
+# checksum is checked against the release's checksums.txt, and it is run once to see that it starts. The install
+# records it in .journal/hooks/runner, and the journal's own settings of Claude Code and Codex in .journal/programs
+# call it by its full path; no project file gets a hook of the journal. When no binary is built for this machine, the
+# release has none, or it does not start, the hooks call .journal/hooks/hook.sh instead, which hands the server the
+# raw hook body, and the install says so.
 # A checksum that does not match stops the install: that file is not the release's.
 #
 # The install leaves .journal/journal, which runs .journal/bin/journal, and writes the journal command of the person's

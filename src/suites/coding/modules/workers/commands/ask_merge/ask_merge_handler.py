@@ -18,8 +18,8 @@ from suites.coding.modules.workers.support.merge_ask_scope import MergeAskScope
 
 class AskMergeHandler(Handler[AskMerge, MergeAskOutcome]):
     """Records a worker's ask for the merge of its whole unit after the checks of MergeAskScope, and delivers
-    its worktree ready for the merge, which starts the merger; an ask up to a task or commit leaves the worktree
-    open and waits for the merger's next visit; with the merger off the main agent hears of it."""
+    its worktree ready for the merge, which starts the merger; an ask up to a task or commit leaves the
+    worktree open and waits for the merger's next visit; with the merger off the main agent hears of it."""
 
     command = AskMerge
     disabled_scopes = [ActorScope]

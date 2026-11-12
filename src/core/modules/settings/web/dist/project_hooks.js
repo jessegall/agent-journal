@@ -1,6 +1,6 @@
-if (!document.getElementById("window-styles-1a8dcf54aa10")) { const style = document.createElement("style"); style.id = "window-styles-1a8dcf54aa10"; style.textContent = ".hook-details[data-v-a95baaf4]{flex:1;min-width:0}.hook-identity[data-v-a95baaf4],.hook-source[data-v-a95baaf4],.hook-effects[data-v-a95baaf4]{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.hook-identity[data-v-a95baaf4]{font-size:12px}.hook-command[data-v-a95baaf4]{margin:5px 0}.hook-command summary[data-v-a95baaf4]{cursor:pointer;min-width:0}.hook-command summary code[data-v-a95baaf4]{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}.hook-command pre[data-v-a95baaf4]{margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}.hook-source[data-v-a95baaf4]{color:var(--text-3);font-size:11px;overflow-wrap:anywhere}.hook-effects[data-v-a95baaf4]{margin-top:5px}.hook-effects span[data-v-a95baaf4]{padding:2px 6px;border-radius:4px;background:var(--raised);color:var(--text-2);font-size:10px}.hook-group h2[data-v-a6886886]{display:flex;gap:8px;align-items:center;margin:0 0 6px;font-size:13px;font-weight:600}.hook-group h2 span[data-v-a6886886]{color:var(--text-3);font-size:11px;font-weight:400}.hook-group p[data-v-a6886886]{margin:8px 0;color:var(--text-3);font-size:12px}.hook-history[data-v-5c45b83c]{display:flex;flex:0 1 210px;flex-direction:column;gap:3px;color:var(--text-3);font-size:11px;overflow-wrap:anywhere}.hook-history strong[data-v-5c45b83c]{color:var(--text-2);font-weight:500}.managed-hook[data-v-839af142]{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}.hook-controls[data-v-839af142]{display:flex;flex:0 0 145px;flex-direction:column;gap:8px}.hook-controls label[data-v-839af142]{display:flex;flex-direction:column;gap:4px;color:var(--text-3);font-size:11px}.hook-controls input[data-v-839af142]{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border-2);border-radius:5px;background:transparent;color:var(--text)}.hook-failure[data-v-839af142]{margin:0;color:var(--danger);font-size:12px}@media(max-width:700px){.managed-hook[data-v-839af142] .hook-details{flex-basis:100%}}.project-hooks[data-v-53c1bd53]{display:flex;flex-direction:column;gap:16px}.hook-intro[data-v-53c1bd53],.hook-notice[data-v-53c1bd53],.hooks-confirm p[data-v-53c1bd53]{margin:0;color:var(--text-2);font-size:12px}.hooks-actions[data-v-53c1bd53],.hooks-confirm[data-v-53c1bd53]{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.hooks-confirm[data-v-53c1bd53],.hook-notice[data-v-53c1bd53]{padding:10px 12px;border:1px solid var(--border-2);border-radius:6px;background:var(--raised)}.hook-error[data-v-53c1bd53]{margin:0;color:var(--danger);font-size:12px}.pending-hook[data-v-53c1bd53],.journal-hook[data-v-53c1bd53],.unmanaged-hook[data-v-53c1bd53]{padding:12px 0;border-bottom:1px solid var(--line)}.journal-hook[data-v-53c1bd53]{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px;overflow-wrap:anywhere}.unmanaged-hook[data-v-53c1bd53]{color:var(--text-2);font-size:12px;overflow-wrap:anywhere}.unmanaged-hook p[data-v-53c1bd53]{margin:4px 0 0;color:var(--text-3)}section[data-v-0db8a5a2]{min-width:0}h3[data-v-0db8a5a2]{margin:0 0 12px;font-size:13px}p[data-v-0db8a5a2]{color:var(--text-2)}.command[data-v-0db8a5a2]{display:flex;flex:1;gap:16px;align-items:center;min-width:0}.command code[data-v-0db8a5a2]{flex:1;overflow-wrap:anywhere}.command span[data-v-0db8a5a2]{color:var(--text-3)}.setting-input[data-v-bfe42409]{display:flex;gap:8px;align-items:center}.setting-unit[data-v-bfe42409]{flex:none;color:var(--text-3);font-size:12px}.setting-list[data-v-bfe42409]{resize:vertical}.setting-head[data-v-bfe42409]{display:flex;gap:6px;align-items:center}.setting-dot[data-v-bfe42409]{width:6px;height:6px;border-radius:50%;background:var(--accent)}.setting-reset[data-v-bfe42409]{margin-left:auto;padding:0 6px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:11.5px;cursor:pointer}.setting-reset[data-v-bfe42409]:hover{background:var(--hover);color:var(--text)}.setting-group[data-v-bfe42409]{display:flex;flex-direction:column;gap:6px}.setting-group-head[data-v-bfe42409]{display:flex;align-items:center;gap:10px}.setting-group-title[data-v-bfe42409]{margin:0;font-size:13px;font-weight:600}.setting-children[data-v-bfe42409]{display:flex;flex-direction:column;gap:14px;padding-left:14px;border-left:1px solid var(--line)}.setting-children.off[data-v-bfe42409]{opacity:.5}.setting-value[data-v-bfe42409]{display:flex;flex-direction:column;gap:4px}.setting-label[data-v-bfe42409]{font-size:12px;color:var(--text)}.setting-description[data-v-bfe42409],.setting-shown[data-v-bfe42409]{margin:0;font-size:12px;color:var(--text-3)}.setting-field[data-v-bfe42409]{max-width:360px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;color:var(--text);background:transparent}.setting-switch[data-v-bfe42409]{align-self:flex-start;padding:2px 10px;border:0;border-radius:10px;color:var(--text-2);background:var(--raised);font-size:11px;cursor:pointer}.setting-switch[aria-checked=true][data-v-bfe42409]{color:#fff;background:var(--accent)}.setting-choices[data-v-bfe42409]{display:flex;gap:6px}.setting-refusal[data-v-bfe42409]{margin:0;font-size:12px;color:var(--danger)}.environment[data-v-b4a155e1]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.environment-names[data-v-b4a155e1]{flex:1;min-width:0}.environment-name[data-v-b4a155e1]{font-weight:500}.environment-here[data-v-b4a155e1]{margin-left:8px;color:var(--accent-text);font-size:12px}.environment-folder[data-v-b4a155e1]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.environment-refusal[data-v-b4a155e1]{margin:2px 0 0;color:var(--danger);font-size:12.5px}.settings-nav-item.current[data-v-84eb6cd1]{background:var(--hover);color:var(--text)}.settings[data-v-84eb6cd1]{display:flex;flex-direction:column;gap:16px}.settings-bar[data-v-84eb6cd1]{flex-wrap:wrap;gap:12px}.settings-saved[data-v-84eb6cd1]{color:var(--text-3);font-size:12px}.settings-body[data-v-84eb6cd1]{display:flex;gap:28px;align-items:flex-start}.settings-nav[data-v-84eb6cd1]{display:flex;flex:none;flex-direction:column;gap:2px;width:150px;position:sticky;top:0}.settings-nav-item[data-v-84eb6cd1]{padding:5px 10px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-align:left;cursor:pointer}.settings-nav-item[data-v-84eb6cd1]:hover{background:var(--hover);color:var(--text)}.settings-sections[data-v-84eb6cd1]{display:flex;flex:1;flex-direction:column;gap:32px;min-width:0}.settings-module[data-v-84eb6cd1]{display:flex;flex-direction:column;gap:18px}.settings-module-heading[data-v-84eb6cd1]{margin:0;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-3)}.settings-failure[data-v-84eb6cd1],.settings-empty[data-v-84eb6cd1]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
-import { openBlock as a, createElementBlock as l, createElementVNode as o, toDisplayString as n, createCommentVNode as g, Fragment as y, renderList as w, createTextVNode as $, renderSlot as I, computed as R, createVNode as r, unref as d, ref as j, createBlock as E, withCtx as f } from "vue";
-import { TimeAgo as D, Switch as V, useWindow as G, coalesced as L, READ_RATES as P, WindowRoom as W, Btn as S, runChanged as J } from "@journal/window-kit";
+if (!document.getElementById("window-styles-52083f7f5511")) { const style = document.createElement("style"); style.id = "window-styles-52083f7f5511"; style.textContent = ".hook-details[data-v-a95baaf4]{flex:1;min-width:0}.hook-identity[data-v-a95baaf4],.hook-source[data-v-a95baaf4],.hook-effects[data-v-a95baaf4]{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.hook-identity[data-v-a95baaf4]{font-size:12px}.hook-command[data-v-a95baaf4]{margin:5px 0}.hook-command summary[data-v-a95baaf4]{cursor:pointer;min-width:0}.hook-command summary code[data-v-a95baaf4]{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}.hook-command pre[data-v-a95baaf4]{margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}.hook-source[data-v-a95baaf4]{color:var(--text-3);font-size:11px;overflow-wrap:anywhere}.hook-effects[data-v-a95baaf4]{margin-top:5px}.hook-effects span[data-v-a95baaf4]{padding:2px 6px;border-radius:4px;background:var(--raised);color:var(--text-2);font-size:10px}.hook-group h2[data-v-a6886886]{display:flex;gap:8px;align-items:center;margin:0 0 6px;font-size:13px;font-weight:600}.hook-group h2 span[data-v-a6886886]{color:var(--text-3);font-size:11px;font-weight:400}.hook-group p[data-v-a6886886]{margin:8px 0;color:var(--text-3);font-size:12px}.hook-history[data-v-5c45b83c]{display:flex;flex:0 1 210px;flex-direction:column;gap:3px;color:var(--text-3);font-size:11px;overflow-wrap:anywhere}.hook-history strong[data-v-5c45b83c]{color:var(--text-2);font-weight:500}.managed-hook[data-v-839af142]{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}.hook-controls[data-v-839af142]{display:flex;flex:0 0 145px;flex-direction:column;gap:8px}.hook-controls label[data-v-839af142]{display:flex;flex-direction:column;gap:4px;color:var(--text-3);font-size:11px}.hook-controls input[data-v-839af142]{width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--border-2);border-radius:5px;background:transparent;color:var(--text)}.hook-failure[data-v-839af142]{margin:0;color:var(--danger);font-size:12px}@media(max-width:700px){.managed-hook[data-v-839af142] .hook-details{flex-basis:100%}}.project-hooks[data-v-f5acb9a0]{display:flex;flex-direction:column;gap:16px}.hook-intro[data-v-f5acb9a0],.hook-notice[data-v-f5acb9a0],.hooks-confirm p[data-v-f5acb9a0]{margin:0;color:var(--text-2);font-size:12px}.hooks-actions[data-v-f5acb9a0],.hooks-confirm[data-v-f5acb9a0]{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.hooks-confirm[data-v-f5acb9a0],.hook-notice[data-v-f5acb9a0]{padding:10px 12px;border:1px solid var(--border-2);border-radius:6px;background:var(--raised)}.hook-error[data-v-f5acb9a0]{margin:0;color:var(--danger);font-size:12px}.pending-hook[data-v-f5acb9a0],.journal-hook[data-v-f5acb9a0],.unmanaged-hook[data-v-f5acb9a0]{padding:12px 0;border-bottom:1px solid var(--line)}.journal-hook[data-v-f5acb9a0]{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px;overflow-wrap:anywhere}.unmanaged-hook[data-v-f5acb9a0]{color:var(--text-2);font-size:12px;overflow-wrap:anywhere}.unmanaged-hook p[data-v-f5acb9a0]{margin:4px 0 0;color:var(--text-3)}section[data-v-0db8a5a2]{min-width:0}h3[data-v-0db8a5a2]{margin:0 0 12px;font-size:13px}p[data-v-0db8a5a2]{color:var(--text-2)}.command[data-v-0db8a5a2]{display:flex;flex:1;gap:16px;align-items:center;min-width:0}.command code[data-v-0db8a5a2]{flex:1;overflow-wrap:anywhere}.command span[data-v-0db8a5a2]{color:var(--text-3)}.setting-input[data-v-bfe42409]{display:flex;gap:8px;align-items:center}.setting-unit[data-v-bfe42409]{flex:none;color:var(--text-3);font-size:12px}.setting-list[data-v-bfe42409]{resize:vertical}.setting-head[data-v-bfe42409]{display:flex;gap:6px;align-items:center}.setting-dot[data-v-bfe42409]{width:6px;height:6px;border-radius:50%;background:var(--accent)}.setting-reset[data-v-bfe42409]{margin-left:auto;padding:0 6px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:11.5px;cursor:pointer}.setting-reset[data-v-bfe42409]:hover{background:var(--hover);color:var(--text)}.setting-group[data-v-bfe42409]{display:flex;flex-direction:column;gap:6px}.setting-group-head[data-v-bfe42409]{display:flex;align-items:center;gap:10px}.setting-group-title[data-v-bfe42409]{margin:0;font-size:13px;font-weight:600}.setting-children[data-v-bfe42409]{display:flex;flex-direction:column;gap:14px;padding-left:14px;border-left:1px solid var(--line)}.setting-children.off[data-v-bfe42409]{opacity:.5}.setting-value[data-v-bfe42409]{display:flex;flex-direction:column;gap:4px}.setting-label[data-v-bfe42409]{font-size:12px;color:var(--text)}.setting-description[data-v-bfe42409],.setting-shown[data-v-bfe42409]{margin:0;font-size:12px;color:var(--text-3)}.setting-field[data-v-bfe42409]{max-width:360px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;color:var(--text);background:transparent}.setting-switch[data-v-bfe42409]{align-self:flex-start;padding:2px 10px;border:0;border-radius:10px;color:var(--text-2);background:var(--raised);font-size:11px;cursor:pointer}.setting-switch[aria-checked=true][data-v-bfe42409]{color:#fff;background:var(--accent)}.setting-choices[data-v-bfe42409]{display:flex;gap:6px}.setting-refusal[data-v-bfe42409]{margin:0;font-size:12px;color:var(--danger)}.environment[data-v-b4a155e1]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.environment-names[data-v-b4a155e1]{flex:1;min-width:0}.environment-name[data-v-b4a155e1]{font-weight:500}.environment-here[data-v-b4a155e1]{margin-left:8px;color:var(--accent-text);font-size:12px}.environment-folder[data-v-b4a155e1]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.environment-refusal[data-v-b4a155e1]{margin:2px 0 0;color:var(--danger);font-size:12.5px}.settings-nav-item.current[data-v-84eb6cd1]{background:var(--hover);color:var(--text)}.settings[data-v-84eb6cd1]{display:flex;flex-direction:column;gap:16px}.settings-bar[data-v-84eb6cd1]{flex-wrap:wrap;gap:12px}.settings-saved[data-v-84eb6cd1]{color:var(--text-3);font-size:12px}.settings-body[data-v-84eb6cd1]{display:flex;gap:28px;align-items:flex-start}.settings-nav[data-v-84eb6cd1]{display:flex;flex:none;flex-direction:column;gap:2px;width:150px;position:sticky;top:0}.settings-nav-item[data-v-84eb6cd1]{padding:5px 10px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-align:left;cursor:pointer}.settings-nav-item[data-v-84eb6cd1]:hover{background:var(--hover);color:var(--text)}.settings-sections[data-v-84eb6cd1]{display:flex;flex:1;flex-direction:column;gap:32px;min-width:0}.settings-module[data-v-84eb6cd1]{display:flex;flex-direction:column;gap:18px}.settings-module-heading[data-v-84eb6cd1]{margin:0;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-3)}.settings-failure[data-v-84eb6cd1],.settings-empty[data-v-84eb6cd1]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+import { openBlock as n, createElementBlock as l, createElementVNode as o, toDisplayString as s, createCommentVNode as g, Fragment as y, renderList as w, createTextVNode as $, renderSlot as I, computed as N, createVNode as r, unref as d, ref as j, createBlock as E, withCtx as f } from "vue";
+import { TimeAgo as D, Switch as V, useWindow as G, coalesced as L, READ_RATES as P, WindowRoom as W, Btn as C, runChanged as J } from "@journal/window-kit";
 import { _ as x } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const K = { class: "hook-details" }, U = { class: "hook-identity" }, z = { class: "hook-command" }, Q = ["title"], X = { class: "hook-source" }, Y = { key: 0 }, Z = { class: "hook-effects" }, ee = {
   __name: "HookDetails",
@@ -12,26 +12,26 @@ const K = { class: "hook-details" }, U = { class: "hook-identity" }, z = { class
       adds_lines: "Adds context",
       overlaps: "Also checked by journal"
     };
-    return (i, v) => (a(), l("div", K, [
+    return (i, v) => (n(), l("div", K, [
       o("div", U, [
-        o("strong", null, n(e.hook.program), 1),
-        o("span", null, n(e.hook.event), 1),
-        o("code", null, n(e.hook.matcher || "All"), 1)
+        o("strong", null, s(e.hook.program), 1),
+        o("span", null, s(e.hook.event), 1),
+        o("code", null, s(e.hook.matcher || "All"), 1)
       ]),
       o("details", z, [
         o("summary", {
           title: e.hook.command
         }, [
-          o("code", null, n(e.hook.command), 1)
+          o("code", null, s(e.hook.command), 1)
         ], 8, Q),
-        o("pre", null, n(e.hook.command), 1)
+        o("pre", null, s(e.hook.command), 1)
       ]),
       o("div", X, [
-        o("code", null, n(e.hook.source), 1),
-        e.hook.tracked ? (a(), l("span", Y, "Tracked by Git")) : g("", !0)
+        o("code", null, s(e.hook.source), 1),
+        e.hook.tracked ? (n(), l("span", Y, "Tracked by Git")) : g("", !0)
       ]),
       o("div", Z, [
-        (a(!0), l(y, null, w(e.hook.effects, (k) => (a(), l("span", { key: k }, n(u[k] || k), 1))), 128))
+        (n(!0), l(y, null, w(e.hook.effects, (k) => (n(), l("span", { key: k }, s(u[k] || k), 1))), 128))
       ])
     ]));
   }
@@ -43,35 +43,35 @@ const K = { class: "hook-details" }, U = { class: "hook-identity" }, z = { class
     empty: { type: String, required: !0 }
   },
   setup(e) {
-    return (u, i) => (a(), l("section", oe, [
+    return (u, i) => (n(), l("section", oe, [
       o("h2", null, [
-        $(n(e.title) + " ", 1),
-        o("span", null, n(e.count), 1)
+        $(s(e.title) + " ", 1),
+        o("span", null, s(e.count), 1)
       ]),
-      e.count ? I(u.$slots, "default", {}, void 0, !0, 0) : (a(), l("p", te, n(e.empty), 1))
+      e.count ? I(u.$slots, "default", {}, void 0, !0, 0) : (n(), l("p", te, s(e.empty), 1))
     ]));
   }
-}, C = /* @__PURE__ */ x(ae, [["__scopeId", "data-v-a6886886"]]), ne = { class: "hook-history" }, se = { key: 1 }, le = { key: 2 }, ie = {
+}, S = /* @__PURE__ */ x(ae, [["__scopeId", "data-v-a6886886"]]), ne = { class: "hook-history" }, se = { key: 1 }, le = { key: 2 }, ie = {
   __name: "HookRunHistory",
   props: { history: { type: Object, required: !0 } },
   setup(e) {
-    const u = e, i = R(() => u.history.last), v = {
+    const u = e, i = N(() => u.history.last), v = {
       allowed: "Allowed",
       refused: "Refused",
       rewritten: "Rewrote input",
       timed_out: "Timed out",
       failed: "Failed"
     };
-    return (k, h) => (a(), l("div", ne, [
-      i.value ? (a(), l(y, { key: 0 }, [
-        o("strong", null, n(v[e.history.last_outcome]), 1),
+    return (k, h) => (n(), l("div", ne, [
+      i.value ? (n(), l(y, { key: 0 }, [
+        o("strong", null, s(v[e.history.last_outcome]), 1),
         r(d(D), {
           at: e.history.last_at
         }, null, 8, ["at"]),
-        o("span", null, "Ended with code " + n(i.value.exit_code) + " after " + n(i.value.milliseconds) + " ms", 1)
-      ], 64)) : (a(), l("span", se, "No runs yet")),
-      o("span", null, "Refusals: " + n(e.history.refused) + " / " + n(e.history.runs), 1),
-      e.history.failed || e.history.timed_out ? (a(), l("span", le, "Failed: " + n(e.history.failed) + " · Timed out: " + n(e.history.timed_out), 1)) : g("", !0)
+        o("span", null, "Ended with code " + s(i.value.exit_code) + " after " + s(i.value.milliseconds) + " ms", 1)
+      ], 64)) : (n(), l("span", se, "No runs yet")),
+      o("span", null, "Refusals: " + s(e.history.refused) + " / " + s(e.history.runs), 1),
+      e.history.failed || e.history.timed_out ? (n(), l("span", le, "Failed: " + s(e.history.failed) + " · Timed out: " + s(e.history.timed_out), 1)) : g("", !0)
     ]));
   }
 }, de = /* @__PURE__ */ x(ie, [["__scopeId", "data-v-5c45b83c"]]), ue = ["data-managed-hook"], re = { class: "hook-controls" }, ce = ["value", "disabled"], he = {
@@ -97,7 +97,7 @@ const K = { class: "hook-details" }, U = { class: "hook-identity" }, z = { class
       state: i.hook.state,
       timeout: Number(m.target.value)
     });
-    return (m, _) => (a(), l("div", {
+    return (m, p) => (n(), l("div", {
       class: "managed-hook",
       "data-managed-hook": e.hook.id
     }, [
@@ -111,7 +111,7 @@ const K = { class: "hook-details" }, U = { class: "hook-identity" }, z = { class
           onChange: k
         }, null, 8, ["on", "word", "disabled"]),
         o("label", null, [
-          _[0] || (_[0] = $("Time limit (seconds)", -1)),
+          p[0] || (p[0] = $("Time limit (seconds)", -1)),
           o("input", {
             value: e.hook.timeout,
             type: "number",
@@ -121,7 +121,7 @@ const K = { class: "hook-details" }, U = { class: "hook-identity" }, z = { class
             onChange: h
           }, null, 40, ce)
         ]),
-        e.failure ? (a(), l("p", he, n(e.failure), 1)) : g("", !0)
+        e.failure ? (n(), l("p", he, s(e.failure), 1)) : g("", !0)
       ]),
       r(de, { history: e.history }, null, 8, ["history"])
     ], 8, ue));
@@ -132,149 +132,150 @@ const K = { class: "hook-details" }, U = { class: "hook-identity" }, z = { class
 }, ye = {
   key: 1,
   class: "hook-notice"
-}, _e = {
+}, pe = {
   key: 2,
   class: "hook-error",
   role: "alert"
-}, pe = {
+}, _e = {
   key: 0,
   class: "hook-notice",
   "data-shell-fallback": ""
 }, be = ["data-journal-hook"], $e = {
   __name: "ProjectHooks",
   setup(e) {
-    const u = G(), { data: i, failure: v } = u.props.hooks, k = () => u.reload("hooks"), h = j(!1), m = j(!1), _ = j(!1), p = j({ hook_id: null, text: "" }), H = R(
+    const u = G(), { data: i, failure: v } = u.props.hooks, k = () => u.reload("hooks"), h = j(!1), m = j(!1), p = j(!1), _ = j({ hook_id: null, text: "" }), T = N(
       () => u.face === "phone" || u.readOnly === !0
-    ), T = R(
-      () => p.value.hook_id === null ? p.value.text : ""
-    ), A = (c) => c.hook.id, q = (c) => p.value.hook_id === c.hook.id ? p.value.text : "";
-    async function N(c, s = null, t = null) {
-      h.value = !0, p.value = { hook_id: null, text: "" };
+    ), R = N(
+      () => _.value.hook_id === null ? _.value.text : ""
+    ), A = (c) => c.hook.id, q = (c) => _.value.hook_id === c.hook.id ? _.value.text : "";
+    async function H(c, a = null, t = null) {
+      h.value = !0, _.value = { hook_id: null, text: "" };
       try {
         const b = await J(t, c, u.run);
-        return p.value = { hook_id: s, text: b.ok ? "" : b.error }, b.ok && await k(), b;
+        return _.value = { hook_id: a, text: b.ok ? "" : b.error }, b.ok && await k(), b;
       } finally {
         h.value = !1;
       }
     }
-    const F = (c, s) => N(
+    const F = (c, a) => H(
       [
         "managed-hook",
         "set",
-        s.hook_id,
-        s.state,
-        String(s.timeout)
+        a.hook_id,
+        a.state,
+        String(a.timeout)
       ],
-      s.hook_id,
-      { target: c, fields: { state: s.state, timeout: s.timeout } }
+      a.hook_id,
+      { target: c, fields: { state: a.state, timeout: a.timeout } }
     );
     async function M() {
-      (await N(["managed-hook", "scan"])).ok && (_.value = !1);
+      (await H(["managed-hook", "scan"])).ok && (p.value = !1);
     }
     async function B() {
       m.value = !1;
-      const c = await N(["managed-hook", "give-back"]);
-      _.value = c.ok;
+      const c = await H(["managed-hook", "give-back"]);
+      p.value = c.ok;
     }
-    return u.follow(["hook_call.*"], L(k, P.projectHooks)), (c, s) => (a(), E(d(W), null, {
+    return u.follow(["hook_call.*"], L(k, P.projectHooks)), (c, a) => (n(), E(d(W), null, {
       default: f(() => [
         o("div", fe, [
-          s[7] || (s[7] = o("p", { class: "hook-intro" }, " Run project commands when an agent program starts, uses a tool or stops. Edit commands and matchers in their source files. ", -1)),
+          a[7] || (a[7] = o("p", { class: "hook-intro" }, " Run project commands when an agent program starts, uses a tool or stops. Edit commands and matchers in their source files. ", -1)),
+          a[8] || (a[8] = o("p", { class: "hook-intro" }, " The journal starts Claude Code and Codex on settings it writes again at every start, so an always-allow answer given while prompts are asked is not kept for the next launch. ", -1)),
           o("div", ve, [
-            r(d(S), {
+            r(d(C), {
               bordered: "",
-              disabled: H.value || h.value,
+              disabled: T.value || h.value,
               "data-hooks-scan": "",
               onClick: M
             }, {
-              default: f(() => [...s[2] || (s[2] = [
+              default: f(() => [...a[2] || (a[2] = [
                 $("Scan now", -1)
               ])]),
               _: 1
             }, 8, ["disabled"]),
-            r(d(S), {
+            r(d(C), {
               bordered: "",
-              disabled: H.value || h.value,
+              disabled: T.value || h.value,
               "data-hooks-give-back": "",
-              onClick: s[0] || (s[0] = (t) => m.value = !0)
+              onClick: a[0] || (a[0] = (t) => m.value = !0)
             }, {
-              default: f(() => [...s[3] || (s[3] = [
+              default: f(() => [...a[3] || (a[3] = [
                 $("Stop managing all commands", -1)
               ])]),
               _: 1
             }, 8, ["disabled"])
           ]),
-          m.value ? (a(), l("div", ge, [
-            s[6] || (s[6] = o("p", null, " Return every command to its source file? Management is off until the next scan. ", -1)),
-            r(d(S), {
+          m.value ? (n(), l("div", ge, [
+            a[6] || (a[6] = o("p", null, " Return every command to its source file? Management is off until the next scan. ", -1)),
+            r(d(C), {
               disabled: h.value,
               "data-hooks-cancel": "",
-              onClick: s[1] || (s[1] = (t) => m.value = !1)
+              onClick: a[1] || (a[1] = (t) => m.value = !1)
             }, {
-              default: f(() => [...s[4] || (s[4] = [
+              default: f(() => [...a[4] || (a[4] = [
                 $("Cancel", -1)
               ])]),
               _: 1
             }, 8, ["disabled"]),
-            r(d(S), {
+            r(d(C), {
               variant: "danger",
               disabled: h.value,
               "data-hooks-confirm": "",
               onClick: B
             }, {
-              default: f(() => [...s[5] || (s[5] = [
+              default: f(() => [...a[5] || (a[5] = [
                 $("Stop managing all commands", -1)
               ])]),
               _: 1
             }, 8, ["disabled"])
           ])) : g("", !0),
-          _.value ? (a(), l("p", ye, " Management is off until the next scan. ")) : g("", !0),
-          d(v) || T.value ? (a(), l("p", _e, n(d(v) || T.value), 1)) : g("", !0),
-          d(i) ? (a(), l(y, { key: 3 }, [
-            d(i).fallback ? (a(), l("p", pe, " The shell runner does not run managed project commands. Native commands stay in their files while it is in use. ")) : g("", !0),
-            r(C, {
+          p.value ? (n(), l("p", ye, " Management is off until the next scan. ")) : g("", !0),
+          d(v) || R.value ? (n(), l("p", pe, s(d(v) || R.value), 1)) : g("", !0),
+          d(i) ? (n(), l(y, { key: 3 }, [
+            d(i).fallback ? (n(), l("p", _e, " The shell runner does not run managed project commands. Native commands stay in their files while it is in use. ")) : g("", !0),
+            r(S, {
               title: "Managed",
               count: d(i).managed.length,
               empty: "No managed commands"
             }, {
               default: f(() => [
-                (a(!0), l(y, null, w(d(i).managed, (t) => (a(), E(me, {
+                (n(!0), l(y, null, w(d(i).managed, (t) => (n(), E(me, {
                   key: A(t),
                   hook: t.hook,
                   history: t.history,
-                  disabled: H.value || h.value,
+                  disabled: T.value || h.value,
                   failure: q(t),
                   onSave: (b) => F(t.hook, b)
                 }, null, 8, ["hook", "history", "disabled", "failure", "onSave"]))), 128))
               ]),
               _: 1
             }, 8, ["count"]),
-            r(C, {
+            r(S, {
               title: "Journal",
               count: d(i).journal.length,
-              empty: "No journal hooks"
+              empty: "The journal has set no hooks here"
             }, {
               default: f(() => [
-                (a(!0), l(y, null, w(d(i).journal, (t) => (a(), l("div", {
+                (n(!0), l(y, null, w(d(i).journal, (t) => (n(), l("div", {
                   key: `${t.program}:${t.event}`,
                   class: "journal-hook",
                   "data-journal-hook": `${t.program}:${t.event}`
                 }, [
-                  o("strong", null, n(t.program), 1),
-                  o("span", null, n(t.event), 1),
-                  o("code", null, n(t.source), 1),
-                  o("span", null, "Time limit " + n(t.timeout) + " seconds", 1)
+                  o("strong", null, s(t.program), 1),
+                  o("span", null, s(t.event), 1),
+                  o("code", null, s(t.source), 1),
+                  o("span", null, "Time limit " + s(t.timeout) + " seconds", 1)
                 ], 8, be))), 128))
               ]),
               _: 1
             }, 8, ["count"]),
-            r(C, {
+            r(S, {
               title: "Pending",
               count: d(i).pending.length,
               empty: "No pending commands"
             }, {
               default: f(() => [
-                (a(!0), l(y, null, w(d(i).pending, (t) => (a(), l("div", {
+                (n(!0), l(y, null, w(d(i).pending, (t) => (n(), l("div", {
                   key: t.id,
                   class: "pending-hook"
                 }, [
@@ -283,19 +284,19 @@ const K = { class: "hook-details" }, U = { class: "hook-identity" }, z = { class
               ]),
               _: 1
             }, 8, ["count"]),
-            r(C, {
+            r(S, {
               title: "Not managed",
               count: d(i).unmanaged.length,
               empty: "No excluded entries"
             }, {
               default: f(() => [
-                (a(!0), l(y, null, w(d(i).unmanaged, (t) => (a(), l("div", {
+                (n(!0), l(y, null, w(d(i).unmanaged, (t) => (n(), l("div", {
                   key: `${t.program}:${t.source}:${t.event}`,
                   class: "unmanaged-hook"
                 }, [
-                  o("strong", null, n(t.program), 1),
-                  o("code", null, n(t.source), 1),
-                  o("p", null, n(t.reason), 1)
+                  o("strong", null, s(t.program), 1),
+                  o("code", null, s(t.source), 1),
+                  o("p", null, s(t.reason), 1)
                 ]))), 128))
               ]),
               _: 1
@@ -306,7 +307,7 @@ const K = { class: "hook-details" }, U = { class: "hook-identity" }, z = { class
       _: 1
     }));
   }
-}, Se = /* @__PURE__ */ x($e, [["__scopeId", "data-v-53c1bd53"]]);
+}, Ce = /* @__PURE__ */ x($e, [["__scopeId", "data-v-f5acb9a0"]]);
 export {
-  Se as default
+  Ce as default
 };

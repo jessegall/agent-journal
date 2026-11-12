@@ -9,8 +9,8 @@ REPEAT_AFTER_SECONDS = 3600
 
 class ReportedFindings:
     """The findings already reported on a server, by key with the count and the time they were reported at. A
-    finding is reported once however many requests and rows meet it, and again when its count changes or after an
-    hour."""
+    finding is reported once however many requests and rows meet it, and again when its count changes or after
+    an hour."""
 
     def __init__(self, seconds: Callable[[], float] = time.monotonic) -> None:
         self.seconds = seconds

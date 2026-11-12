@@ -29,6 +29,7 @@ QUESTION_VISITS_LIMIT = f"{MODULE_KEY}.ask-visits-limit"
 MERGER_GROUP_MESSAGE_LIMIT = f"{MODULE_KEY}.most-merger-messages-per-group"
 PHASE_TEST_DEFERRAL_LIMIT = f"{MODULE_KEY}.most-phase-test-deferrals"
 MOST_OPEN_TASKS = f"{MODULE_KEY}.most-open-tasks"
+STRONGEST_MODEL_LEAST_COMPLEXITY = f"{MODULE_KEY}.strongest-model-least-complexity"
 SILENT_RECOVERY_ATTEMPTS = f"{MODULE_KEY}.silent-recovery-attempts"
 WORKER_RESUME_LIMIT = f"{MODULE_KEY}.worker-resume-limit"
 INACTIVE_HELPER_MINUTES = f"{MODULE_KEY}.quiet-helper-minutes"
@@ -52,6 +53,15 @@ RESUME_SILENT_AGENTS = f"{MODULE_KEY}.resume-silent-agents"
 WORKERS_START_HELPERS = f"{MODULE_KEY}.workers-start-read-only-helpers"
 WORKER_SANDBOX = f"{MODULE_KEY}.worker-sandbox"
 PROTECTED_FOLDERS = f"{MODULE_KEY}.protected-folders"
+KEEP_UP_TO_DATE = f"{MODULE_KEY}.keep-worktrees-up-to-date"
+BEHIND_COMMITS_TO_CHECK = f"{MODULE_KEY}.behind-commits-to-check"
+BEHIND_CHECK_MINUTES = f"{MODULE_KEY}.behind-check-minutes"
+BEHIND_RECHECK_COMMITS = f"{MODULE_KEY}.behind-recheck-commits"
+UPDATE_TO_MAIN_COMMITS = f"{MODULE_KEY}.update-to-main-commits"
+UPDATE_WAIT_MINUTES = f"{MODULE_KEY}.update-wait-minutes"
+UPDATE_REMINDERS = f"{MODULE_KEY}.update-reminders"
+CHECK_HISTORY_DAYS = f"{MODULE_KEY}.check-history-days"
+UP_TO_DATE_SECTION = "Keeping worktrees up to date"
 WORKER_SETTING_VALUES = [
     SettingValue("idle-worker-minutes", "Worker idle warning", "Minutes without activity before a worker with work left is reported.", SettingType.NUMBER, default=15, person_set=True, required_settings=[MERGER_ENABLED], screen="helper-type.workers", section="How a worker works"),
     SettingValue("ask-answer-minutes", "Answer time for a worker's question", "Minutes the merger has to answer a worker's question before it is woken for it again.", SettingType.NUMBER, default=10, person_set=True, required_settings=[MERGER_ENABLED], screen="helper-type.merger", section="Questions"),
@@ -63,6 +73,7 @@ WORKER_SETTING_VALUES = [
     SettingValue("worker-resume-limit", "Go-on lines for a stopped worker", "How often a stopped worker with tasks left is told to go on, with no task moved, before it is reported.", SettingType.NUMBER, default=3, person_set=True, screen="advanced", section="Silent agents"),
     SettingValue("idle-worker-repeat-minutes", "Worker idle warning repeat", "Minutes between warnings about a worker with work left.", SettingType.NUMBER, default=5, person_set=True, screen="advanced", section="Quiet helpers"),
     SettingValue("most-open-tasks", "Tasks a worker may hold started at once", "Most tasks a worker may have started before it commits some of them.", SettingType.NUMBER, default=5, person_set=True, screen="helper-type.workers", section="How a worker works"),
+    SettingValue("strongest-model-least-complexity", "Least complexity for the strongest model", "Tasks sent alone, not as a plan or phase, to the strongest model are refused below this complexity; agents may skip it.", SettingType.NUMBER, default=3, person_set=True, screen="helper-type.workers", section="How a worker works"),
     SettingValue("worker-phase-test-runs", "A worker's test runs between two commits", "Test commands a worker may run itself between two commits before it asks the main agent.", SettingType.NUMBER, default=3, person_set=True, screen="tests", section="A worker's own runs"),
     SettingValue("silent-agent-minutes", "Silent agent minutes", "Minutes without tool use or a running command before an agent with unfinished work is resumed.", SettingType.NUMBER, default=3, person_set=True, screen="advanced", section="Silent agents"),
     SettingValue("affected-tests-command", "Affected tests command", "Find tests for changed files, one argument per line. Set the project test command too.", SettingType.TEXT, default="", person_set=True, screen="tests", section="Test commands"),
@@ -76,6 +87,14 @@ WORKER_SETTING_VALUES = [
     SettingValue("stopped-worker-run-minutes", "Minutes before a stopped worker's run", "Minutes after a worker stopped with tasks left, while a command it started still runs, before its main agent is told.", SettingType.NUMBER, default=30, person_set=True, screen="advanced", section="Silent agents"),
     SettingValue("merger-wait-minutes", "Merger wait minutes", "Minutes the merger has to take in a worker whose tests passed, before the main agent is told to merge it.", SettingType.NUMBER, default=15, person_set=True, screen="helper-type.merger", section="Waiting"),
     SettingValue("merger-commands", "Merger commands", "Lines the merger runs after each merge, sending what they find to the worker. {commit} is the commit before it.", SettingType.LIST, default=(), person_set=True, required_settings=[MERGER_ENABLED], screen="helper-type.merger", section="Commands"),
+    SettingValue("keep-worktrees-up-to-date", "Keep worktrees up to date", "Check whether a worker's working folder has fallen behind the branch it was cut from, and have it brought up to date.", SettingType.FLAG, default=True, person_set=True, screen="work", section=UP_TO_DATE_SECTION),
+    SettingValue("behind-commits-to-check", "Commits behind before a check", "New commits on the branch a worker was cut from before its folder is looked at. At 0 no folder is looked at.", SettingType.NUMBER, default=3, person_set=True, required_settings=[KEEP_UP_TO_DATE], screen="work", section=UP_TO_DATE_SECTION),
+    SettingValue("behind-check-minutes", "Minutes between checks", "Minutes between two looks at how far the workers' folders are behind their branch.", SettingType.NUMBER, default=10, person_set=True, required_settings=[KEEP_UP_TO_DATE], screen="work", section=UP_TO_DATE_SECTION),
+    SettingValue("behind-recheck-commits", "Commits before a folder is checked again", "How many more commits a folder left alone may fall behind before it is looked at again.", SettingType.NUMBER, default=3, person_set=True, required_settings=[KEEP_UP_TO_DATE], screen="work", section=UP_TO_DATE_SECTION),
+    SettingValue("update-to-main-commits", "Commits behind that go to the main agent", "A folder this many commits behind goes straight to the main agent. At 0 the merger always judges first.", SettingType.NUMBER, default=0, person_set=True, required_settings=[KEEP_UP_TO_DATE], screen="work", section=UP_TO_DATE_SECTION),
+    SettingValue("update-wait-minutes", "Minutes a worker has to update", "Minutes a worker told to update its folder has before it is reminded.", SettingType.NUMBER, default=30, person_set=True, required_settings=[KEEP_UP_TO_DATE], screen="work", section=UP_TO_DATE_SECTION),
+    SettingValue("update-reminders", "Reminders to update", "How many times a worker is reminded to update its folder before the main agent is told.", SettingType.NUMBER, default=2, person_set=True, required_settings=[KEEP_UP_TO_DATE], screen="work", section=UP_TO_DATE_SECTION),
+    SettingValue("check-history-days", "Days a closed check is kept", "Days a finished look at a folder behind its branch is kept before it is removed.", SettingType.NUMBER, default=30, person_set=True, screen="work", section=UP_TO_DATE_SECTION),
     SettingValue("main-dispatches-workers", "Main agent sends workers", "Whether the main agent may send workers to do tasks.", SettingType.FLAG, default=True, person_set=True, screen="work", section="Workers"),
     SettingValue("main-agent-may-merge", "Main agent may merge workers", "Whether the main agent may merge the work of a worker itself.", SettingType.FLAG, default=True, person_set=True, required_settings=[DISPATCHES_WORKERS_SETTING], screen="work", section="Workers"),
     SettingValue("resume-silent-agents", "Resume silent agents", "Whether a helper with unfinished work that has gone silent is resumed.", SettingType.FLAG, default=True, person_set=True, screen="advanced", section="Silent agents"),
@@ -123,6 +142,13 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         MERGER_WAIT_MINUTES: NumberRule(1),
                         UNSTARTED_WORKER_SECONDS: NumberRule(1),
                         STOPPED_WORKER_RUN_MINUTES: NumberRule(1),
+                        BEHIND_COMMITS_TO_CHECK: NumberRule(0),
+                        BEHIND_CHECK_MINUTES: NumberRule(1),
+                        BEHIND_RECHECK_COMMITS: NumberRule(0),
+                        UPDATE_TO_MAIN_COMMITS: NumberRule(0),
+                        UPDATE_WAIT_MINUTES: NumberRule(1),
+                        UPDATE_REMINDERS: NumberRule(0),
+                        CHECK_HISTORY_DAYS: NumberRule(1),
                         MERGER_COMMANDS: ListRule(),
                         PROTECTED_FOLDERS: ListRule(),
                         MERGE_COMMANDS: ListRule()}

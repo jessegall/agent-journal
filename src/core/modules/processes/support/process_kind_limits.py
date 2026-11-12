@@ -1,9 +1,12 @@
+from collections.abc import Sequence
+
 from core.modules.processes.models.process import Process
+from core.modules.processes.support.kind_pass import KindPass
 
 
 class ProcessKindLimits:
-    """How many runs of a process's kind may run at once; a kind nobody declares has no limit of its own. A
-    module that declares kinds of run, such as the plugins module, binds its own answer."""
+    """The limits of the declared kinds of run for one pass of the queue, read once for the runs that wait. A module
+    that declares kinds of run, such as the plugins module, binds its own answer."""
 
-    def limit(self, process: Process) -> int | None:
-        return None
+    def pass_over(self, waiting: Sequence[Process]) -> KindPass:
+        return KindPass()

@@ -5,6 +5,7 @@ from pathlib import Path
 from engine.provider.program_hooks import ProgramHooks
 from install.hook.hook_writer import HookWriter
 from install.backup.version_four_backup import BACKUP_FOLDER
+from engine.file.file_access import FileAccess
 
 SETTINGS_FILES = (Path(".claude") / "settings.json", Path(".claude") / "settings.local.json", Path(".codex") / "hooks.json")
 SAVED_FOLDER = "hooks"
@@ -31,13 +32,12 @@ class HookSwitch:
                 kept.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(self.root / name, kept)
         runner = self.runner()
-        writer = HookWriter(self.root)
-        writer.write(runner, is_upgrade=True)
-        return [f"the hooks of {', '.join(str(name) for name in present)} call {runner}; the old files are in {self.saved}"]
+        HookWriter(self.root).write(runner)
+        return [f"Claude Code and Codex start on the journal's own settings in .journal/programs, whose hooks call {runner}; the old files are in {self.saved}"]
 
     def restore(self) -> list[str]:
         (self.root / VERSION_FOUR_SWITCH).parent.mkdir(parents=True, exist_ok=True)
-        (self.root / VERSION_FOUR_SWITCH).touch()
+        FileAccess.shared().update_timestamp(self.root / VERSION_FOUR_SWITCH)
         restored = [name for name in SETTINGS_FILES if (self.saved / name).is_file()]
         for name in SETTINGS_FILES:
             path = self.root / name

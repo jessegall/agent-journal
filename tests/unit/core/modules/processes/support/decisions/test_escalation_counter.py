@@ -12,7 +12,7 @@ from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.decisions.escalation_counter import EscalationCounter
 from core.modules.processes.support.decisions.escalation_resets import EscalationResets
-from core.modules.processes.support.reading.key_run import KeyRun
+from core.modules.processes.support.decisions.key_run import KeyRun
 
 START = datetime(2026, 11, 11, 12, 0, tzinfo=timezone.utc)
 
@@ -44,9 +44,17 @@ class DecisionsSample:
     def descending(self, *columns: str) -> "DecisionsSample":
         return self
 
-    def limited(self, size: int) -> list[DecisionSample]:
+    def limit(self, size: int, reason: str) -> "LimitedDecisions":
         matching = [row for row in self.rows if row.command_key in self.keys and row.moment is self.moment]
-        return sorted(matching, key=lambda row: row.decided_at, reverse=True)[:size]
+        return LimitedDecisions(sorted(matching, key=lambda row: row.decided_at, reverse=True)[:size])
+
+
+@dataclass
+class LimitedDecisions:
+    rows: list[DecisionSample]
+
+    def get(self) -> list[DecisionSample]:
+        return self.rows
 
 
 @dataclass

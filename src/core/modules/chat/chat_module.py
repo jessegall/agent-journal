@@ -49,4 +49,4 @@ class ChatModule(Module):
     listeners = [JournalExceptionMarkListener, UpgradeMarkListener]
     bindings = {ExceptionSink: ChatExceptionSink}
     windows = [WindowDeclaration("chat.errors", "Errors", "errors.js", WindowLoading.COMPONENT, skeleton=CHAT_ERRORS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.WARNING,
-                                 reads=["journal-exception list"], keys=[WindowKey("errors", "journal-exception list --newest", events=["journal_exception.*"])], runs=["journal-exception solve"], events=["journal_exception.*"])]
+                                 reads=["journal-exception list"], keys=[WindowKey("errors", "journal-exception list", events=["journal_exception.*"])], runs=["journal-exception solve"], events=["journal_exception.*"])]

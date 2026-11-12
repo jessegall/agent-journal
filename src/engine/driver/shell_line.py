@@ -140,9 +140,11 @@ class ShellLine:
     def is_permitted_line(self, action: str) -> bool:
         return action == self._source_line
 
+    def journal_argument_lines(self) -> tuple[tuple[str, ...], ...]:
+        return (*(tuple(part.arguments) for part in self.parts if part.program == JOURNAL_PROGRAM), *(tuple(nested) for part in self.parts for nested in part.nested_journal_commands))
+
     def runs_journal_command(self, *commands: str) -> bool:
-        lines = [*(part.arguments for part in self.parts if part.program == JOURNAL_PROGRAM), *(nested for part in self.parts for nested in part.nested_journal_commands)]
-        return any(tuple(line[:len(command.split())]) == tuple(command.split()) for line in lines for command in commands)
+        return any(tuple(line[:len(command.split())]) == tuple(command.split()) for line in self.journal_argument_lines() for command in commands)
 
     def has_part_matching(self, pattern: str) -> bool:
         return any(re.search(pattern, part.text) for part in self.parts)

@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from pathlib import Path
 
+from engine.journal.journal_home import JournalHome
+
 from engine.time.clock import Clock
 from engine.database.kept_rows import KeptRows
 from engine.enums.hook_trust import HookTrust
@@ -33,8 +35,9 @@ class ProgramStates:
     """Reads program readiness; account windows apply across its open sessions in every environment."""
 
     def __init__(self, providers: Providers, programs: HelperPrograms, queries: Queries,
-                 settings: SettingValues, statuses: StatusFiles, clock: Clock, agents: AgentQuery, scopes: Scopes, kept_rows: KeptRows, limits: UsageLimits) -> None:
-        self.limits = limits
+                 settings: SettingValues, statuses: StatusFiles, clock: Clock, agents: AgentQuery, scopes: Scopes, kept_rows: KeptRows, limits: UsageLimits,
+                 home: JournalHome) -> None:
+        self.limits, self.home = limits, home
         self.providers, self.programs, self.queries = providers, programs, queries
         self.settings, self.statuses, self.clock = settings, statuses, clock
         self.agents, self.scopes = agents, scopes
@@ -49,7 +52,7 @@ class ProgramStates:
             self.programs.installed(program)
         except Refusal as refusal:
             return ProgramState.unavailable(refusal.text)
-        if provider.hook_trust(folder) is not HookTrust.READY:
+        if provider.journal_trust(self.home) is not HookTrust.READY:
             return ProgramState.unavailable(f"{program} has not trusted the journal hooks in {folder}")
         return self.allowance_state(program)
 

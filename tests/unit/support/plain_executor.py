@@ -12,7 +12,7 @@ class OpenGate(ExecutionGate):
     def __init__(self) -> None:
         pass
 
-    def opened(self) -> bool:
+    def opened(self, run: PlacedRun) -> bool:
         return True
 
 

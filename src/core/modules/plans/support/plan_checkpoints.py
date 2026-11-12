@@ -5,6 +5,7 @@ from engine.query.query import Query
 from core.modules.plans.conditions.plan_tasks_condition import PlanTasksCondition
 from core.modules.plans.models.phase_task import PhaseTask
 from core.modules.tasks.models.task import Task
+from engine.setting.setting_values import SettingValues
 from engine.repository.repository import Repository
 from core.modules.plans.models.checkpoint_pass import CheckpointPass
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
@@ -15,6 +16,7 @@ from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.support.checkpoint_branch_moves import CheckpointBranchMoves
 from core.modules.plans.support.checkpoint_windows import CheckpointWindows
 from core.modules.plans.support.early_run import EarlyRun
+from core.modules.plans.support.plan_settings import WAIT_FOR_PERSON_SETTING
 
 REACHES_REASON = "the checkpoint status shows the newest reach of every phase, read from every reach of the plan"
 
@@ -26,12 +28,13 @@ class PlanCheckpoints:
     for its run, one at a time, with the completed tasks it had then; a reached window with no completed task
     has nothing to run and passes at once. A window whose run failed is reached again once its tasks are all
     completed again, and gets a new reach. The core runs no test: a suite ends the run of a reach. The last
-    phase of a plan is always a checkpoint, so a plan is over once that one has passed. A window whose worker run
-    passed with the same tasks passes at the merge with no new run, unless it is the plan's last window and the
-    branch moved after the worker's commit."""
+    phase of a plan is always a checkpoint, so a plan is over once that one has passed. A window whose run on
+    an agent's commit passed with the same tasks passes at the merge with no new run, unless it is the plan's
+    last window and the branch moved after that commit. When the setting to wait for the person is on, a
+    window whose run passed gets no pass until a person approves it."""
 
-    def __init__(self, queries: Queries, repository: Repository, moves: CheckpointBranchMoves, kept: KeptRows) -> None:
-        self.queries, self.repository, self.moves, self.kept = queries, repository, moves, kept
+    def __init__(self, queries: Queries, repository: Repository, moves: CheckpointBranchMoves, kept: KeptRows, settings: SettingValues) -> None:
+        self.queries, self.repository, self.moves, self.kept, self.settings = queries, repository, moves, kept, settings
 
     def windows(self, plan_id: int) -> CheckpointWindows:
         return self.kept.read_across(self.window_sources(plan_id), lambda: self.loaded_windows(plan_id), name="plans.checkpoint_windows")
@@ -73,8 +76,8 @@ class PlanCheckpoints:
             if not windows.is_reached(checkpoint) or checkpoint.id in running_phase_ids:
                 continue
             completed = windows.completed_ids(checkpoint)
-            worker_pass = self.worker_pass(reaches, checkpoint.id, completed)
-            if worker_pass is not None and not (checkpoint.id == last_id and self.moves.moved_after(worker_pass)):
+            agent_commit_pass = self.agent_commit_pass(reaches, checkpoint.id, completed)
+            if agent_commit_pass is not None and not (checkpoint.id == last_id and self.moves.moved_after(agent_commit_pass)):
                 if checkpoint.id not in passed:
                     self.save_pass(plan_id, checkpoint.id, context)
                 continue
@@ -84,9 +87,9 @@ class PlanCheckpoints:
                 self.repository.save(CheckpointReach.started(context.actor.id, plan_id, checkpoint.id, completed), context)
 
     @staticmethod
-    def worker_pass(reaches: tuple[CheckpointReach, ...], phase_id: int, completed: tuple[int, ...]) -> CheckpointReach | None:
-        worker_reaches = [reach for reach in reaches if reach.phase_id == phase_id and reach.source is CheckpointReachSource.WORKER]
-        newest = worker_reaches[-1] if worker_reaches else None
+    def agent_commit_pass(reaches: tuple[CheckpointReach, ...], phase_id: int, completed: tuple[int, ...]) -> CheckpointReach | None:
+        agent_commit_reaches = [reach for reach in reaches if reach.phase_id == phase_id and reach.source is CheckpointReachSource.AGENT_COMMIT]
+        newest = agent_commit_reaches[-1] if agent_commit_reaches else None
         if newest is None or newest.state is not CheckpointState.PASSED or set(newest.tasks()) != set(completed):
             return None
         return newest
@@ -101,16 +104,29 @@ class PlanCheckpoints:
                 return EarlyRun(checkpoint.id, testing)
         return EarlyRun()
 
-    def reach_worker(self, plan_id: int, phase_id: int, task_ids: tuple[int, ...], context: Context) -> CheckpointReach | None:
+    def reach_agent_commit(self, plan_id: int, phase_id: int, task_ids: tuple[int, ...], context: Context) -> CheckpointReach | None:
         if phase_id in self.running_phase_ids(self.reaches(plan_id)):
             return None
-        return self.repository.save(CheckpointReach.started_worker(context.actor.id, plan_id, phase_id, task_ids), context)
+        return self.repository.save(CheckpointReach.started_on_agent_commit(context.actor.id, plan_id, phase_id, task_ids), context)
 
     @staticmethod
     def running_phase_ids(reaches: tuple[CheckpointReach, ...]) -> frozenset[int]:
         return frozenset(reach.phase_id for reach in reaches if reach.state is CheckpointState.RUNNING)
 
     def save_pass(self, plan_id: int, phase_id: int, context: Context) -> bool:
+        if self.settings.flag(WAIT_FOR_PERSON_SETTING):
+            return False
+        return self.saved_pass(plan_id, phase_id, context)
+
+    def waiting_phase_ids(self, plan_id: int) -> frozenset[int]:
+        """The checkpoints whose run passed and whose pass waits for a person."""
+        passed = self.passed_phase_ids(plan_id)
+        return frozenset(reach.phase_id for reach in self.reaches(plan_id) if reach.source.opens_phases() and reach.state is CheckpointState.PASSED and reach.phase_id not in passed)
+
+    def approve(self, plan_id: int, phase_id: int, context: Context) -> bool:
+        return phase_id in self.waiting_phase_ids(plan_id) and self.saved_pass(plan_id, phase_id, context)
+
+    def saved_pass(self, plan_id: int, phase_id: int, context: Context) -> bool:
         if self.queries.query(CheckpointPass).filter(plan_id=plan_id, phase_id=phase_id).exists():
             return False
         self.repository.save(CheckpointPass(creator_id=context.actor.id, plan_id=plan_id, phase_id=phase_id, passed_at=context.timestamp), context)

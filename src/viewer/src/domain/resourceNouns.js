@@ -1,4 +1,4 @@
-import {wordLabel} from "./labels.js";
+import {agentTitle} from "./agentTitle.js";
 
 export {cliOf} from "./modelNames.js";
 const HIDDEN = new Set(["id", "version", "metadata", "title", "brief", "body", "abstract", "state"]);
@@ -10,8 +10,8 @@ export const titleOf = (term, row, id) => row?.title || row?.name || `${term} ${
 // what the panel's head says of a row with no page of its own: its type and number, then its state
 export const headingOf = (term, row, id) => [firstUpper(`${term} ${id}`), row?.state && firstUpper(row.state)].filter(Boolean).join(" · ");
 
-// an agent by name: the one it was given, otherwise its role and number, such as Worker 412
-const agentNameOf =(agent) => agent.given_name || `${wordLabel(agent.role)} ${agent.number}`;
+// an agent by name, through the one agent title
+const agentNameOf = (agent) => agentTitle(agent).text;
 
 // who made a row, by name: an agent's name, otherwise the name of the actor; "" while the creator is not read
 export const creatorNameOf = (actor, agent) => (actor?.type === "agent" && agent ? agentNameOf(agent) : actor?.name ?? "");

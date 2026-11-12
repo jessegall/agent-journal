@@ -30,7 +30,7 @@ class PlanInspection:
     def assignee_json(self) -> PlanAssigneeJsonRecord | None:
         if self.assignee is None:
             return None
-        name = "main" if self.assignee.role == AgentRole.MAIN else self.assignee.given_name or f"Agent {self.assignee.id}"
+        name = "main" if self.assignee.role == AgentRole.MAIN else self.assignee.display_name
         return PlanAssigneeJsonRecord(id=self.assignee.id, name=name, main=self.assignee.role == AgentRole.MAIN)
 
     def json(self) -> PlanInspectionJsonRecord:

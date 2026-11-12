@@ -5,6 +5,7 @@ from engine.enums.actor_type import ActorType
 from engine.time.clock import Clock
 from engine.command.bus import Bus
 from engine.driver.hook_event import HookEvent
+from engine.process.door.request_records import REFUSED_HOOK_EXIT_CODE, RequestRecords
 from engine.enums.log_level import LogLevel
 from engine.request.request_values import RequestValues
 from engine.log.system_log_writer import SystemLogWriter
@@ -39,6 +40,10 @@ AGENT_HOOK_SECONDS = 40
 MILLISECONDS = 1000
 
 
+def hook_row_line(event: HookEvent) -> str:
+    return f"{event.program} {event.event.value}"
+
+
 class AgentHookRoute(HookRoute):
     """Stops every hook but a session end of a program that is locked down at a usage limit, before anything
     else: no agent is looked up or started, no rule is asked and no hook call is recorded. Otherwise answers a
@@ -48,10 +53,11 @@ class AgentHookRoute(HookRoute):
     answer of a hook sent twice, refuses the tools of a program whose agent has ended and asks the launcher to
     stop it, refuses the tools of a session its agent replaced with a newer one, which never starts an agent
     and never takes its agent back, and lets through, without a record, a hook from an unknown agent when the
-    event does not require an agent check."""
+    event does not require an agent check. The row of a recorded hook is kept once its call is committed; a tick
+    that brought nothing keeps none."""
 
-    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues, clock: Clock, providers: Providers, lockdown: ProgramLockdown, sessions: AgentSessions) -> None:
-        self.lockdown, self.sessions = lockdown, sessions
+    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues, clock: Clock, providers: Providers, lockdown: ProgramLockdown, sessions: AgentSessions, request_records: RequestRecords) -> None:
+        self.lockdown, self.sessions, self.request_records = lockdown, sessions, request_records
         self.clock, self.providers = clock, providers
         self.rule_answers, self.request_values = rule_answers, request_values
         self.bus, self.queries, self.system_log, self.durations, self.settings = bus, queries, system_log, durations, settings
@@ -76,6 +82,8 @@ class AgentHookRoute(HookRoute):
         with self.bus.scopes.command_scope((), actor, agent.environment_id):
             answers = self.rule_answers.evaluate(event, agent)
         reply = self.bus.run(RecordHookCall(event, agent.id, answers), actor, environment_id=agent.environment_id)
+        if reply.hook_call_id is not None:
+            self.request_records.recorded_hook(agent.id, agent.environment_id, hook_row_line(event), REFUSED_HOOK_EXIT_CODE if reply.refusal else 0)
         self.note_timeout(event, agent, actor)
         with self.bus.scopes.read_scope((), None, agent.environment_id):
             measured = self.durations.measured(event, reply.labelled_lines or [*reply.lines, reply.refusal])
@@ -110,7 +118,7 @@ class AgentHookRoute(HookRoute):
         agent = self.open_agent(event.session)
         if agent is None or agent.role != AgentRole.MAIN:
             return False
-        return event.event is HookEventName.PROMPT or (event.event is HookEventName.PRE_TOOL_USE and PanicFileRule.names_panic_file(event))
+        return event.event is HookEventName.PROMPT or (event.event is HookEventName.PRE_TOOL_USE and PanicFileRule.is_panic_file_line(event))
 
     def halted(self, event: HookEvent, lockdown: Lockdown) -> HookReply:
         agent = self.open_agent(event.session) or self.launch_name_agent(event)

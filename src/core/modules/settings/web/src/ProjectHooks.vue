@@ -67,6 +67,10 @@ context.follow(["hook_call.*"], coalesced(load, READ_RATES.projectHooks));
         Run project commands when an agent program starts, uses a tool or stops.
         Edit commands and matchers in their source files.
       </p>
+      <p class="hook-intro">
+        The journal starts Claude Code and Codex on settings it writes again at every start, so an
+        always-allow answer given while prompts are asked is not kept for the next launch.
+      </p>
       <div class="hooks-actions">
         <Btn bordered :disabled="readOnly || busy" data-hooks-scan @click="scan"
           >Scan now</Btn
@@ -132,7 +136,7 @@ context.follow(["hook_call.*"], coalesced(load, READ_RATES.projectHooks));
         <HookGroup
           title="Journal"
           :count="value.journal.length"
-          empty="No journal hooks"
+          empty="The journal has set no hooks here"
         >
           <template
             v-for="entry in value.journal"

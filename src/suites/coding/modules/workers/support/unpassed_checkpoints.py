@@ -12,10 +12,10 @@ from suites.coding.modules.workers.support.work_units import WorkUnits
 
 
 class UnpassedCheckpoints:
-    """Finds the tasks that come after a checkpoint phase of their plan that has not passed: a checkpoint phase
-    with a task that is not closed, or whose tests have not passed. Such a task is not started until it has.
-    Each waiting task is given by its id with a place of the first such checkpoint phase of its plan. The actor
-    whose unit holds every open task of that checkpoint's window is not held: its own commits run the
+    """Finds the tasks that come after a checkpoint phase of their plan that has not passed: a checkpoint
+    phase with a task that is not closed, or whose tests have not passed. Such a task is not started until it
+    has. Each waiting task is given by its id with a place of the first such checkpoint phase of its plan. The
+    actor whose unit holds every open task of that checkpoint's window is not held: its own commits run the
     window's tests."""
 
     def __init__(self, plans: TaskPlans, queries: Queries, kept: KeptRows, checkpoints: PlanCheckpoints, units: WorkUnits) -> None:

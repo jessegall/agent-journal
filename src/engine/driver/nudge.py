@@ -32,8 +32,6 @@ class Nudge:
         return f"journal: {self.text}"
 
     def for_role(self, role: str) -> "Nudge":
-        """This nudge in the text its declaration gives an agent of the role, with the same fields; the default text
-        when the declaration gives that role none."""
         if self.declaration is None or role not in self.declaration.role_texts:
             return self
         rendered = self.declaration.rendered(self.declaration.role_texts[role], dict(self.fields))

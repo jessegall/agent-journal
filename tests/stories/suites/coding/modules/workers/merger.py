@@ -25,6 +25,7 @@ from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.helper_program_choice import HelperProgramChoice
 from core.modules.helpers.commands.start_helper.start_helper_handler import StartHelperHandler
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
+from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from core.modules.agents.testing.fake_launcher import FakeLauncher
@@ -42,6 +43,8 @@ from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended,
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 from tests.stories.core.support.agent_labels import agent_label
+from tests.stories.core.modules.helpers.helper_jobs import helper_agent
+from tests.stories.suites.coding.modules.workers.quiet_helpers import StartedMerger
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -276,23 +279,23 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
         story.hook(merger.session, HookSamples.stop())
         story.expect_success(f"agent exited {merger.id} 0")
         story.run_listeners()
-        jobs = story.container.get(HelperJobRows)
-        job_count = len(jobs.helper_jobs(merger.id))
+        queries = story.container.get(Queries)
+        job_count = queries.query(HelperJob).filter(helper_id=merger.id).count()
         MergerRetry()(story.container)
         MergerRetry()(story.container)
-        story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count)
+        story.expect_rows(queries.query(HelperJob).filter(helper_id=merger.id).count() == job_count)
         reported_messages = [row for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).every_row(TEST_ROWS_REASON) if "The merge waits for cart.py to be committed" in row.text]
         story.expect_rows(len(reported_messages) == 1, detail=str(reported_messages))
         repository.git("add", "cart.py")
         repository.git("commit", "-m", "Commit main change")
         repository.checkout("main")
         MergerRetry()(story.container)
-        story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count)
+        story.expect_rows(queries.query(HelperJob).filter(helper_id=merger.id).count() == job_count)
         repository.checkout(ENVIRONMENT_BRANCH)
         MergerRetry()(story.container)
-        story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count + 1)
+        story.expect_rows(queries.query(HelperJob).filter(helper_id=merger.id).count() == job_count + 1)
         MergerRetry()(story.container)
-        story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count + 1)
+        story.expect_rows(queries.query(HelperJob).filter(helper_id=merger.id).count() == job_count + 1)
         story.expect_text("merger next", agent_label(story, worker.id), actor=actor)
         story.expect_success(f"merger merge {agent_number(story, worker.id)}", actor=actor)
         story.expect_text("task show 1", "state: completed", actor=story.agent)
@@ -504,3 +507,16 @@ def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge
     story.advance(timedelta(minutes=15))
     story.tick("s-1")
     story.expect_rows(story.run(main_lines).output_text.count(f"worker:{agent_number(story, worker.id)} committed") > first)
+
+
+
+def test_the_merger_started_by_an_ended_main_session_tells_the_main_agent_that_runs_now(new_story):
+    story = new_story(fixture=StartedMerger)
+    merger = Actor(helper_agent(story).id, ActorType.AGENT)
+    story.expect_success(f"agent end {story.agent.id}", actor=story.user)
+    running_main = Actor(story.new_row_id("agent start s-new-main claude main --environment main"), ActorType.AGENT)
+    story.expect_success('merger tell "Worker 4 asks which reader to keep" --tried "Read the brief" --option "The first" --option "The second" --recommend "The first"', actor=merger)
+    message = story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).first()
+    line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=running_main.id).newest().first()
+    story.expect_rows(message is not None, line is not None and f"in message:{message.id}" in line.text, detail=str(line))
+    story.expect_text(f"message read {message.id}", "Worker 4 asks which reader to keep", actor=running_main)

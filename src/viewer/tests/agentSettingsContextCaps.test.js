@@ -1,8 +1,7 @@
 import {expect, test} from "vitest";
-import {CONTEXT_KINDS, CONTEXT_PROFILES, mountAgentSettings as mount} from "./support/agentSettingsWindow.js";
+import {CONTEXT_KINDS, CONTEXT_PROFILES, chooseTab as choose, mountAgentSettings as mount} from "./support/agentSettingsWindow.js";
 import {settle as settled} from "./support/windowContext.js";
 
-const choose = async (element, tab) => { element.querySelector(`[data-tab=${tab}]`).click(); await settled(); };
 const capRow = (element, kind) => element.querySelector(`[data-cap-row="${kind}"]`);
 const note = (element) => element.querySelector("[data-settings-note]").textContent;
 const cap = (element, key) => [...element.querySelector(`[data-type-row="${key}"]`).querySelectorAll(".cap > span, .cap small")].map((part) => part.textContent);
@@ -45,7 +44,7 @@ test("the screen of a type shows its cap as one of three choices over the entry 
     const {element} = await typeScreen("helper:journal-designer");
     const row = element.querySelector("[data-context-cap]");
     expect(row.querySelector('[data-segment="kind"]').getAttribute("aria-checked")).toBe("true");
-    expect(row.querySelector("[data-cap-line]").textContent).toBe("400k for its kind, set in Advanced");
+    expect(row.querySelector("[data-cap-line]").textContent).toBe("400k for its type, set in Advanced");
 });
 
 test("choosing its own cap on the screen of a type writes the entry of the profile in the same request and the Helpers table shows it as Own value", async () => {

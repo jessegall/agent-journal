@@ -20,9 +20,9 @@ NAME_LETTERS = re.compile(r"[^a-z]+")
 
 
 class ProjectManifests:
-    """Finds the package manifests of a project, in its root and anywhere in its source but never in a library folder,
-    and reads from each the language it names and the test command a worker runs it with. Each read walks the folder
-    again, so a changed or new manifest counts at once."""
+    """Finds the package manifests of a project, in its root and anywhere in its source but never in a library
+    folder, and reads from each the language it names and the test command a worker runs it with. Each read
+    walks the folder again, so a changed or new manifest counts at once."""
 
     def found(self, folder: Path) -> tuple[ProjectManifest, ...]:
         read = [(place, *found) for place, file_names in self.manifest_folders(folder) for found in self.read_folder(folder, place, file_names)]
@@ -93,13 +93,17 @@ class ProjectManifests:
         return path if place == ROOT else f"{place}/{path}"
 
     @staticmethod
+    def entry_name(tool: str, suffix: str, bare: bool) -> str:
+        if bare:
+            return tool
+        return f"{tool}-{suffix}" if suffix else ""
+
+    @staticmethod
     def named(tool: str, place: str, command: str | None, bare: bool, names: set[str], commands: set[str]) -> WorkerTestCommandEntry | None:
-        """The entry of one manifest's test command: the tool's own name when no other folder has the tool or the
-        manifest is the root's, else the tool and the folder's name."""
         if command is None or command in commands:
             return None
         suffix = NAME_LETTERS.sub("-", PurePosixPath(place).name.lower()).strip("-")
-        name = tool if bare else f"{tool}-{suffix}" if suffix else ""
+        name = ProjectManifests.entry_name(tool, suffix, bare)
         if not name or name in names:
             return None
         names.add(name)

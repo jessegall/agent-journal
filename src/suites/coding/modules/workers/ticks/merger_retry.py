@@ -28,8 +28,8 @@ MERGER_RETRY_REASON = "the tick retries the merger in every environment with an 
 
 class MergerRetry:
     """Wakes an idle merger when the next worker can be merged or a line waits unread for it. A merger whose
-    program is at a usage limit is left alone until the limit ends. A worker whose branch has no commit ahead of
-    its base is closed as merged without the merger."""
+    program is at a usage limit is left alone until the limit ends. A worker whose branch has no commit ahead
+    of its base is closed as merged without the merger."""
 
     def __call__(self, container: Container) -> None:
         worktrees = container.get(WorktreeQuery).all_worktrees()

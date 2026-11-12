@@ -51,19 +51,21 @@ def test_a_judge_named_inside_a_workers_quoted_text_is_no_judge_run(judge_worker
 def test_the_chat_marks_can_be_read_by_type_for_the_recent_activity_of_the_workers(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    story.run('worker dispatch --test-command python=pytest 1 --model sonnet --name "Noah Webster"', actor=story.agent)
+    worker = Actor(story.new_row_id('worker dispatch --test-command python=pytest 1 --model sonnet --name "Noah Webster"', actor=story.agent), ActorType.AGENT)
     story.run_listeners()
-    story.expect_text("chat-mark main --environment main --type workers.worker", "Noah Webster started task 1", actor=story.agent)
-    story.run("chat-mark main --environment main --type workers.tests", actor=story.agent).expect_no_text("Noah Webster started task 1")
+    mark = f"Worker {agent_number(story, worker.id)} started task 1"
+    story.expect_text("chat-mark main --environment main --type workers.worker", mark, actor=story.agent)
+    story.run("chat-mark main --environment main --type workers.worker", actor=story.agent).expect_no_text("Noah Webster")
+    story.run("chat-mark main --environment main --type workers.tests", actor=story.agent).expect_no_text(mark)
 
 
 def test_a_dispatch_shows_a_mark_naming_the_worker_its_model_and_its_queue(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
-    story.run('worker dispatch --test-command python=pytest 1 2 --model sonnet --name "Noah Webster"', actor=story.agent)
+    worker = Actor(story.new_row_id('worker dispatch --test-command python=pytest 1 2 --model sonnet --name "Noah Webster"', actor=story.agent), ActorType.AGENT)
     story.run_listeners()
-    expect_marks_text(story, "Noah Webster started task 1")
+    expect_marks_text(story, f"Worker {agent_number(story, worker.id)} started task 1")
     story.expect_text("chat-mark list --json", "sonnet", "Queued: task 2", actor=story.agent)
 
 

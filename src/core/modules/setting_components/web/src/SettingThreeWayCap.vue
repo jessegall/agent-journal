@@ -1,5 +1,6 @@
 <script setup>
 import {computed} from "vue";
+import {SwitchCase} from "@journal/window-kit";
 import SettingChoiceField from "./SettingChoiceField.vue";
 import SettingSegments from "./SettingSegments.vue";
 
@@ -14,8 +15,8 @@ const props = defineProps({
 });
 const emit = defineEmits(["change"]);
 
-const MODES = [{value: "kind", label: "Cap of its kind"}, {value: "own", label: "Its own cap"}, {value: "none", label: "No cap"}];
-const kindText = computed(() => (props.kindValue === null ? "No cap for its kind, set in Advanced" : `${props.kindValue / 1000}k for its kind, set in Advanced`));
+const MODES = [{value: "kind", label: "Same cap as its type"}, {value: "own", label: "A separate cap"}, {value: "none", label: "No cap"}];
+const kindText = computed(() => (props.kindValue === null ? "No cap for its type, set in Advanced" : `${props.kindValue / 1000}k for its type, set in Advanced`));
 const ownSize = computed(() => props.ownValue ?? props.sizes[0]);
 
 function choose(mode) {
@@ -26,15 +27,17 @@ function choose(mode) {
 <template>
     <div class="setting-three-way">
         <SettingSegments :model-value="mode" :options="MODES" :disabled="disabled" @update:model-value="choose" />
-        <template v-if="mode === 'kind'">
-            <span class="line" data-cap-line>{{ kindText }}</span>
-        </template>
-        <template v-else-if="mode === 'own'">
-            <SettingChoiceField :model-value="ownSize" :choices="sizes" :disabled="disabled" data-cap-own @update:model-value="(size) => emit('change', {mode: 'own', size})" />
-        </template>
-        <template v-else>
-            <span class="line" data-cap-line>This type is never compacted at a size</span>
-        </template>
+        <SwitchCase :value="mode">
+            <template #kind>
+                <span class="line" data-cap-line>{{ kindText }}</span>
+            </template>
+            <template #own>
+                <SettingChoiceField :model-value="ownSize" :choices="sizes" :disabled="disabled" data-cap-own @update:model-value="(size) => emit('change', {mode: 'own', size})" />
+            </template>
+            <template #none>
+                <span class="line" data-cap-line>This type is never compacted at a size</span>
+            </template>
+        </SwitchCase>
     </div>
 </template>
 

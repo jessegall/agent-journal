@@ -142,7 +142,7 @@ def test_a_go_test_command_takes_packages_and_a_pattern_of_test_names_instead_of
 def test_a_run_with_no_test_file_is_refused_as_the_whole_suite(worker_with_commands):
     worker_with_commands.story.expect_refusal("worker test python", "name each test file", actor=worker_with_commands.worker)
     worker_with_commands.story.expect_refusal("worker test python -q", "name each test file", actor=worker_with_commands.worker)
-    for test_arguments in ("./...", "-run", "-run -v", "-v"):
+    for test_arguments in ("./...", "-run", "-run -v", "-v", "-run .", "-run=.*", "-run '^'"):
         worker_with_commands.story.expect_refusal(f"worker test go-journal {test_arguments}", "name each test file", actor=worker_with_commands.worker)
 
 

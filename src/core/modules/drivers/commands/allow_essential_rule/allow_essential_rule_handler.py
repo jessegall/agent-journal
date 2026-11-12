@@ -5,7 +5,7 @@ from engine.registry.registry import Registry
 from core.modules.drivers.commands.allow_essential_rule.allow_essential_rule import AllowEssentialRule
 from core.modules.drivers.support.driver_settings import ALLOWANCE_SETTINGS
 from core.modules.settings.models.setting import Setting
-from core.modules.settings.commands.support.setting_store import SettingStore
+from core.modules.settings.support.setting_store import SettingStore
 
 
 class AllowEssentialRuleHandler(Handler[AllowEssentialRule, Setting]):

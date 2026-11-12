@@ -4,12 +4,17 @@ import json
 import pytest
 
 from engine.actor.actor import Actor
+from engine.query.queries import Queries
+from engine.testing.examples.hook_samples import HookSamples
+from core.modules.agents.models.agent import Agent
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.plans.commands.start_checkpoint_run.start_checkpoint_run_handler import StartCheckpointRunHandler
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support import story_lines as lines
+from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.core.support.plan_steps import ready_plan
 from tests.stories.server.support.server_client import server_story
@@ -295,3 +300,67 @@ def test_190_the_plan_view_gets_a_line_on_how_each_checkpoint_stands_and_on_a_te
         inspected = server.viewer_line_value(cookie, {"window": "plans.plans", "line": ["plan", "inspect", "1"], "environment": "main"})
     lines = inspected["checkpoint_lines"]
     story.expect_rows("checkpoint of phase 3: running" in lines, "checkpoint of phase 5: waits for tasks 4, 5" in lines, "test of phase 1 not run: this phase is not a checkpoint" in lines, detail=str(lines))
+
+
+WAIT_FOR_PERSON = "setting set journal.core.plans.checkpoints.wait-for-person true --environment main"
+APPROVE = "plan approve-checkpoint 1 3 --environment main"
+
+
+def test_a_passed_checkpoint_keeps_the_later_phase_closed_until_a_person_approves_it_when_the_plan_waits_for_the_person(new_story):
+    story = new_story(fixture=ReachedCheckpoint)
+    story.expect_success(WAIT_FOR_PERSON, actor=story.user)
+    pass_reach(story, 1)
+    story.expect_rows(rows(story, PASSES) == [], rows(story, REACHES)[0]["state"] == "passed", detail=str(rows(story, PASSES)))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "later phases open once a person approves it on the plan card")
+    story.expect_text(OUTLINE, "checkpoint of phase 3: tests passed, waits for a person", actor=story.user)
+    story.expect_refusal(APPROVE, "only a person approves a checkpoint", actor=story.agent)
+    story.expect_success(APPROVE, "checkpoint phase 3 approved", actor=story.user)
+    story.expect_text(OUTLINE, "checkpoint of phase 3: passed", actor=story.user)
+    story.expect_rows([row["phase_id"] for row in rows(story, PASSES)] == [3], detail=str(rows(story, PASSES)))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "the phases after it are open: tell the user")
+    story.expect_refusal(APPROVE, "waits for no approval", actor=story.user)
+
+
+QUICK_REVIEW = "setting set journal.core.plans.checkpoints.quick-review true --environment main"
+REVIEWS = "checkpoint-review list --json --oldest --environment main"
+
+
+def stop_with_report(text: str):
+    stop = HookSamples.stop()
+    return stop.with_raw({**stop.body["raw"], "last_assistant_message": text})
+
+
+def test_a_passed_checkpoint_launches_its_read_only_reviewer_on_the_sonnet_model_and_keeps_its_report(new_story):
+    story = new_story(fixture=ReachedCheckpoint)
+    story.expect_success(QUICK_REVIEW, actor=story.user)
+    story.expect_rows(rows(story, REVIEWS) == [], detail="no review before the tests pass")
+    launcher = FakeLauncher.listening(story.home.socket("launcher"), request_count=2)
+    pass_reach(story, 1)
+    launcher.drain_requests()
+    launcher.server.close()
+    review = rows(story, REVIEWS)[0]
+    story.expect_rows((review["plan_id"], review["phase_id"], review["program"], review["program_model"], review["report"]) == (1, 3, "claude", "sonnet", ""), detail=str(review))
+    story.expect_text(f"agent show {agent_number(story, review['reviewer_id'])}", "role: reviewer", "access: read", "program_model: sonnet", actor=story.user)
+    assert len(launcher.starts) == 1, str(launcher.requests)
+    command = " ".join(launcher.starts[0]["command"])
+    story.expect_rows("sonnet" in command, "phase Check of plan 1" in command, detail=command)
+    reviewer = story.container.get(Queries).query(Agent).find(review["reviewer_id"])
+    story.hook(reviewer.session, stop_with_report("Matches the brief; the polish step is missing."))
+    story.run_listeners()
+    story.expect_rows(rows(story, REVIEWS)[0]["report"] == "Matches the brief; the polish step is missing.", detail=str(rows(story, REVIEWS)))
+
+
+def test_two_checkpoint_reviews_get_sessions_of_their_own(new_story):
+    story = new_story(fixture=FirstOfTwoReached)
+    story.expect_success(QUICK_REVIEW, actor=story.user)
+    pass_reach(story, 1)
+    close(story, 2)
+    pass_reach(story, 2)
+    reviewers = [row["reviewer_id"] for row in rows(story, REVIEWS)]
+    sessions = {story.container.get(Queries).query(Agent).find(reviewer).session for reviewer in reviewers}
+    story.expect_rows(len(reviewers) == 2, len(sessions) == 2, detail=str(reviewers))
+
+
+def test_a_checkpoint_with_the_review_off_starts_no_reviewer(new_story):
+    story = new_story(fixture=PassedCheckpoint)
+    story.expect_rows(rows(story, REVIEWS) == [], detail=str(rows(story, REVIEWS)))

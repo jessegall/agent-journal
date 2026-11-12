@@ -45,7 +45,7 @@ def started(tmp_path: Path, folder: Path, *arguments: str, extra: dict[str, str]
     environment = {key: value for key, value in os.environ.items() if key != "JOURNAL_HEAVY_GATE_HELD"}
     environment.update({"PYTHONPATH": os.pathsep.join([str(CHECKOUT / "src"), str(CHECKOUT)]), "JOURNAL_HEAVY_GATE_FOLDER": str(tmp_path / "gate"),
                         "JOURNAL_FULL_RUN_RECORD": str(tmp_path / "runs.jsonl"), "HOLD_RELEASE": str(tmp_path / "release"), **(extra or {})})
-    return subprocess.Popen([sys.executable, "-m", "pytest", "-p", "no:cacheprovider", "-p", "engine.testing.stories.pytest_plugin", "-s", "-q", *arguments], cwd=folder, env=environment,
+    return subprocess.Popen([sys.executable, "-m", "pytest", "-p", "no:cacheprovider", "-p", "engine.testing.pytest_plugin", "-s", "-q", *arguments], cwd=folder, env=environment,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
 

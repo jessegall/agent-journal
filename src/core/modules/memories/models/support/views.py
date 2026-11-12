@@ -1,3 +1,4 @@
+from engine.agent.agent_name import agent_name
 from engine.query.condition_join import ConditionJoin
 from engine.query.conditions.column_compare import ColumnCompare
 from engine.query.conditions.equal import Equal
@@ -36,7 +37,7 @@ ACTIVE_MEMORIES_SELECT = Select("memories").selecting(
 MEMORY_COUNTS = Select("memories").selecting(Column("agent_id"), state_count("active", "active_memories"), state_count("removed", "removed_memories")).matching(
     HasValue("agent_id")).grouped("agent_id")
 MEMORY_HOLDERS_SELECT = Select("agents").selecting(
-    Aliased(Column("agents.id"), "agent_id"), Column("agents.environment_id"), Column("agents.role"), Column("agents.given_name"),
+    Aliased(Column("agents.id"), "agent_id"), Column("agents.environment_id"), Column("agents.role"), Aliased(agent_name("agents"), "name"),
     Aliased(Column("agents.created_at"), "started_at"), Column("agents.ended_at"), Column("counts.active_memories"), Column("counts.removed_memories"),
 ).joined(ConditionJoin(ScalarSubselect(MEMORY_COUNTS), condition=ColumnCompare("counts.agent_id", "=", "agents.id"), alias="counts")).view_sql()
 

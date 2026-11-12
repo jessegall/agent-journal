@@ -1,5 +1,3 @@
-import shlex
-
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.process_query import ProcessQuery
@@ -16,13 +14,13 @@ class ReaderDemands:
         self.judge, self.processes = judge, processes
 
     def needs_reader(self, part: PartSpec) -> bool:
-        if not part.category.is_watched or self.asks_about_itself(part.command or part.text):
+        if not part.category.is_watched or self.is_help_request(part.command or part.text):
             return False
         return part.category.is_long_running or self.processes.has_moved_run([part.text])
 
     @staticmethod
-    def asks_about_itself(command: str) -> bool:
-        return bool(ASKING_FLAGS.intersection(shlex.split(command)))
+    def is_help_request(command: str) -> bool:
+        return bool(ASKING_FLAGS.intersection(command.split()))
 
     def reason(self, part: PartSpec, reader: Reader | None, scope: ReaderSampleScope) -> str:
         if reader is None:

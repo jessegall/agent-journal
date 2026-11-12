@@ -45,3 +45,17 @@ def test_a_status_file_with_no_context_percent_is_read_once_for_the_card(new_sto
     facts = json.loads(story.run("usage agents --environment main --json").output_text)["rows"]
     row = next(row for row in facts if row["id"] == worker_id)
     story.expect_rows(row["model"] == "Opus", row["context_percent"] is None)
+
+
+def test_a_status_file_with_a_cost_and_no_model_leaves_the_model_and_effort_to_the_transcript(new_story, monkeypatch):
+    from tests.stories.core.modules.usage.support.status_files import save_status_file
+    story = new_story(fixture=UserBuilder)
+    monkeypatch.setenv("CODEX_HOME", str(story.home.folder / "codex"))
+    worker_id = story.new_row_id("agent start codex-costed codex worker --environment main")
+    rollout = story.home.folder / "codex" / "sessions" / "2026" / "11" / "06" / "rollout-2026-11-06T18-31-51-codex-costed.jsonl"
+    rollout.parent.mkdir(parents=True)
+    rollout.write_text(json.dumps({"type": "turn_context", "payload": {"model": "gpt-6.1-sol", "effort": "medium"}}) + "\n")
+    save_status_file(story, "codex-costed", {"cost": {"total_cost_usd": 1.25}})
+    facts = json.loads(story.run("usage agents --environment main --json").output_text)["rows"]
+    row = next(row for row in facts if row["id"] == worker_id)
+    story.expect_rows(row["model"] == "gpt-6.1-sol", row["effort"] == "medium", row["cost_dollars"] == 1.25)

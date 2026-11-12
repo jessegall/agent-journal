@@ -27,7 +27,7 @@ export function capOf(value, role, profile) {
     const own = profile ? valueOf(value(CONTEXT_PROFILES), profile) : undefined;
     if (own !== undefined) return {text: worded(own), where: "Own value", own: true};
     const kind = valueOf(value(CONTEXT_KINDS), role);
-    if (kind !== undefined) return {text: worded(kind), where: "Set for its kind", own: false};
+    if (kind !== undefined) return {text: worded(kind), where: "Set for its type", own: false};
     return {text: sizeWord(Number(value(CONTEXT_TOKENS))), where: "Set for every agent", own: false};
 }
 

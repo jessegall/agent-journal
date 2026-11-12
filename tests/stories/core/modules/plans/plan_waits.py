@@ -54,7 +54,7 @@ def test_a_plan_cannot_wait_on_itself_a_finished_plan_or_a_plan_that_waits_on_it
     story.expect_success("plan block 2 --on plan:1", actor=story.user)
     story.expect_success("plan unblock 2", actor=story.user)
     story.expect_success("plan block 1 --on plan:2", actor=story.user)
-    story.expect_refusal("plan block 2 --on plan:1", "would be a loop", actor=story.user)
+    story.expect_refusal("plan block 2 --on plan:1", "closes a circle", actor=story.user)
 
 
 def test_ending_a_plan_unblocks_a_waiting_plan_that_the_person_unblocked_already_no_more(new_story):
@@ -64,3 +64,20 @@ def test_ending_a_plan_unblocks_a_waiting_plan_that_the_person_unblocked_already
     story.expect_rows(inspected(story, 1)["blocker_ids"] == [])
     story.expect_success('plan cancel 2 --reason "Not needed"', actor=story.user)
     story.expect_text("plan show 1", "state: started", actor=story.user)
+
+
+def test_a_task_cannot_wait_on_its_own_plan(new_story):
+    story = new_story(fixture=ThreeStartedPlans)
+    story.expect_refusal("task block 1 --on plan:1", "closes a circle: task 1 -> plan 1 -> task 1", actor=story.user)
+
+
+def test_a_task_cannot_wait_on_a_plan_that_waits_on_the_task_own_plan(new_story):
+    story = new_story(fixture=ThreeStartedPlans)
+    story.expect_success("plan block 2 --on plan:1", actor=story.user)
+    story.expect_refusal("task block 1 --on plan:2", "closes a circle: task 1 -> plan 2 -> plan 1 -> task 1", actor=story.user)
+
+
+def test_a_plan_cannot_wait_on_a_plan_whose_task_waits_on_the_first_plan(new_story):
+    story = new_story(fixture=ThreeStartedPlans)
+    story.expect_success("task block 3 --on plan:1", actor=story.user)
+    story.expect_refusal("plan block 1 --on plan:2", "closes a circle: plan 1 -> plan 2 -> task 3 -> plan 1", actor=story.user)

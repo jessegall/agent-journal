@@ -5,6 +5,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+from tests.unit.support.commandments_config import commandments_config
 
 ROOT = Path(__file__).resolve().parents[2]
 CUSTOM_FOLDER = ROOT / ".commandments" / "custom"
@@ -64,7 +65,7 @@ def lines_without_sample() -> list[str]:
 
 
 def configuration() -> dict:
-    return json.loads((ROOT / ".commandments" / "config.json").read_text())
+    return commandments_config(ROOT)
 
 
 def sample_folders_missing() -> list[str]:

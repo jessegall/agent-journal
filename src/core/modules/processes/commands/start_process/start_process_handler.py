@@ -18,7 +18,7 @@ from core.modules.processes.support.reader_requests import ReaderRequests
 from core.modules.processes.support.run_slots import RunSlots
 from core.modules.processes.support.part_visibility import PartVisibility
 from core.modules.processes.models.enums.reading_moment import ReadingMoment
-from core.modules.processes.support.decisions.shadow_decisions import ShadowDecisions
+from core.modules.processes.support.reading.shadow_decisions import ShadowDecisions
 
 
 class StartProcessHandler(Handler[StartProcess, Process]):
@@ -44,7 +44,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
                                                line=command.line, folder=command.folder, shell=command.shell, category=command.category,
                                                limit_seconds=command.limit_seconds, is_full_test_run=command.is_full_test_run,
                                                queued_at=context.timestamp, plugin=command.plugin, kind=command.kind, is_queue_run=bool(command.plugin) or any(part.category.is_queued for part in command.parts) and all(part.category.is_queued or part.category is CommandCategory.JOURNAL for part in command.parts),
-                                               owner_agent_id=command.owner_agent_id, task_id=command.task_id, timeout_seconds=min(timeouts, default=None)), context)
+                                               owner_agent_id=command.owner_agent_id, task_id=command.task_id, timeout_seconds=min(timeouts, default=None), priority=command.priority), context)
         readers = self.readers.all() if command.category.has_reader else ()
         layers = self.readers.layers()
         parts: list[ProcessPart] = []

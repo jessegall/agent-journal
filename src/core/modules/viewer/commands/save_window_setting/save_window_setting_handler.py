@@ -4,7 +4,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from core.modules.settings.models.setting import Setting
-from core.modules.settings.commands.support.setting_store import SettingStore
+from core.modules.settings.support.setting_store import SettingStore
 from core.modules.viewer.commands.save_window_setting.save_window_setting import SaveWindowSetting
 from core.modules.viewer.commands.support.window_setting_keys import WindowSettingKeys
 

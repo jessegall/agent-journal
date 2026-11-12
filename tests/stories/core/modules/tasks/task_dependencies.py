@@ -23,7 +23,7 @@ def test_a_loop_of_three_is_refused_by_its_guard_and_offers_no_way_past(new_stor
     story = three_tasks(new_story)
     story.run(lines.FIRST_TASK_DEPENDENCY)
     story.run("task depend 2 --on 3")
-    story.expect_refusal(lines.THIRD_TASK_DEPENDENCY, "refused by tasks.no-dependency-loop: task 1 already waits on task 3, so this would be a loop")
+    story.expect_refusal(lines.THIRD_TASK_DEPENDENCY, "refused by plans.task-dependency-circle: this wait would never end, it closes a circle: task 3 -> task 1 -> task 2 -> task 3")
     story.expect_rows("--skip-guard" not in story.run(lines.THIRD_TASK_DEPENDENCY).output_text)
 
 

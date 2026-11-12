@@ -111,9 +111,20 @@ from engine.viewer.skeleton_part import SkeletonPart
 from engine.enums.window_place import WindowPlace
 from core.modules.plans.commands.record_checkpoints.record_checkpoints_handler import RecordCheckpointsHandler
 from core.modules.plans.commands.fail_checkpoint.fail_checkpoint import FailCheckpoint
+from core.modules.plans.commands.approve_checkpoint.approve_checkpoint_handler import ApproveCheckpointHandler
+from core.modules.plans.commands.start_checkpoint_review.start_checkpoint_review_handler import StartCheckpointReviewHandler
+from core.modules.plans.models.checkpoint_review import CheckpointReview
+from core.modules.plans.migrations.m013_checkpoint_reviews import CheckpointReviewsMigration
+from core.modules.plans.migrations.m014_checkpoint_review_report import CheckpointReviewReportMigration
+from core.modules.plans.migrations.m015_agent_commit_reaches import AgentCommitReachesMigration
+from core.modules.plans.listeners.checkpoint_review_report_listener import CheckpointReviewReportListener
+from core.modules.plans.commands.approve_checkpoint.approve_checkpoint_subcommand import ApproveCheckpointSubcommand
 from core.modules.plans.commands.check_plan.check_plan_handler import CheckPlanHandler
 from core.modules.plans.commands.check_plan.check_plan_subcommand import CheckPlanSubcommand
 from core.modules.plans.guards.checkpoint_run_guard import CheckpointRunGuard
+from core.modules.plans.guards.plan_wait_circle_guard import PlanWaitCircleGuard
+from core.modules.plans.guards.task_dependency_circle_guard import TaskDependencyCircleGuard
+from core.modules.plans.guards.task_wait_circle_guard import TaskWaitCircleGuard
 from core.modules.plans.listeners.checkpoint_pass_listener import CheckpointPassListener
 from core.modules.plans.listeners.checkpoint_reach_listener import CheckpointReachListener
 from core.modules.plans.listeners.started_plan_checkpoints_listener import StartedPlanCheckpointsListener
@@ -135,16 +146,16 @@ class PlansModule(Module):
     skills = [SkillDeclaration("journal-plans", "Build and follow a plan of ordered tasks; read it before the first plan command of a session, or when the user asks for a plan or a roadmap", keywords=("plan", "plans", "roadmap", "phases"), commands=("plan", "phase")),
               SkillDeclaration("journal-planning", "Build a thorough plan with real steps in each phase, one task per step, and a brief that can be carried out alone; read it before you make a plan or a phase", keywords=("plan", "phases"), commands=("plan make", "phase make"))]
     models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]), ModelDeclaration(PlanContextRead, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PlanWait, excluded_subcommands=ALL_SUBCOMMANDS),
-              ModelDeclaration(CheckpointReach, commands=tuple([FailCheckpoint]), excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(CheckpointPass, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration, CheckpointsMigration, CheckpointReachSourceMigration, PlanContextReadsEnvironmentIndexMigration]
-    handlers = [CheckPlanHandler, RecordCheckpointsHandler, StartCheckpointRunHandler, WaitPlanHandler, AssignPlanHandler, RecordPlanAgentHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
+              ModelDeclaration(CheckpointReach, commands=tuple([FailCheckpoint]), excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(CheckpointPass, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(CheckpointReview, excluded_subcommands=["make", "edit", "delete"])]
+    migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration, CheckpointsMigration, CheckpointReachSourceMigration, PlanContextReadsEnvironmentIndexMigration, CheckpointReviewsMigration, CheckpointReviewReportMigration, AgentCommitReachesMigration]
+    handlers = [ApproveCheckpointHandler, StartCheckpointReviewHandler, CheckPlanHandler, RecordCheckpointsHandler, StartCheckpointRunHandler, WaitPlanHandler, AssignPlanHandler, RecordPlanAgentHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
     moves = [PlansMove]
-    subcommands = [CheckPlanSubcommand, WaitPlanSubcommand, AssignPlanSubcommand, ChoosePlanFocusSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
+    subcommands = [ApproveCheckpointSubcommand, CheckPlanSubcommand, WaitPlanSubcommand, AssignPlanSubcommand, ChoosePlanFocusSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand]
     views = [PlanTask, PlanProgress, PlanCard, PlanOutlineTask, PlanEventRow]
-    guards = [CheckpointRunGuard, PhasePositionGuard, PhaseTestGuard, PlanCloseGuard, OneTaskPhaseGuard, UnorderedTasksGuard]
+    guards = [CheckpointRunGuard, PhasePositionGuard, PhaseTestGuard, PlanCloseGuard, OneTaskPhaseGuard, UnorderedTasksGuard, TaskWaitCircleGuard, TaskDependencyCircleGuard, PlanWaitCircleGuard]
     step_conditions = [PlanBriefSet, PlanHasPhases, PlanPhasesHaveTasks, PlanTasksOrdered]
-    listeners = [CheckpointReachListener, StartedPlanCheckpointsListener, CheckpointPassListener, PlanWaitListener, TaskPlanRowsListener, ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
+    listeners = [CheckpointReviewReportListener, CheckpointReachListener, StartedPlanCheckpointsListener, CheckpointPassListener, PlanWaitListener, TaskPlanRowsListener, ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
                  FinishedPlanListener, PassedPlanListener, CheckpointRunListener, FinishedPlanLineListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener, ReadyPlanSyncListener]
     marks = PLAN_MARKS
     nudges = PLAN_NUDGES
@@ -167,7 +178,8 @@ class PlansModule(Module):
                                        WindowKey("plan.*", "plan show {id}", loading=KeyLoading.REQUESTED)],
                                  tabs=[WindowTab("open", "Open", "plan board", "open_total"), WindowTab("started", "Started", "plan board --started", "started_total"), WindowTab("closed", "Closed", "plan board --closed", "closed_total")]),
                WindowDeclaration("plans.plan-details", "Details", "plan-details.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.PLAN, skeleton=[SkeletonPart.line()]),
-               WindowDeclaration("plans.plan-phases", "Phases", "plan-phases.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.PLAN, skeleton=[SkeletonPart.line()]),
+               WindowDeclaration("plans.plan-phases", "Phases", "plan-phases.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.PLAN, skeleton=[SkeletonPart.line()],
+                                 runs=["task edit"]),
                WindowDeclaration("plans.plan-timeline", "Timeline", "plan-timeline.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.PLAN, skeleton=[SkeletonPart.line()],
                                  reads=["plan timeline"], events=["plan.*"])]
     inspectors = [PLAN_INSPECTOR]

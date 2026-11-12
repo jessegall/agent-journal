@@ -12,8 +12,9 @@ ACTIVE_QUESTION_SQL = ("worker_id IS NOT NULL AND EXISTS (" + QUESTION_WAIT_SQL 
 
 class MergerLineLedgerMigration(Migration):
     """A merger line about a worker records the wait and the task of the ask, how and when it ended, when an
-    answer is due, when it is forwarded to the main agent and how often a merger read it. Lines that exist are closed as moot,
-    except the line of a worker that still waits for its answer, which gets its times from the upgrade."""
+    answer is due, when it is forwarded to the main agent and how often a merger read it. Lines that exist are
+    closed as moot, except the line of a worker that still waits for its answer, which gets its times from the
+    upgrade."""
 
     number = 63
     statements = (

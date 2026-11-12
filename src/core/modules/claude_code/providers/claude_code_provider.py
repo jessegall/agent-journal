@@ -23,6 +23,8 @@ from engine.provider.launch_command import LaunchCommand
 from engine.enums.model_tier import ModelTier
 from engine.provider.transcript_author import AGENT_AUTHOR, TRANSCRIPT_AUTHORS, USER_AUTHOR, TranscriptAuthor
 from engine.provider.program_hooks import ProgramHooks
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.program_settings import ProgramSettings, SettingsFile
 from engine.provider.program_folders import ProgramFolders
 from engine.provider.program_model import ProgramModel
 from engine.provider.control_choice import ControlChoice
@@ -43,6 +45,7 @@ from core.modules.claude_code.providers.support.claude_inbox import ClaudeInbox
 from core.modules.claude_code.providers.support.claude_kept_skills import ClaudeKeptSkills
 from core.modules.claude_code.providers.support.claude_peer_notes import ClaudePeerNotes
 from core.modules.claude_code.providers.support.claude_trust import ClaudeTrust
+from engine.journal.journal_home import JOURNAL_FOLDER
 
 CONFIG_VARIABLE = "CLAUDE_CONFIG_DIR"
 SYNTHETIC_MODEL = "<synthetic>"
@@ -54,12 +57,18 @@ MODEL_CHOICES = (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("f
 FALLBACK_EFFORT = "high"
 EFFORT_CHOICES = (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhigh", "Extra high"), ("max", "Maximum"))
 
+SETTINGS_FLAGS = ("--settings", "--setting-sources")
+SETTING_SOURCES = "project"
+CARRIED_SETTINGS = ("env", "apiKeyHelper", "awsAuthRefresh", "awsCredentialExport", "forceLoginMethod", "forceLoginOrgUUID", "otelHeadersHelper",
+                    "includeCoAuthoredBy", "skipDangerousModePermissionPrompt")
+BYPASS_PERMISSIONS = {"defaultMode": "bypassPermissions"}
+
 COMPACT_LINE = "/compact Focus on continuing the work at once: what you were doing last, what comes next, and the facts those depend on. Keep every instruction, request, direction and correction the user gave you. Leave out the rest of the earlier history and old messages: the journal gives back recent messages, tasks, memories and rules."
 
 class ClaudeCodeProvider(Provider):
-    """Anthropic's Claude Code: hooks in .claude/settings.local.json, sessions under its config folder's
-    projects, a session id the journal chooses, and a state file that records the folders it trusts; a main
-    session starts with the MCP servers' keys in its environment."""
+    """Anthropic's Claude Code: hooks in the journal's own settings file, passed with --settings, sessions under
+    its config folder's projects, a session id the journal chooses, and a state file that records the folders it
+    trusts; a main session starts with the MCP servers' keys in its environment."""
 
     name = "claude"
     title = "Claude Code"
@@ -91,6 +100,7 @@ class ClaudeCodeProvider(Provider):
     hook_file = HookFile(Path(".claude/settings.local.json"), {})
     hook_files = (Path(".claude/settings.json"), Path(".claude/settings.local.json"))
     session_variable = "CLAUDE_CODE_SESSION_ID"
+    person_file_note = "Claude Code itself may save a /model or /config choice in this file; the journal does not."
     markers = ["CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX"]
     compacts_headless = True
     controls = (ControlGroup("model", "Model", tuple(ControlChoice(value, label, f"/model {value}") for value, label in MODEL_CHOICES)),
@@ -124,29 +134,33 @@ class ClaudeCodeProvider(Provider):
         return replace(super().with_profile_model(profile, model), model=model)
 
     def session_command(self, launch: Launch) -> LaunchCommand:
-        skip = ["--dangerously-skip-permissions"] if launch.skip_prompts else []
+        launch.refuse_flags(self.title, *SETTINGS_FLAGS)
+        permission = ["--dangerously-skip-permissions"] if launch.skip_prompts else ["--permission-mode", "default"]
         model = [] if launch.names_flag("--model") else ["--model", launch.model]
         effort = [] if launch.names_flag("--effort") else ["--effort", launch.effort or self.effort(launch.model)]
-        arguments = [self.executable, *model, *effort, *skip, *launch.program_arguments, *launch.session.arguments(self), *launch.prompt_arguments]
+        arguments = [self.executable, *self.settings_arguments(launch.root), *model, *effort, *permission, *launch.program_arguments,
+                     *launch.session.arguments(self), *launch.prompt_arguments]
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:
-        arguments = [self.executable, "-p", launch.brief, "--model", launch.model, "--effort", self.effort(launch.model), "--dangerously-skip-permissions",
+        arguments = [self.executable, *self.settings_arguments(launch.root), "-p", launch.brief, "--model", launch.model, "--effort", self.effort(launch.model), "--dangerously-skip-permissions",
                      "--output-format", "stream-json", "--verbose", *launch.session.arguments(self)]
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
+
+    def settings_arguments(self, root: Path) -> list[str]:
+        return ["--settings", str(JournalHome(root / JOURNAL_FOLDER).program_settings_file(self.name)), "--setting-sources", SETTING_SOURCES]
 
     def effort(self, model: str) -> str:
         return self.efforts.effort(MODEL_EFFORTS, model) or FALLBACK_EFFORT
 
     def session_effort(self, home: JournalHome, session: str) -> str:
-        return self.status_text(home, session, "effort", "level") or self.effort(self.reported_model(home, session))
+        return self.status_text(home.status_file(session), "effort", "level") or self.effort(self.reported_model(home, session))
 
     def reported_model(self, home: JournalHome, session: str) -> str:
-        return self.status_text(home, session, "model", "id")
+        return self.status_text(home.status_file(session), "model", "id")
 
     @staticmethod
-    def status_text(home: JournalHome, session: str, group: str, name: str) -> str:
-        path = home.status_file(session)
+    def status_text(path: Path, group: str, name: str) -> str:
         if not path.is_file():
             return ""
         fields = StatusFileFields.read(path, FileAccess.shared().version(path)).get(group)
@@ -208,7 +222,6 @@ class ClaudeCodeProvider(Provider):
         return [str(block.get("text", "")) for block in blocks if is_mapping(block) and block.get("type") == "text"]
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
-        ProgramHooks.hooks(type(self), folder).write(runner, root)
         self.folder_trusted(folder)
 
     def folder_trusted(self, folder: Path) -> None:
@@ -217,8 +230,32 @@ class ClaudeCodeProvider(Provider):
     def user_hook_files(self) -> tuple[Path, ...]:
         return tuple([self.folders.folder(CONFIG_VARIABLE, ".claude") / "settings.json"])
 
-    def hook_trust(self, project: Path) -> HookTrust:
-        return HookTrust.READY if ProgramHooks.hooks(type(self), project).is_complete() else HookTrust.UNWRITTEN
+    def journal_settings(self, home: JournalHome, runner: str, managed: Sequence[ManagedHook], folders: Sequence[Path]) -> ProgramSettings:
+        path = home.program_settings_file(self.name)
+        root = home.project_folder
+        person_data = self.person_data()
+        person_file = self.user_hook_files()[0]
+        person_settings = self.person_settings(person_data.get(person_file, b""))
+        unreadable = tuple(path for path in [person_file] if path.is_file() and (path not in person_data or person_settings is None))
+        carried = {key: value for key, value in (person_settings or {}).items() if key in CARRIED_SETTINGS}
+        settings = {**carried, "permissions": BYPASS_PERMISSIONS, **self.hook_settings(runner, root),
+                    "hooks": ProgramHooks.journal(type(self), path).journal_blocks(runner, root, managed)}
+        return ProgramSettings(self.name, tuple([SettingsFile(path, json.dumps(settings, indent=2, sort_keys=True) + "\n")]),
+                               person_files=self.user_hook_files(), person_data=person_data, unreadable_person_files=unreadable)
+
+    @staticmethod
+    def person_settings(data: bytes) -> Mapping[str, object] | None:
+        try:
+            parsed: object = json.loads(data or b"{}")
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return None
+        return {str(key): value for key, value in parsed.items()} if is_mapping(parsed) else None
+
+    def journal_hook_file(self, home: JournalHome) -> Path:
+        return home.program_settings_file(self.name)
+
+    def journal_trust(self, home: JournalHome) -> HookTrust:
+        return HookTrust.READY if ProgramHooks.journal(type(self), self.journal_hook_file(home)).is_complete() else HookTrust.UNWRITTEN
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
         return self.context_window(home, session).used_percentage

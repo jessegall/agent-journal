@@ -6,8 +6,9 @@ M = TypeVar("M", bound=Model)
 
 
 class KeptRowChanges(Generic[M]):
-    """Keeps a kept read in step with one saved or removed row: a saved row joins the read when the read keeps it,
-    and a removed row leaves it. The class that keeps the read says which rows it keeps and how the read changes."""
+    """Keeps a kept read in step with one saved or removed row: a saved row joins the read when the read keeps
+    it, and a removed row leaves it. The class that keeps the read says which rows it keeps and how the read
+    changes."""
 
     def remember(self, row: M) -> None:
         self.update_kept(row, self.kept_rows(row))

@@ -18,7 +18,7 @@ class FakeSettings:
         return self.values[key]
 
     def texts(self, key: str) -> tuple[str, ...]:
-        return ()
+        return tuple(self.values.get(key, ()))
 
 
 def share(enabled: bool, limit: int) -> ContextShare:

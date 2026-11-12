@@ -17,7 +17,8 @@ from suites.coding.modules.workers.support.worker_run_answer import WorkerRunAns
 
 class CommitWorkerWorkSubcommand(Subcommand[Command[object], CommitOutcome]):
     """`journal worker commit`: commits all the worker's tasks, once none is queued and its started task has a
-    proof for every point of its brief."""
+    proof for every point of its brief. A worker told that its base branch moved runs journal worker update at
+    a stopping point first, and settles any clashing files before it commits."""
 
     cli_name = "worker"
     name = "commit"

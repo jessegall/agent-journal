@@ -12,9 +12,9 @@ from engine.enums.agent_role import AgentRole
 
 
 class CompactionWakeRule(DriverRule):
-    """A tick wakes an agent left sitting at its prompt by a compaction, since a /compact typed into its terminal
-    does not start a new turn when it ends. It wakes the agent once: the compaction records the wake, whoever typed
-    it."""
+    """A tick wakes an agent left sitting at its prompt by a compaction, since a /compact typed into its
+    terminal does not start a new turn when it ends. It wakes the agent once: the compaction records the wake,
+    whoever typed it."""
 
     name = "workers.compaction-wake"
     hook = HookEventName.TICK

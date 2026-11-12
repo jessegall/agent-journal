@@ -81,19 +81,19 @@ def test_take_gives_the_newest_rows_named_and_reports_no_cut(entries: Query[LogE
 
 def test_limit_two_hundred_returns_two_hundred_in_one_statement_and_passes_the_read_limit_check(entries: Query[LogEntry], statements_run):
     entries.database.read_limit_rows = READ_LIMIT_ROWS
-    assert len(filled(entries, 300).limit(200).get()) == 200 and len(statements_run) == 1
+    assert len(filled(entries, 300).limit(200, "a story reads 200 rows").get()) == 200 and len(statements_run) == 1
 
 
 def test_a_cut_at_a_named_limit_is_reported(entries: Query[LogEntry]):
     entries.database.collected_large_reads = []
-    filled(entries, 300).limit(200).get()
+    filled(entries, 300).limit(200, "a story reads 200 rows").get()
     assert "read cut at 200 rows" in str(entries.database.collected_large_reads[0])
 
 
 @pytest.mark.parametrize("rows", [5000, 10_000])
 def test_a_limit_above_the_ceiling_is_refused_with_the_walk_hint(entries: Query[LogEntry], rows):
     with pytest.raises(QueryLimitError) as refused:
-        entries.limit(rows)
+        entries.limit(rows, "a test names the limit")
     assert str(refused.value) == WALK_HINT
 
 

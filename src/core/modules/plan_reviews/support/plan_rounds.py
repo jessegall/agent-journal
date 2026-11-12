@@ -80,5 +80,5 @@ class PlanRounds:
 
     def actor_names(self, actor_ids: Set[int]) -> Mapping[int, str]:
         actors = {actor.id: actor.name for actor in self.queries.query(ActorRecord).find_many(sorted(actor_ids))}
-        agents = {agent.id: agent.given_name or agent.profile or agent.role for agent in self.queries.query(Agent).find_many(sorted(actor_ids))}
+        agents = {agent.id: agent.display_name for agent in self.queries.query(Agent).find_many(sorted(actor_ids))}
         return {**actors, **agents}

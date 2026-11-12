@@ -27,9 +27,9 @@ UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hol
 
 
 class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
-    """Closes the worker's delivered tasks once git has merged its worktree, or restarts its task with the files
-    that clashed. A task of a started plan is closed with the checkpoint its tests run at. The worker's ask that
-    waited for this merge is merged with it."""
+    """Closes the worker's delivered tasks once git has merged its worktree, or restarts its task with the
+    files that clashed. A task of a started plan is closed with the checkpoint its tests run at. The worker's
+    ask that waited for this merge is merged with it."""
 
     command = RecordWorktreeMerge
     runs_once = True

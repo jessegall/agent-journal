@@ -58,7 +58,7 @@ test("opening an inspector is one read, for that agent alone", async () => {
 test("a running worker says who it is, how it does, what it does now and what it was told", async () => {
     const {element} = opened(WORKER);
     await settle();
-    expect(text(element, ".name")).toBe("Lovelace");
+    expect(text(element, ".name")).toBe("Worker Builder · worker 4");
     expect(text(element, '[data-fact="agent"]')).toBe("Claude Code");
     expect(element.querySelector('[data-fact="agent"]').title).toContain("Session 7c1f0d9e-52a4");
     expect(text(element, '[data-fact="model"]')).toBe("Sonnet 5.5");
@@ -129,14 +129,14 @@ const MAIN = {
     "usage agents": {rows: [facts({id: 1, given_name: "Ada", profile: "", cost_dollars: 537.93, context_percent: 57, instruction: "", tasks: []})]},
     "usage agent 1": inspection({id: 1, started_by: "You", task: {id: 5649, title: "Sidebar: pages only for what is a page"}, plan: {id: 91, title: "Sidebar", phase: 2, done: 6, total: 9}}),
     "usage tool --agent 1": {tool: "", thinking: true, wait_target: ""},
-    "agent list --parent 1": {rows: [{id: 22, role: "helper", given_name: "Curie", profile: "explorer"}], total: 1},
+    "agent list --parent 1": {rows: [{id: 22, number: 22, role: "helper", given_name: "Curie", profile: "explorer"}], total: 1},
     "agent-skill list --agent 1": {rows: [], total: 0},
 };
 
 test("the main agent is titled without a number, shows the tasks done of its plan, and has no brief and no points", async () => {
     const {element, lines} = opened(MAIN, {id: 1});
     await settle();
-    expect(text(element, ".name")).toBe("Ada");
+    expect(text(element, ".name")).toBe("Main agent");
     expect(text(element, "[data-agent-started-by]")).toBe("Started by: You");
     expect(texts(element, "[data-agent-cell] small")).toEqual(["Running for", "Context used", "Cost", "Tasks done", "Failed runs"]);
     expect(text(element, '[data-agent-cell="done"] b')).toBe("6 of 9");
@@ -147,7 +147,7 @@ test("the main agent is titled without a number, shows the tasks done of its pla
     expect(lines.some((line) => line.startsWith("worker-worktree"))).toBe(false);
     element.querySelectorAll("[data-agent-fold]")[0].click();
     await settle();
-    expect(text(element, "[data-agent-helper]")).toBe("CurieHelper 22");
+    expect(text(element, "[data-agent-helper]")).toBe("HelperExplorer · helper 22");
 });
 
 const ENDED = {

@@ -296,42 +296,52 @@ async function emptyBox(run, runs) {
     return element;
 }
 
-test("an empty output box says No output yet and holds the button that asks the agent for a reader, on its right, inside the box", async () => {
+// the corner button of the output box, pressed so that its menu is open in the page
+async function reportMenu(element) {
+    document.body.append(element);
+    element.querySelector("[data-output-report]").click();
+    await vi.waitFor(() => expect(document.body.querySelector("[data-output-report-menu]")).not.toBeNull());
+    return document.body.querySelector("[data-output-report-menu]");
+}
+
+test("an empty output box says No output yet and holds a small report button in its top right corner, inside the box", async () => {
     const element = await emptyBox({}, []);
     const terminal = element.querySelector("[data-output-terminal]");
     expect(terminal.textContent).toBe("No output yet");
-    const ask = element.querySelector("[data-output-reader-ask]");
-    expect(ask.textContent.trim()).toBe("Ask the agent to draw a reader");
-    expect(ask.parentElement).toBe(terminal.parentElement);
-    expect(ask.parentElement.classList.contains("output-dock-box")).toBe(true);
+    const report = element.querySelector("[data-output-report]");
+    expect(report.textContent.trim()).toBe("");
+    expect(report.parentElement).toBe(terminal.parentElement);
+    expect(report.parentElement.classList.contains("output-dock-box")).toBe(true);
+    expect(element.querySelector("[data-output-mark-unreadable]")).toBeNull();
 });
 
-test("the button asks for the reader by one command and goes once pressed", async () => {
+test("the report menu asks for a better reader by one command and offers it no more once pressed", async () => {
     const runs = [];
     const element = await emptyBox({}, runs);
-    element.querySelector("[data-output-reader-ask]").click();
-    await vi.waitFor(() => expect(element.querySelector("[data-output-reader-ask]")).toBeNull());
+    const menu = await reportMenu(element);
+    expect(menu.querySelector("[data-output-reader-ask]").textContent.trim()).toBe("Ask for a better reader");
+    menu.querySelector("[data-output-reader-ask]").click();
+    await vi.waitFor(() => expect(element.querySelector("[data-output-report]")).toBeNull());
     expect(runs).toEqual([["output", "ask-reader", "3"]]);
 });
 
-test("a person marks the command of a run as not readable, and a marked command as readable again", async () => {
+test("the report menu marks the command of a run as unreadable, and a marked command as readable again", async () => {
     const runs = [];
     const element = await emptyBox({markable: true, marked_words: ""}, runs);
-    element.querySelector("[data-output-mark-unreadable]").click();
+    (await reportMenu(element)).querySelector("[data-output-mark-unreadable]").click();
     await vi.waitFor(() => expect(runs).toContainEqual(["output", "unreadable", "3"]));
+    document.body.innerHTML = "";
     const marked = await emptyBox({markable: true, marked_words: "make build"}, runs);
-    marked.querySelector("[data-output-mark-readable]").click();
+    const menu = await reportMenu(marked);
+    expect(menu.querySelector("[data-output-mark-unreadable]")).toBeNull();
+    menu.querySelector("[data-output-mark-readable]").click();
     await vi.waitFor(() => expect(runs).toContainEqual(["output", "readable", "3"]));
-    expect((await emptyBox({markable: false}, [])).querySelector("[data-output-mark-unreadable]")).toBeNull();
 });
 
-test("a run whose reader was asked for already offers no button", async () => {
-    expect((await emptyBox({reader_requested: true}, [])).querySelector("[data-output-reader-ask]")).toBeNull();
-});
-
-test("a run whose reader gives progress, or one that ended, offers no reader button", async () => {
-    expect((await emptyBox({reads_progress: true}, [])).querySelector("[data-output-reader-ask]")).toBeNull();
-    expect((await emptyBox({state: "finished", ended_at: "2026-11-02T10:00:05Z"}, [])).querySelector("[data-output-reader-ask]")).toBeNull();
+test("a run whose reader was asked for already, gives or reads progress, or ended, and cannot be marked, shows no report button", async () => {
+    for (const run of [{reader_requested: true}, {reads_progress: true}, {state: "finished", ended_at: "2026-11-02T10:00:05Z"}]) {
+        expect((await emptyBox(run, [])).querySelector("[data-output-report]")).toBeNull();
+    }
 });
 
 test("a running dock in a hidden pane or chat makes no read, and reads once when it is shown again", async () => {

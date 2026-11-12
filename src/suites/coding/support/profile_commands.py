@@ -19,6 +19,15 @@ DOCUMENT_COMMANDS = (
     "for all actions and each action's --help for its flags."
 )
 
+REPORT_COMMANDS = (
+    "\n\nFile findings with journal report make \"<title>\" --abstract \"<one line>\" --body \"<markdown>\". "
+    "Use --environment <name> to name the environment. A report is a one-time answer to a question and has no revisions; "
+    "journal doc make and journal doc edit are refused to you, because documents are for designs and plans. "
+    "Read reports with journal report list, journal report show, journal report inspect, journal report edit, "
+    "journal report comment and journal report comments, and read documents with journal doc list and journal doc show. "
+    "Use journal report --help for all actions and each action's --help for its flags."
+)
+
 PLAN_COMMANDS = (
     "\n\nCreate a plan with journal plan make \"<title>\" --brief \"<goal>\" --environment <name>. "
     "Add phases with journal phase make --plan <n> \"<title>\" --goal \"<done when>\"; "
@@ -33,7 +42,7 @@ PLAN_COMMANDS = (
     "A phase with one task needs a reason when you run journal plan ready: --skip-guard plans.one-task-phase --skip-reason \"<why>\". "
     "Read the skill journal-planning before you make a plan or a phase, and the skill journal-plan-review-applying before you work a report of reviews into a plan. "
     "Building a plan starts for you when you make a plan, and you may run journal plan edit, journal phase edit, journal task edit and journal plan ready on a plan you made. "
-    "Only the user runs journal plan approve; prepare the plan and mark it ready for that approval. "
+    "Only the user runs journal plan approve and journal plan approve-checkpoint; prepare the plan and mark it ready for that approval. "
     "The phase actions are journal phase make, journal phase edit, journal phase list, journal phase show, "
     "journal phase move, journal phase place and journal phase delete. "
     "The task actions are journal task make, journal task edit, journal task list, journal task show, "

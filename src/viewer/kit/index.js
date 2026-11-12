@@ -35,6 +35,7 @@ export {default as WindowSkeleton} from "../src/kit/WindowSkeleton.vue";
 export {default as Icon} from "../src/kit/Icon.vue";
 export {default as AgentBadge} from "../src/kit/AgentBadge.vue";
 export {agentLabel} from "../src/domain/agentLabel.js";
+export {agentNumber, agentTitle} from "../src/domain/agentTitle.js";
 export {default as PriorityIcon} from "../src/kit/PriorityIcon.vue";
 export {PRIORITY_LEVELS, namedPriority, priorityLabel} from "../src/domain/taskPriority.js";
 export {scoreMeaning} from "../src/domain/taskComplexity.js";

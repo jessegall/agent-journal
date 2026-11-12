@@ -306,4 +306,4 @@ class DependencyChain(StoryFixture):
         story.run("task depend 2 --on 3")
 
     def expect(self, story: Story) -> None:
-        story.expect_refusal(lines.THIRD_TASK_DEPENDENCY, "refused by tasks.no-dependency-loop")
+        story.expect_refusal(lines.THIRD_TASK_DEPENDENCY, "refused by plans.task-dependency-circle")

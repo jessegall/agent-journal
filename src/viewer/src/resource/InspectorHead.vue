@@ -36,8 +36,8 @@ const closing = computed(() => (props.backed ? "Close all rows" : "Close"));
                     <Btn variant="icon" title="Next" aria-label="Next" data-inspector-step="next" @click="emit('step', 1)"><Icon name="down" :size="13" /></Btn>
                 </template>
             </span>
-            <h2 v-if="titleOnBand" class="inspector-band-title" data-resource-title>{{ title }}</h2>
-            <p v-else class="inspector-label" data-resource-type>{{ label }}</p>
+            <template v-if="titleOnBand"><h2 class="inspector-band-title" data-resource-title>{{ title }}</h2></template>
+            <template v-else><p class="inspector-label" data-resource-type>{{ label }}</p></template>
             <span class="inspector-icons-end">
                 <template v-if="embedded">
                     <Btn variant="icon" title="Open in the inspector" aria-label="Open in the inspector" data-inspector-open @click="peekRef(address)"><Icon name="open" :size="13" /></Btn>

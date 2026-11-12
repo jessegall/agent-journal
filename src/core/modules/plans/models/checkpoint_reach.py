@@ -38,8 +38,8 @@ class CheckpointReach(EnvironmentScoped, Model):
         return replace(cls.started(creator_id, plan_id, phase_id, task_ids), is_early=True, source=CheckpointReachSource.EARLY)
 
     @classmethod
-    def started_worker(cls, creator_id: int, plan_id: int, phase_id: int, task_ids: tuple[int, ...]) -> "CheckpointReach":
-        return replace(cls.started(creator_id, plan_id, phase_id, task_ids), source=CheckpointReachSource.WORKER)
+    def started_on_agent_commit(cls, creator_id: int, plan_id: int, phase_id: int, task_ids: tuple[int, ...]) -> "CheckpointReach":
+        return replace(cls.started(creator_id, plan_id, phase_id, task_ids), source=CheckpointReachSource.AGENT_COMMIT)
 
     def tasks(self) -> tuple[int, ...]:
         return self.listed(self.task_ids)

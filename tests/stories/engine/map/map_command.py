@@ -6,6 +6,7 @@ from engine.file.file_access import FileAccess
 from engine.map.code_map import TOP_FOLDERS, CodeMap
 from engine.map.errors.missing_summary_error import MissingSummaryError
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_value
 
 ROOT = Path(__file__).resolve().parents[4]
 SOURCE = ROOT / "src"
@@ -35,6 +36,7 @@ def small_tree(root: Path) -> Path:
 
 def test_443_the_map_command_prints_seven_top_folders_with_one_line_for_every_one(new_story):
     story = new_story(fixture=UserJoined)
+    (story.home.project_folder / "src").symlink_to(SOURCE, target_is_directory=True)
     text = story.run("map", actor=story.user)
     text.expect_code(0)
     tops = [line for line in map_lines() if not line.startswith(" ")]
@@ -46,7 +48,7 @@ def test_443_the_map_command_prints_seven_top_folders_with_one_line_for_every_on
 def test_444_the_engine_areas_show_contract_areas_first_and_internal_ones_after_with_one_line_for_every_area(new_story):
     story = new_story()
     lines = top_folder_lines("engine")
-    areas = sorted(folder.name for folder in (SOURCE / "engine").iterdir() if folder.is_dir() and folder.name not in ("__pycache__", "errors", "enums"))
+    areas = sorted(folder.name for folder in (SOURCE / "engine").iterdir() if folder.is_dir() and folder.name not in ("__pycache__", "errors", "enums") and not CodeMap.holds_only_caches(folder))
     shown = [line.split("  ")[2] for line in lines if line.startswith("    ")]
     story.expect_rows(lines.index("  contract") < lines.index("  internal"), sorted(shown) == areas, detail=str(sorted(set(areas) ^ set(shown))))
     story.expect_rows(all(len(line.strip().split("  ", 1)) == 2 for line in lines if line.startswith("    ")), detail="an area line has no summary")
@@ -105,3 +107,27 @@ def test_452_a_pinned_map_edited_by_hand_differs_from_the_map_of_the_code(new_st
     generated = "\n".join(map_lines()) + "\n"
     edited = PINNED_MAP.read_text().replace("engine  ", "engine  By hand: ", 1)
     story.expect_rows(edited != generated, PINNED_MAP.read_text() == generated, detail=HOW_TO_PIN)
+
+
+def test_the_map_write_saves_the_map_of_the_checkout_the_journal_runs_for(new_story):
+    story = new_story(fixture=UserJoined)
+    checkout = story.home.project_folder
+    small_tree(checkout)
+    pinned = checkout / "tests" / "snapshots" / "map.txt"
+    pinned.parent.mkdir(parents=True)
+    pinned.write_text("an old map\n")
+    story.run("map --write", actor=story.user).expect_code(0)
+    expect_value(pinned.read_text(), CodeMap(checkout / "src", FileAccess.shared()).text())
+
+
+def test_the_map_write_is_refused_in_a_checkout_with_no_snapshots_folder(new_story):
+    story = new_story(fixture=UserJoined)
+    small_tree(story.home.project_folder)
+    story.expect_refusal("map --write", "has no tests/snapshots folder to save the map in", actor=story.user)
+
+
+def test_a_folder_left_with_only_its_cache_after_a_move_is_no_line_of_the_map(new_story, tmp_path):
+    story = new_story()
+    source = small_tree(tmp_path)
+    (source / "engine" / "ledger" / "__pycache__").mkdir(parents=True)
+    expect_value(CodeMap(source, FileAccess.shared()).lines(), ["engine  " + TOP_FOLDERS["engine"], "  contract", "    clock  Tells the time."])

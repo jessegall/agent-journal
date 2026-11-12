@@ -62,7 +62,7 @@ class UsageAgentSubcommand(ReadSubcommand[AgentInspection]):
         if starter.type is not ActorType.AGENT:
             return starter.name
         parent = self.queries.query(Agent).find(starter.id)
-        name = parent.given_name or f"{parent.role} {parent.id}"
+        name = parent.display_name
         return f"{name}, the main agent" if parent.role == AgentRole.MAIN else name
 
     def last_activity(self, agent_id: int) -> str:

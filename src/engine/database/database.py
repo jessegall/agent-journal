@@ -143,7 +143,8 @@ class Database:
     def check_read_limit(self, statement: Statement, count: int) -> None:
         if self.read_limit_rows is None or not statement.is_limited_read:
             return
-        allowed = max(self.read_limit_rows, statement.named_limit_rows or 0)
+        named = statement.named_limit_rows
+        allowed = self.read_limit_rows if named is None else max(self.read_limit_rows, named)
         if count <= allowed:
             return
         error = ReadLimitError.loaded(count, allowed, statement.sql)

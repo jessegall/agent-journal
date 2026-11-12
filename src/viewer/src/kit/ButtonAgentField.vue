@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import DropList from "./DropList.vue";
 import {lineResult} from "../windows/windowContext.js";
 import {CHAT_WINDOW} from "../windows/chatOptions.js";
-import {wordLabel} from "../domain/labels.js";
+import {agentTitle} from "../domain/agentTitle.js";
 
 // a select of the running agents with the agents of the field's first role on top, each with its number; it picks the number
 const props = defineProps({field: {type: Object, required: true}, value: {type: String, required: true}, environment: {type: String, required: true}});
@@ -12,7 +12,7 @@ const agents = ref([]);
 const failure = ref("");
 const options = computed(() => [...agents.value]
     .sort((first, second) => Number(second.role === props.field.first_role) - Number(first.role === props.field.first_role) || first.id - second.id)
-    .map((agent) => ({key: String(agent.number), label: agent.given_name || `${wordLabel(agent.role)} ${agent.number}`, note: `${wordLabel(agent.role)} ${agent.number}`})));
+    .map((agent) => ({key: String(agent.number), label: agentTitle(agent).title, note: agentTitle(agent).subtext})));
 const picked = computed(() => options.value.find((option) => option.key === props.value));
 
 async function load() {

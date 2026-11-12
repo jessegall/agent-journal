@@ -2,9 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.registry.registry import Registry
-from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
-from engine.types.type_guards import is_tuple
 from core.modules.skills.support.skill_files import SkillFiles
 
 
@@ -25,7 +23,3 @@ class SkillWriteSubcommand(ReadSubcommand[tuple[str, ...]]):
     def read(self, arguments: Namespace, caller: Caller) -> tuple[str, ...]:
         results = [f"{'written' if changed else 'unchanged'}: {folder}" for folder, changed in self.files.write_all(self.registry.skills).items()]
         return (*results, *(f"removed: {folder}" for folder in self.files.clear(self.registry.skills)))
-
-    def write_output(self, value: object, output: Output) -> None:
-        for line in value if is_tuple(value) else ():
-            output.line(str(line))

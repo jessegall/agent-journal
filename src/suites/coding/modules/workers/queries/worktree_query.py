@@ -65,7 +65,8 @@ class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
         return list(self.kept.read(worktrees, lambda: tuple(worktrees.every_row(WORKTREES_REASON)), name="workers.open_worktrees"))
 
     def folder_worktrees(self, folders: Sequence[str]) -> tuple[Worktree, ...]:
-        return tuple(self.with_removed().matching(Among("folder", folders)).every_row(WORKTREES_REASON))
+        worktrees = self.with_removed().matching(Among("folder", folders))
+        return self.kept.read(worktrees, lambda: tuple(worktrees.every_row(WORKTREES_REASON)), name="workers.folder_worktrees")
 
     def all_worktrees(self) -> tuple[Worktree, ...]:
         worktrees = self.with_removed().oldest()
