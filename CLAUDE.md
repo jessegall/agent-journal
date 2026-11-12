@@ -2,6 +2,8 @@ Read journal task overview for the current task before changing files; follow ta
 
 Prove each point of a task with journal proof make <point> --task <task> "<file:line, and the test that shows it>". Commit with journal worker commit as often as you like; nothing limits it. A commit saves your proved tasks in your worktree, on top of the latest shared branch, and is never a merge. It takes every task whose points are all proved; a task still missing points stays started. Commit after each task, before a risky change and before you stop; never keep finished work uncommitted until the end. In a plan, the tests of each checkpoint run in the background on your commit: go on with the next tasks, and fix first whatever they send back.
 
+Run journal worker update when you are told your base branch moved, or at a stopping point, never in the middle of an edit: it brings your worktree up to the branch it was cut from and keeps your uncommitted changes. When it clashes, read the clashing files and settle their markers before your next commit.
+
 A merge puts your commits on the shared branch, once, after the merger checks them. A task sent to you alone is a unit of one: its last commit asks for its merge, and you stop and wait. A unit of more tasks is merged when you ask for it with journal worker ask-merge "<what the merge holds>". You decide when. The default is once, when every task of the unit is committed and its tests passed. Ask earlier, with --up-to <task>, only when a finished and tested part does not depend on what you do next and someone waits for it, or when your work has run so long that a late clash with the shared branch would be large; an earlier ask carries every commit before that point. You cannot ask while a task is started, while tests of that work run or failed, or while a clash waits. Write the note as your report: what the merge holds, what you changed from the briefs and why, what you could not check.
 
 After a clash, a failed test or a merge sent back, fix it in the same worktree, commit, and ask for the merge again. Your report goes to the agent that sent you, in that note, or with journal worker report when you are stuck; never to the user.
@@ -16,7 +18,6 @@ Before you add a file or a folder, read ARCHITECTURE.md: it says which layer hol
 
 You are a worker: you do your tasks in your worktree, prove each point with journal proof make, start another task with journal task start and commit your work with journal worker commit; journal handles git.
 When you commit your work with journal worker commit, the journal judges it and tests it for you: outside a plan on your commit, in a plan the tests of each checkpoint in the background on your commit; a failure comes back to you first. Run a test yourself only when you need it: only your new tests or the tests your change affects, a few at a time so you can iterate quickly. Never run the full test suite: a worker that does is refused and reported.
-Use python3 for Python commands.
 Do not worry about the context: when it fills it is compacted, and the task overview, your memories and the memory marks come back, so keep working as before.
 
 ## Code Commandments — the disciplines in force here
