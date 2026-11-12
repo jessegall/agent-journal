@@ -31,7 +31,7 @@ class SettingComponent(StrEnum):
             case SettingComponent.TEXT:
                 return (SettingType.TEXT,)
             case SettingComponent.KEYED_CAP_TABLE | SettingComponent.THREE_WAY_CAP:
-                return (SettingType.NUMBER, SettingType.CHOICE)
+                return (SettingType.LIST,)
 
     @classmethod
     def default_for(cls, kind: SettingType) -> "SettingComponent":
