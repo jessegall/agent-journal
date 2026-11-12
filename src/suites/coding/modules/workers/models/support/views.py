@@ -62,7 +62,7 @@ SELECT worktree.session_agent_id AS agent_id, worktree.environment_id, worktree.
        coalesce(worktree.cut_at, worktree.created_at) AS started_at,
        worktree.removed_at AS finished_at,
        count(tasks.id) AS task_count,
-       count(CASE WHEN tasks.state = 'completed' THEN 1 END) AS completed_count
+       count(CASE WHEN tasks.state IN ('completed', 'testing') THEN 1 END) AS completed_count
 FROM worker_worktrees AS worktree
 LEFT JOIN tasks ON tasks.id IN (SELECT assignments.subject_id FROM assignments WHERE assignments.subject_model = 'task' AND assignments.actor_id = worktree.session_agent_id
                                 UNION SELECT held.id FROM tasks AS held WHERE held.holder_id = worktree.session_agent_id)

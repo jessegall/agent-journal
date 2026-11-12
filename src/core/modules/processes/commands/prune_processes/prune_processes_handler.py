@@ -6,11 +6,11 @@ from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.process_settings import ProcessSettings
 
-PROCESS_BATCH_COUNT = 200
+PROCESS_BATCH_COUNT = 50
 
 
 class PruneProcessesHandler(Handler[PruneProcesses, int]):
-    """Removes the oldest ended processes while keeping every running process."""
+    """Removes the oldest ended processes while keeping every running process. Answers how many it removed."""
 
     command = PruneProcesses
 
@@ -24,6 +24,5 @@ class PruneProcessesHandler(Handler[PruneProcesses, int]):
         if excess_count <= 0:
             return 0
         processes = ended.ordered("ended_at", "id").limited(min(excess_count, PROCESS_BATCH_COUNT))
-        for process in processes:
-            self.repository.delete(process, context)
+        self.repository.delete_many_stored(processes, context)
         return len(processes)

@@ -1,5 +1,8 @@
-import subprocess
 
+from engine.enums.process_kind import ProcessKind
+from engine.errors.run_time_limit_error import RunTimeLimitError
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.process_executor import ProcessExecutor
 from engine.journal.journal_home import JournalHome
 from engine.setting.setting_values import SettingValues
 from core.modules.voices.support.builtin_catalogue import BuiltinCatalogue
@@ -13,8 +16,8 @@ class VoiceChoice:
     """The voice, title and first name the user chose, as settings of the project; the first name falls back to
     what git knows the user by."""
 
-    def __init__(self, values: SettingValues, home: JournalHome) -> None:
-        self.values, self.home = values, home
+    def __init__(self, values: SettingValues, home: JournalHome, executor: ProcessExecutor) -> None:
+        self.values, self.home, self.executor = values, home, executor
 
     def is_voiced(self) -> bool:
         return self.values.project.flag(VOICE_SWITCH_KEY)
@@ -42,7 +45,7 @@ class VoiceChoice:
 
     def git_first_name(self) -> str:
         try:
-            full = subprocess.run(["git", "config", "user.name"], cwd=self.home.project_folder, capture_output=True, text=True, timeout=GIT_SECONDS).stdout.strip()
-        except (OSError, subprocess.TimeoutExpired):
+            full = self.executor.execute(ExecutionRequest(["git", "config", "user.name"], self.home.project_folder, ProcessKind.QUICK, GIT_SECONDS)).stdout.strip()
+        except (OSError, RunTimeLimitError):
             return ""
         return full.split(" ")[0] if full else ""

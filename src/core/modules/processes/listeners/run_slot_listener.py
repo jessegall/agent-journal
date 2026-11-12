@@ -9,7 +9,8 @@ from core.modules.processes.commands.grant_run_slots.grant_run_slots import Gran
 
 
 class RunSlotListener(SaveListener[Moved[Process]]):
-    """Rechecks admission when a process starts or ends."""
+    """Rechecks admission when a process that took part in the queue starts or ends; a request row that never
+    waited for a place and held none frees nothing, so it grants nothing."""
 
     name = "processes.run-slots"
     moves = ProcessLifecycle.moves()
@@ -20,4 +21,6 @@ class RunSlotListener(SaveListener[Moved[Process]]):
     def handle(self, event: Moved[Process], context: Context) -> None:
         run = event.row
         self.slots.remember(run)
+        if not run.takes_part_in_queue:
+            return
         self.bus.dispatch(GrantRunSlots(), context)

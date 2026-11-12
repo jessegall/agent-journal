@@ -15,6 +15,7 @@ class AgentProfile:
     name: str
     description: str = ""
     body: str = ""
+    base: str = ""
     agent_type: str = "helper"
     access: Access | None = None
     program: str = ""

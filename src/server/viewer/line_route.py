@@ -1,5 +1,9 @@
 import io
 import json
+import shlex
+
+from engine.enums.process_kind import ProcessKind
+from engine.process.door.request_records import RequestRecords
 from time import perf_counter
 
 from engine.database.repeated_lines import RepeatedLines
@@ -129,7 +133,7 @@ class LineRoute:
                 container.get(ShareScope).check(shared, argv, environment)
             caller = Caller(person, container.get(EnvironmentNames).environment_id(environment))
             with container.get(RequestWatch).watching_without_refusal(argv):
-                code = container.get(Console).run(self.json_line(argv), caller, stream)
+                code = container.get(RequestRecords).recorded(ProcessKind.JOURNAL, shlex.join(["journal", *argv[:2]]), lambda: container.get(Console).run(self.json_line(argv), caller, stream))
         except UsageError as error:
             return LineAnswer(USAGE_CODE, error=str(error))
         except ShareRefusal:

@@ -1,5 +1,14 @@
+from core.modules.processes.models.request_run import RequestRun
+from core.modules.processes.migrations.m067_request_runs import RequestRunsMigration
+from engine.process.door.run_placement import RunPlacement
+from engine.process.door.request_records import RequestRecords
+from core.modules.processes.support.process_row_wrapper import ProcessRowWrapper
+from core.modules.processes.commands.record_request_run.record_request_run_handler import RecordRequestRunHandler
+from core.modules.processes.commands.record_request_runs.record_request_runs_handler import RecordRequestRunsHandler
+from core.modules.processes.support.process_run_placement import ProcessRunPlacement
 from core.modules.processes.migrations.m065_environment_index import ReadersEnvironmentIndexMigration
 from core.modules.processes.migrations.m066_process_kind import ProcessKindMigration
+from core.modules.processes.migrations.m069_stock_digest import StockDigestMigration
 from core.modules.processes.migrations.m062_watch_agent_index import WatchAgentIndexMigration
 from core.modules.processes.listeners.ended_run_line_listener import EndedRunLineListener
 from engine.driver.run_owners import RunOwners
@@ -37,6 +46,7 @@ from core.modules.processes.migrations.m029_stock_test_titles import StockTestTi
 from core.modules.processes.migrations.m031_stock_reader_defaults import StockReaderDefaultsMigration
 from core.modules.processes.listeners.reader_failure_listener import ReaderFailureListener
 from core.modules.processes.listeners.end_decision_listener import EndDecisionListener
+from core.modules.processes.commands.send_reading_notices.send_reading_notices_handler import SendReadingNoticesHandler
 from core.modules.processes.commands.store_end_decisions.store_end_decisions_handler import StoreEndDecisionsHandler
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.migrations.m022_reader_requests import ReaderRequestsMigration
@@ -49,6 +59,7 @@ from core.modules.processes.ticks.output_reading import OutputReading
 from core.modules.processes.ticks.run_slot_grant import RunSlotGrant
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from core.modules.processes.ticks.process_pruning import ProcessPruning
+from core.modules.processes.ticks.request_log_import import RequestLogImport
 from core.modules.processes.commands.grant_run_slots.grant_run_slots_handler import GrantRunSlotsHandler
 from core.modules.processes.commands.halt_run_queue.halt_run_queue_handler import HaltRunQueueHandler
 from core.modules.processes.commands.halt_run_queue.halt_run_queue_subcommand import HaltRunQueueSubcommand
@@ -66,6 +77,7 @@ from engine.enums.auto_scroll import AutoScroll
 from engine.viewer.window_search import WindowSearch
 from core.modules.processes.support.process_searcher import ProcessSearcher
 from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window_extension import WindowExtension
 from engine.viewer.window_key import WindowKey
 from engine.viewer.window_extension import WindowExtension
 from engine.viewer.window_tab import WindowTab
@@ -87,6 +99,7 @@ from core.modules.processes.commands.read_output.read_output_subcommand import R
 from core.modules.processes.commands.show_output_status.show_output_status_subcommand import ShowOutputStatusSubcommand
 from core.modules.processes.commands.record_given_percent.record_given_percent_handler import RecordGivenPercentHandler
 from core.modules.processes.commands.request_reader.request_reader_handler import RequestReaderHandler
+from core.modules.processes.commands.request_count_reader.request_count_reader_handler import RequestCountReaderHandler
 from core.modules.processes.commands.request_reader.request_reader_subcommand import RequestReaderSubcommand
 from core.modules.processes.commands.unwatch_output.unwatch_output_handler import UnwatchOutputHandler
 from core.modules.processes.commands.unwatch_output.unwatch_output_subcommand import UnwatchOutputSubcommand
@@ -105,11 +118,13 @@ from core.modules.processes.rules.orphan_process_rule import OrphanProcessRule
 from core.modules.processes.listeners.process_folder_removal_listener import ProcessFolderRemovalListener
 from core.modules.processes.listeners.run_slot_listener import RunSlotListener
 from core.modules.processes.rules.alias_suggestion_rule import AliasSuggestionRule
-from core.modules.processes.rules.large_output_read_rule import LargeOutputReadRule
-from core.modules.processes.rules.reader_hint_rule import ReaderHintRule
+from core.modules.processes.rules.read_advice_rule import ReadAdviceRule
+from core.modules.processes.rules.reading_rule import ReadingRule
 from core.modules.processes.rules.run_title_rule import RunTitleRule
 from core.modules.processes.listeners.process_end_mark_listener import ProcessEndMarkListener
 from core.modules.processes.listeners.process_part_start_mark_listener import ProcessPartStartMarkListener
+from core.modules.processes.listeners.process_move_mark_listener import ProcessMoveMarkListener
+from core.modules.processes.commands.process_list.process_list_subcommand import ProcessListSubcommand
 from core.modules.processes.listeners.process_output_mark_listener import ProcessOutputMarkListener
 from core.modules.processes.support.process_marks import PROCESS_DOCKS, PROCESS_MARKS
 from core.modules.processes.commands.read_new_output.read_new_output_handler import ReadNewOutputHandler
@@ -129,9 +144,7 @@ from core.modules.processes.commands.title_output.title_output_subcommand import
 from core.modules.processes.rules.journal_chain_rule import JournalChainRule
 from core.modules.processes.rules.journal_pipe_rule import JournalPipeRule
 from core.modules.processes.rules.read_command_output_rule import ReadCommandOutputRule
-from core.modules.processes.rules.redirected_run_rule import RedirectedRunRule
 from core.modules.processes.rules.silent_run_hold_rule import SilentRunHoldRule
-from core.modules.processes.rules.silent_start_rule import SilentStartRule
 from core.modules.processes.rules.long_run_dock_rule import LongRunDockRule
 from core.modules.processes.listeners.running_tests_marker_listener import RunningTestsMarkerListener
 from core.modules.processes.listeners.process_output_listener import ProcessOutputListener
@@ -153,6 +166,17 @@ from core.modules.processes.commands.add_reader.add_reader_handler import AddRea
 from core.modules.processes.commands.add_reader.add_reader_subcommand import AddReaderSubcommand
 from core.modules.processes.commands.choose_default_reader.choose_default_reader_handler import ChooseDefaultReaderHandler
 from core.modules.processes.commands.choose_default_reader.choose_default_reader_subcommand import ChooseDefaultReaderSubcommand
+from core.modules.processes.commands.mark_unreadable.mark_unreadable_handler import MarkUnreadableHandler
+from core.modules.processes.commands.lift_hold.lift_hold_handler import LiftHoldHandler
+from core.modules.processes.commands.lift_hold.lift_hold_subcommand import LiftHoldSubcommand
+from core.modules.processes.commands.list_holds.list_holds_subcommand import ListHoldsSubcommand
+from core.modules.processes.commands.mark_run_unreadable.mark_run_unreadable_handler import MarkRunUnreadableHandler
+from core.modules.processes.commands.mark_run_unreadable.mark_run_unreadable_subcommand import MarkRunUnreadableSubcommand
+from core.modules.processes.commands.lift_run_unreadable.lift_run_unreadable_handler import LiftRunUnreadableHandler
+from core.modules.processes.commands.lift_run_unreadable.lift_run_unreadable_subcommand import LiftRunUnreadableSubcommand
+from core.modules.processes.commands.mark_unreadable.mark_unreadable_subcommand import MarkUnreadableSubcommand
+from core.modules.processes.commands.lift_unreadable.lift_unreadable_handler import LiftUnreadableHandler
+from core.modules.processes.commands.lift_unreadable.lift_unreadable_subcommand import LiftUnreadableSubcommand
 from core.modules.processes.commands.remove_reader.remove_reader_handler import RemoveReaderHandler
 from core.modules.processes.commands.remove_reader.remove_reader_subcommand import RemoveReaderSubcommand
 from core.modules.processes.guards.reader_owner_guard import ReaderOwnerGuard
@@ -214,14 +238,20 @@ from core.modules.processes.migrations.m051_reader_request_environment_index imp
 from core.modules.processes.migrations.m060_plain_column_names import PlainColumnNamesMigration
 from core.modules.processes.migrations.m061_process_session_state_index import ProcessSessionStateIndexMigration
 from core.modules.processes.migrations.m063_reading_decisions import ReadingDecisionsMigration
+from core.modules.processes.migrations.m064_unreadable_marks import UnreadableMarksMigration
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
+from core.modules.processes.models.unreadable_mark import UnreadableMark
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
+from core.modules.processes.queries.unreadable_mark_query import UnreadableMarkQuery
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.watch import Watch
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_query import ProcessQuery
+from core.modules.processes.queries.request_run_query import RequestRunQuery
+from core.modules.processes.migrations.m068_request_run_age_index import RequestRunAgeIndexMigration
+from core.modules.processes.migrations.m070_request_run_end_index import RequestRunEndIndexMigration
 from core.modules.processes.queries.watch_query import WatchQuery
 from core.modules.processes.models.enums.process_setting import PROCESS_SETTINGS
 from core.modules.processes.seeders.processes_seeder import ProcessesSeeder
@@ -230,8 +260,8 @@ from core.modules.processes.support.block_conditions.output_monitored import Out
 from core.modules.processes.support.block_conditions.output_read import OutputRead
 from core.modules.processes.support.skeletons import PROCESSES_OUTPUTS_SKELETON, PROCESSES_OUTPUT_SKELETON
 
-WINDOW_READS = ["process card", "process show", "process feed", "output peek", "output page"]
-WINDOW_RUNS = ["output stop", "output watch", "output ask-reader"]
+WINDOW_READS = ["process card", "process show", "process feed", "output peek", "output page", "unreadable-mark list"]
+WINDOW_RUNS = ["output stop", "output watch", "output ask-reader", "output unreadable", "output readable"]
 WINDOW_EVENTS = ["process.*", "output.*"]
 
 
@@ -249,7 +279,7 @@ class ProcessesModule(Module):
     tick_handlers = [TickHandler(TickInterval(seconds=1), OutputReading(), "read running outputs"), TickHandler(TickInterval(seconds=1), RunSlotGrant(), "run slots"),
                      TickHandler(TickInterval(seconds=1), RunTimeouts(), "run timeouts"), TickHandler(TickInterval(seconds=15), HangWatch(), "hang watch"), TickHandler(TickInterval(seconds=10), CadenceWatch(), "cadence watch"), TickHandler(TickInterval(seconds=15), OutputChecks(), "output checks"),
                      TickHandler(TickInterval(seconds=15), RunEndRecovery(), "run end recovery", starts_immediately=True),
-                     TickHandler(TickInterval(seconds=15 * 60), ProcessPruning(), "process pruning")]
+                     TickHandler(TickInterval(seconds=15 * 60), ProcessPruning(), "process pruning"), TickHandler(TickInterval(seconds=5), RequestLogImport(), "request log import")]
     skills = [SkillDeclaration("journal-shell", "Run shell commands through the journal and read what they printed; read it before reading an output, or writing a reader or an alias",
                                keywords=("output", "reader", "alias"))]
     requires_core = ">=5,<6"
@@ -257,22 +287,23 @@ class ProcessesModule(Module):
     settings = PROCESS_SETTINGS
     moves = [ProcessesMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking", "journal.core.tasks", "journal.core.settings", "journal.core.developer", "journal.core.assignments"]
-    models = [ModelDeclaration(ReaderRequest, query=ReaderRequestQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, OrphanProcess), excluded_subcommands=["make", "finish", "fail", "stop"]), ModelDeclaration(ProcessPart, query=ProcessPartQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit", "delete", "prune"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(ReadingDecisionRow, query=ReadingDecisionQuery, excluded_subcommands=["make", "edit", "delete"])]
+    models = [ModelDeclaration(RequestRun, query=RequestRunQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(ReaderRequest, query=ReaderRequestQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, OrphanProcess), excluded_subcommands=["make", "finish", "fail", "stop"]), ModelDeclaration(ProcessPart, query=ProcessPartQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit", "delete", "prune"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(ReadingDecisionRow, query=ReadingDecisionQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(UnreadableMark, query=UnreadableMarkQuery, excluded_subcommands=["make", "edit", "delete"])]
     views = [ProcessRow, ProcessQueueRow]
-    migrations = [ReadingDecisionsMigration, WatchAgentIndexMigration, ProcessSessionStateIndexMigration, PlainColumnNamesMigration, WatchConfirmMigration, ProcessPluginMigration, OutputFullReadMigration, OutputCreatorIndexMigration, VitestSummaryCountsMigration, VitestListingCountsMigration, OutputReadPositionMigration, TestReaderProgressMigration, ProcessSessionMigration, PytestListingCountsMigration, GoSelectedTestCountsMigration, SelectedTestCountsMigration, ProcessSandboxMigration, ReaderUseIndexesMigration, ReaderSampleIndexMigration, WatchReadIndexMigration, ReaderRequestOwnerMigration, ProcessQueueVisibilityMigration, OutputEndNameMigration, MoreToolStockReadersMigration, ProcessTimeoutMigration, ProcessQueueTimestampMigration, MoreStockReadersMigration, ProcessEndIndexMigration,ProcessOwnerMigration,StockReaderDefaultsMigration, StockReaderCatalogMigration, StockTestTitlesMigration,ProcessPartVisibilityMigration, ReaderRequestChatHistoryMigration, ProcessQueueIndexesMigration, StockReaderSummariesMigration,ProcessWorkMigration,ProcessAdmissionMigration, ReaderRequestsMigration, ReaderTestCountsMigration, OutputTestCountMigration, StockReaderTestCountsMigration, ProcessPartCommandMigration, QueueMembershipMigration, ProcessHotQueryIndexesMigration, ProcessPartTextIndexMigration, OutputReaderPositionMigration, ProcessQueueMigration, VitestReaderCommandsMigration, ProcessFullTestRunMigration, EndedAgentRunsMigration, ReaderStepsAndTitlesMigration, ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration, OutputReadersMigration, ReaderPluginsMigration, WatchPercentMigration, ProcessStateIndexMigration, ProcessPartCategoryMigration, ReaderRequestEnvironmentIndexMigration, ReadersEnvironmentIndexMigration, ProcessKindMigration]
-    handlers = [WarnCadenceHandler, StoreEndDecisionsHandler, RequestReaderHandler, CheckOutputHandler, ConfirmOutputHandler, RecordSandboxHandler, UpdateStockReadersHandler, SetOutputTimeoutHandler, StopTimedProcessHandler, AskAgentToLookHandler, StopHungProcessHandler, PruneProcessesHandler, SendReadersNoticeHandler, MakeReaderDraftHandler, SendReaderRequestNoticeHandler, SkipReaderRequestHandler, TitleOutputHandler, StartProcessHandler, StartProcessPartHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenPercentHandler, ReadNewOutputHandler, GrantRunSlotsHandler, HaltRunQueueHandler, ResumeRunQueueHandler]
-    subcommands = [RequestReaderSubcommand, ConfirmOutputSubcommand, RecordSandboxSubcommand, SetOutputTimeoutSubcommand, PageOutputSubcommand, HookOutputPageSubcommand, InspectRunQueueSubcommand,MakeReaderDraftSubcommand, SkipReaderRequestSubcommand, ListRunQueueSubcommand, ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, StartProcessPartSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand, HaltRunQueueSubcommand, ResumeRunQueueSubcommand]
+    migrations = [RequestRunAgeIndexMigration, RequestRunEndIndexMigration, RequestRunsMigration, ReadingDecisionsMigration, WatchAgentIndexMigration, ProcessSessionStateIndexMigration, PlainColumnNamesMigration, WatchConfirmMigration, ProcessPluginMigration, OutputFullReadMigration, OutputCreatorIndexMigration, VitestSummaryCountsMigration, VitestListingCountsMigration, OutputReadPositionMigration, TestReaderProgressMigration, ProcessSessionMigration, PytestListingCountsMigration, GoSelectedTestCountsMigration, SelectedTestCountsMigration, ProcessSandboxMigration, ReaderUseIndexesMigration, ReaderSampleIndexMigration, WatchReadIndexMigration, ReaderRequestOwnerMigration, ProcessQueueVisibilityMigration, OutputEndNameMigration, MoreToolStockReadersMigration, ProcessTimeoutMigration, ProcessQueueTimestampMigration, MoreStockReadersMigration, ProcessEndIndexMigration, ProcessOwnerMigration, StockReaderDefaultsMigration, StockReaderCatalogMigration, StockTestTitlesMigration, ProcessPartVisibilityMigration, ReaderRequestChatHistoryMigration, ProcessQueueIndexesMigration, StockReaderSummariesMigration, ProcessWorkMigration, ProcessAdmissionMigration, ReaderRequestsMigration, ReaderTestCountsMigration, OutputTestCountMigration, StockReaderTestCountsMigration, ProcessPartCommandMigration, QueueMembershipMigration, ProcessHotQueryIndexesMigration, ProcessPartTextIndexMigration, OutputReaderPositionMigration, ProcessQueueMigration, VitestReaderCommandsMigration, ProcessFullTestRunMigration, EndedAgentRunsMigration, ReaderStepsAndTitlesMigration, ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration, OutputReadersMigration, ReaderPluginsMigration, WatchPercentMigration, ProcessStateIndexMigration, ProcessPartCategoryMigration, ReaderRequestEnvironmentIndexMigration, ReadersEnvironmentIndexMigration, ProcessKindMigration, StockDigestMigration, UnreadableMarksMigration]
+    handlers = [WarnCadenceHandler, StoreEndDecisionsHandler, RequestReaderHandler, CheckOutputHandler, ConfirmOutputHandler, RecordSandboxHandler, UpdateStockReadersHandler, SetOutputTimeoutHandler, StopTimedProcessHandler, AskAgentToLookHandler, StopHungProcessHandler, PruneProcessesHandler, SendReadersNoticeHandler, MakeReaderDraftHandler, SendReaderRequestNoticeHandler, SkipReaderRequestHandler, TitleOutputHandler, StartProcessHandler, StartProcessPartHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenPercentHandler, ReadNewOutputHandler, GrantRunSlotsHandler, HaltRunQueueHandler, ResumeRunQueueHandler, RecordRequestRunHandler, RecordRequestRunsHandler, LiftHoldHandler, MarkRunUnreadableHandler, LiftRunUnreadableHandler, MarkUnreadableHandler, LiftUnreadableHandler, SendReadingNoticesHandler, RequestCountReaderHandler]
+    subcommands = [RequestReaderSubcommand, ConfirmOutputSubcommand, RecordSandboxSubcommand, SetOutputTimeoutSubcommand, PageOutputSubcommand, HookOutputPageSubcommand, InspectRunQueueSubcommand, MakeReaderDraftSubcommand, SkipReaderRequestSubcommand, ListRunQueueSubcommand, ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, StartProcessPartSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand, HaltRunQueueSubcommand, ResumeRunQueueSubcommand, ProcessListSubcommand, ListHoldsSubcommand, LiftHoldSubcommand, MarkRunUnreadableSubcommand, LiftRunUnreadableSubcommand, MarkUnreadableSubcommand, LiftUnreadableSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard, EndedProcessDockGuard]
-    driver_rules = [RetryLoopRule, ReaderRequestRule, LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReaderHintRule, LargeOutputReadRule, RunTitleRule, SleepPollRule, JournalChainRule, ReadCommandOutputRule, JournalPipeRule, RedirectedRunRule, SilentStartRule, SilentRunHoldRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule, RunQueueHaltedRule]
-    listeners = [EndDecisionListener, EndedRunLineListener, FullOutputReadListener, StockReadersPublishListener, StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, ProcessFolderRemovalListener, RunSlotListener, RunningTestsMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, ProcessPruneListener, ProcessRemovalListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, ProcessPartStartMarkListener, ProcessOutputMarkListener, ProcessOutputListener]
+    driver_rules = [ReadingRule, RetryLoopRule, ReaderRequestRule, LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReadAdviceRule, RunTitleRule, SleepPollRule, JournalChainRule, ReadCommandOutputRule, JournalPipeRule, SilentRunHoldRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule, RunQueueHaltedRule]
+    listeners = [EndDecisionListener, EndedRunLineListener, FullOutputReadListener, StockReadersPublishListener, StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, ProcessFolderRemovalListener, RunSlotListener, RunningTestsMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, ProcessPruneListener, ProcessRemovalListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, ProcessPartStartMarkListener, ProcessMoveMarkListener, ProcessOutputMarkListener, ProcessOutputListener]
     marks = PROCESS_MARKS
-    bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets, RunOwners: ProcessRunOwners}
+    bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets, RunOwners: ProcessRunOwners, RunPlacement: ProcessRunPlacement, RequestRecords: ProcessRowWrapper}
     docks = PROCESS_DOCKS
     window_extensions = [WindowExtension(name, reads=["queue list", "output page"], events=["output.*"],
                                          tabs=[WindowTab("processes", "Processes", "queue list", component="/modules/journal.core.processes/agent-processes.js")])
                          for name in ("agents.agents", "agents.helpers")]
     windows = [WindowDeclaration("processes.outputs", "Commands", "outputs.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUTS_SKELETON, search=WindowSearch(ProcessSearcher, "Search the commands"), icon=WindowIcon.TERMINAL, reads=WINDOW_READS,
-                                 keys=[WindowKey("runs", "process feed", arguments=["session-agent-id"], events=WINDOW_EVENTS)], runs=WINDOW_RUNS, events=WINDOW_EVENTS),
+                                 keys=[WindowKey("runs", "process feed", arguments=["session-agent-id"], events=WINDOW_EVENTS),
+                                       WindowKey("marks", "unreadable-mark list", events=["unreadable_mark.*"])], runs=WINDOW_RUNS, events=[*WINDOW_EVENTS, "unreadable_mark.*"]),
                WindowDeclaration("processes.output", "Output", "output.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.TERMINAL, auto_scroll=AutoScroll.BOTTOM, reads=[*WINDOW_READS, "window setting"],
                                  keys=[WindowKey("selection", "window setting processes.output output", loading=KeyLoading.REQUESTED),
                                        WindowKey("latest", "process feed --limit 1", arguments=["session-agent-id"], loading=KeyLoading.REQUESTED),
@@ -282,5 +313,6 @@ class ProcessesModule(Module):
                                  runs=WINDOW_RUNS, events=WINDOW_EVENTS),
                WindowDeclaration("processes.queue-body", "Process queue", "queue-body.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TERMINAL, skeleton=[SkeletonPart.line()],
                                  reads=["queue list", "output page"], runs=["setting set"], events=["output.*"])]
+    window_extensions = [WindowExtension("agents.agents", runs=["process lift-hold"])]
     inspectors = [QUEUE_INSPECTOR]
     seeders = [ProcessesSeeder]

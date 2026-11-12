@@ -1,0 +1,49 @@
+from pathlib import Path
+
+from engine.driver.agent_hook import AgentHook
+from engine.enums.command_category import CommandCategory
+from engine.driver.driver_rule import DriverRule
+from engine.enums.hook_event_name import HookEventName
+from engine.driver.rule_answer import RuleAnswer
+from engine.driver.search_category import JOURNAL_FOLDER
+from engine.listener.rows.event_rows import EventRows
+from core.modules.environments.models.environment import Environment
+from engine.enums.agent_role import AgentRole
+from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
+from suites.coding.support.coding_nudges import MAIN_CODE_EDIT_REFUSED
+
+ALLOWED_COMMANDS = tuple(category.value for category in (CommandCategory.READ, CommandCategory.SEARCH, CommandCategory.TEST_RUN, CommandCategory.CHECK,
+                                                          CommandCategory.VERSION_CONTROL))
+
+
+class CheckoutWriteWithoutCodeRule(DriverRule):
+    """While the main agent writes no code, it writes no file of the project checkout, by a file tool or a
+    shell line; files outside the checkout, in the .journal folder (agent memory and worker worktrees) and
+    journal commands stay allowed."""
+
+    name = "coding.main-writes-no-code"
+    hook = HookEventName.PRE_TOOL_USE
+    drivers = ["coding.main"]
+    roles = [AgentRole.MAIN]
+    single_action_refusal = "While the main agent writes no code, it writes no file of the project checkout, by a file tool or a shell"
+
+    def __init__(self, options: CodingMainOptions, rows: EventRows) -> None:
+        self.options, self.rows = options, rows
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        tool = hook.event.tool
+        if tool is None or self.options.options().writes_code:
+            return RuleAnswer.allowed()
+        if tool.category.writes_files:
+            folder = Path(self.rows.required(Environment, hook.environment_id).folder).resolve()
+            return RuleAnswer.refused(MAIN_CODE_EDIT_REFUSED.nudge()) if any(self.is_project_file(folder, file) for file in tool.files) else RuleAnswer.allowed()
+        shell = tool.shell
+        if shell is None:
+            return RuleAnswer.allowed()
+        writes = shell.parse_error or not shell.parts or shell.has_uncertain_part or shell.has_non_journal_file_writes
+        return RuleAnswer.refused(MAIN_CODE_EDIT_REFUSED.nudge()) if writes or shell.disallowed_part(ALLOWED_COMMANDS) is not None else RuleAnswer.allowed()
+
+    @staticmethod
+    def is_project_file(folder: Path, file: str) -> bool:
+        path = (folder / file).resolve()
+        return path.is_relative_to(folder) and not path.is_relative_to(folder / JOURNAL_FOLDER)

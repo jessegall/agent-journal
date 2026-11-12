@@ -5,7 +5,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_list, is_tuple
-from core.modules.settings.bindings.support.context_caps import CONTEXT_LIMIT_PROFILES, NO_CAP
+from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_PROFILES, NO_CAP
 from core.modules.settings.commands.set_setting.set_setting import SetSetting
 from core.modules.settings.support.current_setting import CurrentSetting
 from core.modules.settings.support.setting_reader import SettingReader

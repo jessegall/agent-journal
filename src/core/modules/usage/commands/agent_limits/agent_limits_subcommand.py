@@ -18,7 +18,7 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.usage.support.agent_limit_counts import AgentLimitCounts
 from core.modules.usage.support.agent_profile_limit_counts import AgentProfileLimitCounts
 from core.modules.settings.support.setting_reader import SettingReader
-from core.modules.settings.bindings.support.context_caps import CONTEXT_LIMIT_PROFILES, ContextCaps
+from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_PROFILES, ContextShare
 
 
 class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
@@ -28,8 +28,8 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
     name = "limits"
     environment_refusal = "agent limits are shown for one environment"
 
-    def __init__(self, queries: Queries, registry: Registry, limits: AgentTypeLimits, profiles: ProfileFiles, settings: SettingReader, work: AgentWork, caps: ContextCaps) -> None:
-        self.work, self.caps = work, caps
+    def __init__(self, queries: Queries, registry: Registry, limits: AgentTypeLimits, profiles: ProfileFiles, settings: SettingReader, work: AgentWork, share: ContextShare) -> None:
+        self.work, self.share = work, share
         self.queries, self.registry, self.limits, self.profiles = queries, registry, limits, profiles
         self.settings = settings
 
@@ -40,7 +40,7 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
         installed_profiles = {profile.name: profile for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
         titles = {name: profile.display_title for name, profile in installed_profiles.items()}
         counts: list[AgentLimitCounts] = []
-        context_caps = self.caps.entries(CONTEXT_LIMIT_PROFILES)
+        context_caps = self.share.entries(CONTEXT_LIMIT_PROFILES)
         for entry in self.registry.helper_types:
             if not entry.run_limit_key:
                 continue

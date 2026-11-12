@@ -1,4 +1,5 @@
-from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
+from suites.coding.modules.workers.models.affected_test import AffectedTest
+from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.tasks.models.task import Task

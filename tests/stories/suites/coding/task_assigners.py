@@ -26,6 +26,12 @@ class SecondAssigner(TaskAssigner[Task]):
     def urgent(self, excluded_id: int | None = None) -> Task | None:
         return None
 
+    def own_tasks(self, agent_ids):
+        return {}
+
+    def blocked_tasks(self):
+        return ()
+
     def following(self, agent_id: int, excluded_id: int | None = None) -> Task | None:
         return None
 

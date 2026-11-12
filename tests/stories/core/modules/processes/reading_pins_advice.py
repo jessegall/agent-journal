@@ -11,7 +11,7 @@ def posted_read(line):
     return HookSamples.shell(line, ShellPart("journal", CommandCategory.JOURNAL, line.split()[1:], subcommand="output")).with_fields(event="post_tool_use")
 
 
-def test_a_worker_that_runs_one_line_often_is_not_told_to_save_it_as_an_alias(new_story):
+def test_a_worker_whose_role_saves_no_commands_is_not_told_to_save_a_line_it_runs_often_as_an_alias(new_story):
     story = install_runner(new_story(fixture=ForcedReaders))
     for _ in range(8):
         worker_run(story, "make build fast", CommandCategory.UNKNOWN)

@@ -4,17 +4,19 @@ from typing import TypedDict
 class ProcessCardJsonRecord(TypedDict):
     """The JSON form of ProcessCard.json."""
 
-    id: object
-    line: object
-    state: object
-    progress: object
-    created_at: object
-    ended_at: object
-    title: object
-    steps_passed: object
-    steps_failed: object
-    summary: object
-    agent_id: object
-    reads_progress: object
-    reader_requested: object
-    reading_text: object
+    id: int
+    line: str
+    state: str
+    progress: int
+    created_at: str | None
+    ended_at: str | None
+    title: str
+    steps_passed: int
+    steps_failed: int
+    summary: str
+    agent_id: int
+    reads_progress: bool
+    reader_requested: bool
+    reading_text: str | None
+    marked_words: str
+    markable: bool

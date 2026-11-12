@@ -64,6 +64,7 @@ from core.modules.agents.migrations.m024_main_agent_parent import MainAgentParen
 from core.modules.agents.support.local_launcher_transport import LocalLauncherTransport
 from core.modules.agents.support.program_transport import ProgramTransport
 from core.modules.agents.migrations.m025_agent_launch_failed_at import AgentLaunchFailureColumnMigration
+from core.modules.agents.migrations.m026_agent_announced_at import AgentAnnouncedColumnMigration
 from core.modules.agents.commands.agent_standing.agent_standing_subcommand import AgentStandingSubcommand
 from core.modules.agents.commands.stop_unused_launcher.stop_unused_launcher_handler import StopUnusedLauncherHandler
 from core.modules.agents.rules.unused_launcher_rule import UnusedLauncherRule
@@ -151,7 +152,7 @@ class AgentsModule(Module):
     models = [ModelDeclaration(Agent, query=AgentQuery, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(AgentSession, excluded_subcommands=["make", "edit", "delete"])]
     moves = [AgentsMove]
-    migrations = [AgentLaunchFailureColumnMigration, MainAgentParentMigration, AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
+    migrations = [AgentAnnouncedColumnMigration, AgentLaunchFailureColumnMigration, MainAgentParentMigration, AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
     nudges = [AGENT_START_FAILED, *REPORT_NUDGES]
     guards = [AgentNameGuard, NumberGuard, RetiredRowGuard, RetiredDeleteGuard, AgentChatGuard]
     tick_handlers = [TickHandler(TickInterval(seconds=30), AgentReconcile(), "agent rows and their programs")]

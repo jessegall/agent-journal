@@ -24,6 +24,7 @@ from tests.stories.support.story_checks import expect_value
 from tests.stories.core.support.agent_labels import agent_number
 
 READ = HookSamples.shell("cat cart.py", ShellPart("cat", CommandCategory.READ, ["cart.py"]))
+LINT = HookSamples.shell("ruff check", ShellPart("ruff", CommandCategory.CHECK, ["check"]))
 
 
 class TargetedSession(StoryFixture):
@@ -99,19 +100,19 @@ def test_main_ignores_a_workers_unread_message_and_its_limit(targeted_chat):
     post_target(server, cookie, story.worker, "Check the worker output")
     expect_absent_reply_refusal(story.hook("s-1", HookSamples.stop()), "message 1 is unread")
     expect_reply_refusal(story.hook(story.worker_session, HookSamples.stop()), "message 1 is unread")
-    story.hook("s-1", READ)
-    story.hook(story.worker_session, READ)
+    story.hook("s-1", LINT)
+    story.hook(story.worker_session, LINT)
     story.expect_text("process show 1", "limit_seconds: 15")
-    story.expect_text("process show 2", "limit_seconds: 10")
+    story.expect_text("process show 2", "limit_seconds: 60")
 
 
 def test_a_main_message_leaves_the_worker_limit_unchanged(targeted_chat):
     server, cookie, typing = targeted_chat
     story = server.story
     post_target(server, cookie, story.agent, "Main should answer this")
-    expect_absent_reply_line(story.hook(story.worker_session, READ), "new message")
-    story.hook("s-1", READ)
-    story.expect_text("process show 1", "limit_seconds: 15")
+    expect_absent_reply_line(story.hook(story.worker_session, LINT), "new message")
+    story.hook("s-1", LINT)
+    story.expect_text("process show 1", "limit_seconds: 60")
     story.expect_text("process show 2", "limit_seconds: 10")
 
 

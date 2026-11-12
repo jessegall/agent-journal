@@ -11,6 +11,10 @@ import shutil
 from pathlib import Path, PurePosixPath
 
 from engine.file.conflict_files import ConflictFiles
+from engine.enums.process_kind import ProcessKind
+from engine.errors.run_time_limit_error import RunTimeLimitError
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.process_executor import ProcessExecutor
 from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from engine.errors.refusal import Refusal
 from core.modules.environments.models.environment import Environment
@@ -50,6 +54,9 @@ SKIP_WORKTREE_MARK = "S "
 UNTRACKED_STATUS = "?? "
 PUBLISHED_FOLDERS = (".claude", ".agents")
 
+GIT_OPTIONS_WITH_VALUE = frozenset({"-c", "-C", "--git-dir", "--work-tree", "--namespace", "--exec-path", "--super-prefix", "--config-env"})
+BRANCH_CHANGES = frozenset({"merge", "rebase", "checkout", "switch", "worktree", "stash", "reset", "commit", "cherry-pick", "revert", "branch", "pull", "push", "clone", "am", "apply", "restore", "clean", "add", "update-ref", "update-index", "config", "fetch", "rm", "mv", "tag", "notes"})
+
 
 class WorktreeGit:
     """Runs timed Git operations on worker branches and worktrees. Every worktree of a project shares one
@@ -57,8 +64,8 @@ class WorktreeGit:
     a drop. Tests run in a detached checkout of their own, of a worktree's commit or of the head of the
     environment's branch, so no checkout anybody works in is moved."""
 
-    def __init__(self, runs: WorkerFolderRuns) -> None:
-        self.runs = runs
+    def __init__(self, runs: WorkerFolderRuns, executor: ProcessExecutor) -> None:
+        self.runs, self.executor = runs, executor
 
     def tip(self, folder: str, branch: str) -> str:
         revision = self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}")
@@ -148,6 +155,8 @@ class WorktreeGit:
         if not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
             return False
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "add", "-A")
+        if self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--cached", "--quiet").returncode == 0:
+            return False
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "-m", message, "-m", trailer)
         return True
 
@@ -262,10 +271,10 @@ class WorktreeGit:
         if linked:
             modules.symlink_to(base_modules.resolve(), target_is_directory=True)
         try:
-            finished = subprocess.run(["npm", "run", "build"], cwd=viewer, capture_output=True, text=True, timeout=BUILD_LIMIT_SECONDS, check=False)
-            if finished.returncode != 0:
+            finished = self.executor.execute(ExecutionRequest(["npm", "run", "build"], viewer, ProcessKind.SHELL, BUILD_LIMIT_SECONDS))
+            if not finished.succeeded:
                 raise Refusal("the web build failed", (finished.stderr or finished.stdout).strip())
-        except subprocess.TimeoutExpired as timeout:
+        except RunTimeLimitError as timeout:
             raise Refusal("the web build exceeded its time limit", "fix the build in the worker's worktree, then merge again") from timeout
         finally:
             if linked:
@@ -539,8 +548,22 @@ class WorktreeGit:
             raise Refusal(f"git {' '.join(arguments[:2])} failed in {folder}", (finished.stderr or finished.stdout).strip())
         return finished
 
+    @staticmethod
+    def subcommand(arguments: Sequence[str]) -> str:
+        """The git command in the arguments, after any options placed before it such as -c name=value."""
+        remaining = iter(arguments)
+        for argument in remaining:
+            if argument in GIT_OPTIONS_WITH_VALUE:
+                next(remaining, None)
+            elif not argument.startswith("-"):
+                return argument
+        return ""
+
     def git(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
+        line = ["git", "-C", folder, *arguments]
+        kind = ProcessKind.MERGE if self.subcommand(arguments) in BRANCH_CHANGES else ProcessKind.READ
         try:
-            return subprocess.run(["git", "-C", folder, *arguments], capture_output=True, text=True, timeout=limit_seconds, check=False)
-        except subprocess.TimeoutExpired as timeout:
+            done = self.executor.execute(ExecutionRequest(line, Path.cwd(), kind, limit_seconds))
+            return subprocess.CompletedProcess(line, done.exit_code, done.stdout, done.stderr)
+        except RunTimeLimitError as timeout:
             raise Refusal(f"git {' '.join(arguments[:2])} took longer than {limit_seconds} seconds in {folder}", "run it again once the folder is free") from timeout

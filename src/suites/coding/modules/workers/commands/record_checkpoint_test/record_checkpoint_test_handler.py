@@ -13,7 +13,7 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.commands.record_checkpoint_test.record_checkpoint_test import RecordCheckpointTest
-from suites.coding.modules.workers.models.affected_test import AffectedTestState
+from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from suites.coding.modules.workers.models.checkpoint_test import CheckpointTest
 from suites.coding.modules.workers.support.checkpoint_results import CheckpointResults
 from suites.coding.modules.workers.support.worker_settings import TEST_LIMIT_SECONDS

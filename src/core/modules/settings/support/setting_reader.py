@@ -1,5 +1,5 @@
 import json
-from collections.abc import Generator, Mapping
+from collections.abc import Generator
 from contextlib import contextmanager
 
 from engine.scope.scopes import Scopes
@@ -10,12 +10,12 @@ from engine.setting.setting_value import SettingDefault
 from core.modules.settings.models.secret_setting import SecretSetting
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.current_setting import CurrentSetting
+from core.modules.settings.support.current_value import StoredValue
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 
 ENVIRONMENT_SOURCE = "environment"
 PROJECT_SOURCE = "project"
 DEFAULT_SOURCE = "default"
-StoredValue = str | int | float | bool | list[object] | Mapping[str, object] | None
 
 
 class SettingReader:

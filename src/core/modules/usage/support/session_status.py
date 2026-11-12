@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from engine.provider.context_window import ContextWindow
+from engine.time.timestamp import Timestamp
 from engine.types.type_guards import is_mapping
 from core.modules.usage.support.plan_window import PlanWindow
 
@@ -21,6 +22,7 @@ class SessionStatus:
     context_tokens: int | None = None
     context_limit_tokens: int | None = None
     context_window_tokens: int | None = None
+    read_at: Timestamp | None = None
 
     @classmethod
     def reported(cls, report: object) -> "SessionStatus":
@@ -33,6 +35,13 @@ class SessionStatus:
         return cls(str(model.get("display_name", "")) if is_mapping(model) else "", round(used) if isinstance(used, int | float) else None,
                    float(spent) if isinstance(spent, int | float) else None, windows, str(effort.get("level", "")) if is_mapping(effort) else "",
                    ContextWindow.number(context, "total_input_tokens"))
+
+    def context_window(self) -> ContextWindow:
+        return ContextWindow(self.context_percent, self.context_tokens, self.read_at)
+
+    @property
+    def is_read(self) -> bool:
+        return self.read_at is not None
 
     @property
     def is_reported(self) -> bool:

@@ -19,7 +19,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
 from suites.coding.modules.workers.commands.defer_phase_test.defer_phase_test import DeferPhaseTest
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
-from suites.coding.modules.workers.models.affected_test import AffectedTestState
+from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from suites.coding.modules.workers.models.phase_test_deferral import PATH_SEPARATOR, PhaseTestDeferral
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery

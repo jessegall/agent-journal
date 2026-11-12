@@ -70,6 +70,10 @@ class Process(EnvironmentScoped, Model):
             return f"{seconds} s"
         return f"{minutes} min {seconds} s" if seconds else f"{minutes} min"
 
+    @property
+    def takes_part_in_queue(self) -> bool:
+        return self.is_queue_run or self.slot_assigned or self.queued_at is not None
+
     def has_expired_timeout(self, timestamp: Timestamp) -> bool:
         if self.timeout_seconds is None or self.started_at is None:
             return False

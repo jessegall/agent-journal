@@ -48,10 +48,10 @@ def test_539_two_suites_that_register_one_helper_type_are_refused_naming_both(ne
     story.expect_sync_refusal(f"{SAMPLES}:DepotScoutSuite", "folder.depot's helper type scout: folder.shop registers that helper type too")
 
 
-def test_542_the_coding_suite_is_in_the_suite_layer_and_a_suite_folder_under_the_core_is_in_no_layer(new_story, tmp_path):
+def test_542_the_coding_suite_listing_is_a_module_list_its_module_is_in_the_suite_layer_and_a_suite_folder_under_the_core_is_in_no_layer(new_story, tmp_path):
     story = new_story()
     project = LayerProject(story, tmp_path)
     project.add_file("src/core/suites/shop/shop_module.py")
     failures = project.check()
-    story.expect_rows(project.layer_of("src/suites/coding/coding_suite.py") == "suite coding", project.layer_of("src/core/suites/shop/shop_module.py") == "no layer",
+    story.expect_rows(project.layer_of("src/suites/coding/coding_suite.py") == "module list", project.layer_of("src/suites/coding/coding_module.py") == "suite coding", project.layer_of("src/core/suites/shop/shop_module.py") == "no layer",
                       any("src/core/suites" in failure for failure in failures), detail=str(failures))

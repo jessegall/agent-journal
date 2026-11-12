@@ -1,3 +1,4 @@
+from server.hook import hook_sender
 from tests.stories.server.support.server_fixtures import task_server
 
 import pytest
@@ -23,6 +24,7 @@ from engine.testing.expectations.expect_row import expect_row
 RAW_HEADERS = {"X-Journal-Request-At": "1793395000123", "X-Journal-Hook-Id": "7731-1793395000123", "X-Journal-Actor": "agent", "X-Journal-Env": "main"}
 SCHEMA_EXAMPLES = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "event" / "testdata" / "schema"
 
+STORY_STOP_LIMIT_SECONDS = 3.5
 
 
 def example(name: str) -> object:
@@ -83,7 +85,8 @@ def test_a_hook_resent_under_its_firing_gets_its_stored_answer(lead_server):
     story.expect_hook_answer("/hook", lead_stop("server-2"), 200, '"hook_call_id": 2')
 
 
-def test_a_stop_that_waits_past_its_limit_on_a_busy_database_is_held(lead_server):
+def test_a_stop_that_waits_past_its_limit_on_a_busy_database_is_held(lead_server, monkeypatch):
+    monkeypatch.setattr(hook_sender, "STOP_LIMIT_SECONDS", STORY_STOP_LIMIT_SECONDS)
     started = lead_server.story
     story = lead_server
     writer = sqlite3.connect(started.home.database, timeout=1)
@@ -101,7 +104,8 @@ def test_a_claude_stop_posted_as_a_prepared_object_is_refused_as_the_builder_dec
     story.story.expect_success(lines.SECOND_HOOK_CALL, "driver: coding.main", "answer: refused")
 
 
-def test_a_stop_that_waits_past_its_limit_for_another_hook_is_held(lead_server):
+def test_a_stop_that_waits_past_its_limit_for_another_hook_is_held(lead_server, monkeypatch):
+    monkeypatch.setattr(hook_sender, "STOP_LIMIT_SECONDS", STORY_STOP_LIMIT_SECONDS)
     story = lead_server
     story.expect_locked_hook_answer(lead_stop("server-4"), "the journal could not check this stop and holds it")
 

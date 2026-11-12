@@ -460,6 +460,7 @@ def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
+    repository.checkout(ENVIRONMENT_BRANCH)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
@@ -469,7 +470,7 @@ def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_
     merger = merger_agent(story)
     story.expect_success(f"agent end {merger.id}", actor=Actor(merger.id, ActorType.AGENT))
     story.run_listeners()
-    reminder = f"worker:{agent_number(story, worker.id)} delivered"
+    reminder = f"worker:{agent_number(story, worker.id)} committed"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick("s-1")
     story.expect_rows(reminder not in story.run(main_lines).output_text)
@@ -483,6 +484,7 @@ def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
+    repository.checkout(ENVIRONMENT_BRANCH)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
@@ -495,8 +497,8 @@ def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge
     story.run_listeners()
     story.expect_text(main_lines, f"the merger leaves worker:{agent_number(story, worker.id)} to you: its merge waits on you")
     story.tick("s-1")
-    story.expect_text(main_lines, f"worker:{agent_number(story, worker.id)} delivered")
-    first = story.run(main_lines).output_text.count(f"worker:{agent_number(story, worker.id)} delivered")
+    story.expect_text(main_lines, f"worker:{agent_number(story, worker.id)} committed")
+    first = story.run(main_lines).output_text.count(f"worker:{agent_number(story, worker.id)} committed")
     story.advance(timedelta(minutes=15))
     story.tick("s-1")
-    story.expect_rows(story.run(main_lines).output_text.count(f"worker:{agent_number(story, worker.id)} delivered") > first)
+    story.expect_rows(story.run(main_lines).output_text.count(f"worker:{agent_number(story, worker.id)} committed") > first)

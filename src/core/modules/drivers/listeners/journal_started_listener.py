@@ -9,7 +9,8 @@ from core.modules.drivers.commands.send_journal_started_line.send_journal_starte
 
 
 class JournalStartedListener(CommitListener[JournalBooting]):
-    """Wakes every running main agent as the journal starts."""
+    """Wakes every running main agent as the journal starts; the agents whose hooks were held are woken by the held
+    session wake once the server is ready."""
 
     name = "drivers.journal-started"
 

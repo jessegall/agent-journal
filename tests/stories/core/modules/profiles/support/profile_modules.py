@@ -95,3 +95,25 @@ class ClerkModuleJoining(Suite):
     name = "sample.clerks"
     joins = "coding"
     modules = [ClerkModule]
+
+
+class BasedProfiles(ProfileModule):
+    """A base profile and one built on it, which adds its own lines and its own model."""
+
+    profiles = [AgentProfile("sample-base", "The shared body", "Read the files.", agent_type="helper", model="sonnet", skills=("journal",)),
+                AgentProfile("sample-based", "Reads and answers", "Answer in one line.", base="sample-base", agent_type="helper", model="opus")]
+
+
+class ChangedBase(BasedProfiles):
+    """The same two profiles after the text of the base changed."""
+
+    profiles = [AgentProfile("sample-base", "The shared body", "Read the files twice.", agent_type="helper", model="sonnet", skills=("journal",)),
+                AgentProfile("sample-based", "Reads and answers", "Answer in one line.", base="sample-base", agent_type="helper", model="opus")]
+
+
+class MissingBase(ProfileModule):
+    profiles = [AgentProfile("module-reader", "Reads", "Read.", base="no-such-base")]
+
+
+class LoopingBases(ProfileModule):
+    profiles = [AgentProfile("module-reader", "Reads", "Read.", base="module-writer"), AgentProfile("module-writer", "Writes", "Write.", base="module-reader")]

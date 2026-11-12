@@ -1,5 +1,6 @@
 import shutil
 import subprocess
+from engine.process.door.process_executor import ProcessExecutor
 from collections.abc import Sequence
 from pathlib import Path, PurePosixPath
 
@@ -23,8 +24,8 @@ class MemoryWorktreeGit(WorktreeGit):
     stories that are not about git. It follows WorktreeGit step by step; a step it cannot answer, a merge
     conflict or a git command it does not know, raises GitStoryRequired: that story needs real git."""
 
-    def __init__(self, runs: WorkerFolderRuns, history: MemoryHistory) -> None:
-        super().__init__(runs)
+    def __init__(self, runs: WorkerFolderRuns, history: MemoryHistory, executor: ProcessExecutor) -> None:
+        super().__init__(runs, executor)
         self.history = history
         self.skipped: dict[Path, set[str]] = {}
 

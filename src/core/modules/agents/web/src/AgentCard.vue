@@ -1,18 +1,22 @@
 <script setup>
-import {computed} from "vue";
-import {age, perHour, seenWords, sinceWords, AgentTip, Icon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import {computed, ref} from "vue";
+import {age, perHour, seenWords, sinceWords, AgentTip, Btn, Icon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import AgentActions from "./AgentActions.vue";
 import AgentCardDetails from "./AgentCardDetails.vue";
 import AgentStatusDot from "./AgentStatusDot.vue";
 import AgentTaskLine from "./AgentTaskLine.vue";
 import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
 
 const IN_HAND_STATES = new Set(["started", "testing", "blocked"]);
+// a task moved to testing counts as done for the tasks per hour
+const DONE_STATES = ["completed", "testing"];
 const FALLBACK_TITLES = {helper: "Helper", reviewer: "Reviewer", main: "Main agent"};
 // the words for the standing the server works out for an agent's program
 const STANDING_WORDS = {running: "Working", starting: "Starting", stopping: "Stopping", ended: "Idle: its process has stopped", failed: "Could not start", never_started: "Not started"};
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
 const emit = defineEmits(["toggle"]);
 const now = useNow();
+const menuOpen = ref(false);
 const title = computed(() => {
     if (props.facts?.profile_title) return props.facts.profile_title;
     if (props.facts?.profile) return props.facts.profile;
@@ -42,7 +46,7 @@ const clockTime = (text) => new Date(text).toLocaleTimeString([], {hour: "2-digi
 const limitText = computed(() => (props.row.halted_at ? `Stopped at the usage limit since ${clockTime(props.row.halted_at)}, goes on at ${clockTime(props.facts.usage_limit_ends_at)}` : `At usage limit: starts again ${new Date(props.facts.usage_limit_ends_at).toLocaleString()}`));
 const dotState = computed(() => (props.row.retired_at || props.row.state === "retired" ? "retired" : limited.value || pendingWork.value || props.waitReason || stoppedWithWork.value ? "waiting" : props.row.state === "running" ? props.facts?.state || props.row.state : props.row.state));
 const workStatus = computed(() => limited.value ? limitText.value : pendingWork.value ? `Status: ${pendingWork.value}` : props.waitReason ? `Waiting: ${props.waitReason}` : dotState.value === "blocked" ? (props.facts?.blocked_reason ? `Blocked: ${props.facts.blocked_reason}` : "Blocked") : stoppedWithWork.value ? "Stopped with work left" : "");
-const completedCount = computed(() => props.progress?.completed_count ?? tasks.value.filter((task) => task.state === "completed").length);
+const completedCount = computed(() => props.progress?.completed_count ?? tasks.value.filter((task) => DONE_STATES.includes(task.state)).length);
 const perHourRate = computed(() => perHour(completedCount.value, props.progress?.started_at || props.row.created_at, props.progress ? props.progress.finished_at : props.row.ended_at, now.value));
 const rate = computed(() => (props.row.role === "main" ? 0 : perHourRate.value));
 const retired = computed(() => Boolean(props.row.retired_at) || props.row.state === "retired");
@@ -67,6 +71,7 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
             <template v-if="open">
                 <span class="agent-title" data-agent-title data-agent-motion>{{ openTitle }}</span>
                 <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
+                <Btn variant="ghost" small class="agent-menu-button" data-agent-menu :aria-expanded="menuOpen" @click.stop="menuOpen = !menuOpen">Actions</Btn>
             </template>
             <template v-else>
                 <AgentTip :agent-id="row.id" :label="title" class="agent-who">
@@ -76,6 +81,7 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
                 <Icon class="agent-chevron" name="chevronRight" :size="12" />
             </template>
         </div>
+        <template v-if="open && menuOpen"><div class="agent-menu" data-agent-menu-panel><AgentActions :row="row" :held="dotState === 'blocked'" /></div></template>
         <template v-if="!open">
             <span class="agent-line">
                 <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
@@ -206,6 +212,8 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
 .agent-card.open .agent-head { gap: 9px; padding: 7px 36px 7px 8px; border-bottom: 1px solid var(--border-inner); background: var(--side); }
 .agent-card.open .agent-title { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
 .agent-who { display: inline-flex; gap: 6px; align-items: baseline; min-width: 0; }
+.agent-menu-button { margin-left: auto; }
+.agent-menu { padding: 8px 14px; border-bottom: 1px solid var(--border-inner); background: var(--side); }
 .agent-live { background: var(--bg-2); }
 .agent-live-fact { flex: none; color: var(--text-3); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 </style>

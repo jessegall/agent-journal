@@ -4,7 +4,6 @@ from engine.time.clock import Clock
 from engine.command.bus import Bus
 from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
-from engine.query.conditions.among import Among
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
@@ -17,20 +16,23 @@ from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.run_title import RunTitle
+from core.modules.processes.support.running_output_readers import RunningOutputReaders
 from engine.event.changed import Changed
 from engine.event.deleted import Deleted
 from engine.command.context import Context
 
 
 class ReaderRequestCompleteListener(SaveListener[Changed[Reader]]):
-    """Completes requests read by a newly saved proper reader, and puts a new reader on each running output that
-    has none and whose command it reads, so a run that is still going shows its progress at once."""
+    """Completes requests read by a newly saved proper reader, and puts a reader an agent or a person saved on the
+    running outputs it reads that have no reader yet; the stock readers are left to the start of a run."""
 
     name = "processes.reader-request-complete"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, requests: ReaderRequestQuery, judge: ReaderJudge, repository: Repository, clock: Clock, bus: Bus, rows: ReaderRows) -> None:
+    def __init__(self, queries: Queries, requests: ReaderRequestQuery, judge: ReaderJudge, repository: Repository, clock: Clock, bus: Bus, rows: ReaderRows,
+                 running: RunningOutputReaders) -> None:
         self.queries, self.requests, self.judge, self.repository, self.clock, self.bus, self.rows = queries, requests, judge, repository, clock, bus, rows
+        self.running = running
 
     def handle(self, event: Changed[Reader], context: Context) -> None:
         if isinstance(event, Deleted):
@@ -49,12 +51,5 @@ class ReaderRequestCompleteListener(SaveListener[Changed[Reader]]):
                     self.repository.save(replace(output, reader_id=reader.id, reader_position=waiting.position, read_offset=0, displayed_offset=0,
                                                  title=RunTitle.title(reader, waiting.command or waiting.text)), context)
             self.bus.dispatch(GrantRunSlots(), context)
-        self.attached_to_running(reader, context)
-
-    def attached_to_running(self, reader: Reader, context: Context) -> None:
-        outputs = tuple(self.queries.query(Output).filter(ended_at=None, reader_id=None).all_rows())
-        parts = tuple(self.queries.query(ProcessPart).matching(Among("process_id", [output.process_id for output in outputs])).oldest().all_rows())
-        for output in outputs:
-            read = next((part for part in parts if part.process_id == output.process_id and ReaderSelection.reads_command(reader, part.command or part.text, part.category)), None)
-            if read is not None:
-                self.repository.save(replace(output, reader_id=reader.id, reader_position=read.position, read_offset=0, displayed_offset=0), context)
+        if not reader.is_default:
+            self.running.attach(reader, context)

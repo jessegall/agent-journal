@@ -23,14 +23,19 @@ from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.reader_demands import ReaderDemands
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.run_counts import RunCounts
+from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
+
+
+COUNT_MISSING_REASON = "no reader counts the tests of {command}"
 
 
 class ReaderRequests:
     """Opens an agent's request for each command without a proper reader."""
 
     def __init__(self, queries: Queries, requests: ReaderRequestQuery, parts: ProcessPartQuery, repository: Repository,
-                 demands: ReaderDemands, settings: ProcessSettings, clock: Clock, suites: SuiteChoice, judge: ReaderJudge, counts: RunCounts) -> None:
-        self.counts = counts
+                 demands: ReaderDemands, settings: ProcessSettings, clock: Clock, suites: SuiteChoice, judge: ReaderJudge, counts: RunCounts,
+                 marks: UnreadableMarks) -> None:
+        self.counts, self.marks = counts, marks
         self.queries, self.requests, self.parts, self.repository = queries, requests, parts, repository
         self.demands, self.settings, self.clock = demands, settings, clock
         self.suites = suites
@@ -41,10 +46,10 @@ class ReaderRequests:
                 and self.settings.flag(ProcessSetting.READERS_FORCED))
 
     def request(self, process: Process, spec: PartSpec, reader: Reader | None, context: Context) -> int | None:
-        if not self.demands.needs_reader(spec):
+        if not self.demands.needs_reader(spec) or self.marks.excuses(spec.command or spec.text):
             return None
         scope = ReaderSampleScope(process.session_agent_id, spec.command or spec.text)
-        reason = self.counts.reader_reason(process, spec, reader, self.demands.reason(spec, reader, scope))
+        reason = self.reason(process, spec, reader, scope)
         if not reason:
             return None
         existing = self.open_row(scope)
@@ -72,9 +77,17 @@ class ReaderRequests:
         if not self.demands.needs_reader(spec):
             return
         scope = ReaderSampleScope(process.session_agent_id, spec.command or spec.text)
-        reason = self.counts.reader_reason(process, spec, reader, self.demands.reason(spec, reader, scope))
+        reason = self.reason(process, spec, reader, scope)
         if reason:
             self.open_request(process, spec, reason, process.id, context)
+
+    def reason(self, process: Process, spec: PartSpec, reader: Reader | None, scope: ReaderSampleScope) -> str:
+        """Why a reader is asked for: a count the suite needs and no reader gives, or, when the suite asks beyond
+        counts, a missing or poor reader; nothing when no reader is to be asked for."""
+        part = ProcessPart(process_id=process.id, position=0, text=spec.text, program=spec.program, command=spec.command, piped=spec.piped, category=spec.category)
+        if self.counts.count_missing(process, part):
+            return COUNT_MISSING_REASON.format(command=spec.command or spec.text)
+        return self.demands.reason(spec, reader, scope) if self.counts.asks_beyond_counts() else ""
 
     @staticmethod
     def command_key(spec: PartSpec) -> str:

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from engine.registry.setting_entry import SettingEntry
+from core.modules.settings.support.current_value import CurrentValue
 
 
 @dataclass(frozen=True)
@@ -9,5 +10,5 @@ class CurrentSetting:
     default, or a group above it that is switched off."""
 
     entry: SettingEntry
-    value: object
+    value: CurrentValue
     source: str

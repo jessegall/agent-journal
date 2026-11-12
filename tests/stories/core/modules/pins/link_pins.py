@@ -35,8 +35,28 @@ def pin_lines(hook_answer) -> list[str]:
     return [line for line in hook_answer.lines if "pin this link" in line]
 
 
-def test_a_pull_request_pins_itself_once_and_a_closed_pin_stays_closed(new_story):
-    story = new_story(fixture=UserJoined)
+def with_shop_remote(story):
+    config = story.home.project_folder / ".git" / "config"
+    config.parent.mkdir(parents=True, exist_ok=True)
+    config.write_text('[remote "origin"]\n\turl = https://github.com/shop/cart.git\n')
+    return story
+
+
+def as_worktree_with_an_included_alias_remote(story):
+    """The project folder is a git worktree: its .git file points into the main checkout, whose config includes a
+    file that names the remote through an ssh host alias."""
+    common = story.home.project_folder.parent / "main-checkout" / ".git"
+    pointed = common / "worktrees" / "project"
+    pointed.mkdir(parents=True, exist_ok=True)
+    (pointed / "commondir").write_text("../..\n")
+    (common / "config").write_text('[core]\n\tbare = false\n[include]\n\tpath = remotes.conf\n')
+    (common / "remotes.conf").write_text('[remote "origin"]\n\turl = git@github-work:shop/cart.git\n')
+    (story.home.project_folder / ".git").write_text(f"gitdir: {pointed}\n")
+    return story
+
+
+def test_a_pull_request_of_a_worktree_whose_remote_is_an_included_host_alias_pins_itself_once_and_a_closed_pin_stays_closed(new_story):
+    story = as_worktree_with_an_included_alias_remote(new_story(fixture=UserJoined))
     address = "https://github.com/shop/cart/pull/4"
     expect_absent_pin_lines(story.hook("s-1", shell_call("gh pr create", f"{address}\n")))
     story.expect_text("pin list --environment main", "Pull request 4", address, actor=story.user)
@@ -44,6 +64,8 @@ def test_a_pull_request_pins_itself_once_and_a_closed_pin_stays_closed(new_story
     story.expect_success("pin close 1", actor=story.user)
     story.hook("s-1", shell_call("gh pr view", f"{address}\n"))
     story.expect_absent("pin list --environment main", "Pull request 4", actor=story.user)
+    story.hook("s-1", shell_call("gh search prs cart", "https://github.com/someone/elsewhere/pull/1\n"))
+    story.expect_absent("pin list --environment main", "elsewhere", actor=story.user)
 
 
 def test_a_bare_design_project_link_is_not_pinned(new_story):
@@ -64,7 +86,7 @@ def test_a_helper_report_pins_a_design_only_once_even_after_it_is_closed(new_sto
 
 
 def test_a_helper_tool_output_pins_a_pull_request(new_story):
-    story = new_story(fixture=StartedHelper)
+    story = with_shop_remote(new_story(fixture=StartedHelper))
     address = "https://github.com/shop/cart/pull/23"
     story.hook(helper_agent(story).session, shell_call("gh pr create", address))
     story.expect_text("pin list --environment main", "Pull request 23", address, actor=story.user)

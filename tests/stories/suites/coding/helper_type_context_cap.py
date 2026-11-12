@@ -1,6 +1,6 @@
 import json
 
-from core.modules.settings.bindings.support.context_caps import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
+from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.agent_labels import agent_number

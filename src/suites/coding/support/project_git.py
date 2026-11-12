@@ -2,9 +2,12 @@ from suites.coding.support.project_git_branch_record import ProjectGitBranchReco
 from suites.coding.support.project_git_commit_record import ProjectGitCommitRecord
 from suites.coding.support.project_git_pull_record import ProjectGitPullRecord
 import shutil
-import subprocess
 from pathlib import Path
 
+from engine.enums.process_kind import ProcessKind
+from engine.errors.run_time_limit_error import RunTimeLimitError
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.process_executor import ProcessExecutor
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.scope.scopes import Scopes
@@ -25,8 +28,8 @@ class ProjectGit:
     base branch and those it lacks, the recent commits of the current branch, and the open pull requests when
     the gh program is there."""
 
-    def __init__(self, queries: Queries, scopes: Scopes) -> None:
-        self.queries, self.scopes = queries, scopes
+    def __init__(self, queries: Queries, scopes: Scopes, executor: ProcessExecutor) -> None:
+        self.queries, self.scopes, self.executor = queries, scopes, executor
 
     def output(self, *command: str) -> str | None:
         environment_id = self.scopes.environment_id
@@ -34,10 +37,10 @@ class ProjectGit:
             raise Refusal("a repository is read in one environment", "run this from an environment")
         folder = Path(self.queries.query(Environment).find(environment_id).folder)
         try:
-            finished = subprocess.run(command, cwd=folder, capture_output=True, text=True, timeout=COMMAND_LIMIT_SECONDS, stdin=subprocess.DEVNULL)
-        except (OSError, subprocess.TimeoutExpired):
+            finished = self.executor.execute(ExecutionRequest(command, folder, ProcessKind.QUICK, COMMAND_LIMIT_SECONDS))
+        except (OSError, RunTimeLimitError):
             return None
-        return finished.stdout if finished.returncode == 0 else None
+        return finished.stdout if finished.succeeded else None
 
     def git_output(self, *arguments: str) -> str:
         text = self.output("git", *arguments)

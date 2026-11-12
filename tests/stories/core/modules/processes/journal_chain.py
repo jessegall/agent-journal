@@ -5,7 +5,7 @@ from engine.enums.command_category import CommandCategory
 from engine.driver.part import Part
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line
+from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 JOURNAL_PART = ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"], subcommand="task")
 LISTING_PART = ShellPart("ls", CommandCategory.SEARCH, ["build"])
@@ -19,7 +19,6 @@ def test_asking_for_a_runs_status_is_answered_with_how_to_set_a_monitor(new_stor
     story.expect_hook_allowed("s-1", status, "do not ask again for output 7: set a Monitor on its wait")
 
 
-REDIRECT_REFUSAL = "pytest goes to a file, so no reader sees it: run it without the redirect, and read it by its output number"
 
 
 def test_a_parts_write_paths_are_read_from_the_field_the_hook_client_sends():

@@ -6,7 +6,8 @@ import pytest
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE as COMPACT
 from core.modules.overview.support.overview_first import OverviewFirst
-from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
+from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_KINDS
+from tests.stories.server.support.server_client import server_story
 from engine.testing.examples.shell_part import ShellPart
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
@@ -289,3 +290,23 @@ def compacted_agent(limited):
     has_context(limited, LIMIT_TOKENS)
     idle_turn(limited)
     return limited
+
+
+def set_through_the_viewer(story, key, value):
+    with server_story(story) as server:
+        cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+        answer = server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", key, value, "--project"]})
+    shown = story.run(f"setting show {key}", actor=story.user).output_text
+    story.expect_rows(all(line in shown for line in json.loads(value)), detail=f"{answer} {shown}")
+
+
+def test_a_cap_for_the_main_agents_kind_holds_it_in_place_of_the_size_for_all(limited):
+    set_through_the_viewer(limited, CONTEXT_LIMIT_KINDS, json.dumps(["main:none", "worker:200000"]))
+    has_context(limited, 900_000)
+    stops(limited)
+    limited.expect_rows(limited.typing.typed == [], detail=str(limited.typing.typed))
+    set_through_the_viewer(limited, CONTEXT_LIMIT_KINDS, json.dumps(["main:300000"]))
+    has_context(limited, 350_000)
+    idle_turn(limited)
+    stops(limited)
+    limited.expect_rows(len(limited.typing.typed) == 1, limited.typing.typed[-1].startswith("/compact"), detail=str(limited.typing.typed))

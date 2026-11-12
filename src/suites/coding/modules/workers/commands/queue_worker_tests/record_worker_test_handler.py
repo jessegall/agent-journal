@@ -26,7 +26,8 @@ from suites.coding.modules.workers.support.worker_test_failures import WorkerTes
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK, WORKER_COMMIT_PASSED, WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
 from core.modules.plans.support.task_plans import TaskPlans
-from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
+from suites.coding.modules.workers.models.affected_test import AffectedTest
+from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 
 LINE_SOURCE = "workers"

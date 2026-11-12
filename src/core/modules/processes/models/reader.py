@@ -1,3 +1,4 @@
+from engine.actor.actor import CORE_ACTOR_ID
 from dataclasses import dataclass
 
 from engine.model.model import Model
@@ -20,6 +21,7 @@ class Reader(Model):
     name: str
     type: ReaderType
     commands: str
+    shipped_digest: str = ""
     lines_pattern: str = ""
     script: str = ""
     progress_pattern: str = ""
@@ -35,6 +37,12 @@ class Reader(Model):
     proved_on: int | None = None
     is_default: bool = False
     plugin_name: str = ""
+
+    @property
+    def is_stock(self) -> bool:
+        """Whether the core wrote this row from a shipped stock entry: the core made it and it keeps the digest of
+        that entry. A person's reader is never stock, though a person's actor number may equal the core's."""
+        return self.creator_id == CORE_ACTOR_ID and bool(self.shipped_digest)
 
     def has_counted_steps(self) -> bool:
         return bool(self.step_pattern and self.count_pattern)

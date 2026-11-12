@@ -2,6 +2,10 @@ import hashlib
 import os
 import shutil
 import subprocess
+from engine.enums.process_kind import ProcessKind
+from engine.errors.run_time_limit_error import RunTimeLimitError
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.process_executor import ProcessExecutor
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
@@ -17,8 +21,8 @@ class PluginStaging:
     """Where a plugin's source is read from: a folder as it is, a repository cloned at its newest release into
     a folder of its own until the plugin is installed."""
 
-    def __init__(self, home: JournalHome, releases: PluginReleases) -> None:
-        self.home, self.releases = home, releases
+    def __init__(self, home: JournalHome, releases: PluginReleases, executor: ProcessExecutor) -> None:
+        self.home, self.releases, self.executor = home, releases, executor
 
     def folder(self, source: str) -> Path:
         if Path(source).is_dir():
@@ -34,10 +38,10 @@ class PluginStaging:
         branch = ["--branch", tag] if tag else []
         command = ["git", "clone", "--quiet", "--depth", "1", *branch, self.releases.address(source), str(folder)]
         try:
-            finished = subprocess.run(command, capture_output=True, text=True, timeout=CLONE_LIMIT_SECONDS, check=False, stdin=subprocess.DEVNULL, env={**os.environ, "GIT_TERMINAL_PROMPT": "0"})
-        except subprocess.TimeoutExpired as timeout:
+            finished = self.executor.execute(ExecutionRequest(command, Path.cwd(), ProcessKind.MERGE, CLONE_LIMIT_SECONDS, variables={**os.environ, "GIT_TERMINAL_PROMPT": "0"}))
+        except RunTimeLimitError as timeout:
             raise Refusal(f"{source} took longer than {CLONE_LIMIT_SECONDS} seconds to clone", "try again") from timeout
-        if finished.returncode != 0:
+        if not finished.succeeded:
             raise Refusal(f"{source} could not be cloned", finished.stderr.strip())
         return folder
 

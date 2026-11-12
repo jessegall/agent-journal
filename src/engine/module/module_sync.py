@@ -3,8 +3,9 @@ from engine.file.file_access import FileAccess
 from collections.abc import Sequence
 
 from engine.time.clock import Clock
-from engine.agent.agent_group_entry import AgentGroupEntry
+from engine.agent.groups.agent_group_entry import AgentGroupEntry
 from engine.helper_type.helper_type_entry import HelperTypeEntry
+from engine.profile.profile_bases import ProfileBases
 from engine.registry.profile_entry import ProfileEntry
 from engine.command.delete_command import DeleteCommand
 from engine.command.edit_command import EditCommand
@@ -169,7 +170,7 @@ class ModuleSync:
             state_additions=tuple(StateAdditionEntry.declared(module.name, addition, module not in self.finder.default_modules()) for module in modules for addition in module.added_states),
             helper_types=tuple(HelperTypeEntry.declared(module.name, declaration) for module in modules for declaration in suites.helper_types(module)),
             agent_groups=tuple(AgentGroupEntry.declared(module.name, group) for module in modules for group in module.agent_groups),
-            profiles=tuple(ProfileEntry.declared(module.name, profile) for module in modules for profile in module.profiles),
+            profiles=self.profile_entries(modules),
             providers=self.providers.providers(modules),
             settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
             shared_rows={shared.row.model_name: DottedPath.class_path(shared) for module in modules for shared in module.shared_rows},
@@ -184,6 +185,11 @@ class ModuleSync:
     def guard_entries(guards: Sequence[GuardClass], first_position: int) -> tuple[GuardEntry, ...]:
         return tuple(GuardEntry(guard.name, EventPattern(guard.event), DottedPath.class_path(guard), position, guard.short_flag, guard.is_confirmation)
                      for position, guard in enumerate(guards, first_position))
+
+    @staticmethod
+    def profile_entries(modules: tuple[type[Module], ...]) -> tuple[ProfileEntry, ...]:
+        built = {profile.name: profile for profile in ProfileBases([profile for module in modules for profile in module.profiles]).built()}
+        return tuple(ProfileEntry.declared(module.name, built[profile.name]) for module in modules for profile in module.profiles)
 
     def windows(self, modules: tuple[type[Module], ...]) -> tuple[WindowEntry, ...]:
         shipped = set(self.finder.default_modules())

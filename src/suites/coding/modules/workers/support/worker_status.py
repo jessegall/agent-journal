@@ -32,6 +32,7 @@ class WorkerStatus:
     question_lines: tuple[str, ...]
     standing: StandingState
     unit_line: str
+    tasks_held_by_others: tuple[Task, ...]
 
     @property
     def blocked_tasks(self) -> tuple[Task, ...]:
@@ -43,7 +44,8 @@ class WorkerStatus:
                 f"Tasks staged: {len(self.staging.ready)}", *(f"  task {task.id}: {task.title}" for task in self.staging.ready),
                 f"Tasks waiting for tests: {len(self.waiting_tasks)}", *(f"  task {task.id}: {task.title}" for task in self.waiting_tasks),
                 f"Tasks you may start: {len(self.startable_tasks)}", *(f"  task {task.id}: {task.title}" for task in self.startable_tasks),
-                f"Tasks blocked: {len(self.blocked_tasks)}", *(f"  task {task.id}: {task.reason}" for task in self.blocked_tasks))
+                f"Tasks blocked: {len(self.blocked_tasks)}", *(f"  task {task.id}: {task.reason}" for task in self.blocked_tasks),
+                f"Tasks someone else holds: {len(self.tasks_held_by_others)}", *(f"  task {task.id}: {task.title}" for task in self.tasks_held_by_others))
 
     @property
     def runs_text(self) -> str:

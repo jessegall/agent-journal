@@ -14,7 +14,6 @@ from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.output_query import OutputQuery
-from core.modules.processes.support.ended_output_text import EndedOutputText
 from core.modules.processes.support.run_visibility import RunVisibility
 
 from engine.enums.command_category import CommandCategory
@@ -32,6 +31,18 @@ READ_NOTES = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.REA
 AFTER = READ_NOTES.with_fields(event="post_tool_use")
 TESTS_REPORT = "collected 3 items\nFAILED tests/test_cart.py::test_total - assert 1 == 2\n2 failed, 1 passed in 0.4s\n"
 ENDED = "output 1 ended"
+
+
+def settled(story) -> None:
+    story.advance(timedelta(seconds=1))
+    story.run_listeners()
+
+
+def settled_run(story, line: str):
+    process = moved_run(story, line)
+    end_run(story, process, TESTS_REPORT, exit_code=1)
+    settled(story)
+    return process
 
 
 def read_lines(story, sample) -> list[str]:
@@ -54,12 +65,11 @@ def test_one_hook_reuses_the_ended_runs_output(ended_test_output):
     story.expect_rows(all(row is not None and row.process_id == process.id and parts for row, parts in rows))
 
 
-def test_several_ended_runs_read_their_outputs_and_parts_once_each(ended_test_output):
+def test_several_ended_runs_are_all_told_on_one_hook(ended_test_output):
     story, first = ended_test_output
-    processes = (first, *[ended_run(story, f"pytest -q tests/test_{number}.py", TESTS_REPORT, exit_code=1) for number in range(11)])
-    with story.repeated_work.request():
-        nudges = story.container.get(EndedOutputText).nudges(processes)
-    story.expect_rows(len(nudges) >= len(processes))
+    processes = (first, *[settled_run(story, f"pytest -q tests/test_{number}.py") for number in range(7)])
+    lines = "\n".join(read_lines(story, READ_NOTES))
+    story.expect_rows(all(str(process.id) in lines for process in processes), detail=lines)
 
 
 def test_only_the_part_that_ran_past_the_limit_sends_a_later_line_to_the_background(new_story):
@@ -90,7 +100,7 @@ def ended_lines(new_story, line, text=TESTS_REPORT, category=None):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, line, category=category)
     end_run(story, process, text)
-    story.advance(timedelta(seconds=1))
+    settled(story)
     return story, process, read_lines(story, READ_NOTES)
 
 
@@ -132,7 +142,7 @@ def test_a_reader_that_keeps_nearly_every_line_is_told_to_narrow_and_one_with_no
     process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     end_run(story, process, "".join(f"step {number}\n" for number in range(60)))
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
-    story.advance(timedelta(seconds=1))
+    settled(story)
     lines = read_lines(story, READ_NOTES)
     expect_value_line(lines, "reader deploys kept 60 of 60 lines")
     expect_value_line(lines, "reader deploys found no summary")
@@ -144,7 +154,7 @@ def test_a_test_run_whose_reader_finds_progress_only_on_its_last_line_is_told_to
     process = moved_run(story, "./dots.sh", category=CommandCategory.TEST_RUN)
     end_run(story, process, "".join("........\n" for _ in range(60)) + "Tests 60 of 60\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
-    story.advance(timedelta(seconds=1))
+    settled(story)
     expect_lines(story, READ_NOTES, "ran with no progress")
 
 
@@ -154,7 +164,7 @@ def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_
     process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     end_run(story, process, "step 3/9\nstep 9/9\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
-    story.advance(timedelta(seconds=1))
+    settled(story)
     expect_lines(story, READ_NOTES, "ran with no progress")
 
 
@@ -251,7 +261,7 @@ def ended_test_output(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "pytest -q")
     end_run(story, process, TESTS_REPORT, exit_code=1)
-    story.advance(timedelta(seconds=1))
+    settled(story)
     return story, process
 
 
@@ -269,7 +279,7 @@ def ended_chain_output(new_story):
     process = story.container.get(Bus).run(command, story.agent, environment_id=1)
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
     end_run(story, process, "one\ntwo\n")
-    story.advance(timedelta(seconds=1))
+    settled(story)
     lines = read_lines(story, READ_NOTES)
     return story, parts, command, process, lines
 
@@ -310,7 +320,7 @@ def unmatched_reader_output(deploy_reader):
     process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
-    story.advance(timedelta(seconds=1))
+    settled(story)
     return story, process
 
 
@@ -320,7 +330,7 @@ def program_reader_output(new_story):
     process = moved_run(story, "pytest tests/one.py && echo done", category=CommandCategory.TEST_RUN)
     story.container.get(OutputFolder).write_start(process.id, process.line, [process.line])
     end_run(story, process, "one\ntwo\n")
-    story.advance(timedelta(seconds=1))
+    settled(story)
     return story, process
 
 
@@ -330,7 +340,7 @@ def chain_reader_output(deploy_reader):
     process = moved_run(story, "./deploy.sh staging && echo one && echo two", category=CommandCategory.BUILD)
     end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
-    story.advance(timedelta(seconds=1))
+    settled(story)
     return story, process
 
 
@@ -340,7 +350,7 @@ def unshown_output(deploy_reader):
     process = moved_run(story, "./deploy.sh staging")
     end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
-    story.advance(timedelta(seconds=1))
+    settled(story)
     return story, process
 
 
@@ -370,3 +380,11 @@ def expect_updated_input_hook_without(story, text, text_2, text_3, text_4, expec
 def expect_updated_input_hook_with(story, text, text_2, text_3, text_4, expected) -> None:
     actual = str(story.hook(text, HookSamples.shell(text_2, ShellPart(text_3, CommandCategory.PROCESS, [text_4]))).updated_input)
     assert expected in actual, actual
+
+
+def test_a_hook_checks_the_blocks_of_twelve_ended_moved_runs_reading_their_processes_once(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    for number in range(12):
+        end_run(story, moved_run(story, f"make test{number}", category=CommandCategory.TEST_RUN), TESTS_REPORT, exit_code=1)
+    with story.repeated_work.request():
+        story.hook("s-1", READ_NOTES)

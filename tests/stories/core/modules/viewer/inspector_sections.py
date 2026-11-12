@@ -160,13 +160,14 @@ def test_a_module_removed_takes_its_section_and_button_and_the_inspector_works(p
 def test_the_person_watches_a_removed_module_take_its_section_from_an_open_inspector(plan_notes):
     plan_notes.story.expect_success("window trust acme.plan_notes --environment main", actor=plan_notes.story.user)
     expect_browser(plan_notes, "inspectorSections.browser.mjs", ["removal", str(plan_notes.socket_path)])
+    plan_notes.story.expect_no_text("module list", "acme.plan_notes")
 
 
 def test_the_module_guide_shows_the_samples_own_declaration_and_commands_that_exist(plan_notes):
     checkout = Path(__file__).resolve().parents[5]
     guide = (checkout / "docs/writing-a-module.md").read_text()
     declared = (checkout / "tests/stories/fixtures/acme_plan_notes/module.py").read_text()
-    windows = declared[declared.index("    windows = "):].rstrip()
+    windows = declared[declared.index("    windows = "):].split("\n\n\n")[0].rstrip()
     plan_notes.story.expect_rows(windows in guide, "journal module add tests/stories/fixtures/acme_plan_notes" in guide, "journal window trust acme.plan_notes --environment main" in guide)
 
 

@@ -1,3 +1,4 @@
+from engine.process.door.request_records import RequestRecords
 from core.modules.settings.bindings.support.context_share import ContextShare
 import json
 from collections.abc import Mapping
@@ -55,8 +56,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     runs_once = True
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository, choice: SuiteChoice,
-                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery) -> None:
-        self.home, self.share, self.compaction_end, self.hook_calls = home, share, compaction_end, hook_calls
+                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery, request_records: RequestRecords) -> None:
+        self.home, self.share, self.compaction_end, self.hook_calls, self.request_records = home, share, compaction_end, hook_calls, request_records
         self.event_rows = event_rows
         self.system_log = system_log
         self.required_commands = required_commands
@@ -83,7 +84,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         tool = command.event.tool
         metadata = {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "clear_start": command.event.is_clear_start, "ended_session": command.event.session if command.event.event == HookEventName.SESSION_END else "", "manual_compaction": command.event.is_manual_compaction, "search": SearchCategory.classify(tool, str(command.event.raw.get("cwd", "")), self.home.project_folder), "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}
         if command.event.event == HookEventName.COMPACT or command.event.is_compaction_start:
-            percent = self.share.percent(command.event.program, command.event.session)
+            percent = self.share.percent_of(agent)
             if percent is not None:
                 metadata["context_percent"] = percent
         metadata[PROGRAM_SESSION] = command.event.session
@@ -107,6 +108,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         if refusing:
             self.system_log.write(LogLevel.INFORMATION, f"stop {call.id} {AgentLabel.from_agent(agent).text} refused: {'; '.join(refusing)}"[:LOG_LINE_CHARACTERS])
         self.nudges.write(agent.id, answers, context)
+        self.request_records.recorded_hook(agent.id, agent.environment_id, f"{command.event.program} {command.event.event.value}", 2 if answers.refusal else 0)
         self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")
         for row in handed_lines.rows:

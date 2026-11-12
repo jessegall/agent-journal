@@ -7,7 +7,7 @@ from core.modules.agents.models.enums.end_reason import EndReason
 from core.modules.helpers.support.cold_sessions import ColdSessions
 from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 
-AGENT = SimpleNamespace(id=7, program="claude", session="s-1", environment_id=1)
+AGENT = SimpleNamespace(id=7, program="claude", session="s-1", environment_id=1, role="worker", profile="journal-worker")
 LIMIT_TOKENS = 400000
 
 
@@ -26,7 +26,7 @@ def cold_sessions(silent: bool, percent: int, tokens: int = 0, minutes: int = 55
     activity = SimpleNamespace(is_inactive=lambda timestamp, seconds: silent)
     bus = RecordingBus()
     sessions = ColdSessions(None, SimpleNamespace(timestamp=lambda: None), SimpleNamespace(context_tokens=lambda program, home, session: tokens), None, settings, bus,
-                            SimpleNamespace(percent=lambda program, session: percent), SimpleNamespace(required=lambda model, row_id: activity),
+                            SimpleNamespace(percent_of=lambda agent: percent, cap=lambda role, profile: LIMIT_TOKENS), SimpleNamespace(required=lambda model, row_id: activity),
                             SimpleNamespace(unstarted=lambda agent: False), SimpleNamespace(exists=lambda agent: True))
     return sessions, bus
 

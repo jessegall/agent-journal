@@ -32,7 +32,7 @@ COMMAND_AUDIT_EVENT = "subprocess.Popen"
 OPEN_REQUEST: ContextVar["RepeatedWork | None"] = ContextVar("open_request", default=None)
 SCAN_TABLE = re.compile(r"\bSCAN(?: TABLE)? (\w+)")
 SCAN_INDEX = re.compile(r"\bUSING INDEX (\w+)")
-BOUNDED_PAGE = re.compile(r"^SELECT \* FROM (\w+)(?: ORDER BY id (?:ASC|DESC))? LIMIT ([1-9]\d*|\?) OFFSET (\d+|\?)$", re.IGNORECASE)
+BOUNDED_PAGE = re.compile(r"^SELECT \* FROM (\w+)(?: ORDER BY id (?:ASC|DESC))? LIMIT ([1-9]\d*|\?)(?: OFFSET (\d+|\?))?$", re.IGNORECASE)
 UNFILTERED_COUNT = re.compile(r"^SELECT count\(\*\) FROM \w+$", re.IGNORECASE)
 SMALL_TABLES = {
     "listener_cursors": "One row per listener, read when a request wakes the listeners.",
@@ -206,8 +206,9 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def has_page_bounds(page: re.Match[str], statement: Statement) -> bool:
+        """Whether a page reads a known number of rows from a known place; a first page writes no offset."""
         parameters = iter(statement.parameters)
-        limit, offset = (next(parameters) if value == "?" else int(value) for value in page.groups()[1:])
+        limit, offset = (next(parameters) if value == "?" else int(value or 0) for value in page.groups()[1:])
         return isinstance(limit, int) and limit > 0 and isinstance(offset, int) and offset >= 0
 
     @staticmethod
@@ -237,7 +238,13 @@ class RepeatedWork(PointTally):
     @classmethod
     def build_finding(cls, category: str, subject: str, text: str) -> RepeatedFinding:
         frames = cls.caller_frames()
-        return RepeatedFinding("|".join([category, subject, *cls.stack_calls(frames)[-SHOWN_CALLS:]]), f"{text}\n{cls.shown_calls(frames)}")
+        return RepeatedFinding("|".join([category, subject, *cls.project_calls(frames)[-SHOWN_CALLS:]]), f"{text}\n{cls.shown_calls(frames)}")
+
+    @classmethod
+    def project_calls(cls, frames: list[traceback.FrameSummary]) -> list[str]:
+        calls = cls.stack_calls(frames)
+        first_project_call = next((index for index, call in enumerate(calls) if not call.startswith(TEST_FOLDER)), len(calls))
+        return calls[first_project_call:]
 
     def note_command(self, command: str) -> None:
         self.commands[command] += 1

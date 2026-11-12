@@ -12,6 +12,7 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.less import Less
 from engine.query.query import Query
+from engine.query.kept_row_changes import KeptRowChanges
 from engine.query.condition import Condition
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.select import Select
@@ -29,7 +30,7 @@ FOLLOWED_PLAN_STATES = ("approved", "started")
 
 TASK_PAGE_ROWS = 50
 
-class TaskQuery(Query[Task]):
+class TaskQuery(Query[Task], KeptRowChanges[Task]):
     """Reads tasks with named filters. The open tasks assigned to an actor are that actor's work, and the open
     tasks assigned to nobody are free; both are read from the assignments table."""
 
@@ -53,6 +54,12 @@ class TaskQuery(Query[Task]):
         return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(self.assignee(actor_id)).oldest().all_rows(TASK_PAGE_ROWS)),
                               f"state = ? AND {assignee.sql}", [TaskState.OPEN, *assignee.parameters], name="tasks.queued_tasks")
 
+    def unfinished_assigned(self, actor_id: int) -> tuple[Task, ...]:
+        assignee = self.assignee(actor_id).statement()
+        states = [TaskState.OPEN, TaskState.STARTED]
+        return self.kept.owner_read(self.table.name, lambda: tuple(self.assignee_tasks(actor_id).matching(Among("state", states)).oldest().all_rows(TASK_PAGE_ROWS)),
+                                    f"state IN (?, ?) AND {assignee.sql}", [*states, *assignee.parameters], name="tasks.unfinished_assigned")
+
     def assigned_ready(self, actor_id: int) -> tuple[Task, ...]:
         assignee, dependency_free = self.assignee(actor_id).statement(), self.no_open_dependency().statement()
         return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(self.assignee(actor_id)).matching(self.no_open_dependency()).oldest().all_rows(TASK_PAGE_ROWS)),
@@ -61,13 +68,7 @@ class TaskQuery(Query[Task]):
     def free(self) -> Self:
         return self.open_tasks().matching(Unassigned(Task))
 
-    def remember(self, task: Task) -> None:
-        self.replace_cached(task, tuple([task]))
-
-    def remove(self, task: Task) -> None:
-        self.replace_cached(task, ())
-
-    def replace_cached(self, task: Task, present: tuple[Task, ...]) -> None:
+    def update_kept(self, task: Task, present: tuple[Task, ...]) -> None:
         started = [row for row in present if row.state is TaskState.STARTED]
         def with_started(tasks: tuple[Task, ...]) -> tuple[Task, ...]:
             return self.newest_current([row for row in tasks if row.id != task.id] + started)

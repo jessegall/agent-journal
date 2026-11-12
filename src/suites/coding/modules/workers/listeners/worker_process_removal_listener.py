@@ -1,8 +1,10 @@
+from collections.abc import Sequence
 from dataclasses import replace
 
 from engine.event.deleted import Deleted
 from engine.command.context import Context
 from engine.listener.deletion_listener import DeletionListener
+from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.processes.models.process import Process
@@ -21,10 +23,12 @@ class WorkerProcessRemovalListener(DeletionListener[Deleted[Process]]):
         self.queries, self.repository = queries, repository
 
     def handle(self, event: Deleted[Process], context: Context) -> None:
-        process = event.row
-        for operation in tuple(self.queries.query(WorkerOperation).filter(process_id=process.id).all_rows()):
-            self.repository.delete(operation, context)
-        for line in tuple(self.queries.query(MergerLine).filter(read_output_id=process.id).all_rows()):
+        self.handle_many([event], context)
+
+    def handle_many(self, events: Sequence[Deleted[Process]], context: Context) -> None:
+        process_ids = [event.row.id for event in events]
+        self.repository.delete_many_stored(tuple(self.queries.query(WorkerOperation).matching(Among("process_id", process_ids)).all_rows()), context)
+        for line in tuple(self.queries.query(MergerLine).matching(Among("read_output_id", process_ids)).all_rows()):
             self.repository.save(replace(line, read_output_id=None), context)
-        for worktree in tuple(self.queries.query(Worktree).with_removed().filter(logs_output_id=process.id).all_rows()):
+        for worktree in tuple(self.queries.query(Worktree).with_removed().matching(Among("logs_output_id", process_ids)).all_rows()):
             self.repository.update(worktree, context, logs_output_id=None)

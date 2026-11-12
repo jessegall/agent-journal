@@ -6,6 +6,7 @@ from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.processes.models.enums.process_dock_type import ProcessDockType
 
 
+
 SHORT_CATEGORIES = tuple(category.value for category in CommandCategory if category.is_short)
 
 

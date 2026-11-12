@@ -13,7 +13,7 @@ from suites.coding.support.coding_templates import CODING_TEMPLATES
 from engine.module.model_declaration import ModelDeclaration
 from engine.skill.skill_declaration import SkillDeclaration
 from engine.module.module import Module
-from engine.agent.agent_group import AgentGroup
+from engine.agent.groups.agent_group import AgentGroup
 from engine.helper_type.helper_type import HelperType
 from engine.viewer.window_search import WindowSearch
 from suites.coding.support.file_edit_searcher import FileEditSearcher
@@ -113,14 +113,16 @@ class CodingModule(Module):
                                        WindowKey("matches", "project-file find {words}", loading=KeyLoading.REQUESTED),
                                        WindowKey("file", "project-file show {path}", loading=KeyLoading.REQUESTED)]),
                WindowDeclaration("coding.work-mode", "Work mode", "work-mode.js", WindowLoading.COMPONENT, skeleton=CODING_WORK_MODE_SKELETON, icon=WindowIcon.WINDOW, place=WindowPlace.HEADER,
-                                 reads=["work-settings show", "setting show", "agent limits"], runs=["work-settings preset", "work-settings apply", "setting set", "agent profile-limits", "agent context-cap", "agent retire"], events=["setting.*", "agent.*"],
+                                 reads=["work-settings show", "setting-screen show", "setting-screen index", "setting show", "agent limits"], runs=["work-settings preset", "work-settings apply", "setting-screen apply", "setting set", "agent profile-limits", "agent context-cap", "agent retire"], events=["setting.*", "agent.*"],
                                  keys=[WindowKey("work", "work-settings show", events=["setting.*"]),
+                                       WindowKey("find", "setting-screen index", events=["setting.*"]),
                                        WindowKey("auto", "setting show journal.suites.coding.auto-mode", events=["setting.*"]),
                                        WindowKey("limits", "agent limits", tab="agents", events=["agent.*", "setting.*"])]),
                WindowDeclaration("coding.agent-settings", "Agent settings", "agent-settings.js", WindowLoading.COMPONENT, skeleton=CODING_AGENT_SETTINGS_SKELETON, icon=WindowIcon.WINDOW,
-                                 reads=["work-settings show", "agent limits", "agent cards", "setting show"], runs=["work-settings apply", "work-settings preset", "setting set", "agent profile-limits", "agent context-cap", "agent retire"],
+                                 reads=["work-settings show", "setting-screen show", "setting-screen index", "agent limits", "agent cards", "setting show"], runs=["work-settings apply", "work-settings preset", "setting-screen apply", "setting set", "agent profile-limits", "agent context-cap", "agent retire"],
                                  events=["setting.*", "agent.*"],
                                  keys=[WindowKey("work", "work-settings show", events=["setting.*"]),
+                                       WindowKey("find", "setting-screen index", events=["setting.*"]),
                                        WindowKey("limits", "agent limits", tab="agents", events=["agent.*", "setting.*"]),
                                        WindowKey("count-agents", "agent cards --show all --reusable", arguments=["role", "profile", "page"], loading=KeyLoading.REQUESTED, events=["agent.*"])]),
                WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, skeleton=CODING_FILE_FEED_SKELETON, search=WindowSearch(FileEditSearcher, "Filter files"), icon=WindowIcon.FILE, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM, reads=[*FILE_EDIT_READS, "file-edit file", "window setting"],

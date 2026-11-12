@@ -13,7 +13,8 @@ MAX_FOREGROUND_SECONDS = 15
 
 
 class ForegroundLimit:
-    """How a shell line is run: in the background at once for an alias marked so or a part that went past the
+    """How a shell line is run: a line of only reading, writing and searching stays in the foreground to its end, like a
+    journal line; else in the background at once for an alias marked so or a part that went past the
     limit in an earlier run, else the seconds the settings give, fewer for the main agent while the user
     waits on a message; a line that runs an alias is judged by the command under the alias, as the hook
     classified it, and read by the alias's reader. The test runs and builds of a line keep more of their
@@ -26,7 +27,7 @@ class ForegroundLimit:
         alias_runs = self.background.alias_runs(shell)
         part_commands = tuple(self.background.part_command(part, shell) for part in shell.parts)
         declared = self.background.declared_category(shell)
-        if shell.is_journal_line and all(command.category is CommandCategory.JOURNAL for command in part_commands):
+        if shell.is_journal_line and all(command.category is CommandCategory.JOURNAL for command in part_commands) or all(not command.category.can_go_to_background for command in part_commands):
             return ForegroundRun(0, self.background.includes(shell), part_commands=part_commands, most_output_bytes=self.output_limit(ProcessSetting.MOST_OUTPUT_MEGABYTES))
         seconds = self.seconds_allowed(agent_id)
         is_long = self.processes.has_moved_run(tuple(dict.fromkeys(part.text for part in shell.pipeline_heads)), seconds)

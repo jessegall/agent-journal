@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 from typing import ClassVar, Self
 
+from engine.container.container import Container
 from engine.driver.block_check import BlockCheck
 
 
@@ -24,6 +25,10 @@ class BlockCondition:
     @property
     def numbers(self) -> Sequence[int]:
         return [int(number) for number in self.text.split(",") if number]
+
+    @classmethod
+    def prepare(cls, texts: Sequence[str], container: Container) -> None:
+        return None
 
     def is_true(self, check: BlockCheck) -> bool:
         raise NotImplementedError

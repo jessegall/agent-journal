@@ -17,6 +17,7 @@ dispatch`, and work that writes goes to one or stays with you.
 - A helper stays kept after its process stops. It is idle until retired, and can take another job on the same
   agent number and session. Give new work to a compatible idle helper, whatever the subject; prefer the
   helper that already knows the work. A missing session, a nearly full context or an unfinished job can prevent reuse.
+- Every helper start names its model: `--model <model>`, or `--model default` for the profile's own; a start without `--model` is refused, also with a `--tier`.
 - `journal helper start <profile> --brief "<the job>"` starts one; `--program`, `--model` and `--name` choose how, and
   `journal profile list` names the profiles. It works in your folder, on the profile's model. When a compatible idle
   helper can take the job, a start is refused with its send command. Use `--fresh "<why>"` only when a separate

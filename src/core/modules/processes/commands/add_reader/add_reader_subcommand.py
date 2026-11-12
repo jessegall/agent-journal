@@ -1,6 +1,5 @@
 from argparse import ArgumentParser, Namespace
 
-from engine.actor.actor import CORE_ACTOR_ID
 from engine.caller.caller import Caller
 from engine.subcommand.subcommand import Subcommand
 from core.modules.processes.commands.add_reader.add_reader import AddReader
@@ -34,7 +33,7 @@ class AddReaderSubcommand(Subcommand[AddReader, Reader]):
         super().write_output(value, output)
         if not isinstance(value, Reader) or output.json_output:
             return
-        if value.creator_id == CORE_ACTOR_ID:
+        if value.is_stock:
             output.line("This is a stock reader. Apply the same fix to src/core/modules/processes/support/stock_reader.py, or file a task for it.")
         for request in self.requests.open_rows():
             if not ReaderSelection.reads_command(value, request.command, request.category):

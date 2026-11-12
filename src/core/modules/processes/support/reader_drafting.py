@@ -5,6 +5,7 @@ from engine.errors.refusal import Refusal
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.reader_request import ReaderRequest
+from core.modules.processes.support.stock_reader import STOCK_READERS
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.support.reader_candidates import CANDIDATES, BUILD_CANDIDATES
 from core.modules.processes.support.reader_draft import ReaderDraft
@@ -12,7 +13,6 @@ from core.modules.processes.support.reader_judge import COUNTED, ReaderJudge
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.reader_selection import ReaderSelection
-from core.modules.processes.support.stock_reader import STOCK_READERS
 from engine.enums.command_category import CommandCategory
 
 NEAREST_LINES = 8
