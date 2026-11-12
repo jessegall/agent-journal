@@ -230,7 +230,7 @@ usePoll(load, isRunning, () =>
               data-output-terminal
               @scroll="pages.loadEarlier($event.target)"
               >{{ lines.length ? lines.join("\n") : "No output yet" }}</pre>
-            <p v-if="run?.reading_text" class="output-dock-reading" data-output-reading>{{ run.reading_text }}</p>
+            <template v-if="run?.reading_text"><p class="output-dock-reading" data-output-reading>{{ run.reading_text }}</p></template>
             <template v-if="canAskForReader || run?.markable">
               <button ref="reportAnchor" type="button" class="output-dock-report" data-output-report title="Report a problem with this output" aria-label="Report a problem with this output" :aria-expanded="reportOpen" @click="reportOpen = !reportOpen"><Icon name="warn" :size="14" /></button>
               <template v-if="reportOpen">

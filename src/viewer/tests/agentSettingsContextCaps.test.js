@@ -1,8 +1,7 @@
 import {expect, test} from "vitest";
-import {CONTEXT_KINDS, CONTEXT_PROFILES, mountAgentSettings as mount} from "./support/agentSettingsWindow.js";
+import {CONTEXT_KINDS, CONTEXT_PROFILES, chooseTab as choose, mountAgentSettings as mount} from "./support/agentSettingsWindow.js";
 import {settle as settled} from "./support/windowContext.js";
 
-const choose = async (element, tab) => { element.querySelector(`[data-tab=${tab}]`).click(); await settled(); };
 const capRow = (element, kind) => element.querySelector(`[data-cap-row="${kind}"]`);
 const note = (element) => element.querySelector("[data-settings-note]").textContent;
 const cap = (element, key) => [...element.querySelector(`[data-type-row="${key}"]`).querySelectorAll(".cap > span, .cap small")].map((part) => part.textContent);

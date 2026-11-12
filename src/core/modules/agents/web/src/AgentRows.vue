@@ -148,18 +148,20 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 
 <template>
     <div ref="agents" :class="['agents', {focused: openRow, 'card-changing': changing}]">
-        <SearchBar v-if="!openRow" v-model="words" placeholder="Search agents" :menu-count="filterCount" data-agents-search>
-                <template #menu>
-                    <MenuLabel>Type</MenuLabel>
-                    <template v-for="role in filterOptions.roles" :key="role"><MenuItem role="menuitemcheckbox" :aria-checked="filters.roles.includes(role)" :checked="filters.roles.includes(role)" :data-filter-role="role" @click="updateFilter('roles', role)">{{ label(role) }}</MenuItem></template>
-                    <template v-if="filterOptions.profiles.length"><MenuLabel>Profile</MenuLabel></template>
-                    <template v-for="profile in filterOptions.profiles" :key="profile.name"><MenuItem role="menuitemcheckbox" :aria-checked="filters.profiles.includes(profile.name)" :checked="filters.profiles.includes(profile.name)" :data-filter-profile="profile.name" @click="updateFilter('profiles', profile.name)">{{ profile.title }}</MenuItem></template>
-                    <MenuLabel>Program</MenuLabel>
-                    <template v-for="program in programs" :key="program.name"><MenuItem role="menuitemcheckbox" :aria-checked="filters.programs.includes(program.name)" :checked="filters.programs.includes(program.name)" :data-filter-program="program.name" @click="updateFilter('programs', program.name)">{{ program.title }}</MenuItem></template>
-                    <template v-if="filterCount"><MenuItem data-filter-clear @click="clearFilters">Clear filters</MenuItem></template>
-                </template>
-                <Segmented :options="filterOptions.states" :value="show" @pick="show = $event" />
-        </SearchBar>
+        <template v-if="!openRow">
+            <SearchBar v-model="words" placeholder="Search agents" :menu-count="filterCount" data-agents-search>
+                    <template #menu>
+                        <MenuLabel>Type</MenuLabel>
+                        <template v-for="role in filterOptions.roles" :key="role"><MenuItem role="menuitemcheckbox" :aria-checked="filters.roles.includes(role)" :checked="filters.roles.includes(role)" :data-filter-role="role" @click="updateFilter('roles', role)">{{ label(role) }}</MenuItem></template>
+                        <template v-if="filterOptions.profiles.length"><MenuLabel>Profile</MenuLabel></template>
+                        <template v-for="profile in filterOptions.profiles" :key="profile.name"><MenuItem role="menuitemcheckbox" :aria-checked="filters.profiles.includes(profile.name)" :checked="filters.profiles.includes(profile.name)" :data-filter-profile="profile.name" @click="updateFilter('profiles', profile.name)">{{ profile.title }}</MenuItem></template>
+                        <MenuLabel>Program</MenuLabel>
+                        <template v-for="program in programs" :key="program.name"><MenuItem role="menuitemcheckbox" :aria-checked="filters.programs.includes(program.name)" :checked="filters.programs.includes(program.name)" :data-filter-program="program.name" @click="updateFilter('programs', program.name)">{{ program.title }}</MenuItem></template>
+                        <template v-if="filterCount"><MenuItem data-filter-clear @click="clearFilters">Clear filters</MenuItem></template>
+                    </template>
+                    <Segmented :options="filterOptions.states" :value="show" @pick="show = $event" />
+            </SearchBar>
+        </template>
         <template v-if="show === 'retired' && filterOptions.upgrade_retired"><p class="agents-upgrade" data-agents-upgrade>Retired during the upgrade: {{ filterOptions.upgrade_retired }}</p></template>
         <div ref="list" :class="['agents-view', {'agents-view-open': openRow}]">
         <template v-if="loaded && !failure && !visible.length && filterCount"><EmptyState title="No agents match the filters" data-filter-empty>

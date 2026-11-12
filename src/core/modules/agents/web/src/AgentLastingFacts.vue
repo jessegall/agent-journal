@@ -6,10 +6,12 @@ defineProps({row: {type: Object, required: true}});
 </script>
 
 <template>
-    <dl v-if="row.retired_at" class="lasting-facts" data-agent-lasting-facts>
-        <div><dt>Retired</dt><dd data-agent-retired-at><TimeAgo :at="row.retired_at" /></dd></div>
-        <template v-if="row.retiring_actor_name"><div><dt>Retired by</dt><dd data-agent-retired-by>{{ row.retiring_actor_name }}</dd></div></template>
-    </dl>
+    <template v-if="row.retired_at">
+        <dl class="lasting-facts" data-agent-lasting-facts>
+            <div><dt>Retired</dt><dd data-agent-retired-at><TimeAgo :at="row.retired_at" /></dd></div>
+            <template v-if="row.retiring_actor_name"><div><dt>Retired by</dt><dd data-agent-retired-by>{{ row.retiring_actor_name }}</dd></div></template>
+        </dl>
+    </template>
 </template>
 
 <style scoped>
