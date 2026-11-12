@@ -1,3 +1,4 @@
+from engine.enums.process_kind import ProcessKind
 from dataclasses import dataclass
 
 from engine.actor.actor import Actor
@@ -11,6 +12,7 @@ from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 
 FINISHED_PROGRESS = 100
+REQUEST_KINDS = frozenset(kind.value for kind in ProcessKind)
 ENDING_PHRASES = {ProcessState.RUNNING: "is running", ProcessState.BACKGROUND: "is running", ProcessState.STOPPED: "was stopped", ProcessState.ORPHANED: "was lost"}
 
 
@@ -69,6 +71,14 @@ class Process(EnvironmentScoped, Model):
         if not minutes:
             return f"{seconds} s"
         return f"{minutes} min {seconds} s" if seconds else f"{minutes} min"
+
+    @property
+    def is_request_row(self) -> bool:
+        return self.kind in REQUEST_KINDS
+
+    @property
+    def takes_part_in_queue(self) -> bool:
+        return self.is_queue_run or self.slot_assigned or self.queued_at is not None
 
     def has_expired_timeout(self, timestamp: Timestamp) -> bool:
         if self.timeout_seconds is None or self.started_at is None:

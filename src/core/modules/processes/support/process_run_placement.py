@@ -10,7 +10,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.move_process.move_process import MoveProcess
-from core.modules.processes.commands.start_process.start_process import StartProcess
+from core.modules.processes.commands.record_request_run.record_request_run import RecordRequestRun
 from core.modules.processes.models.process import Process
 
 
@@ -26,27 +26,21 @@ class ProcessRunPlacement(RunPlacement):
         agent = self.owner_agent()
         if agent is None:
             return PlacedRun(request, None, False)
-        command = StartProcess.single_part(agent.id, request.text, str(request.folder), request.kind.category, int(request.limit_seconds), kind=request.kind.value)
-        process = self.bus.run(command, Actor.core(), environment_id=agent.environment_id)
-        return PlacedRun(request, process.id, request.kind.takes_place and self.rows.required(Process, process.id).slot_assigned)
+        return PlacedRun(request, None, False, agent.id, agent.environment_id, agent.paused_at is not None)
 
     def holds(self, run: PlacedRun) -> bool:
-        if run.process_id is None:
+        if not run.paused_at_start or run.agent_id is None:
             return False
-        agent = self.agents.find(self.rows.required(Process, run.process_id).session_agent_id)
-        return agent.paused_at is not None
+        return self.agents.find(run.agent_id).paused_at is not None
 
     def moved_to_background(self, run: PlacedRun, pid: int) -> None:
-        if run.process_id is None:
-            return
-        self.bus.run(MoveProcess(run.process_id), Actor.core(), environment_id=self.rows.required(Process, run.process_id).environment_id)
+        return None
 
-    def ended(self, run: PlacedRun, execution: Execution) -> None:
-        if run.process_id is None:
-            return
-        printed = execution.stdout + execution.stderr
-        self.bus.run(EndProcess(run.process_id, execution.exit_code, len(printed.encode()), printed.count("\n")), Actor.core(),
-                     environment_id=self.rows.required(Process, run.process_id).environment_id)
+    def ended(self, run: PlacedRun, execution: Execution) -> int | None:
+        if run.agent_id is None:
+            return None
+        command = RecordRequestRun(run.agent_id, run.request.kind, run.request.text, execution.exit_code)
+        return self.bus.run(command, Actor.core(), environment_id=run.environment_id).id
 
     def owner_agent(self) -> Agent | None:
         owner = self.database.row_owner

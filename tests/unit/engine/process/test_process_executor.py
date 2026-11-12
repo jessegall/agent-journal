@@ -26,8 +26,9 @@ class CountedPlacement(RunPlacement):
     def moved_to_background(self, run: PlacedRun, pid: int) -> None:
         self.moved.append(run.process_id)
 
-    def ended(self, run: PlacedRun, execution: Execution) -> None:
+    def ended(self, run: PlacedRun, execution: Execution) -> int | None:
         self.ended_runs.append((run, execution))
+        return run.process_id
 
 
 class OpenGate(ExecutionGate):

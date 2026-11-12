@@ -17,5 +17,5 @@ class RunPlacement:
     def moved_to_background(self, run: PlacedRun, pid: int) -> None:
         return None
 
-    def ended(self, run: PlacedRun, execution: Execution) -> None:
+    def ended(self, run: PlacedRun, execution: Execution) -> int | None:
         return None
