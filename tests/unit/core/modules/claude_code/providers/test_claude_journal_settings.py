@@ -34,7 +34,7 @@ def provider(home: JournalHome) -> ClaudeCodeProvider:
 
 def journal_file(provider: ClaudeCodeProvider, home: JournalHome, managed: tuple[ManagedHook, ...] = ()) -> dict[str, object]:
     settings = provider.journal_settings(home, RUNNER, managed, [home.project_folder])
-    assert [file.path for file in settings.files] == [home.program_settings_file("claude")]
+    assert [file.path for file in settings.files] == [home.program_settings_file("claude"), home.program_folder("claude") / "mcp.json"]
     return json.loads(settings.files[0].text)
 
 

@@ -10,6 +10,7 @@ from engine.database.rebuild_migration import RebuildMigration
 from engine.database.schema import Schema
 from engine.database.module_migrations import ModuleMigrations
 from engine.database.statement import Statement
+from engine.database.errors.migration_deferred_error import MigrationDeferred
 from engine.database.errors.schema_mismatch_error import SchemaMismatchError
 from engine.model.view_model import ViewModel
 from engine.journal.journal_home import JournalHome
@@ -84,6 +85,25 @@ def test_a_failing_statement_undoes_its_whole_migration(database):
         Schema(database, Tables(), Clock()).migrate([ModuleMigrations("shelves", (ShelvesTable(), BrokenSecondStatement()))])
     assert "half" not in tables(database)
     assert Schema(database, Tables(), Clock()).migrate([ModuleMigrations("shelves", [ShelvesTable()])]) == []
+
+
+class DeferredOnce(Migration):
+    number = 2
+
+    def __init__(self) -> None:
+        self.runs = 0
+
+    def run(self, database: Database) -> None:
+        self.runs += 1
+        if self.runs == 1:
+            raise MigrationDeferred.because("not yet")
+
+
+def test_a_deferred_migration_is_not_recorded_and_runs_again(database):
+    plan = [ModuleMigrations("shelves", (ShelvesTable(), DeferredOnce()))]
+    assert Schema(database, Tables(), Clock()).migrate(plan) == ["shelves 1"]
+    assert Schema(database, Tables(), Clock()).migrate(plan) == ["shelves 2"]
+    assert Schema(database, Tables(), Clock()).migrate(plan) == []
 
 
 def test_a_rebuild_keeps_every_row_that_points_at_the_table(database):
