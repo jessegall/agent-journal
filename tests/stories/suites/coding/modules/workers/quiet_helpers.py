@@ -104,6 +104,7 @@ def test_a_helper_that_has_used_no_tool_for_fifteen_minutes_is_named_to_its_main
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"{line}: check on it")
+    story.expect_success("overview", actor=story.agent)
 
 
 def test_an_idle_merger_is_not_named(new_story):
@@ -175,3 +176,16 @@ def test_an_ended_merger_whose_job_has_not_started_is_named_too(new_story, monke
     story = new_story(fixture=StartedMerger)
     story.advance(minutes(1))
     expect_waiting_job_name(story, monkeypatch)
+
+
+def test_a_helper_that_used_a_tool_within_the_limit_is_not_named(new_story):
+    story = new_story(fixture=BuilderHelper)
+    line = inactive_line("helper", story.helper.id)
+    story.advance(minutes(GRACE_MINUTES - 1))
+    story.hook("sub-1", HELPER_PROMPT)
+    story.advance(minutes(GRACE_MINUTES - 1))
+    story.tick(MAIN_SESSION)
+    story.expect_rows(line_count(story, line) == 0)
+    story.expect_text(f"agent show {agent_number(story, story.helper.id)}", "role: helper", actor=story.agent)
+    story.expect_success("hook-call list --limit 5", actor=story.agent)
+    story.expect_success("agent-line list --limit 5", actor=story.agent)

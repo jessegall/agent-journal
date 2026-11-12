@@ -8,6 +8,11 @@ description: Write lasting knowledge as documents and what was checked as report
 A doc is lasting knowledge about this project. A report is what was checked or found, at one moment. Both have
 their own numbers, so write the type with the number: doc 12, report 3.
 
+A doc is revised and referred to later, such as a design or a spec; a report answers one question once, such as a
+trace, a review or a check, and has no revisions. Debuggers, researchers and reviewers (journal-debugger,
+journal-researcher, journal-code-reviewer, journal-plan-reviewer) file reports only: `journal doc make` and
+`journal doc edit` are refused to them with a line that names `journal report make`. Designers and planners file docs.
+
 - `journal doc make "<title>" --abstract "<one line>" --body "<text>"` writes one; `--file <path>` takes the text from a
   file. `journal report make` takes the same.
 - A read-only helper files its own documents and reports with these commands, even though it writes no files: they show in the

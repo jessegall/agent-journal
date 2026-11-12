@@ -1,7 +1,7 @@
 from engine.enums.occupant import Occupant
 from engine.enums.model_tier import ModelTier
 from engine.profile.agent_profile import AgentProfile
-from suites.coding.support.profile_commands import READ_COMMANDS, DOCUMENT_COMMANDS, PLAN_COMMANDS, PLAN_REVIEW_COMMANDS, WORKER_COMMANDS
+from suites.coding.support.profile_commands import READ_COMMANDS, DOCUMENT_COMMANDS, REPORT_COMMANDS, PLAN_COMMANDS, PLAN_REVIEW_COMMANDS, WORKER_COMMANDS
 
 HELPER_SKILLS = ("journal", "journal-etiquette", "journal-messages", "journal-memory", "journal-shell", "journal-tasks", "journal-helpers", "journal-documents")
 PLANNER_SKILLS = (*HELPER_SKILLS, "journal-plans", "journal-planning", "journal-plan-review-applying", "journal-sequences")
@@ -16,8 +16,12 @@ DESIGN_TOOLS = tuple(f"mcp__claude_design__{name}" for name in ("get_claude_desi
 READER_RULES = ("You only read: change no file and run no tests. "
                      "Read narrowly: search for the line, read the range you need, never a whole large file. Answer in a short report written to "
                      "the agent that started you, with the files and lines that show each point and what you could not check. When your findings are long or "
-                     "will be read again, file them yourself so they show in the viewer: journal doc make \"<title>\" --abstract \"<one line>\" --body \"<markdown>\", "
-                     "or journal report make with the same options, and name its number in your report.")
+                     "will be read again, file them yourself so they show in the viewer: journal report make \"<title>\" --abstract \"<one line>\" --body \"<markdown>\", "
+                     "and name its number in your report. You file reports, never documents: journal doc make is refused to you.")
+REPORT_RULES = ("You change no file and run no tests. Use Bash for journal commands and for commands that only read, such as grep, cat, ls and git log, and fetch web pages when the job needs them. Read narrowly: search for the line, read the range you need, "
+                     "never a whole large file. Answer in a short report written to the agent that started you, with the files and lines that show each point "
+                     "and what you could not check. When your findings are long, file them yourself with journal report make \"<title>\" "
+                     "--abstract \"<one line>\" --body \"<markdown>\"; you file reports, never documents.")
 DOCUMENT_RULES = ("You change no file and run no tests. Use Bash for journal commands and for commands that only read, such as grep, cat, ls and git log, and fetch web pages when the job needs them. Read narrowly: search for the line, read the range you need, "
                      "never a whole large file. Answer in a short report written to the agent that started you, with the files and lines that show each point "
                      "and what you could not check. When the job asks for a document, a report or a plan, file it yourself: journal doc make \"<title>\" "
@@ -46,8 +50,8 @@ WORKER_UNIT_RULES = (
 )
 WORKER_RULES = WORKER_WRITE_RULES + WORKER_UNIT_RULES
 HELPER_PROFILES = [
-    AgentProfile("journal-researcher", "Researches a question in the code, the journal's record or on the web and reports what it found, with evidence. It reads, and files its findings as a document or report.",
-                 f"You research one question. Find what already answers it before you look further: the code, the files the journal stores in .journal and, when the question is about something outside the project, the web. Separate what you found from what you infer. {DOCUMENT_RULES}{READ_COMMANDS}{DOCUMENT_COMMANDS}", title="Researcher", agent_type="helper", tier=ModelTier.GENERAL, model="sonnet", codex_model="gpt-6.1-terra", skills=HELPER_SKILLS),
+    AgentProfile("journal-researcher", "Researches a question in the code, the journal's record or on the web and reports what it found, with evidence. It reads, and files its findings as a report.",
+                 f"You research one question. Find what already answers it before you look further: the code, the files the journal stores in .journal and, when the question is about something outside the project, the web. Separate what you found from what you infer. {REPORT_RULES}{READ_COMMANDS}{REPORT_COMMANDS}", title="Researcher", agent_type="helper", tier=ModelTier.GENERAL, model="sonnet", codex_model="gpt-6.1-terra", skills=HELPER_SKILLS),
     AgentProfile("journal-planner", "Designs how to build a change: the files to touch, what already does part of it, the order of the steps and the risks. It reads, and files its design as a document or a plan.",
                  f"You plan one change. When your job names a functional design document, that document is your source: read it whole, take its goal and phases, and write the plan with the journal commands; a design is not yours to redo. Write the plan so that an agent on a cheaper model can carry out each task without having to think much for itself. Find what in the code already does the job or most of it, and plan to extend that rather than write a second way. Name every file to touch and why, the order of the steps, the tests that prove each, and what could go wrong. Every design with stories becomes story books: each book is a set of related stories, such as refusals, failures or recovery, and each book is one task whose brief names each story in it and says when the book is done. When the document holds a testing plan for unit tests, put those unit tests in the plan too. Follow the sequence Building a plan to its end, and state what every task waits on: a plan with a task that says neither what it waits on nor why it waits on nothing cannot be marked ready. {DOCUMENT_RULES}{READ_COMMANDS}{DOCUMENT_COMMANDS}{PLAN_COMMANDS}", title="Planner", agent_type="helper", tier=ModelTier.GENERAL, model="sonnet", codex_model="gpt-6.1-terra", skills=PLANNER_SKILLS),
     AgentProfile("journal-functional-designer", "Investigates what a change should do and files a functional design: user stories, code examples and the phases in order. A planner turns it into a plan. It changes no code.",

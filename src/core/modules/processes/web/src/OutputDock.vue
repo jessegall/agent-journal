@@ -330,14 +330,16 @@ usePoll(load, isRunning, () =>
 
 /* a folded card's percent as a small bar, centred on the line, with the number in its tooltip */
 .output-dock-percent {
+  --dock-bar-width: 64px;
+  --dock-bar-height: 8px;
   flex: none;
   align-self: center;
-  width: 32px;
-  height: 4px;
+  width: var(--dock-bar-width);
+  height: var(--dock-bar-height);
   margin-right: 6px;
   overflow: hidden;
-  border-radius: 2px;
-  background: var(--hover);
+  border-radius: 4px;
+  background: var(--bar-track);
 }
 
 .output-dock-percent i {

@@ -69,6 +69,8 @@ const buttons = computed(() => look.value.actions.filter((button) => !pressed.va
 const badge = computed(() => dockBadgeOf(declaration.value?.badge, row.value));
 // a folded or collapsed card keeps all its head icons: Open, the pin and X
 const controls = computed(() => look.value.controls);
+// a card that folds shows its buttons only while it is open; folded it is its head and its fold toggle
+const showsActions = computed(() => !(Boolean(declaration.value?.folds) && props.folded));
 const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props.collapsed);
 </script>
 
@@ -142,26 +144,28 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
             </template>
             <span class="dock-acts" @click.stop>
                 <span ref="actions" class="dock-module-actions" />
-                <ButtonSlot
-                    :name="`dock.${item.type}`"
-                    :row="row"
-                    :environment="view.environment"
-                    :read-only="view.readOnly"
-                    :object-name="cliOf(item.target_model)"
-                    external-failure
-                    @failure="failure = $event"
-                    @done="loadRow"
-                />
-                <template v-for="button in buttons" :key="button.action + button.runs">
-                    <Btn
-                        small
-                        :variant="button.primary ? 'primary' : 'ghost'"
-                        :bordered="!button.primary"
-                        :data-dock-action="button.action"
-                        @click="press(button)"
-                    >
-                        {{ button.label }}
-                    </Btn>
+                <template v-if="showsActions">
+                    <ButtonSlot
+                        :name="`dock.${item.type}`"
+                        :row="row"
+                        :environment="view.environment"
+                        :read-only="view.readOnly"
+                        :object-name="cliOf(item.target_model)"
+                        external-failure
+                        @failure="failure = $event"
+                        @done="loadRow"
+                    />
+                    <template v-for="button in buttons" :key="button.action + button.runs">
+                        <Btn
+                            small
+                            :variant="button.primary ? 'primary' : 'ghost'"
+                            :bordered="!button.primary"
+                            :data-dock-action="button.action"
+                            @click="press(button)"
+                        >
+                            {{ button.label }}
+                        </Btn>
+                    </template>
                 </template>
             </span>
         </template>
