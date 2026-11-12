@@ -10,6 +10,7 @@ from core.modules.processes.support.colour_codes import ColourCodes
 from core.modules.processes.support.output_page import NEWLINE, OutputPage
 
 FOLDER_NAME = "processes"
+END_POLL_SECONDS = 0.5
 PAGE_BYTES = 1 << 20
 READS_FILE = "reads"
 LINE_FILE = "line"
