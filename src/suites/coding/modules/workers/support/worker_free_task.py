@@ -1,3 +1,6 @@
+from dataclasses import replace
+
+from engine.actor.actor import Actor
 from core.modules.agents.models.agent import Agent
 from engine.listener.rows.event_rows import EventRows
 from engine.command.bus import Bus
@@ -23,4 +26,4 @@ class WorkerFreeTask:
             return
         task = self.tasks.next_simple(WORKER_MOST_COMPLEXITY, self.plan_tasks.plan_exclusion())
         if task is not None:
-            self.bus.dispatch(AssignTask(task.id, worker_id), context)
+            self.bus.dispatch(AssignTask(task.id, worker_id), replace(context, actor=Actor.core()))
