@@ -40,9 +40,9 @@ def test_a_running_helper_and_one_with_an_open_job_are_never_idle():
     assert [numbers(kept, occupant) for occupant in Occupant] == [[5]] * 3
 
 
-def test_an_each_launch_helper_is_idle_on_another_program_with_a_gone_conversation_and_a_full_context():
+def test_an_each_launch_helper_is_idle_with_a_gone_conversation_and_a_full_context_but_never_on_another_model():
     kept = kept_helpers([helper(3, program="codex"), helper(4, session="gone"), helper(5)], full_percent=90)
-    assert numbers(kept, Occupant.LAUNCH_ROTATION) == [3, 4, 5]
+    assert numbers(kept, Occupant.LAUNCH_ROTATION) == [4, 5]
 
 
 def test_a_helper_that_keeps_its_session_is_idle_only_on_the_same_program_with_a_session_that_resumes():

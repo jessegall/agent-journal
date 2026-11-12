@@ -9,7 +9,6 @@ from core.modules.agents.support.agent_label import AgentLabel
 
 MAIN_AGENT_ROUTES = "message your own helpers"
 HELPER_ROUTES = "message your main agent and the merger"
-MAIN_KEY = "main"
 
 
 class AgentMessageRoutes:
@@ -37,7 +36,7 @@ class AgentMessageRoutes:
         return agent.parent_id is not None and self.parent_key(agent) == self.parent_key(peer) and (self.takes_siblings(agent) or self.takes_siblings(peer))
 
     def own_key(self, agent: Agent) -> int | tuple[str, int]:
-        return (MAIN_KEY, agent.environment_id) if agent.role == AgentRole.MAIN else agent.id
+        return (AgentRole.MAIN, agent.environment_id) if agent.role == AgentRole.MAIN else agent.id
 
     def parent_key(self, agent: Agent) -> int | tuple[str, int] | None:
         if agent.parent_id is None:

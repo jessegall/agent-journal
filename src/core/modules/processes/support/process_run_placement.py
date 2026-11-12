@@ -2,10 +2,10 @@ from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.listener.rows.event_rows import EventRows
-from engine.process.execution import Execution
-from engine.process.execution_request import ExecutionRequest
-from engine.process.placed_run import PlacedRun
-from engine.process.run_placement import RunPlacement
+from engine.process.door.execution import Execution
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.placed_run import PlacedRun
+from engine.process.door.run_placement import RunPlacement
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.processes.commands.end_process.end_process import EndProcess

@@ -2,12 +2,12 @@ from dataclasses import replace
 
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.log.error_log import ErrorLog
-from engine.process.execution import Execution
-from engine.process.execution_gate import ExecutionGate
-from engine.process.execution_request import ExecutionRequest
-from engine.process.placed_run import PlacedRun
-from engine.process.run_placement import RunPlacement
-from engine.process.runner_program import RunnerProgram
+from engine.process.door.execution import Execution
+from engine.process.door.execution_gate import ExecutionGate
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.placed_run import PlacedRun
+from engine.process.door.run_placement import RunPlacement
+from engine.process.door.runner_program import RunnerProgram
 
 TIME_LIMIT_EXIT_CODE = 124
 

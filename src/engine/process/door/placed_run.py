@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from engine.process.execution_request import ExecutionRequest
+from engine.process.door.execution_request import ExecutionRequest
 
 
 @dataclass(frozen=True)

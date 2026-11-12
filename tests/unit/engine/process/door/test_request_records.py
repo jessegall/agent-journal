@@ -4,7 +4,7 @@ from engine.cli.errors.usage_error import UsageError
 from engine.enums.process_kind import ProcessKind
 from engine.errors.missing_file_refusal import MissingFileRefusal
 from engine.errors.refusal import Refusal
-from engine.process.request_records import RequestRecords
+from engine.process.door.request_records import RequestRecords
 
 
 class KeptRecords(RequestRecords):

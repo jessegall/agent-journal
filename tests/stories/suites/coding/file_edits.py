@@ -5,7 +5,7 @@ from engine.file.file_access import FileAccess
 from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from engine.testing.examples.hook_samples import HookSamples
-from suites.coding.commands.record_file_edit import record_file_edit_handler
+from suites.coding.commands.prune_file_edits import prune_file_edits_handler
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskOrchestrator
@@ -90,8 +90,8 @@ def test_a_scan_is_kept_for_the_agent_of_its_session_whatever_environment_it_wor
 
 
 def test_the_log_keeps_the_newest_1000_file_edits(new_story, monkeypatch):
-    expect_value(record_file_edit_handler.ROWS_KEPT, 1000)
-    monkeypatch.setattr(record_file_edit_handler, "ROWS_KEPT", 3)
+    expect_value(prune_file_edits_handler.ROWS_KEPT, 1000)
+    monkeypatch.setattr(prune_file_edits_handler, "ROWS_KEPT", 3)
     story = new_story(fixture=BuilderStarted)
     for number in range(1, 6):
         scanned_edit(story, "s-1", f"src/part{number}.py")
@@ -105,7 +105,7 @@ def test_a_request_that_prunes_more_than_ten_file_edits_reads_the_links_once_for
     story = new_story(fixture=BuilderStarted)
     for number in range(1, 14):
         scanned_edit(story, "s-1", f"src/part{number}.py")
-    monkeypatch.setattr(record_file_edit_handler, "ROWS_KEPT", 2)
+    monkeypatch.setattr(prune_file_edits_handler, "ROWS_KEPT", 2)
     scanned_edit(story, "s-1", "src/part14.py")
     reads = {sql: count for sql, count in story.repeated_work.read_texts.items() if "FROM links" in sql}
     story.expect_rows(len(reads) <= 2, all(count == 1 for count in reads.values()), detail=str(reads))

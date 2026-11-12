@@ -4,8 +4,8 @@ import subprocess
 import threading
 
 from engine.errors.run_time_limit_error import RunTimeLimitError
-from engine.process.execution import Execution
-from engine.process.placed_run import PlacedRun
+from engine.process.door.execution import Execution
+from engine.process.door.placed_run import PlacedRun
 
 
 class RunnerProgram:

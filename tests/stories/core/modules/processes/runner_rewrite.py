@@ -36,13 +36,12 @@ def test_the_agent_terminal_reads_the_call_output_through_the_viewer(new_story):
     story.expect_rows(page["lines"] == ["server started"])
 
 
-@pytest.mark.parametrize("program,category", [("cat", CommandCategory.READ), ("touch", CommandCategory.EDIT), ("custom", CommandCategory.UNKNOWN)])
-def test_a_read_write_or_unknown_command_gets_the_fifteen_second_limit(new_story, program, category):
+@pytest.mark.parametrize("program,category,limit", [("cat", CommandCategory.READ, 0), ("touch", CommandCategory.EDIT, 0), ("custom", CommandCategory.UNKNOWN, 15)])
+def test_a_read_or_a_write_runs_with_no_limit_and_an_unknown_command_gets_fifteen_seconds(new_story, program, category, limit):
     story = install_runner(new_story(fixture=BuilderStarted))
-    sample = HookSamples.shell(f"{program} file", ShellPart(program, category, ["file"]))
-    reply = story.hook("s-1", sample)
-    story.expect_rows("--limit 15" in str(reply.updated_input))
-    story.expect_text("process show 1", "limit_seconds: 15", actor=story.agent)
+    reply = story.hook("s-1", HookSamples.shell(f"{program} file", ShellPart(program, category, ["file"])))
+    story.expect_rows(f"--limit {limit} " in str(reply.updated_input), "--background" not in str(reply.updated_input))
+    story.expect_text("process show 1", f"limit_seconds: {limit}", actor=story.agent)
 
 
 def test_a_command_whose_last_run_went_past_the_limit_goes_to_the_background_at_once(new_story):
@@ -91,7 +90,7 @@ def test_a_chain_of_reads_and_writes_goes_through_the_runner_as_written(new_stor
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "sed -n 1,5p src/cart.py && cat > notes.txt"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("sed", CommandCategory.READ, ["-n"]), ShellPart("cat", CommandCategory.EDIT, [], output_paths=["notes.txt"])))
-    expected = runner_line(story, 1, line, queue_run=False)
+    expected = runner_line(story, 1, line, limit=0, queue_run=False)
     expect_updated_input_reply(reply, {"command": expected})
     expect_reply_allowed(reply)
     story.expect_success("process show 1", f"line: {line}")
