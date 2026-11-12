@@ -58,8 +58,9 @@ test("the agent field lists the running agents with the main agent first", async
     await opened();
     expect(reads[0]).toMatchObject({window: "messages.chat", line: ["agent", "running"], environment: "main"});
     expect(items().map((item) => item.getAttribute("data-drop-item"))).toEqual(["7", "4", "9"]);
-    expect(items()[0].textContent).toContain("Ada Lovelace");
-    expect(items()[2].textContent).toContain("Worker 9");
+    expect(items()[0].textContent).toContain("Main agent");
+    expect(items()[2].textContent).toContain("Worker");
+    expect(items()[2].textContent).toContain("worker 9");
 });
 
 test("picking an agent sends the plan's assign line with its number", async () => {

@@ -6,7 +6,8 @@ import Skeleton from "../../kit/Skeleton.vue";
 import {useResourceEvents} from "../resourceEvents.js";
 import {eventAboutRows, eventChildOf} from "../../../kit/eventRows.js";
 import {agentRowArgument} from "../../../kit/agentRowArgument.js";
-import {agentState, agentTitle, detailRows, finishedWords, givenName, stripCells} from "./agentView.js";
+import {agentTitle} from "../../domain/agentTitle.js";
+import {agentState, detailRows, finishedWords, stripCells} from "./agentView.js";
 import AgentBrief from "./AgentBrief.vue";
 import AgentFolds from "./AgentFolds.vue";
 import AgentNow from "./AgentNow.vue";
@@ -62,7 +63,7 @@ onMounted(load);
         <div class="scroll">
             <template v-if="failure"><p class="failure" role="alert" data-resource-failure>{{ failure }}</p></template>
             <template v-else-if="row && inspection">
-                <AgentWho :name="givenName(row, facts)" :state="agentState(row, facts)" :started-by="inspection.started_by" :agent="row" :programs="programs" :usage="{agents: facts ? [facts] : [], windows: facts?.windows ?? []}" />
+                <AgentWho :name="agentTitle(row, facts).text" :state="agentState(row, facts)" :started-by="inspection.started_by" :agent="row" :programs="programs" :usage="{agents: facts ? [facts] : [], windows: facts?.windows ?? []}" />
                 <AgentStrip :cells="stripCells({row, facts, inspection, now})" />
                 <AgentNow :inspection="inspection" :tool="tool" :nothing="nothing" />
                 <AgentBrief :label="row.access === 'read-only' ? 'Instruction' : 'Brief'" :text="facts?.instruction ?? ''" :points="points" />

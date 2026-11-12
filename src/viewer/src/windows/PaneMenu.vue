@@ -4,7 +4,7 @@ import MenuItem from "../kit/MenuItem.vue";
 import MenuLabel from "../kit/MenuLabel.vue";
 import PaneMenuInner from "../panes/PaneMenuInner.vue";
 import PaneMenuOptions from "../panes/PaneMenuOptions.vue";
-import {wordLabel} from "../domain/labels.js";
+import {agentTitle} from "../domain/agentTitle.js";
 
 // one pane's menu in sections: what to do with the pane (split, detach, its width), the agent it follows, its window's options with the marks behind a fold,
 // then moving it, closing it and resetting the layout; it is one narrow column that scrolls when it is long
@@ -20,7 +20,7 @@ const props = defineProps({
 });
 const emit = defineEmits(["split", "detach", "option", "move", "close", "reset"]);
 const agents = computed(() => [{value: "main", agent: null, label: "Main agent", chosen: !props.pane.options?.agent},
-    ...props.followable.map((row) => ({value: row.id, agent: row.id, label: `${wordLabel(row.role)} ${row.number}`, chosen: props.pane.options?.agent === row.id}))]);
+    ...props.followable.map((row) => ({value: row.id, agent: row.id, label: agentTitle(row).text, chosen: props.pane.options?.agent === row.id}))]);
 </script>
 
 <template>
