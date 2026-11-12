@@ -40,4 +40,5 @@ def test_a_part_merge_takes_the_merged_tasks_out_of_the_count_and_keeps_the_rest
     worker.repository.checkout(ENVIRONMENT_BRANCH)
     worker.story.expect_success(f"worker merge --wait {number} --up-to 1", actor=worker.story.agent)
     worker.story.run_listeners()
-    assert card_task_ids(worker) == [2, 3], card_task_ids(worker)
+    rows = [(row["id"], row["state"], row["merged_task_ids"], row["merged_at"]) for row in json.loads(worker.story.run("worker-worktree list --json --environment main", actor=worker.story.agent).output_text)["rows"]]
+    assert card_task_ids(worker) == [2, 3], (card_task_ids(worker), rows)

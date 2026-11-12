@@ -336,19 +336,19 @@ def test_only_a_person_changes_the_split(split_story):
     story.expect_refusal(f'setting set {SPLIT} "claude 50,codex 50" --project', 'person', actor=story.agent)
     story.expect_success(f'setting request {SPLIT} "claude 50,codex 50" --reason "Share new work evenly" --project --environment main', actor=story.agent)
     story.run_listeners()
-    story.expect_text('chat-mark list --json', 'split')
-    story.expect_text('question show 1', 'claude', 'codex')
+    story.expect_text('approval show 1', 'Program split', 'claude', 'codex', 'state: open')
     story.expect_absent(f'setting show {SPLIT}', 'claude 50')
 
 
 @pytest.mark.parametrize('role', ['worker', 'helper'])
-@pytest.mark.parametrize('line', ['worker-route make --program codex --tags protected --environment main',
-                                 'provider-outage make codex "out of credit" --ends-at 2026-11-01T09:00:00+00:00',
-                                 f'setting set {SPLIT} "claude 50,codex 50" --project'])
-def test_only_a_person_changes_the_split_child_agents_cannot_write(split_story, role, line):
+@pytest.mark.parametrize('line,refusal', [('worker-route make --program codex --tags protected --environment main', None),
+                                          ('provider-outage make codex "out of credit" --ends-at 2026-11-01T09:00:00+00:00', None),
+                                          (f'setting set {SPLIT} "claude 50,codex 50" --project', 'an approval needs a reason')])
+def test_only_a_person_changes_the_split_child_agents_cannot_write(split_story, role, line, refusal):
     story = split_story
     child = Actor(story.new_row_id(f'agent start child-session claude {role} --parent {story.agent.id} --environment main'), ActorType.AGENT)
-    story.expect_refusal(line, role, actor=child)
+    story.expect_refusal(line, refusal or role, actor=child)
+    story.expect_absent(f'setting show {SPLIT}', 'claude 50')
     story.expect_text('worker-route list --environment main', 'nothing found')
     story.expect_text('provider-outage list', 'nothing found')
 

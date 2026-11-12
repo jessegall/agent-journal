@@ -54,8 +54,9 @@ class WorktreeQuery(Query[Worktree]):
 
     def merged_among(self, agent_ids: Sequence[int]) -> tuple[Worktree, ...]:
         """The worktrees of these agents that a merge took work from, a whole one or a part."""
-        merged = self.with_removed().matching(Among("session_agent_id", agent_ids))
-        return tuple({worktree.id: worktree for column in ("merged_at", "merged_task_ids") for worktree in merged.matching(Greater(column, "")).all_rows()}.values())
+        whole = self.with_removed().matching(Among("session_agent_id", agent_ids)).matching(Greater("merged_at", ""))
+        part = self.with_removed().matching(Among("session_agent_id", agent_ids)).matching(Greater("merged_task_ids", ""))
+        return tuple({worktree.id: worktree for worktree in (*whole.all_rows(), *part.all_rows())}.values())
 
     def open_worktrees(self) -> list[Worktree]:
         return list(self.kept.scoped_read(self.table.name, lambda: tuple(self.oldest().all_rows()), "removed_at IS NULL", name="workers.open_worktrees"))
