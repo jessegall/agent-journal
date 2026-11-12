@@ -4,11 +4,11 @@ from engine.enums.command_category import CommandCategory
 
 # a command each pattern of the streaming hints stands for, so the test can ask which stock reader reads it
 HINT_EXAMPLES = {
-    "*vitest*": "npx vitest run", "*jest*": "npx jest", "*phpunit*": "vendor/bin/phpunit", "*pest*": "vendor/bin/pest", "*artisan test*": "artisan test",
+    "*vitest*": "npx vitest run", "*jest*": "npx jest", "*phpunit*": "vendor/bin/phpunit", "*pest*": "vendor/bin/pest", "*artisan test*": "php artisan test",
     "*pytest*": "pytest tests", "*-m unittest*": "python3 -m unittest discover", "go test*": "go test ./...", "*gotestsum*": "gotestsum --format testname",
     "cargo test*": "cargo test", "*playwright test*": "npx playwright test", "*webpack*": "npx webpack", "*gradle*": "./gradlew build", "mvn*": "mvn -B test",
     "*mvnw*": "./mvnw test", "sbt*": "sbt test", "dotnet build*": "dotnet build", "dotnet test*": "dotnet test", "turbo*": "turbo run build",
-    "*turbo run*": "turbo run build", "ctest*": "ctest", "docker build*": "docker build .", "docker buildx*": "docker buildx build .",
+    "*turbo run*": "npx turbo run build", "ctest*": "ctest", "docker build*": "docker build .", "docker buildx*": "docker buildx build .",
     "xcodebuild*": "xcodebuild test", "npm*run *": "npm run build", "pnpm*run *": "pnpm run build", "yarn *": "yarn build", "*python*": "python3 tools/deploy.py",
 }
 TOOLS_WITHOUT_STOCK_READER = {
