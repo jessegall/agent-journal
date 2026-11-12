@@ -1,4 +1,4 @@
-from engine.process.process_executor import ProcessExecutor
+from engine.process.door.process_executor import ProcessExecutor
 from tests.stories.core.modules.agents.support.numbered_agents import FIRST_STORY_NUMBER
 import json
 from core.modules.agents.models.agent import Agent

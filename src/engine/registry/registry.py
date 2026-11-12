@@ -5,9 +5,9 @@ from engine.registry.profile_entry import ProfileEntry
 from engine.errors.refusal import Refusal
 from engine.agent.agent_policy import AgentPolicy
 from engine.agent.enums.role_group import RoleGroup
-from engine.agent.agent_group_book import AgentGroupBook
+from engine.agent.groups.agent_group_book import AgentGroupBook
 from engine.helper_type.helper_type_book import HelperTypeBook
-from engine.agent.agent_group_entry import AgentGroupEntry
+from engine.agent.groups.agent_group_entry import AgentGroupEntry
 from engine.helper_type.helper_type_entry import HelperTypeEntry
 from dataclasses import asdict, dataclass, field, replace
 from functools import cached_property, lru_cache

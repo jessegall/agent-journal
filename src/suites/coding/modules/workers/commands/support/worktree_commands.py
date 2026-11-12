@@ -5,8 +5,8 @@ from collections.abc import Sequence
 from engine.enums.process_kind import ProcessKind
 from engine.errors.refusal import Refusal
 from engine.errors.run_time_limit_error import RunTimeLimitError
-from engine.process.execution_request import ExecutionRequest
-from engine.process.process_executor import ProcessExecutor
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.process_executor import ProcessExecutor
 from suites.coding.modules.workers.models.merge_followup import STEP_FINISHED, FAILED_STEP, UNCERTAIN_STEP
 from suites.coding.modules.workers.commands.support.command_result import CommandResult
 

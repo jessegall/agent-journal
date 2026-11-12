@@ -13,7 +13,7 @@ from suites.coding.support.coding_templates import CODING_TEMPLATES
 from engine.module.model_declaration import ModelDeclaration
 from engine.skill.skill_declaration import SkillDeclaration
 from engine.module.module import Module
-from engine.agent.agent_group import AgentGroup
+from engine.agent.groups.agent_group import AgentGroup
 from engine.helper_type.helper_type import HelperType
 from engine.viewer.window_search import WindowSearch
 from suites.coding.support.file_edit_searcher import FileEditSearcher

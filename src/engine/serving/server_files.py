@@ -1,7 +1,7 @@
 import time
 import fcntl
 import os
-from engine.serving.server_phase import ServerPhase
+from engine.enums.server_phase import ServerPhase
 from collections.abc import Generator
 from contextlib import ExitStack, contextmanager
 from pathlib import Path

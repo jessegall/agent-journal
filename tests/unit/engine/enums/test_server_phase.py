@@ -1,6 +1,6 @@
 from engine.journal.journal_home import JournalHome
 from engine.serving.server_files import ServerFiles
-from engine.serving.server_phase import ServerPhase
+from engine.enums.server_phase import ServerPhase
 
 
 def test_the_phase_reads_from_the_server_marks_and_no_mark_reads_as_ready(tmp_path):

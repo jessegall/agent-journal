@@ -74,12 +74,15 @@ class Wait(Overlay):
         return []
 
 
-def module(name: str, dependencies: Sequence[str] = (), **lists: object) -> type[Module]:
-    return type(name.capitalize(), tuple([Module]), {"name": name, "requires_core": ">=5,<6", "dependencies": dependencies, **lists})
+def module(name: str, dependencies: Sequence[str] = (), suites: Sequence[type[Suite]] = (), **lists: object) -> type[Module]:
+    made = type(name.capitalize(), tuple([Module]), {"name": name, "requires_core": ">=5,<6", "dependencies": dependencies, **lists})
+    made.sample_suites = [type(suite.__name__, tuple([suite]), {"modules": [made]}) for suite in suites]
+    return made
 
 
 def problems(*modules: type[Module]) -> list[str]:
-    return list(SuiteCheck().problems(modules, DriverEntries().rules(modules), SuiteList([])))
+    shipped = SuiteList([suite for made in modules for suite in made.sample_suites])
+    return list(SuiteCheck().problems(modules, DriverEntries().rules(modules), shipped))
 
 
 def test_a_suite_with_its_drivers_passes_and_a_default_may_name_a_driver_not_installed_yet():

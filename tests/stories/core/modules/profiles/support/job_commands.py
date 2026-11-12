@@ -33,7 +33,7 @@ PROFILE_COMMANDS = {
     "journal-designer": ("journal doc make", "journal doc show", "journal report make", "journal search find", "journal task show"),
 }
 PROJECT_COMMANDS = {
-    "code-reviewer": ("journal search find", "journal task make", "journal task list", "journal doc show"),
+    "code-reviewer": ("journal search find", "journal report make"),
     "plan-reviewer": ("journal plan outline", "journal task show", "journal doc show"),
     "designer": ("journal task show", "journal doc show", "journal search find"),
 }
@@ -91,7 +91,7 @@ def expect_helper_commands(story) -> None:
     run_helper_command(story, "journal-researcher", 'doc make "Cart evidence" --abstract "Totals" --body "The cart stores cents."')
     run_helper_command(story, "journal-plan-reviewer", "plan outline 1")
     run_helper_command(story, "journal-debugger", "task show 1")
-    run_helper_command(story, "code-reviewer", 'task make "Check the cents" --brief "Check integer totals" --priority critical --environment main')
+    run_helper_command(story, "code-reviewer", 'report make "Cents review" --abstract "Totals" --body "Totals use integer cents."')
     run_helper_command(story, "plan-reviewer", "plan outline 1")
     run_helper_command(story, "designer", "task show 1")
 

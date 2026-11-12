@@ -1,7 +1,7 @@
-from engine.process.outside_start import OutsideStart
+from engine.process.door.outside_start import OutsideStart
 
 OUTSIDE_STARTS = (
-    OutsideStart("src/engine/process/runner_program.py", "the door itself: the one place the executor starts a program"),
+    OutsideStart("src/engine/process/door/runner_program.py", "the door itself: the one place the executor starts a program"),
     OutsideStart("src/core/modules/processes/support/queued_process_launch.py", "starts the Go runner of an agent's shell line, which writes that line's own process row in the one queue"),
     OutsideStart("src/install/update/install_journal.py", "the installer runs while the server is stopped for the update, inside the pause; there is no door to go through"),
     OutsideStart("src/install/update/chat_update_steps.py", "an installer step reports its progress while the server is stopped, inside the pause"),

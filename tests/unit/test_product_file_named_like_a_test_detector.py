@@ -29,6 +29,7 @@ def test_the_detector_fires_on_a_source_file_named_test_and_stays_silent_on_a_pl
     (custom.parent / "config.json").write_text(json.dumps({"detectors": [RULE]}))
     shutil.copyfile(CUSTOM / f"{RULE}.json", custom / f"{RULE}.json")
     shutil.copytree(SAMPLES, custom / "samples" / "src" / "shop")
+    shutil.copytree(CUSTOM / "skills" / "plain-code-words", custom / "skills" / "plain-code-words")
     completed_process = subprocess.run([executable, "rule", "prove"], cwd=tmp_path, capture_output=True, text=True, timeout=30)
     assert completed_process.returncode == 0, completed_process.stdout + completed_process.stderr
     assert f"✓ {RULE}" in completed_process.stdout, completed_process.stdout

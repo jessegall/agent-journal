@@ -10,6 +10,7 @@ from engine.enums.actor_type import ActorType
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
+from suites.coding.modules.workers.support.merger_work import MergerWork
 from tests.stories.core.modules.helpers.helper_jobs import resumable_session
 from tests.stories.core.modules.helpers.support.rotating_helper import real_program_states
 from tests.stories.core.support.agent_labels import agent_number
@@ -26,6 +27,7 @@ TWO_PROGRAM_SAVE = "profile save journal-merger --program claude --fallback-prog
 @pytest.fixture
 def merging(new_story, monkeypatch):
     merger_can_start(monkeypatch)
+    monkeypatch.setattr(MergerWork, "waits", lambda work: True)
     story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     return story

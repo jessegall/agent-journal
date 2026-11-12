@@ -38,7 +38,7 @@ def pin_lines(hook_answer) -> list[str]:
 def with_shop_remote(story):
     config = story.home.project_folder / ".git" / "config"
     config.parent.mkdir(parents=True, exist_ok=True)
-    config.write_text('[remote "origin"]\n\turl = git@github.com:shop/cart.git\n')
+    config.write_text('[remote "origin"]\n\turl = https://github.com/shop/cart.git\n')
     return story
 
 

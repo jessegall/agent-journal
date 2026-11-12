@@ -4,9 +4,9 @@ import subprocess
 import threading
 
 from engine.errors.run_time_limit_error import RunTimeLimitError
-from engine.process.execution import Execution
-from engine.process.placed_run import PlacedRun
-from engine.process.run_placement import RunPlacement
+from engine.process.door.execution import Execution
+from engine.process.door.placed_run import PlacedRun
+from engine.process.door.run_placement import RunPlacement
 
 QUICK_RUN_LONGEST_FACTOR = 10
 QUICK_RUN_LONGEST_SECONDS = 600

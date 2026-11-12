@@ -51,14 +51,18 @@ def handler(*agents: StoredAgent) -> tuple[RetireAgentHandler, StoredAgents]:
     return RetireAgentHandler(stored, stored, SimpleNamespace(helper_types=()), SimpleNamespace()), stored
 
 
-@pytest.mark.parametrize("asking_agent_id", [MAIN_AGENT_ID, 9], ids=["its parent, the main agent", "an unrelated agent"])
-def test_an_agent_that_retires_an_agent_asks_a_person_with_its_reason(asking_agent_id):
-    retiring, stored = handler(stored_agent(), stored_agent(id=9, number=5))
+def test_the_main_agent_retires_an_ended_agent_at_once_without_asking_a_person():
+    retiring, stored = handler(stored_agent())
     command = RetireAgent(HELPER_ID, REASON)
-    with pytest.raises(UserApprovalRefusal) as approval_request:
-        retiring.prepare(command, Actor(asking_agent_id, ActorType.AGENT))
-    assert (approval_request.value.command, approval_request.value.request_reason) == (command, REASON)
-    assert "helper 4" in str(approval_request.value)
+    retiring.prepare(command, Actor(MAIN_AGENT_ID, ActorType.AGENT))
+    retired = retiring.handle(command, SimpleNamespace(timestamp=RETIRED_AT, actor=Actor(MAIN_AGENT_ID, ActorType.AGENT)))
+    assert (retired.retired_at, retired.retiring_actor_id) == (RETIRED_AT, MAIN_AGENT_ID)
+
+
+def test_an_agent_that_is_not_the_main_agent_is_refused_a_retirement():
+    retiring, stored = handler(stored_agent(), stored_agent(id=9, number=5))
+    with pytest.raises(Refusal, match="only a person or the main agent retires helper 4"):
+        retiring.prepare(RetireAgent(HELPER_ID, REASON), Actor(9, ActorType.AGENT))
     assert stored.saved == []
 
 
