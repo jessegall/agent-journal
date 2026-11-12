@@ -15,13 +15,6 @@ NUDGE_TOTALS_SELECT = (
 )
 
 
-TOOL_USE_COUNT_TERM = "coalesce(sum(created_at > ?), 0)"
-TOOL_USE_COUNTS_SELECT = "SELECT {sums} FROM hook_calls WHERE session_agent_id = ? AND hook = ? AND created_at > ?"
-
-
-def tool_use_counts_select(start_count: int) -> str:
-    return TOOL_USE_COUNTS_SELECT.format(sums=", ".join(TOOL_USE_COUNT_TERM for _ in range(start_count)))
-
 
 ENVIRONMENT_MENU_ROWS_SELECT = (
     "SELECT environments.id, environments.name, environments.folder, environments.branch,"

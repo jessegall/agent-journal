@@ -135,8 +135,4 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
         return self.free().matching(self.no_open_dependency()).matching(exclusion)
 
     def closed_counts(self, starts: Sequence[Timestamp]) -> list[int]:
-        if not starts:
-            return []
-        parameters = (*(start.text for start in starts), self.database.scope_environment_id, min(start.text for start in starts))
-        row = self.database.rows(Statement(closed_task_counts_select(len(starts)), parameters))[0]
-        return [int(count) for count in row]
+        return self.counts_after("closed_at", [start.text for start in starts])

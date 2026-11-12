@@ -74,10 +74,3 @@ ENVIRONMENT_CARDS_SELECT = (
     " FROM environments WHERE environments.test = 0"
 )
 
-
-CLOSED_TASK_COUNT_TERM = "coalesce(sum(closed_at > ?), 0)"
-CLOSED_TASK_COUNTS_SELECT = "SELECT {sums} FROM tasks WHERE environment_id = COALESCE(?, environment_id) AND closed_at > ?"
-
-
-def closed_task_counts_select(start_count: int) -> str:
-    return CLOSED_TASK_COUNTS_SELECT.format(sums=", ".join(CLOSED_TASK_COUNT_TERM for _ in range(start_count)))

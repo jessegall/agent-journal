@@ -16,7 +16,6 @@ from engine.query.conditions.maximum import Maximum
 from engine.query.conditions.minimum import Minimum
 from engine.query.conditions.equal import Equal
 from engine.query.query import Query
-from core.modules.drivers.models.support.views import tool_use_counts_select
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from engine.driver.search_category import CODE, GRAPHIFY
@@ -148,9 +147,7 @@ class HookCallQuery(Query[HookCall]):
         return self.agent(agent_id).filter(hook=HookEventName.PRE_TOOL_USE).matching(Minimum("created_at", timestamp.text)).count()
 
     def tool_use_counts(self, agent_id: int, starts: Sequence[Timestamp]) -> list[int]:
-        parameters = (*(start.text for start in starts), agent_id, HookEventName.PRE_TOOL_USE.value, min(start.text for start in starts))
-        row = self.database.rows(Statement(tool_use_counts_select(len(starts)), parameters))[0]
-        return [int(count) for count in row]
+        return self.agent(agent_id).filter(hook=HookEventName.PRE_TOOL_USE).counts_after("created_at", [start.text for start in starts])
 
     def newest_agent_hook(self, agent_id: int) -> HookCall | None:
         calls = self.agent(agent_id).matching(Equal("hook", HookEventName.TICK, negated=True)).newest()

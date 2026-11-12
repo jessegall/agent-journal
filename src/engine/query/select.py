@@ -65,6 +65,11 @@ class Select:
     def count_statement(self) -> Statement:
         return self.filtered(Statement(f"SELECT count(*) FROM {self.source}"))
 
+    def counts_after_statement(self, column: str, starts: tuple[object, ...]) -> Statement:
+        """For each start, how many rows have the column past it: one count per start, in one statement."""
+        sums = ", ".join(f"coalesce(sum({column} > ?), 0)" for _ in starts)
+        return self.filtered(Statement(f"SELECT {sums} FROM {self.source}", starts))
+
     def group_count_statement(self) -> Statement:
         """Counts the rows of each value of the group columns."""
         columns = ", ".join(self.group_columns)

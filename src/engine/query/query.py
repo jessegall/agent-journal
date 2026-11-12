@@ -318,6 +318,17 @@ class Query(Generic[M]):
             return 0
         return self.database.rows(select.count_statement())[0][0]
 
+    def counts_after(self, column: str, starts: Sequence[object]) -> list[int]:
+        """For each start, how many rows have the column past it, in the order of the starts, read in one statement
+        that reads no row before the earliest start."""
+        self.checked(column)
+        if not starts:
+            return []
+        select = self.scoped(self.select.matching(Greater(column, min(starts))))
+        if select.is_empty:
+            return [0 for _ in starts]
+        return [int(count) for count in self.database.rows(select.counts_after_statement(column, tuple(starts)))[0]]
+
     def exists(self) -> bool:
         select = self.scoped(self.select)
         if select.is_empty:
