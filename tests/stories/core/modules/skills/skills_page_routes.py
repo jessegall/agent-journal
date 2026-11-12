@@ -33,12 +33,12 @@ def test_one_required_switch_adds_then_removes_a_skill_from_project_lists(skills
     with skills_server(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         line(server, cookie, "skill", "set-required", folder, "--agents", "all")
-        line(server, cookie, "skill", "set-required", "journal-etiquette", "--agents", "all")
+        line(server, cookie, "skill", "set-required", "journal-messages", "--agents", "all")
         settings = line(server, cookie, "skill", "requirements")
-        story.expect_rows(folder in settings["session_start"] and "journal-etiquette" in settings["session_start"])
+        story.expect_rows(folder in settings["session_start"] and "journal-messages" in settings["session_start"])
         story.expect_rows(folder in story.container.get(StartSkills).session_start())
         line(server, cookie, "skill", "set-required", folder, "--agents", "none")
-        story.expect_rows(line(server, cookie, "skill", "requirements")["session_start"] == ["journal-etiquette"])
+        story.expect_rows(line(server, cookie, "skill", "requirements")["session_start"] == ["journal-messages"])
 
 
 def test_main_only_and_compaction_choices_do_not_overwrite_other_skills(skills_page_story):

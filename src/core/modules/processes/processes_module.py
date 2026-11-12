@@ -1,5 +1,5 @@
 from core.modules.processes.models.request_run import RequestRun
-from core.modules.processes.migrations.m072_process_hook_call_index import ProcessHookCallIndexMigration
+from core.modules.processes.migrations.m073_process_hook_call_index import ProcessHookCallIndexMigration
 from core.modules.processes.migrations.m067_request_runs import RequestRunsMigration
 from engine.process.door.run_placement import RunPlacement
 from engine.process.door.run_pauses import RunPauses

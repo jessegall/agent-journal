@@ -18,8 +18,8 @@ def test_a_dispatch_with_the_launcher_running_hands_it_the_worker_to_start_in_it
     launcher.expect_started(worker_id, worker_session(story, Actor(worker_id, ActorType.AGENT)), repository.worktree_folder(worker_id))
     command = launcher.requests[0]["command"]
     brief = " ".join(command)
-    for skill in ("journal", "journal-etiquette", "journal-tasks", "journal-shell", "journal-workers"):
+    for skill in ("journal", "journal-tasks", "journal-shell", "journal-workers"):
         expected = f"load this first with the Skill tool: {skill}" if program == "claude" else f"read this first: {repository.worktree_folder(worker_id) / skills_folder / skill / 'SKILL.md'}"
         story.expect_rows(expected in brief)
-    story.expect_rows("Load these skills before your first write" in brief, "journal overview" in brief,
+    story.expect_rows("journal-etiquette" not in brief, "Load these skills before your first write" in brief, "journal overview" in brief,
                       "only your new tests or the tests your change affects" in brief, "no Monitor" in brief)

@@ -7,8 +7,8 @@ MODULE_KEY = "journal.core.skills"
 SESSION_START_KEY = f"{MODULE_KEY}.session-start"
 AFTER_COMPACTION_KEY = f"{MODULE_KEY}.after-compaction"
 MAIN_AGENT_KEY = f"{MODULE_KEY}.main-agent"
-JOURNAL_SKILLS = ("journal", "journal-etiquette")
-MAIN_AGENT_SKILLS = ("journal-tasks", "journal-messages", "journal-memory", "journal-plans")
+JOURNAL_SKILLS = ("journal",)
+MAIN_AGENT_SKILLS = ("journal-etiquette", "journal-tasks", "journal-messages", "journal-memory", "journal-plans")
 SKILL_SETTINGS = [
     SettingValue("session-start", "Skills at the start", "The skills an agent reads when its session starts.", SettingType.LIST, default=JOURNAL_SKILLS),
     SettingValue("after-compaction", "Skills after a compaction", "The skills an agent reads again after its context is compacted.",

@@ -79,8 +79,8 @@ class SkillsModule(Module):
     block_conditions = [SkillsRead, SkillLoaded]
     settings = SKILL_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.chat", "journal.core.processes", "journal.core.environments", "journal.core.profiles"]
-    skills = [SkillDeclaration("journal", "Find your way in the journal: what it is, its basic ideas and which skill to load for what; read it before your first command of every session, with the etiquette skill"),
-              SkillDeclaration("journal-etiquette", "Behave in the chat with the user and keep the journal's own mechanics out of it; read it before your first reply of every session, with the journal skill")]
+    skills = [SkillDeclaration("journal", "Find your way in the journal: what it is, its basic ideas and which skill to load for what; read it before your first command of every session"),
+              SkillDeclaration("journal-etiquette", "Behave in the chat with the user and keep the journal's own mechanics out of it; read it before your first reply of every session, with the journal skill", types=["main"])]
     models = [ModelDeclaration(AgentSkill, commands=[LoadAgentSkill]), ModelDeclaration(SkillRequest, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [SkillSessionMigration, SkillsTablesMigration, SkillRequestsTableMigration]
     subcommands = [SaveProfileSubcommand, ProfileSkillsSubcommand, SetRequiredSkillSubcommand, SkillRequirementsSubcommand, SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand, SkillRequiredSubcommand]

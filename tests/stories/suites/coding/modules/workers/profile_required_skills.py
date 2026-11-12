@@ -15,7 +15,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.support.story_checks import expect_value
 
 PROFILE = "note-taker"
-LISTED = "journal,journal-etiquette,journal-tasks,journal-memory"
+LISTED = "journal,journal-tasks,journal-memory"
 REQUIRED = "journal-memory"
 UNLISTED_SKILL = "journal-dumps"
 SAVE = f'profile save {PROFILE} --type helper --access read-only --description "Takes notes" --body "Take notes."'
@@ -67,7 +67,7 @@ def test_a_skill_nobody_has_cannot_be_required(person):
 
 
 def test_switching_the_skill_off_clears_its_required_mark(saved):
-    saved.expect_success(f"profile save {PROFILE} --skills journal,journal-etiquette,journal-tasks", actor=saved.user)
+    saved.expect_success(f"profile save {PROFILE} --skills journal,journal-tasks", actor=saved.user)
     saved.expect_rows(row(saved, PROFILE, REQUIRED).required is False, row(saved, PROFILE, REQUIRED).listed is False)
 
 
