@@ -7,6 +7,7 @@ from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
+from engine.driver.hook_reply import HookReply
 from engine.testing.expectations.expect_reply import expect_reply_line
 from engine.testing.stories.story import Story
 from core.modules.processes.commands.move_process.move_process import MoveProcess
@@ -33,13 +34,14 @@ def moved(story: Story, process: Process) -> Process:
     return process
 
 
-def docked(story: Story, session: str = "s-1") -> None:
-    """The agent works on while the dock seconds pass, and its next hooks dock a long run."""
+def docked(story: Story, session: str = "s-1") -> HookReply:
+    """The agent stops, the dock seconds pass, and its next tool use docks a long run: its reply carries the
+    lines said at the dock."""
     story.hook(session, HookSamples.stop())
     story.advance(DOCK_SECONDS)
-    story.hook(session, HookSamples.stop())
-    story.hook(session, HookSamples.stop())
+    reply = story.hook(session, READ)
     story.run_listeners()
+    return reply
 
 
 @pytest.fixture
@@ -67,8 +69,7 @@ def test_a_script_started_in_the_background_shows_its_mark_and_dock_item_until_i
 
 def test_a_background_script_is_asked_for_a_title_and_a_descriptive_title_is_not(main_story):
     process = moved(main_story, started_run(main_story, SCRIPT, CommandCategory.PROCESS))
-    docked(main_story)
-    expect_reply_line(main_story.hook("s-1", READ), RUN_NAME.nudge(process=process.id).text)
+    expect_reply_line(docked(main_story), RUN_NAME.nudge(process=process.id).text)
     main_story.expect_success(f'output title {process.id} "Serving the docs"', actor=main_story.agent)
     main_story.expect_rows(not any("has its raw command as its title" in line for line in main_story.hook("s-1", READ).lines))
 
@@ -78,19 +79,19 @@ def test_a_helpers_background_run_gets_the_card_and_the_title_ask(new_story):
     worker = reader_worker(story)
     process = worker_run(story, "python3 build_site.py", CommandCategory.BUILD)
     story.container.get(Bus).run(MoveProcess(process.id), worker, environment_id=1)
-    docked(story, "s-reader")
+    reply = docked(story, "s-reader")
     story.expect_text(MARKS, f"process:{process.id}", actor=story.user)
-    expect_reply_line(story.hook("s-reader", READ), RUN_NAME.nudge(process=process.id).text)
+    expect_reply_line(reply, RUN_NAME.nudge(process=process.id).text)
 
 
 def test_a_run_moved_by_the_foreground_limit_keeps_its_card_and_its_title_ask(main_story):
     process = started_run(main_story, "python3 build_site.py", CommandCategory.BUILD)
     main_story.advance(FOREGROUND_SECONDS)
     main_story.run(f"process background {process.id}", actor=main_story.agent)
-    docked(main_story)
+    reply = docked(main_story)
     main_story.expect_text(MARKS, f"process:{process.id}", actor=main_story.user)
     main_story.expect_text(DOCK, "processes.output", actor=main_story.user)
-    expect_reply_line(main_story.hook("s-1", READ), RUN_NAME.nudge(process=process.id).text)
+    expect_reply_line(reply, RUN_NAME.nudge(process=process.id).text)
 
 
 def test_a_read_that_moved_a_quick_read_and_a_plugin_run_never_show_a_card(main_story):
@@ -136,5 +137,4 @@ def test_two_background_runs_with_one_title_are_asked_to_take_their_own(main_sto
     second = moved(main_story, started_run(main_story, "make docs", CommandCategory.BUILD))
     for process in (first, second):
         main_story.expect_success(f'output title {process.id} "Building the viewer"', actor=main_story.agent)
-    docked(main_story)
-    expect_reply_line(main_story.hook("s-1", READ), SHARED_TITLE.nudge(outputs=f"{first.id}, {second.id}").text)
+    expect_reply_line(docked(main_story), SHARED_TITLE.nudge(outputs=f"{first.id}, {second.id}").text)
