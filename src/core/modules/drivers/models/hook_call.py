@@ -38,7 +38,7 @@ class HookCall(Prunable, EnvironmentScoped, Model):
     """One hook an agent program sent, or one tick on which a rule spoke, with the driver that answered and
     its answer; the rules asked, the layers and any command dropped are in its metadata."""
 
-    kept_rows = 50000
+    kept_rows = 10000
 
     change_names = (COMPACTION, SESSION_START, PROMPT, STOP_ALLOWED, STOP_REFUSED)
     model_name = "hook_call"

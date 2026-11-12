@@ -40,7 +40,8 @@ PREPARED = HOOK_FOLDER / "programs" / "testdata" / "prepared" / "claude"
 STOP_EXAMPLE = HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json"
 ROOT, FOLDER = Path("/work/journal"), Path("/work/app")
 VARIABLES = {"JOURNAL_ENV": "main"}
-SETTINGS = ["--settings", str(ROOT / ".journal" / "programs" / "claude" / "settings.json"), "--setting-sources", "project"]
+SETTINGS = ["--settings", str(ROOT / ".journal" / "programs" / "claude" / "settings.json"), "--setting-sources", "project",
+            "--mcp-config", str(ROOT / ".journal" / "programs" / "claude" / "mcp.json")]
 
 
 @pytest.fixture
@@ -124,14 +125,14 @@ def test_opus_starts_at_medium_and_sonnet_at_high_by_default():
 
 def test_a_session_command_carries_the_journal_settings_and_the_project_source(provider):
     arguments = list(provider.session_command(Launch(ROOT, FOLDER, "sonnet", "launch-1", SessionStart("s-1"), VARIABLES)).arguments)
-    assert arguments[1:5] == SETTINGS
+    assert arguments[1:7] == SETTINGS
     assert Path(arguments[2]).is_absolute()
     assert "user" not in arguments and "local" not in arguments
 
 
 def test_a_helper_command_carries_the_journal_settings_and_the_project_source(provider):
     arguments = list(provider.helper_command(HelperLaunch(ROOT, FOLDER, "sonnet", "worker-7", SessionStart("s-2"), VARIABLES, brief="Go")).arguments)
-    assert arguments[1:5] == SETTINGS
+    assert arguments[1:7] == SETTINGS
 
 
 @pytest.mark.parametrize("given", [("--settings", "/tmp/mine.json"), ("--settings=/tmp/mine.json",)])

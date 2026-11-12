@@ -1,3 +1,4 @@
+from engine.file.kept_bytes import KeptBytes
 from engine.provider.model_efforts import ModelEfforts
 from core.modules.claude_code.support.claude_code_settings import MODEL_EFFORTS
 from engine.provider.program_server_file import ProgramServerFile
@@ -59,6 +60,8 @@ EFFORT_CHOICES = (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhig
 
 SETTINGS_FLAGS = ("--settings", "--setting-sources")
 SETTING_SOURCES = "project"
+SERVER_FILE = "mcp.json"
+SERVERS_KEY = "mcpServers"
 CARRIED_SETTINGS = ("env", "apiKeyHelper", "awsAuthRefresh", "awsCredentialExport", "forceLoginMethod", "forceLoginOrgUUID", "otelHeadersHelper",
                     "includeCoAuthoredBy", "skipDangerousModePermissionPrompt")
 BYPASS_PERMISSIONS = {"defaultMode": "bypassPermissions"}
@@ -148,7 +151,11 @@ class ClaudeCodeProvider(Provider):
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
 
     def settings_arguments(self, root: Path) -> list[str]:
-        return ["--settings", str(JournalHome(root / JOURNAL_FOLDER).program_settings_file(self.name)), "--setting-sources", SETTING_SOURCES]
+        home = JournalHome(root / JOURNAL_FOLDER)
+        return ["--settings", str(home.program_settings_file(self.name)), "--setting-sources", SETTING_SOURCES, "--mcp-config", str(self.server_file(home))]
+
+    def server_file(self, home: JournalHome) -> Path:
+        return home.program_folder(self.name) / SERVER_FILE
 
     def effort(self, model: str) -> str:
         return self.efforts.effort(MODEL_EFFORTS, model) or FALLBACK_EFFORT
@@ -240,7 +247,12 @@ class ClaudeCodeProvider(Provider):
         carried = {key: value for key, value in (person_settings or {}).items() if key in CARRIED_SETTINGS}
         settings = {**carried, "permissions": BYPASS_PERMISSIONS, **self.hook_settings(runner, root),
                     "hooks": ProgramHooks.journal(type(self), path).journal_blocks(runner, root, managed)}
-        return ProgramSettings(self.name, tuple([SettingsFile(path, json.dumps(settings, indent=2, sort_keys=True) + "\n")]),
+        state = self.state_file()
+        person_state = self.person_settings(KeptBytes.read(state)) if state.is_file() and os.access(state, os.R_OK) else {}
+        servers = person_state.get(SERVERS_KEY, {}) if person_state is not None else {}
+        unreadable = (*unreadable, *([state] if person_state is None else []))
+        server_file = SettingsFile(self.server_file(home), json.dumps({SERVERS_KEY: servers if is_mapping(servers) else {}}, indent=2, sort_keys=True) + "\n")
+        return ProgramSettings(self.name, (SettingsFile(path, json.dumps(settings, indent=2, sort_keys=True) + "\n"), server_file),
                                person_files=self.user_hook_files(), person_data=person_data, unreadable_person_files=unreadable)
 
     @staticmethod
