@@ -19,4 +19,6 @@ class BehindCheckLifecycle(Lifecycle):
     bring_up_to_date = Move("bring_up_to_date", [State.OPEN, State.ORDERED, State.CONFLICTED], State.UPDATED)
     conflict = Move("conflict", [State.ORDERED], State.CONFLICTED)
     remind = Move("remind", [State.ORDERED], State.ORDERED)
+    note_open_failure = Move("note_open_failure", [State.OPEN], State.OPEN)
+    note_ordered_failure = Move("note_ordered_failure", [State.ORDERED], State.ORDERED)
     end = Move("end", [State.OPEN, State.ORDERED, State.CONFLICTED, State.PASSED, State.LEFT], State.GONE)

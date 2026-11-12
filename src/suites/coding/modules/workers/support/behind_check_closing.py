@@ -13,7 +13,8 @@ GONE_FROM = (BehindCheckState.OPEN, BehindCheckState.ORDERED, BehindCheckState.C
 
 class BehindCheckClosing:
     """Closes the checks of a worktree as what happened to it says: brought up to date by a commit or an update,
-    clashing when an update left markers, gone when the worktree left its cut state. A closed check is left as it is."""
+    clashing when an update left markers, gone when the worktree left its cut state; an update that failed is noted
+    on an open or ordered check, which stays as it was. A closed check is left as it is."""
 
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository
@@ -25,6 +26,9 @@ class BehindCheckClosing:
     def conflicted(self, worktree: Worktree, context: Context) -> None:
         for check in self.checks(worktree, CONFLICTED_FROM):
             self.repository.save_change(check, check.conflicted(), context)
+
+    def failed(self, worktree: Worktree, reason: str, context: Context) -> tuple[WorktreeBehindCheck, ...]:
+        return tuple(self.repository.save_change(check, check.failed(reason), context) for check in self.checks(worktree, CONFLICTED_FROM))
 
     def close_gone(self, worktree: Worktree, context: Context) -> None:
         for check in self.checks(worktree, GONE_FROM):

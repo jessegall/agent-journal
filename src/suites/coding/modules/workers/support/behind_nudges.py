@@ -8,4 +8,6 @@ BEHIND_FOR_MERGER = NudgeDeclaration("workers.worktree_behind", NudgeType.STEERI
     "worker:{worker} is {count} commits behind {base}: journal merger behind {worker}", turn_limited=False, wakes_agent=True)
 BEHIND_FOR_MAIN_AGENT = NudgeDeclaration("workers.worktree_behind_main", NudgeType.STEERING,
     "worker:{worker} is {count} commits behind {base}, too far to leave to the merger: journal merger behind {worker}, then decide", turn_limited=False, wakes_agent=True)
-BEHIND_NUDGES = [FAST_FORWARDED, BEHIND_FOR_MERGER, BEHIND_FOR_MAIN_AGENT]
+UPDATE_FAILED_FOR_MERGER = NudgeDeclaration("workers.worktree_update_failed", NudgeType.STEERING,
+    "worker:{worker} update failed and changed nothing: {reason}", turn_limited=False, wakes_agent=True)
+BEHIND_NUDGES = [FAST_FORWARDED, BEHIND_FOR_MERGER, BEHIND_FOR_MAIN_AGENT, UPDATE_FAILED_FOR_MERGER]

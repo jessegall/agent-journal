@@ -9,7 +9,7 @@ class WorktreeBehindChecksMigration(Migration):
     statements = (
         "CREATE TABLE worktree_behind_checks (id INTEGER PRIMARY KEY, environment_id INTEGER NOT NULL REFERENCES environments(id),"
         " worktree_id INTEGER NOT NULL REFERENCES worker_worktrees(id) ON DELETE CASCADE, base_tip TEXT NOT NULL, behind INTEGER NOT NULL,"
-        " state TEXT NOT NULL, decided_by INTEGER REFERENCES actors(id), reason TEXT NOT NULL DEFAULT '', reminders INTEGER NOT NULL DEFAULT 0,"
+        " state TEXT NOT NULL, decided_by INTEGER REFERENCES actors(id), reason TEXT NOT NULL DEFAULT '', reminders INTEGER NOT NULL DEFAULT 0, failure TEXT NOT NULL DEFAULT '',"
         " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)), created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT",
         "CREATE INDEX worktree_behind_checks_worktree ON worktree_behind_checks (worktree_id, state)",
         "CREATE INDEX worktree_behind_checks_environment ON worktree_behind_checks (environment_id, id)",

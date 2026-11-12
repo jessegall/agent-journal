@@ -13,7 +13,8 @@ DECIDING_STATES = (BehindCheckState.OPEN, BehindCheckState.PASSED)
 @dataclass(frozen=True, kw_only=True)
 class WorktreeBehindCheck(EnvironmentScoped, Model):
     """One look at a worktree that fell behind its base branch: the base tip it was behind, by how many commits,
-    where the decision stands, who decided it and why, and how often the worker was reminded to update."""
+    where the decision stands, who decided it and why, how often the worker was reminded to update, and why its last
+    update failed."""
 
     model_name = "worktree_behind_check"
     cli_name = "behind-check"
@@ -27,6 +28,7 @@ class WorktreeBehindCheck(EnvironmentScoped, Model):
     decided_by: int | None = None
     reason: str = ""
     reminders: int = 0
+    failure: str = ""
 
     @classmethod
     def opened(cls, environment_id: int, worktree_id: int, base_tip: str, behind: int) -> "WorktreeBehindCheck":
@@ -56,6 +58,11 @@ class WorktreeBehindCheck(EnvironmentScoped, Model):
 
     def gone(self) -> "WorktreeBehindCheck":
         return self.taken(BehindCheckLifecycle.end)
+
+    def failed(self, reason: str) -> "WorktreeBehindCheck":
+        """Notes an update that changed nothing; the check stays where it was, since nothing was brought up to date."""
+        move = BehindCheckLifecycle.note_ordered_failure if self.state is BehindCheckState.ORDERED else BehindCheckLifecycle.note_open_failure
+        return self.taken(move, failure=reason)
 
     def reminded(self) -> "WorktreeBehindCheck":
         return self.taken(BehindCheckLifecycle.remind, reminders=self.reminders + 1)
