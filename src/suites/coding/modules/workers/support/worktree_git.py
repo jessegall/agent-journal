@@ -54,6 +54,7 @@ STASH_MESSAGE = "journal merge of "
 STASH_LOCK_FILE = "journal-stash.lock"
 DEPENDENCY_FOLDER_NAMES = {"node_modules", "bower_components", "vendor", ".venv", "venv", "env", ".bundle"}
 SKIP_WORKTREE_MARK = "S "
+LISTING_WORD = "list"
 
 UNTRACKED_STATUS = "?? "
 PUBLISHED_FOLDERS = (".claude", ".agents")
@@ -640,6 +641,13 @@ class WorktreeGit:
         return finished
 
     @staticmethod
+    def changes_branches(arguments: Sequence[str]) -> bool:
+        """Whether the git call may move a branch or a checkout; listing worktrees or stashes moves nothing."""
+        command = WorktreeGit.subcommand(arguments)
+        word_after = next(iter(arguments[arguments.index(command) + 1:][:1]), "") if command else ""
+        return command in BRANCH_CHANGES and word_after != LISTING_WORD
+
+    @staticmethod
     def subcommand(arguments: Sequence[str]) -> str:
         """The git command in the arguments, after any options placed before it such as -c name=value."""
         remaining = iter(arguments)
@@ -652,7 +660,7 @@ class WorktreeGit:
 
     def git(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
         line = ["git", "-C", folder, *arguments]
-        kind = ProcessKind.MERGE if self.subcommand(arguments) in BRANCH_CHANGES else ProcessKind.QUICK
+        kind = ProcessKind.MERGE if self.changes_branches(arguments) else ProcessKind.QUICK
         try:
             done = self.executor.execute(ExecutionRequest(line, Path.cwd(), kind, limit_seconds))
             return subprocess.CompletedProcess(line, done.exit_code, done.stdout, done.stderr)
