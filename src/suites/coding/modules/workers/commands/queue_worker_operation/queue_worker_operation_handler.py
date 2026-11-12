@@ -12,18 +12,23 @@ from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.messages.support.work_sources import WorkSources
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from suites.coding.modules.workers.commands.queue_worker_operation.queue_worker_operation import QueueWorkerOperation
+from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
+from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
+from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
 from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 
 
 class QueueWorkerOperationHandler(Handler[QueueWorkerOperation, WorkerOperation]):
-    """Reserves one worker and starts its command through the existing process queue."""
+    """Reserves one worker and starts its command through the existing process queue. The open and blocked tasks of a
+    send are assigned to the worker here, so its unit names them while the send waits for the worker."""
 
     command = QueueWorkerOperation
     disabled_scopes = [ActorScope]
 
     def __init__(self, operations: WorkerOperationQuery, bus: Bus, repository: Repository,
-                 rows: EventRows, environments: EnvironmentRows, sources: WorkSources) -> None:
+                 rows: EventRows, environments: EnvironmentRows, sources: WorkSources, kept_tasks: KeptWorkerTasks) -> None:
+        self.kept_tasks = kept_tasks
         self.operations, self.bus, self.repository = operations, bus, repository
         self.rows, self.environments = rows, environments
         self.sources = sources
@@ -32,6 +37,8 @@ class QueueWorkerOperationHandler(Handler[QueueWorkerOperation, WorkerOperation]
         self.operations.check_available(command.worker_id)
         self.bus.handler(command.command).check_rows(command.command, context.actor)
         worker = self.rows.required(Agent, command.worker_id)
+        if isinstance(command.command, SendWorker):
+            self.assign_sent_tasks(worker, command.command, context)
         source = self.sources.source_copy(replace(context, environment_id=worker.environment_id))
         folder = self.environments.find(worker.environment_id).folder
         line = f"journal worker-operation run {worker.id}"
@@ -42,3 +49,7 @@ class QueueWorkerOperationHandler(Handler[QueueWorkerOperation, WorkerOperation]
                                     source_unavailable=source.unavailable, selecting_actor_id=source.selecting_actor_id,
                                     source_origin=source.origin,
                                     plugin_script=command.plugin_script), context)
+
+    def assign_sent_tasks(self, worker: Agent, send: SendWorker, context: Context) -> None:
+        sent = [task for task in self.kept_tasks.read_tasks(send.task_ids) if task.state in (TaskState.OPEN, TaskState.BLOCKED)]
+        self.kept_tasks.delegate(worker, sent, context)

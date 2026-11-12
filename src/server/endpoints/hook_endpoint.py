@@ -59,7 +59,9 @@ class HookEndpoint:
     def answer(self, data: object, program: str, headers: Mapping[str, str]) -> HookReply:
         started_at = perf_counter()
         sender = HookSender.parsed(data, self.context.hook_limit_seconds, self.context.agent_hook_limit_seconds)
-        if not ServerFiles(self.context.home).phase().runs_programs:
+        files = ServerFiles(self.context.home)
+        if not files.phase().runs_programs:
+            files.hold_session(sender.session)
             return self.held(sender)
         try:
             request = QueueRequest.started(sender.name, sender.event_name, sender.session)

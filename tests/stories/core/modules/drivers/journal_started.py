@@ -1,4 +1,5 @@
 from core.modules.drivers.support.driver_nudges import JOURNAL_STARTED
+from engine.serving.server_files import ServerFiles
 from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.fixtures import MainEnvironment
@@ -28,3 +29,11 @@ def test_a_start_does_not_wake_an_ended_main_agent(new_story):
     story.run(f"agent end {story.agent.id}")
     started_journal(story)
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", LINE)
+
+
+def test_a_start_after_an_update_wakes_a_worker_whose_hook_the_journal_held(new_story):
+    story = new_story(fixture=BuilderStarted)
+    worker_id = story.new_row_id("agent start s-9 claude worker --environment main")
+    ServerFiles(story.home).hold_session("s-9")
+    started_journal(story)
+    story.expect_rows(LINE in story.run(f"agent-line list --agent {worker_id}").output_text, not ServerFiles(story.home).held_sessions_file.exists())

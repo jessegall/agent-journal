@@ -38,7 +38,8 @@ class OpenMarkRule(DriverRule):
         return marks if maximum_tokens is None else self.marks.spaced(marks, maximum_tokens, self.settings.number(MARK_SPACING_TOKENS_SETTING))
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        usage = self.share.reading(self.current_window.window(self.agents.find(hook.agent_id)))
+        agent = self.agents.find(hook.agent_id)
+        usage = self.share.reading_of(agent, self.current_window.window(agent))
         percent = usage.percent
         if percent is None:
             return RuleAnswer.allowed()

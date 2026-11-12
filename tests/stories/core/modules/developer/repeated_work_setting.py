@@ -9,7 +9,7 @@ from engine.caller.caller import Caller
 from engine.caller.caller_request import CallerRequest
 from engine.cli.console import Console
 from engine.cli.line_run import LineRun
-from engine.database.repeated_work import READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS
+from engine.database.repeated_work import READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS, SHOWN_CALLS
 from engine.database.reported_findings import ReportedFindings
 from server.work.listener_thread import ListenerThread
 from server.viewer.line_route import LineRoute
@@ -25,7 +25,7 @@ from tests.stories.server.support.server_client import server_story
 
 LINES = "agent-line list --agent {agent}"
 REPEATED_READ = Statement("SELECT 1")
-SHORT_FINDING_LINES = 8
+SHORT_FINDING_LINES = 2 * SHOWN_CALLS + 3
 
 
 class RepeatedWorkEnabled(StoryFixture):

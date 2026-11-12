@@ -1,8 +1,10 @@
-from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.support.task_block_renewal_record import TaskBlockRenewalRecord
 from core.modules.tasks.support.task_inspection_json_record import TaskInspectionJsonRecord
+from core.modules.tasks.support.task_log_record import TaskLogRecord
+from core.modules.tasks.support.task_wait_record import TaskWaitRecord
 
 
 @dataclass(frozen=True)
@@ -11,13 +13,13 @@ class TaskInspection:
     and its log, oldest line first."""
 
     task: Task
-    waits: tuple[Mapping[str, object], ...]
-    logs: tuple[Mapping[str, object], ...]
+    waits: tuple[TaskWaitRecord, ...]
+    logs: tuple[TaskLogRecord, ...]
     openers: tuple[str, ...] = ()
     helper_id: int | None = None
     helper_name: str | None = None
     helper_main: bool = False
-    block_renewals: tuple[Mapping[str, object], ...] = ()
+    block_renewals: tuple[TaskBlockRenewalRecord, ...] = ()
     tags: tuple[str, ...] = ()
 
     def json(self) -> TaskInspectionJsonRecord:

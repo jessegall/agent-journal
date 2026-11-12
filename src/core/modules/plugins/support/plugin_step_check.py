@@ -9,6 +9,7 @@ from core.modules.environments.models.environment import Environment
 from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event import DeliverPluginEvent
 from core.modules.plugins.commands.send_plugin_step_line.send_plugin_step_line import SendPluginStepLine
 from core.modules.plugins.support.plugin_event import PluginEvent
+from core.modules.plugins.support.plugin_queued_judge import PluginQueuedJudge
 from core.modules.plugins.support.plugin_run import PluginRun
 from core.modules.plugins.support.plugin_run_request import PluginRunRequest
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
@@ -21,8 +22,8 @@ class PluginStepCheck:
     runs late lets the step through with a fault on record, and what could not be judged or what a plugin
     tells reaches the agent and its parent, so a step nobody judged never reads as clean."""
 
-    def __init__(self, runnable: RunnablePlugins, runs: PluginRun, bus: Bus) -> None:
-        self.runnable, self.runs, self.bus = runnable, runs, bus
+    def __init__(self, runnable: RunnablePlugins, runs: PluginRun, bus: Bus, judge: PluginQueuedJudge) -> None:
+        self.runnable, self.runs, self.bus, self.judge = runnable, runs, bus, judge
 
     def refusal(self, event: str, data: Mapping[str, object], environment: Environment, timestamp: Timestamp, agent_id: int) -> str:
         for runnable in self.runnable.running():
@@ -35,7 +36,7 @@ class PluginStepCheck:
             request = PluginRunRequest(runnable, PluginEvent(guard.key if guard else event, data), EventForm.GUARD, None if guard else manifest.window_ms(event, STEP_CEILING_MS),
                                        f"at {event}", environment.name, timestamp, agent_id, guard.script if guard else "")
             outcome = self.runs.recorded_run(request)
-            answer = outcome.answer
+            answer = None if outcome.answer is None else self.judge.settled(outcome.answer, plugin.name, agent_id, environment.id)
             if answer is None:
                 self.line_sender(agent_id, environment, f"[plugin {plugin.name}] could not judge this step: {outcome.fault_text}")
                 continue

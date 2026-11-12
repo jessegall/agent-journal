@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from tests.unit.engine.testing.support.overlap_cases import configure_run
 
@@ -133,3 +135,11 @@ def test_two_failed_expectations(new_story):
     pytest_run = pytester.runpytest_subprocess("-q", "--tb=short", "test_soft.py")
     output = pytest_run.stdout.str()
     assert "2 expectations failed" in output and "the first check" in output and "the second check" in output
+
+
+@pytest.mark.parametrize("workers", [(), ("-n", "2", "--maxschedchunk=1")], ids=["one-process", "two-workers"])
+def test_a_run_that_fails_the_overlap_check_ends_with_pytests_count_line(pytester, monkeypatch, workers):
+    configure_run(pytester, monkeypatch)
+    pytest_run = pytester.runpytest_subprocess("-q", "--tb=short", "-rf", *workers)
+    lines = [line for line in pytest_run.outlines if line.strip()]
+    assert re.search(r"1 failed, 2 passed", lines[-1]), lines[-3:]

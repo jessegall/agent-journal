@@ -1,7 +1,6 @@
 from types import SimpleNamespace
 
 from engine.provider.context_window import ContextWindow
-from core.modules.settings.bindings.support.context_caps import ContextCaps
 from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_KINDS, CONTEXT_LIMIT_PROFILES, CONTEXT_LIMIT_TOKENS, ContextShare
 from core.modules.usage.commands.usage_agents.usage_agents_subcommand import UsageAgentsSubcommand
 from core.modules.usage.support.session_status import SessionStatus
@@ -27,7 +26,7 @@ class Settings:
 def percent(role: str, profile: str, tokens: int, enabled: bool = True) -> int | None:
     settings = Settings(enabled)
     subcommand = UsageAgentsSubcommand.__new__(UsageAgentsSubcommand)
-    subcommand.share, subcommand.caps = ContextShare(settings, None, None), ContextCaps(settings)
+    subcommand.share = ContextShare(settings, None, None)
     subcommand.is_context_unknown = lambda card, status: False
     card = SimpleNamespace(role=role, profile=profile)
     return subcommand.context_percent(card, SessionStatus(model="m", context_percent=WINDOW_PERCENT, context_tokens=tokens))

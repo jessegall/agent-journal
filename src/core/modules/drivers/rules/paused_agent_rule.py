@@ -7,11 +7,21 @@ from core.modules.drivers.support.block_conditions.agent_resumed import AgentRes
 
 
 class PausedAgentRule(DriverRule):
-    """A paused agent's tool calls are refused until it is resumed, except journal lines, read tools and read
-    commands, so it can still look things up and answer in the chat."""
+    """A paused agent's tool calls are refused until it is resumed, except read tools, read commands and journal
+    message commands, so it can still look things up and answer in the chat; any other journal command waits for
+    the resume too (message 117878)."""
 
     name = "drivers.paused-agent"
     hook = HookEventName.PRE_TOOL_USE
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
+        if self.runs_journal_work(hook):
+            return RuleAnswer.refused(PAUSED_REFUSAL.nudge())
         return RuleAnswer.blocked(hook, PAUSED_REFUSAL.nudge(), AgentResumed())
+
+    @staticmethod
+    def runs_journal_work(hook: AgentHook) -> bool:
+        shell = hook.event.tool.shell if hook.event.tool is not None else None
+        if shell is None:
+            return False
+        return any(part.arguments[:1] != ("message",) for part in shell.parts_running_journal_command())
