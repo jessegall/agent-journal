@@ -38,6 +38,10 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
   declaration of the `reading_declarations` list). `ReadingNotices` and `WarnCadenceHandler` are the only senders.
 - **`main-only-rule-without-reason`** - a rule of the processes or aliases module is limited to the main agent with
   `roles = [AgentRole.MAIN]` and says no reason. Add `main_only_because` with one line, or let the rule answer every role.
+- **`reader-chosen-outside-reader-layers`** - readers are put in order by id or by default flag outside `ReaderLayers`.
+  Order them with `ReaderLayers.ordered`: project, plugin, stock; default first, then the newest.
+- **`unreadable-mark-outside-unreadable-marks`** - an unreadable mark is made or removed outside `UnreadableMarks` and the
+  mark and lift commands. Make and lift marks through `UnreadableMarks`, so the reason and the actor are recorded.
 - **`output-measured-outside-output-facts`** - code outside `OutputFacts` and the cadence funnel measures an output
   through `OutputFolder`: its size, its silence or its text. Measure it in `OutputFacts` (what it is) or
   `RunCadence`/`RunSilences` (how it prints); everything else asks them.
