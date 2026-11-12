@@ -10,6 +10,7 @@ from engine.database.statement import Statement
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support import story_lines as lines
+from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.core.support.plan_steps import ready_plan
 from tests.stories.server.support.server_client import server_story
@@ -314,3 +315,22 @@ def test_a_passed_checkpoint_keeps_the_later_phase_closed_until_a_person_approve
     story.expect_rows([row["phase_id"] for row in rows(story, PASSES)] == [3], detail=str(rows(story, PASSES)))
     story.expect_text(f"agent-line list --agent {story.agent.id}", "the phases after it are open: tell the user")
     story.expect_refusal(APPROVE, "waits for no approval", actor=story.user)
+
+
+QUICK_REVIEW = "setting set journal.core.plans.checkpoints.quick-review true --environment main"
+REVIEWS = "checkpoint-review list --json --oldest --environment main"
+
+
+def test_a_passed_checkpoint_starts_its_read_only_reviewer_on_the_sonnet_model_the_setting_names(new_story):
+    story = new_story(fixture=ReachedCheckpoint)
+    story.expect_success(QUICK_REVIEW, actor=story.user)
+    story.expect_rows(rows(story, REVIEWS) == [], detail="no review before the tests pass")
+    pass_reach(story, 1)
+    review = rows(story, REVIEWS)[0]
+    story.expect_rows((review["plan_id"], review["phase_id"], review["program"], review["program_model"]) == (1, 3, "claude", "sonnet"), detail=str(review))
+    story.expect_text(f"agent show {agent_number(story, review['reviewer_id'])}", "role: reviewer", "access: read", "program_model: sonnet", actor=story.user)
+
+
+def test_a_checkpoint_with_the_review_off_starts_no_reviewer(new_story):
+    story = new_story(fixture=PassedCheckpoint)
+    story.expect_rows(rows(story, REVIEWS) == [], detail=str(rows(story, REVIEWS)))
