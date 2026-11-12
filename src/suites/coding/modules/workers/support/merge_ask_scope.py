@@ -26,7 +26,7 @@ class MergeAskScope:
         self.units, self.worktrees, self.tasks, self.runs, self.steps, self.queries = units, worktrees, tasks, runs, steps, queries
         self.range = merge_range
 
-    def checked(self, worker_id: int, note: str, up_to: str = "") -> MergeAskPart:
+    def checked(self, worker_id: int, note: str, up_to: str) -> MergeAskPart:
         unit = self.units.unit(worker_id)
         worktree = self.worktrees.required_worker_worktree(worker_id)
         if not unit.has_several_tasks:
