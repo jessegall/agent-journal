@@ -11,7 +11,6 @@ from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_places import PluginPlaces
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
-from core.modules.skills.support.plugin_skill_removal import PluginSkillRemoval
 
 
 class SwitchPluginHandler(Handler[SwitchPlugin, Plugin]):
@@ -21,8 +20,8 @@ class SwitchPluginHandler(Handler[SwitchPlugin, Plugin]):
     command = SwitchPlugin
     runs_once = True
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, skill_removal: PluginSkillRemoval, repository: Repository, scripts: PluginScriptProcesses, places: PluginPlaces) -> None:
-        self.plugins, self.folders, self.skill_files, self.skill_removal, self.repository, self.scripts, self.places = plugins, folders, skill_files, skill_removal, repository, scripts, places
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, repository: Repository, scripts: PluginScriptProcesses, places: PluginPlaces) -> None:
+        self.plugins, self.folders, self.skill_files, self.repository, self.scripts, self.places = plugins, folders, skill_files, repository, scripts, places
 
     def prepare(self, command: SwitchPlugin, actor: Actor) -> None:
         if not command.enabled:
@@ -33,7 +32,6 @@ class SwitchPluginHandler(Handler[SwitchPlugin, Plugin]):
         plugin = self.plugins.find_name(command.name)
         folder = self.folders.code(plugin.name)
         if not command.enabled:
-            self.skill_removal.remove(plugin.name)
             return self.repository.save(plugin.changed(enabled=False), context)
         manifest = PluginManifest.read(folder)
         self.skill_files.publish(folder, manifest)
