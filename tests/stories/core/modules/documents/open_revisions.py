@@ -60,7 +60,7 @@ def test_two_edits_save_one_revision_by_the_agent(new_story):
 
 def test_another_agent_cannot_open_the_document(new_story):
     story = new_story(fixture=DocumentOpen)
-    second_agent_id = story.new_row_id('agent start s-2 claude main --environment main')
+    second_agent_id = story.new_row_id(f'agent start s-2 claude helper --parent {story.agent.id} --environment main')
     story.expect_refusal('doc open 1', 'main agent', actor=Actor(second_agent_id, ActorType.AGENT))
 
 

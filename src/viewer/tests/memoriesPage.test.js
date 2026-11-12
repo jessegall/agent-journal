@@ -23,8 +23,8 @@ const USUAL = {
     "memory agents --environment main --working": page([WORKER]),
     "memory agents --environment main --ended": page([ENDED]),
     "memory agents --agents": page([WORKER]),
-    "agent show 646": {ok: true, value: {role: "worker", given_name: "", ended_at: null}},
-    "agent show 638": {ok: true, value: {role: "helper", given_name: "Ada Yonath", ended_at: "2026-10-02T10:00:00+00:00"}},
+    "agent show 646": {ok: true, value: {number: 646, role: "worker", ended_at: null}},
+    "agent show 638": {ok: true, value: {number: 638, role: "helper", ended_at: "2026-10-02T10:00:00+00:00"}},
 };
 
 const rowTexts = (element) => [...element.querySelectorAll("[data-memory]")].map((row) => row.querySelector(".memory-text").textContent);

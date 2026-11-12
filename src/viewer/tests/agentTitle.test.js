@@ -27,7 +27,7 @@ test("a read-only helper is a Helper whatever its profile and given name", () =>
 });
 
 test("an agent with no profile shows its role and number, and the main agent only its title", () => {
-    expect(agentTitle({id: 3, role: "worker", number: 3}).text).toBe("Worker worker 3");
+    expect(agentTitle({id: 3, role: "worker", number: 3}).text).toBe("Worker 3");
     expect(agentTitle({id: 1, role: "main", number: 1}, {profile_title: "Orchestrator"})).toEqual({title: "Main agent", subtext: "", text: "Main agent"});
     expect(agentNumber({role: "helper", number: 12})).toBe("helper 12");
 });
