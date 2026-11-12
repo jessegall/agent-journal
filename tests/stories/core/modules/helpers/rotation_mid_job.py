@@ -78,7 +78,7 @@ def test_a_paused_main_agent_that_resumes_gets_the_same_session_of_its_helper_ba
     working.expect_rows(len(launcher.requests) == 1, helper_agent(working).session == helper.session, helper.session in launcher.requests[0]["command"], detail=str(launcher.requests))
 
 
-def test_a_program_that_goes_out_in_a_job_makes_the_job_wait_and_never_changes_program(working, monkeypatch):
+def test_a_program_that_goes_out_in_a_job_makes_the_job_wait_never_changes_program_and_goes_on_once_the_outage_ends(working, monkeypatch):
     helper = helper_agent(working)
     real_program_states(working)
     resumable_session(working, helper, monkeypatch)
@@ -87,6 +87,10 @@ def test_a_program_that_goes_out_in_a_job_makes_the_job_wait_and_never_changes_p
     working.expect_success(f'provider-outage make claude "rate limit" --ends-at {ends_at}', actor=working.agent)
     during_outage = launches_after_the_program_died(working)
     working.expect_rows(during_outage == [], helper_agent(working).program == "claude", read_jobs(working, helper)[0].ended_at is None, detail=str(during_outage))
+    working.advance(timedelta(minutes=31))
+    after_outage = launches_at_the_next_round(working)
+    working.expect_rows(len(after_outage) == 1, any("--resume" in launch["command"] for launch in after_outage), helper_agent(working).session == helper.session,
+                        read_jobs(working, helper)[0].ended_at is None, detail=str(after_outage))
 
 
 def test_a_changed_occupant_leaves_the_open_job_alone_and_decides_the_next_launch(working, monkeypatch):
@@ -127,18 +131,3 @@ def launches_at_the_next_round(story) -> list[dict]:
     launcher.server.close()
     story.home.socket("launcher").unlink()
     return [request for request in launcher.requests if "command" in request]
-
-
-def test_a_job_that_waited_out_an_outage_goes_on_in_the_same_session_at_the_next_round_after_the_outage(working, monkeypatch):
-    helper = helper_agent(working)
-    real_program_states(working)
-    resumable_session(working, helper, monkeypatch)
-    steered(working)
-    ends_at = (working.clock.timestamp().value + timedelta(minutes=30)).isoformat()
-    working.expect_success(f'provider-outage make claude "rate limit" --ends-at {ends_at}', actor=working.agent)
-    working.expect_rows(launches_after_the_program_died(working) == [])
-    working.advance(timedelta(minutes=31))
-    launches = launches_at_the_next_round(working)
-    working.expect_rows(len(launches) == 1, detail=str(launches))
-    working.expect_rows(any("--resume" in launch["command"] for launch in launches), helper_agent(working).session == helper.session,
-                        read_jobs(working, helper)[0].ended_at is None, detail=str(launches))
