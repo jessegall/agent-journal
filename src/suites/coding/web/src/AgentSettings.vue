@@ -1,10 +1,11 @@
 <script setup>
-import {computed, onBeforeUnmount, ref, watch} from "vue";
+import {computed, onBeforeUnmount, onMounted, ref, watch} from "vue";
 import {InnerTabs, SwitchCase, TabBody, WindowRoom, useWindow} from "@journal/window-kit";
 import {ChangeFoot, FindBox, SettingPresetBand, currentPreset, useSettingsDraft} from "@journal/setting-components";
 import AgentSettingsAgents from "./AgentSettingsAgents.vue";
 import AgentSettingsPresets from "./AgentSettingsPresets.vue";
 import AgentSettingsScreen from "./AgentSettingsScreen.vue";
+import {fullCount, useHelperRows} from "./helperRows.js";
 
 // the agent settings: the tabs under the environment, the long tabs drawn from the screens the settings declare,
 // and one foot for the changes of all of them; a viewer who may only read sees a note that only a person changes them
@@ -13,7 +14,7 @@ const DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers";
 const SCREEN_KEYS = {work: "work-screen", tests: "tests-screen", advanced: "advanced-screen"};
 const view = useWindow();
 const tab = ref("work");
-const tabs = [{key: "work", label: "Work"}, {key: "agents", label: "Helpers"}, {key: "tests", label: "Tests"}, {key: "advanced", label: "Advanced"}];
+const tabs = [{key: "work", label: "Work"}, {key: "agents", label: "Helpers", count_field: "full"}, {key: "tests", label: "Tests"}, {key: "advanced", label: "Advanced"}];
 const active = computed(() => tabs.find((entry) => entry.key === tab.value));
 
 const loaded = () => Object.values(SCREEN_KEYS).map((key) => view.props[key].data.value);
@@ -21,15 +22,21 @@ const isLoaded = computed(() => loaded().every(Boolean));
 const draft = useSettingsDraft({
     run: (line) => view.run(line),
     reload: async () => {
-        await Promise.all(Object.values(SCREEN_KEYS).map((key) => view.reload(key)));
+        await Promise.all([...Object.values(SCREEN_KEYS).map((key) => view.reload(key)), view.reload("limits")]);
         draft.load(loaded());
     },
 });
 watch(loaded, (screens) => { if (screens.every(Boolean)) draft.load(screens); }, {immediate: true});
 
+// the Helpers tab says how many agent types are at a limit; the counts are read when the settings open
+const {rows: helperTable} = useHelperRows(view, draft);
+const full = computed(() => fullCount(helperTable.value));
+const tabAnswer = computed(() => (full.value ? {full: `${full.value} full`} : {}));
+onMounted(() => view.reload("limits"));
+
 const nodesOf = (name) => view.props[SCREEN_KEYS[name]].data.value?.nodes ?? [];
 const nothingStarts = computed(() => draft.value(AUTO) === false && draft.value(DISPATCHES) === false);
-const showsFoot = computed(() => tab.value !== "agents" && !view.readOnly);
+const showsFoot = computed(() => !view.readOnly);
 
 // the presets come with the work settings read: each gives a value to the eight switches, and the form matches one or none
 const page = ref("main");
@@ -75,7 +82,7 @@ function pick(entry) {
                             <FindBox :index="index" @pick="openFound" />
                         </SettingPresetBand>
                     </template>
-                    <div class="settings-bar"><InnerTabs :tabs="tabs" :active="active" @choose="pick" /></div>
+                    <div class="settings-bar"><InnerTabs :tabs="tabs" :active="active" :answer="tabAnswer" @choose="pick" /></div>
                     <template v-if="view.readOnly">
                         <p class="note lock" role="note" data-settings-lock>Only a person can change these settings. You can read every value, and ask a person for a change.</p>
                     </template>
@@ -94,7 +101,7 @@ function pick(entry) {
                                     </template>
                                 </template>
                                 <template #agents>
-                                    <AgentSettingsAgents />
+                                    <AgentSettingsAgents :draft="draft" />
                                 </template>
                                 <template #tests>
                                     <template v-if="isLoaded">
@@ -114,7 +121,7 @@ function pick(entry) {
                     <AgentSettingsPresets :presets="presets" :switches="switches" :now="form" :read-only="view.readOnly" @back="page = 'main'" @fill="fill" />
                 </template>
             </SwitchCase>
-            <template v-if="showsFoot || (page === 'presets' && !view.readOnly)">
+            <template v-if="showsFoot">
                 <ChangeFoot :changes="draft.changes()" :can-save="draft.canSave.value" :pending="draft.pending.value" :reason="draft.reason.value" :environment="view.environment" @save="draft.apply()" @cancel="draft.reset()" />
             </template>
         </div>

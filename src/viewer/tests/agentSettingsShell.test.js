@@ -3,7 +3,7 @@ import {AUTO, LIMIT, SENDS, mountAgentSettings as mount} from "./support/agentSe
 import {settle as settled} from "./support/windowContext.js";
 
 const control = (element, key) => element.querySelector(`[data-setting="${key}"]`);
-const tabs = (element) => [...element.querySelectorAll("[role=tab]")].map((tab) => tab.textContent.trim());
+const tabs = (element) => [...element.querySelectorAll("[role=tab]")].map((tab) => tab.childNodes[0].textContent.trim());
 const choose = async (element, tab) => { element.querySelector(`[data-tab=${tab}]`).click(); await settled(); };
 const note = (element) => element.querySelector("[data-settings-note]").textContent;
 

@@ -160,3 +160,24 @@ test("values filled together are sent even for a setting that is hidden, and a r
     draft.set("auto", false);
     expect(draft.changes().map((change) => change.key)).toEqual(["auto"]);
 });
+
+test("a screen read later is taken into a draft that holds a change, which keeps its change", async () => {
+    const {draft, run} = drafted();
+    draft.set("limit", "5");
+    draft.load([{screen: "helper-type.workers", revision: "h1", nodes: [node("workers", "number", 2, {rule: NUMBER_RULE})]}]);
+    expect(draft.stale.value).toBe(false);
+    expect(draft.value("workers")).toBe("2");
+    draft.set("workers", "4");
+    await draft.apply();
+    expect(run).toHaveBeenCalledWith(["setting-screen", "apply", "tests", "--revision", "t1", "--also", "helper-type.workers=h1", "limit=5", "workers=4"]);
+});
+
+test("a screen read again with a new revision makes a draft that began from it stale, and one that began from another does not", () => {
+    const {draft} = drafted();
+    draft.load([{screen: "helper-type.workers", revision: "h1", nodes: [node("workers", "number", 2, {rule: NUMBER_RULE})]}]);
+    draft.set("workers", "4");
+    draft.load([{screen: "tests", revision: "t1", nodes: screens().find((screen) => screen.screen === "tests").nodes}]);
+    expect(draft.stale.value).toBe(false);
+    draft.load([{screen: "helper-type.workers", revision: "h2", nodes: [node("workers", "number", 3, {rule: NUMBER_RULE})]}]);
+    expect(draft.stale.value).toBe(true);
+});

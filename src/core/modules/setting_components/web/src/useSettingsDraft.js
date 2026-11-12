@@ -38,7 +38,7 @@ export function useSettingsDraft({run, reload}) {
 
     const nodes = computed(() => base.value.flatMap((screen) => screen.nodes));
     const nodeOf = (key) => nodes.value.find((node) => node.key === key);
-    const revisions = (screens) => screens.map((screen) => `${screen.screen}=${screen.revision}`).join(",");
+    const changedUnder = () => base.value.some((screen) => latest.value.find((entry) => entry.screen === screen.screen)?.revision !== screen.revision);
 
     const visible = (key) => (nodeOf(key)?.requires ?? []).every((required) => draft[required] !== false);
     const isChanged = (key) => {
@@ -47,7 +47,7 @@ export function useSettingsDraft({run, reload}) {
     };
     const changedNodes = computed(() => nodes.value.filter((node) => (visible(node.key) || pinned[node.key]) && isChanged(node.key)));
     const dirty = computed(() => changedNodes.value.length > 0);
-    const stale = computed(() => dirty.value && revisions(base.value) !== revisions(latest.value));
+    const stale = computed(() => dirty.value && changedUnder());
 
     function errors(key) {
         const node = nodeOf(key);
@@ -68,11 +68,16 @@ export function useSettingsDraft({run, reload}) {
         failure.value = "";
     }
 
-    // the screens as the journal gave them; a draft that holds a change keeps its values and goes stale when the
-    // screens it began from are not the screens now
+    // the screens as the journal gave them, in whole or the ones that were read again: a screen the draft has not met is
+    // taken into it, and a draft that holds a change keeps its values and goes stale when a screen it began from changed
     function load(screens) {
-        latest.value = screens;
-        if (!dirty.value) rebase();
+        const names = new Set(screens.map((screen) => screen.screen));
+        latest.value = [...latest.value.filter((screen) => !names.has(screen.screen)), ...screens];
+        if (!dirty.value) return rebase();
+        const known = new Set(base.value.map((screen) => screen.screen));
+        const added = screens.filter((screen) => !known.has(screen.screen));
+        base.value = [...base.value, ...added];
+        for (const node of added.flatMap((screen) => screen.nodes)) draft[node.key] = drafted(node);
     }
 
     const changes = () => changedNodes.value.map((node) => ({key: node.key, title: node.title, from: worded(node, drafted(node)), to: worded(node, draft[node.key])}));
