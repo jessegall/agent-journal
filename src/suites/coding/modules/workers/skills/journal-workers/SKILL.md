@@ -19,7 +19,7 @@ stays kept on the same agent number and session until retired.
   task to a worker only to clear the notice that a place is free: say why not instead.
 - Choose the model first: the least expensive one that fits the job. Reuse a kept worker only when it is on that model,
   and never because a stronger one happens to be there. When no kept worker on that model is idle and no place is free,
-  ask the person to retire a finished worker, then start one on the simpler model.
+  retire a finished worker yourself, then start one on the simpler model.
 - Name a worker by the number `journal agent list` shows beside it here; a row id is refused.
 - Give new work to a kept worker on that model that can take it, even when the subject changes; prefer the one that already knows
   the work. `journal worker send <number> --task <task> [<task> ...]` assigns its next tasks. A kept worker can take them on
@@ -64,9 +64,9 @@ stays kept on the same agent number and session until retired.
 - `journal worker merge <number> --up-to <task or commit>` takes in the worker's handed-in tasks up to that point while it goes on with its next ones; their proofs must be checked first, and its later merge brings only the rest.
 - `journal worker dispatch --take-over <number> --tier <tier>` starts a fresh worker, on its profile as it is now, in
   the place of a stopped worker: it takes over that worker's open worktree with its commits, proofs and files, the tasks
-  it held and its plan, and goes on where it stopped. Then ask the person to retire the stopped worker.
-- `journal agent retire <number> --reason "<why>"` asks the person to retire a stopped worker for good; the worker
-  is kept until the person agrees, since an agent is never retired by an agent. A retired worker retains its history and transcript but
+  it held and its plan, and goes on where it stopped. Then retire the stopped worker.
+- `journal agent retire <number> --reason "<why>"` retires a stopped worker or helper for good, at once: managing agents
+  is the main agent's job, so it asks no one. Any other agent is refused. A retired worker retains its history and transcript but
   can never resume or receive another job. Dirty files or unmerged work prevent retirement; settle
   them first. Reporting, committing, merging and stopping a process do not by themselves retire the agent.
 - Read each proof with `journal proof list --task <n>`, check it with `journal proof check <n>` or send it back with
@@ -96,7 +96,7 @@ stays kept on the same agent number and session until retired.
 Keep a mix that matches the work, and read `journal agent mix` before retiring: it prints the jobs of each kind of agent by
 model lately, the agents kept and how long they have been idle. Prefer retiring the agent idle the longest on the model with
 the most spare agents; one that knows the work coming next is worth keeping. A start refused for no free place names the
-idle worker that can take the job, or tells you a person must retire one first. No agent is retired by the journal.
+idle worker that can take the job, or tells you to retire one first. The journal itself retires no agent.
 
 ## Running and kept limits
 

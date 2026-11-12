@@ -140,7 +140,7 @@ def test_retire_permissions(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     story.expect_refusal(f"agent retire {agent_number(story, story.agent.id)} {REASON}", "main agent is not retired", actor=story.agent)
-    story.expect_refusal(f"agent retire {agent_number(story, helper.id)} {REASON}", "belongs to main agent", actor=Actor(helper.id, ActorType.AGENT))
+    story.expect_refusal(f"agent retire {agent_number(story, helper.id)} {REASON}", "only a person or the main agent retires", actor=Actor(helper.id, ActorType.AGENT))
     story.expect_success(f"agent retire {agent_number(story, helper.id)} {REASON}", actor=story.user)
 
 
