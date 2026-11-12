@@ -110,8 +110,11 @@ def pytest_itemcollected(item: pytest.Item) -> None:
 
 
 @pytest.fixture(scope="session")
-def templates() -> TemplateDatabases:
-    return TemplateDatabases(run_template_folder())
+def templates() -> Generator[TemplateDatabases]:
+    TemplateDatabases.remove_stale_working_folders(time.time())
+    databases = TemplateDatabases(run_template_folder())
+    yield databases
+    databases.working_folder.cleanup()
 
 
 @pytest.fixture
