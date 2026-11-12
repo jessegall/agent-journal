@@ -28,9 +28,6 @@ class ProcessRunPlacement(RunPlacement):
             return PlacedRun(request, None, False)
         return PlacedRun(request, None, False, agent.id, agent.environment_id, agent.paused_at is not None)
 
-    def moved_to_background(self, run: PlacedRun, pid: int) -> None:
-        return None
-
     def ended(self, run: PlacedRun, execution: Execution) -> int | None:
         if run.agent_id is None:
             return None

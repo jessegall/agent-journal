@@ -23,7 +23,7 @@ class ProcessExecutor:
         placed = self.placement.placed(request)
         self.gate.opened()
         try:
-            execution = self.runner.run(placed, self.placement)
+            execution = self.runner.run(placed)
         except RunTimeLimitError as error:
             self.placement.ended(placed, Execution(placed.process_id, TIME_LIMIT_EXIT_CODE, "", str(error)))
             raise

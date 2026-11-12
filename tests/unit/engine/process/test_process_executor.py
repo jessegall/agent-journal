@@ -18,13 +18,9 @@ class CountedPlacement(RunPlacement):
 
     def __init__(self) -> None:
         self.ended_runs: list[tuple[PlacedRun, Execution]] = []
-        self.moved: list[int | None] = []
 
     def placed(self, request: ExecutionRequest) -> PlacedRun:
         return PlacedRun(request, len(self.ended_runs) + 1, request.kind.takes_place)
-
-    def moved_to_background(self, run: PlacedRun, pid: int) -> None:
-        self.moved.append(run.process_id)
 
     def ended(self, run: PlacedRun, execution: Execution) -> int | None:
         self.ended_runs.append((run, execution))
@@ -71,7 +67,8 @@ def test_reading_writing_searching_and_hooks_never_move_to_the_background():
     assert [kind for kind in ProcessKind if not kind.can_go_to_background] == [ProcessKind.HOOK, ProcessKind.READ, ProcessKind.WRITE, ProcessKind.SEARCH]
 
 
-def test_a_quick_run_past_its_limit_is_not_stopped_but_moves_to_the_background_on_its_own_row(tmp_path: Path):
+def test_a_quick_run_past_its_limit_is_stopped_and_fails_naming_its_command(tmp_path: Path):
     door, placement = executor()
-    execution = door.execute(ExecutionRequest(["sh", "-c", "sleep 0.4; echo late"], tmp_path, ProcessKind.QUICK, 0.1))
-    assert (execution.stdout, placement.moved, len(placement.ended_runs), placement.ended_runs[0][1].exit_code) == ("late\n", [1], 1, 0)
+    with pytest.raises(RunTimeLimitError, match="sleep 5 ran past its limit of 1 seconds"):
+        door.execute(ExecutionRequest(["sleep", "5"], tmp_path, ProcessKind.QUICK, 1))
+    assert (len(placement.ended_runs), placement.ended_runs[0][1].exit_code) == (1, 124)
