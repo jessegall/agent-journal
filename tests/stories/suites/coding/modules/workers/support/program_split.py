@@ -46,7 +46,7 @@ def split_story(new_story, monkeypatch):
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     monkeypatch.setattr(shutil, 'which', lambda name: name)
     for provider in story.container.get(Providers).all():
-        monkeypatch.setattr(provider, 'hook_trust', lambda folder: HookTrust.READY)
+        monkeypatch.setattr(provider, 'journal_trust', lambda home: HookTrust.READY)
     real_program_states(story)
     return story
 
@@ -85,7 +85,7 @@ def exit_program(story, worker, code=1, text='API Error: 429 rate limit reached'
 
 def real_program_checks(story):
     for provider in story.container.get(Providers).all():
-        provider.__dict__.pop('hook_trust', None)
+        provider.__dict__.pop('journal_trust', None)
     story.container.bind(HelperPrograms, story.container.constructed(HelperPrograms))
     real_program_states(story)
 

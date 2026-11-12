@@ -151,3 +151,9 @@ def test_a_codex_home_that_is_the_journal_folder_links_to_the_person_folder_in_t
     links = journal_settings(provider, home, folders).links
     assert links[folder / "auth.json"] == tmp_path / "person-home" / ".codex" / "auth.json"
     assert all(target != link for link, target in links.items())
+
+
+def test_the_config_mode_is_0444(provider, home, folders):
+    # Checked with codex-cli 0.165.0: codex exec ends normally on a config.toml it cannot write.
+    config = next(file for file in journal_settings(provider, home, folders).files if file.path.name == "config.toml")
+    assert config.mode == 0o444

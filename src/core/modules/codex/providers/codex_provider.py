@@ -159,7 +159,7 @@ class CodexProvider(Provider):
         cached = self.rollouts.get(session)
         if cached is not None and cached.is_file():
             return cached
-        sessions = self.journal_folder(project) / "sessions"
+        sessions = self.person_folder() / "sessions"
         located = next(sessions.glob(f"**/rollout-*-{session}.jsonl"), None) if sessions.is_dir() else None
         if located is not None:
             self.rollouts[session] = located
@@ -216,19 +216,16 @@ class CodexProvider(Provider):
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
         """The sync of the journal's own Codex folder trusts the folder."""
 
-    def journal_folder(self, project: Path) -> Path:
-        return JournalHome(project / JOURNAL_FOLDER).program_folder(self.name)
+    def journal_hook_file(self, home: JournalHome) -> Path:
+        return home.program_folder(self.name) / "hooks.json"
 
-    def journal_hook_file(self, folder: Path) -> Path:
-        return self.journal_folder(folder) / "hooks.json"
-
-    def hook_trust(self, project: Path) -> HookTrust:
-        if not ProgramHooks.journal(type(self), self.journal_hook_file(project)).is_complete():
+    def journal_trust(self, home: JournalHome) -> HookTrust:
+        if not ProgramHooks.journal(type(self), self.journal_hook_file(home)).is_complete():
             return HookTrust.UNWRITTEN
-        return self.trust_record(project).trust(self.journal_hook_file(project).resolve(), list(self.hook_events))
+        return self.trust_record(home).trust(self.journal_hook_file(home).resolve(), list(self.hook_events))
 
-    def trust_record(self, project: Path) -> CodexTrust:
-        return CodexTrust(self.journal_folder(project) / "config.toml")
+    def trust_record(self, home: JournalHome) -> CodexTrust:
+        return CodexTrust(home.program_folder(self.name) / "config.toml")
 
     def journal_settings(self, home: JournalHome, runner: str, managed: Sequence[ManagedHook], folders: Sequence[Path]) -> ProgramSettings:
         folder = home.program_folder(self.name)

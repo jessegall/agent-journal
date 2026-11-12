@@ -16,13 +16,11 @@ def store_managed_hook(root: Path) -> None:
     ])
 
 
-def test_hook_writer_passes_the_saved_hooks_and_leaves_claude_s_project_file_alone(tmp_path: Path):
+def test_hook_writer_writes_no_program_hook_file_into_the_project(tmp_path: Path):
     store_managed_hook(tmp_path)
     HookWriter(tmp_path).write("runner")
-    codex = ProgramHooks.read(tmp_path / ".codex/hooks.json")["hooks"]
     assert not (tmp_path / ".claude/settings.local.json").exists()
-    assert codex["PreToolUse"][0]["hooks"][0]["timeout"] == 690
-    assert codex["Stop"][0]["hooks"][0]["timeout"] == 90
+    assert not (tmp_path / ".codex/hooks.json").exists()
 
 
 def test_hook_switch_keeps_claude_s_settings_and_names_the_journal_s_own_files(tmp_path: Path):
@@ -35,13 +33,13 @@ def test_hook_switch_keeps_claude_s_settings_and_names_the_journal_s_own_files(t
     assert lines == [f"Claude Code and Codex start on the journal's own settings in .journal/programs, whose hooks call runner; the old files are in {HookSwitch(tmp_path).saved}"]
 
 
-def test_hook_switch_names_the_codex_file_it_still_writes(tmp_path: Path):
-    store_managed_hook(tmp_path)
-    ProgramHooks.store(tmp_path / ".codex/hooks.json", {"hooks": {}})
+def test_hook_switch_restore_brings_back_the_saved_journal_entries(tmp_path: Path):
+    old_entry = {"matcher": "", "hooks": [{"type": "command", "command": 'sh "/p/.journal/hooks/hook.sh" codex /p'}]}
+    ProgramHooks.store(tmp_path / ".codex/hooks.json", {"hooks": {"Stop": [old_entry]}})
     with patch.object(HookSwitch, "runner", return_value="runner"):
-        lines = HookSwitch(tmp_path).switch()
-    assert lines == [f"the hooks of .codex/hooks.json call runner; the old files are in {HookSwitch(tmp_path).saved}"]
-    assert ProgramHooks.read(tmp_path / ".codex/hooks.json")["hooks"]["PreToolUse"][0]["hooks"][0]["timeout"] == 690
+        HookSwitch(tmp_path).switch()
+    assert HookSwitch(tmp_path).restore() == ["version 4's hooks are back in .codex/hooks.json"]
+    assert ProgramHooks.read(tmp_path / ".codex/hooks.json")["hooks"]["Stop"] == [old_entry]
 
 
 def test_hook_writer_records_the_runner_it_chose_for_the_journal_settings(tmp_path: Path):

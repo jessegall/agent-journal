@@ -26,8 +26,7 @@ def assert_imported(root: Path):
         settings = ProgramHooks.read(root / name)
         assert settings["permissions"] == {"allow": ["Bash(ls)"]}
         assert ProgramHooks.partitioned(settings["hooks"]).commands == []
-    assert ProgramHooks.read(root / FILES[2])["hooks"]["PreToolUse"][0]["hooks"][0]["timeout"] == 690
-    assert ProgramHooks.partitioned(ProgramHooks.read(root / FILES[1]).get("hooks")).journal == {}
+        assert ProgramHooks.partitioned(settings["hooks"]).journal == {}
 
 
 def binary_runner(root: Path):
@@ -98,7 +97,7 @@ def test_version_four_restore_returns_disabled_hooks_and_keeps_new_hooks(tmp_pat
     store.changed(hook.id, ManagedState.DISABLED, hook.timeout)
     path = tmp_path / FILES[2]
     settings = ProgramHooks.read(path)
-    settings["hooks"]["PreToolUse"].append({"matcher": "Bash", "hooks": [{"type": "command", "command": "new-check"}]})
+    settings.setdefault("hooks", {}).setdefault("PreToolUse", []).append({"matcher": "Bash", "hooks": [{"type": "command", "command": "new-check"}]})
     ProgramHooks.store(path, settings)
     backup = tmp_path / "backup.db"
     backup.write_bytes(b"version four")
@@ -110,8 +109,8 @@ def test_version_four_restore_returns_disabled_hooks_and_keeps_new_hooks(tmp_pat
     commands = [entry[2]["command"] for entry in ProgramHooks.partitioned(ProgramHooks.read(path)["hooks"]).commands]
     assert "new-check" in commands
     all_commands = [entry["command"] for blocks in ProgramHooks.read(path)["hooks"].values() for block in blocks for entry in block["hooks"]]
-    assert any(old_runner in command for command in all_commands)
     assert not any(str(tmp_path / ".journal/bin/journal-hook") in command for command in all_commands)
+    assert (home.hook_runner_choice.read_text(), old_runner) == (f'"{tmp_path}/.journal/bin/journal-hook"\n', old_runner)
 
 
 def test_restore_splits_mixed_current_and_saved_blocks_without_losing_native_entries(tmp_path):

@@ -44,13 +44,13 @@ class HelperCommand:
         return self.launched(helper, SessionStart(helper.session), BLANK_LINE.join(part for part in opening if part is not None))
 
     def resumed(self, helper: Agent, job: str) -> LaunchCommand:
+        self.sync.prepare(helper.program)
         if self.folders.start_folder(helper).is_dir():
             self.start_folders.prepare(helper)
         return self.launched(helper, ResumedSession(helper.session), BLANK_LINE.join((job, REPORT_STEP)))
 
     def launched(self, agent: Agent, session: SessionStart, brief: str) -> LaunchCommand:
         environment = self.environments.find(agent.environment_id)
-        self.sync.prepare(agent.program)
         launch = HelperLaunch(root=Path(environment.folder), folder=self.folders.folder(agent), model=agent.program_model, launch="", session=session,
                               variables={ENVIRONMENT_VARIABLE: environment.name, ACTIVE_VARIABLE: "1"}, brief=brief)
         return self.providers.provider(agent.program).helper_command(launch)

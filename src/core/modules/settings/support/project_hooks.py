@@ -35,11 +35,11 @@ class ProjectHooks:
 
     def journal_entries(self, provider: Provider) -> list[JournalHook]:
         root = self.home.project_folder
-        hook_file = provider.journal_hook_file(root)
+        hook_file = provider.journal_hook_file(self.home)
         program_hooks = ProgramHooks.journal(type(provider), hook_file)
         stored = ProgramHooks.partitioned(program_hooks.settings().get("hooks")).journal
         managed = self.managed.all()
-        return [JournalHook(provider.name, event, str(hook_file.relative_to(root)), program_hooks.entry_timeout(event, managed)) for event in stored]
+        return [JournalHook(provider.name, event, str(hook_file.resolve().relative_to(root)), program_hooks.entry_timeout(event, managed)) for event in stored]
 
     def excluded(self, provider: Provider) -> list[UnmanagedHook]:
         native = [entry for name in provider.hook_files for entry in self.excluded_file(provider.name, name)]

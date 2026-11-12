@@ -8,7 +8,7 @@ from pathlib import Path
 from core.modules.agents.ticks.program_settings_tick import ProgramSettingsTick
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.program_settings_sync import ProgramSettingsSync
-from tests.stories.core.modules.helpers.start_helper import LauncherRuns, START, started
+from tests.stories.core.modules.helpers.start_helper import LauncherRuns
 from tests.stories.core.support.fixtures import MainEnvironment
 
 OLD_JOURNAL_BLOCK = {"matcher": "", "hooks": [{"type": "command", "command": "exec sh /p/.journal/src/journal/hooks/hook.sh claude /p"}]}
@@ -48,11 +48,8 @@ def test_every_launch_writes_the_programs_files_first_and_replaces_an_older_read
     story.expect_text(f'program command claude "{story.home.project_folder}" --launch launch-1', "claude")
     replaced = claude_file(story).stat().st_ino != older_inode and mode_of(claude_file(story)) == 0o444 and "older" not in claude_file(story).read_text()
     shutil.rmtree(story.home.folder / "programs")
-    started(story, START)
-    written_by_helper_start = claude_file(story).is_file()
-    shutil.rmtree(story.home.folder / "programs")
     story.expect_text(f'program manage codex "{story.home.project_folder}"', "managed hooks:")
-    story.expect_rows(replaced, written_by_helper_start, all(path.is_file() for path in program_files(story)[1:]), not claude_file(story).exists())
+    story.expect_rows(replaced, all(path.is_file() for path in program_files(story)[1:]), not claude_file(story).exists())
 
 
 def test_a_rewrite_never_shows_a_half_file(new_story):

@@ -171,7 +171,7 @@ class Provider(ABC):
         pass
 
     @abstractmethod
-    def hook_trust(self, project: Path) -> HookTrust: ...
+    def journal_trust(self, home: JournalHome) -> HookTrust: ...
 
     def user_hook_files(self) -> tuple[Path, ...]:
         return ()
@@ -212,8 +212,9 @@ class Provider(ABC):
     def launch_variables(self, home: JournalHome) -> Mapping[str, str]:
         return {}
 
-    def journal_hook_file(self, folder: Path) -> Path:
-        return folder / self.hook_file.path
+    def journal_hook_file(self, home: JournalHome) -> Path:
+        return home.project_folder / self.hook_file.path
+
 
     @classmethod
     def hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]:

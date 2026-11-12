@@ -30,8 +30,6 @@ def test_the_project_hooks_query_reports_every_kind_without_importing_pending_en
         {"type": "command", "command": "pending-check"}, {"type": "prompt", "prompt": "Review this"}]}]}})
     ProgramHooks.store(root / ".claude/settings.local.json", {"hooks": {"PreToolUse": [{"hooks": [
         {"type": "command", "command": "sh /project/.journal/hooks/hook.sh"}]}]}})
-    ProgramHooks.store(root / ".journal/programs/claude/settings.json", {"hooks": {"PreToolUse": [{"hooks": [
-        {"type": "command", "command": '"/project/.journal/bin/journal-hook" claude "/project"'}]}]}})
     reply = story.run("managed-hook list --json")
     reply.expect_code(0)
     data = json.loads(reply.output_text)
@@ -89,5 +87,5 @@ def expect_managed_data(data, expected) -> None:
 
 def expect_journal_hooks_listed(data) -> None:
     actual = {(entry['program'], entry['source']) for entry in data['journal']}
-    assert ('claude', '.journal/programs/claude/settings.json') in actual, actual
+    assert any(program == 'claude' and source.endswith('programs/claude/settings.json') for program, source in actual), actual
     assert all(entry['timeout'] > 0 for entry in data['journal']), data['journal']

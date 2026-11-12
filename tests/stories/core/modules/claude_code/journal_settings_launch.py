@@ -26,10 +26,8 @@ def test_a_terminal_launch_reads_only_the_journal_settings_and_the_project_sourc
     outcome = story.run(f'program command claude "{root}" --launch launch-1')
     arguments = outcome.output_text.splitlines()
     settings = json.loads(settings_file.read_text())
-    journal_file(story).parent.mkdir(parents=True, exist_ok=True)
-    journal_file(story).write_text(settings_file.read_text())
     story.expect_success(f'program trust claude "{root}"', "ready")
-    journal_file(story).unlink()
+    settings_file.unlink()
     story.expect_success(f'program trust claude "{root}"', "unwritten")
     story.expect_rows(outcome.code == 0, arguments[1:5] == ["--settings", str(journal_file(story)), "--setting-sources", "project"],
                       Path(arguments[2]).is_absolute(), "user" not in arguments and "local" not in arguments,

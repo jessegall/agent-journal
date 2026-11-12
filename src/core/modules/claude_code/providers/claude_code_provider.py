@@ -251,11 +251,11 @@ class ClaudeCodeProvider(Provider):
             return None
         return {str(key): value for key, value in parsed.items()} if is_mapping(parsed) else None
 
-    def journal_hook_file(self, folder: Path) -> Path:
-        return JournalHome(folder / JOURNAL_FOLDER).program_settings_file(self.name)
+    def journal_hook_file(self, home: JournalHome) -> Path:
+        return home.program_settings_file(self.name)
 
-    def hook_trust(self, project: Path) -> HookTrust:
-        return HookTrust.READY if ProgramHooks.journal(type(self), self.journal_hook_file(project)).is_complete() else HookTrust.UNWRITTEN
+    def journal_trust(self, home: JournalHome) -> HookTrust:
+        return HookTrust.READY if ProgramHooks.journal(type(self), self.journal_hook_file(home)).is_complete() else HookTrust.UNWRITTEN
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
         return self.context_window(home, session).used_percentage

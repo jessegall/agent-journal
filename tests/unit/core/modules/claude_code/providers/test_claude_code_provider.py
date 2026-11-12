@@ -154,11 +154,12 @@ def test_ask_prompts_gives_permission_mode_default(provider):
 
 
 def test_hook_trust_is_ready_when_the_journal_file_holds_every_event(provider, tmp_path):
-    ProgramHooks.journal(ClaudeCodeProvider, provider.journal_hook_file(tmp_path)).write("journal-hook", tmp_path)
-    assert provider.journal_hook_file(tmp_path) == tmp_path / ".journal" / "programs" / "claude" / "settings.json"
-    assert provider.hook_trust(tmp_path) is HookTrust.READY
+    home = JournalHome(tmp_path / ".journal")
+    ProgramHooks.journal(ClaudeCodeProvider, provider.journal_hook_file(home)).write("journal-hook", tmp_path)
+    assert provider.journal_hook_file(home) == tmp_path / ".journal" / "programs" / "claude" / "settings.json"
+    assert provider.journal_trust(home) is HookTrust.READY
 
 
 def test_hook_trust_is_unwritten_when_only_the_local_project_file_holds_them(provider, tmp_path):
     ProgramHooks.hooks(ClaudeCodeProvider, tmp_path).write("journal-hook", tmp_path)
-    assert provider.hook_trust(tmp_path) is HookTrust.UNWRITTEN
+    assert provider.journal_trust(JournalHome(tmp_path / ".journal")) is HookTrust.UNWRITTEN

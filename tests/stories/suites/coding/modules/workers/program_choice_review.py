@@ -446,7 +446,7 @@ def test_program_states_copes_with_a_removed_program(split_story, split_viewer, 
     set_split(story, 'sample 50,claude 50', viewer=split_viewer)
     uninstall_sample_module(story)
     for provider in story.container.get(Providers).all():
-        monkeypatch.setattr(provider, 'hook_trust', lambda folder: HookTrust.READY)
+        monkeypatch.setattr(provider, 'journal_trust', lambda home: HookTrust.READY)
     expect_program(story, dispatch(story), 'claude')
 
 
@@ -467,12 +467,12 @@ def trusted_codex_story(split_story, tmp_path, monkeypatch):
     real_program_checks(story)
     provider = story.container.get(Providers).provider('codex')
     folder = story.home.folder.parent / 'project'
-    hooks = ProgramHooks.hooks(CodexProvider, folder)
+    hooks = ProgramHooks.journal(CodexProvider, provider.journal_hook_file(story.home))
     hooks.write('journal-hook', story.home.project_folder)
-    config = provider.trust_record().config_file
+    config = provider.trust_record(story.home).config_file
     config.parent.mkdir(parents=True, exist_ok=True)
     config.write_text(''.join(CodexTrust.state_table(key, {'trusted_hash': digest}) for key, digest in CodexTrust.hashes(hooks.path.resolve()).items()))
-    story.expect_rows(provider.hook_trust(folder) is HookTrust.READY)
+    story.expect_rows(provider.journal_trust(story.home) is HookTrust.READY)
     return story, provider, folder, hooks
 
 
@@ -481,7 +481,7 @@ def test_codex_hooks_run_in_the_worker_folder_changed_hooks_are_not_trusted(trus
     settings = hooks.settings()
     settings['hooks']['PreToolUse'][0]['hooks'][0]['timeout'] += 1
     ProgramHooks.store(hooks.path, settings)
-    story.expect_rows(provider.hook_trust(folder) is HookTrust.CHANGED)
+    story.expect_rows(provider.journal_trust(story.home) is HookTrust.CHANGED)
 
 
 def test_board_filters_tags_beyond_the_first_page(split_story, split_viewer):
