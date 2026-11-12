@@ -652,12 +652,22 @@ test("a worker shows its worktree task on its task line", async () => {
     }
 });
 
-test("the task button opens its task, and the plan shows as its number after it, not as a link", async () => {
+test("a worker on a plan shows its plan in place of its tasks, and the plan opens", async () => {
     const row = {id: 4, number: 4, role: "worker", state: "running", ended_at: null};
-    const tasks = [{id: 1, title: "Add the tax", state: "started", plan_id: 7, plan_title: "Cart plan"}, {id: 2, title: "Later", state: "open", plan_id: 9}];
+    const tasks = [{id: 1, title: "Add the tax", state: "started", plan_id: 7, plan_title: "Cart plan"}, {id: 2, title: "Later", state: "started", plan_id: 7, plan_title: "Cart plan"}];
     const element = await mounted({render: () => h(AgentCard, {row, facts: {job_enabled: true, task_id: 1, task_title: "Add the tax", tasks}})}, context({}));
-    expect(element.querySelector("[data-agent-plan]").textContent.trim()).toBe("Plan 7");
+    expect(element.querySelector("[data-agent-plan]").textContent).toContain("Plan 7");
+    expect(element.querySelector("[data-agent-plan]").dataset.peek).toBe("plans:7");
+    expect(element.querySelector("[data-agent-tasks]")).toBeNull();
+    expect(element.querySelector("[data-agent-task]")).toBeNull();
+});
+
+test("a worker on tasks outside a plan shows the task button that opens its task", async () => {
+    const row = {id: 4, number: 4, role: "worker", state: "running", ended_at: null};
+    const tasks = [{id: 1, title: "Add the tax", state: "started"}];
+    const element = await mounted({render: () => h(AgentCard, {row, facts: {job_enabled: true, task_id: 1, task_title: "Add the tax", tasks}})}, context({}));
     expect(element.querySelector("[data-agent-task]").dataset.peek).toBe("tasks:1");
+    expect(element.querySelector("[data-agent-plan]")).toBeNull();
 });
 
 test("an opened card has no task bar or blocked row above its commands and uses only shared progress", async () => {

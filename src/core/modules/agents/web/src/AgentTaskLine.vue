@@ -3,7 +3,7 @@ import {computed} from "vue";
 import {HoverTip, TaskBar, peekRef} from "@journal/window-kit";
 import {shortJobTitle, taskLine} from "./agentTaskLine.js";
 
-// the bottom line of an agent's row: "Task" and its number with its title in a tooltip, or "Tasks" and the number of each task it has started when there are several, how many of its tasks are done at the far right
+// the bottom line of an agent's row: "Plan" and its number for an agent working on a plan, else "Task" and its number with its title in a tooltip, or "Tasks" and the number of each task it has started when there are several, how many of its tasks are done at the far right
 // with the rest in a tooltip, and the thin bar of its tasks done and in testing; a helper has a job, named by the title its sender gave it or else the first words of the job, whose question is its tooltip, followed by the program the job runs on and whether it began a new conversation or resumed one
 const props = defineProps({tasks: {type: Array, default: () => []}, inHand: {type: Object, default: null}, job: {type: String, default: ""}, jobTitle: {type: String, default: ""}, jobLaunch: {type: String, default: ""}, perHour: {type: Number, default: 0}});
 const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand: props.inHand, perHour: props.perHour}) : null));
@@ -18,13 +18,15 @@ const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand
     </template>
     <template v-else-if="line">
         <span class="task-line" data-agent-task-line>
-            <template v-if="line.started.length > 1">
+            <template v-if="line.plan">
+                <HoverTip as="button" class="task" data-agent-plan :data-peek="`plans:${line.plan}`" :aria-label="`Plan ${line.plan}: ${line.planTitle}`" @click.stop="peekRef(`plans:${line.plan}`)">Plan {{ line.plan }}<template #tip><b>{{ line.planTitle }}</b><span>Task {{ line.number }}: {{ line.title }}</span></template></HoverTip>
+            </template>
+            <template v-else-if="line.started.length > 1">
                 <span class="tasks" data-agent-tasks>Tasks <template v-for="(task, place) in line.started" :key="task.number"><template v-if="place">, </template><HoverTip as="button" class="task" data-agent-task :data-peek="`tasks:${task.number}`" :aria-label="`Task ${task.number}: ${task.title}`" @click.stop="peekRef(`tasks:${task.number}`)">{{ task.number }}<template #tip><b>{{ task.title }}</b></template></HoverTip></template></span>
             </template>
             <template v-else>
                 <HoverTip as="button" class="task" data-agent-task :data-peek="`tasks:${line.number}`" :aria-label="`Task ${line.number}: ${line.title}`" @click.stop="peekRef(`tasks:${line.number}`)">Task {{ line.number }}<template #tip><b>{{ line.title }}</b><span>{{ line.taskTip }}</span></template></HoverTip>
             </template>
-            <template v-if="line.plan"><span class="plan" data-agent-plan>Plan {{ line.plan }}</span></template>
             <template v-if="line.rate"><span class="rate" data-agent-rate>{{ line.rate }}</span></template>
             <HoverTip class="count" tabindex="0" place="right" data-agent-count>{{ line.count }}<template #tip><b>{{ line.countTip }}</b><template v-if="line.paceTip">
   <span>{{ line.paceTip }}</span>
