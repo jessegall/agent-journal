@@ -1,3 +1,4 @@
+from engine.time.clock import Clock
 from dataclasses import dataclass, field
 from engine.database.reported_findings import ReportedFindings
 from engine.journal.journal_home import JournalHome
@@ -39,6 +40,7 @@ class ServerContext:
     agent_hook_limit_seconds: float = AGENT_HOOK_LIMIT_SECONDS
     stop_limit_seconds: float = STOP_LIMIT_SECONDS
     transcript_entries: TranscriptEntries = field(default_factory=TranscriptEntries)
+    clock: Clock = field(default_factory=Clock)
 
     @property
     def request_log(self) -> RequestLog:

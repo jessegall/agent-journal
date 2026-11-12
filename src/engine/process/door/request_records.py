@@ -4,6 +4,9 @@ from engine.actor.actor import Actor
 from engine.enums.process_kind import ProcessKind
 from engine.errors.exit_coded_error import ExitCodedError
 
+# A hook refused, held, let through unchecked or failed keeps its row with this exit code.
+REFUSED_HOOK_EXIT_CODE = 2
+
 
 class RequestRecords:
     """Keeps a process row for each hook, journal command and viewer request that comes in, from its start to its

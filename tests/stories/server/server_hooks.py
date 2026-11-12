@@ -2,6 +2,11 @@ from tests.stories.server.support.server_fixtures import task_server
 
 import pytest
 
+from engine.file.file_access import FileAccess
+from engine.serving.server_files import ServerFiles
+from core.modules.processes.support.request_log import RequestLog
+from core.modules.processes.support.request_log_entry import RequestLogEntry
+
 import json
 import os
 import sqlite3
@@ -161,3 +166,11 @@ def lead_server(new_story):
 def builder_server(new_story):
     with server_story(new_story(fixture=OpenTaskBuilder)) as story:
         yield story
+
+
+def test_a_hook_held_while_the_journal_starts_keeps_its_row_under_its_session(lead_server):
+    home = lead_server.story.home
+    FileAccess.shared().write(ServerFiles(home).start_mark, "starting")
+    lead_server.expect_hook_answer("/hook", lead_stop("server-7"), 200, '"refusal"')
+    logged = [RequestLogEntry.parsed(line) for line in FileAccess.shared().read(RequestLog(home, FileAccess.shared()).path).splitlines() if line]
+    lead_server.story.expect_rows(any(entry.session == "s-1" and entry.exit_code == 2 and entry.environment_id is None for entry in logged), detail=str(logged))

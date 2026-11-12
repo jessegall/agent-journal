@@ -1,4 +1,3 @@
-from engine.process.door.request_records import RequestRecords
 from core.modules.settings.bindings.support.context_share import ContextShare
 import json
 from collections.abc import Mapping
@@ -56,8 +55,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     runs_once = True
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository, choice: SuiteChoice,
-                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery, request_records: RequestRecords) -> None:
-        self.home, self.share, self.compaction_end, self.hook_calls, self.request_records = home, share, compaction_end, hook_calls, request_records
+                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery) -> None:
+        self.home, self.share, self.compaction_end, self.hook_calls = home, share, compaction_end, hook_calls
         self.event_rows = event_rows
         self.system_log = system_log
         self.required_commands = required_commands
@@ -108,7 +107,6 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         if refusing:
             self.system_log.write(LogLevel.INFORMATION, f"stop {call.id} {AgentLabel.from_agent(agent).text} refused: {'; '.join(refusing)}"[:LOG_LINE_CHARACTERS])
         self.nudges.write(agent.id, answers, context)
-        self.request_records.recorded_hook(agent.id, agent.environment_id, f"{command.event.program} {command.event.event.value}", 2 if answers.refusal else 0)
         self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")
         for row in handed_lines.rows:

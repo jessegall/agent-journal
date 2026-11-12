@@ -1,8 +1,10 @@
+from dataclasses import replace
 from itertools import groupby
 
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.container.container import Container
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.processes.commands.record_request_runs.record_request_runs import RecordRequestRuns
 from core.modules.processes.support.request_log import RequestLog
 from core.modules.processes.support.request_log_entry import RequestLogEntry
@@ -15,12 +17,27 @@ class RequestLogImport:
 
     def __call__(self, container: Container) -> None:
         log = container.get(RequestLog)
-        groups = [tuple(logged) for _, logged in groupby(sorted(log.taken(), key=self.environment_id), key=self.environment_id)]
+        entries = self.placed(log.taken(), container.get(AgentRows))
+        groups = [tuple(logged) for _, logged in groupby(sorted(entries, key=self.environment_id), key=self.environment_id)]
         for index, group in enumerate(groups):
             container.get(Bus).run(RecordRequestRuns(group), Actor.core(), environment_id=group[0].environment_id)
             log.left(tuple(entry for later in groups[index + 1:] for entry in later))
         log.written()
 
     @staticmethod
+    def placed(entries: tuple[RequestLogEntry, ...], agents: AgentRows) -> tuple[RequestLogEntry, ...]:
+        """Gives a hook entry that names only its session the agent and environment of that session; one whose
+        session is no agent is left out."""
+        placed = []
+        for entry in entries:
+            if entry.environment_id is not None:
+                placed.append(entry)
+                continue
+            agent = agents.session(entry.session)
+            if agent is not None:
+                placed.append(replace(entry, environment_id=agent.environment_id, agent_id=agent.id))
+        return tuple(placed)
+
+    @staticmethod
     def environment_id(entry: RequestLogEntry) -> int:
-        return entry.environment_id
+        return entry.environment_id or 0
