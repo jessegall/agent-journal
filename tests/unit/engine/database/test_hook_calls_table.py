@@ -32,3 +32,9 @@ def test_the_next_batch_starts_after_the_last_id_and_an_empty_batch_keeps_it():
     rows = database()
     assert HookCallsTable(rows).delete_batch(0, "2026-02-01", 1) == (1, 1)
     assert HookCallsTable(rows).delete_batch(3, "2026-02-01", 500) == (0, 3)
+
+
+def test_a_new_database_file_uses_incremental_auto_vacuum(tmp_path):
+    rows = Database.configured(sqlite3.connect(tmp_path / "new.db", autocommit=True))
+    rows.connection.execute("CREATE TABLE sample (id INTEGER PRIMARY KEY)")
+    assert rows.connection.execute("PRAGMA auto_vacuum").fetchone()[0] == 2

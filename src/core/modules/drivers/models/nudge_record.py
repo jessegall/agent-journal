@@ -9,7 +9,6 @@ class NudgeRecord(Model):
     """How often one agent was told one line of a nudge, and when last."""
 
     model_name = "nudge_record"
-    events_expire = True
     cli_name = "nudge-record"
 
     session_agent_id: int

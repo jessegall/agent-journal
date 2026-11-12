@@ -13,7 +13,6 @@ class Output(Model):
     change_names = tuple([END_CHANGE])
 
     model_name = "output"
-    events_expire = True
     cli_name = "output"
     lifecycle = OutputLifecycle
 

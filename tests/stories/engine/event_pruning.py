@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 import pytest
 
 from engine.actor.actor import Actor
@@ -17,8 +15,6 @@ from tests.stories.support.story_checks import expect_value
 
 HOOK_CALLS = "hook_calls"
 TASKS = "tasks"
-EXPIRED_AGE = timedelta(hours=25)
-KEPT_AGE = timedelta(hours=23)
 MOST_EVENTS = 100
 
 
@@ -43,29 +39,27 @@ def total_events(story) -> int:
     return story.container.get(Database).rows(Statement("SELECT count(*) FROM events"))[0][0]
 
 
-@pytest.mark.parametrize("age, is_deleted", [(EXPIRED_AGE, True), (KEPT_AGE, False)])
-def test_a_churn_event_goes_only_after_the_kept_time(new_story, age, is_deleted):
+@pytest.mark.parametrize("kept, is_pruned", [(1, True), (100_000, False)])
+def test_the_event_log_keeps_only_the_newest_changes_the_setting_names(new_story, kept, is_pruned):
     story = new_story(fixture=HookAndTaskLogged)
-    hook_event_total, task_event_total = event_count(story, HOOK_CALLS), event_count(story, TASKS)
-    story.advance(age)
+    event_total = total_events(story)
+    story.expect_success(f"setting set journal.core.drivers.event-count {kept} --project")
     story.expect_success("event prune")
-    story.expect_rows(hook_event_total > 0)
-    expect_value((event_count(story, HOOK_CALLS) == 0, event_count(story, TASKS)), (is_deleted, task_event_total))
+    expect_value(total_events(story) < event_total, is_pruned)
 
 
 def test_a_listener_that_has_not_passed_an_event_keeps_it(new_story):
     story = new_story(fixture=HookAndTaskLogged)
-    hook_event_total = event_count(story, HOOK_CALLS)
-    story.advance(EXPIRED_AGE)
+    event_total = total_events(story)
     story.container.get(Database).update(Statement("UPDATE listener_cursors SET event_id = 0 WHERE listener = (SELECT min(listener) FROM listener_cursors)"))
-    story.container.get(EventLog).prune([HOOK_CALLS], story.clock.timestamp().text, 0, MOST_EVENTS)
-    expect_value(event_count(story, HOOK_CALLS), hook_event_total)
+    story.container.get(EventLog).prune(1, 0, MOST_EVENTS)
+    expect_value(total_events(story), event_total)
 
 
 def test_one_run_deletes_within_one_window_of_ids(new_story, monkeypatch):
     story = new_story(fixture=HookAndTaskLogged)
     event_total = total_events(story)
-    story.advance(EXPIRED_AGE)
+    story.expect_success("setting set journal.core.drivers.event-count 1 --project")
     monkeypatch.setattr(prune_events_handler, "WINDOW_IDS", 1)
     story.container.get(Bus).run(PruneEvents(), Actor.core())
     expect_value(total_events(story) >= event_total - 1, True)
