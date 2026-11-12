@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
+from engine.cli.agent_number import AgentNumber
 from engine.row.page import Page
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
@@ -26,7 +27,8 @@ RECENT_RUNS = 20
 
 
 class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
-    """Reads queue controls and ordered inspector lists, with a page of active queued commands for the CLI."""
+    """Reads queue controls and ordered inspector lists, with a page of active queued commands for the CLI; with an
+    agent, only that agent's runs."""
 
     cli_name = "queue"
     name = "list"
@@ -44,13 +46,14 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         parser.add_argument("--limit", type=int, default=50)
         parser.add_argument("--page", type=int, default=1)
         parser.add_argument("--recent", type=int, default=RECENT_RUNS)
+        parser.add_argument("--agent", type=AgentNumber, default=0)
 
     def read(self, arguments: Namespace, caller: Caller) -> ProcessQueuePage:
         environment_id = self.queries.database.scope_environment_id
         if environment_id is None:
             raise Refusal(self.environment_refusal)
         main_spots = self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS)
-        query = self.queries.query(ProcessQueueRow)
+        query = self.agent_rows(self.queries.query(ProcessQueueRow), arguments.agent)
         active = tuple(query.matching(IsNull("ended_at")).oldest().all_rows())
         running = [row.inspector_json(main_spots) for row in active if row.section is QueueSection.RUNNING]
         waiting = [row.inspector_json(main_spots) for row in active if row.section is QueueSection.WAITING]
@@ -67,6 +70,12 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         queue_runs = tuple(self.queue_runs.query().oldest().all_rows())
         number, size = max(1, arguments.page), min(MAX_PAGE_SIZE, max(1, arguments.limit))
         return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector)
+
+    @staticmethod
+    def agent_rows(query: Query[ProcessQueueRow], agent_id: int) -> Query[ProcessQueueRow]:
+        if not agent_id:
+            return query
+        return query.filter(session_agent_id=agent_id)
 
     def recent_rows(self, query: Query[ProcessQueueRow], count: int) -> list[ProcessQueueRow]:
         return query.filter(section=QueueSection.RECENT).descending("ended_at", "id").limited(count)

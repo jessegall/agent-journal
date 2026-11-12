@@ -66,6 +66,8 @@ from engine.viewer.window_search import WindowSearch
 from core.modules.processes.support.process_searcher import ProcessSearcher
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
+from engine.viewer.window_extension import WindowExtension
+from engine.viewer.window_tab import WindowTab
 from engine.enums.key_loading import KeyLoading
 from engine.enums.window_icon import WindowIcon
 from engine.enums.window_loading import WindowLoading
@@ -266,6 +268,9 @@ class ProcessesModule(Module):
     marks = PROCESS_MARKS
     bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets, RunOwners: ProcessRunOwners}
     docks = PROCESS_DOCKS
+    window_extensions = [WindowExtension(name, reads=["queue list", "output page"], events=["output.*"],
+                                         tabs=[WindowTab("processes", "Processes", "queue list", component="/modules/journal.core.processes/agent-processes.js")])
+                         for name in ("agents.agents", "agents.helpers")]
     windows = [WindowDeclaration("processes.outputs", "Commands", "outputs.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUTS_SKELETON, search=WindowSearch(ProcessSearcher, "Search the commands"), icon=WindowIcon.TERMINAL, reads=WINDOW_READS,
                                  keys=[WindowKey("runs", "process feed", arguments=["session-agent-id"], events=WINDOW_EVENTS)], runs=WINDOW_RUNS, events=WINDOW_EVENTS),
                WindowDeclaration("processes.output", "Output", "output.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.TERMINAL, auto_scroll=AutoScroll.BOTTOM, reads=[*WINDOW_READS, "window setting"],

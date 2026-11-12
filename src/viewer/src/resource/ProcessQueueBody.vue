@@ -8,7 +8,8 @@ import ProcessQueueBand from "./ProcessQueueBand.vue";
 
 const RECENT_PAGE = 20;
 
-const props = defineProps({read: {type: Function, required: true}});
+const props = defineProps({read: {type: Function, required: true}, agent: {type: Number, default: 0}});
+const agentArguments = computed(() => (props.agent ? ["--agent", `row:${props.agent}`] : []));
 const queue = ref(null);
 const failure = ref("");
 const open = ref([]);
@@ -32,7 +33,7 @@ function toggle(id) {
 }
 async function load() {
     const turn = ++reading;
-    const answer = await props.read(recentCount.value === RECENT_PAGE ? ["queue", "list"] : ["queue", "list", "--recent", String(recentCount.value)]);
+    const answer = await props.read([...(recentCount.value === RECENT_PAGE ? ["queue", "list"] : ["queue", "list", "--recent", String(recentCount.value)]), ...agentArguments.value]);
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     if (answer.ok) queue.value = answer.value;
@@ -47,11 +48,11 @@ onMounted(load);
 
 <template>
     <article class="process-queue" data-test-queue>
-        <p class="lead">Commands from workers wait here for a free place. Reading and editing never wait.</p>
+        <template v-if="!agent"><p class="lead">Commands from workers wait here for a free place. Reading and editing never wait.</p></template>
         <div class="scroll">
             <template v-if="failure"><p class="failure" role="alert" data-resource-failure>{{ failure }}</p></template>
             <template v-if="queue">
-                <ProcessQueueControls :queue="queue" :read="read" @saved="load" />
+                <template v-if="!agent"><ProcessQueueControls :queue="queue" :read="read" @saved="load" /></template>
                 <TransitionGroup name="queue" tag="div" class="queue-list">
                     <template v-for="item in items" :key="item.key">
                         <template v-if="item.run"><ProcessQueueRun :run="item.run" :environment="queue.environment_name" :position="item.position" :read="read" :expanded="open.includes(item.run.id)" @toggle="toggle(item.run.id)" /></template>
