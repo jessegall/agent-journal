@@ -34,6 +34,21 @@ class WorktreeBehindCheck(EnvironmentScoped, Model):
     def opened(cls, environment_id: int, worktree_id: int, base_tip: str, behind: int) -> "WorktreeBehindCheck":
         return cls(environment_id=environment_id, worktree_id=worktree_id, base_tip=base_tip, behind=behind)
 
+    def decision_text(self, decider: str) -> str:
+        """Where the decision about the worktree stands, in the words worker status shows; decider names who decided."""
+        match self.state:
+            case BehindCheckState.OPEN:
+                return "waiting for a decision"
+            case BehindCheckState.ORDERED:
+                return f"update ordered by {decider}: {self.reason}"
+            case BehindCheckState.PASSED:
+                return f"passed to the main agent: {self.reason}"
+            case BehindCheckState.LEFT:
+                return f"left alone by {decider}: {self.reason}"
+            case BehindCheckState.CONFLICTED:
+                return "the update clashed: settle the markers, then commit"
+        return ""
+
     def open_for_decision(self) -> bool:
         return self.state in DECIDING_STATES
 

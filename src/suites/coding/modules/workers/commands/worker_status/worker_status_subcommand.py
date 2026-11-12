@@ -2,6 +2,8 @@ from suites.coding.modules.workers.support.work_units import WorkUnits
 from suites.coding.modules.workers.support.worktree_runs import WorktreeRuns
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
+from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS
 from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
@@ -73,9 +75,18 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
 
     def behind_line(self, worktree: Worktree) -> str:
         try:
-            return f"{self.git.behind(worktree)} behind {worktree.base_branch}"
+            counted = f"{self.git.behind(worktree)} behind {worktree.base_branch}"
         except Refusal as refusal:
             return f"behind {worktree.base_branch} unknown: {refusal.reason}"
+        check = self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).newest().first()
+        decision = check.decision_text(self.decider(check.decided_by)) if check is not None else ""
+        return f"{counted}; {decision}" if decision else counted
+
+    def decider(self, agent_id: int | None) -> str:
+        if agent_id is None:
+            return "no one"
+        agent = self.queries.query(Agent).find(agent_id)
+        return "the merger" if agent.profile == MERGER_PROFILE else AgentLabel.from_agent(agent).text
 
     def unit_line(self, worker_id: int, worktree_id: int) -> str:
         return " ".join(line for line in (self.units.unit(worker_id).status_line, self.runs.passed_text(worktree_id)) if line)
