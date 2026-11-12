@@ -13,6 +13,7 @@ from engine.query.queries import Queries
 from engine.query.query import PAGE_SIZE_ROWS, Query
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.page_arguments import read_limit
 
 
 
@@ -30,7 +31,7 @@ class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
         self.queries = queries
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
+        parser.add_argument("--limit", type=read_limit, default=PAGE_SIZE_ROWS)
         parser.add_argument("--after-id", type=int, default=None)
         parser.add_argument("--before-id", type=int, default=None)
         parser.add_argument("--ids", type=number_list, default=None)

@@ -26,7 +26,7 @@ class PlanPlacesSubcommand(ReadSubcommand[RowList]):
         self.plans, self.queries = plans, queries
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
-        plans = tuple(self.plans.unclosed().newest().limit(PAGE_SIZE_ROWS).get())
+        plans = tuple(self.plans.unclosed().newest().take(PAGE_SIZE_ROWS))
         if not plans:
             return RowList([])
         phases = tuple(sorted(self.queries.query(Phase).matching(Among("plan_id", [plan.id for plan in plans])).every_row(PLACES_REASON), key=lambda phase: (phase.position, phase.id)))

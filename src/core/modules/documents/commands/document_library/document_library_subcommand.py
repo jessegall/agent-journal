@@ -37,7 +37,7 @@ class DocumentLibrarySubcommand(ReadSubcommand[DocumentLibrary]):
         if arguments.state == CLOSED:
             category = category.matching(Greater("close_reason", ""))
         page = category if arguments.before is None else category.matching(Less("id", arguments.before))
-        rows = tuple(page.newest().limit(PAGE_SIZE_ROWS).get())
+        rows = tuple(page.newest().take(PAGE_SIZE_ROWS))
         return DocumentLibrary(category.count(), rows)
 
     def write_output(self, value: object, output: Output) -> None:

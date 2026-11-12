@@ -62,3 +62,13 @@ class AgentSkillSeed(Seed):
 
     def columns(self, index: int, facts: SeedFacts) -> dict[str, object]:
         return {"creator_id": CORE_ACTOR_ID, "skill": f"seeded-skill-{index}", "digest": "seeded", "state": "loaded", "loaded_at": facts.timestamp}
+
+
+class StoryTaskSeed(Seed):
+    """A task of the story's own environment that needs no seeded agent; the story names its state and holder."""
+
+    table = "tasks"
+
+    def columns(self, index: int, facts: SeedFacts) -> dict[str, object]:
+        return {"environment_id": facts.environment_id, "creator_id": CORE_ACTOR_ID, "title": f"Seeded story task {index + 1}", "brief": "A seeded task; done when it is done.",
+                "state": "completed", "outcome": "done", "closed_at": facts.timestamp, "complexity": 1}

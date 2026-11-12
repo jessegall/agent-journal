@@ -21,7 +21,7 @@ class SequenceBoardSubcommand(ReadSubcommand[SequenceBoard]):
 
     def read(self, arguments: Namespace, caller: Caller) -> SequenceBoard:
         sequences = self.queries.query(Sequence).oldest().get()
-        runs = self.queries.query(SequenceRunRow).newest().limit(PAGE_SIZE_ROWS).get()
+        runs = self.queries.query(SequenceRunRow).newest().take(PAGE_SIZE_ROWS)
         return SequenceBoard(tuple(sequences), tuple(runs))
 
     def write_output(self, value: object, output: Output) -> None:

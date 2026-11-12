@@ -29,7 +29,7 @@ class DumpBoardSubcommand(ReadSubcommand[DumpBoard]):
 
     def read(self, arguments: Namespace, caller: Caller) -> DumpBoard:
         dumps = self.queries.query(Dump)
-        rows = (dumps.matching(Less("id", arguments.before)) if arguments.before else dumps).newest().limit(PAGE_SIZE_ROWS).get()
+        rows = (dumps.matching(Less("id", arguments.before)) if arguments.before else dumps).newest().take(PAGE_SIZE_ROWS)
         items = self.queries.query(DumpItem).matching(Among("dump_id", tuple(dump.id for dump in rows)))
         return DumpBoard(dumps.count(), rows, tuple(sorted(items.every_row(DUMP_ITEMS_REASON), key=lambda item: (item.dump_id, item.position))))
 

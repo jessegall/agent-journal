@@ -150,3 +150,7 @@ def test_a_statement_is_checked_against_its_own_named_limit(entries: Query[LogEn
     assert len(entries.database.rows(Statement("SELECT * FROM log_entries LIMIT 150", named_limit_rows=200))) == 150
     with pytest.raises(ReadLimitError):
         entries.database.rows(Statement("SELECT * FROM log_entries", named_limit_rows=200))
+
+
+def test_calling_all_rows_fails_because_the_method_is_gone():
+    assert not hasattr(Query, "all_rows") and not hasattr(Query, "limited")

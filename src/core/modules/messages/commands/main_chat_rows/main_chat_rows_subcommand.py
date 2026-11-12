@@ -11,6 +11,7 @@ from engine.query.query import PAGE_SIZE_ROWS
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.messages.models.main_chat_mark import MainChatMark
+from engine.subcommand.page_arguments import read_limit
 
 
 class MainChatRowsSubcommand(ReadSubcommand[ViewRowPage]):
@@ -25,7 +26,7 @@ class MainChatRowsSubcommand(ReadSubcommand[ViewRowPage]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--type", default="")
-        parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
+        parser.add_argument("--limit", type=read_limit, default=PAGE_SIZE_ROWS)
         parser.add_argument("--after-id", type=int, default=None)
         parser.add_argument("--before-id", type=int, default=None)
         parser.add_argument("--ids", type=number_list, default=None)
@@ -40,7 +41,7 @@ class MainChatRowsSubcommand(ReadSubcommand[ViewRowPage]):
             marks = marks.matching(Less("id", arguments.before_id))
         if arguments.ids is not None:
             marks = marks.matching(Among("id", arguments.ids))
-        return ViewRowPage(tuple(marks.newest().limit(arguments.limit).get()))
+        return ViewRowPage(tuple(marks.newest().take(arguments.limit)))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ViewRowPage):
