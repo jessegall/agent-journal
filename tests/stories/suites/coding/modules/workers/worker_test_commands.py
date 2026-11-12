@@ -19,7 +19,8 @@ from suites.coding.modules.workers.support.worker_test_launch import WorkerTestL
 REAL_WORKER_TEST_START_WAITED = WorkerTestLaunch.start_waited
 PYTHON = "--test-command python=pytest"
 VITE = '--test-command "vite=npx vitest run"'
-COMMANDS_DISPATCH = f"worker dispatch --model sonnet 1 {PYTHON} {VITE}"
+GO = '--test-command "go-journal=go -C tools/journal test -count=1"'
+COMMANDS_DISPATCH = f"worker dispatch --model sonnet 1 {PYTHON} {VITE} {GO}"
 BARE_DISPATCH = "worker dispatch --model sonnet 1"
 PERSON_DISPATCH = "worker dispatch --program claude --model sonnet 1"
 PYTHON_RUN = "worker test python tests/cart.py"
@@ -130,9 +131,17 @@ def test_only_a_worker_runs_worker_test(worker_with_commands):
     worker_with_commands.story.expect_refusal(PYTHON_RUN, "only a worker", actor=worker_with_commands.story.agent)
 
 
+@pytest.mark.parametrize("test_arguments", ["./launch", "./event/...", "-run TestLaunch", "-run=TestLaunch ./launch"], ids=["package", "package-tree", "pattern", "pattern-and-package"])
+def test_a_go_test_command_takes_packages_and_a_pattern_of_test_names_instead_of_files(worker_with_commands, test_arguments):
+    worker_with_commands.story.expect_success(f"worker test go-journal {test_arguments}", actor=worker_with_commands.worker)
+    expect_value(started_lines(worker_with_commands), [f"go -C tools/journal test -count=1 {test_arguments}"])
+
+
 def test_a_run_with_no_test_file_is_refused_as_the_whole_suite(worker_with_commands):
     worker_with_commands.story.expect_refusal("worker test python", "name each test file", actor=worker_with_commands.worker)
     worker_with_commands.story.expect_refusal("worker test python -q", "name each test file", actor=worker_with_commands.worker)
+    for test_arguments in ("./...", "-run", "-run -v", "-v"):
+        worker_with_commands.story.expect_refusal(f"worker test go-journal {test_arguments}", "name each test file", actor=worker_with_commands.worker)
 
 
 @pytest.mark.parametrize("test_arguments", ["tests/a.py '|' cat", "tests/a.py ';' ls", "tests/a.py '&&' ls", "tests/a.py '||' ls", "tests/a.py '>' out", "'`ls`.py'", "'$(ls).py'",
