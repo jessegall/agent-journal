@@ -6,6 +6,7 @@ from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from tests.stories.core.support.agent_labels import agent_number
 
 
 def test_the_inspector_reads_live_spots_wait_order_start_times_and_recent_output(new_story):
@@ -61,3 +62,21 @@ def test_the_inspector_explains_a_server_restart(new_story):
     story.home.restart_mark.write_text("1")
     queue = json.loads(story.run("queue inspect --environment 1 --json", actor=story.user).output_text)
     story.expect_rows(queue["halted"], queue["halt_reason"] == "Server restart")
+
+
+def test_an_agents_processes_tab_lists_only_that_agents_running_waiting_and_finished_runs(new_story):
+    story = install_runner(new_story(fixture=UserBuilder))
+    worker = story.new_row_id("agent start processes-worker claude worker --environment main")
+    other = story.new_row_id("agent start other-worker claude worker --environment main")
+    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=story.user)
+    story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
+    story.agent = Actor(worker, ActorType.AGENT)
+    finished = start_process(story, "make previous", category=CommandCategory.BUILD)
+    end_run(story, finished, "done\n")
+    running = start_process(story, "make package", category=CommandCategory.BUILD)
+    waiting = start_process(story, "make checks", category=CommandCategory.TEST_RUN)
+    story.agent = Actor(other, ActorType.AGENT)
+    start_process(story, "make site", category=CommandCategory.BUILD)
+    queue = json.loads(story.run(f"queue list --environment 1 --agent {agent_number(story, worker)} --json", actor=story.user).output_text)
+    story.expect_rows([row["id"] for row in queue["running"]] == [running.id], [row["id"] for row in queue["waiting"]] == [waiting.id],
+                      [row["id"] for row in queue["recent"]] == [finished.id], detail=json.dumps(queue)[:400])

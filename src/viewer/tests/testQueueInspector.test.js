@@ -78,10 +78,10 @@ const rowsOf = (section) => [...document.body.querySelectorAll(`[data-queue-row=
 let app = null;
 let subscriptions = null;
 
-async function panel(read) {
+async function panel(read, agent = 0) {
     const element = document.createElement("div");
     document.body.append(element);
-    app = createApp({render: () => h(ProcessQueueBody, {read})});
+    app = createApp({render: () => h(ProcessQueueBody, {read, agent})});
     subscriptions = new WindowSubscriptions();
     app.provide(RESOURCE_SUBSCRIPTIONS, subscriptions);
     app.mount(element);
@@ -306,4 +306,14 @@ test("the queue is named Process queue in its window and its inspector, and its 
     expect(module).toMatch(/WindowDeclaration\("processes\.queue-body", "Process queue",[\s\S]*?reads=\["queue list", "output page"\]/);
     expect(inspector).toContain('label="Process queue"');
     expect(`${module}${inspector}`).not.toContain("Test queue");
+});
+
+test("an agent's Processes tab reads only that agent's runs and shows no queue controls", async () => {
+    const asked = [];
+    await panel(async (line) => (asked.push(line), reader(line)), 41);
+    expect(asked[0]).toEqual(["queue", "list", "--agent", "row:41"]);
+    expect(rowsOf("running")).toHaveLength(1);
+    expect(rowsOf("waiting")).toHaveLength(2);
+    expect(rowsOf("recent")).toHaveLength(1);
+    expect(document.body.querySelector(".lead")).toBeNull();
 });
