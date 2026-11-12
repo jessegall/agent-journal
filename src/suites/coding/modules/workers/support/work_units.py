@@ -13,10 +13,12 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
+from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.support.work_unit import WorkUnit
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+
+UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 CLOSED_NEVER = "9999"
 
@@ -49,9 +51,9 @@ class WorkUnits:
 
     def open_work(self, worker_id: int, cut_text: str) -> tuple[tuple[int, ...], int]:
         open_work = self.tasks.assignee_tasks(worker_id).unclosed()
-        open_ids = tuple(task.id for task in open_work.oldest().all_rows(TASK_PAGE_ROWS))
+        open_ids = tuple(task.id for task in open_work.every_row(UNIT_TASKS_REASON))
         completed = self.tasks.assignee_tasks(worker_id).filter(state=TaskState.COMPLETED).matching(Minimum("closed_at", cut_text))
-        completed_ids = tuple(task.id for task in completed.oldest().all_rows(TASK_PAGE_ROWS))
+        completed_ids = tuple(task.id for task in completed.every_row(UNIT_TASKS_REASON))
         return tuple(sorted({*open_ids, *completed_ids})), open_work.matching(Excluding(Equal("state", TaskState.TESTING))).count()
 
     def assigned_plan(self, worker_id: int, task_ids: tuple[int, ...]) -> Plan | None:

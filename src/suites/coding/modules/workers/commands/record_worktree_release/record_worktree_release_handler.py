@@ -1,4 +1,4 @@
-from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
+from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.assignments.support.assignments import Assignments
 from dataclasses import replace
 
@@ -17,6 +17,8 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
+
+UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 WAITING_STATES = (TaskState.OPEN, TaskState.BLOCKED)
 ASSIGNED_STATES = (TaskState.STARTED, TaskState.TESTING)
@@ -41,11 +43,11 @@ class RecordWorktreeReleaseHandler(Handler[RecordWorktreeRelease, Worktree]):
             self.release_task(task, command.reason, context)
             changed_ids.append(task.id)
         worker_tasks = self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).oldest()
-        assigned_tasks = tuple(worker_tasks.matching(Among("state", ASSIGNED_STATES)).all_rows(TASK_PAGE_ROWS))
+        assigned_tasks = tuple(worker_tasks.matching(Among("state", ASSIGNED_STATES)).every_row(UNIT_TASKS_REASON))
         for unproved_task in [assigned_task for assigned_task in assigned_tasks if not self.has_all_proofs_checked(assigned_task, worktree)]:
             self.release_task(unproved_task, command.reason, context)
             changed_ids.append(unproved_task.id)
-        waiting = tuple(worker_tasks.matching(Among("state", WAITING_STATES)).all_rows(TASK_PAGE_ROWS))
+        waiting = tuple(worker_tasks.matching(Among("state", WAITING_STATES)).every_row(UNIT_TASKS_REASON))
         self.assignments.unassign_rows(waiting, context)
         for delegated in waiting:
             self.repository.update(delegated, context, delegated_to=None)
@@ -57,5 +59,5 @@ class RecordWorktreeReleaseHandler(Handler[RecordWorktreeRelease, Worktree]):
         self.repository.save_change(task, replace(task.release(context.timestamp, context.actor, reason), delegated_to=None), context)
 
     def has_all_proofs_checked(self, task: Task, worktree: Worktree) -> bool:
-        proofs = tuple(self.queries.query(Proof).filter(task_id=task.id, worktree_id=worktree.id).all_rows())
+        proofs = tuple(self.queries.query(Proof).filter(task_id=task.id, worktree_id=worktree.id).get())
         return bool(proofs) and all(proof.state is ProofState.CHECKED for proof in proofs)

@@ -9,6 +9,8 @@ from suites.coding.modules.workers.commands.remove_orphan_worktrees.remove_orpha
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WORKTREES_FOLDER, WorktreeGit
 
+OCCUPIED_REASON = "a folder is an orphan only when no open worktree of any worker holds it"
+
 
 class RemoveOrphanWorktreesHandler(Handler[RemoveOrphanWorktrees, tuple[str, ...]]):
     """Removes only unoccupied worktrees merged into their own environment's branch."""
@@ -21,7 +23,7 @@ class RemoveOrphanWorktreesHandler(Handler[RemoveOrphanWorktrees, tuple[str, ...
 
     def handle(self, command: RemoveOrphanWorktrees, context: Context) -> tuple[str, ...]:
         environment = self.queries.query(Environment).find(context.required_environment_id())
-        occupied = {str(Path(row.folder).resolve()) for row in self.worktrees.matching(IsNull("removed_at")).all_rows()}
+        occupied = {str(Path(row.folder).resolve()) for row in self.worktrees.matching(IsNull("removed_at")).every_row(OCCUPIED_REASON)}
         root = (Path(environment.folder) / WORKTREES_FOLDER).resolve()
         orphans: list[tuple[str, str | None]] = []
         for folder, branch in self.git.folders(environment.folder):

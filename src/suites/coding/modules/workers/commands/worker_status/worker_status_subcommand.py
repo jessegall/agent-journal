@@ -1,6 +1,5 @@
 from suites.coding.modules.workers.support.work_units import WorkUnits
 from suites.coding.modules.workers.support.worktree_runs import WorktreeRuns
-from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS
 from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
@@ -31,6 +30,8 @@ from suites.coding.modules.workers.support.worker_open_tasks import WorkerOpenTa
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
 from suites.coding.modules.workers.support.worker_questions import WorkerQuestions
+
+UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 
 class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Refusal]):
@@ -65,13 +66,13 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
         skills = tuple(self.files.agent_instruction(name, worker) for name in self.unread_skills.names(worker_id))
         current_task = self.queries.query(Task).find(worktree.task_id)
         point = self.guidance.point(worker_id)
-        waiting_tasks = tuple(self.tasks.assignee_tasks(worker_id).filter(state=TaskState.TESTING).oldest().all_rows(TASK_PAGE_ROWS))
+        waiting_tasks = tuple(self.tasks.assignee_tasks(worker_id).filter(state=TaskState.TESTING).every_row(UNIT_TASKS_REASON))
         return WorkerStatus(worker_id, worker.number, worktree, current_task, self.tasks.started_tasks(worker_id), point.round.required_staging(), waiting_tasks, self.open_tasks.startable(point.round), tests, assignments, skills, worker.program, self.resume.program_state(worker) if worker.ended_at is not None else None, point, worker.paused_at is not None, self.questions.status_lines(worker_id), worker.standing,
                             self.unit_line(worker_id, worktree.id), self.held_by_others(worker_id))
 
     def held_by_others(self, worker_id: int) -> tuple[Task, ...]:
         """The worker's assigned tasks another agent has started, which it can neither prove nor commit."""
-        return tuple(task for task in self.tasks.assignee_tasks(worker_id).filter(state=TaskState.STARTED).oldest().all_rows(TASK_PAGE_ROWS) if task.holder_id not in (None, worker_id))
+        return tuple(task for task in self.tasks.assignee_tasks(worker_id).filter(state=TaskState.STARTED).every_row(UNIT_TASKS_REASON) if task.holder_id not in (None, worker_id))
 
     def unit_line(self, worker_id: int, worktree_id: int) -> str:
         return " ".join(line for line in (self.units.unit(worker_id).status_line, self.runs.passed_text(worktree_id)) if line)

@@ -9,6 +9,8 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 
+STANDARD_ROWS_REASON = "the rows a version comes with are compared by title with every stored one"
+
 
 class StandardRows:
     """Brings the rows the journal itself made of one model to what this version comes with, by title: a new one
@@ -19,7 +21,7 @@ class StandardRows:
 
     def save_all[M: Model](self, model: type[M], standard: Sequence[M], fields: Sequence[str], context: Context, used: Callable[[M], bool] = lambda row: False) -> None:
         query = self.queries.query(model).filter(creator_id=CORE_ACTOR_ID)
-        stored = self.kept.read(query, lambda: {getattr(row, "title"): row for row in query.all_rows()}, name="standard.rows")
+        stored = self.kept.read(query, lambda: {getattr(row, "title"): row for row in query.every_row(STANDARD_ROWS_REASON)}, name="standard.rows")
         titles = {getattr(row, "title") for row in standard}
         for row in [row for title, row in stored.items() if title not in titles and not used(row)]:
             self.repository.delete_stored(row, context)

@@ -32,7 +32,7 @@ class WorkerTestMarkListener(MarkListener[Moved[Proof]]):
         if not proof.test_command:
             return
         worktree = self.event_rows.required(Worktree, proof.worktree_id)
-        proofs = tuple(self.queries.query(Proof).filter(worktree_id=worktree.id, task_id=proof.task_id).all_rows())
+        proofs = tuple(self.queries.query(Proof).filter(worktree_id=worktree.id, task_id=proof.task_id).get())
         tested_ids = [row.id for row in proofs if row.test_command]
         round = WorkerTestRound.build(change for change in self.events.row_events_many(logged.row_table, tested_ids) if change.id <= logged.id)
         worker = worktree.session_agent_id

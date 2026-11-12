@@ -6,6 +6,8 @@ from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question
 from server.viewer.waiting_thing import WaitingThing
 
+WAITING_PAGE_ROWS = 50
+
 
 class WaitingRoute:
     """Answers GET /api/waiting for the phone's worker: each open question in every environment, newest first,
@@ -17,7 +19,7 @@ class WaitingRoute:
     def waiting(self) -> list[WaitingThing]:
         container = synced_container(self.home)
         try:
-            questions = container.get(Queries).query(Question).filter(state=QuestionState.OPEN).newest().all_rows()
+            questions = container.get(Queries).query(Question).filter(state=QuestionState.OPEN).newest().page(1, WAITING_PAGE_ROWS).rows
             return [WaitingThing(f"questions:{question.id}") for question in questions]
         finally:
             container.get(Database).close()

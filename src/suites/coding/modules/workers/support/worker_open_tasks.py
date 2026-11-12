@@ -7,6 +7,8 @@ from suites.coding.modules.workers.support.unpassed_checkpoints import UnpassedC
 from suites.coding.modules.workers.support.worker_round import WorkerRound
 from suites.coding.modules.workers.support.worker_task_limit import WorkerTaskLimit
 
+DEPENDENT_REASON = "every task asked about is checked for an open dependency"
+
 
 class WorkerOpenTasks:
     """The tasks of a worker that it may start now: its ready tasks that wait on no open task and come after
@@ -28,5 +30,5 @@ class WorkerOpenTasks:
 
     def dependent_ids(self, task_ids: tuple[int, ...]) -> tuple[int, ...]:
         tasks = self.queries.query(Task).matching(Among("id", task_ids))
-        return self.kept.read(tasks, lambda: tuple(dependency.task_id for dependency in self.queries.query(OpenDependency).matching(Among("task_id", task_ids)).all_rows()),
+        return self.kept.read(tasks, lambda: tuple(dependency.task_id for dependency in self.queries.query(OpenDependency).matching(Among("task_id", task_ids)).every_row(DEPENDENT_REASON)),
                               name="workers.startable_dependent_ids")

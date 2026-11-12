@@ -17,6 +17,8 @@ from suites.coding.modules.workers.support.worker_settings import DELIVERY_FAILU
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
 
+FAILURES_REASON = "the flagged lines name every test failure of the tasks asked about"
+
 TEST_FILE_PATTERN = re.compile(r"[\w./-]*(?:test|stories)[\w./-]*\.(?:py|js|mjs|go)|[\w./-]+_test\.go")
 ALL_RUN_TESTS = "the whole run"
 DELIVERY_REVIEW_INTERVAL_COUNT = 3
@@ -47,7 +49,7 @@ class WorkerTestFailures:
         self.repository.save(WorkerTestFailure(worker_id=worker_id, task_id=task_id, source=source, test_name=test_name), context)
 
     def flagged_lines(self, task_ids: Sequence[int]) -> Mapping[int, tuple[str, ...]]:
-        failures = tuple(self.queries.query(WorkerTestFailure).matching(Among("task_id", task_ids)).all_rows())
+        failures = tuple(self.queries.query(WorkerTestFailure).matching(Among("task_id", task_ids)).every_row(FAILURES_REASON))
         return {task_id: self.task_lines([row for row in failures if row.task_id == task_id]) for task_id in task_ids}
 
     def task_lines(self, failures: Sequence[WorkerTestFailure]) -> tuple[str, ...]:

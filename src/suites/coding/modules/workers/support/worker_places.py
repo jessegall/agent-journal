@@ -20,6 +20,8 @@ from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from core.modules.agents.support.agent_rows import AgentRows
 
+KEPT_WORKERS_REASON = "the places count every kept worker and every line that resumes one"
+
 JOB_DELIVERY_SECONDS = 120
 KEPT_NAMES_SHOWN = 5
 
@@ -39,7 +41,7 @@ class WorkerPlaces:
 
     def kept_workers(self) -> tuple[Agent, ...]:
         workers = self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(IsNull("retired_at")).newest()
-        return self.kept.read(workers, lambda: tuple(workers.all_rows()), name="workers.kept")
+        return self.kept.read(workers, lambda: tuple(workers.every_row(KEPT_WORKERS_REASON)), name="workers.kept")
 
     def kept_limit(self) -> int:
         return self.limits.required(CodingHelperRole.WORKER).kept
@@ -70,7 +72,7 @@ class WorkerPlaces:
         cutoff_at = Timestamp(cutoff_value_at.replace(second=0, microsecond=0)).text
         with self.scopes.opened(self.scopes.actor_id, self.scopes.environment_id, [ActorScope]):
             lines = self.queries.query(AgentLine).filter(state=AgentLineState.ENTERED).matching(Greater("updated_at", cutoff_at))
-            return self.kept.read(lines, lambda: tuple(lines.all_rows()), name=f"workers.resuming_lines.{self.scopes.environment_id}")
+            return self.kept.read(lines, lambda: tuple(lines.every_row(KEPT_WORKERS_REASON)), name=f"workers.resuming_lines.{self.scopes.environment_id}")
 
     def resuming_count(self) -> int:
         pending = self.work.pending()

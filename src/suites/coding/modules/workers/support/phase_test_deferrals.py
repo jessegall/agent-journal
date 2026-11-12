@@ -9,6 +9,8 @@ from suites.coding.modules.workers.models.phase_test_deferral import PhaseTestDe
 from suites.coding.modules.workers.support.own_test import OwnTest
 from suites.coding.modules.workers.support.own_test_command import OwnTestCommand
 
+DEFERRALS_REASON = "the notes name every open deferral of the phases asked about"
+
 DEFERRED_LINE = "phase {phase}: own test deferred: {paths}, until the checkpoint of phase {due}"
 
 
@@ -25,13 +27,13 @@ class PhaseTestDeferrals:
         return self.queries.query(PhaseTestDeferral).filter(phase_id=phase_id).count()
 
     def omitted(self, phase_id: int) -> tuple[PhaseTestDeferral, ...]:
-        return tuple(self.queries.query(PhaseTestDeferral).filter(phase_id=phase_id).matching(IsNull("closed_at")).oldest().all_rows())
+        return tuple(self.queries.query(PhaseTestDeferral).filter(phase_id=phase_id).matching(IsNull("closed_at")).oldest().get())
 
     def due(self, phase_id: int) -> tuple[PhaseTestDeferral, ...]:
-        return tuple(self.queries.query(PhaseTestDeferral).filter(due_phase_id=phase_id).matching(IsNull("closed_at")).oldest().all_rows())
+        return tuple(self.queries.query(PhaseTestDeferral).filter(due_phase_id=phase_id).matching(IsNull("closed_at")).oldest().get())
 
     def notes(self, phases: tuple[Phase, ...]) -> tuple[str, ...]:
-        deferrals = self.queries.query(PhaseTestDeferral).matching(Among("phase_id", [phase.id for phase in phases])).matching(IsNull("closed_at")).oldest().all_rows()
+        deferrals = self.queries.query(PhaseTestDeferral).matching(Among("phase_id", [phase.id for phase in phases])).matching(IsNull("closed_at")).every_row(DEFERRALS_REASON)
         return tuple(DEFERRED_LINE.format(phase=deferral.phase_id, paths=deferral.paths, due=deferral.due_phase_id) for deferral in deferrals)
 
     def run_commands(self, phase: Phase) -> tuple[str, ...]:

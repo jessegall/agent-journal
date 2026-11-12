@@ -1,8 +1,10 @@
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
+from core.modules.tasks.queries.task_query import TaskQuery
 from engine.query.queries import Queries
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+
+UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 TASK_NUMBER_MOST_DIGITS = 6
 
@@ -27,5 +29,5 @@ class WorkerMergeRange:
 
     def tasks_up_to(self, worktree: Worktree, commit: str) -> list[Task]:
         commits = self.git.branch_commits(worktree.folder, f"{worktree.base_commit}..{commit}")
-        assigned = tuple(self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).oldest().all_rows(TASK_PAGE_ROWS))
+        assigned = tuple(self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).every_row(UNIT_TASKS_REASON))
         return [task for task in assigned if any(row.has_task_subject([task.id]) for row in commits)]

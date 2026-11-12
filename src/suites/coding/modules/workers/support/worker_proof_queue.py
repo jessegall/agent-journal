@@ -25,6 +25,8 @@ from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 import shlex
 
+WORKTREE_PROOFS_REASON = "a commit hands in every proof of the worktree"
+
 UNTESTED_STATES = (ProofState.SHOWN, ProofState.COMMITTED)
 PROOF_WAITS_SOURCE = "workers.proof-waits"
 PENDING_AFFECTED_STATES = (AffectedTestState.QUEUED, AffectedTestState.PICKING, AffectedTestState.TESTING)
@@ -47,7 +49,7 @@ class WorkerProofQueue:
 
     def submit_ready(self, worktree: Worktree, tasks: tuple[Task, ...], context: Context) -> Submission:
         task_ids = [task.id for task in tasks]
-        proofs = tuple(self.proofs.worktree_proofs(worktree.id).oldest().all_rows())
+        proofs = tuple(self.proofs.worktree_proofs(worktree.id).every_row(WORKTREE_PROOFS_REASON))
         shown = [proof for proof in proofs if proof.task_id in task_ids and proof.state is ProofState.SHOWN]
         self.send_waiting_line(worktree, [proof for proof in shown if not proof.test_command], context)
         if self.plans.is_started_plan(task_ids[0]):
@@ -64,7 +66,7 @@ class WorkerProofQueue:
         return context.timestamp if self.plans.is_started_plan(task.id) else None
 
     def move_delivered(self, worktree: Worktree, move: Move, context: Context) -> None:
-        for proof in tuple(self.proofs.delivered_proofs(worktree.id).all_rows()):
+        for proof in tuple(self.proofs.delivered_proofs(worktree.id).every_row(WORKTREE_PROOFS_REASON)):
             if proof.test_command:
                 self.repository.save_change(proof, proof.moved(move), context)
 

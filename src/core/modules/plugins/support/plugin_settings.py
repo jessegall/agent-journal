@@ -17,7 +17,7 @@ class PluginSettings:
 
     def values(self, plugin: Plugin, manifest: PluginManifest, environment: str) -> dict[str, object]:
         settings = self.queries.query(PluginSetting).filter(plugin_id=plugin.id)
-        rows = self.kept.read(settings, lambda: tuple(settings.all_rows()), name="plugins.settings")
+        rows = self.kept.read(settings, lambda: tuple(settings.get()), name="plugins.settings")
         environments = self.queries.query(Environment).filter(name=environment)
         selected = self.kept.read(environments, environments.first, name="plugins.setting_environment") if environment else None
         given = {row.key: json.loads(row.value) for row in rows if row.environment_id is None}

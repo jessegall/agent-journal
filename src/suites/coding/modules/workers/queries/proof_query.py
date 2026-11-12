@@ -11,6 +11,8 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.replaced_rows import replaced_rows
 from suites.coding.modules.workers.conditions.proof_task_testing import ProofTaskTesting
 
+PROOFS_REASON = "every proof of the worktree or tasks asked about counts"
+
 PROOF_PAGE_ROWS = 50
 
 
@@ -28,7 +30,7 @@ class ProofQuery(Query[Proof]):
 
     def worktree_rows(self, worktree_id: int) -> tuple[Proof, ...]:
         proofs = self.worktree_proofs(worktree_id)
-        return self.kept.read(proofs, lambda: tuple(proofs.all_rows()), name="workers.worktree_proofs")
+        return self.kept.read(proofs, lambda: tuple(proofs.every_row(PROOFS_REASON)), name="workers.worktree_proofs")
 
     def tests_waiting(self, worktree_id: int) -> bool:
         proofs = self.worktree_proofs(worktree_id).matching(Among("state", TEST_WAITING_STATES))
@@ -49,7 +51,7 @@ class ProofQuery(Query[Proof]):
         return self.worktree_proofs(worktree_id).filter(state=ProofState.SHOWN)
 
     def task_proofs(self, task_ids: Sequence[int]) -> tuple[Proof, ...]:
-        proofs = self.matching(Among("task_id", task_ids)).oldest().all_rows(PROOF_PAGE_ROWS)
+        proofs = self.matching(Among("task_id", task_ids)).every_row(PROOFS_REASON)
         current = {(proof.task_id, proof.point): proof for proof in sorted(proofs, key=lambda proof: (proof.worktree_id, proof.id))}
         return tuple(sorted(current.values(), key=lambda proof: proof.id))
 
@@ -61,7 +63,7 @@ class ProofQuery(Query[Proof]):
 
     def test_rows(self) -> tuple[Proof, ...]:
         proofs = self.test_waiting()
-        return self.kept.read(proofs, lambda: tuple(proofs.all_rows()), name="workers.test_proofs")
+        return self.kept.read(proofs, lambda: tuple(proofs.every_row(PROOFS_REASON)), name="workers.test_proofs")
 
     def test_waiting(self) -> Self:
         return self.matching(Among("state", TEST_WAITING_STATES)).oldest()

@@ -23,7 +23,7 @@ class ConfigurePluginHandler(Handler[ConfigurePlugin, PluginSetting]):
     def handle(self, command: ConfigurePlugin, context: Context) -> PluginSetting:
         plugin = self.plugins.find_name(command.name)
         if context.actor.type is ActorType.AGENT:
-            grants = tuple(self.queries.query(Environment).filter(test=True, test_agent_id=context.actor.id).all_rows())
+            grants = tuple(self.queries.query(Environment).filter(test=True, test_agent_id=context.actor.id).get())
             if grants and command.environment_id not in {environment.id for environment in grants}:
                 raise Refusal("this agent can configure the plugin only in its granted test environment")
         value = PluginManifest.read(self.folders.code(plugin.name)).setting(command.key).value_text(command.value)

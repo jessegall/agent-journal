@@ -15,6 +15,8 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from core.modules.agents.support.agent_label import AgentLabel
 
+FOLDER_RUNS_REASON = "every helper of the worker and every run in its folder is stopped"
+
 
 class WorkerFolderRuns:
     """Stops programs using a worker's folder before it is removed or reused."""
@@ -39,10 +41,10 @@ class WorkerFolderRuns:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             worker = self.queries.query(Agent).find(worktree.session_agent_id)
             self.stop_agent(worker, folder)
-            helpers = tuple(self.queries.query(Agent).filter(parent_id=worker.id).all_rows())
+            helpers = tuple(self.queries.query(Agent).filter(parent_id=worker.id).every_row(FOLDER_RUNS_REASON))
             for helper in helpers:
                 self.stop_agent(helper, folder)
-            processes = tuple(self.processes.running().all_rows())
+            processes = tuple(self.processes.running().every_row(FOLDER_RUNS_REASON))
         for process in processes:
             if not Path(process.folder).resolve().is_relative_to(folder):
                 continue

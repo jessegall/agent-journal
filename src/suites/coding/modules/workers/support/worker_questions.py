@@ -25,6 +25,8 @@ from suites.coding.modules.workers.models.merger_line import CLOCK_FORMAT, Merge
 from suites.coding.modules.workers.support.ask_deadline import AskDeadline
 from suites.coding.modules.workers.support.worker_settings import QUESTION_ANSWER_MINUTES, QUESTION_FORWARD_MINUTES
 
+OPEN_LINES_REASON = "the merger answers every open question of every worker"
+
 
 CLOSED_LINE_COUNT = 10
 
@@ -40,14 +42,14 @@ class WorkerQuestions:
         self.queries, self.repository, self.bus, self.settings, self.numbers, self.kept = queries, repository, bus, settings, numbers, kept
 
     def open_lines(self) -> tuple[MergerLine, ...]:
-        return tuple(self.open_line_rows().all_rows())
+        return tuple(self.open_line_rows().every_row(OPEN_LINES_REASON))
 
     def open_line_rows(self) -> Query[MergerLine]:
         return self.queries.query(MergerLine).matching(HasValue("worker_id")).matching(IsNull("outcome")).oldest()
 
     def worker_lines(self, worker_id: int) -> tuple[MergerLine, ...]:
         lines = self.queries.query(MergerLine).filter(worker_id=worker_id).matching(IsNull("outcome")).oldest()
-        return self.kept.read(lines, lambda: tuple(lines.all_rows()), name="workers.open_worker_lines")
+        return self.kept.read(lines, lambda: tuple(lines.get()), name="workers.open_worker_lines")
 
     def task_lines(self, task_id: int) -> tuple[MergerLine, ...]:
         open_lines = self.kept.read(self.open_line_rows(), self.open_lines, name="workers.open_questions")
@@ -79,7 +81,7 @@ class WorkerQuestions:
 
     def status_lines(self, worker_id: int) -> tuple[str, ...]:
         open_texts = tuple(line.status_text() for line in self.worker_lines(worker_id))
-        closed = self.queries.query(MergerLine).filter(worker_id=worker_id).matching(HasValue("outcome")).matching(HasValue("topic")).newest().limited(CLOSED_LINE_COUNT)
+        closed = self.queries.query(MergerLine).filter(worker_id=worker_id).matching(HasValue("outcome")).matching(HasValue("topic")).newest().take(CLOSED_LINE_COUNT)
         return (*open_texts, *(line.status_text() for line in closed))
 
     def due_workers(self, visits_limit: int, timestamp: Timestamp) -> tuple[int, ...]:

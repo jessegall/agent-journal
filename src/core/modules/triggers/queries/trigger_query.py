@@ -17,7 +17,7 @@ class TriggerQuery(Query[Trigger]):
 
     def open(self) -> list[Trigger]:
         open_triggers = self.matching(IsNull("ended_at")).oldest()
-        return list(self.kept.read(open_triggers, lambda: tuple(open_triggers.all_rows()), name="triggers.open_rows"))
+        return list(self.kept.read(open_triggers, lambda: tuple(open_triggers.get()), name="triggers.open_rows"))
 
     def active(self) -> list[Trigger]:
         return [trigger for trigger in self.open() if trigger.paused_at is None and not trigger.needs_enabling]

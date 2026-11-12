@@ -52,7 +52,7 @@ class FitnessMeasures:
         begin = current_time.value - timedelta(minutes=WAIT_WINDOW_MINUTES)
         seconds = 0.0
         waits = self.queries.query(Wait).filter(session_agent_id=agent.id)
-        for wait in (*waits.matching(IsNull("ended_at")).all_rows(), *waits.matching(Greater("ended_at", Timestamp(begin).text)).all_rows()):
+        for wait in (*waits.matching(IsNull("ended_at")).get(), *waits.matching(Greater("ended_at", Timestamp(begin).text)).get()):
             end = wait.ended_at.value if wait.ended_at else current_time.value
             seconds += max(0.0, (end - max(wait.opened_at.value, begin)).total_seconds())
         share = min(1.0, seconds / (WAIT_WINDOW_MINUTES * 60))

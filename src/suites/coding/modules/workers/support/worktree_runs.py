@@ -37,11 +37,11 @@ class WorktreeRuns:
 
     def links(self, worktree_id: int) -> tuple[WorktreeReach, ...]:
         reaches = self.queries.query(WorktreeReach).filter(worktree_id=worktree_id)
-        return self.kept.read(reaches, lambda: tuple(reaches.all_rows()), name="workers.worktree_reaches")
+        return self.kept.read(reaches, lambda: tuple(reaches.get()), name="workers.worktree_reaches")
 
     def reaches(self, links: tuple[WorktreeReach, ...]) -> tuple[CheckpointReach, ...]:
         if not links:
             return ()
         reach_ids = tuple(link.reach_id for link in links)
         reaches = self.queries.query(CheckpointReach).matching(Among("id", reach_ids))
-        return self.kept.read(reaches, lambda: tuple(reaches.all_rows()), name="workers.worktree_run_reaches")
+        return self.kept.read(reaches, lambda: tuple(reaches.get()), name="workers.worktree_run_reaches")

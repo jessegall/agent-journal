@@ -9,6 +9,8 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.staging import Staging
 
+CANCELLED_REASON = "the staging shows every cancelled task of the unit"
+
 
 class WorkerStaging:
     """Reads what a commit of a worker would take: its started tasks against the proofs of its worktree, and
@@ -28,4 +30,4 @@ class WorkerStaging:
         if not task_ids:
             return ()
         cancelled = self.queries.query(Task).matching(Among("id", task_ids)).filter(state=TaskState.CANCELLED).ordered("id")
-        return self.kept.read(cancelled, lambda: tuple(cancelled.all_rows()), name="workers.cancelled_shown_tasks")
+        return self.kept.read(cancelled, lambda: tuple(cancelled.every_row(CANCELLED_REASON)), name="workers.cancelled_shown_tasks")

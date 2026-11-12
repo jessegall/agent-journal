@@ -17,7 +17,6 @@ from core.modules.reminders.support.reminder_nudges import REMINDER_BLOCK, REMIN
 OPEN_REMINDERS_READ = 200
 
 
-OPEN_REMINDERS_REASON = "every open reminder is checked for being due, at most the 200 oldest"
 
 class DueReminderRule(DriverRule):
     """On any hook, the server's tick included, the main agent is told each reminder that has come due, and
@@ -33,7 +32,7 @@ class DueReminderRule(DriverRule):
         self.queries, self.conditions, self.hook_calls, self.tasks = queries, conditions, hook_calls, tasks
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        reminders = self.queries.query(Reminder).matching(IsNull("ended_at")).matching(NonHelperRows()).oldest().full_table(OPEN_REMINDERS_REASON).limited(OPEN_REMINDERS_READ)
+        reminders = self.queries.query(Reminder).matching(IsNull("ended_at")).matching(NonHelperRows()).oldest().take(OPEN_REMINDERS_READ)
         tool_uses = self.tool_uses(reminders, hook)
         counting = [reminder for reminder in reminders if reminder.due_at is None and reminder.interval_tasks]
         counts = self.tasks.closed_counts([reminder.interval_timestamp() for reminder in counting])

@@ -19,6 +19,8 @@ from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
 from suites.coding.modules.workers.support.worker_merge_range import WorkerMergeRange
 
+MERGED_PROOFS_REASON = "a merge checks every proof of the tasks it takes in"
+
 # A task whose work is committed and not merged is in testing, or completed by its checked proofs.
 COMMITTED_TASK_STATES = (TaskState.TESTING, TaskState.COMPLETED)
 
@@ -77,4 +79,4 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
 
     def check_proofs(self, worktree: Worktree, tasks: list[Task]) -> None:
         numbers = {task.id for task in tasks}
-        self.checks.check_states(worktree, [proof for proof in self.proofs.worktree_proofs(worktree.id).all_rows() if proof.task_id in numbers])
+        self.checks.check_states(worktree, [proof for proof in self.proofs.worktree_proofs(worktree.id).every_row(MERGED_PROOFS_REASON) if proof.task_id in numbers])

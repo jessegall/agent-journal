@@ -22,7 +22,7 @@ class PluginQuery(Query[Plugin]):
 
     def enabled_plugins(self) -> list[Plugin]:
         enabled = self.filter(enabled=True).oldest()
-        return list(self.kept.read(enabled, lambda: tuple(enabled.all_rows()), name="plugins.enabled_plugins"))
+        return list(self.kept.read(enabled, lambda: tuple(enabled.get()), name="plugins.enabled_plugins"))
 
     def is_installed(self, name: str) -> bool:
         named = self.filter(name=name)

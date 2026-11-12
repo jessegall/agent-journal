@@ -32,7 +32,7 @@ class RowSearch:
             raise Refusal(f"{unknown[0]} is no model search reads", f"name one of: {', '.join(sorted(searched))}")
         search_models = [searched[name] for name in model_names] or list(searched.values())
         model_queries = [self.searchable(model).matching(ContainsEvery(model.search_fields, terms)) for model in search_models]
-        hits = [SearchHit.matched(row, terms) for query in model_queries for row in query.newest().limited(HIT_LIMIT_ROWS)]
+        hits = [SearchHit.matched(row, terms) for query in model_queries for row in query.newest().take(HIT_LIMIT_ROWS)]
         total = sum(query.count() for query in model_queries)
         if total or len(terms) < 2:
             return SearchResult(terms, sorted(hits, key=lambda hit: (-hit.rank, -hit.created_at.value.timestamp()))[:HIT_LIMIT_ROWS], total)
@@ -40,7 +40,7 @@ class RowSearch:
 
     def closest(self, terms: Sequence[str], search_models: Sequence[type[Model]]) -> SearchResult:
         enough = (len(terms) + 1) // 2
-        rows = [row for model in search_models for row in self.searchable(model).matching(ContainsMost(model.search_fields, terms, enough)).newest().limited(HIT_LIMIT_ROWS)]
+        rows = [row for model in search_models for row in self.searchable(model).matching(ContainsMost(model.search_fields, terms, enough)).newest().take(HIT_LIMIT_ROWS)]
         hits = [SearchHit.matched(row, terms) for row in rows]
         ranked = sorted(hits, key=lambda hit: (-hit.matched_terms, -hit.rank, -hit.created_at.value.timestamp()))
         return SearchResult(terms, ranked[:HIT_LIMIT_ROWS], len(ranked), is_closest=True)

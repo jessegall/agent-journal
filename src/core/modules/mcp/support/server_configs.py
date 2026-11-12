@@ -35,5 +35,5 @@ class ServerConfigs:
 
     def installed(self, dropped: Sequence[str] = ()) -> list[McpServer]:
         installed = self.queries.query(McpServer).oldest()
-        servers = self.kept.read(installed, lambda: tuple(installed.all_rows()), name="mcp.installed_servers")
+        servers = self.kept.read(installed, lambda: tuple(installed.get()), name="mcp.installed_servers")
         return [server for server in servers if server.name not in dropped]

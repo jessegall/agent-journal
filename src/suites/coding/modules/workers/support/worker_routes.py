@@ -13,6 +13,8 @@ from core.modules.tasks.models.task_tag import TaskTag
 from suites.coding.modules.workers.models.worker_route import WorkerRoute
 from suites.coding.modules.workers.support.route_tasks import RouteTasks
 
+ROUTE_TAGS_REASON = "a route is matched on every tag of the tasks it is asked about"
+
 
 class WorkerRoutes:
     """Reads ordered routes and combines the first matches of a batch."""
@@ -22,7 +24,7 @@ class WorkerRoutes:
 
     def listed(self) -> tuple[WorkerRoute, ...]:
         routes = self.queries.query(WorkerRoute).matching(Minimum("position", 1)).ordered("position")
-        return self.kept.read(routes, lambda: tuple(routes.all_rows()), name="workers.routes")
+        return self.kept.read(routes, lambda: tuple(routes.get()), name="workers.routes")
 
     def task_matches(self, tasks: Sequence[Task]) -> RouteTasks:
         programs = {provider.name for provider in self.providers.all()}
@@ -31,7 +33,7 @@ class WorkerRoutes:
         if routes:
             task_ids = tuple(task_tags)
             route_tags = self.queries.query(TaskTag).matching(Among("task_id", task_ids))
-            tags = self.kept.read(route_tags, lambda: tuple(route_tags.all_rows()), name="workers.route_tags")
+            tags = self.kept.read(route_tags, lambda: tuple(route_tags.every_row(ROUTE_TAGS_REASON)), name="workers.route_tags")
             for tag in tags:
                 task_tags[tag.task_id].append(tag.word)
         return RouteTasks(routes, task_tags)

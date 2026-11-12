@@ -7,6 +7,8 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
+OWNERS_REASON = "every worker that owns a worktree of the main agent is read"
+
 
 class WorkerWorktrees:
     """The worktrees the workers of the current environment have out, and those of them delivered: every main
@@ -24,7 +26,7 @@ class WorkerWorktrees:
         if not owner_ids:
             return []
         owners = self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(Among("id", owner_ids)).oldest()
-        workers = self.kept.read(owners, lambda: tuple(owners.all_rows()), name=f"workers.main_workers:{owner_ids}")
+        workers = self.kept.read(owners, lambda: tuple(owners.every_row(OWNERS_REASON)), name=f"workers.main_workers:{owner_ids}")
         return [worktree_index[worker.id] for worker in workers]
 
     def delivered(self) -> list[Worktree]:

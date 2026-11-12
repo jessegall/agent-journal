@@ -1,6 +1,5 @@
 from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
-from itertools import islice
 from typing import ClassVar
 
 from engine.caller.caller import Caller
@@ -16,7 +15,6 @@ from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 
 
-READ_PAGE_ROWS = 50
 
 
 class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
@@ -48,7 +46,7 @@ class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
             query = query.matching(Less("id", arguments.before_id))
         if arguments.ids is not None:
             query = query.matching(Among("id", arguments.ids))
-        return ViewRowPage(tuple(islice(query.newest().all_rows(min(arguments.limit, READ_PAGE_ROWS)), arguments.limit)))
+        return ViewRowPage(tuple(query.newest().take(arguments.limit)))
 
     def filtered(self, query: Query[ViewModel], arguments: Namespace) -> Query[ViewModel]:
         return query

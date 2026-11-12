@@ -5,6 +5,8 @@ from suites.coding.modules.workers.models.affected_test import AffectedTest
 from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from suites.coding.modules.workers.queries.replaced_rows import replaced_rows
 
+QUEUED_TESTS_REASON = "the queue of affected tests runs every queued one in turn"
+
 
 class AffectedTestRows:
     """Shares queued test selections until they change."""
@@ -14,7 +16,7 @@ class AffectedTestRows:
 
     def queued(self) -> tuple[AffectedTest, ...]:
         queued = self.queued_rows()
-        return self.kept.read(queued, lambda: tuple(queued.all_rows()), name="workers.queued_affected_tests")
+        return self.kept.read(queued, lambda: tuple(queued.every_row(QUEUED_TESTS_REASON)), name="workers.queued_affected_tests")
 
     def queued_rows(self) -> Query[AffectedTest]:
         return self.queries.query(AffectedTest).filter(state=AffectedTestState.QUEUED).oldest()

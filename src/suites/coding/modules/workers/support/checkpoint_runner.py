@@ -25,6 +25,8 @@ from suites.coding.modules.workers.support.phase_test_deferrals import PhaseTest
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND, PROJECT_TEST_COMMAND, TEST_LIMIT_SECONDS
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
+COMMITTED_PROOFS_REASON = "a checkpoint runs the tests of every committed proof of its tasks"
+
 class CheckpointRunner(CheckpointRuns):
     """Starts the tests of a reached checkpoint in the background runner proof tests use, in the checkout
     CheckpointFolders names, made whenever a proof or a test is to run: each committed proof of the window by its
@@ -46,7 +48,7 @@ class CheckpointRunner(CheckpointRuns):
     def start(self, reach: CheckpointReach, context: Context) -> None:
         if self.results.is_started(reach):
             return
-        committed = tuple(self.proofs.committed_proofs(reach.tasks()).oldest().all_rows())
+        committed = tuple(self.proofs.committed_proofs(reach.tasks()).every_row(COMMITTED_PROOFS_REASON))
         phase_commands = self.deferrals.run_commands(self.rows.required(Phase, reach.phase_id))
         has_tests = reach.source is not CheckpointReachSource.EARLY and self.has_tests(reach, phase_commands)
         if not committed and not has_tests:

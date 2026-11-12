@@ -15,6 +15,8 @@ from suites.coding.modules.workers.queries.replaced_rows import replaced_rows
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
 
+WORKTREES_REASON = "every worktree asked about is read, the open ones and the removed ones a merge or a folder needs"
+
 
 class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
     """Reads worktrees, with the one a worker has out and those an environment has out by name."""
@@ -48,26 +50,26 @@ class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
         return self.kept.read_newest(worktrees, worktrees.first, name="workers.newest_worktree")
 
     def worker_worktrees(self, agent_id: int) -> tuple[Worktree, ...]:
-        return tuple(self.with_removed().filter(session_agent_id=agent_id).oldest().all_rows())
+        return tuple(self.with_removed().filter(session_agent_id=agent_id).every_row(WORKTREES_REASON))
 
     def has_merge(self, agent_id: int, earliest_at: Timestamp) -> bool:
         return self.with_removed().filter(session_agent_id=agent_id).matching(Minimum("merged_at", earliest_at.text)).exists()
 
     def merged_among(self, agent_ids: Sequence[int]) -> tuple[Worktree, ...]:
         """The worktrees of these agents that a merge took work from, a whole one or a part."""
-        worktrees = self.with_removed().matching(Among("session_agent_id", agent_ids)).all_rows()
+        worktrees = self.with_removed().matching(Among("session_agent_id", agent_ids)).every_row(WORKTREES_REASON)
         return tuple(worktree for worktree in worktrees if worktree.merged_at is not None or worktree.merged_task_ids)
 
     def open_worktrees(self) -> list[Worktree]:
         worktrees = self.oldest()
-        return list(self.kept.read(worktrees, lambda: tuple(worktrees.all_rows()), name="workers.open_worktrees"))
+        return list(self.kept.read(worktrees, lambda: tuple(worktrees.every_row(WORKTREES_REASON)), name="workers.open_worktrees"))
 
     def folder_worktrees(self, folders: Sequence[str]) -> tuple[Worktree, ...]:
-        return tuple(self.with_removed().matching(Among("folder", folders)).oldest().all_rows())
+        return tuple(self.with_removed().matching(Among("folder", folders)).every_row(WORKTREES_REASON))
 
     def all_worktrees(self) -> tuple[Worktree, ...]:
         worktrees = self.with_removed().oldest()
-        return self.kept.read(worktrees, lambda: tuple(worktrees.all_rows()), name="workers.all_worktrees")
+        return self.kept.read(worktrees, lambda: tuple(worktrees.every_row(WORKTREES_REASON)), name="workers.all_worktrees")
 
     def update_kept(self, worktree: Worktree, present: tuple[Worktree, ...]) -> None:
         active = [row for row in present if row.removed_at is None]

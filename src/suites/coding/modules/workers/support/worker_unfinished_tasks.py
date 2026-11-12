@@ -1,4 +1,3 @@
-from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS
 from core.modules.tasks.models.enums.task_state import TaskState
 from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
@@ -10,6 +9,8 @@ from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from suites.coding.modules.workers.support.worker_round import WorkerRound
 from suites.coding.modules.workers.support.worker_steps import WorkerSteps
+
+UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 
 class WorkerUnfinishedTasks:
@@ -32,13 +33,13 @@ class WorkerUnfinishedTasks:
         return (*worker_round.started, *self.tasks.assigned(worker_round.worker_id))
 
     def committed(self, worker_id: int) -> tuple[Task, ...]:
-        testing = self.kept.scoped_current(lambda: tuple(self.tasks.assignee_tasks(worker_id).filter(state=TaskState.TESTING).oldest().all_rows(TASK_PAGE_ROWS)),
+        testing = self.kept.scoped_current(lambda: tuple(self.tasks.assignee_tasks(worker_id).filter(state=TaskState.TESTING).every_row(UNIT_TASKS_REASON)),
                                            name=f"workers.testing_tasks:{worker_id}")
         self.plans.prepare([task.id for task in testing])
         return tuple(task for task in testing if self.plans.is_started_plan(task.id))
 
     def last_progress_text(self, worker_id: int) -> str:
-        tasks = self.tasks.assignee_tasks(worker_id).oldest().all_rows(TASK_PAGE_ROWS)
+        tasks = self.tasks.assignee_tasks(worker_id).every_row(UNIT_TASKS_REASON)
         stamps = [stamp.text for task in tasks for stamp in (task.started_at, task.closed_at) if stamp]
         last_tool_use = self.hook_calls.agent(worker_id).filter(hook=HookEventName.PRE_TOOL_USE).newest().first()
         if last_tool_use is not None:

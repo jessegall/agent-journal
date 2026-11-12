@@ -34,7 +34,7 @@ class SecretRunSubcommand(ReadSubcommand[SecretRunOutcome]):
         parser.add_argument("command", nargs="*")
 
     def read(self, arguments: Namespace, caller: Caller) -> SecretRunOutcome:
-        deleted = [row for row in self.secrets.all_rows() if str(row.id) == arguments.secret and row.deleted_at is not None]
+        deleted = [row for row in self.secrets.deleted().get() if str(row.id) == arguments.secret]
         if deleted:
             raise Refusal(f"secret {deleted[0].id} is deleted", f"journal secret restore {deleted[0].id} brings it back")
         secret = self.secrets.find_title(arguments.secret)
