@@ -2,6 +2,7 @@ from dataclasses import replace
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.command.context import Context
+from suites.coding.modules.workers.support.model_complexity_policy import ModelComplexityPolicy
 from engine.command.handler import Handler
 from engine.enums.command_category import CommandCategory
 from engine.listener.rows.event_rows import EventRows
@@ -30,8 +31,8 @@ class QueueWorkerOperationHandler(Handler[QueueWorkerOperation, WorkerOperation]
     disabled_scopes = [ActorScope]
 
     def __init__(self, operations: WorkerOperationQuery, bus: Bus, repository: Repository,
-                 rows: EventRows, environments: EnvironmentRows, sources: WorkSources, kept_tasks: KeptWorkerTasks) -> None:
-        self.kept_tasks = kept_tasks
+                 rows: EventRows, environments: EnvironmentRows, sources: WorkSources, kept_tasks: KeptWorkerTasks, complexity: ModelComplexityPolicy) -> None:
+        self.kept_tasks, self.complexity = kept_tasks, complexity
         self.operations, self.bus, self.repository = operations, bus, repository
         self.rows, self.environments = rows, environments
         self.sources = sources
@@ -41,6 +42,8 @@ class QueueWorkerOperationHandler(Handler[QueueWorkerOperation, WorkerOperation]
             self.operations.check_available(command.worker_id)
         self.bus.handler(command.command).check_rows(command.command, context.actor)
         worker = self.rows.required(Agent, command.worker_id)
+        if isinstance(command.command, SendWorker) and command.command.plan_id is None and command.command.phase_id is None:
+            self.complexity.check(worker.program, worker.program_model, self.kept_tasks.read_tasks(command.command.task_ids), context)
         source = self.sources.source_copy(replace(context, environment_id=worker.environment_id))
         folder = self.environments.find(worker.environment_id).folder
         line = f"journal worker-operation run {worker.id}"

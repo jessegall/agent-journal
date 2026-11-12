@@ -29,6 +29,7 @@ QUESTION_VISITS_LIMIT = f"{MODULE_KEY}.ask-visits-limit"
 MERGER_GROUP_MESSAGE_LIMIT = f"{MODULE_KEY}.most-merger-messages-per-group"
 PHASE_TEST_DEFERRAL_LIMIT = f"{MODULE_KEY}.most-phase-test-deferrals"
 MOST_OPEN_TASKS = f"{MODULE_KEY}.most-open-tasks"
+STRONGEST_MODEL_LEAST_COMPLEXITY = f"{MODULE_KEY}.strongest-model-least-complexity"
 SILENT_RECOVERY_ATTEMPTS = f"{MODULE_KEY}.silent-recovery-attempts"
 WORKER_RESUME_LIMIT = f"{MODULE_KEY}.worker-resume-limit"
 INACTIVE_HELPER_MINUTES = f"{MODULE_KEY}.quiet-helper-minutes"
@@ -72,6 +73,7 @@ WORKER_SETTING_VALUES = [
     SettingValue("worker-resume-limit", "Go-on lines for a stopped worker", "How often a stopped worker with tasks left is told to go on, with no task moved, before it is reported.", SettingType.NUMBER, default=3, person_set=True, screen="advanced", section="Silent agents"),
     SettingValue("idle-worker-repeat-minutes", "Worker idle warning repeat", "Minutes between warnings about a worker with work left.", SettingType.NUMBER, default=5, person_set=True, screen="advanced", section="Quiet helpers"),
     SettingValue("most-open-tasks", "Tasks a worker may hold started at once", "Most tasks a worker may have started before it commits some of them.", SettingType.NUMBER, default=5, person_set=True, screen="helper-type.workers", section="How a worker works"),
+    SettingValue("strongest-model-least-complexity", "Least complexity for the strongest model", "Tasks sent alone, not as a plan or phase, to the strongest model are refused below this complexity; agents may skip it.", SettingType.NUMBER, default=3, person_set=True, screen="helper-type.workers", section="How a worker works"),
     SettingValue("worker-phase-test-runs", "A worker's test runs between two commits", "Test commands a worker may run itself between two commits before it asks the main agent.", SettingType.NUMBER, default=3, person_set=True, screen="tests", section="A worker's own runs"),
     SettingValue("silent-agent-minutes", "Silent agent minutes", "Minutes without tool use or a running command before an agent with unfinished work is resumed.", SettingType.NUMBER, default=3, person_set=True, screen="advanced", section="Silent agents"),
     SettingValue("affected-tests-command", "Affected tests command", "Find tests for changed files, one argument per line. Set the project test command too.", SettingType.TEXT, default="", person_set=True, screen="tests", section="Test commands"),
