@@ -29,6 +29,8 @@ try {
         await window.screenshot({path: `${capture}-confirm-${colorScheme}.png`, animations: "disabled"});
     }
     await confirmation.locator('[data-agent-confirm-retire]').click();
+    await retiringCard.getByRole('status').filter({hasText: "Agent retired permanently."}).waitFor();
+    await retiringCard.locator('.agent-back').click();
     await window.getByRole('radio', {name: 'Retired', exact: true}).click();
     const retiredCard = window.locator(`[data-agent-open="${retiring}"]`);
     await retiredCard.click();
