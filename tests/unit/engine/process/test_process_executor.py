@@ -5,6 +5,7 @@ import pytest
 
 from engine.enums.process_kind import ProcessKind
 from engine.errors.run_time_limit_error import RunTimeLimitError
+from engine.log.error_log import ErrorLog
 from engine.process.execution import Execution
 from engine.process.execution_gate import ExecutionGate
 from engine.process.execution_request import ExecutionRequest
@@ -28,6 +29,16 @@ class CountedPlacement(RunPlacement):
         return run.process_id
 
 
+class NotedErrors(ErrorLog):
+    """Keeps the errors it was told to record."""
+
+    def __init__(self) -> None:
+        self.noted: list[tuple[list[str], BaseException]] = []
+
+    def recorded(self, argv: list[str], error: BaseException, environment_id: int | None) -> None:
+        self.noted.append((argv, error))
+
+
 class OpenGate(ExecutionGate):
     """A server that is always ready."""
 
@@ -41,7 +52,7 @@ class OpenGate(ExecutionGate):
 
 def executor() -> tuple[ProcessExecutor, CountedPlacement]:
     placement = CountedPlacement()
-    return ProcessExecutor(placement, RunnerProgram(), OpenGate()), placement
+    return ProcessExecutor(placement, RunnerProgram(), OpenGate(), NotedErrors()), placement
 
 
 def test_a_run_goes_through_the_queue_and_its_end_is_recorded_with_its_row(tmp_path: Path):
@@ -81,3 +92,25 @@ def test_a_run_past_its_limit_is_stopped_with_the_grandchild_that_holds_its_outp
     with pytest.raises(RunTimeLimitError):
         door.execute(ExecutionRequest(["sh", "-c", "sleep 30 & wait"], tmp_path, ProcessKind.SHELL, 1))
     assert time.monotonic() - started < 2.5
+
+
+class BrokenPlacement(CountedPlacement):
+    """A queue whose row cannot be written."""
+
+    def ended(self, run: PlacedRun, execution: Execution) -> int | None:
+        raise OSError("the row cannot be written")
+
+
+def test_a_row_that_cannot_be_written_is_recorded_as_an_exception_and_the_answer_of_the_run_still_returns(tmp_path: Path):
+    errors = NotedErrors()
+    door = ProcessExecutor(BrokenPlacement(), RunnerProgram(), OpenGate(), errors)
+    execution = door.execute(ExecutionRequest(["echo", "done"], tmp_path, ProcessKind.SHELL, 5))
+    assert (execution.stdout, execution.process_id, [(argv, str(error)) for argv, error in errors.noted]) == ("done\n", None, [(["record-run", "echo done"], "the row cannot be written")])
+
+
+def test_a_row_that_cannot_be_written_after_a_run_past_its_limit_does_not_hide_the_limit_error(tmp_path: Path):
+    errors = NotedErrors()
+    door = ProcessExecutor(BrokenPlacement(), RunnerProgram(), OpenGate(), errors)
+    with pytest.raises(RunTimeLimitError, match="sleep 5 ran past its limit"):
+        door.execute(ExecutionRequest(["sleep", "5"], tmp_path, ProcessKind.SHELL, 0.2))
+    assert [argv for argv, _ in errors.noted] == [["record-run", "sleep 5"]]

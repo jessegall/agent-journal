@@ -6,6 +6,7 @@ from engine.command.context import Context
 from engine.database.database import Database
 from core.modules.agents.models.agent import Agent
 from engine.enums.process_kind import ProcessKind
+from engine.log.error_log import ErrorLog
 from engine.process.request_records import RequestRecords
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.processes.commands.record_request_run.record_request_run import RecordRequestRun
@@ -16,8 +17,8 @@ class ProcessRowWrapper(RequestRecords):
     it works for, or of the environment's main agent for a person. Such a row is priority 0: it takes no place,
     never moves to the background and gives no output number."""
 
-    def __init__(self, bus: Bus, database: Database, agents: AgentRows) -> None:
-        self.bus, self.database, self.agents = bus, database, agents
+    def __init__(self, bus: Bus, database: Database, agents: AgentRows, errors: ErrorLog) -> None:
+        self.bus, self.database, self.agents, self.errors = bus, database, agents, errors
 
     def ended_now(self, kind: ProcessKind, line: str, exit_code: int) -> None:
         agent = self.owner_agent()
@@ -27,6 +28,9 @@ class ProcessRowWrapper(RequestRecords):
 
     def recorded_hook(self, agent_id: int, line: str, exit_code: int, context: Context) -> None:
         self.bus.dispatch(RecordRequestRun(agent_id, ProcessKind.HOOK, line, exit_code), replace(context, environment_id=self.agents.find(agent_id).environment_id))
+
+    def write_failed(self, line: str, failure: Exception) -> None:
+        self.errors.recorded(["record-request", line], failure, None)
 
     def owner_agent(self) -> Agent | None:
         owner = self.database.row_owner
