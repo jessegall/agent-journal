@@ -1,5 +1,6 @@
 from core.modules.plans.migrations.m012_environment_index import PlanContextReadsEnvironmentIndexMigration
 from engine.skill.skill_declaration import SkillDeclaration
+from core.modules.plans.support.plan_settings import PLAN_SETTINGS
 from engine.module.model_declaration import ALL_SUBCOMMANDS
 from core.modules.plans.migrations.m008_plan_context_reads import PlanContextReadsMigration
 from core.modules.plans.migrations.m009_plan_waits import PlanWaitsMigration
@@ -126,6 +127,7 @@ class PlansModule(Module):
     """Adds plans: a goal, its phases in order, and the tasks placed in each."""
 
     name = "journal.core.plans"
+    settings = PLAN_SETTINGS
     requires_core = ">=5,<6"
     block_conditions = [PlanApproved, PlanFinished, PlanContextReadCondition]
     bindings = {PlanAuthors: PlanRowAuthors, BlockReviewScope: FocusedBlockReviewScope}

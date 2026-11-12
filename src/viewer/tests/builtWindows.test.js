@@ -55,7 +55,7 @@ test("every built window imports only Vue, the window kit and its own chunks, so
     for (const dist of dists) {
         for (const file of readdirSync(dist).filter((name) => name.endsWith(".js"))) {
             const imports = [...readFileSync(join(dist, file), "utf8").matchAll(/^import[^;]*?from\s*"([^"]+)";/gm)].map((match) => match[1]);
-            for (const source of imports) expect(["vue", "@journal/window-kit"].includes(source) || source.startsWith("./"), `${dist}/${file} imports ${source}`).toBe(true);
+            for (const source of imports) expect(["vue", "@journal/window-kit", "@journal/setting-components"].includes(source) || source.startsWith("./"), `${dist}/${file} imports ${source}`).toBe(true);
         }
     }
 });

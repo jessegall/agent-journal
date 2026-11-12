@@ -66,7 +66,8 @@ class PlanFocus:
             else:
                 unused = UnusedFocus(explicit_id, DELETED_STATE if stored is None else stored.state.value)
         unblockers = self.unblockers.plan_unblockers([plan.id for plan in plans], agent)
-        started = tuple(PlanWork(plan, self.next_tasks.ready(plan.id, agent), unblockers[plan.id]) for plan in plans)
+        ready = self.next_tasks.ready([plan.id for plan in plans], agent)
+        started = tuple(PlanWork(plan, ready[plan.id], unblockers[plan.id]) for plan in plans)
         if explicit_plan is not None:
             return FocusOverview(FocusedPlan(explicit_plan, FocusSource.EXPLICIT), started)
         default = next((work.plan for work in started if work.is_workable), None)

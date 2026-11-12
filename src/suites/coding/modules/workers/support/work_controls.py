@@ -8,10 +8,10 @@ from core.modules.settings.support.setting_changes import SettingChanges
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_reader import SettingReader
 from suites.coding.modules.workers.support.coding_main_options import CONTROL_KEYS, CodingMainOptions
-from suites.coding.support.main_options import PRESETS
+from suites.coding.support.main_options import PRESET_LINES, PRESETS
 from suites.coding.modules.workers.support.work_catalogue import EDITABLE_KEYS, GROUPS, FIELD_BADGES, FIELD_CHOICES
 from suites.coding.support.work_field import WorkField
-from suites.coding.support.work_settings import WorkSettings
+from suites.coding.support.work_settings import WorkPreset, WorkSettings
 
 
 class WorkControls:
@@ -28,7 +28,9 @@ class WorkControls:
         fields = tuple(self.field(group, key) for group, keys in GROUPS.items() for key in keys)
         revision = hashlib.sha256(repr((controls, current.sources, current.problems, [(field.key, field.value, field.source) for field in fields])).encode()).hexdigest()[:12]
         depends = {key: tuple(self.declared.value(key).required_settings) for key in (*CONTROL_KEYS.values(), *(row.key for row in fields))}
-        return WorkSettings(current.workflow, revision, controls, fields, {key: keys for key, keys in depends.items() if keys})
+        presets = tuple(WorkPreset(name, name.capitalize(), PRESET_LINES[name], tuple(zip(CONTROL_KEYS.values(), bundle, strict=True))) for name, bundle in PRESETS.items())
+        switches = tuple((key, self.declared.value(key).title) for key in CONTROL_KEYS.values())
+        return WorkSettings(current.workflow, revision, controls, fields, {key: keys for key, keys in depends.items() if keys}, presets, switches)
 
     def field(self, group: str, key: str) -> WorkField:
         current = self.reader.current(key)

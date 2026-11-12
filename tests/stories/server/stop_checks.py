@@ -28,7 +28,7 @@ def test_an_allowed_stop_records_every_check_and_reason_through_the_viewer_route
                                 checks["tasks.carry-on-at-stop"]["reason"] == "the agent has no task in hand",
                                 checks["messages.unread-at-stop"]["reason"] == "the agent has no unread user message",
                                 checks["memories.weigh-first-stop"]["reason"] == "no active memories.weighing layer",
-                                checks["workers.delivered-work-at-stop"]["reason"] == "no delivered proof needs a check at this stop")
+                                checks["workers.delivered-work-at-stop"]["reason"] == "no committed proof needs a check at this stop")
     stop_server.story.expect_text(f"hook-call stops --session-agent-id {stop_server.story.agent.id} --json", "the agent has no task in hand")
     stop_server.story.expect_rows("stop " not in stop_server.story.system_log_text())
 

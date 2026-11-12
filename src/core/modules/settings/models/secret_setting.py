@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
+from engine.model.environment_or_project import EnvironmentOrProject
 from engine.model.model import Model
 
 
 @dataclass(frozen=True, kw_only=True)
-class SecretSetting(Model):
+class SecretSetting(EnvironmentOrProject, Model):
     """The value of a setting declared secret, such as a token, for one environment or the whole project; the
     event log keeps its value out."""
 

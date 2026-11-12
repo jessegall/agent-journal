@@ -11,6 +11,7 @@ from engine.database.database import Database
 from engine.command.context import Context
 from engine.row.page import Page
 from engine.model.table import stored
+from engine.model.environment_or_project import EnvironmentOrProject
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.model.tables import Tables
@@ -43,7 +44,7 @@ class EventLog:
     def write(self, change: Change[Model], skipped_guards: frozenset[str]) -> int:
         context, row = change.context, change.row
         return self.table.insert({
-            "actor_id": context.actor.id, "environment_id": row.environment_id if isinstance(row, EnvironmentScoped) else context.environment_id, "row_id": row.id, "name": change.event,
+            "actor_id": context.actor.id, "environment_id": row.environment_id if isinstance(row, EnvironmentScoped | EnvironmentOrProject) else context.environment_id, "row_id": row.id, "name": change.event,
             "row_table": self.tables.table(type(change.row)).name, "command": context.command.label(), "cause_id": context.cause_id,
             "skipped_guards": json.dumps(sorted(skipped_guards)), "data": json.dumps(self.data(change)), "created_at": context.timestamp.text,
         })

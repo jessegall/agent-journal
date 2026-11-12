@@ -10,4 +10,4 @@ class AgentProfileLimitCounts:
     run_limit: int
     kept_limit: int
     group: str = ""
-    context_cap: str = ""
+    line: str = ""

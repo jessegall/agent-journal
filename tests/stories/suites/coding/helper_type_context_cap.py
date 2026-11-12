@@ -1,11 +1,10 @@
 import json
 
-from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
+from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_PROFILES, CONTEXT_LIMIT_TOKENS
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from tests.stories.suites.coding.agent_settings_window import limit_rows
 from tests.stories.suites.coding.support.main_controls_fixture import person_viewer
 from tests.stories.support.story_checks import expect_value
 
@@ -28,12 +27,8 @@ class PlannerAndResearcher(StoryFixture):
 
 
 def set_cap_on_the_screen(viewer, profile: str, cap: str) -> None:
-    viewer.server.viewer_line_value(viewer.cookie, {"window": "coding.agent-settings", "environment": "main", "line": ["agent", "context-cap", profile, cap, "--environment", "main"]})
-
-
-def planner_row(viewer) -> dict:
-    helper = next(row for row in limit_rows(viewer) if row["key"] == "helper")
-    return next(row for row in helper["profiles"] if row["profile"] == "journal-planner")
+    entries = json.dumps([f"{profile}:{cap}"])
+    viewer.server.viewer_line_value(viewer.cookie, {"window": "coding.agent-settings", "environment": "main", "line": ["setting", "set", CONTEXT_LIMIT_PROFILES, entries, "--project"]})
 
 
 def bar_rows(story) -> dict:
@@ -45,10 +40,10 @@ def test_a_cap_set_on_the_planner_screen_is_the_cap_its_bar_shows_its_percent_of
     story = new_story(fixture=PlannerAndResearcher)
     with person_viewer(story) as viewer:
         set_cap_on_the_screen(viewer, "journal-planner", str(PLANNER_CAP))
-        shown_cap = planner_row(viewer)["context_cap"]
+    shown_cap = story.run(f"setting show {CONTEXT_LIMIT_PROFILES}", actor=story.user).output_text
     for session in ("planner-session", "researcher-session"):
         save_status_file(story, session, {"context_window": {"used_percentage": WINDOW_PERCENT, "total_input_tokens": USED_TOKENS}})
     rows = bar_rows(story)
     planner, researcher = rows["planner-session"], rows["researcher-session"]
-    expect_value((shown_cap, planner["context_percent"], planner["context_limit_tokens"], researcher["context_percent"], researcher["context_limit_tokens"]),
-                 (str(PLANNER_CAP), 50, PLANNER_CAP, WINDOW_PERCENT, None))
+    expect_value((f"journal-planner:{PLANNER_CAP}" in shown_cap, planner["context_percent"], planner["context_limit_tokens"], researcher["context_percent"], researcher["context_limit_tokens"]),
+                 (True, 50, PLANNER_CAP, WINDOW_PERCENT, None))

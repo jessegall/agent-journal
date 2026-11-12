@@ -1,11 +1,12 @@
 import json
 from dataclasses import dataclass
 
+from engine.model.environment_or_project import EnvironmentOrProject
 from engine.model.model import Model
 
 
 @dataclass(frozen=True, kw_only=True)
-class Setting(Model):
+class Setting(EnvironmentOrProject, Model):
     """One setting: a key and its value as JSON, for one environment or, without one, for the whole project.
     """
 

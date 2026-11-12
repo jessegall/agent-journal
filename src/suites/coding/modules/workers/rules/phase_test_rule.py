@@ -2,6 +2,7 @@ from dataclasses import replace
 
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.commit_window import CommitWindow
+from suites.coding.modules.workers.support.worker_steps import WorkerSteps
 from suites.coding.modules.workers.commands.record_worker_test_run.record_worker_test_run import RecordWorkerTestRun
 
 from engine.driver.agent_hook import AgentHook
@@ -23,7 +24,8 @@ from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 class PhaseTestRule(DriverRule):
     """Allows the test runs a worker starts itself between two commits, counted, and refuses them after the
-    allowance is spent. After its last commit the worker waits for the merge and its runs are not counted."""
+    allowance is spent. After its last commit the worker waits for the merge and its runs are not counted, and
+    while tests of its work have failed its runs are free until its next commit."""
 
     name = "workers.phase-tests"
     priority = -2
@@ -32,8 +34,8 @@ class PhaseTestRule(DriverRule):
     roles = [CodingHelperRole.WORKER]
     single_action_refusal = "Allows counted test runs between two commits and handles requests after the allowance is spent"
 
-    def __init__(self, queries: Queries, commands: BackgroundCommands, worktrees: WorktreeQuery, window: CommitWindow) -> None:
-        self.queries, self.commands, self.worktrees, self.window = queries, commands, worktrees, window
+    def __init__(self, queries: Queries, commands: BackgroundCommands, worktrees: WorktreeQuery, window: CommitWindow, steps: WorkerSteps) -> None:
+        self.queries, self.commands, self.worktrees, self.window, self.steps = queries, commands, worktrees, window, steps
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
@@ -43,7 +45,7 @@ class PhaseTestRule(DriverRule):
         if not test_part_count:
             return RuleAnswer.allowed()
         worktree = self.worktrees.worker_worktree(hook.agent_id)
-        if worktree is None or self.queries.query(Task).find(worktree.task_id).state is TaskState.TESTING:
+        if worktree is None or self.queries.query(Task).find(worktree.task_id).state is TaskState.TESTING or self.steps.has_open_failure(worktree):
             return RuleAnswer.allowed()
         remaining = self.window.test_runs_available(worktree)
         return self.line_answer([self.part_answer(hook.agent_id, self.window.key(worktree), remaining - position) for position in range(test_part_count)])

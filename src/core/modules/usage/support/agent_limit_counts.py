@@ -17,3 +17,5 @@ class AgentLimitCounts:
     profiles: tuple[AgentProfileLimitCounts, ...]
     run_source: str
     kept_source: str
+    line: str = ""
+    default_profile: str = ""
