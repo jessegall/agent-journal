@@ -22,6 +22,8 @@ test("the memories tab lists the memories in force with their state and weight, 
     await vi.waitFor(() => expect(element.querySelectorAll("[data-memory]").length).toBe(2));
     expect(element.querySelector("[data-agent-memories-active]").textContent).toBe("Active: 2");
     const first = element.querySelector('[data-memory="11"]');
+    expect(first.querySelector("[data-memory-title]").textContent).toBe(`Memory ${first.dataset.memory}`);
+    expect(first.querySelector(".memory-text").textContent).not.toBe(first.querySelector("[data-memory-title]").textContent);
     expect(first.querySelector("[data-memory-state]").textContent).toBe("State: Active");
     expect(first.querySelector("[data-memory-weight]").textContent).toContain("Weight: 8 of 10");
     expect(first.querySelectorAll(".steps i.on").length).toBe(8);

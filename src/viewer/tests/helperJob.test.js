@@ -43,17 +43,6 @@ test("a helper's row with a job from before programs were recorded shows no laun
     expect(element.querySelector("[data-agent-job-launch]")).toBeNull();
 });
 
-test.each([[null, false, "Stop"], ["2026-11-01T00:00:00Z", true, "End job"]])("an open helper card offers to stop a running helper and to end the open job of a stopped one", async (ended_at, helper_job_open, label) => {
-    const row = {id: 6, number: 3, role: "helper", access: "read-only", ended_at, session: "s-6", program: "claude"};
-    const lines = [];
-    const window = {...context({}), run: async (line) => lines.push(line)};
-    const element = await mounted({render: () => h(AgentCard, {row, facts: {tasks: [], helper_job_open}, open: true})}, window);
-    const button = element.querySelector("[data-helper-stop]");
-    expect(button.textContent.trim()).toBe(label);
-    button.click();
-    expect(lines).toEqual([["helper", "stop", "3"]]);
-});
-
 test("the open card of a stopped helper whose job ended offers no stop", async () => {
     const row = {id: 6, number: 3, role: "helper", access: "read-only", ended_at: "2026-11-01T00:00:00Z", session: "s-6", program: "claude"};
     const element = await mounted({render: () => h(AgentCard, {row, facts: {tasks: [], helper_job_open: false}, open: true})}, context({}));

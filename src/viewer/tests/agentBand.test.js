@@ -3,7 +3,7 @@ import {expect, test} from "vitest";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
 import {context, mounted} from "./support/agentWindowContext.js";
 
-test("an opened helper has its own information band and stop button", async () => {
+test("an opened helper has its own information band and no stop button", async () => {
     const row = {id: 6, role: "helper", access: "read-only", session: "s-6", program: "claude", created_at: new Date().toISOString()};
     const progress = {branch: "worker-6"};
     const facts = {id: 6, tasks: [], model: "model-six", effort: "high", context_percent: 25, cost_dollars: 5.94};
@@ -16,7 +16,7 @@ test("an opened helper has its own information band and stop button", async () =
     expect(band.textContent).toContain("high");
     expect(band.textContent).toContain("$5.94");
     expect(band.textContent).toContain("worker-6");
-    expect(element.querySelector("[data-agent-head-actions] [data-helper-stop]")).not.toBeNull();
+    expect(element.querySelector("[data-helper-stop]")).toBeNull();
     expect(band.querySelector('[data-fact="jobs"]')).toBeNull();
 });
 
