@@ -95,5 +95,5 @@ test("the count and the bar draw the tasks the card was given for its current ro
     const currentRound = [{id: 4, title: "Fourth", state: "completed"}, {id: 5, title: "Fifth", state: "started"}, {id: 6, title: "Sixth", state: "open"}];
     const element = await card(worker(), {tasks: currentRound});
     expect(labelOf(element.querySelector("[data-agent-count]"))).toBe("1 of 3");
-    expect(element.querySelector("[data-task-bar-done]").style.width).toMatch(/^33\.3/);
+    expect(element.querySelector("[data-task-bar-done]").style.width).toBe("33%");
 });

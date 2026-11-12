@@ -300,8 +300,8 @@ test("the command of an open card is the last thing in it, under the tab body, w
     await vi.waitFor(() => expect(element.querySelector("[data-agent-command]")).not.toBeNull());
     const more = element.querySelector("[data-agent-more]");
     expect(more.lastElementChild).toBe(element.querySelector("[data-agent-command]"));
-    expect(element.querySelector("[data-agent-command]").previousElementSibling).toBe(element.querySelector("[data-agent-tab-body]"));
-    expect(element.querySelector("[data-agent-tab-body] [data-agent-command]")).toBeNull();
+    expect(element.querySelector("[data-agent-command]").previousElementSibling).toBe(element.querySelector(".agent-tab-body"));
+    expect(element.querySelector(".agent-tab-body [data-agent-command]")).toBeNull();
 });
 
 test("a running helper's card names the command it runs", async () => {
