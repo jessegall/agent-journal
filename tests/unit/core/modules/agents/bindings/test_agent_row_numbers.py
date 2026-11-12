@@ -22,6 +22,8 @@ class FakeScopes:
 
 
 class FakeAgentQuery:
+    lookups: list[list[int]] = []
+
     def __init__(self, scopes: FakeScopes, agents: list[SimpleNamespace]) -> None:
         self.scopes, self.agents = scopes, agents
 
@@ -33,6 +35,10 @@ class FakeAgentQuery:
 
     def find(self, row_id: int) -> SimpleNamespace:
         return next(agent for agent in self.agents if agent.id == row_id)
+
+    def find_many(self, row_ids: list[int]) -> list[SimpleNamespace]:
+        self.lookups.append(sorted(row_ids))
+        return [agent for agent in self.agents if agent.id in row_ids]
 
 
 @pytest.fixture
@@ -72,3 +78,9 @@ def test_a_number_read_in_no_environment_is_refused_and_never_read_as_a_row_id(n
         numbers.row_id("agent", 3, None)
     with pytest.raises(Refusal, match="agent with row 3 is read in an environment, and this line runs in none"):
         numbers.environment_number("agent", 3, None)
+
+
+def test_the_numbers_of_many_agents_are_read_in_one_lookup(numbers):
+    FakeAgentQuery.lookups = []
+    assert numbers.numbers("agent", {10, 20, 21}) == {10: 1, 20: 2, 21: 3}
+    assert FakeAgentQuery.lookups == [[10, 20, 21]]
