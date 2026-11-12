@@ -11,7 +11,6 @@ class RuleHistory(Model):
     with lines or a refusal."""
 
     model_name = "rule_history"
-    events_expire = True
     cli_name = "rule-history"
 
     session_agent_id: int

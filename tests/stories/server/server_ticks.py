@@ -24,7 +24,7 @@ def test_the_handlers_the_modules_declare_start_at_their_own_pace(new_story):
     intervals = {handler.label: (handler.interval.seconds, handler.starts_immediately) for handler in Ticker.module_handlers(ModuleFinder(story.home))}
     expect_running_outputs_intervals(intervals, (1, False))
     expect_agent_ticks_intervals(intervals, (60, True))
-    expect_hook_pruning_intervals(intervals, (24 * 60 * 60, True))
+    expect_hook_pruning_intervals(intervals, (60 * 60, False))
     expect_phone_notices_intervals(intervals, (60, True))
 
 

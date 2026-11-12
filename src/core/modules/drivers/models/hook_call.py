@@ -35,7 +35,6 @@ class HookCall(EnvironmentScoped, Model):
 
     change_names = (COMPACTION, SESSION_START, PROMPT, STOP_ALLOWED, STOP_REFUSED)
     model_name = "hook_call"
-    events_expire = True
     event_forms = tuple([EventForm.COMMIT])
     cli_name = "hook-call"
 

@@ -86,7 +86,7 @@ class ReadingFacts:
     def draft_fits(self, process: Process, part: ProcessPart, reader: Reader | None, moment: ReadingMoment) -> bool:
         if reader is not None or moment is not ReadingMoment.END:
             return False
-        text = self.judge.output_text(process.id, part.position)
+        text = self.folder.part_head(process.id, part.position, SAMPLE_BYTES).decode(errors="replace")
         layers = self.readers.layers()
         return bool(text.strip()) and any(self.fits(stock, part.category, text) for stock in self.readers.all() if layers.layer(stock) is ReaderLayer.STOCK)
 

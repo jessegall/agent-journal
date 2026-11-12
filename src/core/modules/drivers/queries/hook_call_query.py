@@ -85,7 +85,7 @@ class HookCallQuery(Query[HookCall]):
         return tuple(self.agent(agent_id).filter(hook=HookEventName.MESSAGE_DISPLAY).matching(Greater("id", latest.id if latest is not None else 0)).oldest().all_rows())
 
     def latest_prompt(self, agent_id: int, cutoff_at: Timestamp) -> HookCall | None:
-        return self.kept.read_newest(self.table.name, self.agent(agent_id).filter(hook=HookEventName.PROMPT).matching(Maximum("created_at", cutoff_at.text)).newest().first,
+        return self.kept.read_newest(self.table.name, self.agent(agent_id).filter(hook=HookEventName.PROMPT).matching(Maximum("created_at", cutoff_at.text)).descending("created_at", "id").first,
                                      "session_agent_id = ? AND hook = ? AND created_at <= ?", [agent_id, HookEventName.PROMPT, cutoff_at.text], name="drivers.prompt_before")
 
     def last_allowed_stop(self, agent_id: int, cutoff_at: Timestamp) -> HookCall | None:

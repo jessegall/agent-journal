@@ -12,7 +12,6 @@ class RequestRun(EnvironmentScoped, Model):
     agent it worked for, its kind, its words without any value, and how it ended. Written once, when it ended."""
 
     model_name = "request_run"
-    events_expire = True
     cli_name = "request-run"
 
     environment_id: int = 0
