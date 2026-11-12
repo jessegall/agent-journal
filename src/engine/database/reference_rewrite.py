@@ -4,6 +4,7 @@ from engine.database.database import Database
 from engine.database.statement import Statement
 
 SCHEMA_REASON = "The fold of main agents walks the rows that hold a folded agent, once, in one transaction."
+STATE_DELETE_RULE_SUFFIX = "_rule_state_delete"
 UNIQUE_INDEXES = Statement("SELECT tables.name AS table_name, indexes.name AS index_name FROM sqlite_master AS tables, pragma_index_list(tables.name) AS indexes"
                            " WHERE tables.type = 'table' AND indexes.\"unique\" = 1 AND indexes.origin != 'pk'", scan_reason=SCHEMA_REASON)
 
@@ -40,6 +41,16 @@ class ReferenceRewrite:
 
     def delete(self, table: str, ids: list[int]) -> int:
         return self.database.update(Statement(f'DELETE FROM "{table}" WHERE id IN ({self.marks(ids)})', list(ids))) if ids else 0
+
+    def delete_past_state_rule(self, table: str, ids: list[int]) -> int:
+        rule = f"{table}{STATE_DELETE_RULE_SUFFIX}"
+        saved = self.database.rows(Statement("SELECT sql FROM sqlite_master WHERE type = 'trigger' AND name = ?", [rule], scan_reason=SCHEMA_REASON))
+        if saved:
+            self.database.update(Statement(f'DROP TRIGGER "{rule}"'))
+        removed = self.delete(table, ids)
+        if saved:
+            self.database.update(Statement(saved[0]["sql"]))
+        return removed
 
     def unique_keys(self) -> list[tuple[str, tuple[str, ...]]]:
         found = []

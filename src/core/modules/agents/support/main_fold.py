@@ -35,10 +35,11 @@ class FoldCounts:
     rules: dict[str, int] = field(default_factory=dict)
 
     def add_reference(self, name: str, before: int, after: int) -> None:
-        self.references[name] = (self.references.get(name, (0, 0))[0] + before, after)
+        earlier_before, earlier_after = self.references.get(name, (0, 0))
+        self.references[name] = (earlier_before + before, earlier_after + after)
 
-    def add_removed(self, table: str, column: str, rule: str, count: int) -> None:
-        for name in (table, f"{table}.{column}"):
+    def add_removed(self, table: str, reference: str, rule: str, count: int) -> None:
+        for name in (table, reference):
             self.removed[name] = self.removed.get(name, 0) + count
         self.rules[f"{table}: {rule}"] = self.rules.get(f"{table}: {rule}", 0) + count
 
@@ -93,22 +94,25 @@ class MainFold:
 
     def fold(self, fold: EnvironmentFold, columns: AgentColumns, counts: FoldCounts, folded_at: str) -> None:
         folded_ids = [agent.id for agent in fold.folded]
-        every_id = [*folded_ids, fold.survivor.id]
+        before = self.reference_counts(columns, [*folded_ids, fold.survivor.id])
         fold_ids = [self.record(fold, agent, folded_at) for agent in fold.folded]
         self.settle_clashes(fold, columns, counts, fold_ids[0], folded_at)
         self.rewrite.rewrite(*SESSIONS, folded_ids, fold.survivor.id)
         for table, column in columns.plain:
-            before = self.rewrite.count(table, column, every_id)
             self.rewrite.rewrite(table, column, folded_ids, fold.survivor.id)
-            counts.add_reference(f"{table}.{column}", before, self.rewrite.count(table, column, [fold.survivor.id]))
         for table, model_column, id_column in columns.pairs:
-            before = self.rewrite.pair_count(table, model_column, id_column, AGENT_MODEL_NAMES, every_id)
             self.rewrite.pair_rewrite(table, model_column, id_column, AGENT_MODEL_NAMES, folded_ids, fold.survivor.id)
-            after = self.rewrite.pair_count(table, model_column, id_column, AGENT_MODEL_NAMES, [fold.survivor.id])
-            counts.add_reference(f"{table}.{model_column}/{id_column}", before, after)
+        for name, after in self.reference_counts(columns, [fold.survivor.id]).items():
+            counts.add_reference(name, before[name], after)
         self.rewrite.delete(AGENTS_TABLE, folded_ids)
         self.rewrite.delete(ACTORS_TABLE, folded_ids)
         self.database.update(Statement('UPDATE "agents" SET number = ? WHERE id = ?', [MAIN_NUMBER, fold.survivor.id]))
+
+    def reference_counts(self, columns: AgentColumns, ids: list[int]) -> dict[str, int]:
+        plain = {f"{table}.{column}": self.rewrite.count(table, column, ids) for table, column in columns.plain}
+        pairs = {f"{table}.{model_column}/{id_column}": self.rewrite.pair_count(table, model_column, id_column, AGENT_MODEL_NAMES, ids)
+                 for table, model_column, id_column in columns.pairs}
+        return plain | pairs
 
     def record(self, fold: EnvironmentFold, agent: Agent, folded_at: str) -> int:
         agent_rows = self.rewrite.rows(AGENTS_TABLE, "id", [agent.id])
@@ -119,23 +123,31 @@ class MainFold:
         return int(self.database.rows(Statement(FOLD_RECORD, values))[0]["id"])
 
     def settle_clashes(self, fold: EnvironmentFold, columns: AgentColumns, counts: FoldCounts, fold_id: int, folded_at: str) -> None:
-        plain = set(columns.plain)
         for table, key in self.rewrite.unique_keys():
-            agent_columns = [column for column in key if (table, column) in plain]
-            if table in FOLD_TABLES or not agent_columns:
+            if table in FOLD_TABLES:
                 continue
-            for group in self.clashing_groups(fold, table, key, agent_columns[0]):
-                settled = FoldClashRules.settled(table, group, fold.survivor.id, agent_columns[0])
-                for removed in settled.removed:
-                    self.database.update(Statement(FOLD_ROW_RECORD, [fold.environment_id, fold_id, table, json.dumps(removed, default=str),
-                                                                     settled.rule, folded_at, folded_at]))
-                self.rewrite.delete(table, [int(row["id"]) for row in settled.removed])
-                counts.add_removed(table, agent_columns[0], settled.rule, len(settled.removed))
+            for column, model_column, name in MainFold.agent_parts(columns, table, key):
+                for group in self.clashing_groups(fold, table, key, column, model_column):
+                    settled = FoldClashRules.settled(table, group, fold.survivor.id, column)
+                    for removed in settled.removed:
+                        self.database.update(Statement(FOLD_ROW_RECORD, [fold.environment_id, fold_id, table, json.dumps(removed, default=str),
+                                                                         settled.rule, folded_at, folded_at]))
+                    self.rewrite.delete_past_state_rule(table, [int(row["id"]) for row in settled.removed])
+                    counts.add_removed(table, name, settled.rule, len(settled.removed))
 
-    def clashing_groups(self, fold: EnvironmentFold, table: str, key: tuple[str, ...], column: str) -> list[list[dict[str, object]]]:
+    @staticmethod
+    def agent_parts(columns: AgentColumns, table: str, key: tuple[str, ...]) -> list[tuple[str, str | None, str]]:
+        plain = [(column, None, f"{table}.{column}") for owner, column in columns.plain if owner == table and column in key]
+        pairs = [(id_column, model_column, f"{table}.{model_column}/{id_column}") for owner, model_column, id_column in columns.pairs
+                 if owner == table and model_column in key and id_column in key]
+        return plain + pairs
+
+    def clashing_groups(self, fold: EnvironmentFold, table: str, key: tuple[str, ...], column: str, model_column: str | None) -> list[list[dict[str, object]]]:
         folded_ids = {agent.id for agent in fold.folded}
         groups: dict[tuple[object, ...], list[dict[str, object]]] = {}
         for row in self.rewrite.rows(table, column, [*folded_ids, fold.survivor.id]):
+            if model_column is not None and row[model_column] not in AGENT_MODEL_NAMES:
+                continue
             folded_key = tuple(fold.survivor.id if name == column and row[name] in folded_ids else row[name] for name in key)
             groups.setdefault(folded_key, []).append(row)
         return [rows for rows in groups.values() if len(rows) > 1]
