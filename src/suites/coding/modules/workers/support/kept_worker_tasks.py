@@ -98,7 +98,7 @@ class KeptWorkerTasks:
         actor_ids = self.task_assignments.row_actor_ids(Task, [task.id for task in tasks])
         changed = [task for task in tasks if actor_ids[task.id] != tuple([worker.id])]
         for task in changed:
-            self.task_assignments.assign(task, worker.id, context, cascade=False)
+            self.task_assignments.assign_kept(task, worker.id, context, cascade=False)
         self.dependency_waits.update_tasks([task.id for task in tasks], context)
         if changed:
             self.assignments.record(worker.id, changed, context)

@@ -48,7 +48,7 @@ class RecordWorktreeCutHandler(Handler[RecordWorktreeCut, Worktree]):
         tasks = self.queries.query(Task).find_many(command.task_ids)
         self.task_assignments.keep_rows(Task, command.task_ids)
         for task in tasks:
-            self.task_assignments.assign(task, worktree.session_agent_id, context, cascade=False)
+            self.task_assignments.assign_kept(task, worktree.session_agent_id, context, cascade=False)
         self.waits.update_tasks(command.task_ids, context)
         self.assignments.record(worktree.session_agent_id, tasks, context)
         if AssignableTasks.has_open(list(tasks)):

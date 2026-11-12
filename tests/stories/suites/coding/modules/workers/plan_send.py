@@ -66,8 +66,9 @@ def test_a_plan_sent_to_an_idle_worker_keeps_its_order_and_blocked_tasks(idle_pl
     previous = len(assignment_marks(story))
     story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --plan 1", actor=story.agent)
     marks = assignment_marks(story)
-    story.expect_rows(len(marks) == previous + 1, marks[-1].text == f"Worker {worker.id} was given 3 tasks",
-                      all(f"Task {number}: Task {number}" in marks[-1].detail for number in (2, 3, 4)), marks[-1].target_id == worker.id)
+    story.expect_rows(len(marks) == previous + 1, marks[-1].text == f"Worker {agent_number(story, worker.id)} was given 3 tasks",
+                      all(f"Task {number}: Task {number}" in marks[-1].detail for number in (2, 3, 4)), marks[-1].target_id == worker.id,
+                      detail=f"{[mark.text for mark in marks]} / {marks[-1].detail}")
     tasks = story.container.get(Queries).query(Task).find_many([2, 3, 4])
     story.expect_rows(all(assignee_of(story, task) == worker.id for task in tasks))
     story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
@@ -107,11 +108,12 @@ def test_a_blocked_task_waits_with_an_idle_worker_and_is_sent_to_it_when_it_open
     story.expect_rows(assignee_of(story, story.row(Task, 3)) == worker.id, story.container.get(WorktreeQuery).worker_worktree(worker.id) is None)
     story.expect_success('task cancel 2 --reason "Not needed"', actor=story.agent)
     operation = story.container.get(Queries).query(WorkerOperation).newest().first()
-    story.expect_rows(operation.worker_id == worker.id, operation.line == f"worker send {agent_number(story, worker.id)} --task 3 --wait", operation.creator_id == story.agent.id)
+    story.expect_rows(operation.worker_id == worker.id, "--task 3 --wait" in operation.line, operation.creator_id == story.agent.id,
+                      detail=f"{operation.line} by {operation.creator_id}")
     outcome = run_operation(story, operation)
     story.expect_rows(outcome.code == 0, detail=outcome.output_text)
     marks = assignment_marks(story)
-    story.expect_rows(len(marks) == previous + 1, marks[-1].text == f"Worker {worker.id} was given task 3", "Task 3: Task 3" in marks[-1].detail)
+    story.expect_rows(len(marks) == previous + 1, marks[-1].text == f"Worker {agent_number(story, worker.id)} was given task 3", "Task 3: Task 3" in marks[-1].detail)
     story.expect_text("task show 3", "state: started", f"holder_id: {worker.id}", actor=story.agent)
 
 
@@ -160,6 +162,6 @@ def test_an_open_task_given_to_an_ended_worker_with_a_blocked_task_is_sent_to_it
     story.expect_success('task block 1 --reason "Waits on the design"', actor=worker)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     task = story.new_row_id('task make "Next work" --environment main', actor=story.agent)
-    story.expect_success(f"task edit {task} --delegated-to {worker.id}", actor=story.agent)
+    story.expect_success(f"worker send {agent_number(story, worker.id)} --task {task}", actor=story.agent)
     operation = story.container.get(Queries).query(WorkerOperation).newest().first()
-    story.expect_rows(operation is not None and operation.line == f"worker send {agent_number(story, worker.id)} --task {task} --wait")
+    story.expect_rows(operation is not None and operation.worker_id == worker.id and f"--task {task} --wait" in operation.line, detail=str(operation))

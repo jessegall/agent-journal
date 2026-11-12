@@ -50,6 +50,8 @@ class Assignments:
         return self.kept_assignments(row.model_name, row.id, lambda: tuple(self.queries.query(Assignment).filter(subject_model=row.model_name, subject_id=row.id).oldest().all_rows()))
 
     def keep_rows(self, model: type[Model], row_ids: Sequence[int]) -> None:
+        if not row_ids:
+            return
         loaded = tuple(self.queries.query(Assignment).filter(subject_model=model.model_name).matching(Among("subject_id", list(row_ids))).oldest().all_rows(ASSIGNMENT_PAGE_ROWS))
         for row_id in row_ids:
             self.kept_assignments(model.model_name, row_id, lambda row_id=row_id: tuple(assignment for assignment in loaded if assignment.subject_id == row_id))
@@ -93,6 +95,11 @@ class Assignments:
 
     def assign(self, row: Assignable, actor_id: int, context: Context, *, cascade: bool = True, override: bool = False) -> Cascade:
         self.require_working_actor(actor_id)
+        return self.assign_kept(row, actor_id, context, cascade=cascade, override=override)
+
+    def assign_kept(self, row: Assignable, actor_id: int, context: Context, *, cascade: bool = True, override: bool = False) -> Cascade:
+        """Gives the row as assign does, without asking whether the actor takes work now: an agent that has ended
+        but is kept takes the row when it starts again."""
         current = self.assignments(row)
         if any(assignment.actor_id == actor_id for assignment in current):
             if row.takes_actors is ActorCount.SEVERAL:
@@ -108,7 +115,9 @@ class Assignments:
 
     def cascaded(self, parent: Assignable, given: Assignment, inherited_ids: frozenset[int], walk: CascadeWalk, outcome: Cascade) -> Cascade:
         for children in parent.assigns:
-            for child in self.child_rows(parent, children):
+            rows = self.child_rows(parent, children)
+            self.keep_rows(children.model, [child.id for child in rows])
+            for child in rows:
                 if child.cascade_skips(given.actor_id):
                     outcome = outcome.with_kept(child.model_name, child.id, KeptReason.MODEL_RULE)
                 else:
