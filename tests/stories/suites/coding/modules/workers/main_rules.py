@@ -10,8 +10,8 @@ def test_a_main_agent_is_refused_its_stop_until_it_checks_a_proof_with_no_test(n
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
-    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), f"worker:{agent_number(story, worker.id)} delivered task:1, proofs 1")
-    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), f"worker:{agent_number(story, worker.id)} delivered task:1, proofs 1")
+    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), f"worker:{agent_number(story, worker.id)} committed task:1, proofs 1")
+    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), f"worker:{agent_number(story, worker.id)} committed task:1, proofs 1")
     story.expect_success("proof check 1", actor=story.agent)
     story.expect_hook_allowed(MAIN_SESSION, HookSamples.stop())
 
@@ -33,4 +33,19 @@ def test_a_proof_waits_for_the_task_to_be_handed_in(new_story):
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
     story.expect_hook_allowed(MAIN_SESSION, HookSamples.stop())
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), f"worker:{agent_number(story, worker.id)} delivered task:1, proofs 1")
+    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), f"worker:{agent_number(story, worker.id)} committed task:1, proofs 1")
+
+
+def test_the_refused_stop_names_the_task_of_each_proof_that_waits(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story)
+    second_id = story.new_row_id('task make "Second job" --brief "Finish the second job" --environment main', actor=story.agent)
+    worker = dispatched_worker(story, f"worker dispatch --test-command python=pytest --model sonnet 1 {second_id}")
+    repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the first story"', actor=worker)
+    story.expect_success(f"task start {second_id}", actor=worker)
+    story.expect_success(f'proof make 1 --task {second_id} "cart.py:1, the second story"', actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    number = agent_number(story, worker.id)
+    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), f"worker:{number} committed task:1, proofs 1")
+    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), f"worker:{number} committed task:{second_id}, proofs 2")
