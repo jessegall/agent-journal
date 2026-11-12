@@ -46,3 +46,5 @@ class BehindChecks:
         left = next((check for check in checks if check.state is BehindCheckState.LEFT), None)
         return left is None or behind >= left.behind + self.settings.number(BEHIND_RECHECK_COMMITS)
 
+    def waits_for_decision(self, worktree: Worktree) -> bool:
+        return any(check.open_for_decision() for check in self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).all_rows())
