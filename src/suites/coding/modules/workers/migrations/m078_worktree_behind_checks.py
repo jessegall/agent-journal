@@ -13,6 +13,7 @@ class WorktreeBehindChecksMigration(Migration):
         " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)), created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT",
         "CREATE INDEX worktree_behind_checks_worktree ON worktree_behind_checks (worktree_id, state)",
         "CREATE INDEX worktree_behind_checks_environment ON worktree_behind_checks (environment_id, id)",
+        "CREATE INDEX worktree_behind_checks_age ON worktree_behind_checks (environment_id, state, updated_at)",
         "CREATE TABLE worktree_behind_looks (id INTEGER PRIMARY KEY, environment_id INTEGER NOT NULL UNIQUE REFERENCES environments(id), looked_at TEXT NOT NULL,"
         " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)), created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT",
     )

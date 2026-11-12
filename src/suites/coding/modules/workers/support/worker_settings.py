@@ -59,6 +59,7 @@ BEHIND_RECHECK_COMMITS = f"{MODULE_KEY}.behind-recheck-commits"
 UPDATE_TO_MAIN_COMMITS = f"{MODULE_KEY}.update-to-main-commits"
 UPDATE_WAIT_MINUTES = f"{MODULE_KEY}.update-wait-minutes"
 UPDATE_REMINDERS = f"{MODULE_KEY}.update-reminders"
+CHECK_HISTORY_DAYS = f"{MODULE_KEY}.check-history-days"
 UP_TO_DATE_SECTION = "Keeping worktrees up to date"
 WORKER_SETTING_VALUES = [
     SettingValue("idle-worker-minutes", "Worker idle warning", "Minutes without activity before a worker with work left is reported.", SettingType.NUMBER, default=15, person_set=True, required_settings=[MERGER_ENABLED], screen="helper-type.workers", section="How a worker works"),
@@ -91,6 +92,7 @@ WORKER_SETTING_VALUES = [
     SettingValue("update-to-main-commits", "Commits behind that go to the main agent", "A folder this many commits behind goes straight to the main agent. At 0 the merger always judges first.", SettingType.NUMBER, default=0, person_set=True, required_settings=[KEEP_UP_TO_DATE], screen="work", section=UP_TO_DATE_SECTION),
     SettingValue("update-wait-minutes", "Minutes a worker has to update", "Minutes a worker told to update its folder has before it is reminded.", SettingType.NUMBER, default=30, person_set=True, required_settings=[KEEP_UP_TO_DATE], screen="work", section=UP_TO_DATE_SECTION),
     SettingValue("update-reminders", "Reminders to update", "How many times a worker is reminded to update its folder before the main agent is told.", SettingType.NUMBER, default=2, person_set=True, required_settings=[KEEP_UP_TO_DATE], screen="work", section=UP_TO_DATE_SECTION),
+    SettingValue("check-history-days", "Days a closed check is kept", "Days a finished look at a folder behind its branch is kept before it is removed.", SettingType.NUMBER, default=30, person_set=True, screen="work", section=UP_TO_DATE_SECTION),
     SettingValue("main-dispatches-workers", "Main agent sends workers", "Whether the main agent may send workers to do tasks.", SettingType.FLAG, default=True, person_set=True, screen="work", section="Workers"),
     SettingValue("main-agent-may-merge", "Main agent may merge workers", "Whether the main agent may merge the work of a worker itself.", SettingType.FLAG, default=True, person_set=True, required_settings=[DISPATCHES_WORKERS_SETTING], screen="work", section="Workers"),
     SettingValue("resume-silent-agents", "Resume silent agents", "Whether a helper with unfinished work that has gone silent is resumed.", SettingType.FLAG, default=True, person_set=True, screen="advanced", section="Silent agents"),
@@ -144,6 +146,7 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         UPDATE_TO_MAIN_COMMITS: NumberRule(0),
                         UPDATE_WAIT_MINUTES: NumberRule(1),
                         UPDATE_REMINDERS: NumberRule(0),
+                        CHECK_HISTORY_DAYS: NumberRule(1),
                         MERGER_COMMANDS: ListRule(),
                         PROTECTED_FOLDERS: ListRule(),
                         MERGE_COMMANDS: ListRule()}
