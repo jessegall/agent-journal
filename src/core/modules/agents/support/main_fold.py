@@ -2,13 +2,15 @@ import json
 from dataclasses import dataclass, field
 
 from engine.database.database import Database
-from engine.database.reference_rewrite import ReferenceRewrite
+from engine.database.reference_rewrite import SCHEMA_REASON, ReferenceRewrite
 from engine.database.schema_columns import SchemaColumns
 from engine.database.statement import Statement
+from engine.enums.agent_role import AgentRole
 from engine.errors.refusal import Refusal
+from engine.model.table import Table
 from core.modules.agents.models.agent import MAIN_NUMBER, Agent
 from core.modules.agents.support.fold_clash_rules import FoldClashRules
-from core.modules.agents.support.main_fold_plan import EnvironmentFold
+from core.modules.agents.support.main_fold_plan import EnvironmentFold, MainFoldPlan
 from core.modules.agents.support.reference_columns import AGENT_MODEL_NAMES, AgentColumns, ReferenceColumns
 
 SESSIONS = ("agent_sessions", "session_agent_id")
@@ -17,6 +19,7 @@ ACTORS_TABLE = "actors"
 FOLD_TABLES = ("agent_folds", "agent_fold_rows")
 FOLD_RECORD = ("INSERT INTO agent_folds (environment_id, folded_agent_id, survivor_id, folded_number, agent_row, actor_row, sessions,"
                " folded_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id")
+MAIN_ROWS = Statement("SELECT * FROM agents WHERE role = ?", [AgentRole.MAIN.value], scan_reason=SCHEMA_REASON)
 FOLD_ROW_RECORD = "INSERT INTO agent_fold_rows (environment_id, fold_id, table_name, row, rule, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 
 
@@ -29,13 +32,15 @@ class FoldCounts:
     removed: dict[str, int] = field(default_factory=dict)
     tables_before: dict[str, int] = field(default_factory=dict)
     tables_after: dict[str, int] = field(default_factory=dict)
+    rules: dict[str, int] = field(default_factory=dict)
 
     def add_reference(self, name: str, before: int, after: int) -> None:
         self.references[name] = (self.references.get(name, (0, 0))[0] + before, after)
 
-    def add_removed(self, table: str, column: str, count: int) -> None:
+    def add_removed(self, table: str, column: str, rule: str, count: int) -> None:
         for name in (table, f"{table}.{column}"):
             self.removed[name] = self.removed.get(name, 0) + count
+        self.rules[f"{table}: {rule}"] = self.rules.get(f"{table}: {rule}", 0) + count
 
     def mismatches(self, folded_count: int) -> list[str]:
         moved = [f"{name}: {before} before, {after} after" for name, (before, after) in self.references.items()
@@ -55,6 +60,10 @@ class MainFold:
     def __init__(self, database: Database) -> None:
         self.database = database
         self.rewrite = ReferenceRewrite(database)
+
+    def plan(self) -> tuple[EnvironmentFold, ...]:
+        table = Table.build(Agent)
+        return MainFoldPlan.folds([table.row_model(row) for row in self.database.rows(MAIN_ROWS)])
 
     def run(self, folds: tuple[EnvironmentFold, ...], folded_at: str) -> FoldCounts:
         counts = FoldCounts()
@@ -121,7 +130,7 @@ class MainFold:
                     self.database.update(Statement(FOLD_ROW_RECORD, [fold.environment_id, fold_id, table, json.dumps(removed, default=str),
                                                                      settled.rule, folded_at, folded_at]))
                 self.rewrite.delete(table, [int(row["id"]) for row in settled.removed])
-                counts.add_removed(table, agent_columns[0], len(settled.removed))
+                counts.add_removed(table, agent_columns[0], settled.rule, len(settled.removed))
 
     def clashing_groups(self, fold: EnvironmentFold, table: str, key: tuple[str, ...], column: str) -> list[list[dict[str, object]]]:
         folded_ids = {agent.id for agent in fold.folded}
