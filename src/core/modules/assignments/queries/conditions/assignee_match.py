@@ -3,6 +3,9 @@ from dataclasses import dataclass
 from engine.database.statement import Statement
 from engine.model.model import Model
 from engine.query.condition import Condition
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.select import Select
 
 
 @dataclass(frozen=True)
@@ -13,5 +16,5 @@ class AssigneeMatch:
     actor_ids: Condition
 
     def statement(self) -> Statement:
-        inner = self.actor_ids.statement()
-        return Statement(f"id IN (SELECT subject_id FROM assignments WHERE subject_model = ? AND actor_id IN ({inner.sql}))", [self.model.model_name, *inner.parameters])
+        assigned = Select("assignments").matching(Equal("subject_model", self.model.model_name)).matching(SubqueryMatch("actor_id", self.actor_ids))
+        return SubqueryMatch("id", assigned.column("subject_id")).statement()

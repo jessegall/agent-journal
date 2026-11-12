@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
+from engine.query.conditions.row_value_before import RowValueBefore
 
 
 @dataclass(frozen=True)
@@ -11,4 +12,4 @@ class ClosedTaskCursor:
     task_id: int
 
     def statement(self) -> Statement:
-        return Statement("(closed_at, id) < (?, ?)", (self.closed_at, self.task_id))
+        return RowValueBefore(("closed_at", "id"), (self.closed_at, self.task_id)).statement()

@@ -2,6 +2,10 @@ from dataclasses import dataclass
 
 from engine.database.statement import Statement
 from engine.model.model import Model
+from engine.query.conditions.among import Among
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.select import Select
 
 
 @dataclass(frozen=True)
@@ -12,5 +16,5 @@ class AssigneeAmong:
     actor_ids: tuple[int, ...]
 
     def statement(self) -> Statement:
-        marks = ", ".join("?" for _ in self.actor_ids)
-        return Statement(f"id IN (SELECT subject_id FROM assignments WHERE subject_model = ? AND actor_id IN ({marks}))", [self.model.model_name, *self.actor_ids])
+        assigned = Select("assignments").matching(Equal("subject_model", self.model.model_name)).matching(Among("actor_id", self.actor_ids))
+        return SubqueryMatch("id", assigned.column("subject_id")).statement()

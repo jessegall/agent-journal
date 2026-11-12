@@ -1,9 +1,15 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
+from engine.query.conditions.all_of import AllOf
+from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.is_null import IsNull
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.select import Select
 
-MAIN_TAKEABLE = "state = 'open' AND (delegated_to IS NULL OR delegated_to IN (SELECT id FROM agents WHERE role = 'main'))"
-ASSIGNED_TAKEABLE = "state = 'open' AND delegated_to = ?"
+OPEN_STATE = "open"
+MAIN_ROLE = "main"
 
 
 @dataclass(frozen=True)
@@ -15,4 +21,7 @@ class TakeableTasks:
     is_main: bool
 
     def statement(self) -> Statement:
-        return Statement(MAIN_TAKEABLE, []) if self.is_main else Statement(ASSIGNED_TAKEABLE, [self.agent_id])
+        if self.is_main:
+            main_agents = Select("agents").matching(Equal("role", MAIN_ROLE)).column("id")
+            return AllOf([Equal("state", OPEN_STATE), AnyOf([IsNull("delegated_to"), SubqueryMatch("delegated_to", main_agents)])]).statement()
+        return AllOf([Equal("state", OPEN_STATE), Equal("delegated_to", self.agent_id)]).statement()
