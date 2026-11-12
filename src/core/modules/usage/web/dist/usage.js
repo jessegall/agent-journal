@@ -1,123 +1,123 @@
-if (!document.getElementById("window-styles-9259c4f8cef4")) { const style = document.createElement("style"); style.id = "window-styles-9259c4f8cef4"; style.textContent = ".current[data-v-2e50afc3]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.meter[data-v-2e50afc3]{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.meter strong[data-v-2e50afc3]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.track[data-v-2e50afc3]{grid-column:1 / -1;height:4px;overflow:hidden;border-radius:2px;background:var(--line)}.track>span[data-v-2e50afc3]{display:block;height:100%;border-radius:inherit;background:var(--accent-text)}.meter small[data-v-2e50afc3]{grid-column:1 / -1;color:var(--text-3);font-size:10.5px}.none[data-v-2e50afc3]{margin:0;color:var(--text-3);font-size:12px}.current[data-v-52b7a0da]{margin:0;padding:2px 0 4px;color:var(--text);font-size:12px}.note[data-v-52b7a0da]{margin:0 0 8px;color:var(--text-3);font-size:11px;line-height:1.4}.line[data-v-52b7a0da]{display:flex;justify-content:space-between;gap:12px;padding:3px 0;color:var(--text-2);font-size:11.5px}.line strong[data-v-52b7a0da]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.total[data-v-52b7a0da]{border-bottom:1px solid var(--border);padding-bottom:6px}.group[data-v-52b7a0da]{margin:8px 0 2px;color:var(--text-3);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}.none[data-v-52b7a0da]{margin:0;color:var(--text-3);font-size:12px}.fitness[data-v-1b832570]{display:flex;flex-direction:column;gap:6px;min-width:300px}.fitness-head[data-v-1b832570]{margin:0;font-weight:600}.fitness-measure[data-v-1b832570]{display:flex;gap:12px;justify-content:space-between;margin:0;font-size:13px}.fitness-note[data-v-1b832570]{margin:0;color:var(--text-3);font-size:12px}.load[data-v-046f30aa]{display:flex;flex-direction:column;gap:6px;min-width:300px}.load-head[data-v-046f30aa]{margin:0;font-weight:600}.load-row[data-v-046f30aa]{display:flex;gap:12px;justify-content:space-between;margin:0;font-size:13px}.load-note[data-v-046f30aa]{margin:0;color:var(--text-3);font-size:12px}.current[data-v-b9f679c6]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.meter[data-v-b9f679c6]{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.meter strong[data-v-b9f679c6]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.track[data-v-b9f679c6]{grid-column:1 / -1;height:4px;overflow:hidden;border-radius:2px;background:var(--line)}.track>span[data-v-b9f679c6]{display:block;height:100%;border-radius:inherit;background:var(--accent-text)}.meter small[data-v-b9f679c6]{grid-column:1 / -1;color:var(--text-3);font-size:10.5px}.limit-form[data-v-b9f679c6]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) 64px auto;gap:6px;padding:8px 0}.limit-form select[data-v-b9f679c6],.limit-form .percent[data-v-b9f679c6]{box-sizing:border-box;width:100%;min-width:0}.limit-form .current[data-v-b9f679c6]{grid-column:1 / -1;padding:0}.none[data-v-b9f679c6]{margin:0;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { computed as v, ref as f, openBlock as a, createBlock as R, unref as n, withCtx as g, createElementVNode as l, createElementBlock as s, toDisplayString as r, createCommentVNode as w, Fragment as b, renderList as S, normalizeStyle as T, withDirectives as V, vModelSelect as $, createVNode as _, createTextVNode as N } from "vue";
-import { useWindow as W, useRunLine as E, WindowRoom as F, TextInput as I, Btn as U } from "@journal/window-kit";
-import { _ as M } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const z = {
+if (!document.getElementById("window-styles-a734fbe4e1f0")) { const style = document.createElement("style"); style.id = "window-styles-a734fbe4e1f0"; style.textContent = ".current[data-v-cc48d24a]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.meter[data-v-cc48d24a]{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.meter strong[data-v-cc48d24a]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.track[data-v-cc48d24a]{grid-column:1 / -1;height:4px;overflow:hidden;border-radius:2px;background:var(--line)}.track>span[data-v-cc48d24a]{display:block;height:100%;border-radius:inherit;background:var(--accent-text)}.meter small[data-v-cc48d24a]{grid-column:1 / -1;color:var(--text-3);font-size:10.5px}.none[data-v-cc48d24a]{margin:0;color:var(--text-3);font-size:12px}.current[data-v-e020b3e9]{margin:0;padding:2px 0 4px;color:var(--text);font-size:12px}.note[data-v-e020b3e9]{margin:0 0 8px;color:var(--text-3);font-size:11px;line-height:1.4}.line[data-v-e020b3e9]{display:flex;justify-content:space-between;gap:12px;padding:3px 0;color:var(--text-2);font-size:11.5px}.line strong[data-v-e020b3e9]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.total[data-v-e020b3e9]{border-bottom:1px solid var(--border);padding-bottom:6px}.group[data-v-e020b3e9]{margin:8px 0 2px;color:var(--text-3);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}.none[data-v-e020b3e9]{margin:0;color:var(--text-3);font-size:12px}.fitness[data-v-f3fd6de8]{display:flex;flex-direction:column;gap:6px;min-width:300px}.fitness-head[data-v-f3fd6de8]{margin:0;font-weight:600}.fitness-measure[data-v-f3fd6de8]{display:flex;gap:12px;justify-content:space-between;margin:0;font-size:13px}.fitness-note[data-v-f3fd6de8]{margin:0;color:var(--text-3);font-size:12px}.load[data-v-9de62706]{display:flex;flex-direction:column;gap:6px;min-width:300px}.load-head[data-v-9de62706]{margin:0;font-weight:600}.load-row[data-v-9de62706]{display:flex;gap:12px;justify-content:space-between;margin:0;font-size:13px}.load-note[data-v-9de62706]{margin:0;color:var(--text-3);font-size:12px}.current[data-v-39e57460]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.meter[data-v-39e57460]{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.meter strong[data-v-39e57460]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.track[data-v-39e57460]{grid-column:1 / -1;height:4px;overflow:hidden;border-radius:2px;background:var(--line)}.track>span[data-v-39e57460]{display:block;height:100%;border-radius:inherit;background:var(--accent-text)}.meter small[data-v-39e57460]{grid-column:1 / -1;color:var(--text-3);font-size:10.5px}.limit-form[data-v-39e57460]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) 64px auto;gap:6px;padding:8px 0}.limit-form select[data-v-39e57460],.limit-form .percent[data-v-39e57460]{box-sizing:border-box;width:100%;min-width:0}.limit-form .current[data-v-39e57460]{grid-column:1 / -1;padding:0}.none[data-v-39e57460]{margin:0;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { computed as u, ref as _, openBlock as s, createBlock as T, unref as n, withCtx as k, createElementVNode as l, createElementBlock as o, toDisplayString as r, createCommentVNode as y, Fragment as h, renderList as x, normalizeStyle as F, withDirectives as N, vModelSelect as L, createVNode as S, createTextVNode as U } from "vue";
+import { useWindow as O, useRunLine as R, WindowRoom as E, TextInput as z, Btn as C } from "@journal/window-kit";
+import { _ as A } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+const j = {
   key: 0,
   class: "none"
-}, A = { class: "track" }, O = {
+}, q = { class: "track" }, G = {
   class: "limit-form",
   "data-usage-limit-form": ""
-}, j = {
+}, H = {
   key: 0,
   class: "none",
   "data-usage-limit-failure": ""
-}, q = {
+}, J = {
   key: 1,
   class: "none"
-}, G = {
+}, K = {
   __name: "UsagePanel",
-  setup(H) {
-    const i = W(), { data: u, failure: y } = i.props.usage, k = v(() => {
-      var t;
-      return ((t = u.value) == null ? void 0 : t.windows) ?? [];
-    }), C = v(() => {
-      var t, e;
-      return ((e = (t = i.props.limits) == null ? void 0 : t.rows) == null ? void 0 : e.value) ?? [];
-    }), L = v(() => {
-      var t, e, o;
-      return ((o = (e = (t = u.value) == null ? void 0 : t.agents) == null ? void 0 : e[0]) == null ? void 0 : o.program) ?? "claude";
-    }), d = f("5 hours"), m = f("fixed"), p = f("50"), { refusal: c, run: x } = E(() => i.reload("limits"));
-    async function B() {
-      const t = Number(p.value);
-      if (i.readOnly || !(t > 0 && t <= 100)) {
-        c.value = "Use a percent from 1 to 100.";
+  setup(Q) {
+    const i = O(), { data: m, failure: b } = i.props.usage, c = u(() => {
+      var e;
+      return ((e = m.value) == null ? void 0 : e.windows) ?? [];
+    }), I = u(() => {
+      var e, a;
+      return ((a = (e = i.props.limits) == null ? void 0 : e.rows) == null ? void 0 : a.value) ?? [];
+    }), W = u(() => {
+      var e, a, t;
+      return ((t = (a = (e = m.value) == null ? void 0 : e.agents) == null ? void 0 : a[0]) == null ? void 0 : t.program) ?? "claude";
+    }), B = { "5 hours": ["5 hours", "hour"], "7 days": ["7 days"] }, p = u(() => c.value.flatMap((e) => B[e.title] ?? [])), v = _(""), d = u({ get: () => p.value.includes(v.value) ? v.value : p.value[0] ?? "", set: (e) => {
+      v.value = e;
+    } }), f = _("fixed"), g = _("50"), { refusal: w, run: V } = R(() => i.reload("limits"));
+    async function D() {
+      const e = Number(g.value);
+      if (i.readOnly || !d.value || !(e > 0 && e <= 100)) {
+        w.value = "Use a percent from 1 to 100.";
         return;
       }
-      await x(["usage-limit", "set", L.value, d.value, m.value, String(t)]);
+      await V(["usage-limit", "set", W.value, d.value, f.value, String(e)]);
     }
-    const P = (t) => x(["usage-limit", "delete", String(t.id)]), D = (t) => `${t.window}: ${t.mode === "fixed" ? "halt at" : "halt after"} ${t.percent}%${t.mode === "fixed" ? "" : " more than when it was set"}`, h = (t) => `Starts again ${new Date(t * 1e3).toLocaleString()}`;
-    return (t, e) => (a(), R(n(F), { padding: "14px 16px" }, {
-      default: g(() => [
-        e[8] || (e[8] = l("p", { class: "current" }, "Plan allowance used", -1)),
-        n(y) ? (a(), s("p", z, r(n(y)), 1)) : w("", !0),
-        (a(!0), s(b, null, S(k.value, (o) => (a(), s("div", {
-          key: o.title,
+    const M = (e) => V(["usage-limit", "delete", String(e.id)]), P = (e) => `${e.window}: ${e.mode === "fixed" ? "halt at" : "halt after"} ${e.percent}%${e.mode === "fixed" ? "" : " more than when it was set"}`, $ = (e) => `Starts again ${new Date(e * 1e3).toLocaleString()}`;
+    return (e, a) => (s(), T(n(E), { padding: "14px 16px" }, {
+      default: k(() => [
+        a[7] || (a[7] = l("p", { class: "current" }, "Plan allowance used", -1)),
+        n(b) ? (s(), o("p", j, r(n(b)), 1)) : y("", !0),
+        (s(!0), o(h, null, x(c.value, (t) => (s(), o("div", {
+          key: t.title,
           class: "meter",
           "data-usage-meter": ""
         }, [
-          l("span", null, r(o.title), 1),
-          l("strong", null, r(Math.round(o.used_percent)) + "%", 1),
-          l("span", A, [
+          l("span", null, r(t.title), 1),
+          l("strong", null, r(Math.round(t.used_percent)) + "%", 1),
+          l("span", q, [
             l("span", {
-              style: T({ width: `${o.used_percent}%` })
+              style: F({ width: `${t.used_percent}%` })
             }, null, 4)
           ]),
-          l("small", null, r(o.used_percent >= 100 ? `At the usage limit. ${h(o.reset_epoch_seconds)}` : h(o.reset_epoch_seconds)), 1)
+          l("small", null, r(t.used_percent >= 100 ? `At the usage limit. ${$(t.reset_epoch_seconds)}` : $(t.reset_epoch_seconds)), 1)
         ]))), 128)),
-        l("div", O, [
-          e[6] || (e[6] = l("p", { class: "current" }, "Stop the agents at your own limit", -1)),
-          V(l("select", {
-            "onUpdate:modelValue": e[0] || (e[0] = (o) => d.value = o),
+        l("div", G, [
+          a[5] || (a[5] = l("p", { class: "current" }, "Stop the agents at your own limit", -1)),
+          N(l("select", {
+            "onUpdate:modelValue": a[0] || (a[0] = (t) => d.value = t),
             "aria-label": "Window the limit counts"
-          }, [...e[3] || (e[3] = [
-            l("option", null, "5 hours", -1),
-            l("option", null, "7 days", -1),
-            l("option", null, "hour", -1)
-          ])], 512), [
-            [$, d.value]
+          }, [
+            (s(!0), o(h, null, x(p.value, (t) => (s(), o("option", { key: t }, r(t), 1))), 128))
+          ], 512), [
+            [L, d.value]
           ]),
-          V(l("select", {
-            "onUpdate:modelValue": e[1] || (e[1] = (o) => m.value = o),
+          N(l("select", {
+            "onUpdate:modelValue": a[1] || (a[1] = (t) => f.value = t),
             "aria-label": "Type of limit"
-          }, [...e[4] || (e[4] = [
+          }, [...a[3] || (a[3] = [
             l("option", { value: "fixed" }, "halt at", -1),
             l("option", { value: "budget" }, "halt after more than", -1)
           ])], 512), [
-            [$, m.value]
+            [L, f.value]
           ]),
-          _(n(I), {
-            modelValue: p.value,
-            "onUpdate:modelValue": e[2] || (e[2] = (o) => p.value = o),
+          S(n(z), {
+            modelValue: g.value,
+            "onUpdate:modelValue": a[2] || (a[2] = (t) => g.value = t),
             class: "percent",
             type: "number",
             min: "1",
             max: "100",
             "aria-label": "Percent of the window"
           }, null, 8, ["modelValue"]),
-          _(n(U), {
+          S(n(C), {
             small: "",
-            onClick: B
+            onClick: D
           }, {
-            default: g(() => [...e[5] || (e[5] = [
-              N("Set limit", -1)
+            default: k(() => [...a[4] || (a[4] = [
+              U("Set limit", -1)
             ])]),
             _: 1
           }),
-          n(c) ? (a(), s("p", j, r(n(c)), 1)) : w("", !0)
+          n(w) ? (s(), o("p", H, r(n(w)), 1)) : y("", !0)
         ]),
-        (a(!0), s(b, null, S(C.value, (o) => (a(), s("div", {
-          key: o.id,
+        (s(!0), o(h, null, x(I.value, (t) => (s(), o("div", {
+          key: t.id,
           class: "meter",
           "data-usage-limit": ""
         }, [
-          l("span", null, r(D(o)), 1),
-          _(n(U), {
+          l("span", null, r(P(t)), 1),
+          S(n(C), {
             small: "",
-            onClick: (J) => P(o)
+            onClick: (X) => M(t)
           }, {
-            default: g(() => [...e[7] || (e[7] = [
-              N("Remove", -1)
+            default: k(() => [...a[6] || (a[6] = [
+              U("Remove", -1)
             ])]),
             _: 1
           }, 8, ["onClick"])
         ]))), 128)),
-        n(u) && !k.value.length ? (a(), s("p", q, "No current plan window has been reported here.")) : w("", !0)
+        n(m) && !c.value.length ? (s(), o("p", J, "No current plan window has been reported here.")) : y("", !0)
       ]),
       _: 1
     }));
   }
-}, Y = /* @__PURE__ */ M(G, [["__scopeId", "data-v-b9f679c6"]]);
+}, te = /* @__PURE__ */ A(K, [["__scopeId", "data-v-39e57460"]]);
 export {
-  Y as default
+  te as default
 };
