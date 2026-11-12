@@ -22,6 +22,6 @@ class WakeWaitingWorkerHandler(Handler[WakeWaitingWorker, None]):
 
     def handle(self, command: WakeWaitingWorker, context: Context) -> None:
         unit = self.units.unit(command.worker_id)
-        if not (unit.has_several_tasks and unit.is_committed):
+        if not unit.is_committed_unit:
             return
         self.nudger.send(command.worker_id, WORKER_UNIT_RUN_PASSED, WAKE_SOURCE, context, phase=command.phase_id, line=self.guidance.line(command.worker_id))

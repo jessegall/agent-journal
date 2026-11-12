@@ -49,6 +49,10 @@ class ReadingCase:
     readers_forced: bool
 
     @property
+    def is_request_waiting_for_reader(self) -> bool:
+        return self.role_must_have_reader and self.request_is_waiting
+
+    @property
     def is_not_needed(self) -> bool:
         return (not self.category.has_reader or self.has_asking_flag or self.is_plugin_run or self.was_rejected
                 or self.is_short_success or self.is_no_sample)
