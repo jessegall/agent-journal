@@ -33,6 +33,7 @@ from core.modules.settings.commands.remove_managed_hooks.remove_managed_hooks_su
 from core.modules.settings.commands.list_managed_hooks.list_managed_hooks_subcommand import ListManagedHooksSubcommand
 from core.modules.settings.commands.switch_setting_group.switch_setting_group_handler import SwitchSettingGroupHandler
 from core.modules.settings.commands.switch_setting_group.switch_setting_group_subcommand import SwitchSettingGroupSubcommand
+from core.modules.settings.commands.setting_screen_show.setting_screen_show_subcommand import SettingScreenShowSubcommand
 from core.modules.settings.commands.setting_show.setting_show_subcommand import SettingShowSubcommand
 from core.modules.settings.commands.setting_tree.setting_tree_subcommand import SettingTreeSubcommand
 from core.modules.settings.support.settings_tree import SETTINGS_SETTINGS
@@ -57,7 +58,7 @@ class SettingsModule(Module):
                                  reads=["setting tree", "environment list", "environment cards", "alias saved"], keys=[WindowKey("settings", "setting tree", tab="settings", events=["setting.*"]), WindowKey("environments", "environment cards", tab="environments", events=["environment.*"]), WindowKey("commands", "alias saved --limit 1000", events=["alias.*"], loading=KeyLoading.REQUESTED)], runs=["setting set", "setting switch", "environment delete"], events=["setting.*", "environment.*", "alias.*"]),
                WindowDeclaration("settings.project-hooks", "Hooks", "project_hooks.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU, skeleton=PROJECT_HOOKS_SKELETON,
                                  reads=["managed-hook list", "hook-call feed"], keys=[WindowKey("hooks", "managed-hook list", events=["managed-hook.*"])], runs=["managed-hook set", "managed-hook scan", "managed-hook give-back"], events=["managed-hook.*", "hook_call.*"])]
-    subcommands = [SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand, ListManagedHooksSubcommand, SetManagedHookSubcommand, RemoveManagedHooksSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand]
+    subcommands = [SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingScreenShowSubcommand, SettingTreeSubcommand, ListManagedHooksSubcommand, SetManagedHookSubcommand, RemoveManagedHooksSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand]
     bindings = {GuardSwitches: SettingGuardSwitches, SyncNotes: UndeclaredSettingNotes, SettingSource: ReaderSettingSource}
     guards = [PersonSetSettingGuard]
     listeners = [SettingRowsListener]
