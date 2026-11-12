@@ -24,7 +24,7 @@ class TranscriptionSourcesSubcommand(ReadSubcommand[Sequence[McpServer]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[McpServer]:
         names = {suggestion.name for suggestion in self.catalogue.with_transcripts()}
-        return tuple(server for server in self.servers.all_rows() if server.name in names)
+        return tuple(server for server in self.servers.get() if server.name in names)
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [row for row in value if isinstance(row, McpServer)] if is_tuple(value) else []

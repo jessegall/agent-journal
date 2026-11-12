@@ -32,7 +32,7 @@ class WorkerPolicy(DispatchPolicy):
     def is_wanted(self, agent: Agent) -> bool:
         if not self.is_ended_worker(agent):
             return super().is_wanted(agent)
-        waiting = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).matching(Among("source", tuple(RESUMING_SOURCES))).all_rows()
+        waiting = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).matching(Among("source", tuple(RESUMING_SOURCES))).get()
         jobs = tuple(waiting)
         return bool(jobs) and self.worker_stop.is_job_due(agent, jobs)
 

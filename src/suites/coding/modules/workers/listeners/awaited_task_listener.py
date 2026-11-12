@@ -13,6 +13,8 @@ from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_AWAITED
 
+AWAITED_REASON = "every task that waited on the moved one may be taken now"
+
 AWAITED_SOURCE = "workers.committed-task-awaited"
 
 
@@ -28,7 +30,7 @@ class AwaitedTaskListener(SaveListener[Moved[Task]]):
         self.queries, self.assignments, self.nudger, self.numbers, self.rows = queries, assignments, nudger, numbers, rows
 
     def handle(self, event: Moved[Task], context: Context) -> None:
-        waiting_ids = tuple(dependency.task_id for dependency in self.queries.query(OpenDependency).filter(dependency_id=event.row.id).all_rows())
+        waiting_ids = tuple(dependency.task_id for dependency in self.queries.query(OpenDependency).filter(dependency_id=event.row.id).every_row(AWAITED_REASON))
         if not waiting_ids:
             return
         holder_id = self.assignments.actor(event.row)

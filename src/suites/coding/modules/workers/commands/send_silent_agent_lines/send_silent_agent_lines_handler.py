@@ -38,6 +38,8 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_questions import WorkerQuestions
 
+SILENT_AGENTS_REASON = "every checked agent is judged silent or idle from its worktrees, lines and merger lines"
+
 
 class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     """Sends a bounded sequence of waking lines to silent agents with work, excluding explicit waits and runs.
@@ -58,10 +60,10 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     def handle(self, command: SendSilentAgentLines, context: Context) -> None:
         agents = tuple(agent for agent in self.checked_agents() if agent.halted_at is None)
         agent_ids = tuple(agent.id for agent in agents)
-        activities = {row.id: row for row in self.queries.query(AgentActivity).matching(Among("id", agent_ids)).full_table(CHECKED_AGENTS_REASON).all_rows()}
+        activities = {row.id: row for row in self.queries.query(AgentActivity).matching(Among("id", agent_ids)).every_row(CHECKED_AGENTS_REASON)}
         working = set(self.assigner.own_tasks(agent_ids))
         tasks_remain = self.task_query.delegation_candidates().exists()
-        worktrees = tuple(self.queries.query(Worktree).all_rows())
+        worktrees = tuple(self.queries.query(Worktree).every_row(SILENT_AGENTS_REASON))
         workers = {row.session_agent_id for row in worktrees}
         excluded = self.work.waiting_agents(agent_ids, context.timestamp)
         self.report_idle_workers(context, agents, activities, working, worktrees, excluded)
@@ -69,7 +71,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         if connection.status is not ConnectionStatus.ONLINE:
             return
         lines: dict[int, list[AgentLine]] = defaultdict(list)
-        for line in self.queries.query(AgentLine).matching(Among("session_agent_id", agent_ids)).filter(source=SILENT_AGENT_SOURCE).oldest().all_rows():
+        for line in self.queries.query(AgentLine).matching(Among("session_agent_id", agent_ids)).filter(source=SILENT_AGENT_SOURCE).every_row(SILENT_AGENTS_REASON):
             lines[line.session_agent_id].append(line)
         span = self.settings.minutes(SILENT_AGENT_MINUTES)
         attempt_limit = self.settings.number(SILENT_RECOVERY_ATTEMPTS)
@@ -98,8 +100,8 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
                             worktrees: tuple[Worktree, ...], excluded: set[int]) -> None:
         workers = {row.session_agent_id for row in worktrees if row.state is WorktreeState.CUT}
         stalled = {row.session_agent_id for row in worktrees if row.state is WorktreeState.DELIVERED and row.merge_ready_at is None and row.returned_at is None}
-        waiting_jobs = {row.session_agent_id for row in self.queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("source", RESUMING_SOURCES)).all_rows()}
-        idle_lines = {line.source_key: line for line in self.queries.query(MergerLine).matching(Prefix("source_key", "idle:")).oldest().all_rows()}
+        waiting_jobs = {row.session_agent_id for row in self.queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("source", RESUMING_SOURCES)).every_row(SILENT_AGENTS_REASON)}
+        idle_lines = {line.source_key: line for line in self.queries.query(MergerLine).matching(Prefix("source_key", "idle:")).every_row(SILENT_AGENTS_REASON)}
         grace = self.settings.minutes(IDLE_WORKER_MINUTES).count
         repeat = self.settings.minutes(IDLE_WORKER_REPEAT_MINUTES).count
         for worker in agents:

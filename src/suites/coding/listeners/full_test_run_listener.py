@@ -17,6 +17,8 @@ from suites.coding.support.full_run_nudges import TESTING_TASKS_FAILED_RUN, TEST
 from engine.event.created import Created
 from core.modules.processes.events.process_ended import ProcessEnded
 
+TESTING_TASKS_REASON = "a full test run speaks for every task in testing and its holder"
+
 SOURCE = "tasks.full-test-run"
 
 
@@ -54,9 +56,9 @@ class FullTestRunListener(SaveListener[Created[Process] | ProcessEnded]):
             self.nudger.send(run.session_agent_id, declaration, SOURCE, context, tasks=names)
 
     def testing_tasks(self, run: Process) -> tuple[Task, ...]:
-        testing = tuple(self.queries.query(Task).filter(state=TaskState.TESTING).oldest().all_rows())
+        testing = tuple(self.queries.query(Task).filter(state=TaskState.TESTING).every_row(TESTING_TASKS_REASON))
         actor_ids = self.assignments.row_actor_ids(Task, [task.id for task in testing])
         assigned_ids = sorted({actor_id for ids in actor_ids.values() for actor_id in ids})
-        roles = {agent.id: agent.role for agent in self.queries.query(Agent).matching(Among("id", assigned_ids)).all_rows()} if assigned_ids else {}
+        roles = {agent.id: agent.role for agent in self.queries.query(Agent).matching(Among("id", assigned_ids)).every_row(TESTING_TASKS_REASON)} if assigned_ids else {}
         waiting = [task for task in testing if all(roles.get(actor_id) == AgentRole.MAIN for actor_id in actor_ids.get(task.id, ()))]
         return tuple(task for task in waiting if task.updated_at is not None and run.created_at is not None and task.updated_at <= run.created_at)

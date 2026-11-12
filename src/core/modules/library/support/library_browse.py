@@ -11,6 +11,8 @@ from core.modules.library.errors.library_unreachable_error import LibraryUnreach
 from core.modules.library.support.library_versions import LibraryVersions
 from core.modules.library.support.page_request import PageRequest
 
+SHARE_COPIES_REASON = "a page of the library marks every item of the share that was copied"
+
 T = TypeVar("T")
 
 
@@ -23,7 +25,7 @@ class LibraryBrowse:
 
     def page(self, request: PageRequest) -> LibraryPage:
         page = self.reached(lambda: self.client.page(request))
-        copies = {copy.item_id: copy.id for copy in self.queries.query(LibraryCopy).filter(share=request.share).all_rows()}
+        copies = {copy.item_id: copy.id for copy in self.queries.query(LibraryCopy).filter(share=request.share).every_row(SHARE_COPIES_REASON)}
         return page.with_copies(copies)
 
     def item(self, share: str, item_id: int) -> LibraryItem:

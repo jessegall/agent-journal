@@ -14,5 +14,5 @@ class ActorQuery(Query[ActorRecord]):
 
     def person(self, login_name: str) -> ActorRecord | None:
         people = self.filter(type=ActorType.USER)
-        login_person = next(iter(people.filter(name=login_name).all_rows()), None) if login_name else None
-        return login_person or next(iter(people.oldest().all_rows()), None)
+        login_person = people.filter(name=login_name).first() if login_name else None
+        return login_person or people.oldest().first()

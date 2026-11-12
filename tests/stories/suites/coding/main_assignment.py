@@ -15,6 +15,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
 
+TEST_ROWS_REASON = "the test reads every row it checks"
 AUTO = "journal.suites.coding.auto-mode"
 DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers"
 WORKER_LIMIT = "journal.suites.coding.workers.worker-run-limit"
@@ -66,7 +67,7 @@ def test_s02_s10_keep_going_holds_a_stop_while_a_task_can_go_to_a_worker_and_han
 
 def waking_lines(story) -> list[str]:
     IdleMainAgentWake()(story.container)
-    return [line.text for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source=WAKE_SOURCE).oldest().all_rows()]
+    return [line.text for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source=WAKE_SOURCE).every_row(TEST_ROWS_REASON)]
 
 
 def test_s08_the_main_driver_holds_a_stop_once_for_a_free_worker_place_when_keep_going_is_off_and_never_wakes_it(new_story):

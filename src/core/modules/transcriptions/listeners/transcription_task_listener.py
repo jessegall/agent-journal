@@ -44,7 +44,7 @@ class TranscriptionTaskListener(SaveListener[Changed[Transcription]]):
             self.line.send_nudge(TRANSCRIPTION_CHANGED.nudge(transcription=row.id, task=task_id), LINE_SOURCE, context)
 
     def unfinished_task_id(self, row: Transcription) -> int | None:
-        linked = self.queries.query(Link).filter(source_model=row.model_name, source_id=row.id, target_model=Task.model_name).all_rows()
+        linked = self.queries.query(Link).filter(source_model=row.model_name, source_id=row.id, target_model=Task.model_name).get()
         task_ids = [link.target_id for link in linked]
         if not task_ids:
             return None

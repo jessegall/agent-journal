@@ -5,6 +5,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import LeadStarted
 from tests.stories.engine.driver.support.samples import SAMPLES
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 def test_a_hook_call_keeps_each_foreign_result_in_its_drivers_metadata(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
@@ -13,7 +15,7 @@ def test_a_hook_call_keeps_each_foreign_result_in_its_drivers_metadata(new_story
         {"id": "second", "exit_code": -1, "stdout": "", "stderr": "", "milliseconds": 1000, "timed_out": True, "answer": {"terminal": "second: hook timed out"}},
     ]
     story.hook("s-1", HookSamples.stop().with_fields(firing="foreign-results", foreign=runs))
-    calls = list(story.container.get(Queries).query(HookCall).filter(firing="foreign-results").all_rows())
+    calls = list(story.container.get(Queries).query(HookCall).filter(firing="foreign-results").every_row(TEST_ROWS_REASON))
     story.expect_rows(len(calls) == 1)
     story.expect_rows(calls[0].metadata.module_part(DRIVERS_MODULE)["foreign"] == runs)
 
@@ -21,6 +23,6 @@ def test_a_hook_call_keeps_each_foreign_result_in_its_drivers_metadata(new_story
 def test_a_hook_call_keeps_an_empty_foreign_list(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     story.hook("s-1", HookSamples.stop().with_fields(firing="empty-foreign"))
-    calls = list(story.container.get(Queries).query(HookCall).filter(firing="empty-foreign").all_rows())
+    calls = list(story.container.get(Queries).query(HookCall).filter(firing="empty-foreign").every_row(TEST_ROWS_REASON))
     story.expect_rows(len(calls) == 1)
     story.expect_rows(calls[0].metadata.module_part(DRIVERS_MODULE)["foreign"] == [])

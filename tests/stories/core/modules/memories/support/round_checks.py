@@ -11,11 +11,13 @@ from engine.testing.stories.story import Story
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import ServerStory
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 BROWSER_CAPTURE = "/tmp/journal-worker-450-memory-round.png"
 
 
 def faded_marks(story: Story) -> list[ChatMark]:
-    return list(story.container.get(Queries).query(ChatMark).filter(type=MemoryMarkType.MEMORY.value, variant=MemoryMarkVariant.FADED.value).all_rows())
+    return list(story.container.get(Queries).query(ChatMark).filter(type=MemoryMarkType.MEMORY.value, variant=MemoryMarkVariant.FADED.value).every_row(TEST_ROWS_REASON))
 
 
 def expect_round(story: Story, shown: Sequence[tuple[int, int, int]], faded: Sequence[tuple[int, int, int]], excluded: Sequence[int]) -> ChatMark:

@@ -17,7 +17,7 @@ class NameWorkerTestsHandler(Handler[NameWorkerTests, None]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: NameWorkerTests, context: Context) -> None:
-        existing = {row.name: row for row in self.queries.query(WorkerTestCommand).filter(worker_id=command.worker_id).all_rows()}
+        existing = {row.name: row for row in self.queries.query(WorkerTestCommand).filter(worker_id=command.worker_id).get()}
         for entry in command.commands:
             if entry.name in existing:
                 self.repository.save(existing[entry.name].changed(command=entry.command), context)

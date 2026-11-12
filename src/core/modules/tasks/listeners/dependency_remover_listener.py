@@ -8,6 +8,8 @@ from engine.command.context import Context
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_waits import TaskWaits
 
+REMOVED_TASK_REASON = "a removed task takes every dependency it is part of with it"
+
 
 class DependencyRemoverListener(DeletionListener[Deleted[Task]]):
     """Removes a task's dependencies, both ways, before the task is deleted, each removal logged as its
@@ -23,5 +25,5 @@ class DependencyRemoverListener(DeletionListener[Deleted[Task]]):
         for wait in self.waits.pending_task(task_id):
             self.repository.update(wait, context, ended_at=context.timestamp)
         dependencies = self.queries.query(TaskDependency)
-        for dependency in (*dependencies.matching(Equal("task_id", task_id)).all_rows(), *dependencies.matching(Equal("dependency_id", task_id)).all_rows()):
+        for dependency in (*dependencies.matching(Equal("task_id", task_id)).every_row(REMOVED_TASK_REASON), *dependencies.matching(Equal("dependency_id", task_id)).every_row(REMOVED_TASK_REASON)):
             self.repository.delete(dependency, context)

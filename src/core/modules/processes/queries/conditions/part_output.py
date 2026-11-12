@@ -1,6 +1,11 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
+from engine.query.conditions.exists import Exists
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.column_compare import ColumnCompare
+from engine.query.join import Join
+from engine.query.select import Select
 
 
 @dataclass(frozen=True)
@@ -11,5 +16,7 @@ class PartOutput:
     text: str
 
     def statement(self) -> Statement:
-        return Statement("EXISTS (SELECT 1 FROM process_parts AS part JOIN processes AS process ON process.id = part.process_id"
-                         " WHERE part.process_id = outputs.process_id AND process.environment_id = COALESCE(?, process.environment_id) AND part.text = ?)", [self.environment_id, self.text])
+        parts = Select("process_parts AS part").joined(Join("processes AS process", False, "process.id", "=", "part.process_id")).matching(ColumnCompare("part.process_id", "=", "outputs.process_id"))
+        if self.environment_id is not None:
+            parts = parts.matching(Equal("process.environment_id", self.environment_id))
+        return Exists(parts.matching(Equal("part.text", self.text))).statement()

@@ -20,6 +20,9 @@ from core.modules.plan_reviews.support.round_report import RoundReport
 from core.modules.plan_reviews.support.round_reviewer import RoundReviewer
 from core.modules.plans.models.plan import Plan
 
+ROUND_REPORTS_REASON = "the review rounds of a plan count every report filed on it"
+ROUND_JOBS_REASON = "the review rounds of a plan look at every helper job begun since its first review"
+
 REVIEW_EVENT = f"{Plan.model_name}.{REVIEW_MOVE.name}"
 REVIEWED_EVENT = f"{Plan.model_name}.{REVIEWED_MOVE.name}"
 
@@ -37,11 +40,11 @@ class PlanRounds:
         pairs = tuple(self.pairs(events))
         if not pairs:
             return ()
-        links = list(self.queries.query(Link).filter(link_type=LinkType.SUBJECT, source_model=Report.model_name, target_model=Plan.model_name, target_id=plan.id).all_rows())
+        links = list(self.queries.query(Link).filter(link_type=LinkType.SUBJECT, source_model=Report.model_name, target_model=Plan.model_name, target_id=plan.id).every_row(ROUND_REPORTS_REASON))
         link_events = self.creation_events(Link, [link.id for link in links])
         filed = self.queries.query(Report).find_many([link.source_id for link in links])
         pattern = re.compile(rf"\bplan[ :]{plan.id}\b")
-        jobs = [job for job in self.queries.query(HelperJob).matching(Minimum("created_at", pairs[0][0].timestamp.text)).all_rows() if pattern.search(job.brief)]
+        jobs = [job for job in self.queries.query(HelperJob).matching(Minimum("created_at", pairs[0][0].timestamp.text)).every_row(ROUND_JOBS_REASON) if pattern.search(job.brief)]
         job_events = self.creation_events(HelperJob, [job.id for job in jobs])
         helper_ids = [job.helper_id for job in jobs if job.helper_id is not None]
         names = self.actor_names({*helper_ids, *(report.creator_id for report in filed)})

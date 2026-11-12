@@ -23,10 +23,10 @@ class SilentStartRuns:
         return f"{JOURNAL_PROGRAM} {tokens[1]}" if program == JOURNAL_PROGRAM and category.is_watched and len(tokens) > 1 else text
 
     def runs(self, name: str) -> tuple[SilentRun, ...]:
-        ended = self.processes.ended().with_part(Prefix("text", name)).newest().limited(RUNS_READ)
+        ended = self.processes.ended().with_part(Prefix("text", name)).newest().take(RUNS_READ)
         silent_runs: list[SilentRun] = []
         for process in ended:
-            part = next((part for part in self.parts.process(process.id).all_rows() if self.name(part.text, part.program, part.category) == name), None)
+            part = next((part for part in self.parts.process(process.id).get() if self.name(part.text, part.program, part.category) == name), None)
             if part is not None and process.ended_at is not None:
                 output = self.outputs.process_output(process.id)
                 started_at = process.started_at or process.creation_timestamp()

@@ -6,6 +6,8 @@ from tests.stories.core.modules.triggers.trigger_details import AgentsEnableTrig
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.expectations.expect_row import expect_row
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 def test_saved_words_can_start_with_dashes(new_story):
     story = new_story(fixture=AgentsEnableTriggers)
@@ -37,7 +39,7 @@ def test_an_old_trigger_run_is_removed_with_its_process(new_story):
     story.hook("s-1", HookSamples.prompt("Fix the cart"))
     story.run_listeners()
     queries = story.container.get(Queries)
-    process = next(queries.query(Process).all_rows())
+    process = next(queries.query(Process).every_row(TEST_ROWS_REASON))
     end_run(story, process, "old\n")
     ended_run(story, "make recent", "recent\n")
     story.expect_rows(not queries.query(Process).filter(id=process.id).exists(),

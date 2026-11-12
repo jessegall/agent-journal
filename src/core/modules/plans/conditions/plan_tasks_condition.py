@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.modules.plans.conditions.shared_plan_tasks import PLAN_TASK_IDS
+from core.modules.plans.conditions.shared_plan_tasks import plan_task_ids
 from engine.database.statement import Statement
 
 
@@ -11,4 +11,4 @@ class PlanTasksCondition:
     plan_ids: tuple[int, ...]
 
     def statement(self) -> Statement:
-        return Statement(PLAN_TASK_IDS.format(plan_ids=", ".join("?" for _ in self.plan_ids)), list(self.plan_ids))
+        return plan_task_ids(self.plan_ids).statement()

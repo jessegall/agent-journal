@@ -24,7 +24,7 @@ class StartWorkerRunsHandler(Handler[StartWorkerRuns, tuple[CheckpointReach, ...
 
     def handle(self, command: StartWorkerRuns, context: Context) -> tuple[CheckpointReach, ...]:
         worktree = self.rows.required(Worktree, command.worktree_id)
-        run_phase_ids = {row.phase_id for row in self.queries.query(WorktreeReach).filter(worktree_id=worktree.id, commit_id=command.commit_id).all_rows()}
+        run_phase_ids = set(self.queries.query(WorktreeReach).filter(worktree_id=worktree.id, commit_id=command.commit_id).pluck("phase_id", int))
         reaches = list[CheckpointReach]()
         for window in self.windows.completed_by(worktree):
             if window.checkpoint_id in run_phase_ids:

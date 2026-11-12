@@ -17,6 +17,8 @@ from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment, dispatched_worker, worker_session
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 def expect_memory_start(story) -> None:
     story.expect_success('memory make "Totals are cents" --environment main')
@@ -51,11 +53,11 @@ def expect_image_read(story) -> None:
         story.expect_success(f"skill require {story.agent.id} journal-memory")
         for _ in range(SKILL_TOOL_USES + 2):
             codex_tool(binary, home, "apply_patch", {"patch": "*** Begin Patch\n*** Add File: preview.txt\n+new\n*** End Patch"})
-        writes = list(story.container.get(Queries).query(HookCall).filter(tool="apply_patch").oldest().all_rows())
+        writes = list(story.container.get(Queries).query(HookCall).filter(tool="apply_patch").every_row(TEST_ROWS_REASON))
         assert len(writes) == SKILL_TOOL_USES + 2 and "read this first" in writes[-1].refusal, writes
         finished = codex_tool(binary, home, "view_image", {"path": str(home.parent / "preview.png")})
     assert finished.returncode == 0, finished.stderr
-    calls = list(story.container.get(Queries).query(HookCall).filter(tool="view_image").all_rows())
+    calls = list(story.container.get(Queries).query(HookCall).filter(tool="view_image").every_row(TEST_ROWS_REASON))
     assert len(calls) == 1, (finished.stdout, finished.stderr)
     assert calls[0].refusal == "", calls[0]
     assert calls[0].summary == str(home.parent / "preview.png"), calls[0]
@@ -79,11 +81,11 @@ def expect_worker_commands(story) -> None:
     story.expect_success(f"skill require {worker.id} journal-memory", actor=worker)
     story.expect_success("skill write", actor=worker)
     rows = story.container.get(Queries).query(AgentSkill).filter(session_agent_id=worker.id, skill="journal-memory")
-    assert next(rows.all_rows()).state is AgentSkillState.DUE
+    assert next(rows.every_row(TEST_ROWS_REASON)).state is AgentSkillState.DUE
     code, text = story.synced()
     assert code == 0, text
     rows = story.container.get(Queries).query(AgentSkill).filter(session_agent_id=worker.id, skill="journal-memory")
-    assert next(rows.all_rows()).state is AgentSkillState.DUE
+    assert next(rows.every_row(TEST_ROWS_REASON)).state is AgentSkillState.DUE
     instructions = story.container.get(SkillFiles).readable("journal-workers").read_text()
     assert "skill write" in instructions and "module sync" in instructions and "same point" in instructions, instructions
     proof = story.new_row_id('proof make 1 --task 1 "Initial evidence"', actor=worker)

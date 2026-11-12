@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.support.merge_builds import MergeBuilds
 import shutil
 import subprocess
 from engine.process.door.process_executor import ProcessExecutor
@@ -13,7 +14,7 @@ from suites.coding.modules.workers.support.task_branch_commit import TaskBranchC
 from suites.coding.modules.workers.support.worker_folder_runs import WorkerFolderRuns
 from suites.coding.modules.workers.support.worktree_changes import WorktreeChanges
 from suites.coding.modules.workers.support.worktree_file_change import WorktreeFileChange
-from suites.coding.modules.workers.support.worktree_git import BUILT_FOLDER, PUBLISHED_FOLDERS, WorktreeGit
+from suites.coding.modules.workers.support.worktree_git import PUBLISHED_FOLDERS, WorktreeGit
 from tests.stories.suites.coding.modules.workers.support.memory_git.git_story_required import GitStoryRequired
 from tests.stories.suites.coding.modules.workers.support.memory_git.memory_folder import MemoryFolder
 from tests.stories.suites.coding.modules.workers.support.memory_git.memory_history import MemoryHistory
@@ -25,8 +26,8 @@ class MemoryWorktreeGit(WorktreeGit):
     stories that are not about git. It follows WorktreeGit step by step; a step it cannot answer, a merge
     conflict or a git command it does not know, raises GitStoryRequired: that story needs real git."""
 
-    def __init__(self, runs: WorkerFolderRuns, history: MemoryHistory, executor: ProcessExecutor) -> None:
-        super().__init__(runs, executor)
+    def __init__(self, runs: WorkerFolderRuns, history: MemoryHistory, executor: ProcessExecutor, builds: MergeBuilds) -> None:
+        super().__init__(runs, executor, builds)
         self.history = history
         self.skipped: dict[Path, set[str]] = {}
 
@@ -35,6 +36,9 @@ class MemoryWorktreeGit(WorktreeGit):
 
     def commit_checkout(self, worktree: Worktree, commit: str) -> str:
         return worktree.folder
+
+    def is_test_checkout_current(self, worktree: Worktree) -> bool:
+        return True
 
     def is_ancestor(self, folder: str, ancestor: str, commit: str) -> bool:
         return True
@@ -189,13 +193,14 @@ class MemoryWorktreeGit(WorktreeGit):
         return [committed for committed in self.committed_tree(worktree.folder) if any(committed.startswith(folder) for folder in folders)]
 
     def refuse_deleted_built_files(self, worktree: Worktree, changes: WorktreeChanges) -> None:
-        if any(change.deleted_under(BUILT_FOLDER) for change in changes.changes):
+        if self.builds.paths().of(change.relative for change in changes.changes if change.status is FileStatus.DELETED):
             raise GitStoryRequired("a story about deleted built files builds its repository with real git")
 
-    def rebuild(self, worktree: Worktree, base_folder: str) -> None:
+    def rebuild(self, worktree: Worktree, base_folder: str) -> bool:
         changed = TreeChanges(self.history.tip(worktree.base_branch).tree, self.history.tip(worktree.branch).tree).names()
-        if self.built_folders(list(changed)):
+        if self.builds.paths().of(changed):
             raise GitStoryRequired("a story about rebuilt web files builds its repository with real git")
+        return False
 
     def restore_stashes(self, worktree: Worktree) -> None:
         return

@@ -8,6 +8,8 @@ from core.modules.assignments.support.assignments import Assignments
 from core.modules.tasks.queries.task_query import TaskQuery
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 TASK_COUNT = 4
 
 
@@ -49,7 +51,7 @@ def ready_ids(story: Story, actor: Actor) -> list[int]:
 
 
 def free_ids(story: Story) -> list[int]:
-    return [task.id for task in story.container.get(TaskQuery).free().oldest().all_rows()]
+    return [task.id for task in story.container.get(TaskQuery).free().every_row(TEST_ROWS_REASON)]
 
 
 def test_the_open_tasks_assigned_to_a_worker_come_oldest_first_are_no_other_workers_whatever_their_priority_and_follow_a_new_assignee_at_once(workshop):

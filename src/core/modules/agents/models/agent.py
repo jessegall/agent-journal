@@ -136,6 +136,11 @@ class Agent(EnvironmentScoped, Model):
         return StandingState.UNSTARTED
 
     @property
+    def use_key(self) -> tuple[str, str]:
+        """The type and model of the agent, which the counts of agent use are kept by."""
+        return (self.profile or self.role, self.program_model or "default")
+
+    @property
     def working_role(self) -> str:
         return "" if self.ended_at is not None else self.role
 

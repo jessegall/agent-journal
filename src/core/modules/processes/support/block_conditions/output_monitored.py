@@ -17,6 +17,8 @@ from core.modules.processes.support.monitored_runs import MONITOR_LIFE_SECONDS, 
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
 
+MONITORS_REASON = "every monitor call since the run began may still be watching it"
+
 
 class OutputMonitored(BlockCondition):
     """The agent watches this output the way its program does, or the output has ended: it starts a Monitor
@@ -35,7 +37,7 @@ class OutputMonitored(BlockCondition):
 
     def has_active_monitor(self, check: BlockCheck, process: Process) -> bool:
         calls = check.container.get(Queries).query(HookCall).filter(session_agent_id=check.hook.agent_id, hook=HookEventName.PRE_TOOL_USE, tool=MONITOR_TOOL,
-                                                                  answer=HookAnswer.ALLOWED).matching(Minimum("created_at", process.creation_timestamp().text)).matching(ContainsSome(["summary"], [self.text])).all_rows()
+                                                                  answer=HookAnswer.ALLOWED).matching(Minimum("created_at", process.creation_timestamp().text)).matching(ContainsSome(["summary"], [self.text])).every_row(MONITORS_REASON)
         return any(re.search(rf"\b{self.text}\b", call.summary) is not None and call.creation_timestamp().elapsed_seconds(check.hook.timestamp) < MONITOR_LIFE_SECONDS for call in calls)
 
     def is_watched(self, check: BlockCheck) -> bool:

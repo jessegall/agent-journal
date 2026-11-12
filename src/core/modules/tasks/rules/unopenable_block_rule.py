@@ -20,6 +20,8 @@ from core.modules.tasks.support.block_conditions.task_blocks_reviewed import Tas
 from core.modules.tasks.support.block_review_scope import BlockReviewScope
 from core.modules.tasks.support.task_nudges import BLOCK_REVIEW, BLOCK_REVIEW_REQUIRED, BLOCK_REVIEW_REMINDER, USER_BLOCK_REVIEW
 
+BLOCKED_TASKS_REASON = "every task the agent blocked by hand is checked for a review of its block"
+
 SKIPPED_REVIEWS_READ = 20
 
 
@@ -39,7 +41,7 @@ class UnopenableBlockRule(DriverRule):
         self.queries, self.spans, self.passes, self.scope = queries, spans, passes, scope
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        blocked = tuple(self.queries.query(TaskBlockReview).filter(session_agent_id=hook.agent_id, state=TaskState.BLOCKED, automatic=False).all_rows())
+        blocked = tuple(self.queries.query(TaskBlockReview).filter(session_agent_id=hook.agent_id, state=TaskState.BLOCKED, automatic=False).every_row(BLOCKED_TASKS_REASON))
         tasks = self.unskipped(hook.agent_id, self.scope.covered(hook.agent_id, blocked)) if blocked else ()
         if not tasks:
             return RuleAnswer.allowed()
@@ -61,7 +63,7 @@ class UnopenableBlockRule(DriverRule):
         return answer.running(BlockUntil(hook.agent_id, refusal, TaskBlocksReviewed.build(blocking), is_skippable=True))
 
     def unskipped(self, agent_id: int, tasks: tuple[TaskBlockReview, ...]) -> tuple[TaskBlockReview, ...]:
-        skipped = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, nudge_key=BLOCK_REVIEW_REQUIRED.key).matching(Greater("skip_reason", "")).newest().limited(SKIPPED_REVIEWS_READ)
+        skipped = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, nudge_key=BLOCK_REVIEW_REQUIRED.key).matching(Greater("skip_reason", "")).newest().take(SKIPPED_REVIEWS_READ)
         skipped_at: dict[int, Timestamp] = {}
         for block in reversed(skipped):
             for task_id in TaskBlocksReviewed.stored(block.condition_text).task_ids():

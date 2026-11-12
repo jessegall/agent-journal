@@ -9,6 +9,8 @@ from core.modules.processes.commands.orphan_process.orphan_process import Orphan
 from core.modules.processes.listeners.process_end_mark_listener import MODULE_NAME
 from core.modules.processes.queries.process_query import ProcessQuery
 
+ORPHANED_RUNS_REASON = "an ended agent leaves every run it still has running orphaned"
+
 
 class EndedAgentRunsListener(CommitListener[AgentEnded]):
     """Ends an agent's runs unless its suite declares that they continue after the agent stops."""
@@ -23,5 +25,5 @@ class EndedAgentRunsListener(CommitListener[AgentEnded]):
         agent = event.row
         if agent.role in self.suites.agent_policy().continuing_run_roles:
             return
-        for process in tuple(self.processes.agent(logged.row_id).running().all_rows()):
+        for process in tuple(self.processes.agent(logged.row_id).running().every_row(ORPHANED_RUNS_REASON)):
             self.bus.run(OrphanProcess(process.id), self.actors.actor(MODULE_NAME), cause_id=logged.id)

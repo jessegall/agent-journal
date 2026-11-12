@@ -23,7 +23,7 @@ class ServiceFaults:
 
     def clear(self, faults: list[ServiceFault]) -> None:
         faulted = {fault.plugin.id for fault in faults}
-        for plugin in [plugin for plugin in self.queries.query(Plugin).filter(enabled=True).all_rows() if plugin.fault_count and plugin.id not in faulted]:
+        for plugin in [plugin for plugin in self.queries.query(Plugin).filter(enabled=True).get() if plugin.fault_count and plugin.id not in faulted]:
             self.bus.run(ClearPluginFaults(plugin.id), self.actors.actor(MODULE_NAME), environment_id=self.environment_id())
 
     def environment_id(self) -> int:

@@ -24,8 +24,8 @@ class AgentRows:
 
     def session(self, session: str) -> Agent | None:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            return self.kept.read("agents", lambda: AgentRows.session_holder(self.queries.query(Agent).filter(session=session).newest().limited(SESSION_ROWS)),
-                                  "session = ?", [session], name="agents.session")
+            agents = self.queries.query(Agent).filter(session=session)
+            return self.kept.read(agents, lambda: AgentRows.session_holder(agents.newest().take(SESSION_ROWS)), name="agents.session")
 
     @staticmethod
     def session_holder(rows: list[Agent]) -> Agent | None:
@@ -33,8 +33,8 @@ class AgentRows:
 
     def launch_row(self, launch_name: str) -> Agent | None:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            bound = self.kept.read("agents", lambda: self.queries.query(Agent).filter(launch_name=launch_name).first(),
-                                   "launch_name = ?", [launch_name], name="agents.launch_row")
+            agents = self.queries.query(Agent).filter(launch_name=launch_name)
+            bound = self.kept.read(agents, agents.first, name="agents.launch_row")
         return bound if bound is not None else self.session(launch_name)
 
     def find(self, agent_id: int) -> Agent:
@@ -66,14 +66,15 @@ class AgentRows:
     def running(self, role: str | None = None, parent_id: int | None = None) -> tuple[Agent, ...]:
         environment_id = self.scopes.environment_id
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            agents = self.kept.read("agents", lambda: tuple(self.agents.running().oldest().full_table(RUNNING_AGENTS_REASON).all_rows()), "ended_at IS NULL", name="agents.running")
+            running = self.agents.running().oldest()
+            agents = self.kept.read(running, lambda: tuple(running.every_row(RUNNING_AGENTS_REASON)), name="agents.running")
         agents = tuple(agent for agent in agents if environment_id is None or agent.environment_id == environment_id)
         agents = tuple(agent for agent in agents if role is None or agent.role == role)
         return tuple(agent for agent in agents if parent_id is None or agent.parent_id == parent_id)
 
     def running_main_agents(self) -> tuple[Agent, ...]:
-        return self.kept.scoped_read("agents", lambda: MainAgentFinder.all_running(self.queries),
-                                       "role = ? AND ended_at IS NULL", [AgentRole.MAIN], name="agents.running_main_agents")
+        mains = self.agents.running().filter(role=AgentRole.MAIN)
+        return self.kept.read(mains, lambda: tuple(mains.get()), name="agents.running_main_agents")
 
     def numbered_main(self, environment_id: int) -> Agent | None:
         with self.scopes.opened(None, environment_id):

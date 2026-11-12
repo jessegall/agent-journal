@@ -16,6 +16,8 @@ WORKTREE_COMMANDS_NAME = "worktree-commands"
 WORKTREE_COMMANDS = f"{MODULE_KEY}.{WORKTREE_COMMANDS_NAME}"
 MERGE_COMMANDS_NAME = "merge-commands"
 MERGE_COMMANDS = f"{MODULE_KEY}.{MERGE_COMMANDS_NAME}"
+MERGE_BUILT_PATHS = f"{MODULE_KEY}.merge-built-paths"
+MERGE_BUILD_COMMAND = f"{MODULE_KEY}.merge-build-command"
 WORKER_RUN_LIMIT = f"{MODULE_KEY}.worker-run-limit"
 WORKER_KEPT_LIMIT = f"{MODULE_KEY}.worker-kept-limit"
 WORKER_INSTRUCTION_FILES_SETTING = f"{MODULE_KEY}.worker-instruction-files"
@@ -118,6 +120,10 @@ WORKER_SETTING_VALUES = [
                  SettingType.LIST, default=()),
     SettingValue(MERGE_COMMANDS_NAME, "Merge commands", "Commands run in the main checkout after each worker merge, such as a push. The task closes only when they all succeed.",
                  SettingType.LIST, default=(), person_set=True),
+    SettingValue("merge-built-paths", "Built files a merge rebuilds", "Globs of files a build makes. A merge never stops on a clash in them; it builds them again from the merged sources.",
+                 SettingType.LIST, default=("**/web/dist/**", "src/core/modules/viewer/web/dist/**"), person_set=True, screen="helper-type.workers", section="Merging"),
+    SettingValue("merge-build-command", "Build command after a merge", "The command that builds the built files again after a merge, run in the checkout that was merged into.",
+                 SettingType.TEXT, default="npm --prefix src/viewer run build", person_set=True, screen="helper-type.workers", section="Merging"),
 ]
 WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         WORKER_KEPT_LIMIT: NumberRule(0),

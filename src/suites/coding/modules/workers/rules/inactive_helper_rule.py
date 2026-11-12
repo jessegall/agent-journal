@@ -34,6 +34,8 @@ from suites.coding.modules.workers.support.queue_run_workers import QueueRunWork
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.agents.support.agent_rows import AgentRows
 
+INACTIVE_REASON = "every ended helper of the agent is checked for work it never started, with the queue it waits in"
+
 WAITING_WORK_SOURCES = (*RESUMING_SOURCES, HELPER_JOB_SOURCE)
 
 
@@ -76,10 +78,10 @@ class InactiveHelperRule(DriverRule):
         return f"journal worker status {helper.number}" if helper.role == CodingHelperRole.WORKER else "check on it"
 
     def unstarted(self, hook: AgentHook, grace: Seconds) -> list[Agent]:
-        ended = tuple(self.queries.query(Agent).filter(parent_id=hook.agent_id).matching(Among("role", self.types.helper_keys())).matching(Greater("ended_at", "")).matching(IsNull("retired_at")).matching(IsNull("paused_at")).all_rows())
+        ended = tuple(self.queries.query(Agent).filter(parent_id=hook.agent_id).matching(Among("role", self.types.helper_keys())).matching(Greater("ended_at", "")).matching(IsNull("retired_at")).matching(IsNull("paused_at")).every_row(INACTIVE_REASON))
         ids = [helper.id for helper in ended]
-        lines = tuple(self.queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("session_agent_id", ids)).matching(Among("source", WAITING_WORK_SOURCES)).all_rows())
-        jobs = tuple(self.queries.query(HelperJob).matching(Among("helper_id", ids)).matching(IsNull("ended_at")).all_rows())
+        lines = tuple(self.queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("session_agent_id", ids)).matching(Among("source", WAITING_WORK_SOURCES)).every_row(INACTIVE_REASON))
+        jobs = tuple(self.queries.query(HelperJob).matching(Among("helper_id", ids)).matching(IsNull("ended_at")).every_row(INACTIVE_REASON))
         return [helper for helper in ended if self.has_unstarted_work(helper, [*(line for line in lines if line.session_agent_id == helper.id), *(job for job in jobs if job.helper_id == helper.id)], hook, grace)]
 
     def has_unstarted_work(self, helper: Agent, work: list[AgentLine | HelperJob], hook: AgentHook, grace: Seconds) -> bool:
@@ -89,8 +91,8 @@ class InactiveHelperRule(DriverRule):
 
     def queue_notes(self, helpers: Sequence[Agent]) -> dict[int, str]:
         notes = {helper.id: "" for helper in helpers}
-        queue = self.processes.running().filter(is_queue_run=True).oldest()
-        rows = tuple(queue.all_rows())
+        queue = self.processes.running().filter(is_queue_run=True)
+        rows = tuple(queue.every_row(INACTIVE_REASON))
         page = Page(rows, 1, max(1, len(rows)), len(rows))
         workers = self.workers.read(page)
         for position, process in enumerate(page.rows):

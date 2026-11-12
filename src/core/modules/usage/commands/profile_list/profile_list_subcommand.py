@@ -33,7 +33,7 @@ class ProfileListSubcommand(ReadSubcommand[Sequence[AgentProfile | ProfileProble
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[AgentProfile | ProfileProblem]:
         listed = self.files.listed()
         keys = [f"profiles.{profile.name}.{counter}" for profile in listed for counter in PROFILE_COUNTERS]
-        counts = {row.key: row.value for row in self.queries.query(Statistic).matching(Among("key", keys)).full_table(PROFILE_COUNTERS_REASON).all_rows()}
+        counts = {row.key: row.value for row in self.queries.query(Statistic).matching(Among("key", keys)).every_row(PROFILE_COUNTERS_REASON)}
         return tuple(replace(profile, uses=counts.get(f"profiles.{profile.name}.uses", 0), last_used=counts.get(f"profiles.{profile.name}.last_used", 0)) if isinstance(profile, AgentProfile) else profile for profile in listed)
 
     def write_output(self, value: object, output: Output) -> None:

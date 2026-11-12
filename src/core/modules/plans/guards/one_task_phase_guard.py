@@ -8,6 +8,8 @@ from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.tasks.models.enums.task_state import TaskState
 
+PLAN_TASKS_REASON = "the check counts the phases of every task of the plan"
+
 
 class OneTaskPhaseGuard(Guard[Moved[Plan]]):
     """Refuses a plan's move to ready while a phase has one task, unless the guard is passed with a reason."""
@@ -19,7 +21,7 @@ class OneTaskPhaseGuard(Guard[Moved[Plan]]):
         self.queries = queries
 
     def check(self, event: Moved[Plan], context: Context) -> None:
-        tasks = [task for task in self.queries.query(PlanTask).filter(plan_id=event.row.id).all_rows() if task.state is not TaskState.CANCELLED]
+        tasks = [task for task in self.queries.query(PlanTask).filter(plan_id=event.row.id).every_row(PLAN_TASKS_REASON) if task.state is not TaskState.CANCELLED]
         phase_ids = sorted({task.phase_id for task in tasks})
         single = [phase_id for phase_id in phase_ids if sum(task.phase_id == phase_id for task in tasks) == 1]
         if single:

@@ -35,7 +35,7 @@ class LiftHoldHandler(Handler[LiftHold, int]):
             self.folder.write_read_mark(held.process.id, LOOKED_MARK, context.timestamp.text)
             self.nudger.send(command.agent_id, HOLD_LIFTED, SOURCE, context, output=held.process.id)
             lifted += 1
-        blocks = self.queries.query(AgentBlock).filter(session_agent_id=command.agent_id, closed_at=None).all_rows()
+        blocks = self.queries.query(AgentBlock).filter(session_agent_id=command.agent_id, closed_at=None).get()
         for block in tuple(blocks):
             request_id = ReaderBlockKeys.request_id(block.nudge_key)
             if request_id is None:

@@ -5,7 +5,6 @@ from core.modules.plans.models.plan_task import PlanTask
 from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES
 from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS
 from suites.coding.modules.workers.support.phase_work import PhaseWork
 from core.modules.plans.support.task_plans import TaskPlans
 from core.modules.processes.queries.process_query import ProcessQuery
@@ -15,6 +14,8 @@ from suites.coding.modules.workers.support.worker_ask_facts import WorkerAskFact
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_point import WorkerPoint
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+
+PHASE_TASKS_REASON = "the facts name every unfinished task of the phase and what it waits on"
 
 OUTPUT_COUNT = 3
 
@@ -27,7 +28,7 @@ class WorkerAskFactsQuery:
 
     def read(self, point: WorkerPoint, task: Task) -> WorkerAskFacts:
         worker_round = point.round
-        outputs = tuple(f"output {process.id}, {process.state}: {process.line}" for process in self.processes.agent(worker_round.worker_id).newest().limited(OUTPUT_COUNT))
+        outputs = tuple(f"output {process.id}, {process.state}: {process.line}" for process in self.processes.agent(worker_round.worker_id).newest().take(OUTPUT_COUNT))
         worktree = worker_round.worktree
         if worktree is None:
             return WorkerAskFacts(point.step.value, task.id, None, outputs, (), self.phase_work(task.id))
@@ -38,9 +39,9 @@ class WorkerAskFactsQuery:
         if phase is None:
             return None
         unfinished = self.queries.query(PlanTask).filter(plan_id=phase.plan_id).matching(Minimum("phase_position", phase.position)).matching(Among("state", UNFINISHED_STATES))
-        places = tuple(unfinished.ordered("task_id").all_rows(TASK_PAGE_ROWS))
+        places = tuple(sorted(unfinished.every_row(PHASE_TASKS_REASON), key=lambda place: place.task_id))
         blockers: dict[int, list[int]] = {place.task_id: [] for place in places}
-        for dependency in self.queries.query(OpenDependency).matching(Among("task_id", list(blockers))).ordered("id").all_rows(TASK_PAGE_ROWS):
+        for dependency in self.queries.query(OpenDependency).matching(Among("task_id", list(blockers))).every_row(PHASE_TASKS_REASON):
             blockers[dependency.task_id].append(dependency.dependency_id)
         return PhaseWork(phase.title, phase.test_command if phase.checkpoint and phase.test_command else None,
                          tuple(self.task_line(place, blockers[place.task_id]) for place in places))

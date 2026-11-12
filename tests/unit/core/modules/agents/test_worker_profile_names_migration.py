@@ -1,8 +1,8 @@
 import sqlite3
 
 from core.modules.agents.migrations.m029_worker_profile_names import WorkerProfileNamesMigration
-from core.modules.drivers.migrations.m062_helper_job_worker_profile_names import HelperJobWorkerProfileNamesMigration
-from core.modules.helpers.migrations.m010_worker_profile_names_in_settings import WorkerProfileNamesInSettingsMigration
+from core.modules.drivers.migrations.m063_helper_job_worker_profile_names import HelperJobWorkerProfileNamesMigration
+from core.modules.helpers.migrations.m011_worker_profile_names_in_settings import WorkerProfileNamesInSettingsMigration
 from core.modules.usage.migrations.m002_worker_profile_names import WorkerProfileUseNamesMigration
 
 

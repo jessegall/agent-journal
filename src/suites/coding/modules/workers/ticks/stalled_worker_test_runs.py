@@ -16,6 +16,7 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_settings import STUCK_PROOF_RUN_MINUTES
 
+STALLED_RUNS_REASON = "the run of every proof still shown as running is looked at"
 ENDED_GRACE_SECONDS = 60
 
 
@@ -42,7 +43,7 @@ class StalledWorkerTestRuns:
         current = container.get(Clock).timestamp()
         stuck_minutes = int(container.get(SettingValues).number(STUCK_PROOF_RUN_MINUTES))
         stuck_seconds = stuck_minutes * 60
-        processes = {process.id: process for process in container.get(Queries).query(Process).matching(Among("id", [proof.process_id for proof in running])).all_rows()}
+        processes = {process.id: process for process in container.get(Queries).query(Process).matching(Among("id", [proof.process_id for proof in running])).every_row(STALLED_RUNS_REASON)}
         for proof in running:
             process = processes.get(proof.process_id)
             if process is None:

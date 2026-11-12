@@ -6,6 +6,8 @@ from core.modules.chat.models.journal_exception import JournalException
 from core.modules.processes.ticks.output_reading import OutputReading
 from tests.stories.core.modules.developer.support.performance_fixture import DevelopmentToolsEnabled
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 def test_tick_warnings_repeat_after_five_rise_at_once_and_reset_below_the_limit(new_story, monkeypatch):
     story = new_story(fixture=DevelopmentToolsEnabled)
@@ -17,7 +19,7 @@ def test_tick_warnings_repeat_after_five_rise_at_once_and_reset_below_the_limit(
     for _ in range(15):
         tick(story.container)
         story.run_listeners()
-        warnings = story.container.get(Queries).query(JournalException).filter(source=CLOCK_TICK_SOURCE).all_rows()
+        warnings = story.container.get(Queries).query(JournalException).filter(source=CLOCK_TICK_SOURCE).every_row(TEST_ROWS_REASON)
         counts.append(sum(1 for _ in warnings))
     story.expect_rows(counts == [1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 4, 5, 5, 6])
     marks = story.run("chat-mark main --environment main --json", actor=story.user).output_text

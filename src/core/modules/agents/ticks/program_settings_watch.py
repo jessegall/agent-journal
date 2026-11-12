@@ -24,7 +24,7 @@ from core.modules.agents.support.outside_change import OutsideChange
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.environments.models.environment import Environment
 
-
+ENVIRONMENTS_REASON = "the program settings of every environment are watched"
 SWITCH_KEY = "program-settings-switch"
 SWITCH_TEXT = ("The journal now starts Claude Code and Codex on its own settings in .journal/programs, written again at every start; "
                "your own settings files are backed up in .journal/backups/program-settings and left as they are.")
@@ -131,5 +131,5 @@ class ProgramSettingsWatch:
     @staticmethod
     def show(container: Container, mark: ShowMark) -> None:
         bus, actor = container.get(Bus), container.get(ModuleActors).actor(AGENTS_MODULE)
-        for environment in container.get(Queries).query(Environment).all_rows():
+        for environment in container.get(Queries).query(Environment).every_row(ENVIRONMENTS_REASON):
             bus.run(mark, actor, environment_id=environment.id)

@@ -58,7 +58,7 @@ class PlanFocusRule(DriverRule):
 
     def new_places(self, hook: AgentHook) -> list[PlanTask]:
         new_ids = [task.id for task in self.new_tasks(hook)]
-        return list(self.queries.query(PlanTask).matching(Among("state", ACTIVE_STATES)).matching(Among("task_id", new_ids)).all_rows()) if new_ids else []
+        return self.queries.query(PlanTask).matching(Among("state", ACTIVE_STATES)).matching(Among("task_id", new_ids)).get() if new_ids else []
 
     def new_tasks(self, hook: AgentHook) -> list[Task]:
         started = self.tasks.started_tasks(hook.agent_id)

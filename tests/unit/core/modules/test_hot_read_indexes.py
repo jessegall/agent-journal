@@ -5,7 +5,9 @@ from engine.database.statement import Statement
 from engine.module.journal_container import opened_container
 from engine.journal.journal_home import JournalHome
 from engine.module.module_sync import ModuleSync
-from core.modules.tasks.models.support.views import closed_task_counts_select
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.greater import Greater
+from engine.query.select import Select
 
 
 @pytest.fixture
@@ -18,7 +20,7 @@ def database(tmp_path):
 
 
 @pytest.mark.parametrize("statement,index", [
-    (Statement(closed_task_counts_select(1), ("2026-11-01", 1, "2026-11-01")), "tasks_environment_closed"),
+    (Select("tasks").matching(Greater("closed_at", "2026-11-01")).matching(Equal("environment_id", 1)).counts_after_statement("closed_at", ("2026-11-01",)), "tasks_environment_closed"),
     (Statement("SELECT * FROM plugin_queue_files WHERE plugin_id = ? AND name = ?", (1, "card.json")), "plugin_queue_files_plugin_name"),
     (Statement("SELECT * FROM checks WHERE removed_at IS NULL AND task_wait_id > ?", [0]), "checks_open_task_wait"),
     (Statement("SELECT id FROM agents WHERE role <> ?", ["main"]), "agents_role"),

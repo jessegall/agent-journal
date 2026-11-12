@@ -16,6 +16,8 @@ from suites.coding.modules.workers.support.worker_settings import WORKER_RESUME_
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
 
+ENDED_LINES_REASON = "every ended-worker line since the progress is checked for this worker"
+
 
 class StopFactsReader:
     """Reads the facts of a worker that ended a turn with tasks left, for the one reading of its stop. It
@@ -39,5 +41,5 @@ class StopFactsReader:
                          is_main_agent_informed=self.is_main_agent_informed(worker, progress), committed_names=self.unfinished.names(self.unfinished.committed(worker.id)))
 
     def is_main_agent_informed(self, worker: Agent, progress: Minimum) -> bool:
-        lines = self.queries.query(AgentLine).filter(source=ENDED_WORKER_SOURCE).matching(progress).all_rows()
+        lines = self.queries.query(AgentLine).filter(source=ENDED_WORKER_SOURCE).matching(progress).every_row(ENDED_LINES_REASON)
         return any(line.nudge.key == WORKER_ENDED_WITH_TASKS.key and dict(line.nudge.fields)["worker"] == str(worker.number) for line in lines)

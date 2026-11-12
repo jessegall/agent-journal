@@ -47,7 +47,7 @@ class ReaderRequestBlocks:
             return RuleAnswer.allowed()
         if hook.role != AgentRole.MAIN:
             return RuleAnswer.with_nudges(*(self.request_text.line(request) for request in self.writers.agent_requests(Actor(hook.agent_id, ActorType.AGENT))))
-        waiting = tuple(request for request in self.requests.open().oldest().all_rows()
+        waiting = tuple(request for request in self.requests.open_rows()
                         if (self.attempts.needs_help(request) or request.expires_at <= hook.timestamp)
                         if not self.notices.has_recent_notice(hook.agent_id, request.id, hook.timestamp))
         blocks = tuple(self.help_block(hook.agent_id, request) for request in waiting)

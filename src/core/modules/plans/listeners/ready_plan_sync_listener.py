@@ -27,7 +27,7 @@ class ReadyPlanSyncListener(CommitListener[RegistrySynced]):
 
     def handle(self, event: RegistrySynced, logged: LoggedEvent) -> None:
         actor = self.actors.actor("journal.core.plans")
-        for plan in self.queries.query(Plan).filter(state=PlanState.READY).all_rows():
+        for plan in self.queries.query(Plan).filter(state=PlanState.READY).get():
             self.bus.run(CloseUserApproval(("plan", "approve", str(plan.id))), actor, cause_id=logged.id, environment_id=plan.environment_id)
-            if not self.items.type_items(PlanDockType.WAITING.value).row_items(Plan.model_name, plan.id).filter(state=DockItemState.DOCKED).all_rows():
+            if not self.items.type_items(PlanDockType.WAITING.value).row_items(Plan.model_name, plan.id).filter(state=DockItemState.DOCKED).exists():
                 self.bus.run(AddDockItem(PlanDockType.WAITING.value, Plan.model_name, plan.id), actor, cause_id=logged.id, environment_id=plan.environment_id)

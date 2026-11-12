@@ -19,6 +19,7 @@ from core.modules.processes.support.run_shapes import INSPECTED_CHARACTERS, RunS
 from core.modules.processes.support.silent_run import SilentRun
 from core.modules.processes.support.silent_start_runs import SilentStartRuns
 
+
 EXIT_COMMANDS = ("output read", "output peek", "output page", "output stop", "reader", "refusal skip", "command-type")
 UNKNOWN_SHAPE = "none of the known ones"
 MISSING_TOTAL_TEXT = "states no total, so the command must print one first"

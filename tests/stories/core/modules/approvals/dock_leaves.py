@@ -7,11 +7,13 @@ from core.modules.docking.models.enums.dock_item_state import DockItemState
 from tests.stories.core.modules.approvals.approvals import SETTING, pending_setting
 from tests.stories.server.support.server_client import server_story
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 __all__ = ["pending_setting"]
 
 
 def docked_cards(story, request) -> int:
-    return len(tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=request.id, state=DockItemState.DOCKED).all_rows()))
+    return len(tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=request.id, state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON)))
 
 
 def decide(story, request, decision: str) -> None:

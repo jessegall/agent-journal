@@ -12,6 +12,8 @@ from core.modules.documents.support.mention_refs import MentionRefs
 from core.modules.documents.support.row_refs import RowRefs
 from core.modules.documents.support.row_link_writer import RowLinkWriter
 
+MENTIONS_REASON = "the mentions of a text are compared with every mention link it has"
+
 
 class RecordMentionsHandler(Handler[RecordMentions, int]):
     """Saves a mentions link to each row a text names that exists and is not the row itself; a link already
@@ -29,7 +31,7 @@ class RecordMentionsHandler(Handler[RecordMentions, int]):
         mention_refs = dict.fromkeys(ref for text in command.texts for ref in MentionRefs.found(text, self.registry.models))
         references = tuple(ref for ref in (self.row_reference(name, number, context.environment_id) for name, number in mention_refs) if ref is not None)
         targets = self.row_refs.existing_many(references)
-        stored = self.queries.query(Link).filter(source_model=command.source.model, source_id=command.source.row_id, link_type=LinkType.MENTION).all_rows()
+        stored = self.queries.query(Link).filter(source_model=command.source.model, source_id=command.source.row_id, link_type=LinkType.MENTION).every_row(MENTIONS_REASON)
         existing = {(link.target_model, link.target_id) for link in stored}
         new_targets = [ref for ref in targets if ref != command.source and (ref.model, ref.row_id) not in existing]
         self.links.save_many(tuple(Link(creator_id=context.actor.id, source_model=command.source.model, source_id=command.source.row_id, target_model=ref.model,

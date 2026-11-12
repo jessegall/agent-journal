@@ -16,8 +16,7 @@ class ProviderOutageMarkListener(MarkListener[Created[ProviderOutage]]):
 
     def handle(self, event: Created[ProviderOutage], logged: LoggedEvent) -> None:
         row = event.row
-        previous = self.queries.query(ProviderOutage).filter(program=row.program).all_rows()
-        if any(outage.id < row.id and outage.ends_at > row.creation_timestamp() for outage in previous):
+        if self.queries.query(ProviderOutage).filter(program=row.program).where("id", "<", row.id).where("ends_at", ">", row.creation_timestamp()).exists():
             return
         fix = "sign in to the program again (use /login if supported), then end the outage" if "login" in row.reason else "wait, or end the outage when the program is ready"
         self.show(logged, ProgramMarkType.OUTAGE, ProgramMarkVariant.UNAVAILABLE,

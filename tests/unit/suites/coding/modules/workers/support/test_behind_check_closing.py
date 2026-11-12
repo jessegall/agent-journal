@@ -24,7 +24,7 @@ class Store:
         self.condition = condition
         return self
 
-    def all_rows(self) -> list[WorktreeBehindCheck]:
+    def every_row(self, reason: str) -> list[WorktreeBehindCheck]:
         return [row for row in self.rows.values() if row.state in self.condition.values]
 
     def save_change(self, row, changed, context):

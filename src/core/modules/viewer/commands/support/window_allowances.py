@@ -16,8 +16,7 @@ class WindowAllowances:
 
     def permission(self, person_id: int, subject: str, permission_type: WindowPermissionType) -> WindowPermission | None:
         query = self.queries.query(WindowPermission).filter(person_id=person_id, subject=subject, type=permission_type)
-        return self.kept.scoped_read("window_permissions", query.first, "person_id = ? AND subject = ? AND type = ?",
-                                       [person_id, subject, permission_type], name="viewer.permission")
+        return self.kept.read(query, query.first, name="viewer.permission")
 
     def allowed_lines(self, person_id: int, window: str, permission_type: WindowPermissionType) -> list[str]:
         permission = self.permission(person_id, window, permission_type)

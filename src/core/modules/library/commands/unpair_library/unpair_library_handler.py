@@ -13,6 +13,8 @@ from core.modules.library.support.library_disconnection import LibraryDisconnect
 from core.modules.library.support.library_person import LibraryPerson
 from core.modules.library.errors.library_stopped_error import LibraryStoppedError
 
+UNPAIRED_REASON = "unpairing the library deletes every copy taken from it"
+
 STOPPED_TEXT = "Disconnected. Connect again to sync."
 
 
@@ -40,7 +42,7 @@ class UnpairLibraryHandler(Handler[UnpairLibrary, LibraryDisconnection]):
         return LibraryDisconnection(self.queries.query(LibraryCopy).count(), False)
 
     def deleted(self, connection: LibraryConnection, context: Context) -> LibraryDisconnection:
-        copies = list(self.queries.query(LibraryCopy).all_rows())
+        copies = list(self.queries.query(LibraryCopy).every_row(UNPAIRED_REASON))
         for copy in copies:
             self.repository.delete(copy, context)
         self.repository.delete(connection, context)

@@ -14,6 +14,8 @@ from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.setting_revision import SettingRevision
 
+OPEN_APPROVALS_REASON = "a saved setting closes every open approval it makes outdated"
+
 REVISION_FLAG = "--expected-revision"
 
 
@@ -29,7 +31,7 @@ class OutdatedSettingApprovalListener(CommitListener[Created[Setting] | Updated[
 
     def handle(self, event: Created[Setting] | Updated[Setting], logged: LoggedEvent) -> None:
         key = event.row.key
-        outdated = {(request.arguments, request.environment_id): request for request in self.queries.query(ApprovalRequest).filter(state=ApprovalState.OPEN).all_rows()
+        outdated = {(request.arguments, request.environment_id): request for request in self.queries.query(ApprovalRequest).filter(state=ApprovalState.OPEN).every_row(OPEN_APPROVALS_REASON)
                     if self.is_outdated(request, key)}
         for request in outdated.values():
             self.bus.run(CloseUserApproval(request.arguments, f"outdated: {key} changed since this change was asked for"), self.actors.actor("journal.core.setting-requests"),

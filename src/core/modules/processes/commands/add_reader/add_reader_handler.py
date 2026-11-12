@@ -15,6 +15,8 @@ from core.modules.processes.support.reader_judgement import ReaderJudgement
 from core.modules.processes.support.reader_writers import ReaderWriters
 from core.modules.processes.errors.reader_save_refusal import ReaderSaveRefusal
 
+JOURNAL_PROGRAM = "journal"
+
 
 class AddReaderHandler(Handler[AddReader, Reader]):
     """Saves a new reader, or the reader of that name with the fields the command gives."""
@@ -38,6 +40,7 @@ class AddReaderHandler(Handler[AddReader, Reader]):
         request = self.writers.check_save(context.actor, reader)
         try:
             self.check_patterns(command)
+            AddReaderHandler.refuse_journal_commands(reader)
             if not reader.commands or not (reader.lines_pattern or reader.script):
                 raise Refusal(f"reader {reader.name} needs --commands and --lines or --script", "journal reader add <name> --commands <pattern> --lines <pattern>")
             if request is not None:
@@ -56,6 +59,13 @@ class AddReaderHandler(Handler[AddReader, Reader]):
         if judgement.missed:
             raise Refusal(f"reader {reader.name} missed {'; '.join(judgement.missed)}", "try the patterns on the named output")
         return self.repository.save(replace(reader, proved_on=judgement.output_id), context)
+
+    @staticmethod
+    def refuse_journal_commands(reader: Reader) -> None:
+        """A journal command has no reader: it stays in the foreground and the agent reads its answer whole."""
+        named = [pattern.strip() for pattern in reader.commands.split(",") if pattern.strip().split(" ", 1)[0] == JOURNAL_PROGRAM]
+        if named:
+            raise Refusal(f"reader {reader.name} names the journal command {named[0]}, and a journal command has no reader", "name commands of other programs only")
 
     @staticmethod
     def check_patterns(command: AddReader) -> None:

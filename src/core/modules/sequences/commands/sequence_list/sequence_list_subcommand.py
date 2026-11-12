@@ -22,7 +22,7 @@ class SequenceListSubcommand(ReadSubcommand[Rows[Sequence]]):
         return
 
     def read(self, arguments: Namespace, caller: Caller) -> Rows[Sequence]:
-        return tuple(self.queries.query(Sequence).oldest().all_rows())
+        return tuple(self.queries.query(Sequence).oldest().get())
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [row for row in value if isinstance(row, Sequence)] if is_tuple(value) else []

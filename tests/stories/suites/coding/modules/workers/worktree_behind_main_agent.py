@@ -15,13 +15,14 @@ from tests.stories.suites.coding.modules.workers.worktree_behind_check import ch
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState
 from suites.coding.modules.workers.models.merger_line import MergerLine
 
+TEST_ROWS_REASON = "the test reads every row it checks"
 WAIT = timedelta(minutes=30)
 CLASHING_FILE = "plan_checkpoints.py"
 
 
 def merger_texts(story) -> list[str]:
     with story.container.get(Scopes).opened(None, 1):
-        return [line.text for line in story.container.get(Queries).query(MergerLine).all_rows()]
+        return [line.text for line in story.container.get(Queries).query(MergerLine).every_row(TEST_ROWS_REASON)]
 
 
 def clashed(story, repository, worker: Actor) -> None:
@@ -82,7 +83,7 @@ def s48_no_step_of_an_update_asks_the_person_anything(story, repository, worker:
     clashed(story, repository, worker)
     waited(story)
     with story.container.get(Scopes).opened(None, 1):
-        questions = tuple(story.container.get(Queries).query(Question).all_rows())
+        questions = tuple(story.container.get(Queries).query(Question).every_row(TEST_ROWS_REASON))
     story.expect_rows(questions == (), detail=str(questions))
 
 

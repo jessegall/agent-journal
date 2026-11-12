@@ -47,6 +47,9 @@ from core.modules.plans.support.task_plans import TaskPlans
 from core.modules.plans.support.plan_approval import PlanApproval
 from core.modules.tasks.models.task import Task
 
+CONTEXT_ROWS_REASON = "the work context names every actor, link and title its messages refer to"
+MISSING_REFERENCES = 50
+
 CONTEXT_CHARACTERS = 8000
 ANCESTRY_MESSAGES = 20
 SOURCE_TYPES = (LinkType.SUBJECT, LinkType.EDITED)
@@ -206,14 +209,14 @@ class WorkContextReader:
     def rendered(self, messages: tuple[Message, ...], primary: Message | None,
                  roots: tuple[Task | Plan, ...], command: str) -> tuple[WorkContextMessage, ...]:
         actor_ids = tuple({number for message in messages for number in (message.creator_id, message.session_agent_id) if number is not None})
-        actors = {actor.id: actor for actor in self.queries.query(ActorRecord).matching(Among("id", actor_ids)).all_rows()}
+        actors = {actor.id: actor for actor in self.queries.query(ActorRecord).matching(Among("id", actor_ids)).every_row(CONTEXT_ROWS_REASON)}
         relations: dict[int, set[str]] = {message.id: set() for message in messages}
         for root in roots:
             links = self.queries.query(Link).filter(source_model="message", target_model=root.model_name, target_id=root.id)
-            for link in links.matching(Among("source_id", tuple(relations))).matching(Among("link_type", (*SOURCE_TYPES, LinkType.COMMENT))).all_rows():
+            for link in links.matching(Among("source_id", tuple(relations))).matching(Among("link_type", (*SOURCE_TYPES, LinkType.COMMENT))).every_row(CONTEXT_ROWS_REASON):
                 relations[link.source_id].add(f"{link.link_type} {root.cli_name}:{root.id}")
         comments = self.queries.query(Link).filter(source_model="message", target_model="message", link_type=LinkType.COMMENT)
-        for link in comments.matching(Among("source_id", tuple(relations))).all_rows():
+        for link in comments.matching(Among("source_id", tuple(relations))).every_row(CONTEXT_ROWS_REASON):
             relations[link.source_id].add(f"comments_on message:{link.target_id}")
             if link.target_id in relations:
                 relations[link.target_id].add(f"commented on by message:{link.source_id}")
@@ -306,7 +309,7 @@ class WorkContextReader:
         references: dict[int, set[str]] = {}
         for root in roots:
             links = self.queries.query(Link).filter(source_model="message", target_model=root.model_name, target_id=root.id)
-            missing = links.matching(Among("link_type", (*SOURCE_TYPES, LinkType.COMMENT))).matching(SubqueryMatch("source_id", visible.select.column("id"), negated=True)).limited(50)
+            missing = links.matching(Among("link_type", (*SOURCE_TYPES, LinkType.COMMENT))).matching(SubqueryMatch("source_id", visible.select.column("id"), negated=True)).take(MISSING_REFERENCES)
             for link in missing:
                 references.setdefault(link.source_id, set()).add(f"{link.link_type} {root.cli_name}:{root.id}")
         return tuple(WorkContextReference("message", number, "message unavailable", tuple(sorted(relations)), True)
@@ -321,9 +324,9 @@ class WorkContextReader:
                     references.setdefault(("message", approval), set()).add("plan approval")
             outgoing = self.queries.query(Link).filter(source_model=root.model_name, source_id=root.id).matching(Among("target_model", ("doc", "report")))
             incoming = self.queries.query(Link).filter(target_model=root.model_name, target_id=root.id).matching(Among("source_model", ("doc", "report")))
-            for link in outgoing.matching(Among("link_type", (LinkType.SUBJECT, LinkType.REFERENCE))).limited(50):
+            for link in outgoing.matching(Among("link_type", (LinkType.SUBJECT, LinkType.REFERENCE))).take(MISSING_REFERENCES):
                 references.setdefault((link.target_model, link.target_id), set()).add(str(link.link_type))
-            for link in incoming.matching(Among("link_type", (LinkType.SUBJECT, LinkType.REFERENCE))).limited(50):
+            for link in incoming.matching(Among("link_type", (LinkType.SUBJECT, LinkType.REFERENCE))).take(MISSING_REFERENCES):
                 references.setdefault((link.source_model, link.source_id), set()).add(str(link.link_type))
             if isinstance(root, Plan) and root.document_id is not None:
                 references.setdefault(("doc", root.document_id), set()).add("design")
@@ -338,6 +341,6 @@ class WorkContextReader:
             ids = tuple(number for name, number in references if name == model.model_name)
             query = self.queries.query(model).matching(Among("id", ids))
             query = query.with_select(query.select.column(WorkContextReferenceColumns.columns(query.table.columns)))
-            titles.update({(model.model_name, row.id): " ".join(row.title.split()) for row in query.all_rows()})
+            titles.update({(model.model_name, row.id): " ".join(row.title.split()) for row in query.every_row(CONTEXT_ROWS_REASON)})
         return tuple(WorkContextReference(model, number, titles.get((model, number), "reference unavailable"),
                      tuple(sorted(relations)), (model, number) not in titles) for (model, number), relations in sorted(references.items()))

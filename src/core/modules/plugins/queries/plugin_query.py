@@ -14,14 +14,16 @@ class PluginQuery(Query[Plugin]):
         self.kept = kept
 
     def find_name(self, name: str) -> Plugin:
-        plugin = self.kept.read(self.table.name, lambda: self.filter(name=name).first(), "name = ?", [name], name="plugins.find_name")
+        named = self.filter(name=name)
+        plugin = self.kept.read(named, named.first, name="plugins.find_name")
         if plugin is None:
             raise Refusal(f"no plugin named {name} is installed", "journal plugin list shows them")
         return plugin
 
     def enabled_plugins(self) -> list[Plugin]:
-        return list(self.kept.read(self.table.name, lambda: tuple(self.filter(enabled=True).oldest().all_rows()),
-                                   "enabled = ?", [True], name="plugins.enabled_plugins"))
+        enabled = self.filter(enabled=True).oldest()
+        return list(self.kept.read(enabled, lambda: tuple(enabled.get()), name="plugins.enabled_plugins"))
 
     def is_installed(self, name: str) -> bool:
-        return self.kept.read(self.table.name, self.filter(name=name).exists, "name = ?", [name], name="plugins.installed")
+        named = self.filter(name=name)
+        return self.kept.read(named, named.exists, name="plugins.installed")

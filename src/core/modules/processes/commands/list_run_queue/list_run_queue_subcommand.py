@@ -22,6 +22,8 @@ from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from engine.setting.setting_values import SettingValues
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 
+QUEUE_REASON = "the queue shows every run that has not ended and every queued run"
+
 MAX_PAGE_SIZE = 100
 RECENT_RUNS = 20
 
@@ -54,7 +56,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
             raise Refusal(self.environment_refusal)
         main_spots = self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS)
         query = self.agent_rows(self.queries.query(ProcessQueueRow), arguments.agent)
-        active = tuple(query.matching(IsNull("ended_at")).oldest().all_rows())
+        active = tuple(query.matching(IsNull("ended_at")).every_row(QUEUE_REASON))
         running = [row.inspector_json(main_spots) for row in active if row.section is QueueSection.RUNNING]
         waiting = [row.inspector_json(main_spots) for row in active if row.section is QueueSection.WAITING]
         recent = [row.inspector_json(main_spots) for row in self.recent_rows(query, max(1, arguments.recent))]
@@ -67,7 +69,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
             "used_slots": sum(bool(row["uses_slot"]) for row in running), "waiting_count": len(waiting),
             "halted": self.halt.is_halted, "halt_state": "halted" if self.halt.is_halted else "running", "halt_reason": self.halt.reason, "halt_cause": self.halt.halt_type,
             "running": running, "waiting": waiting, "recent": recent, "recent_total": query.filter(section=QueueSection.RECENT).count()}
-        queue_runs = tuple(self.queue_runs.query().oldest().all_rows())
+        queue_runs = tuple(self.queue_runs.query().every_row(QUEUE_REASON))
         number, size = max(1, arguments.page), min(MAX_PAGE_SIZE, max(1, arguments.limit))
         return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector)
 
@@ -78,7 +80,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         return query.filter(session_agent_id=agent_id)
 
     def recent_rows(self, query: Query[ProcessQueueRow], count: int) -> list[ProcessQueueRow]:
-        return query.filter(section=QueueSection.RECENT).descending("ended_at", "id").limited(count)
+        return query.filter(section=QueueSection.RECENT).descending("ended_at", "id").take(count)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ProcessQueuePage):

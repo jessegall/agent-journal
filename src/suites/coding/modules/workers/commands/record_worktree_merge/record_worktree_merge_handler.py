@@ -9,7 +9,7 @@ from engine.scope.actor_scope import ActorScope
 from engine.driver.nudger import Nudger
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
+from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.commands.record_worktree_merge.record_worktree_merge import RecordWorktreeMerge
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -22,6 +22,8 @@ from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOUR
 from suites.coding.modules.workers.support.worker_nudges import WORKER_MERGE_CONFLICT
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
+
+UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 
 class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
@@ -55,7 +57,7 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
         return MergeOutcome(self.repository.save_change(worktree, merged, context), ())
 
     def delivered_tasks(self, worktree: Worktree, task: Task) -> list[Task]:
-        delivered = tuple(self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).filter(state=TaskState.TESTING).oldest().all_rows(TASK_PAGE_ROWS))
+        delivered = tuple(self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).filter(state=TaskState.TESTING).every_row(UNIT_TASKS_REASON))
         return [row for row in (task, *delivered) if row.state is TaskState.TESTING and (row is task or row.id != task.id)]
 
     def returned(self, worktree: Worktree, task: Task, conflicts: tuple[str, ...], context: Context) -> Worktree:

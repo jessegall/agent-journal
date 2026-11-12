@@ -11,6 +11,8 @@ from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.silent_runs import PYTHON_PROGRAM
 
+JUDGED_RUNS_REASON = "the cadence tick judges every running run with its agent and parts"
+
 
 
 class JudgedRuns:
@@ -23,14 +25,14 @@ class JudgedRuns:
         self.processes, self.parts, self.queries = processes, parts, queries
 
     def running(self) -> tuple[tuple[Process, tuple[ProcessPart, ...]], ...]:
-        processes = tuple(self.processes.running().all_rows())
+        processes = tuple(self.processes.running().every_row(JUDGED_RUNS_REASON))
         if not processes:
             return ()
-        agents = self.queries.query(Agent).matching(Among("id", sorted({process.session_agent_id for process in processes}))).all_rows()
+        agents = self.queries.query(Agent).matching(Among("id", sorted({process.session_agent_id for process in processes}))).every_row(JUDGED_RUNS_REASON)
         ended = {agent.id for agent in agents if agent.ended_at is not None}
         processes = tuple(process for process in processes if process.session_agent_id not in ended)
         parts: dict[int, list[ProcessPart]] = defaultdict(list)
-        for part in self.parts.matching(Among("process_id", [process.id for process in processes])).all_rows():
+        for part in self.parts.matching(Among("process_id", [process.id for process in processes])).every_row(JUDGED_RUNS_REASON):
             parts[part.process_id].append(part)
         return tuple((process, tuple(parts[process.id])) for process in processes if self.is_judged(process, parts[process.id]))
 

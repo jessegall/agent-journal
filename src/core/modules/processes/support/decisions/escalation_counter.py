@@ -25,7 +25,7 @@ class EscalationCounter:
         """The count of each command, from one read of the newest ended runs of all of them: up to RUNS_READ runs
         a command, so a command that runs far less often than the others may count fewer runs than it had."""
         keys = tuple(dict.fromkeys(command_keys))
-        ended = self.decisions.matching(Among("command_key", keys)).filter(moment=ReadingMoment.END).descending("decided_at", "id").limit(RUNS_READ * len(keys), "the newest ended runs of each command counted").get()
+        ended = self.decisions.matching(Among("command_key", keys)).filter(moment=ReadingMoment.END).descending("decided_at", "id").take(RUNS_READ * len(keys))
         rows = {key: [row for row in ended if row.command_key == key][:RUNS_READ] for key in keys}
         marked = self.resets.last_marked_among(keys)
         return {key: self.counted_runs(key, rows[key], marked[key]) for key in keys}

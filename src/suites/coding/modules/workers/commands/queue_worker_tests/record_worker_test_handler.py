@@ -30,6 +30,8 @@ from suites.coding.modules.workers.models.affected_test import AffectedTest
 from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 
+AFFECTED_TESTS_REASON = "every affected test of the worktree is checked for one still running"
+
 LINE_SOURCE = "workers"
 TESTS_PASSED_REASON = "its tests passed"
 PROOFS_CHECKED_REASON = "its proofs are checked"
@@ -78,7 +80,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         tasks = self.rows.required_index(Task, sorted({row.task_id for row in proofs}))
         failed = [row for row in proofs if row.state is ProofState.SHORT and tasks[row.task_id].state is TaskState.TESTING]
         current = self.reopen_work(worktree, failed, context) if failed else worktree
-        pending = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).all_rows()
+        pending = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).every_row(AFFECTED_TESTS_REASON)
         if any(row.state in (AffectedTestState.QUEUED, AffectedTestState.PICKING, AffectedTestState.TESTING) for row in pending):
             return []
         completed = self.complete_tested(tasks, proofs, context)

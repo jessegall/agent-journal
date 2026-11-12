@@ -38,7 +38,7 @@ class SendMergerAdviceHandler(Handler[SendMergerAdvice, str]):
         if point.round.worktree is None:
             raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers).text} has no open work", "advise a worker that is at work")
         task_id = self.guidance.current_task(point.round).id
-        group_rows = tuple(self.queries.query(MergerAdvice).filter(worker_id=command.worker_id, group_key=point.counted_window_key()).oldest().all_rows())
+        group_rows = tuple(self.queries.query(MergerAdvice).filter(worker_id=command.worker_id, group_key=point.counted_window_key()).oldest().get())
         visit = self.queries.query(MergerVisit).newest().first()
         visit_id = None if visit is None else visit.id
         limit = self.settings.number(MERGER_GROUP_MESSAGE_LIMIT)

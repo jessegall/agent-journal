@@ -10,6 +10,8 @@ from tests.stories.core.modules.chat.support.mark_samples import expect_absent_m
 from tests.stories.suites.coding.modules.workers.support.phase_steps import planned_story
 from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 def read_outline(story) -> dict:
     return json.loads(story.run("plan outline 1 --json", actor=story.agent).output_text)
@@ -56,7 +58,7 @@ def test_a_dispatch_for_a_phase_shows_a_mark_that_the_plan_was_handed_over(new_s
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1", actor=story.agent), ActorType.AGENT)
     story.run_listeners()
     expect_marks_text(story, f"Worker {agent_number(story, worker.id)} was given 3 tasks")
-    marks = tuple(story.container.get(Queries).query(ChatMark).filter(variant=WorkerMarkVariant.ASSIGNED).all_rows())
+    marks = tuple(story.container.get(Queries).query(ChatMark).filter(variant=WorkerMarkVariant.ASSIGNED).every_row(TEST_ROWS_REASON))
     story.expect_rows(len(marks) == 1, marks[0].target_id == worker.id,
                       all(text in marks[0].detail for text in ("Task 1: Fix the cart", "Task 2: Tax", "Task 3: Totals")))
 

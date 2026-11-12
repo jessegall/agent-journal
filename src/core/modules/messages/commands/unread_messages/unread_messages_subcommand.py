@@ -12,6 +12,8 @@ from core.modules.messages.support.message_text import MessageText
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.conditions.main_message_target import MainMessageTarget
 
+UNREAD_REASON = "the unread list shows every message not read yet, oldest first"
+
 
 class UnreadMessagesSubcommand(ReadSubcommand[tuple[MessageText, ...]]):
     """Shows the caller's unread messages, oldest first, or the main chat's messages for a user."""
@@ -28,7 +30,7 @@ class UnreadMessagesSubcommand(ReadSubcommand[tuple[MessageText, ...]]):
     def read(self, arguments: Namespace, caller: Caller) -> tuple[MessageText, ...]:
         agent_id = caller.read_actor_id
         addressed = self.messages.unread(agent_id) if agent_id is not None else self.messages.matching(MainMessageTarget()).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at"))
-        unread = addressed.oldest().all_rows()
+        unread = addressed.every_row(UNREAD_REASON)
         return tuple(MessageText.built(message, self.links) for message in unread)
 
     def write_output(self, value: object, output: Output) -> None:

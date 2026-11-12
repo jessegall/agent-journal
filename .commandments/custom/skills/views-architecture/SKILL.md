@@ -14,9 +14,11 @@ read like any table.
 ## When it fires
 
 - **`view-model-without-select`** - a class extending ViewModel sets no `select`. Name the view, its key column and
-  its SELECT on the view model; the SELECT text lives in the module's `views.py` and the module lists the view model
-  in `views`. Sync then compares its fields with the view's columns.
+  its SELECT on the view model, and the module lists the view model in `views`. Sync then compares its fields with
+  the view's columns. A `views.py` keeps SELECT text only while the SQL detectors list it; that list only shrinks, so a
+  new view builds its select with the query builder.
 - **`second-view-reader`** - a class named View, ViewQuery or the like reads or declares views beside Query. Read a
-  view with `queries.query(ViewModel)`: filter, matching, ordered, page, find by its key.
+  view with `queries.query(ViewModel)` like a table: where, order_by, take, page, every_row(reason), find by its key;
+  get() returns at most 50 rows unless a limit up to 1000 is named.
 - **`position-outside-positions`** - plans code sets `position=` outside `positions.py` and `phase_handlers.py`. Take a
   new place from `Positions`, renumber with it when a place leaves, and move a phase with `journal phase move`.

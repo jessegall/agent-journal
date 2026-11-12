@@ -11,6 +11,8 @@ from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.fixtures.legacy_plugin import INSTALLED_VERSION, PLUGIN_NAME
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 PLUGIN_REFUSAL_SAMPLE = HookSamples.shell("touch protected", ShellPart("touch", CommandCategory.EDIT, ["protected"]))
 
 
@@ -18,7 +20,7 @@ def expect_plugin_upgrade(story: Story, enabled: bool) -> None:
     plugin = story.story_rows(Plugin)[0]
     assert plugin.release == f"v{INSTALLED_VERSION}", plugin
     assert plugin.enabled is enabled, plugin
-    settings = {row.key: json.loads(row.value) for row in story.container.get(Queries).query(PluginSetting).filter(plugin_id=plugin.id).all_rows()}
+    settings = {row.key: json.loads(row.value) for row in story.container.get(Queries).query(PluginSetting).filter(plugin_id=plugin.id).every_row(TEST_ROWS_REASON)}
     assert settings == {"folders_judged": ["src"], "judge_parallel": 2}, settings
     text = story.upgrade_text
     assert f"kept plugin {PLUGIN_NAME} v{INSTALLED_VERSION}" in text, "missing retained plugin and release"

@@ -36,12 +36,12 @@ class WorktreeRuns:
         return next(((links[reach.id], reach) for reach in newest.values() if reach.state is not CheckpointState.PASSED), None)
 
     def links(self, worktree_id: int) -> tuple[WorktreeReach, ...]:
-        return self.kept.read("worktree_reaches", lambda: tuple(self.queries.query(WorktreeReach).filter(worktree_id=worktree_id).all_rows()),
-                              "worktree_id = ?", [worktree_id], name="workers.worktree_reaches")
+        reaches = self.queries.query(WorktreeReach).filter(worktree_id=worktree_id)
+        return self.kept.read(reaches, lambda: tuple(reaches.get()), name="workers.worktree_reaches")
 
     def reaches(self, links: tuple[WorktreeReach, ...]) -> tuple[CheckpointReach, ...]:
         if not links:
             return ()
         reach_ids = tuple(link.reach_id for link in links)
-        return self.kept.read("checkpoint_reaches", lambda: tuple(self.queries.query(CheckpointReach).matching(Among("id", reach_ids)).all_rows()),
-                              f"id IN ({', '.join('?' for _ in reach_ids)})", list(reach_ids), name="workers.worktree_run_reaches")
+        reaches = self.queries.query(CheckpointReach).matching(Among("id", reach_ids))
+        return self.kept.read(reaches, lambda: tuple(reaches.get()), name="workers.worktree_run_reaches")

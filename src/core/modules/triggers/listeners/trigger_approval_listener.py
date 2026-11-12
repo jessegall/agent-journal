@@ -24,7 +24,7 @@ class TriggerApprovalListener(CommitListener[Changed[Trigger] | RegistrySynced])
         self.bus, self.actors, self.queries = bus, actors, queries
 
     def handle(self, event: Changed[Trigger] | RegistrySynced, logged: LoggedEvent) -> None:
-        triggers = tuple(self.queries.query(Trigger).filter(needs_enabling=True).all_rows()) if isinstance(event, RegistrySynced) else tuple([event.row])
+        triggers = tuple(self.queries.query(Trigger).filter(needs_enabling=True).get()) if isinstance(event, RegistrySynced) else tuple([event.row])
         for trigger in triggers:
             self.update_request(trigger, logged)
 

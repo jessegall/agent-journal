@@ -56,9 +56,27 @@ def test_get_on_fifty_rows_reports_nothing(entries: Query[LogEntry]):
     assert len(filled(entries, 50).get()) == 50 and entries.database.collected_large_reads == []
 
 
-def test_a_cut_does_not_fail_the_command(entries: Query[LogEntry]):
+def test_a_cut_does_not_fail_the_command_and_is_recorded_with_the_read_limit_setting_off(entries: Query[LogEntry]):
     entries.database.collected_large_reads = None
     assert len(filled(entries, 60).get()) == 50
+    assert len(entries.database.read_cuts) == 1 and "read cut at 50 rows" in str(entries.database.read_cuts[0])
+
+
+def test_a_cut_raises_where_cuts_raise_as_under_the_story_kit(entries: Query[LogEntry]):
+    entries.database.cuts_raise = True
+    with pytest.raises(ReadCutError, match="read cut at 50 rows"):
+        filled(entries, 60).get()
+
+
+def test_get_with_no_order_reads_by_key(entries: Query[LogEntry], statements_run):
+    rows = filled(entries, 60).get()
+    assert [row.id for row in rows] == list(range(1, 51)) and "ORDER BY id" in statements_run[-1]
+
+
+def test_take_gives_the_newest_rows_named_and_reports_no_cut(entries: Query[LogEntry]):
+    entries.database.collected_large_reads, entries.database.cuts_raise = [], True
+    rows = filled(entries, 60).newest().take(5)
+    assert [row.id for row in rows] == [60, 59, 58, 57, 56] and entries.database.collected_large_reads == [] and entries.database.read_cuts == []
 
 
 def test_limit_two_hundred_returns_two_hundred_in_one_statement_and_passes_the_read_limit_check(entries: Query[LogEntry], statements_run):
@@ -132,3 +150,7 @@ def test_a_statement_is_checked_against_its_own_named_limit(entries: Query[LogEn
     assert len(entries.database.rows(Statement("SELECT * FROM log_entries LIMIT 150", named_limit_rows=200))) == 150
     with pytest.raises(ReadLimitError):
         entries.database.rows(Statement("SELECT * FROM log_entries", named_limit_rows=200))
+
+
+def test_calling_all_rows_fails_because_the_method_is_gone():
+    assert not hasattr(Query, "all_rows") and not hasattr(Query, "limited")

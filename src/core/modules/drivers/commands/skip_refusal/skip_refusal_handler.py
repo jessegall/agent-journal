@@ -9,7 +9,8 @@ from engine.command.handler import Handler
 from engine.command.request_user_approval import RequestUserApproval
 from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from engine.guard.guard import Guard
-from engine.query.conditions.greater import Greater
+from engine.module.driver_entries import DRIVERS_MODULE
+from engine.query.conditions.metadata_list_differs import MetadataListDiffers
 from engine.query.conditions.has_value import HasValue
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
@@ -88,16 +89,15 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
     def skip_count(self, actor: Actor, last: RefusalSkip | None, name: str, skipped_at: str) -> int:
         if last is None or last.restored_at is not None:
             return 1
-        return 1 if self.refused_names_past(actor, skipped_at) - {name} else last.streak + 1
+        return 1 if self.another_rule_refused(actor, skipped_at, name) else last.streak + 1
 
-    def refused_names_past(self, actor: Actor, skipped_at: str) -> set[str]:
-        calls = self.queries.query(HookCall).filter(session_agent_id=actor.id, answer=HookAnswer.REFUSED).matching(Greater("created_at", skipped_at)).all_rows()
-        hook_names = {name for call in calls for name in self.refusing_rules(call)}
-        return hook_names | self.refusals.guards_refused_past(actor.id, skipped_at)
-
-    @staticmethod
-    def refusing_rules(call: HookCall) -> list[str]:
-        return [str(row.get("rule", "")) for row in call.refused_rules] or [""]
+    def another_rule_refused(self, actor: Actor, skipped_at: str, name: str) -> bool:
+        """Whether a rule or guard other than the named one refused the agent after the time; a refused call that
+        names no rule counts as another."""
+        calls = self.queries.query(HookCall).where(session_agent_id=actor.id, answer=HookAnswer.REFUSED).where("created_at", ">", skipped_at)
+        if calls.matching(MetadataListDiffers(DRIVERS_MODULE, "rules", "outcome", "refused", "rule", name)).exists():
+            return True
+        return bool(self.refusals.guards_refused_past(actor.id, skipped_at) - {name})
 
     def raised(self, agent_id: int, context: Context) -> None:
         agent = self.queries.query(Agent).find(agent_id)

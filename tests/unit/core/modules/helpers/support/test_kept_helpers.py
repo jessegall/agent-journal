@@ -5,7 +5,7 @@ from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.modules.helpers.support.profile_model import ProfileModel
 
 SELECTION = ProfileModel("claude", "sonnet", "reader")
-OPEN_JOBS_TABLE = "helper_jobs"
+OPEN_JOBS_READ = "helpers.with_open_jobs"
 
 
 def helper(number: int, program: str = "claude", ended_at: str | None = "2026-10-31", session: str = "kept") -> SimpleNamespace:
@@ -16,13 +16,40 @@ class StoredRows:
     def __init__(self, helpers: list[SimpleNamespace], open_job_ids: set[int]) -> None:
         self.helpers, self.open_job_ids = tuple(helpers), open_job_ids
 
-    def scoped_read(self, table, loader, condition, parameters, *, name):
-        return self.open_job_ids if table == OPEN_JOBS_TABLE else self.helpers
+    def read(self, source, loader, *, name):
+        return self.open_job_ids if name == OPEN_JOBS_READ else self.helpers
+
+
+class OpenJobs:
+    def __init__(self, helper_ids: set[int]) -> None:
+        self.helper_ids, self.helper_id = helper_ids, None
+
+    def query(self, model):
+        return self
+
+    def where_null(self, column):
+        return self
+
+    def filter(self, **values):
+        return self
+
+    def matching(self, condition):
+        return self
+
+    def newest(self):
+        return self
+
+    def where(self, helper_id):
+        self.helper_id = helper_id
+        return self
+
+    def exists(self):
+        return self.helper_id in self.helper_ids
 
 
 def kept_helpers(helpers: list[SimpleNamespace], open_job_ids: frozenset[int] = frozenset(), full_percent: int = 0) -> KeptHelpers:
     provider = SimpleNamespace(session_matches_folder=lambda folder, session: session == "kept")
-    return KeptHelpers(None, SimpleNamespace(provider=lambda program: provider), SimpleNamespace(folder=lambda agent: "folder"), StoredRows(helpers, set(open_job_ids)), None,
+    return KeptHelpers(OpenJobs(set(open_job_ids)), SimpleNamespace(provider=lambda program: provider), SimpleNamespace(folder=lambda agent: "folder"), StoredRows(helpers, set(open_job_ids)), None,
                        SimpleNamespace(percent_of=lambda helper: full_percent), None)
 
 

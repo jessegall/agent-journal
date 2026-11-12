@@ -8,11 +8,14 @@ from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.listener.commit.commit_listener import CommitListener
 from engine.query.queries import Queries
+from engine.query.query import Query
 from engine.scope.actor_scope import ActorScope
 from core.modules.memories.models.memory import Memory
 from core.modules.memories.commands.remove_memory.remove_memory import RemoveMemory
 from core.modules.memories.models.enums.memory_state import MemoryState
 from core.modules.tasks.models.task import Task
+
+TASK_MEMORIES_REASON = "an ended task removes every memory tied to it"
 
 
 
@@ -29,13 +32,15 @@ class TaskMemoryRemoverListener(CommitListener[Moved[Task]]):
 
     def prepare(self, events: Sequence[LoggedEvent]) -> None:
         task_ids = list(dict.fromkeys(event.row_id for event in events))
-        memories = self.queries.query(Memory).filter(state=MemoryState.ACTIVE).matching(Among("task_id", task_ids)).all_rows()
+        memories = tuple(self.queries.query(Memory).filter(state=MemoryState.ACTIVE).matching(Among("task_id", task_ids)).every_row(TASK_MEMORIES_REASON))
         for task_id in task_ids:
-            self.kept.scoped_read("memories", lambda task_id=task_id: tuple(memory for memory in memories if memory.task_id == task_id),
-                                  "task_id = ? AND state = ? AND removed_at IS NULL", [task_id, MemoryState.ACTIVE.value], name="memories.task_active")
+            self.kept.read(self.task_memories(task_id), lambda task_id=task_id: tuple(memory for memory in memories if memory.task_id == task_id), name="memories.task_active")
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
-        memories = self.kept.scoped_read("memories", lambda: self.queries.query(Memory).filter(task_id=logged.row_id, state=MemoryState.ACTIVE).all_rows(),
-                                         "task_id = ? AND state = ? AND removed_at IS NULL", [logged.row_id, MemoryState.ACTIVE.value], name="memories.task_active")
+        active = self.task_memories(logged.row_id)
+        memories = self.kept.read(active, lambda: tuple(active.every_row(TASK_MEMORIES_REASON)), name="memories.task_active")
         for memory in memories:
             self.bus.run(RemoveMemory(memory.id, f"task {logged.row_id} ended"), Actor.core(), cause_id=logged.id)
+
+    def task_memories(self, task_id: int) -> Query[Memory]:
+        return self.queries.query(Memory).filter(task_id=task_id, state=MemoryState.ACTIVE)

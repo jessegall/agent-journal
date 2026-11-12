@@ -28,11 +28,13 @@ from tests.stories.support.story_checks import expect_absent_value, expect_count
 from tests.stories.core.support.agent_labels import agent_label
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 TICK_LIMIT_POINTS = 20
 
 
 def stopped_run_texts(story) -> list[str]:
-    return [line.text for line in story.container.get(Queries).query(MergerLine).matching(Prefix("source_key", SOURCE_KEY_PREFIX)).oldest().all_rows()]
+    return [line.text for line in story.container.get(Queries).query(MergerLine).matching(Prefix("source_key", SOURCE_KEY_PREFIX)).every_row(TEST_ROWS_REASON)]
 
 
 def worker_with_background_run(new_story):

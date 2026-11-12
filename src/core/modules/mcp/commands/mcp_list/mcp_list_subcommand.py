@@ -23,7 +23,7 @@ class McpListSubcommand(ReadSubcommand[Sequence[tuple[McpServer, str]]]):
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[tuple[McpServer, str]]:
-        return tuple((server, self.standing.standing(server)) for server in self.servers.oldest().all_rows())
+        return tuple((server, self.standing.standing(server)) for server in self.servers.oldest().get())
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [(pair[0], str(pair[1])) for pair in value if is_tuple(pair) and isinstance(pair[0], McpServer)] if is_tuple(value) else []

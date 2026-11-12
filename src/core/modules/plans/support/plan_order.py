@@ -5,6 +5,8 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_dependency import TaskDependency
 
+ORDER_REASON = "the order check looks at every task of the plan and what each waits on"
+
 
 UNCANCELLED_STATES = [state for state in TaskState if state is not TaskState.CANCELLED]
 
@@ -17,9 +19,9 @@ class PlanOrder:
         self.queries = queries
 
     def unordered(self, plan_id: int) -> tuple[int, ...]:
-        placed = self.queries.query(PlanTask).filter(plan_id=plan_id).matching(Among("state", UNCANCELLED_STATES)).all_rows()
+        placed = self.queries.query(PlanTask).filter(plan_id=plan_id).matching(Among("state", UNCANCELLED_STATES)).every_row(ORDER_REASON)
         later = [task.task_id for task in sorted(placed, key=lambda task: (task.phase_position, task.position))[1:]]
-        waiting = {dependency.task_id for dependency in self.queries.query(TaskDependency).matching(Among("task_id", later)).all_rows()}
+        waiting = {dependency.task_id for dependency in self.queries.query(TaskDependency).matching(Among("task_id", later)).every_row(ORDER_REASON)}
         declared = {task.id for task in self.queries.query(Task).find_many(later) if task.independence_reason}
         return tuple(task_id for task_id in later if task_id not in waiting | declared)
 

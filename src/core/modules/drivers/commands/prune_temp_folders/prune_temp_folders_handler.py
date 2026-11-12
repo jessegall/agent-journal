@@ -33,7 +33,7 @@ class PruneTempFoldersHandler(Handler[PruneTempFolders, int]):
         return len(removable)
 
     def may_remove(self, session: str, folder: Path) -> bool:
-        agents = tuple(self.queries.query(Agent).filter(session=session).all_rows())
+        agents = tuple(self.queries.query(Agent).filter(session=session).get())
         if agents:
             return all(agent.ended_at is not None for agent in agents)
         return self.clock.epoch_seconds() - folder.stat().st_mtime > UNKNOWN_SESSION_KEPT_SECONDS

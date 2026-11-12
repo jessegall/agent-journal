@@ -12,6 +12,8 @@ from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_value
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 ROUNDS_WINDOW = "plan_reviews.rounds"
 REPORT = 'report make "{title}" --abstract "What the review found" --body "Fine" --about plan:1 --environment main'
 CRITIQUE_COMMAND = 'template send 1 --on=plan:1 --set=agents=2 --set=size="a normal read" --environment main'
@@ -119,7 +121,7 @@ def start_helper(story, brief: str) -> Agent:
     launcher.drain_requests()
     launcher.server.close()
     story.home.socket("launcher").unlink()
-    return max(story.container.get(Queries).query(Agent).filter(role="helper").all_rows(), key=lambda agent: agent.id)
+    return max(story.container.get(Queries).query(Agent).filter(role="helper").every_row(TEST_ROWS_REASON), key=lambda agent: agent.id)
 
 
 def test_helpers_whose_brief_names_the_plan_in_the_round_are_its_reviewers(rounds, cookie):

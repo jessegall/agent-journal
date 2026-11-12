@@ -24,7 +24,7 @@ class ChooseDefaultReaderHandler(Handler[ChooseDefaultReader, Reader]):
         reader = self.readers.with_name(command.name).first()
         if reader is None:
             raise Refusal(f"there is no reader {command.name}", "journal reader list shows them")
-        for previous_default in tuple(self.readers.filter(commands=reader.commands).defaults().all_rows()):
+        for previous_default in tuple(self.readers.filter(commands=reader.commands).defaults().get()):
             if previous_default.id != reader.id:
                 self.repository.save(replace(previous_default, is_default=False), context)
         return self.repository.save(replace(reader, is_default=True), context)

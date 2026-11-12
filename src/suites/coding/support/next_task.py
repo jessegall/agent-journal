@@ -14,10 +14,12 @@ from core.modules.plans.support.plan_task_order import PlanTaskOrder
 from engine.setting.setting_values import SettingValues
 from core.modules.tasks.models.support.task_priority import URGENT_PRIORITY
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
+from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.support.next_task_choices import NextTaskChoices
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from suites.coding.support.context_limit_check import ContextLimitCheck
+
+OWN_TASKS_REASON = "the own tasks of an agent are every task it holds or is assigned"
 
 BLOCKED_TASK_PAGE_SIZE = 10
 
@@ -68,8 +70,8 @@ class NextTask(TaskAssigner[Task]):
 
     def own_tasks(self, agent_ids: Sequence[int]) -> dict[int, tuple[int, ...]]:
         tasks = self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).ordered("id")
-        held = tuple(tasks.matching(Among("holder_id", agent_ids)).all_rows(TASK_PAGE_ROWS))
-        assigned = tuple(tasks.matching(AssigneeAmong(Task, tuple(agent_ids))).all_rows(TASK_PAGE_ROWS))
+        held = tuple(tasks.matching(Among("holder_id", agent_ids)).every_row(OWN_TASKS_REASON))
+        assigned = tuple(tasks.matching(AssigneeAmong(Task, tuple(agent_ids))).every_row(OWN_TASKS_REASON))
         actor_ids = self.assignments.row_actor_ids(Task, sorted({task.id for task in (*held, *assigned)}))
         own: dict[int, set[int]] = defaultdict(set)
         for task in held:

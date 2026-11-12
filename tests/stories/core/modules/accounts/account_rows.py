@@ -19,6 +19,8 @@ from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 REFUSAL = "refused by accounts.account-rows: accounts are written only by the journal itself"
 
 
@@ -57,7 +59,7 @@ def test_the_journal_itself_writes_and_deletes_every_account_row(new_story):
     with story.container.get(Database).transaction():
         for row in rows:
             repository.delete(row, context_of(story, Actor.core()))
-    expect_value([tuple(story.container.get(Queries).query(type(row)).all_rows()) for row in rows], [()] * len(rows))
+    expect_value([tuple(story.container.get(Queries).query(type(row)).every_row(TEST_ROWS_REASON)) for row in rows], [()] * len(rows))
 
 
 @pytest.mark.parametrize("who", ["agent", "user"])

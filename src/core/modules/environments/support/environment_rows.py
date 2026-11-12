@@ -13,7 +13,8 @@ class EnvironmentRows:
         self.queries, self.kept = queries, kept
 
     def all(self) -> tuple[Environment, ...]:
-        return self.kept.read("environments", lambda: tuple(self.queries.query(Environment).full_table(CATALOGUE_REASON).all_rows()), name="environments.rows")
+        environments = self.queries.query(Environment)
+        return self.kept.read(environments, lambda: tuple(environments.every_row(CATALOGUE_REASON)), name="environments.rows")
 
     def find(self, environment_id: int) -> Environment:
         environment = next((row for row in self.all() if row.id == environment_id), None)

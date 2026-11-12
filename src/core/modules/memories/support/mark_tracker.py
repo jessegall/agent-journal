@@ -20,8 +20,8 @@ class MarkTracker:
         self.queries, self.kept = queries, kept
 
     def open_marks(self, agent_id: int) -> list[MemoryMark]:
-        return list(self.kept.read("memory_marks", lambda: tuple(self.queries.query(MemoryMark).filter(session_agent_id=agent_id, state=MarkState.OPEN).all_rows()),
-                                   "session_agent_id = ? AND state = ?", [agent_id, MarkState.OPEN], name="memories.open_marks"))
+        marks = self.queries.query(MemoryMark).filter(session_agent_id=agent_id, state=MarkState.OPEN)
+        return list(self.kept.read(marks, lambda: tuple(marks.get()), name="memories.open_marks"))
 
     @staticmethod
     def spaced(marks: Sequence[int], maximum_tokens: int, spacing_tokens: int) -> tuple[int, ...]:

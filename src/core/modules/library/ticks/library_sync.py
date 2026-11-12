@@ -29,6 +29,8 @@ from core.modules.library.support.round_memory import RoundMemory
 from core.modules.library.support.server_state import ServerState
 from core.modules.library.support.sync_outcome import SyncOutcome
 
+SYNC_REASON = "the library sync compares every library item with its file"
+
 MODULE_NAME = "journal.core.library"
 REACHED_NOTE_SECONDS = 60
 
@@ -52,7 +54,7 @@ class LibrarySync:
             return SyncOutcome.idle(connection.stopped)
         try:
             state = self.state(connection, memory)
-            results = [self.sync_safely(copy, state, memory) for copy in list(self.queries.query(LibraryCopy).all_rows())]
+            results = [self.sync_safely(copy, state, memory) for copy in list(self.queries.query(LibraryCopy).every_row(SYNC_REASON))]
         except LibraryUnreachableError as failure:
             return self.note_failure(connection, failure)
         except LibraryStoppedError as stopped:

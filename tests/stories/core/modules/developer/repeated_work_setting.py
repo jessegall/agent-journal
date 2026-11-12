@@ -78,7 +78,7 @@ def run_direct(story, line_run=None):
 
 
 def reported(story) -> list[str]:
-    return [row.message for row in story.container.get(Queries).query(JournalException).limited(20) if "RepeatedCallsError" in row.message]
+    return [row.message for row in story.container.get(Queries).query(JournalException).take(20) if "RepeatedCallsError" in row.message]
 
 
 @pytest.mark.parametrize("start", [run_as_core, run_direct])

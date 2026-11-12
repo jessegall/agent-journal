@@ -31,7 +31,7 @@ class EndSilentHelpersHandler(Handler[EndSilentHelpers, None]):
         helpers = self.agents.running(HelperRole.HELPER)
         recent_limit = Timestamp(context.timestamp.value - timedelta(seconds=SILENT_HELPER_SECONDS))
         helpers = tuple(helpers)
-        recently_called = {call.session_agent_id for call in self.hook_calls.matching(Among("session_agent_id", [helper.id for helper in helpers])).matching(Greater("created_at", recent_limit.text)).all_rows()}
+        recently_called = set(self.hook_calls.matching(Among("session_agent_id", [helper.id for helper in helpers])).matching(Greater("created_at", recent_limit.text)).group_by("session_agent_id").count_by())
         for helper in helpers:
             if helper.id not in recently_called and self.is_past_silence(helper, context.timestamp):
                 self.bus.dispatch(EndAgent(helper.id), replace(context, environment_id=helper.environment_id))

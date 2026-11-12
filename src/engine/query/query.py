@@ -1,4 +1,4 @@
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from copy import copy
 from dataclasses import replace
 from typing import Generic, Self, TypeVar
@@ -36,11 +36,12 @@ from engine.query.errors.unknown_table_error import UnknownTableError
 from engine.query.join import Join
 from engine.query.errors.unknown_operator_error import UnknownOperatorError
 from engine.query.errors.unnamed_column_error import UnnamedColumnError
+from engine.query.errors.column_kind_error import ColumnKindError
 
 
 M = TypeVar("M", bound=Model | ViewModel, covariant=True)
+V = TypeVar("V")
 PAGE_SIZE_ROWS = 25
-READ_ALL_BATCH_ROWS = 1000
 AGENT_COLUMN = "agent_id"
 SESSION_COLUMN = "session_agent_id"
 REMOVED_COLUMN = "removed_at"
@@ -50,7 +51,7 @@ ALL_COLUMNS = "*"
 DEFAULT_LIMIT_ROWS = 50
 MOST_NAMED_LIMIT_ROWS = 1000
 WALK_ROWS = 50
-COMPARISONS: dict[str, type[Condition]] = {">": Greater, "<": Less, ">=": Minimum, "<=": Maximum}
+COMPARISONS: dict[str, Callable[[str, object], Condition]] = {">": Greater, "<": Less, ">=": Minimum, "<=": Maximum}
 OPERATORS = ("=", "!=", "<", "<=", ">", ">=")
 
 
@@ -74,7 +75,7 @@ class Query(Generic[M]):
         if kept is None or self.table.key != ROW_KEY or not self.table.has_column(VERSION_COLUMN):
             return self.find_many([row_id])[0]
         statement = self.with_removed().scoped(self.select).conditions
-        return kept.read_newest(self.table.name, lambda: self.find_many([row_id])[0], f"{self.table.key} = ?", [row_id], name=f"query.find:{statement}")
+        return kept.read_newest(self.with_removed().matching(Equal(self.table.key, row_id)), lambda: self.find_many([row_id])[0], name=f"query.find:{statement}")
 
     def find_many(self, row_ids: Sequence[int]) -> list[M]:
         row_index = {getattr(row, self.table.key): row for row in self.with_removed().rows(self.select.matching(Among(self.table.key, row_ids)))}
@@ -84,6 +85,7 @@ class Query(Generic[M]):
         return [row_index[row_id] for row_id in row_ids]
 
     def filter(self, **values: object) -> Self:
+        """The old name of where for columns that equal values; new code writes where."""
         return self.where(**values)
 
     def where(self, *comparison: object, **values: object) -> Self:
@@ -107,7 +109,10 @@ class Query(Generic[M]):
         return COMPARISONS[str(operator)](str(column), stored(value))
 
     def select_columns(self, *columns: str) -> Self:
-        self.checked(*(column.split(".", 1)[1] if column.startswith(f"{self.table.name}.") else column for column in columns if not column.endswith(".*")))
+        """Reads only the named columns: this table's by name, and this table's or a joined table's as table.column or
+        table.*."""
+        self.checked_qualified(*(column for column in columns if "." in column))
+        self.checked(*(column for column in columns if "." not in column))
         return self.with_select(self.select.column(", ".join(columns)))
 
     def where_in(self, column: str, values: "Sequence[object] | Query[Model]") -> Self:
@@ -222,19 +227,24 @@ class Query(Generic[M]):
         width = len(select.group_columns)
         return {(tuple(row[:width]) if width > 1 else row[0]): row[width] for row in self.database.rows(select.group_count_statement())}
 
-    def pluck(self, column: str) -> list[object]:
+    def pluck(self, column: str, kind: type[V]) -> list[V]:
+        """The values of one column of the rows, at most the limit of the read, each of the kind named; a value of
+        another kind is refused, since the column's type names what it holds."""
         self.checked(column)
         limit = self.select.limit or DEFAULT_LIMIT_ROWS
         select = self.scoped(self.select.column(column).sliced(limit + 1, 0).named(limit + 1))
         if select.is_empty:
             return []
-        values = [row[0] for row in self.database.rows(select.statement())]
+        values = [Query.of_kind(row[0], kind, column) for row in self.database.rows(select.statement())]
         if len(values) > limit:
             self.database.report_cut(select.statement().sql, limit)
         return values[:limit]
 
-    def full_table(self, reason: str) -> Self:
-        return self.with_select(self.select.full_table(reason))
+    @staticmethod
+    def of_kind(value: object, kind: type[V], column: str) -> V:
+        if not isinstance(value, kind):
+            raise ColumnKindError(f"{column} holds {type(value).__name__} {value!r}, not {kind.__name__}")
+        return value
 
     def page(self, number: int = 1, size: int = PAGE_SIZE_ROWS) -> Page[M]:
         select = self.select.sliced(size, (number - 1) * size)
@@ -248,12 +258,22 @@ class Query(Generic[M]):
         return self.with_select(self.select.sliced(Query.checked_limit(rows), 0))
 
     def get(self) -> list[M]:
+        """The rows of the query up to its limit, 50 unless it names one, by key unless it names an order; a read
+        that finds more is cut there and reported, never silent."""
         limit = self.select.limit or DEFAULT_LIMIT_ROWS
         select = self.select.sliced(limit + 1, 0).named(limit + 1)
+        if not select.orders and self.table.key and self.table.has_column(self.table.key):
+            select = select.ordered(self.table.key, False)
         rows = self.rows(select)
         if len(rows) > limit:
             self.database.report_cut(self.scoped(select).statement().sql, limit)
         return rows[:limit]
+
+    def take(self, rows: int) -> list[M]:
+        """The first rows in the order of the query, as many as named; more rows past them are left on purpose and
+        never reported as a cut."""
+        size = Query.checked_limit(rows)
+        return self.rows(self.select.sliced(size, 0).named(size))
 
     @staticmethod
     def checked_limit(rows: int) -> int:
@@ -263,23 +283,9 @@ class Query(Generic[M]):
             raise QueryLimitError(f"a read names at most {MOST_NAMED_LIMIT_ROWS} rows; walk the rows with every_row(reason) if you need them all")
         return rows
 
-    def limited(self, size: int) -> list[M]:
-        return self.rows(self.select.sliced(size, 0))
-
-    def rows_without(self, column: str) -> list[M]:
-        return list(self.matching(IsNull(column)).oldest().all_rows())
-
     def first(self) -> M | None:
-        rows = self.limited(1)
+        rows = self.rows(self.select.sliced(1, 0))
         return rows[0] if rows else None
-
-    def all_rows(self, size: int = READ_ALL_BATCH_ROWS) -> Iterator[M]:
-        offset = 0
-        while rows := self.rows(self.select.sliced(size, offset)):
-            yield from rows
-            if len(rows) < size:
-                return
-            offset += size
 
     def every_row(self, reason: str) -> Iterator[M]:
         if not reason.strip():
@@ -299,11 +305,26 @@ class Query(Generic[M]):
                 return
             last = getattr(rows[-1], key)
 
+    def kept_select(self) -> Select:
+        """The select with the scope of the read applied, as a kept read compares it."""
+        return self.scoped(self.select)
+
     def count(self) -> int:
         select = self.scoped(self.select)
         if select.is_empty:
             return 0
         return self.database.rows(select.count_statement())[0][0]
+
+    def counts_after(self, column: str, starts: Sequence[str]) -> list[int]:
+        """For each start, how many rows have the column past it, in the order of the starts, read in one statement
+        that reads no row before the earliest start."""
+        self.checked(column)
+        if not starts:
+            return []
+        select = self.scoped(self.select.matching(Greater(column, min(starts))))
+        if select.is_empty:
+            return [0 for _ in starts]
+        return [int(count) for count in self.database.rows(select.counts_after_statement(column, tuple(starts)))[0]]
 
     def exists(self) -> bool:
         select = self.scoped(self.select)

@@ -25,7 +25,7 @@ class WatchLinesRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         answer = RuleAnswer.allowed()
-        for watch in tuple(self.watches.progress_due(hook.agent_id, PROGRESS_STEP_PERCENT).oldest().all_rows()):
+        for watch in tuple(self.watches.progress_due(hook.agent_id, PROGRESS_STEP_PERCENT).oldest().get()):
             answer = self.with_progress(answer, watch)
         return answer
 

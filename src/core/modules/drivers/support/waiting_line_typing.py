@@ -11,6 +11,8 @@ from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.line_typing import LineTyping
 from engine.query.conditions.greater import Greater
 
+WAITING_LINES_REASON = "a release types every line that waited for the agent, oldest first"
+
 PAUSE_SOURCE = "drivers.pause"
 RESUME_SOURCE = "drivers.resume"
 COMPACTED_WAKE_SOURCE = "drivers.compacted"
@@ -40,7 +42,7 @@ class WaitingLineTyping:
             self.typing.enter_line(line, actor)
 
     def release(self, agent_id: int, actor_id: int, timestamp: Timestamp) -> None:
-        waiting = self.queries.query(AgentLine).filter(session_agent_id=agent_id, state=AgentLineState.WAITING).oldest().all_rows()
+        waiting = self.queries.query(AgentLine).filter(session_agent_id=agent_id, state=AgentLineState.WAITING).every_row(WAITING_LINES_REASON)
         for line in waiting:
             self.type(line, actor_id, timestamp)
 

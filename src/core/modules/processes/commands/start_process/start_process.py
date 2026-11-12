@@ -5,6 +5,7 @@ from pathlib import Path
 from engine.command.command import Command
 from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
+from engine.enums.process_kind import ProcessKind
 from engine.driver.shell_line import ShellLine
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.enums.queue_priority import QueuePriority
@@ -33,6 +34,11 @@ class StartProcess(Command[Process]):
     plugin: str = ""
     kind: str = ""
     priority: QueuePriority = QueuePriority.NORMAL
+
+    @property
+    def is_journal_merge(self) -> bool:
+        """A merge the journal runs itself through its door: the door runs it at once, so it never waits in the queue."""
+        return self.kind == ProcessKind.MERGE.value
 
     @classmethod
     def single_part(cls, agent_id: int, line: str, folder: str, category: CommandCategory, limit_seconds: int, plugin: str = "", kind: str = "") -> "StartProcess":

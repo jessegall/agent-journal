@@ -18,6 +18,8 @@ from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
+STOPPED_WORKERS_REASON = "every stopped worker, and every line that resumed it, is counted to start it again"
+
 
 class WorkerStartedWork:
     """The stopped workers that hold started work or an open assigned task they can go on with and have no job
@@ -33,7 +35,7 @@ class WorkerStartedWork:
 
     def stopped_workers(self) -> list[Agent]:
         stopped = self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(HasValue("ended_at")).matching(IsNull("retired_at")).matching(IsNull("paused_at"))
-        return list(stopped.oldest().all_rows())
+        return list(stopped.every_row(STOPPED_WORKERS_REASON))
 
     def stopped_with_tasks(self) -> list[Agent]:
         return [worker for worker in self.stopped_workers() if self.tasks.has_assigned_work(worker.id)]
@@ -57,7 +59,7 @@ class WorkerStartedWork:
         return self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.WAITING).matching(Among("source", tuple(RESUMING_SOURCES))).exists()
 
     def resume_count(self, worker: Agent) -> int:
-        lines = self.queries.query(AgentLine).filter(session_agent_id=worker.id, source=UNFINISHED_TASKS_SOURCE).all_rows()
+        lines = self.queries.query(AgentLine).filter(session_agent_id=worker.id, source=UNFINISHED_TASKS_SOURCE).every_row(STOPPED_WORKERS_REASON)
         progress = self.unfinished.last_progress_text(worker.id)
         return sum(line.creation_timestamp().text >= progress for line in lines)
 

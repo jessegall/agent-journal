@@ -46,6 +46,8 @@ from tests.stories.core.support.agent_labels import agent_label
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.suites.coding.modules.workers.quiet_helpers import StartedMerger
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 
 class MergerStartError(RuntimeError):
@@ -54,7 +56,7 @@ class MergerStartError(RuntimeError):
 
 
 def merger_agent(story):
-    agents = story.container.get(Queries).query(Agent).filter(profile="journal-merger").all_rows()
+    agents = story.container.get(Queries).query(Agent).filter(profile="journal-merger").every_row(TEST_ROWS_REASON)
     return next(iter(agents), None)
 
 
@@ -180,7 +182,7 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     expect_marks_text(story, f"Worker {worker.id} had")
     story.hook(merger.session, HookSamples.stop())
     merged_lines = merged_worker_lines(story, worker)
-    story.expect_rows(len(merged_lines) == 1, merged_lines[0].wakes_agent, not any("could not be confirmed" in row.text for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows()))
+    story.expect_rows(len(merged_lines) == 1, merged_lines[0].wakes_agent, not any("could not be confirmed" in row.text for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).every_row(TEST_ROWS_REASON)))
     story.expect_success(f'merger findings {agent_number(story, worker.id)} "Fix the merged code"', actor=actor)
     story.run_listeners()
     mark = story.container.get(Queries).query(ChatMark).filter(text=f"The merger sent Worker {worker.id} back").first()
@@ -282,7 +284,7 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
         MergerRetry()(story.container)
         MergerRetry()(story.container)
         story.expect_rows(queries.query(HelperJob).filter(helper_id=merger.id).count() == job_count)
-        reported_messages = [row for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows() if "The merge waits for cart.py to be committed" in row.text]
+        reported_messages = [row for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).every_row(TEST_ROWS_REASON) if "The merge waits for cart.py to be committed" in row.text]
         story.expect_rows(len(reported_messages) == 1, detail=str(reported_messages))
         repository.git("add", "cart.py")
         repository.git("commit", "-m", "Commit main change")
@@ -318,7 +320,7 @@ def test_the_merger_pass_shows_the_reason_on_the_worker_mark(new_story, monkeypa
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "{reason}"', actor=merger)
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "Another decision"', actor=merger)
     story.run_listeners()
-    marks = tuple(story.container.get(Queries).query(ChatMark).filter(text=f"The merger left Worker {worker.id} to the main agent").oldest().all_rows())
+    marks = tuple(story.container.get(Queries).query(ChatMark).filter(text=f"The merger left Worker {worker.id} to the main agent").every_row(TEST_ROWS_REASON))
     story.expect_rows(len(marks) == 2, marks[0].detail == reason, marks[1].detail == "Another decision", marks[0].target_id == worker.id)
 
 
@@ -420,7 +422,7 @@ def test_a_merge_the_merger_starts_runs_in_the_foreground_and_is_reported_once_a
     story.expect_text("merger next", agent_label(story, worker.id), actor=actor)
     story.expect_text(f"merger merge {agent_number(story, worker.id)}", f"{agent_label(story, worker.id)} merged into", actor=actor)
     story.expect_text("merger next", "no worker waits", actor=actor)
-    story.expect_rows(len(merged_worker_lines(story, worker)) == 1, not any("could not be confirmed" in row.text for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows()))
+    story.expect_rows(len(merged_worker_lines(story, worker)) == 1, not any("could not be confirmed" in row.text for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).every_row(TEST_ROWS_REASON)))
 
 
 def test_explaining_a_merge_runs_the_merge_inside_the_explanation_without_the_transaction_error(new_story, monkeypatch):
@@ -450,7 +452,7 @@ def test_a_planner_helper_ending_starts_no_merger(new_story):
     launcher.drain_requests()
     launcher.server.close()
     story.home.socket("launcher").unlink()
-    planner = next(story.container.get(Queries).query(Agent).filter(profile="journal-planner").all_rows())
+    planner = next(story.container.get(Queries).query(Agent).filter(profile="journal-planner").every_row(TEST_ROWS_REASON))
     story.expect_success(f"agent end {planner.id}", actor=story.user)
     story.run_listeners()
     MergerRetry()(story.container)

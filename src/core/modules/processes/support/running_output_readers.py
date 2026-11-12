@@ -10,6 +10,8 @@ from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.reader_selection import ReaderSelection
 
+UNREAD_OUTPUTS_REASON = "a new reader is offered to every running output that has none"
+
 
 class RunningOutputReaders:
     """Puts a reader an agent or a user just saved on each running output that has no reader and
@@ -20,11 +22,11 @@ class RunningOutputReaders:
         self.queries, self.repository = queries, repository
 
     def attach(self, reader: Reader, context: Context) -> None:
-        outputs = tuple(self.queries.query(Output).filter(ended_at=None, reader_id=None).all_rows())
+        outputs = tuple(self.queries.query(Output).filter(ended_at=None, reader_id=None).every_row(UNREAD_OUTPUTS_REASON))
         if not outputs:
             return
         parts: dict[int, list[ProcessPart]] = defaultdict(list)
-        for part in self.queries.query(ProcessPart).matching(Among("process_id", [output.process_id for output in outputs])).oldest().all_rows():
+        for part in self.queries.query(ProcessPart).matching(Among("process_id", [output.process_id for output in outputs])).every_row(UNREAD_OUTPUTS_REASON):
             parts[part.process_id].append(part)
         for output in outputs:
             read = next((part for part in parts[output.process_id] if ReaderSelection.reads_command(reader, part.command or part.text, part.category)), None)

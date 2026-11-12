@@ -10,6 +10,8 @@ from tests.stories.core.modules.helpers.support.rotating_helper import installed
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.profile_storage import boot, profile_path, save_profile_file
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 __all__ = ["idle_reviewer"]
 
 DIFF_READER_FILE = "---\nname: diff-reader\ndescription: Reads changes\nkind: helper\nmodel: sonnet\nindependent: true\n---\nRead the diff.\n"
@@ -23,7 +25,7 @@ def session_history(story, reviewer: Agent) -> list[dict]:
 
 
 def diff_readers(story) -> list[Agent]:
-    return list(story.container.get(Queries).query(Agent).filter(profile="diff-reader").all_rows())
+    return list(story.container.get(Queries).query(Agent).filter(profile="diff-reader").every_row(TEST_ROWS_REASON))
 
 
 def test_a_personal_profile_with_the_old_independent_line_runs_as_each_launch_and_is_saved_back_so(new_story, monkeypatch):

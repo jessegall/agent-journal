@@ -14,6 +14,8 @@ from core.modules.memories.support.memory_holder_row import MemoryHolderRow
 
 from core.modules.memories.support.memory_page import MemoryPage
 
+HOLDERS_REASON = "the page names the holder of every memory it shows"
+
 
 class MemoryPageSubcommand(ReadSubcommand[MemoryPage]):
     """Reads a page of memories with its agents for a user."""
@@ -32,7 +34,7 @@ class MemoryPageSubcommand(ReadSubcommand[MemoryPage]):
             raise UserApprovalRefusal("Show memories for all agents in the viewer?", returns_output=True)
         page = self.memories.read(arguments, caller)
         ids = {row.agent_id for row in page.rows if isinstance(row, Memory) and row.agent_id is not None}
-        holders = self.queries.query(MemoryHolder).matching(Among("agent_id", tuple(sorted(ids)))).all_rows() if ids else ()
+        holders = self.queries.query(MemoryHolder).matching(Among("agent_id", tuple(sorted(ids)))).every_row(HOLDERS_REASON) if ids else ()
         return MemoryPage(page, tuple(MemoryHolderRow.built(holder) for holder in holders))
 
     def write_output(self, value: object, output: Output) -> None:

@@ -12,6 +12,8 @@ from core.modules.dumps.models.dump import Dump
 from core.modules.dumps.models.dump_item import DumpItem
 from core.modules.dumps.models.enums.item_state import ItemState
 
+DUMP_ITEMS_REASON = "a moved item renumbers every item of its dump"
+
 NOTE, FILED, FAILED = "note", "filed", "failed"
 STATES = {NOTE: ItemState.READ, FILED: ItemState.FILED, FAILED: ItemState.FAILED}
 REF = re.compile(r"^[a-z_-]+:\d+$")
@@ -31,7 +33,7 @@ class MoveDumpItemHandler(Handler[MoveDumpItem, DumpLine]):
         dump = self.queries.query(Dump).find(command.dump_id)
         if dump.closed_at is not None:
             raise Refusal(f"dump {dump.id} is closed", "a closed dump takes no more")
-        items = list(self.queries.query(DumpItem).filter(dump_id=dump.id).oldest().all_rows())
+        items = list(self.queries.query(DumpItem).filter(dump_id=dump.id).every_row(DUMP_ITEMS_REASON))
         matching = [item for item in items if str(item.position) == command.item]
         if not matching:
             raise Refusal(f"dump {dump.id} has no item '{command.item}'", "its items are " + ", ".join(str(item.position) for item in items))

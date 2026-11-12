@@ -22,6 +22,6 @@ class ReleaseInstallListener(CommitListener[JournalBooting]):
 
     def handle(self, event: JournalBooting, logged: LoggedEvent) -> None:
         active = CodeVersions(self.home).link.resolve().name
-        installs = self.queries.query(ReleaseInstall).filter(code_version=active).matching(Among("step", [UpdateStep.PROOF, UpdateStep.HANDOVER, UpdateStep.SERVING])).all_rows()
+        installs = self.queries.query(ReleaseInstall).filter(code_version=active).matching(Among("step", [UpdateStep.PROOF, UpdateStep.HANDOVER, UpdateStep.SERVING])).get()
         for install in installs:
             self.bus.run(RecordReleaseInstall(install.id, UpdateStep.FINISHED), Actor.core())

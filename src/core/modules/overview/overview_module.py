@@ -3,6 +3,7 @@ from core.modules.overview.commands.overview.overview_subcommand import Overview
 from core.modules.overview.overlays.overview_overlay import OverviewOverlay
 from core.modules.overview.rules.overview_compaction_rule import OverviewCompactionRule
 from core.modules.overview.rules.overview_first_rule import OverviewFirstRule
+from core.modules.overview.support.block_conditions.overview_read_since import OverviewReadSince
 from core.modules.overview.support.overview_nudges import OVERVIEW_NUDGES
 from core.modules.overview.support.overview_settings import OVERVIEW_SETTINGS
 
@@ -21,3 +22,4 @@ class OverviewModule(Module):
     overlays = [OverviewOverlay]
     settings = OVERVIEW_SETTINGS
     subcommands = [OverviewSubcommand]
+    block_conditions = [OverviewReadSince]

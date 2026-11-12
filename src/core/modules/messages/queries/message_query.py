@@ -17,6 +17,9 @@ from engine.query.conditions.is_null import IsNull
 from core.modules.messages.conditions.message_target import MessageTarget
 from core.modules.messages.conditions.message_text_segment import MessageTextSegment
 
+TURN_REASON = "a turn is judged on every reply the agent wrote in it"
+RECENT_REASON = "every recent message of the agent is compared, newest first"
+
 
 class MessageQuery(Query[Message]):
     """Reads messages, with the filters the messages module and its guards use by name."""
@@ -26,17 +29,20 @@ class MessageQuery(Query[Message]):
         self.kept = kept
 
     def latest_agent_message(self, creator_id: int) -> Message | None:
-        return self.kept.read(self.table.name, self.filter(creator_id=creator_id, type=MessageType.AGENT).newest().first,
-                              "creator_id = ? AND type = ?", [creator_id, MessageType.AGENT], name="messages.latest_agent_message")
+        messages = self.agent_messages_of(creator_id)
+        return self.kept.read(messages, messages.first, name="messages.latest_agent_message")
+
+    def agent_messages_of(self, creator_id: int) -> Self:
+        return self.filter(creator_id=creator_id, type=MessageType.AGENT).newest()
 
     def latest_turn_reply(self, creator_id: int, start_at: Timestamp, end_at: Timestamp) -> Message | None:
         return self.agent_replies().filter(creator_id=creator_id).matching(Minimum("created_at", start_at.text)).matching(Maximum("created_at", end_at.text)).newest().first()
 
     def turn_replies(self, creator_id: int, start_at: Timestamp, end_at: Timestamp) -> tuple[Message, ...]:
-        return tuple(self.agent_replies().filter(creator_id=creator_id).matching(Minimum("created_at", start_at.text)).matching(Maximum("created_at", end_at.text)).oldest().all_rows())
+        return tuple(self.agent_replies().filter(creator_id=creator_id).matching(Minimum("created_at", start_at.text)).matching(Maximum("created_at", end_at.text)).every_row(TURN_REASON))
 
     def recent_agent_messages(self, creator_id: int, cutoff_at: Timestamp) -> tuple[Message, ...]:
-        return tuple(self.agent_messages().filter(creator_id=creator_id).matching(Minimum("created_at", cutoff_at.text)).newest().all_rows())
+        return tuple(sorted(self.agent_messages().filter(creator_id=creator_id).matching(Minimum("created_at", cutoff_at.text)).every_row(RECENT_REASON), key=lambda message: message.id, reverse=True))
 
     def has_text_after(self, creator_id: int, text: str, cutoff_at: Timestamp) -> bool:
         return self.filter(creator_id=creator_id, text=text).matching(Minimum("created_at", cutoff_at.text)).exists()
@@ -50,8 +56,7 @@ class MessageQuery(Query[Message]):
         def newest(previous: Message | None) -> Message:
             return message if previous is None or message.id >= previous.id else previous
 
-        self.kept.update(self.table.name, newest,
-                         "creator_id = ? AND type = ?", [message.creator_id, MessageType.AGENT], name="messages.latest_agent_message")
+        self.kept.update(self.agent_messages_of(message.creator_id), newest, name="messages.latest_agent_message")
 
     def person_messages_during(self, agent_id: int, start_text: str, end_at: Timestamp) -> Self:
         return self.addressed(agent_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(Greater("created_at", start_text)).matching(Maximum("created_at", end_at.text))
@@ -72,8 +77,8 @@ class MessageQuery(Query[Message]):
         return self.matching(MessageTarget(agent_id))
 
     def has_person_message_after(self, message_id: int) -> bool:
-        return self.kept.read_newest(self.table.name, self.matching(Among("type", PERSON_MESSAGE_TYPES)).matching(Greater("id", message_id)).exists,
-                                     f"type IN ({', '.join('?' for _ in PERSON_MESSAGE_TYPES)}) AND id > ?", [*PERSON_MESSAGE_TYPES, message_id], name="messages.person_message_past")
+        messages = self.matching(Among("type", PERSON_MESSAGE_TYPES)).matching(Greater("id", message_id))
+        return self.kept.read_newest(messages, messages.exists, name="messages.person_message_past")
 
     def unread(self, agent_id: int) -> Self:
         return self.addressed(agent_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at"))
@@ -82,6 +87,7 @@ class MessageQuery(Query[Message]):
         return self.unread(agent_id).matching(IsNull("delivered_at"))
 
     def oldest_undelivered(self, agent_id: int, size: int) -> list[Message]:
-        oldest = [message for message_type in PERSON_MESSAGE_TYPES
-                  for message in self.addressed(agent_id).filter(type=message_type).matching(IsNull("read_at")).matching(IsNull("delivered_at")).oldest().limited(size)]
+        """The oldest of each user message type is found by its own index walk, so none walks the other types' rows."""
+        oldest = [message for kind in PERSON_MESSAGE_TYPES
+                  for message in self.addressed(agent_id).filter(type=kind).matching(IsNull("read_at")).matching(IsNull("delivered_at")).oldest().take(size)]
         return sorted(oldest, key=lambda message: message.id)[:size]

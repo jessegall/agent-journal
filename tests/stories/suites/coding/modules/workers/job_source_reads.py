@@ -14,6 +14,7 @@ from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from tests.stories.core.modules.plugins.support.checkout_stories import checkout_story
 from tests.stories.support.statement_counts import reads_in_last_request
 
+TEST_ROWS_REASON = "the test reads every row it checks"
 LINE_COUNT = 12
 LISTING_SAMPLE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
 
@@ -29,5 +30,5 @@ def test_a_hook_that_delivers_twelve_worker_lines_reads_their_task_sources_once(
                                                                    source_line_id=line.id), context)
     story.hook(story.worker_session, LISTING_SAMPLE)
     reads = reads_in_last_request(story, "SELECT * FROM worker_task_sources")
-    sources = story.container.get(Queries).query(WorkerTaskSource).all_rows()
+    sources = story.container.get(Queries).query(WorkerTaskSource).every_row(TEST_ROWS_REASON)
     story.expect_rows(reads == 1, all(source.started_at is not None for source in sources), detail=f"{reads} source reads")

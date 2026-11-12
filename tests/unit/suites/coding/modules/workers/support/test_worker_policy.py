@@ -26,7 +26,7 @@ class FakeLineQuery:
     def matching(self, condition: object) -> "FakeLineQuery":
         return self
 
-    def all_rows(self) -> tuple:
+    def get(self) -> tuple:
         return self.lines
 
 

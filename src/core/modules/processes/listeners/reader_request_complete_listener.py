@@ -21,6 +21,8 @@ from engine.event.changed import Changed
 from engine.event.deleted import Deleted
 from engine.command.context import Context
 
+WAITING_PARTS_REASON = "a completed request gives its reader to every part that waited for it"
+
 
 class ReaderRequestCompleteListener(SaveListener[Changed[Reader]]):
     """Completes requests read by a newly saved proper reader, and puts a reader an agent or a user saved on the
@@ -46,8 +48,8 @@ class ReaderRequestCompleteListener(SaveListener[Changed[Reader]]):
                 continue
             completed = self.repository.update(request, context, reader_id=reader.id, completed_at=self.clock.timestamp())
             self.requests.remove_completed(completed)
-            for waiting in self.queries.query(ProcessPart).filter(reader_request_id=request.id).all_rows():
-                for output in self.queries.query(Output).filter(process_id=waiting.process_id, ended_at=None).all_rows():
+            for waiting in self.queries.query(ProcessPart).filter(reader_request_id=request.id).every_row(WAITING_PARTS_REASON):
+                for output in self.queries.query(Output).filter(process_id=waiting.process_id, ended_at=None).get():
                     self.repository.save(replace(output, reader_id=reader.id, reader_position=waiting.position, read_offset=0, displayed_offset=0,
                                                  title=RunTitle.title(reader, waiting.command or waiting.text)), context)
             self.bus.dispatch(GrantRunSlots(), context)

@@ -7,6 +7,8 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.escalations import Escalations
 from suites.coding.modules.workers.support.merge_ask_section import MergeAskSection
 
+UNREAD_LINES_REASON = "the merger reads every line it has not read and settled"
+
 
 class MergerWork:
     """What waits for the merger in the environment in scope: its unread lines, and the next worker it can merge,
@@ -19,7 +21,7 @@ class MergerWork:
         self.escalations, self.agents = escalations, agents
 
     def unread_lines(self) -> tuple[MergerLine, ...]:
-        return tuple(self.queries.query(MergerLine).matching(IsNull("read_at")).matching(IsNull("outcome")).oldest().all_rows())
+        return tuple(self.queries.query(MergerLine).matching(IsNull("read_at")).matching(IsNull("outcome")).every_row(UNREAD_LINES_REASON))
 
     def next_worktree(self) -> Worktree | None:
         waiting_ids = self.merge_ask.waiting_worktree_ids()

@@ -23,6 +23,8 @@ from suites.coding.modules.workers.ticks.ask_watch import AskWatch
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from tests.stories.suites.coding.modules.workers.worker_ask import asking, asking_with_merger_running, merger_disabled_worker  # noqa: F401
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 QUESTION = "The sandbox has no compiler"
 SECOND_QUESTION = "The fixture file is empty"
 ANSWER = "Use the compiler in tools/bin"
@@ -37,7 +39,7 @@ def questions(story) -> tuple[MergerLine, ...]:
 
 
 def waits_of(story, worker: Actor) -> tuple[Wait, ...]:
-    return tuple(story.container.get(Queries).query(Wait).filter(session_agent_id=worker.id).oldest().all_rows())
+    return tuple(story.container.get(Queries).query(Wait).filter(session_agent_id=worker.id).every_row(TEST_ROWS_REASON))
 
 
 def ask(case: MergerCase, text: str = QUESTION, topic: AskTopic = AskTopic.TOOL):

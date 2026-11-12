@@ -25,6 +25,6 @@ class TaskWaitCheckListener(SaveListener[Changed[TaskWait]]):
             self.repository.save(Check(creator_id=wait.creator_id, title=f"Task {wait.task_id} waits until this passes", command=wait.command,
                                        interval_minutes=wait.interval_minutes, task_wait_id=wait.id, hidden=True), context)
             return
-        for check in tuple(self.queries.query(Check).filter(task_wait_id=wait.id).all_rows()):
+        for check in tuple(self.queries.query(Check).filter(task_wait_id=wait.id).get()):
             if check.removed_at is None:
                 self.repository.save(replace(check, removed_at=context.timestamp), context)

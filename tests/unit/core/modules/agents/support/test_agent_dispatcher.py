@@ -86,7 +86,7 @@ class FakeAgentQuery:
     def matching(self, condition: object) -> "FakeAgentQuery":
         return self
 
-    def all_rows(self) -> tuple[Agent, ...]:
+    def every_row(self, reason: str) -> tuple[Agent, ...]:
         return self.rows
 
 

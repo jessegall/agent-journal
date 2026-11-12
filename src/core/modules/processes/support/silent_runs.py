@@ -19,7 +19,7 @@ class SilentRuns:
     def silent_part(self, process: Process, timestamp: Timestamp) -> ProcessPart | None:
         if self.silences.seconds(process, timestamp) < SILENT_SECONDS:
             return None
-        part = next((part for part in self.parts.process(process.id).all_rows() if part.ended_at is None), None)
+        part = self.parts.process(process.id).filter(ended_at=None).oldest().first()
         return part if part is not None and self.is_watched(part) else None
 
     def is_empty_output(self, part: ProcessPart) -> bool:

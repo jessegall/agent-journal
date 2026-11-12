@@ -14,6 +14,8 @@ from core.modules.plugins.support.plugin_settings import PluginSettings
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.process_kind_limits import ProcessKindLimits
 
+PLUGINS_REASON = "the limits of every plugin that has a run kind are read"
+
 
 class PluginProcessKindLimits(ProcessKindLimits):
     """Holds a waiting run of a plugin's kind while as many runs of that kind hold a place as the plugin setting
@@ -27,7 +29,7 @@ class PluginProcessKindLimits(ProcessKindLimits):
         kinds = {(process.plugin, process.kind, process.environment_id) for process in waiting if process.plugin and process.kind}
         if not kinds:
             return PluginKindPass({}, 0, {})
-        plugins = {plugin.name: plugin for plugin in self.queries.query(Plugin).matching(Among("name", sorted({plugin for plugin, _, _ in kinds}))).all_rows()}
+        plugins = {plugin.name: plugin for plugin in self.queries.query(Plugin).matching(Among("name", sorted({plugin for plugin, _, _ in kinds}))).every_row(PLUGINS_REASON)}
         environments = {environment.id: environment.name for environment in self.queries.query(Environment).find_many(sorted({environment for _, _, environment in kinds}))}
         manifests = {name: PluginManifest.read(self.folders.code(name)) for name in plugins}
         values = {(plugin, environment): self.settings.values(plugins[plugin], manifests[plugin], environments[environment])

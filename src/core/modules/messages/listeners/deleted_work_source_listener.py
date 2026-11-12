@@ -7,6 +7,8 @@ from core.modules.messages.models.enums.work_source_origin import WorkSourceOrig
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.message_work_source import MessageWorkSource
 
+WORK_SOURCES_REASON = "a deleted message clears every work source that chose it"
+
 
 class DeletedWorkSourceListener(DeletionListener[Deleted[Message]]):
     """Clears the selections that point at a deleted message."""
@@ -17,5 +19,5 @@ class DeletedWorkSourceListener(DeletionListener[Deleted[Message]]):
         self.queries, self.repository = queries, repository
 
     def handle(self, event: Deleted[Message], context: Context) -> None:
-        for selected in tuple(self.queries.query(MessageWorkSource).filter(message_id=event.row.id).all_rows()):
+        for selected in tuple(self.queries.query(MessageWorkSource).filter(message_id=event.row.id).every_row(WORK_SOURCES_REASON)):
             self.repository.update(selected, context, message_id=None, origin=WorkSourceOrigin.CLEAR, provisional=False, used=False)

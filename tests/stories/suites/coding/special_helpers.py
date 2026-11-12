@@ -15,6 +15,8 @@ from tests.stories.suites.coding.modules.workers.test_queue import PROOF, record
 from tests.stories.support.story_checks import expect_value
 from tests.stories.core.support.agent_labels import agent_label
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 DESIGNER = "journal.suites.coding.designer-enabled"
 HELPERS = "journal.suites.coding.main-starts-read-only-helpers"
 MERGER = "journal.suites.coding.workers.merger-on"
@@ -22,7 +24,7 @@ START_DESIGNER = 'helper start journal-designer --brief "Design the cart page" -
 
 
 def read_merger(story):
-    return next(iter(story.container.get(Queries).query(Agent).filter(profile="journal-merger").all_rows()), None)
+    return next(iter(story.container.get(Queries).query(Agent).filter(profile="journal-merger").every_row(TEST_ROWS_REASON)), None)
 
 
 def merger_delivery(story, monkeypatch):

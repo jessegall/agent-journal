@@ -16,6 +16,7 @@ from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
 
 
+
 class MergeChecks:
     """The row checks a merge passes before git runs: every proof checked, and the base branch unchanged. In a
     started plan a committed proof passes too, since its test runs at a checkpoint of the plan, and the
@@ -37,8 +38,7 @@ class MergeChecks:
     def check_proofs(self, worktree: Worktree) -> None:
         if not self.plans.is_started_plan(worktree.task_id):
             self.check_selected_tests(worktree)
-        self.check_states(worktree, self.kept.read("proofs", lambda: tuple(self.proofs.worktree_proofs(worktree.id).oldest().all_rows()),
-                                                   "worktree_id = ?", [worktree.id], name="workers.merge_proofs"))
+        self.check_states(worktree, self.proofs.worktree_rows(worktree.id))
 
     def check_states(self, worktree: Worktree, proofs: Iterable[Proof]) -> None:
         mergeable = COMMITTED_WORK_MERGEABLE_STATES if self.plans.is_started_plan(worktree.task_id) else MERGEABLE_STATES
@@ -47,8 +47,8 @@ class MergeChecks:
             raise Refusal(f"point {', '.join(refused)} is not {' or '.join(mergeable)}", "journal proof check <proof> or journal proof short <proof> --shortfall \"<what is missing>\"")
 
     def check_selected_tests(self, worktree: Worktree) -> None:
-        first_answer = self.kept.read("affected_tests", lambda: self.queries.query(AffectedTest).filter(worktree_id=worktree.id).newest().first(),
-                                  "worktree_id = ?", [worktree.id], name="workers.merge_selected")
+        answers = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).newest()
+        first_answer = self.kept.read(answers, answers.first, name="workers.merge_selected")
         if first_answer is not None and first_answer.state not in (AffectedTestState.PASSED, AffectedTestState.CANCELLED):
             raise Refusal("selected tests have not passed", "wait for the selected tests to finish")
 

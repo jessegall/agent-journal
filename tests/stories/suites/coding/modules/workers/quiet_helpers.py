@@ -18,6 +18,8 @@ from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPE
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, BuilderHelper
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 MAIN_SESSION = "s-1"
 GRACE_MINUTES = 15
 REPEAT_MINUTES = 5
@@ -69,7 +71,7 @@ def test_the_inactive_line_wakes_the_main_agent(new_story):
     story, worker = idle_worker(new_story)
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)
-    line = next(row for row in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows() if f"worker:{agent_number(story, worker.id)} has used no tool" in row.text)
+    line = next(row for row in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON) if f"worker:{agent_number(story, worker.id)} has used no tool" in row.text)
     story.expect_rows(line.wakes_agent)
 
 
@@ -79,7 +81,7 @@ def test_a_worker_that_never_made_a_call_is_named_with_the_command_for_its_log_a
     worker = dispatched_worker(story)
     story.advance(timedelta(seconds=START_SECONDS))
     story.tick(MAIN_SESSION)
-    line = next(row for row in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows() if f"worker:{agent_number(story, worker.id)} made no call" in row.text)
+    line = next(row for row in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON) if f"worker:{agent_number(story, worker.id)} made no call" in row.text)
     story.expect_rows(line.wakes_agent, f"worker:{agent_number(story, worker.id)} made no call" in line.text)
 
 

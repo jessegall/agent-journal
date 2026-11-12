@@ -27,7 +27,7 @@ class WorkerMergeBlockListener(SaveListener[Moved[Worktree]]):
     def handle(self, event: Moved[Worktree], context: Context) -> None:
         command = self.merge_command(event.row)
         key = f"{REQUIRED_COMMAND_REFUSAL.key}:{command}"
-        blocks = self.queries.query(AgentBlock).filter(nudge_key=key, condition_text=command).matching(IsNull("closed_at")).all_rows()
+        blocks = self.queries.query(AgentBlock).filter(nudge_key=key, condition_text=command).matching(IsNull("closed_at")).get()
         for block in blocks:
             self.bus.dispatch(CloseAgentBlock(block.id), context)
 

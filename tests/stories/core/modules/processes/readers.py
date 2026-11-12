@@ -95,3 +95,8 @@ def test_a_count_pattern_is_checked_and_its_fields_survive_an_update(new_story):
 def expect_run_title(story, line, expected) -> None:
     actual = run_title(story, line)
     assert actual == expected, actual
+
+
+def test_a_reader_for_a_journal_command_is_refused_since_a_journal_command_has_no_reader(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_refusal('reader add replies --commands "journal message*" --lines "reacted"', "a journal command has no reader", actor=story.agent)

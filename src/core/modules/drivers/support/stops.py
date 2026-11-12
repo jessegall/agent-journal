@@ -19,5 +19,5 @@ class Stops(Span):
         return self.has_passed_many(reads, agent_id, [start], timestamp)[0]
 
     def has_passed_many(self, reads: SpanQueries, agent_id: int, starts: Sequence[Timestamp], checked_at: Timestamp) -> list[bool]:
-        stops = HookCallQuery(reads.queries.database, reads.queries.tables, reads.kept).agent(agent_id).filter(hook=HookEventName.STOP).newest().limited(self.count)
+        stops = HookCallQuery(reads.queries.database, reads.queries.tables, reads.kept).agent(agent_id).filter(hook=HookEventName.STOP).newest().take(self.count)
         return [len(stops) >= self.count and stops[-1].creation_timestamp() > start for start in starts]

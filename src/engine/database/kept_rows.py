@@ -1,10 +1,15 @@
 from collections.abc import Callable, Sequence
 from dataclasses import replace
-from typing import TypeVar, cast
+from typing import TYPE_CHECKING, TypeVar, cast
 
 from engine.database.database import Database
 from engine.database.kept_value import KeptValue
 from engine.database.statement import Statement
+
+if TYPE_CHECKING:
+    from engine.model.model import Model
+    from engine.model.view_model import ViewModel
+    from engine.query.query import Query
 
 T = TypeVar("T")
 Signature = tuple[tuple[object, ...], ...]
@@ -13,9 +18,9 @@ KEPT_ROW_COUNT = 20000
 
 
 class KeptRows:
-    """Caches scoped reads and refreshes them when their database data changes, also a read that spans several
-    tables. A read whose rows depend on
-    the agent that asks is kept with owner_read, apart for each agent and environment of the scope in force."""
+    """Caches reads and refreshes them when the rows of their query change, also a read that spans several
+    queries. The query names the rows and carries the scope in force; a read whose rows depend on the agent that
+    asks is kept with owner_read, apart for each agent and environment of the scope in force."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
@@ -23,22 +28,37 @@ class KeptRows:
         self.kept: dict[str, KeptValue] = {}
         self.write_rollback_count = database.write_rollback_count
 
-    def read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> T:
-        return self.kept_value(self.key(table, condition, parameters, name), lambda _signature: loader(), self.signature_read(table, condition, parameters))
+    def read(self, source: "Query[Model | ViewModel]", loader: Callable[[], T], *, name: str) -> T:
+        """Keeps what the loader read for a query until the rows of that query change."""
+        select = source.kept_select()
+        if select.is_empty:
+            return loader()
+        return self.kept_value(self.query_key(source, name), lambda _signature: loader(), select.signature_statement())
 
-    def owner_read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> T:
-        return self.read(table, loader, condition, parameters, name=f"{name}:{self.database.row_owner}")
+    def owner_read(self, source: "Query[Model | ViewModel]", loader: Callable[[], T], *, name: str) -> T:
+        return self.read(source, loader, name=f"{name}:{self.database.row_owner}")
 
-    def read_across(self, tables: Sequence[tuple[str, Statement]], loader: Callable[[], T], *, name: str) -> T:
-        signatures = tuple(self.signature_read(table, condition.sql, condition.parameters) for table, condition in tables)
-        key = "|".join(self.key(table, condition.sql, condition.parameters, name) for table, condition in tables)
+    def read_across(self, sources: "Sequence[Query[Model | ViewModel]]", loader: Callable[[], T], *, name: str) -> T:
+        """Keeps what the loader read from the rows of several queries until any of them changes."""
+        signatures = tuple(source.kept_select().signature_statement() for source in sources)
+        key = "|".join(self.query_key(source, name) for source in sources)
         return self.kept_value(key, lambda _signature: loader(), Statement.all_joined(signatures, " UNION ALL "))
 
-    def read_matching_signature(self, table: str, loader: Callable[[Signature], T], *, name: str) -> T:
-        return self.kept_value(self.key(table, "1 = 1", (), name), loader, self.signature_read(table, "1 = 1", ()))
+    def read_matching_signature(self, source: "Query[Model | ViewModel]", loader: Callable[[Signature], T], *, name: str) -> T:
+        """Keeps what the loader read for the signature of a query's rows, which the loader is handed."""
+        return self.kept_value(self.query_key(source, name), loader, source.kept_select().signature_statement())
 
-    def read_newest(self, table: str, loader: Callable[[], T], condition: str, parameters: Sequence[object], *, name: str) -> T:
-        return self.kept_value(self.key(table, condition, parameters, name), lambda _signature: loader(), Statement(f"SELECT id, version, updated_at FROM {table} WHERE {condition} ORDER BY id DESC LIMIT 1", list(parameters)))
+    def read_newest(self, source: "Query[Model | ViewModel]", loader: Callable[[], T], *, name: str) -> T:
+        """Keeps what the loader read until the newest row of the query changes."""
+        select = source.kept_select()
+        if select.is_empty:
+            return loader()
+        return self.kept_value(self.query_key(source, name), lambda _signature: loader(), select.newest_signature_statement())
+
+    def read_signed(self, signature: Statement, loader: Callable[[], T], *, name: str) -> T:
+        """Keeps what the loader read until the given signature statement answers otherwise: for the database
+        layer's own reads, which have no model to query."""
+        return self.kept_value(f"{name}:{signature.sql}:{tuple(signature.parameters)}", lambda _signature: loader(), signature)
 
     def kept_value(self, cache_key: str, loader: Callable[[Signature], T], signature_read: Statement) -> T:
         self.check_rollback()
@@ -55,15 +75,13 @@ class KeptRows:
         self.kept[cache_key] = KeptValue(signature, change_mark, loaded)
         return loaded
 
-    def update(self, table: str, updater: Callable[[T], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> None:
+    def update(self, source: "Query[Model | ViewModel]", updater: Callable[[T], T], *, name: str) -> None:
+        """Changes a kept read of the query in place, after a write the caller knows the outcome of."""
         self.check_rollback()
-        previous = self.kept.pop(self.key(table, condition, parameters, name), None)
+        previous = self.kept.pop(self.query_key(source, name), None)
         if previous is None:
             return
-        self.read(table, lambda: updater(cast(T, previous.value)), condition, parameters, name=name)
-
-    def scoped_read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> T:
-        return self.read(table, loader, *self.condition_with_scope(condition, parameters), name=name)
+        self.read(source, lambda: updater(cast(T, previous.value)), name=name)
 
     def scoped_current(self, loader: Callable[[], T], *, name: str) -> T:
         with self.database.consistent_read():
@@ -71,22 +89,12 @@ class KeptRows:
             return self.kept_value(f"current:{name}:{self.database.scope_environment_id}", lambda _signature: loader(),
                                    Statement("SELECT ?, ?, ?", signature))
 
-    def scoped_update(self, table: str, updater: Callable[[T], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> None:
-        self.update(table, updater, *self.condition_with_scope(condition, parameters), name=name)
-
-    def condition_with_scope(self, condition: str, parameters: Sequence[object]) -> tuple[str, Sequence[object]]:
-        environment_id = self.database.scope_environment_id
-        return (condition, parameters) if environment_id is None else (f"environment_id = ? AND {condition}", [environment_id, *parameters])
-
     def check_rollback(self) -> None:
         if self.write_rollback_count != self.database.write_rollback_count:
             self.kept = {key: replace(value, change_mark=(-1, -1)) for key, value in self.kept.items()}
             self.write_rollback_count = self.database.write_rollback_count
 
     @staticmethod
-    def signature_read(table: str, condition: str, parameters: Sequence[object]) -> Statement:
-        return Statement(f"SELECT count(*), coalesce(sum(id), 0), coalesce(sum(version), 0), max(updated_at) FROM {table} WHERE {condition}", list(parameters))
-
-    @staticmethod
-    def key(table: str, condition: str, parameters: Sequence[object], name: str) -> str:
-        return f"{name}:{table}:{condition}:{tuple(parameters)}"
+    def query_key(query: "Query[Model | ViewModel]", name: str) -> str:
+        conditions = query.kept_select().conditions_statement()
+        return f"{name}:{conditions.sql}:{tuple(conditions.parameters)}"

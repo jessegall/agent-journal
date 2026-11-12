@@ -6,7 +6,7 @@ import pytest
 
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.agent.agent_name import AgentName
+from engine.agent.agent_name import AgentName, agent_name
 
 NAMES = json.loads((Path(__file__).resolve().parents[6] / "tests" / "snapshots" / "agent_names.json").read_text())
 
@@ -15,7 +15,7 @@ def sql_name(role: str, number: int) -> str:
     connection = sqlite3.connect(":memory:")
     connection.execute("CREATE TABLE agents (role TEXT, number INTEGER)")
     connection.execute("INSERT INTO agents VALUES (?, ?)", (role, number))
-    return connection.execute(f"SELECT {AgentName.sql('agents')} FROM agents").fetchone()[0]
+    return connection.execute(f"SELECT {agent_name('agents').sql()} FROM agents").fetchone()[0]
 
 
 @pytest.mark.parametrize("name", NAMES, ids=lambda name: f"{name['role']} {name['number']}")

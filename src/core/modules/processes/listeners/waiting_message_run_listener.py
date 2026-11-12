@@ -13,7 +13,8 @@ from core.modules.messages.support.message_targets import MessageTargets
 
 class WaitingMessageRunListener(CommitListener[Created[Message]]):
     """A user's message moves the main agent's foreground run to the background at once, through a file its runner
-    watches, so the agent can read the message without waiting for the run."""
+    watches, so the agent can read the message without waiting for the run; a run that never goes to the background,
+    such as a journal command, finishes in the foreground."""
 
     name = "processes.waiting-message-run"
 
@@ -28,7 +29,8 @@ class WaitingMessageRunListener(CommitListener[Created[Message]]):
         target = self.targets.recipient(message)
         if target is None:
             return
-        processes = self.kept.scoped_read("processes", lambda: tuple(self.processes.agent(target.id).filter(state=ProcessState.RUNNING).all_rows()),
-                                            "session_agent_id = ? AND state = ?", [target.id, ProcessState.RUNNING], name="processes.message_foreground_runs")
+        foreground = self.processes.agent(target.id).filter(state=ProcessState.RUNNING)
+        processes = self.kept.read(foreground, lambda: tuple(foreground.get()), name="processes.message_foreground_runs")
         for process in processes:
-            self.folder.ask_move(process.id)
+            if process.category.can_go_to_background:
+                self.folder.ask_move(process.id)

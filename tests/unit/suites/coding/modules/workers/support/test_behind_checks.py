@@ -32,7 +32,7 @@ class Rows:
     def newest(self) -> "Rows":
         return Rows(list(reversed(self.rows)))
 
-    def all_rows(self) -> list[object]:
+    def every_row(self, reason: str) -> list[object]:
         return self.rows
 
     def first(self) -> object | None:

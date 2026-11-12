@@ -43,6 +43,8 @@ from core.modules.drivers.support.suite_choice import SuiteChoice
 from engine.module.driver_entries import DRIVERS_MODULE
 from core.modules.agents.support.agent_label import AgentLabel
 
+WAITING_LINES_REASON = "every line waiting for the agent may be handed to it at this hook"
+
 LOG_LINE_CHARACTERS = 240
 
 
@@ -77,7 +79,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         self.compaction_end.finish_compaction(command.event, agent, context)
         if command.event.event == HookEventName.TICK and not (answers.refusal or answers.lines or answers.commands):
             return HookReply.allowed()
-        waiting = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).oldest().all_rows()
+        waiting = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).every_row(WAITING_LINES_REASON)
         handed_lines = DeliveredLines.chosen(command.event, answers, tuple(waiting))
         lines = handed_lines.with_answers(answers)
         moves = OneMovePerRow.split(answers.commands)

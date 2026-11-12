@@ -14,6 +14,8 @@ from tests.stories.core.modules.viewer.support.window_samples import NOTES
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 SHAPE = '{"tabs":["notes.board"],"active":"notes.board","width":"full"}'
 REQUESTED = "A user was asked in the dock"
 
@@ -119,4 +121,4 @@ def test_an_agent_cannot_make_or_remove_a_standing_yes(new_story):
 
 
 def docked(story, dock_type):
-    return list(story.container.get(Queries).query(DockItem).filter(type=dock_type, state=DockItemState.DOCKED).all_rows())
+    return list(story.container.get(Queries).query(DockItem).filter(type=dock_type, state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON))

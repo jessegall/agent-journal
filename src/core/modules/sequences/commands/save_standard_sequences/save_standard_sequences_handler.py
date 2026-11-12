@@ -20,4 +20,4 @@ class SaveStandardSequencesHandler(Handler[SaveStandardSequences, None]):
         self.standard.save_all(Sequence, STANDARD_SEQUENCES, STANDARD_SEQUENCE_FIELDS, context, self.has_run)
 
     def has_run(self, sequence: Sequence) -> bool:
-        return bool(tuple(self.queries.query(SequenceRun).filter(sequence_id=sequence.id).all_rows()))
+        return self.queries.query(SequenceRun).filter(sequence_id=sequence.id).exists()

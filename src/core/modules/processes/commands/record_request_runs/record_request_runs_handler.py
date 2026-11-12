@@ -32,7 +32,7 @@ class RecordRequestRunsHandler(Handler[RecordRequestRuns, None]):
             self.repository.save(RequestRun(session_agent_id=agent_id, creator_id=context.actor.id, kind=entry.kind, line=entry.line, exit_code=entry.exit_code,
                                             ended_at=Timestamp.parsed(entry.ended_at)), context)
         days = max(1, self.settings.integer(ProcessSetting.REQUEST_RUN_DAYS))
-        old = self.request_runs.ended_before(context.timestamp, days).ordered("ended_at", "id").limited(PRUNED_AT_ONCE)
+        old = self.request_runs.ended_before(context.timestamp, days).ordered("ended_at", "id").take(PRUNED_AT_ONCE)
         self.repository.delete_many_stored(old, context)
 
     @staticmethod

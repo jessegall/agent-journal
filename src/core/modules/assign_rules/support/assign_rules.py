@@ -26,9 +26,9 @@ class AssignRules:
     def first_match(self, task: Task) -> AssignRule | None:
         facts = self.facts_reader.read(task)
         conditions: dict[int, list[AssignRuleCondition]] = {}
-        for condition in self.queries.query(AssignRuleCondition).all_rows():
+        for condition in self.queries.query(AssignRuleCondition).get():
             conditions.setdefault(condition.rule_id, []).append(condition)
-        rules = self.queries.query(AssignRule).filter(enabled=True).ordered("position").all_rows()
+        rules = self.queries.query(AssignRule).filter(enabled=True).ordered("position").get()
         return next((rule for rule in rules if self.meets_all(conditions.get(rule.id, []), facts)), None)
 
     @staticmethod

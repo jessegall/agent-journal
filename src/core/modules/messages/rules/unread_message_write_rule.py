@@ -25,7 +25,7 @@ class UnreadMessageWriteRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         waiting = self.messages.unread(hook.agent_id).matching(Greater("delivered_at", "")).oldest()
-        delivered = waiting.limited(MESSAGE_COUNT_SHOWN)
+        delivered = waiting.take(MESSAGE_COUNT_SHOWN)
         if not delivered:
             return RuleAnswer.allowed()
         count = waiting.count() if len(delivered) == MESSAGE_COUNT_SHOWN else len(delivered)

@@ -17,6 +17,8 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 FALLBACK_LINE = "A worker waits for the merger"
 MEMORY_TEXT = "Worker 2, task 1: advised a longer timeout"
 OCCUPANT_SAVE = "profile save journal-merger --occupant {occupant} --reason needed"
@@ -39,7 +41,7 @@ def declared_occupant(story, occupant: str) -> None:
 
 
 def mergers(story) -> list[Agent]:
-    return list(story.container.get(Queries).query(Agent).filter(profile="journal-merger").all_rows())
+    return list(story.container.get(Queries).query(Agent).filter(profile="journal-merger").every_row(TEST_ROWS_REASON))
 
 
 def merger_launch(story) -> dict:
@@ -120,5 +122,5 @@ def test_a_when_cold_merger_whose_program_is_changed_keeps_its_agent_and_nobody_
     merger = when_cold_merger
     merging.expect_success(PROGRAM_SAVE.format(program="codex"), actor=merging.user)
     merger_launch(merging)
-    kept = list(merging.container.get(Queries).query(Agent).filter(profile="journal-merger").matching(IsNull("retired_at")).all_rows())
+    kept = list(merging.container.get(Queries).query(Agent).filter(profile="journal-merger").matching(IsNull("retired_at")).every_row(TEST_ROWS_REASON))
     merging.expect_rows(len(mergers(merging)) == 1, len(kept) == 1, kept[0].id == merger.id, detail=str(mergers(merging)))

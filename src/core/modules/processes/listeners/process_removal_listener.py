@@ -10,6 +10,8 @@ from core.modules.processes.models.reader_request import ReaderRequest
 from engine.event.deleted import Deleted
 from engine.command.context import Context
 
+REMOVED_SAMPLES_REASON = "every reader request that sampled a removed process loses its sample"
+
 
 class ProcessRemovalListener(DeletionListener[Deleted[Process]]):
     """Detaches reader samples from a deleted process."""
@@ -23,6 +25,6 @@ class ProcessRemovalListener(DeletionListener[Deleted[Process]]):
         self.handle_many([event], context)
 
     def handle_many(self, events: Sequence[Deleted[Process]], context: Context) -> None:
-        requests = tuple(self.queries.query(ReaderRequest).matching(Among("sample_process_id", [event.row.id for event in events])).all_rows())
+        requests = tuple(self.queries.query(ReaderRequest).matching(Among("sample_process_id", [event.row.id for event in events])).every_row(REMOVED_SAMPLES_REASON))
         for request in requests:
             self.repository.save(replace(request, sample_process_id=None), context)

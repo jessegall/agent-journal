@@ -15,6 +15,7 @@ from core.modules.tasks.models.task_card import TaskCard
 from core.modules.tasks.support.task_board import TaskBoard
 from core.modules.tasks.support.task_group import TaskGroup
 from core.modules.tasks.support.task_board_cards import FINISHED_STATES, TaskBoardCards
+from engine.subcommand.page_arguments import read_limit
 
 FINISHED_PAGE_ROWS = 10
 WORKING_STATES = (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED)
@@ -46,7 +47,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         parser.add_argument("--state", type=board_group)
         parser.add_argument("--before-id", type=int, default=None, help="the rows older than this one")
         parser.add_argument("--before-closed-at", default=None, help="the finished rows closed before this time")
-        parser.add_argument("--limit", type=int, default=None)
+        parser.add_argument("--limit", type=read_limit, default=None)
         parser.add_argument("--tag", action="append", default=[], help="show tasks with every named tag")
         parser.add_argument("--hide-plan-tasks", default="", help="the groups, with commas, that leave out the tasks of a plan")
 
@@ -68,7 +69,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         previous_id = arguments.before_id if arguments.state is not None else None
         limit = arguments.limit or PAGE_SIZE_ROWS
         rows = (cards.matching(Less("id", previous_id)) if previous_id is not None else cards).newest()
-        return TaskGroup(str(state), cards.count(), tuple(rows.full_table(WORKING_TASKS_REASON).all_rows() if state in WORKING_STATES else rows.limited(limit)))
+        return TaskGroup(str(state), cards.count(), tuple(sorted(rows.every_row(WORKING_TASKS_REASON), key=lambda task: task.id, reverse=True) if state in WORKING_STATES else rows.take(limit)))
 
     @staticmethod
     def finished_cursor(arguments: Namespace) -> Condition | None:
@@ -82,7 +83,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         cards = self.shown_cards(state, arguments)
         cursor = self.finished_cursor(arguments) if arguments.state is not None else None
         rows = cards.matching(cursor) if cursor is not None else cards
-        return TaskGroup(state.value, cards.count(), tuple(rows.descending("closed_at", "id").limited(arguments.limit or FINISHED_PAGE_ROWS)))
+        return TaskGroup(state.value, cards.count(), tuple(rows.descending("closed_at", "id").take(arguments.limit or FINISHED_PAGE_ROWS)))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TaskBoard):

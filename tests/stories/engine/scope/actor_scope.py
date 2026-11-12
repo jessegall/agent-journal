@@ -18,6 +18,8 @@ from tests.stories.core.modules.processes.worker_outputs import worker_run
 from tests.stories.core.support.coding_fixtures import BuilderHelper
 from engine.testing.expectations.expect_row import expect_row
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 TASK_LINE = 'task make "Fix the cart" --environment main'
 MAIN_CHAT = "chat-mark main --environment main"
 MAIN_DOCK = "dock-item main --environment main"
@@ -37,7 +39,7 @@ def subagent_task(new_story):
 def test_a_helpers_task_move_stays_out_of_the_main_chat_and_is_stored_as_its_own(subagent_task):
     story = subagent_task
     story.expect_absent(MAIN_CHAT, MADE)
-    mark = next(story.container.get(Queries).query(ChatMark).filter(target_model="task", target_id=1).all_rows())
+    mark = next(story.container.get(Queries).query(ChatMark).filter(target_model="task", target_id=1).every_row(TEST_ROWS_REASON))
     expect_row(mark, session_agent_id=story.helper.id)
 
 
@@ -135,7 +137,7 @@ def test_a_main_agents_question_still_reaches_the_chat(new_story):
 
 def test_an_edit_of_a_shown_mark_under_an_agent_leaves_it_in_the_main_chat(new_story):
     story = new_story(fixture=GlobalTaskMark)
-    mark = next(story.container.get(Queries).query(ChatMark).filter(target_model="task", target_id=1).all_rows())
+    mark = next(story.container.get(Queries).query(ChatMark).filter(target_model="task", target_id=1).every_row(TEST_ROWS_REASON))
     expect_agent_id_mark(mark, None)
     expect_agent_id_scoped(mark, "new", story, None)
 

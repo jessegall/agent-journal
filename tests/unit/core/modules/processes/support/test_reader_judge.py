@@ -101,7 +101,7 @@ def test_samples_use_the_newest_matching_kept_parts_up_to_the_limit():
             for position in range(SAMPLE_OUTPUTS + 2, 0, -1)]
     rows.insert(0, ProcessPart(id=100, version=1, process_id=100, position=1, text="other", program="other", category=CommandCategory.BUILD))
     sampled = reader()
-    parts.kept_samples.return_value.limited.return_value = tuple(rows)
+    parts.kept_samples.return_value.take.return_value = tuple(rows)
     folder.output.side_effect = lambda process_id, position: f"\x1b[32mdone {process_id}\x1b[0m\n"
     judgement = ReaderJudge(ReaderRun(), folder, parts).tested(sampled)
     assert judgement.output_id == SAMPLE_OUTPUTS + 2

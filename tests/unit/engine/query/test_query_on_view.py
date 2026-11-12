@@ -12,6 +12,7 @@ from engine.model.view_model import ViewModel
 from engine.query.queries import Queries
 
 
+
 @dataclass(frozen=True, kw_only=True)
 class ShelfCount(ViewModel):
     cli_name = "shelf"
@@ -47,7 +48,7 @@ def test_a_key_with_no_row_is_refused(queries: Queries):
 
 def test_a_view_is_filtered_and_read_in_the_order_of_its_columns(queries: Queries):
     counts = queries.query(ShelfCount)
-    assert [row.shelf_id for row in counts.ordered("book_count").all_rows()] == [2, 1]
+    assert [row.shelf_id for row in counts.ordered("book_count").get()] == [2, 1]
     assert counts.filter(book_count=2).count() == 1
 
 

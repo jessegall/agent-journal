@@ -66,7 +66,7 @@ def test_no_read_command_and_no_hook_loads_more_rows_than_the_read_limit_on_a_la
     database.read_limit_rows = READ_LIMIT_ROWS
     worker = story.container.get(Queries).query(Agent).filter(session="s-worker").first()
     actors = {"main agent": story.agent, "person": story.user, "helper": story.helper, "worker": Actor(worker.id, ActorType.AGENT)}
-    profile_helpers = story.container.get(Queries).query(Agent).matching(Among("profile", HELPER_PROFILES)).limited(len(HELPER_PROFILES) * 2)
+    profile_helpers = story.container.get(Queries).query(Agent).matching(Among("profile", HELPER_PROFILES)).take(len(HELPER_PROFILES) * 2)
     actors.update({f"{helper.profile} helper": Actor(helper.id, ActorType.AGENT) for helper in profile_helpers})
     story.expect_rows(len({helper.profile for helper in profile_helpers}) == len(HELPER_PROFILES), detail=str(sorted({helper.profile for helper in profile_helpers})))
     findings: list[str] = []
