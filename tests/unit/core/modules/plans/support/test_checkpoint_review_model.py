@@ -15,9 +15,15 @@ class SettingsSample:
         return self.chosen
 
 
+PROVIDERS = {"claude": ClaudeCodeProvider, "codex": CodexProvider}
+
+
 class ProvidersSample:
     def provider(self, program: str):
-        return {"claude": ClaudeCodeProvider, "codex": CodexProvider}[program].__new__({"claude": ClaudeCodeProvider, "codex": CodexProvider}[program])
+        return PROVIDERS[program].__new__(PROVIDERS[program])
+
+    def model_program(self, model: str) -> str:
+        return next(program for program in PROVIDERS if model in self.provider(program).model_names())
 
 
 def model(chosen: str) -> CheckpointReviewModel:

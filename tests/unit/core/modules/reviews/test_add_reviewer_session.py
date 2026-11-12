@@ -6,19 +6,7 @@ from engine.command.context import Context
 from engine.time.timestamp import Timestamp
 from core.modules.reviews.commands.add_reviewer.add_reviewer import AddReviewer
 from core.modules.reviews.commands.add_reviewer.add_reviewer_handler import AddReviewerHandler
-
-REVIEWERS_PER_ENVIRONMENT = {1: 3, 2: 1}
-
-
-class FakeReviewers:
-    def __init__(self, environment_id: int | None = None) -> None:
-        self.environment_id = environment_id
-
-    def in_environment(self, environment_id: int) -> "FakeReviewers":
-        return FakeReviewers(environment_id)
-
-    def count(self) -> int:
-        return REVIEWERS_PER_ENVIRONMENT[self.environment_id]
+from core.modules.drivers.support.reviewer_start import ReviewerStart
 
 
 class FakeSettings:
@@ -26,16 +14,16 @@ class FakeSettings:
         return "claude"
 
     def model(self) -> str:
-        return ""
+        return "sonnet"
 
 
 class FakeBus:
     def __init__(self) -> None:
-        self.sessions: list[str] = []
+        self.starts: list = []
 
     def dispatch(self, command, context):
-        self.sessions.append(command.session)
-        return type("StartedAgent", (), {"id": 9})()
+        self.starts.append(command)
+        return type("StartedAgent", (), {"id": 9, "program": command.program, "program_model": command.program_model})()
 
 
 class FakeRepository:
@@ -48,14 +36,16 @@ class FakeSandbox:
         pass
 
 
-def next_session(environment_id: int) -> str:
-    bus = FakeBus()
-    handler = AddReviewerHandler(FakeReviewers(), FakeSettings(), bus, FakeRepository(), FakeSandbox())
+def added(bus: FakeBus):
+    handler = AddReviewerHandler(FakeSettings(), ReviewerStart(bus, FakeRepository()), FakeRepository(), FakeSandbox())
     command = AddReviewer()
-    handler.handle(command, Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), command, environment_id=environment_id))
-    return bus.sessions[0]
+    return handler.handle(command, Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), command, environment_id=1))
 
 
-def test_the_next_reviewer_session_counts_the_reviewers_of_its_own_environment():
-    assert next_session(1) == "reviewer-4"
-    assert next_session(2) == "reviewer-2"
+def test_every_reviewer_gets_a_session_of_its_own_and_the_model_the_setting_names():
+    bus = FakeBus()
+    reviewer = added(bus)
+    added(bus)
+    assert bus.starts[0].session != bus.starts[1].session
+    assert (reviewer.program, reviewer.model) == ("claude", "sonnet")
+    assert bus.starts[0].program_model == "sonnet"
