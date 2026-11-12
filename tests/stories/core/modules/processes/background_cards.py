@@ -15,3 +15,11 @@ def test_a_process_run_that_moves_to_the_background_gets_its_mark_at_the_move(ne
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
     story.run_listeners()
     story.expect_text(MARKS, "processes.command", f"process:{process.id}", actor=story.user)
+
+
+def test_the_open_list_shows_a_background_run_that_the_running_state_leaves_out(new_story):
+    story = install_runner(new_story(fixture=UserBuilder))
+    process = started_run(story, "make bundle", CommandCategory.BUILD)
+    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
+    story.expect_text("process list --open --columns id,state --environment main", "background", actor=story.user)
+    story.expect_absent("process list --state running --columns id,state --environment main", "background", actor=story.user)
