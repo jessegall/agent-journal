@@ -44,6 +44,7 @@ from engine.errors.refusal import Refusal
 from engine.log.refusal_log import RefusalLog
 from engine.scope.scopes import Scopes
 from engine.command.errors.user_approval_refusal import UserApprovalRefusal
+from engine.process.door.request_records import RequestRecords
 
 SUCCESS_CODE, REFUSED_CODE, USAGE_CODE, ERROR_CODE = 0, 1, 2, 3
 HELP_FLAGS = ("--help", "-h")
@@ -59,8 +60,8 @@ class Console:
 
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, line_parser: LineParser, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
-                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes, refusal_skips: RefusalSkips, overview_reads: OverviewReads, read_limit_bypass: ReadLimitBypass, agent_numbers: AgentNumberArguments) -> None:
-        self.read_limit_bypass, self.agent_numbers = read_limit_bypass, agent_numbers
+                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes, refusal_skips: RefusalSkips, overview_reads: OverviewReads, read_limit_bypass: ReadLimitBypass, agent_numbers: AgentNumberArguments, request_records: RequestRecords) -> None:
+        self.read_limit_bypass, self.agent_numbers, self.request_records = read_limit_bypass, agent_numbers, request_records
         self.registry, self.finder, self.fingerprint, self.line_parser, self.bus = registry, finder, fingerprint, line_parser, bus
         self.flags, self.refusals, self.errors, self.tables, self.commit_listeners = flags, refusals, errors, tables, commit_listeners
         self.refusal_skips, self.overview_reads = refusal_skips, overview_reads
@@ -157,6 +158,7 @@ class Console:
         environment_id = self.scopes.line_environment_id(caller.actor, environment_id)
         self.agent_numbers.replace_numbers(arguments, environment_id)
         caller = replace(caller, environment_id=environment_id)
+        self.request_records.note_caller(caller.actor, environment_id)
         try:
             return self.parsed_run(argv, subcommand, arguments, caller, output)
         except Refusal as refusal:
