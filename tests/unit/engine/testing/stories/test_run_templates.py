@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from engine.testing.stories import pytest_plugin
+from engine.testing import pytest_plugin
 from engine.testing.pytest_plugin import GATE_LOCK_VARIABLE, TEMPLATE_FOLDER_VARIABLE, chooses_template_folder, run_template_folder
 from engine.testing.runs.run_size import RunSize
 from engine.testing.cache.template_cache import TemplateCache
