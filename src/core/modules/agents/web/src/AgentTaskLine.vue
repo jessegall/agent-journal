@@ -6,6 +6,7 @@ import {shortJobTitle, taskLine} from "./agentTaskLine.js";
 // the bottom line of an agent's row: "Task" and its number with its title in a tooltip, or "Tasks" and the number of each task it has started when there are several, how many of its tasks are done at the far right
 // with the rest in a tooltip, and the thin bar of its tasks done and in testing; a helper has a job, named by the title its sender gave it or else the first words of the job, whose question is its tooltip, followed by the program the job runs on and whether it began a new conversation or resumed one
 const props = defineProps({tasks: {type: Array, default: () => []}, inHand: {type: Object, default: null}, job: {type: String, default: ""}, jobTitle: {type: String, default: ""}, jobLaunch: {type: String, default: ""}, perHour: {type: Number, default: 0}});
+const MOST_LISTED = 3;
 const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand: props.inHand, perHour: props.perHour}) : null));
 </script>
 
@@ -18,7 +19,10 @@ const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand
     </template>
     <template v-else-if="line">
         <span class="task-line" data-agent-task-line>
-            <template v-if="line.started.length > 1">
+            <template v-if="line.started.length > MOST_LISTED">
+                <span class="tasks" data-agent-tasks><HoverTip as="button" class="task" data-agent-task-count :aria-label="`Tasks: ${line.started.length}`">Tasks: {{ line.started.length }}<template #tip><template v-for="task in line.started" :key="task.number"><b class="listed" data-agent-task-listed>{{ task.number }} {{ task.title }}</b></template></template></HoverTip></span>
+            </template>
+            <template v-else-if="line.started.length > 1">
                 <span class="tasks" data-agent-tasks>Tasks <template v-for="(task, place) in line.started" :key="task.number"><template v-if="place">, </template><HoverTip as="button" class="task" data-agent-task :data-peek="`tasks:${task.number}`" :aria-label="`Task ${task.number}: ${task.title}`" @click.stop="peekRef(`tasks:${task.number}`)">{{ task.number }}<template #tip><b>{{ task.title }}</b></template></HoverTip></template></span>
             </template>
             <template v-else>
@@ -44,5 +48,6 @@ const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand
 .count { position: relative; flex: none; margin-left: auto; color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; cursor: default; }
 .rate { flex: none; margin-left: auto; color: var(--text-4); font-size: 11px; font-variant-numeric: tabular-nums; }
 .rate + .count { margin-left: 0; }
+.listed { display: block; }
 .bar { margin-top: 5px; }
 </style>
