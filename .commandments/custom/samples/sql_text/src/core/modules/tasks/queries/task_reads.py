@@ -15,7 +15,6 @@ ORDERED = "id ORDER BY priority DESC"
 # @sin architecture_queries_sql_text_in_a_builder
 LIMITED = "id LIMIT 5"
 # @sin architecture_queries_sql_text_in_a_builder
-# @sin architecture_core_sql_outside_database_layer
 SELECTED = "SELECT id FROM tasks"
 # @sin architecture_queries_sql_text_in_a_builder
 UNHELD = "holder_id IS NULL"

@@ -1,22 +1,27 @@
 ---
 name: SqlInTheDatabaseLayer
 description: Load it before writing a SQL statement in version 5's core, so SQL text stays in the database layer and the rest of the code names what it reads and writes.
-summary: SQL text lives in base/database, base/query, migrations and a module's conditions; everything else calls a named method there.
+summary: SQL text lives in engine/database, engine/query and migrations; everything else builds its read with the query builder.
 tier: mandatory
 languages: [python]
 ---
 
 # SQL in the database layer
 
-SQL text is written in five places only: `engine/database/`, `engine/query/`, a module's `migrations/`,
-the views a module declares in its `views.py`, and a module's `conditions/`. Everywhere else the code calls a method that says what it reads or writes.
+SQL text is written in three places only: `engine/database/`, `engine/query/` and a module's `migrations/`.
+The views still listed in the detector, and the few conditions it names by path, are the last that keep their
+text until they are built with the builder; that list only shrinks. Everywhere else the code builds its read with
+the query builder's methods.
 
 ## When it fires
 
-- **`sql-outside-database-layer`** - a statement or SQL string, including a nested `SELECT`, sits in any
-  other file. A function in `views.py` is a query builder, not a declared view.
-- **`sql-condition-outside-conditions`** - a module embeds a `SELECT` condition outside its conditions
-  folder. Move the condition to that folder and use its named type.
+- **`sql-text-in-a-builder`** - a string holds SQL: `<column> = ?`, `IS NULL`, ` IN (`, `LIKE`, `ORDER BY`,
+  `GROUP BY`, `LIMIT`, `JOIN`, `EXISTS(`, or starts with `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `CREATE`,
+  `DROP`, `ALTER` or `WITH`. Use `where` for `= ?`, `where_in` for `IN (`, `where_exists` for `EXISTS(`,
+  `join` for `JOIN`, `group_by` for `GROUP BY`, `order_by` for `ORDER BY` and `limit` for `LIMIT`.
+- **`statement-outside-the-builder`** - code builds a `Statement(...)` or runs `execute` on a connection.
+  A condition composes `Select`, `Equal`, `SubqueryMatch` and the other classes of `engine/query/conditions/`
+  and returns their statement.
 
 ## How to fix it
 
