@@ -16,6 +16,7 @@ class RunQueueHaltedRule(DriverRule):
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
     roles = [AgentRole.MAIN]
+    main_only_because = "only the main agent resumes a halted queue or lets a waiting update go on"
 
     def __init__(self, halt: RunQueueHalt) -> None:
         self.halt = halt

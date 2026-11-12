@@ -36,6 +36,8 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
   silent-run hold keeps its own rule and the alias rules keep their own refusals.
 - **`reading-nudge-outside-the-notices`** - a rule, a listener or a tick says a reading or cadence notice itself (a
   declaration of the `reading_declarations` list). `ReadingNotices` and `WarnCadenceHandler` are the only senders.
+- **`main-only-rule-without-reason`** - a rule of the processes or aliases module is limited to the main agent with
+  `roles = [AgentRole.MAIN]` and says no reason. Add `main_only_because` with one line, or let the rule answer every role.
 - **`output-measured-outside-output-facts`** - code outside `OutputFacts` and the cadence funnel measures an output
   through `OutputFolder`: its size, its silence or its text. Measure it in `OutputFacts` (what it is) or
   `RunCadence`/`RunSilences` (how it prints); everything else asks them.
