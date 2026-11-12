@@ -1,4 +1,6 @@
-from core.modules.processes.support.reader_judge import ReaderJudge
+class ReaderJudge:
+    def misses(self, reader: str, category: str, text: str) -> bool:
+        return reader not in text
 
 
 class GatheredFacts:

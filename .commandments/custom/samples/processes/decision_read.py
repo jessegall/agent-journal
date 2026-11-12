@@ -3,6 +3,8 @@ from core.modules.processes.queries.reading_decision_query import ReadingDecisio
 
 
 class StoredDecisionRule(DriverRule):
+    name = "samples.decision_read"
+
     def __init__(self, decisions: ReadingDecisionQuery) -> None:
         self.decisions = decisions
 

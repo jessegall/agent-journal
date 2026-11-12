@@ -12,10 +12,8 @@ from core.modules.processes.support.cadence.run_silences import LOOKED_MARK
 from core.modules.processes.support.held_runs import HeldRuns
 from core.modules.processes.support.output_folder import OutputFolder
 
-POLL_ADVICE = {
-    AgentRole.MAIN: "set a monitor with journal output monitor {process}",
-    AgentRole.HELPER: "go idle: the journal wakes you when it ends",
-}
+MAIN_POLL_ADVICE = "set a monitor with journal output monitor {process}"
+HELPER_POLL_ADVICE = "go idle: the journal wakes you when it ends"
 
 
 class RepeatReads:
@@ -34,8 +32,8 @@ class RepeatReads:
             return
         if not self.has_ended(command.process_id):
             if self.folder.read_mark(command.process_id, self.running_mark(context.actor)) and not self.is_held(command.process_id, context):
-                role = self.queries.query(Agent).find(context.actor.id).role
-                raise Refusal(f"output {command.process_id} is still running and you read it already: stop polling it", POLL_ADVICE[role].format(process=command.process_id))
+                advice = MAIN_POLL_ADVICE if self.queries.query(Agent).find(context.actor.id).role == AgentRole.MAIN else HELPER_POLL_ADVICE
+                raise Refusal(f"output {command.process_id} is still running and you read it already: stop polling it", advice.format(process=command.process_id))
             return
         if command.is_repeat_allowed:
             return

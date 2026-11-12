@@ -1,8 +1,14 @@
 from engine.driver.driver_rule import DriverRule
-from core.modules.processes.support.reader_judge import ReaderJudge
+
+
+class ReaderJudge:
+    def misses(self, reader: str, category: str, text: str) -> bool:
+        return reader not in text
 
 
 class MissedLinesRule(DriverRule):
+    name = "samples.reading_judged"
+
     def __init__(self, judge: ReaderJudge) -> None:
         self.judge = judge
 

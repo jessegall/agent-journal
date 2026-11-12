@@ -27,8 +27,12 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
   answers; the commands it wants go in its answer with `running()`.
 - **`go-updated-input-shape-outside-programs`** - Go outside `journal-hook/programs` writes `run_in_background`. What a
   program's rewritten input carries is in its row of the program table.
-- **`reader-judged-outside-one-place`** - Reader findings become messages outside `ReadingNotices`.
-  `ReaderJudge` produces findings; `ReadingNotices` turns them into declarations from `process_nudges`.
+- **`reading-judged-outside-the-decider`** - a rule, a listener or a handler judges whether a command has a good
+  reader (`ReaderJudge.misses`, `fields_missing`, `ReaderDemands`, `ReaderSelection.choose`, `ReaderLayers.ordered`).
+  Ask the engine: `ReadingDecider` decides from the facts `ReadingFacts` gathers; a rule only reads the stored decision.
+- **`output-measured-outside-output-facts`** - code outside `OutputFacts` and the cadence funnel measures an output
+  through `OutputFolder`: its size, its silence or its text. Measure it in `OutputFacts` (what it is) or
+  `RunCadence`/`RunSilences` (how it prints); everything else asks them.
 
 - **`reader-saved-outside-add-reader`** - a reader definition is persisted outside `AddReaderHandler`.
   Save definitions through `AddReader` so writer checks and output proof always run. Unsaved readers used

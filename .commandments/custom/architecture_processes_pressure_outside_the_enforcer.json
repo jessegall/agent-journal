@@ -1,0 +1,81 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {
+                        "all": [
+                            {
+                                "name": "BlockUntil"
+                            },
+                            {
+                                "fileMatches": "(^|/)core/modules/processes/"
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "all": [
+                                    {
+                                        "name": "refused"
+                                    },
+                                    {
+                                        "argument": {
+                                            "descendant": {
+                                                "all": [
+                                                    {
+                                                        "is": "identifier"
+                                                    },
+                                                    {
+                                                        "nameIn": [
+                                                            "READER_BLOCK",
+                                                            "READER_REQUEST_REFUSAL",
+                                                            "SILENT_START_REFUSED",
+                                                            "REDIRECTED_RUN",
+                                                            "HOLD_LIFTED",
+                                                            "READING_PREVENTED"
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "fileMatches": "(^|/)(core/modules|suites)/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/support/reading/(reading_enforcer|exit_texts)\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/listeners/background_run_watch_listener\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/rules/silent_run_hold_rule\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)core/modules/aliases/rules/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "pressure-outside-the-enforcer",
+        "description": "Code other than the ReadingEnforcer blocks or refuses an agent over a reader.",
+        "rule": "ReadingEnforcer is the only code that presses: a decision says what, the enforcer does it and states the exits.",
+        "skill": "processes-architecture"
+    }
+}
