@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from engine.command.context import Context
 from engine.command.handler import Handler
+from engine.query.conditions.among import Among
 from engine.query.conditions.less import Less
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
@@ -12,8 +13,8 @@ from core.modules.drivers.commands.prune_hook_calls.prune_hook_calls import Prun
 from engine.setting.setting_values import SettingValues
 from core.modules.drivers.support.driver_settings import DAYS_SETTING
 
-PRUNE_REASON = "pruning removes every hook call older than the kept window, with its lines"
-
+BATCH_ROWS = 500
+MOST_BATCHES = 20
 
 
 class PruneHookCallsHandler(Handler[PruneHookCalls, int]):
@@ -28,9 +29,13 @@ class PruneHookCallsHandler(Handler[PruneHookCalls, int]):
     def handle(self, command: PruneHookCalls, context: Context) -> int:
         days = self.settings.project.number(DAYS_SETTING)
         cutoff = Timestamp(context.timestamp.value - timedelta(days=days))
-        calls = tuple(self.queries.query(HookCall).matching(Less("created_at", cutoff.text)).every_row(PRUNE_REASON))
-        for call in calls:
-            for line in tuple(self.queries.query(AgentLine).filter(hook_call_id=call.id).every_row(PRUNE_REASON)):
-                self.repository.delete(line, context)
-            self.repository.delete(call, context)
-        return len(calls)
+        pruned = 0
+        for _ in range(MOST_BATCHES):
+            calls = self.queries.query(HookCall).matching(Less("created_at", cutoff.text)).oldest().limit(BATCH_ROWS, "one batch of old hook calls to delete").get()
+            if not calls:
+                break
+            lines = self.queries.query(AgentLine).matching(Among("hook_call_id", [call.id for call in calls])).every_row("the lines of the hook calls deleted with them")
+            self.repository.delete_many_stored(tuple(lines), context)
+            self.repository.delete_many_stored(calls, context)
+            pruned += len(calls)
+        return pruned

@@ -24,9 +24,9 @@ class SendReadingNoticesHandler(Handler[SendReadingNotices, None]):
 
     def handle(self, command: SendReadingNotices, context: Context) -> None:
         process = self.rows.required(Process, command.process_id)
-        if process.is_journal_merge:
+        parts = self.visibility.shown_parts(process)
+        if not parts:
             return
-        parts = self.visibility.parts(process.id)
         changes = self.marker.changes(process, parts, context)
         for nudge in (*self.notices.mark_nudges(process, changes), *self.notices.nudges(process, self.outputs.process_output(process.id), parts)):
             self.nudger.send_nudge(process.session_agent_id, nudge, SOURCE, context)

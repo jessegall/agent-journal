@@ -16,15 +16,15 @@ from core.modules.processes.support.reading.reading_facts import ReadingFacts
 
 class ShadowDecisions:
     """Decides the reader of each part of a run beside the old code and keeps the decision, which nothing acts on
-    yet. The facts and the kept decisions of all parts are read together, once; a merge the journal ran itself has
-    no reader to judge, so it reads and keeps nothing. A decision the engine cannot build is written to the system
+    yet. The facts and the kept decisions of all parts are read together, once; a run with no parts reads and keeps
+    nothing. A decision the engine cannot build is written to the system
     log, and the run goes on."""
 
     def __init__(self, facts: ReadingFacts, decider: ReadingDecider, decisions: ReadingDecisions, log: SystemLogWriter) -> None:
         self.facts, self.decider, self.decisions, self.log = facts, decider, decisions, log
 
     def store(self, process: Process, parts: Sequence[ProcessPart], moment: ReadingMoment, context: Context) -> None:
-        if not parts or process.is_journal_merge:
+        if not parts:
             return
         stored = self.decisions.kept(process, moment)
         for part, case in zip(parts, self.facts.cases_for(process, parts, moment)):

@@ -9,6 +9,7 @@ from tests.stories.support.statement_counts import reads_in_last_request
 
 WAITING_RUNS = 12
 PROCESS_READ = "SELECT * FROM processes WHERE id IN"
+VERSION_READ = "SELECT id, version FROM processes"
 
 
 def test_granting_slots_to_twelve_waiting_runs_reads_their_processes_once(new_story):
@@ -19,5 +20,6 @@ def test_granting_slots_to_twelve_waiting_runs_reads_their_processes_once(new_st
     story.container.get(EventRows).known.clear()
     with story.repeated_work.request():
         story.container.get(Bus).run(GrantRunSlots(), Actor.core())
-    reads = reads_in_last_request(story, PROCESS_READ)
-    story.expect_rows([has_slot(story, process) for process in waiting].count(True) == 2, reads == 1, detail=f"{reads} process reads")
+    reads, version_reads = reads_in_last_request(story, PROCESS_READ), reads_in_last_request(story, VERSION_READ)
+    story.expect_rows([has_slot(story, process) for process in waiting].count(True) == 2, reads == 1, version_reads == 0,
+                      detail=f"{reads} process reads, {version_reads} version reads")

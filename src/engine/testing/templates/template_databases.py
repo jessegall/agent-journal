@@ -23,6 +23,9 @@ from engine.testing.templates.template import Template
 from engine.testing.templates.template_adaptation import STATE_FILE, TemplateAdaptation
 from engine.testing.stories.working_journal import WorkingJournal
 
+WORKING_FOLDER_PREFIX = "story-journals-"
+STALE_WORKING_FOLDER_SECONDS = 6 * 3600
+
 
 class TemplateDatabases:
     """Migrated databases shared by test processes and kept for later runs: a template is built the first
@@ -33,8 +36,14 @@ class TemplateDatabases:
         self.folder = folder
         self.adaptation = TemplateAdaptation(CORE_FOLDER.parent.parent.resolve())
         self.templates: dict[tuple[tuple[str, ...], type[StoryFixture] | None], Template] = {}
-        self.working_folder = tempfile.TemporaryDirectory(prefix="story-journals-")
+        self.working_folder = tempfile.TemporaryDirectory(prefix=WORKING_FOLDER_PREFIX)
         self.working_journals: dict[Path, list[WorkingJournal]] = {}
+
+    @staticmethod
+    def remove_stale_working_folders(now: float) -> None:
+        for folder in Path(tempfile.gettempdir()).glob(f"{WORKING_FOLDER_PREFIX}*"):
+            if now - folder.stat().st_mtime > STALE_WORKING_FOLDER_SECONDS:
+                shutil.rmtree(folder, ignore_errors=True)
 
     def story(self, folder: Path, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Story:
         template = self.template(modules, fixture)

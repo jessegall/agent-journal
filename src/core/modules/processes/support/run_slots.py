@@ -39,15 +39,15 @@ class RunSlots:
     def grant(self, context: Context) -> None:
         queued = sorted((process for process in self.running() if process.queued_at is not None), key=lambda process: (process.priority.rank, process.id))
         parts = self.admission.waiting_parts(queued)
-        self.rows.prepare(Process, [waiting.id for waiting in queued])
-        self.rows.prepare(Agent,[waiting.session_agent_id for waiting in queued])
+        processes = self.rows.required_index(Process, [waiting.id for waiting in queued])
+        agents = self.rows.required_index(Agent, [waiting.session_agent_id for waiting in queued])
         kinds = self.kind_limits.pass_over(queued)
         for waiting in queued:
-            agent = self.rows.required(Agent, waiting.session_agent_id)
+            agent = agents[waiting.session_agent_id]
             needs_slot = self.admission.needs_slot(waiting, agent)
             if not self.admission.may_start(waiting, agent, parts[waiting.id], self.clock.timestamp()) or kinds.is_held(waiting, self.admitted_runs()):
                 continue
-            process = self.rows.required(Process, waiting.id)
+            process = processes[waiting.id]
             used_slots = sum(self.admission.uses_slot(run) for run in self.running() if run.queued_at is None)
             room = self.settings.integer(ProcessSetting.RUN_BATCH_SIZE) - used_slots
             if needs_slot and (self.halt.is_halted or room <= 0):

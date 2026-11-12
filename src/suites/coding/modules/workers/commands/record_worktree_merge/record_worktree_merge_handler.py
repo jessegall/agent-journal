@@ -1,4 +1,3 @@
-from core.modules.tasks.queries.task_query import TaskQuery
 from dataclasses import replace
 
 from engine.command.context import Context
@@ -10,6 +9,7 @@ from engine.scope.actor_scope import ActorScope
 from engine.driver.nudger import Nudger
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.commands.record_worktree_merge.record_worktree_merge import RecordWorktreeMerge
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree

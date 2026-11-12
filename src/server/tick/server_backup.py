@@ -16,10 +16,9 @@ LEAST_COPIES = 1
 
 
 class ServerBackup:
-    """Writes an online copy of the journal's database once the minutes a setting names have passed since the
-    newest copy, under a name of its own until it is whole, and keeps the newest copies a setting counts, at
-    least the one
-    just written; 0 minutes writes none."""
+    """Writes an online copy of the journal's database, before an update and every so many minutes when a setting
+    asks for it (0, the default, never), under a name of its own until it is whole; each check keeps only the
+    newest copies a setting counts, at least one, and a write removes a partial copy a failed write left."""
 
     def __init__(self, home: JournalHome, clock: Clock) -> None:
         self.home, self.clock = home, clock
@@ -31,9 +30,8 @@ class ServerBackup:
             minutes, count = settings.project.number(BACKUP_MINUTES_SETTING), settings.project.number(BACKUP_COUNT_SETTING)
         finally:
             container.get(Database).close()
-        if minutes == 0 or self.has_recent_copy(minutes):
-            return
-        self.write_copy()
+        if minutes > 0 and not self.has_recent_copy(minutes):
+            self.write_copy()
         for extra_copy in self.copies()[max(count, LEAST_COPIES):]:
             extra_copy.unlink()
 
@@ -49,6 +47,8 @@ class ServerBackup:
 
     def write_copy(self) -> None:
         self.folder().mkdir(parents=True, exist_ok=True)
+        for leftover in self.folder().glob(f"{COPY_PREFIX}*{PARTIAL_SUFFIX}*"):
+            leftover.unlink()
         target = self.folder() / f"{COPY_PREFIX}{self.clock.timestamp().value.strftime('%Y%m%d-%H%M%S')}.db"
         partial = target.with_suffix(PARTIAL_SUFFIX)
         source = sqlite3.connect(self.home.database)

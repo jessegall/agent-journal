@@ -13,4 +13,4 @@ class NoReads:
 
 def test_a_merge_the_journal_ran_itself_keeps_no_reading_decision_and_reads_nothing():
     merge = SimpleNamespace(id=3, is_journal_merge=True)
-    ShadowDecisions(NoReads(), NoReads(), NoReads(), NoReads()).store(merge, [SimpleNamespace(position=1)], ReadingMoment.START, NoReads())
+    ShadowDecisions(NoReads(), NoReads(), NoReads(), NoReads()).store(merge, [], ReadingMoment.START, NoReads())
