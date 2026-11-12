@@ -1,39 +1,25 @@
-import subprocess
-import threading
 from collections.abc import Callable
 
+from engine.enums.process_kind import ProcessKind
+from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.journal.journal_home import JournalHome
-from suites.coding.modules.checks.commands.support.check_group import CheckGroup
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.process_executor import ProcessExecutor
 from suites.coding.modules.checks.commands.support.check_result import CheckResult
 
 CHECK_LIMIT_SECONDS = 300
 
 
 class CheckRunner:
-    """Runs a check's command through the shell in the project's folder, under a time limit, hands on each line
-    as it is printed and keeps what it printed. A reader of the lines that fails stops the check's whole process
-    group, and a check that ended in time is never reported as late."""
+    """Runs a check's command through the shell in the project's folder, through the one door under a time limit,
+    hands on each line as it is printed and keeps what it printed."""
 
-    def __init__(self, home: JournalHome, limit_seconds: float = CHECK_LIMIT_SECONDS) -> None:
-        self.home, self.limit_seconds = home, limit_seconds
+    def __init__(self, home: JournalHome, executor: ProcessExecutor, limit_seconds: float = CHECK_LIMIT_SECONDS) -> None:
+        self.home, self.executor, self.limit_seconds = home, executor, limit_seconds
 
     def run(self, command: str, read_line: Callable[[str], None]) -> CheckResult:
-        running = subprocess.Popen(["sh", "-c", command], cwd=self.home.project_folder, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace", start_new_session=True)
-        group = CheckGroup(running)
-        limit = threading.Timer(self.limit_seconds, group.expire)
-        limit.start()
-        lines: list[str] = []
         try:
-            for line in running.stdout or ():
-                lines.append(line)
-                read_line(line)
-            running.wait()
-        except BaseException:
-            group.stop()
-            raise
-        finally:
-            limit.cancel()
-            group.finish()
-        if group.expired:
+            done = self.executor.execute(ExecutionRequest(["sh", "-c", command], self.home.project_folder, ProcessKind.PLUGIN, self.limit_seconds, on_line=read_line))
+        except RunTimeLimitError:
             return CheckResult(False, f"it did not end within {int(self.limit_seconds)} seconds")
-        return CheckResult(running.returncode == 0, "".join(lines).strip())
+        return CheckResult(done.succeeded, done.stdout.strip())

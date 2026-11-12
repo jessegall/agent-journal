@@ -50,9 +50,9 @@ class SendHelperHandler(Handler[SendHelper, int]):
         if command.review_plan_id is not None and self.reviewed(helper, command.review_plan_id):
             raise Refusal(f"{AgentLabel.from_agent(helper).text} reviewed plan {command.review_plan_id} already", self.other_reviewer_step(helper, command.review_plan_id))
         is_idle = helper.ended_at is not None and last_job.ended_at is not None
-        if is_idle:
-            self.check_profile_model(helper)
         rotating_profile = self.occupants.profile(helper) if is_idle else None
+        if is_idle and rotating_profile is None:
+            self.check_profile_model(helper)
         if rotating_profile is None:
             self.kept.check_program(helper)
         source_context = replace(context, environment_id=helper.environment_id)

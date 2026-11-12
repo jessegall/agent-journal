@@ -1,7 +1,7 @@
 from engine.enums.process_kind import ProcessKind
 from engine.errors.run_time_limit_error import RunTimeLimitError
-from engine.process.execution_request import ExecutionRequest
-from engine.process.process_executor import ProcessExecutor
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.process_executor import ProcessExecutor
 from engine.file.file_access import FileAccess
 import shutil
 import sys

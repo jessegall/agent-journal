@@ -1,3 +1,4 @@
+from tests.unit.support.plain_executor import plain_executor
 from pathlib import Path
 
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -9,7 +10,7 @@ def test_a_missing_test_checkout_is_made_at_the_named_commit(tmp_path):
     first = repository.tip("base")
     repository.committed("cart.py", "TOTAL = 1\n", "The cart counts")
     worktree = worktree_row(repository, folder, first)
-    checkout = WorktreeGit(None).commit_checkout(worktree, first)
+    checkout = WorktreeGit(None, plain_executor()).commit_checkout(worktree, first)
     assert Path(checkout, "cart.py").read_text() == "TOTAL = 0\n"
 
 
@@ -17,7 +18,7 @@ def test_an_existing_test_checkout_moves_to_the_named_commit(tmp_path):
     repository, folder = worker_checkout(tmp_path)
     first = repository.tip("base")
     worktree = worktree_row(repository, folder, first)
-    git = WorktreeGit(None)
+    git = WorktreeGit(None, plain_executor())
     git.commit_checkout(worktree, first)
     (folder / "cart.py").write_text("TOTAL = 2\n")
     repository.git("commit", "-am", "The worker's cart", folder=folder)

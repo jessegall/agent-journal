@@ -1,4 +1,5 @@
 import json
+import shlex
 
 import pytest
 
@@ -10,6 +11,7 @@ from tests.stories.suites.coding.work_settings import shown_fields
 
 BADGES = {"journal.core.helpers.context-limit-tokens": "Capped amount"}
 FIRST_VALUES = {"journal.core.helpers.cold-session-minutes": 55, "journal.core.helpers.cold-session-context-percent": 20}
+ADDED_ENTRIES = {"journal.core.helpers.context-limit-kinds": "worker:200000", "journal.core.helpers.context-limit-profiles": "journal-worker:200000"}
 
 
 def changed_value(field: dict[str, object]) -> object:
@@ -20,7 +22,13 @@ def changed_value(field: dict[str, object]) -> object:
     choices = [choice for choice in field.get("choices") or [] if choice != value]
     if choices:
         return choices[0]
+    if isinstance(value, list):
+        return [*value, ADDED_ENTRIES[str(field["key"])]]
     return value + 1
+
+
+def stored_text(value: object) -> str:
+    return ", ".join(value) if isinstance(value, list) else str(value)
 
 
 @pytest.mark.parametrize("key", EDITABLE_KEYS)
@@ -28,8 +36,8 @@ def test_each_setting_of_the_workers_screen_shows_its_badge_and_a_person_changes
     story = new_story(fixture=UserBuilder)
     field = shown_fields(story)[key]
     changed = changed_value(field)
-    apply_work_setting(story, key, json.dumps(changed) if isinstance(changed, bool) else changed)
+    apply_work_setting(story, key, shlex.quote(json.dumps(changed)) if isinstance(changed, (bool, list)) else changed)
     shown = shown_fields(story)[key]
     stored = story.run(f"setting show {key} --environment main", actor=story.user).output_text
-    story.expect_rows(field["badge"] == BADGES.get(key, ""), field["value"] == FIRST_VALUES.get(key, field["value"]), shown["value"] == changed, f"value: {changed}".lower() in stored.lower(),
+    story.expect_rows(field["badge"] == BADGES.get(key, ""), field["value"] == FIRST_VALUES.get(key, field["value"]), shown["value"] == changed, f"value: {stored_text(changed)}".lower() in stored.lower(),
                       detail=f"{field} | {shown} | {stored}")

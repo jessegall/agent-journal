@@ -1,5 +1,6 @@
 import subprocess
 
+from tests.unit.support.plain_executor import plain_executor
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
@@ -53,7 +54,7 @@ def test_own_files_leave_out_merged_in_files(tmp_path):
     repository.git("merge", "--no-edit", ENVIRONMENT_BRANCH, folder=folder)
     repository.committed("second.py", "SECOND = 1\n", "The second move")
     repository.git("merge", "--no-edit", ENVIRONMENT_BRANCH, folder=folder)
-    assert list(WorktreeGit(None, None).worker_files(worktree_row(repository, folder, base_commit))) == ["own.py"]
+    assert list(WorktreeGit(None, plain_executor()).worker_files(worktree_row(repository, folder, base_commit))) == ["own.py"]
 
 
 def test_own_files_keep_a_renamed_file(tmp_path):
@@ -61,14 +62,14 @@ def test_own_files_keep_a_renamed_file(tmp_path):
     base_commit = repository.tip(ENVIRONMENT_BRANCH)
     repository.git("mv", "cart.py", "basket.py", folder=folder)
     repository.git("commit", "-m", "task 1: rename", folder=folder)
-    assert "basket.py" in WorktreeGit(None, None).worker_files(worktree_row(repository, folder, base_commit))
+    assert "basket.py" in WorktreeGit(None, plain_executor()).worker_files(worktree_row(repository, folder, base_commit))
 
 
 def test_own_files_keep_a_name_with_a_space(tmp_path):
     repository, folder = worker_checkout(tmp_path)
     base_commit = repository.tip(ENVIRONMENT_BRANCH)
     own_commit(repository, folder, "my notes.py", "NOTE = 1\n")
-    assert list(WorktreeGit(None, None).worker_files(worktree_row(repository, folder, base_commit))) == ["my notes.py"]
+    assert list(WorktreeGit(None, plain_executor()).worker_files(worktree_row(repository, folder, base_commit))) == ["my notes.py"]
 
 
 def test_own_files_hold_uncommitted_and_untracked_files_once(tmp_path):
@@ -77,9 +78,9 @@ def test_own_files_hold_uncommitted_and_untracked_files_once(tmp_path):
     own_commit(repository, folder, "own.py", "OWN = 1\n")
     (folder / "own.py").write_text("OWN = 2\n")
     (folder / "new.py").write_text("NEW = 1\n")
-    assert WorktreeGit(None, None).worker_files(worktree_row(repository, folder, base_commit)) == ("own.py", "new.py")
+    assert WorktreeGit(None, plain_executor()).worker_files(worktree_row(repository, folder, base_commit)) == ("own.py", "new.py")
 
 
 def test_own_files_of_a_worker_with_no_work_are_empty(tmp_path):
     repository, folder = worker_checkout(tmp_path)
-    assert WorktreeGit(None, None).worker_files(worktree_row(repository, folder, repository.tip(ENVIRONMENT_BRANCH))) == ()
+    assert WorktreeGit(None, plain_executor()).worker_files(worktree_row(repository, folder, repository.tip(ENVIRONMENT_BRANCH))) == ()

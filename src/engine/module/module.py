@@ -3,7 +3,7 @@ import inspect
 from collections.abc import Sequence
 from pathlib import Path
 from typing import ClassVar, Never
-from engine.agent.agent_group import AgentGroup
+from engine.agent.groups.agent_group import AgentGroup
 from engine.helper_type.helper_type import HelperType
 from engine.profile.agent_profile import AgentProfile
 

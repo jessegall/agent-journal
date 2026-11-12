@@ -2,15 +2,14 @@ from dataclasses import dataclass
 
 from engine.command.command import Command
 from engine.enums.process_kind import ProcessKind
-from core.modules.processes.models.process import Process
+from core.modules.processes.models.request_run import RequestRun
 
 
 @dataclass(frozen=True)
-class RecordRequestRun(Command[Process]):
-    """Keeps the process row of a hook, journal command or viewer request: running as it comes in, or already ended
-    with its exit code when it is recorded after its answer, as a hook is."""
+class RecordRequestRun(Command[RequestRun]):
+    """Keeps the row of a hook, journal command, viewer request or run of the journal's own, once it ended."""
 
     agent_id: int
     kind: ProcessKind
     line: str
-    ended_with: int | None = None
+    exit_code: int

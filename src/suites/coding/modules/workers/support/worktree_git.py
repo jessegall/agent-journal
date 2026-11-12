@@ -13,8 +13,8 @@ from pathlib import Path, PurePosixPath
 from engine.file.conflict_files import ConflictFiles
 from engine.enums.process_kind import ProcessKind
 from engine.errors.run_time_limit_error import RunTimeLimitError
-from engine.process.execution_request import ExecutionRequest
-from engine.process.process_executor import ProcessExecutor
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.process_executor import ProcessExecutor
 from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from engine.errors.refusal import Refusal
 from core.modules.environments.models.environment import Environment
@@ -53,6 +53,8 @@ SKIP_WORKTREE_MARK = "S "
 
 UNTRACKED_STATUS = "?? "
 PUBLISHED_FOLDERS = (".claude", ".agents")
+
+BRANCH_CHANGES = frozenset({"merge", "rebase", "checkout", "switch", "worktree", "stash", "reset", "commit", "cherry-pick", "revert", "branch", "pull", "push", "clone", "am", "apply", "restore", "clean", "add", "update-ref", "update-index", "config", "fetch", "rm", "mv", "tag", "notes"})
 
 
 class WorktreeGit:
@@ -545,9 +547,9 @@ class WorktreeGit:
 
     def git(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
         line = ["git", "-C", folder, *arguments]
-        kind = ProcessKind.QUICK if limit_seconds <= GIT_LIMIT_SECONDS else ProcessKind.MERGE
+        kind = ProcessKind.MERGE if arguments and arguments[0] in BRANCH_CHANGES else ProcessKind.QUICK
         try:
-            done = self.executor.execute(ExecutionRequest(line, Path(folder), kind, limit_seconds))
+            done = self.executor.execute(ExecutionRequest(line, Path.cwd(), kind, limit_seconds))
             return subprocess.CompletedProcess(line, done.exit_code, done.stdout, done.stderr)
         except RunTimeLimitError as timeout:
             raise Refusal(f"git {' '.join(arguments[:2])} took longer than {limit_seconds} seconds in {folder}", "run it again once the folder is free") from timeout

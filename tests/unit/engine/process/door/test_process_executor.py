@@ -4,13 +4,13 @@ import pytest
 
 from engine.enums.process_kind import ProcessKind
 from engine.errors.run_time_limit_error import RunTimeLimitError
-from engine.process.execution import Execution
-from engine.process.execution_gate import ExecutionGate
-from engine.process.execution_request import ExecutionRequest
-from engine.process.placed_run import PlacedRun
-from engine.process.process_executor import ProcessExecutor
-from engine.process.run_placement import RunPlacement
-from engine.process.runner_program import RunnerProgram
+from engine.process.door.execution import Execution
+from engine.process.door.execution_gate import ExecutionGate
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.placed_run import PlacedRun
+from engine.process.door.process_executor import ProcessExecutor
+from engine.process.door.run_placement import RunPlacement
+from engine.process.door.runner_program import RunnerProgram
 
 
 class CountedPlacement(RunPlacement):
@@ -26,8 +26,9 @@ class CountedPlacement(RunPlacement):
     def moved_to_background(self, run: PlacedRun, pid: int) -> None:
         self.moved.append(run.process_id)
 
-    def ended(self, run: PlacedRun, execution: Execution) -> None:
+    def ended(self, run: PlacedRun, execution: Execution) -> int | None:
         self.ended_runs.append((run, execution))
+        return run.process_id
 
 
 class OpenGate(ExecutionGate):
@@ -36,7 +37,7 @@ class OpenGate(ExecutionGate):
     def __init__(self) -> None:
         self.asked = 0
 
-    def opened(self, placement: RunPlacement, run: PlacedRun) -> bool:
+    def opened(self) -> bool:
         self.asked += 1
         return True
 

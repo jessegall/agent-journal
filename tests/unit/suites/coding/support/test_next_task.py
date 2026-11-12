@@ -18,7 +18,7 @@ def assigner(selected_task=None, open_task=None, focused=None, planned=None, res
     plan_order = SimpleNamespace(first_started_plan_task=lambda tasks: tasks[0] if tasks else None)
     choices = SimpleNamespace(find=lambda agent_id, excluded_id: selected_task)
     picker = SimpleNamespace(first_started=lambda agent, excluded_id: focused or planned)
-    return NextTask(tasks, plan_tasks, queries, SimpleNamespace(), SimpleNamespace(), plan_order, choices, picker)
+    return NextTask(tasks, plan_tasks, queries, SimpleNamespace(), SimpleNamespace(), plan_order, choices, picker, SimpleNamespace())
 
 
 @pytest.mark.parametrize("steps, first_id", [

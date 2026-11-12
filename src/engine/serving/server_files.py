@@ -1,6 +1,7 @@
+import time
 import fcntl
 import os
-from engine.serving.server_phase import ServerPhase
+from engine.enums.server_phase import ServerPhase
 from collections.abc import Generator
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
@@ -19,6 +20,8 @@ from engine.time.polled_wait import PolledWait
 SOCKET_FILE_MODE = 0o600
 HOSTED_VIEWER_SOCKET = Path("/run/journal/viewer.sock")
 LOCK_POLL_SECONDS = 0.05
+MARK_FRESH_SECONDS = 120
+
 def socket_path(home: JournalHome, name: str = SERVER_SOCKET) -> Path:
     return home.socket(name)
 class ServerFiles:
@@ -111,11 +114,18 @@ class ServerFiles:
         self.tunnel_pid_file.unlink(missing_ok=True)
 
     def phase(self) -> ServerPhase:
-        if self.maintenance.exists() or self.restart_mark.exists():
+        if self.is_fresh(self.maintenance) or self.is_fresh(self.restart_mark):
             return ServerPhase.UPDATING
-        if self.start_mark.exists():
+        if self.is_fresh(self.start_mark):
             return ServerPhase.STARTING
         return ServerPhase.READY
+
+    @staticmethod
+    def is_fresh(mark: Path) -> bool:
+        try:
+            return time.time() - mark.stat().st_mtime < MARK_FRESH_SECONDS
+        except FileNotFoundError:
+            return False
 
     def mark_maintenance(self) -> None:
         FileAccess.shared().write(self.maintenance, str(os.getpid()))

@@ -87,8 +87,8 @@ class AgentRows:
             return self.find(owner.stored_agent_id)
         if owner.environment_id is None:
             return None
-        with self.scopes.opened(None, owner.environment_id):
-            return MainAgentFinder.newest(self.queries)
+        running = [agent for agent in self.running_main_agents() if agent.environment_id == owner.environment_id]
+        return max(running, key=lambda agent: agent.id, default=None)
 
     def main_agents(self) -> tuple[Agent, ...]:
         main = self.main_agent()

@@ -1,9 +1,12 @@
+from dataclasses import replace
+
 from engine.errors.run_time_limit_error import RunTimeLimitError
-from engine.process.execution import Execution
-from engine.process.execution_gate import ExecutionGate
-from engine.process.execution_request import ExecutionRequest
-from engine.process.run_placement import RunPlacement
-from engine.process.runner_program import RunnerProgram
+from engine.process.door.execution import Execution
+from engine.process.door.execution_gate import ExecutionGate
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.placed_run import PlacedRun
+from engine.process.door.run_placement import RunPlacement
+from engine.process.door.runner_program import RunnerProgram
 
 TIME_LIMIT_EXIT_CODE = 124
 
@@ -18,7 +21,7 @@ class ProcessExecutor:
 
     def execute(self, request: ExecutionRequest) -> Execution:
         placed = self.placement.placed(request)
-        self.gate.opened(self.placement, placed)
+        self.gate.opened()
         try:
             execution = self.runner.run(placed, self.placement)
         except RunTimeLimitError as error:
@@ -27,5 +30,10 @@ class ProcessExecutor:
         except BaseException:
             self.placement.ended(placed, Execution(placed.process_id, 1, "", "the run failed to start"))
             raise
-        self.placement.ended(placed, execution)
-        return execution
+        return replace(execution, process_id=self.recorded(placed, execution))
+
+    def recorded(self, placed: PlacedRun, execution: Execution) -> int | None:
+        try:
+            return self.placement.ended(placed, execution)
+        except Exception:
+            return None

@@ -1,6 +1,6 @@
-from engine.process.execution import Execution
-from engine.process.execution_request import ExecutionRequest
-from engine.process.placed_run import PlacedRun
+from engine.process.door.execution import Execution
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.placed_run import PlacedRun
 
 
 class RunPlacement:
@@ -11,11 +11,8 @@ class RunPlacement:
     def placed(self, request: ExecutionRequest) -> PlacedRun:
         return PlacedRun(request, None, False)
 
-    def holds(self, run: PlacedRun) -> bool:
-        return False
-
     def moved_to_background(self, run: PlacedRun, pid: int) -> None:
         return None
 
-    def ended(self, run: PlacedRun, execution: Execution) -> None:
+    def ended(self, run: PlacedRun, execution: Execution) -> int | None:
         return None
