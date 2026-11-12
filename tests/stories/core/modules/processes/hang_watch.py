@@ -157,7 +157,7 @@ def test_a_quiet_run_its_agent_read_is_kept_past_the_hang_time_and_stopped_once_
 
 TICK = timedelta(seconds=10)
 HALF = HANG_SECONDS // 2
-STUCK = "uses no processor time"
+STUCK = "uses no CPU"
 
 
 def titled(story: Story, title: str, process_id: int = 1) -> None:

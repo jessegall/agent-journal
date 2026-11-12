@@ -571,7 +571,7 @@ def test_one_line_is_typed_to_an_idle_agent_however_many_messages_wait_and_ticks
 def test_a_line_the_hook_carries_after_a_failed_typing_is_told_once(untyped_message_after_tick):
     story = untyped_message_after_tick
     lines = story.hook("s-1", HookSamples.prompt("Carry on")).lines
-    expect_lines_3(lines, "New message 1", ["New message 1"])
+    expect_lines_3(lines, "New message 1", ["New message 1: read it"])
     story.expect_absent_hook_line("s-1", HookSamples.edit("cart.py"), "New message 1")
 
 

@@ -5,7 +5,7 @@ from engine.module.module_finder import ModuleFinder
 from tests.stories.core.modules.processes.support.process_samples import end_run, moved_run
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
-CHECK_TERMS = "still runs after {minutes} minutes: check it does its work"
+CHECK_TERMS = "has run {minutes} min: check it is doing its work"
 
 
 def check_tick(story):
@@ -15,7 +15,7 @@ def check_tick(story):
 
 
 def wakes(story, process) -> int:
-    return story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text.count(f"output {process.id} still runs after")
+    return story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text.count(f"Output {process.id} has run")
 
 
 def waited(story, minutes: int, process) -> int:

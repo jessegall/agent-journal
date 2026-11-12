@@ -87,7 +87,7 @@ def test_a_read_only_helper_is_told_its_own_run_is_sparse(new_story):
     process = agent_run(story, helper, "pytest tests/search -q", CommandCategory.TEST_RUN)
     titled(story, process, "Running the search tests", Actor(helper.id, ActorType.AGENT))
     ticks(story, 120, process, every=40)
-    expect_told(story, helper.session, f"Output {process.id} prints about once every 40 seconds, so no reader can follow it")
+    expect_told(story, helper.session, f"Output {process.id} prints about once every 40s, too sparse for a reader")
 
 
 def test_a_helpers_and_a_workers_runs_that_print_nothing_for_30_seconds_are_told_they_do_not_stream(new_story):
@@ -149,7 +149,7 @@ def test_a_busy_agent_is_told_the_sparse_line_once_with_its_next_tool_use(new_st
         lines += told(story, MAIN)
         ticks(story, 10, process, every=10 if step % 4 == 0 else 0)
     lines += told(story, MAIN)
-    sparse = [line for line in lines if "so no reader can follow it" in line]
+    sparse = [line for line in lines if "too sparse for a reader" in line]
     story.expect_rows(len(sparse) == 1, detail="\n".join(lines))
 
 

@@ -93,4 +93,4 @@ def test_two_environments_judge_their_runs_by_their_own_thresholds(new_story):
     early = kept_lines(story, other.id, story.user)
     ticks(story, 30)
     story.expect_rows(f"Output {here.id} printed nothing for 30s" in kept_lines(story), f"output {there.id} " not in early,
-                      f"Output {there.id} printed nothing for 60 seconds" in kept_lines(story, other.id, story.user), detail=kept_lines(story, other.id, story.user))
+                      f"Output {there.id} printed nothing for 60s" in kept_lines(story, other.id, story.user), detail=kept_lines(story, other.id, story.user))
