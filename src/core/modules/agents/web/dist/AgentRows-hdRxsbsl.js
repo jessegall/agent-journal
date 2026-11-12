@@ -1,6 +1,6 @@
 import { openBlock as a, createElementBlock as s, withModifiers as ne, createElementVNode as y, createVNode as p, unref as i, withCtx as b, createTextVNode as f, Fragment as F, renderList as oe, toDisplayString as c, createBlock as D, createCommentVNode as h, ref as V, computed as u, watch as ge, onUnmounted as xe, defineAsyncComponent as _e, createSlots as et, resolveDynamicComponent as tt, normalizeClass as ue, normalizeStyle as Ie, renderSlot as Se, onMounted as at, Teleport as nt, mergeProps as ot, toRef as Ve, withKeys as qe, nextTick as Fe } from "vue";
 import { TextInput as ze, Btn as ee, TextArea as lt, TimeAgo as We, useWindow as Oe, SwitchCase as Je, peekRef as Ce, Icon as Ee, RunningCommand as st, FoldGroup as Ke, TaskStatusIcon as it, loadWindowComponent as rt, coalesced as dt, READ_RATES as ut, eventMayBeChildOf as ct, InnerTabs as gt, TabBody as vt, EmptyState as Ne, HoverTip as Me, TaskBar as mt, useNow as Ze, age as pt, perHour as ft, sinceWords as ht, seenWords as bt, AgentTip as kt, SearchBar as yt, Segmented as wt, MenuLabel as He, MenuItem as Re, RowList as Mt, toggleFilter as $t } from "@journal/window-kit";
-import { _ as Z, T as xt } from "./TranscriptRows-h-id2yIe.mjs";
+import { _ as Z, T as xt } from "./TranscriptRows-Crmxs6Un.js";
 const St = { class: "action-buttons" }, Ct = {
   __name: "AgentDriverForm",
   props: { program: String, model: String, pending: Boolean },
@@ -50,7 +50,7 @@ const St = { class: "action-buttons" }, Ct = {
       ])
     ], 32));
   }
-}, Tt = /* @__PURE__ */ Z(Ct, [["__scopeId", "data-v-50df3766"]]), At = { class: "action-field" }, jt = ["value", "disabled"], Lt = ["value"], Rt = { key: 1 }, Bt = {
+}, Tt = /* @__PURE__ */ Z(Ct, [["__scopeId", "data-v-c138a4da"]]), At = { class: "action-field" }, jt = ["value", "disabled"], Lt = ["value"], Rt = { key: 1 }, Bt = {
   key: 1,
   class: "action-field"
 }, It = { class: "action-buttons" }, Ot = {
@@ -124,7 +124,7 @@ const St = { class: "action-buttons" }, Ct = {
       ])
     ], 32));
   }
-}, Vt = /* @__PURE__ */ Z(Ot, [["__scopeId", "data-v-356a2712"]]), Ht = { class: "action-buttons" }, zt = {
+}, Vt = /* @__PURE__ */ Z(Ot, [["__scopeId", "data-v-adde4158"]]), Ht = { class: "action-buttons" }, zt = {
   __name: "AgentRetireForm",
   props: { reason: String, pending: Boolean },
   emits: ["submit", "cancel", "update:reason"],
@@ -166,7 +166,7 @@ const St = { class: "action-buttons" }, Ct = {
       ])
     ], 32));
   }
-}, Et = /* @__PURE__ */ Z(zt, [["__scopeId", "data-v-818a34c9"]]), Nt = {
+}, Et = /* @__PURE__ */ Z(zt, [["__scopeId", "data-v-92de7dd6"]]), Nt = {
   class: "session-history",
   "data-agent-session-history": ""
 }, Wt = { key: 0 }, Dt = { key: 0 }, qt = { "data-agent-session-state": "" }, Ft = { class: "action-buttons" }, Ut = {
@@ -205,7 +205,7 @@ const St = { class: "action-buttons" }, Ct = {
       ])
     ]));
   }
-}, Pt = /* @__PURE__ */ Z(Ut, [["__scopeId", "data-v-182feeca"]]), Gt = { class: "action-buttons" }, Jt = {
+}, Pt = /* @__PURE__ */ Z(Ut, [["__scopeId", "data-v-0d688bd9"]]), Gt = { class: "action-buttons" }, Jt = {
   key: 0,
   role: "alert"
 }, Kt = {
@@ -401,7 +401,7 @@ const St = { class: "action-buttons" }, Ct = {
       ], 32);
     };
   }
-}, Yt = /* @__PURE__ */ Z(Zt, [["__scopeId", "data-v-ab808fe3"]]), Qt = {
+}, Yt = /* @__PURE__ */ Z(Zt, [["__scopeId", "data-v-4e3619f8"]]), Qt = {
   class: "agent-command",
   "data-agent-command": ""
 }, Xt = {
@@ -432,7 +432,7 @@ const St = { class: "action-buttons" }, Ct = {
       }, null, 8, ["text", "idle"]))
     ]));
   }
-}, ea = /* @__PURE__ */ Z(_t, [["__scopeId", "data-v-bb905922"]]), ta = {
+}, ea = /* @__PURE__ */ Z(_t, [["__scopeId", "data-v-1b371fb5"]]), ta = {
   key: 0,
   class: "lasting-facts",
   "data-agent-lasting-facts": ""
@@ -455,7 +455,7 @@ const St = { class: "action-buttons" }, Ct = {
       ])) : h("", !0)
     ])) : h("", !0);
   }
-}, sa = /* @__PURE__ */ Z(la, [["__scopeId", "data-v-900483a5"]]), ia = ["data-agent-delegated", "onClick"], ra = { class: "agent-task-number" }, da = { class: "agent-task-title" }, ua = ["title"], ca = {
+}, sa = /* @__PURE__ */ Z(la, [["__scopeId", "data-v-abc8e12a"]]), ia = ["data-agent-delegated", "onClick"], ra = { class: "agent-task-number" }, da = { class: "agent-task-title" }, ua = ["title"], ca = {
   __name: "AgentTaskGroup",
   props: { section: { type: Object, required: !0 }, open: Boolean },
   emits: ["toggle"],
@@ -492,7 +492,7 @@ const St = { class: "action-buttons" }, Ct = {
       _: 1
     }, 8, ["label", "count", "open", "data-agent-section"]));
   }
-}, ga = /* @__PURE__ */ Z(ca, [["__scopeId", "data-v-dbdcae3e"]]), va = {
+}, ga = /* @__PURE__ */ Z(ca, [["__scopeId", "data-v-ea4ccd6b"]]), va = {
   key: 0,
   class: "agent-summary",
   "data-agent-retirement-reason": ""
@@ -669,7 +669,7 @@ const St = { class: "action-buttons" }, Ct = {
       ]);
     };
   }
-}, Ma = /* @__PURE__ */ Z(wa, [["__scopeId", "data-v-83e4209c"]]), $a = { class: "line" }, xa = {
+}, Ma = /* @__PURE__ */ Z(wa, [["__scopeId", "data-v-fabbecdf"]]), $a = { class: "line" }, xa = {
   key: 0,
   class: "line",
   "data-agent-since": ""
@@ -703,7 +703,7 @@ const St = { class: "action-buttons" }, Ct = {
       _: 1
     }, 8, ["class", "data-state", "aria-label"]));
   }
-}, Ta = /* @__PURE__ */ Z(Ca, [["__scopeId", "data-v-a51f28ad"]]), Aa = { started: { words: "started" }, testing: { words: "being tested" }, blocked: { words: "blocked" } }, ja = (e) => e.filter((o) => o.state !== "cancelled"), Ue = (e, o) => e.filter((t) => t.state === o).length, La = 5, Ra = (e, o) => e || o.split(/\s+/).slice(0, La).join(" ");
+}, Ta = /* @__PURE__ */ Z(Ca, [["__scopeId", "data-v-1a0bc478"]]), Aa = { started: { words: "started" }, testing: { words: "being tested" }, blocked: { words: "blocked" } }, ja = (e) => e.filter((o) => o.state !== "cancelled"), Ue = (e, o) => e.filter((t) => t.state === o).length, La = 5, Ra = (e, o) => e || o.split(/\s+/).slice(0, La).join(" ");
 function Ba({ tasks: e, inHand: o, perHour: t }) {
   const l = ja(e), r = Ue(l, "completed"), g = Aa[o == null ? void 0 : o.state], n = l.filter((N) => N.state === "started").map((N) => ({ number: N.id, title: N.title })), $ = Math.max(n.length, o && o.state !== "completed" ? 1 : 0), T = l.length - r - $, R = r === l.length;
   return {
@@ -835,7 +835,7 @@ const Ia = {
       }, null, 8, ["total", "done", "testing"])
     ], 64)) : h("", !0);
   }
-}, Da = /* @__PURE__ */ Z(Wa, [["__scopeId", "data-v-4fdd9e5c"]]), qa = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', Fa = ["data-icon", "stroke-width", "innerHTML"], ae = {
+}, Da = /* @__PURE__ */ Z(Wa, [["__scopeId", "data-v-e51f5781"]]), qa = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', Fa = ["data-icon", "stroke-width", "innerHTML"], ae = {
   __name: "Icon",
   props: {
     name: { type: String, default: "dot" },
@@ -1020,13 +1020,13 @@ const Ia = {
       ])) : Se(o.$slots, "default", {}, void 0, !0, 2)
     ], 2));
   }
-}, ke = /* @__PURE__ */ Z(Ga, [["__scopeId", "data-v-9c67fe37"]]), Ja = {}, Ka = { class: "menu-label" };
+}, ke = /* @__PURE__ */ Z(Ga, [["__scopeId", "data-v-fec99974"]]), Ja = {}, Ka = { class: "menu-label" };
 function Za(e, o) {
   return a(), s("span", Ka, [
     Se(e.$slots, "default", {}, void 0, !0)
   ]);
 }
-const $e = /* @__PURE__ */ Z(Ja, [["render", Za], ["__scopeId", "data-v-71c11156"]]), Ya = {
+const $e = /* @__PURE__ */ Z(Ja, [["render", Za], ["__scopeId", "data-v-aa955b3e"]]), Ya = {
   class: "skills-menu",
   "data-agent-skills-menu": ""
 }, Qa = {
@@ -1087,7 +1087,7 @@ const $e = /* @__PURE__ */ Z(Ja, [["render", Za], ["__scopeId", "data-v-71c11156
       })
     ]));
   }
-}, _a = /* @__PURE__ */ Z(Xa, [["__scopeId", "data-v-27140adf"]]), en = ["disabled", "title"], tn = { class: "gauge usage" }, an = {
+}, _a = /* @__PURE__ */ Z(Xa, [["__scopeId", "data-v-be514d47"]]), en = ["disabled", "title"], tn = { class: "gauge usage" }, an = {
   __name: "AllowanceBar",
   props: { windows: { type: Array, default: () => [] }, disabled: Boolean },
   emits: ["open"],
@@ -1118,7 +1118,7 @@ const $e = /* @__PURE__ */ Z(Ja, [["render", Za], ["__scopeId", "data-v-71c11156
       f(" " + c(n.value ? "At usage limit" : `${g.value}%`), 1)
     ], 8, en)) : h("", !0);
   }
-}, nn = /* @__PURE__ */ Z(an, [["__scopeId", "data-v-82d641a0"]]), on = {
+}, nn = /* @__PURE__ */ Z(an, [["__scopeId", "data-v-a36f09dc"]]), on = {
   __name: "DashboardBadge",
   props: { text: { type: String, required: !0 }, tone: { type: String, default: "" } },
   setup(e) {
@@ -1126,7 +1126,7 @@ const $e = /* @__PURE__ */ Z(Ja, [["render", Za], ["__scopeId", "data-v-71c11156
       class: ue(["badge", e.tone])
     }, c(e.text), 3));
   }
-}, ln = /* @__PURE__ */ Z(on, [["__scopeId", "data-v-6ef74765"]]), sn = (e, o, t) => Math.max(o, Math.min(t, e)), Ye = /* @__PURE__ */ new WeakMap(), rn = (e, o) => Ye.set(e, o);
+}, ln = /* @__PURE__ */ Z(on, [["__scopeId", "data-v-9e7e1157"]]), sn = (e, o, t) => Math.max(o, Math.min(t, e)), Ye = /* @__PURE__ */ new WeakMap(), rn = (e, o) => Ye.set(e, o);
 function dn(e, o) {
   for (let t = o; t; t = Ye.get(t) ?? t.parentElement) if (t === e) return !0;
   return !1;
@@ -1223,7 +1223,7 @@ const be = 8, cn = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       ], 16)
     ], 8, ["disabled"]));
   }
-}), gn = /* @__PURE__ */ Z(cn, [["__scopeId", "data-v-7f046e0d"]]);
+}), gn = /* @__PURE__ */ Z(cn, [["__scopeId", "data-v-3d203970"]]);
 async function vn(e, o, t) {
   if (!e) return t(o);
   const { target: l, fields: r } = e, g = Object.fromEntries(Object.keys(r).map((T) => [T, l[T]])), n = () => Object.assign(l, g);
@@ -1620,7 +1620,7 @@ const bn = ["disabled", "title"], kn = ["disabled", "title"], yn = { class: "gau
       ], 2);
     };
   }
-}, Vn = /* @__PURE__ */ Z(On, [["__scopeId", "data-v-f3afd1a9"]]), Hn = ["data-agent-open", "aria-expanded", "role", "tabindex"], zn = {
+}, Vn = /* @__PURE__ */ Z(On, [["__scopeId", "data-v-d7113347"]]), Hn = ["data-agent-open", "aria-expanded", "role", "tabindex"], zn = {
   class: "agent-head",
   "data-agent-head": ""
 }, En = {
@@ -1857,7 +1857,7 @@ const bn = ["disabled", "title"], kn = ["disabled", "title"], yn = { class: "gau
       ], 42, Hn);
     };
   }
-}, Qn = /* @__PURE__ */ Z(Yn, [["__scopeId", "data-v-5ee87cc4"]]), Xn = {
+}, Qn = /* @__PURE__ */ Z(Yn, [["__scopeId", "data-v-ed366b02"]]), Xn = {
   key: 1,
   class: "agents-upgrade",
   "data-agents-upgrade": ""
@@ -2088,7 +2088,7 @@ const bn = ["disabled", "title"], kn = ["disabled", "title"], yn = { class: "gau
       ], 2)
     ], 2));
   }
-}, oo = /* @__PURE__ */ Z(eo, [["__scopeId", "data-v-9815d431"]]);
+}, oo = /* @__PURE__ */ Z(eo, [["__scopeId", "data-v-fceb20c3"]]);
 export {
   oo as A
 };

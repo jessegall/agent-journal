@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-5b65cea02ba1")) { const style = document.createElement("style"); style.id = "window-styles-5b65cea02ba1"; style.textContent = ".domain[data-v-586a2d37]{display:flex;flex-direction:column;gap:4px}.name[data-v-586a2d37]{overflow-wrap:anywhere}.fine[data-v-586a2d37]{margin:0;color:var(--text-3);font-size:12px}.row[data-v-586a2d37]{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.login[data-v-4c751a40]{display:flex;flex-direction:column;gap:6px}label[data-v-4c751a40]{color:var(--text-3);font-size:12px}input[data-v-4c751a40]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:13px}.fine[data-v-4c751a40]{margin:0;color:var(--text-3);font-size:12px}.failure[data-v-4c751a40]{margin:0;color:var(--danger);font-size:12.5px}.actions[data-v-4c751a40]{display:flex;gap:8px}.account[data-v-72358d71]{display:flex;flex-direction:column;gap:18px;max-width:640px}.part[data-v-72358d71]{display:flex;flex-direction:column;gap:8px}h3[data-v-72358d71]{margin:0;font-size:13px;font-weight:600}.line[data-v-72358d71]{margin:0;color:var(--text-2);line-height:1.5}.fine[data-v-72358d71]{margin:0;color:var(--text-3);font-size:12px}.failure[data-v-72358d71]{margin:0;color:var(--danger);font-size:12.5px}.row[data-v-72358d71]{display:flex;flex-wrap:wrap;align-items:center;gap:8px}input[data-v-72358d71]{flex:1;min-width:0;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:13px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-d7ae2bd06d5c")) { const style = document.createElement("style"); style.id = "window-styles-d7ae2bd06d5c"; style.textContent = ".domain[data-v-1a7fedc8]{display:flex;flex-direction:column;gap:4px}.name[data-v-1a7fedc8]{overflow-wrap:anywhere}.fine[data-v-1a7fedc8]{margin:0;color:var(--text-3);font-size:12px}.row[data-v-1a7fedc8]{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.login[data-v-841bc053]{display:flex;flex-direction:column;gap:6px}label[data-v-841bc053]{color:var(--text-3);font-size:12px}input[data-v-841bc053]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:13px}.fine[data-v-841bc053]{margin:0;color:var(--text-3);font-size:12px}.failure[data-v-841bc053]{margin:0;color:var(--danger);font-size:12.5px}.actions[data-v-841bc053]{display:flex;gap:8px}.account[data-v-c1bc0844]{display:flex;flex-direction:column;gap:18px;max-width:640px}.part[data-v-c1bc0844]{display:flex;flex-direction:column;gap:8px}h3[data-v-c1bc0844]{margin:0;font-size:13px;font-weight:600}.line[data-v-c1bc0844]{margin:0;color:var(--text-2);line-height:1.5}.fine[data-v-c1bc0844]{margin:0;color:var(--text-3);font-size:12px}.failure[data-v-c1bc0844]{margin:0;color:var(--danger);font-size:12.5px}.row[data-v-c1bc0844]{display:flex;flex-wrap:wrap;align-items:center;gap:8px}input[data-v-c1bc0844]{flex:1;min-width:0;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:13px}\n"; document.head.appendChild(style); }
 import { ref as c, openBlock as l, createElementBlock as o, createElementVNode as t, toDisplayString as w, createCommentVNode as $, createBlock as D, unref as s, withCtx as v, createTextVNode as i, Fragment as V, withModifiers as L, withDirectives as N, vModelText as A, createVNode as g, computed as R, watch as K, renderList as P } from "vue";
 import { Btn as y, useWindow as F, WindowRoom as W, Skeleton as q } from "@journal/window-kit";
 const M = (u, b) => {
@@ -100,7 +100,7 @@ const M = (u, b) => {
       ], 64)) : $("", !0)
     ], 8, z));
   }
-}, _ = /* @__PURE__ */ M(Z, [["__scopeId", "data-v-586a2d37"]]), ee = {
+}, _ = /* @__PURE__ */ M(Z, [["__scopeId", "data-v-1a7fedc8"]]), ee = {
   key: 0,
   class: "failure",
   role: "alert",
@@ -183,7 +183,7 @@ const M = (u, b) => {
       a[10] || (a[10] = t("p", { class: "fine" }, "A forgotten password can't be recovered: make a new account. Accounts unused for 30 days are deleted with their domains.", -1))
     ], 32));
   }
-}, ae = /* @__PURE__ */ M(ne, [["__scopeId", "data-v-4c751a40"]]), se = {
+}, ae = /* @__PURE__ */ M(ne, [["__scopeId", "data-v-841bc053"]]), se = {
   class: "account",
   "data-tunler": ""
 }, le = {
@@ -407,7 +407,7 @@ const M = (u, b) => {
       _: 1
     }));
   }
-}, je = /* @__PURE__ */ M($e, [["__scopeId", "data-v-72358d71"]]);
+}, je = /* @__PURE__ */ M($e, [["__scopeId", "data-v-c1bc0844"]]);
 export {
   je as default
 };
