@@ -33,7 +33,7 @@ class FoldMainAgentsMigration(RebuildMigration):
         home = JournalHome(Path(database.rows(DATABASE_FILE)[0][2]).parent)
         copy = FoldCopy.written(home, clock.timestamp())
         try:
-            counts = fold.run(folds, clock.timestamp().text())
+            counts = fold.run(folds, clock.timestamp().text)
         except Refusal as refusal:
             SystemLogWriter(home, clock).write(LogLevel.ERROR, f"The fold of main agents rolled back: {refusal}. The copy taken before it: {copy}")
             return

@@ -42,6 +42,7 @@ class AgentsWithoutNumbers(StoryFixture):
         story.run("environment make depot /work/depot")
         for session in MAIN_SESSIONS:
             story.run(f"agent end {started(story, session, 'worker', 'main')}")
+        story.container.get(Database).update(Statement("DROP INDEX IF EXISTS agents_one_main"))
         story.container.get(Database).update(Statement("UPDATE agents SET role = 'main' WHERE session IN ('s-1', 's-2', 's-3')"))
         for session in SHOP_WORKER_SESSIONS:
             started(story, session, "worker", "shop")
