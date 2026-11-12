@@ -1,8 +1,6 @@
 from core.modules.drivers.support.current_context_window import CurrentContextWindow
 from engine.cli.agent_number import AgentNumber
 from core.modules.agents.support.agent_rows import RUNNING_AGENTS_REASON
-from core.modules.settings.bindings.support.context_caps import ContextCaps
-from core.modules.settings.bindings.support.context_caps import ContextCaps
 from core.modules.settings.bindings.support.context_share import ContextShare
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import NEW_SESSION_LAUNCH, RESUMED_SESSION_LAUNCH
@@ -56,8 +54,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     name = "agents"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice, types: HelperTypeBook, share: ContextShare, caps: ContextCaps, spend: AgentSpend, current_window: CurrentContextWindow) -> None:
-        self.share, self.caps, self.spend, self.current_window = share, caps, spend, current_window
+    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice, types: HelperTypeBook, share: ContextShare, spend: AgentSpend, current_window: CurrentContextWindow) -> None:
+        self.share, self.spend, self.current_window = share, spend, current_window
         self.activity, self.sandbox, self.types = activity, sandbox, types
         self.queries, self.files, self.providers, self.home, self.suites, self.profiles = queries, files, providers, home, suites, profiles
         self.settings, self.clock = settings, clock
@@ -110,10 +108,10 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
 
     def facts(self, card: AgentCard, policy: AgentPolicy, titles: dict[str, str], work_status: str | None, status: SessionStatus, account: tuple[PlanWindow, ...], sandboxed: bool, merged: MergedWork | None) -> AgentFacts:
         blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp(), policy)
-        return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
+        return AgentFacts(card.id, self.model(card, status) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
                           self.current_round(json.loads(card.tasks), merged), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
-                          card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), card.helper_job_title, titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.usage_limit_ends_at.text if card.usage_limit_ends_at is not None else None,
-                          helper_job_program=card.helper_job_program, occupant_launch=self.occupant_launch(card), is_helper_job_open=card.is_helper_job_open, is_context_unknown=self.is_context_unknown(card))
+                          card.job_instruction, self.effort(card, status), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), card.helper_job_title, titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.usage_limit_ends_at.text if card.usage_limit_ends_at is not None else None,
+                          helper_job_program=card.helper_job_program, occupant_launch=self.occupant_launch(card), is_helper_job_open=card.is_helper_job_open, is_context_unknown=self.is_context_unknown(card, status))
 
     @staticmethod
     def occupant_launch(card: AgentCard) -> str:
@@ -128,21 +126,27 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
             return description[:100]
         return next((line.strip()[:100] for line in card.helper_job_brief.splitlines() if line.strip()), "")
 
-    def is_context_unknown(self, card: AgentCard) -> bool:
+    def is_context_unknown(self, card: AgentCard, status: SessionStatus) -> bool:
+        if status.is_read:
+            return not CurrentContextWindow.is_read_after(card.compaction_ended_at, status.context_window())
         return self.current_window.is_session_unknown(card.program, card.session, card.compaction_ended_at)
 
     def context_percent(self, card: AgentCard, status: SessionStatus) -> int | None:
-        if self.is_context_unknown(card):
+        if self.is_context_unknown(card, status):
             return None
-        cap = self.caps.tokens(card.role, card.profile)
+        cap = self.share.cap(card.role, card.profile)
         if not status.is_reported:
             return self.share.usage_within(card.program, card.session, cap).percent
         return None if status.context_percent is None else self.share.reading_within(ContextWindow(status.context_percent, status.context_tokens), cap).percent
 
-    def reported_model(self, card: AgentCard) -> str:
+    def model(self, card: AgentCard, status: SessionStatus) -> str:
+        if status.is_reported:
+            return status.model
         return self.providers.reported_model(card.program, self.home, card.session)
 
-    def session_effort(self, card: AgentCard) -> str:
+    def effort(self, card: AgentCard, status: SessionStatus) -> str:
+        if status.is_reported:
+            return status.effort
         return self.providers.session_effort(card.program, self.home, card.session)
 
     @staticmethod

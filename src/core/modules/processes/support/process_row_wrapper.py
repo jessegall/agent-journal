@@ -1,33 +1,28 @@
-from dataclasses import replace
-
-from engine.actor.actor import Actor
-from engine.command.bus import Bus
-from engine.command.context import Context
 from engine.database.database import Database
-from core.modules.agents.models.agent import Agent
 from engine.enums.process_kind import ProcessKind
+from engine.log.error_log import ErrorLog
 from engine.process.door.request_records import RequestRecords
-from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.processes.commands.record_request_run.record_request_run import RecordRequestRun
+from engine.time.clock import Clock
+from core.modules.processes.support.request_log import RequestLog
+from core.modules.processes.support.request_log_entry import RequestLogEntry
 
 
 class ProcessRowWrapper(RequestRecords):
-    """Keeps the row of a hook, journal command or viewer request once it answered: one insert, as a run of the agent
-    it works for, or of the running main agent of its own environment for a person. A request with no environment,
-    such as a viewer line before it opens its scope, keeps no row. Such a row is priority 0: it takes no place,
-    never moves to the background and gives no output number."""
+    """Keeps the row of a hook, journal command or viewer request once it answered. Each is appended to the request log,
+    so answering costs no write and no read, and a tick writes the log's rows. Such a row is priority 0: it takes no place, never moves to the
+    background and gives no output number."""
 
-    def __init__(self, bus: Bus, database: Database, agents: AgentRows) -> None:
-        self.bus, self.database, self.agents = bus, database, agents
+    def __init__(self, database: Database, log: RequestLog, clock: Clock, errors: ErrorLog) -> None:
+        self.database, self.log, self.clock, self.errors = database, log, clock, errors
 
     def ended_now(self, kind: ProcessKind, line: str, exit_code: int) -> None:
-        agent = self.owner_agent()
-        if agent is None:
+        owner = self.database.row_owner
+        if owner is None or owner.environment_id is None:
             return
-        self.bus.run(RecordRequestRun(agent.id, kind, line, exit_code), Actor.core(), environment_id=agent.environment_id)
+        self.log.append(RequestLogEntry(owner.environment_id, owner.stored_agent_id, kind, line, exit_code, self.clock.timestamp().text))
 
-    def recorded_hook(self, agent_id: int, line: str, exit_code: int, context: Context) -> None:
-        self.bus.dispatch(RecordRequestRun(agent_id, ProcessKind.HOOK, line, exit_code), replace(context, environment_id=self.agents.find(agent_id).environment_id))
+    def recorded_hook(self, agent_id: int, environment_id: int, line: str, exit_code: int) -> None:
+        self.log.append(RequestLogEntry(environment_id, agent_id, ProcessKind.HOOK, line, exit_code, self.clock.timestamp().text))
 
-    def owner_agent(self) -> Agent | None:
-        return self.agents.run_owner(self.database.row_owner)
+    def write_failed(self, line: str, failure: Exception) -> None:
+        self.errors.recorded(["record-request", line], failure, None)

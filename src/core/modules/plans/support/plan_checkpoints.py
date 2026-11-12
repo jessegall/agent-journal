@@ -1,7 +1,7 @@
 from engine.command.context import Context
 from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
-from core.modules.plans.conditions.plan_tasks_condition import PlanTasksCondition
+from core.modules.plans.conditions.plan_window_tables import PlanWindowTables
 from engine.repository.repository import Repository
 from core.modules.plans.models.checkpoint_pass import CheckpointPass
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
@@ -29,13 +29,7 @@ class PlanCheckpoints:
         self.queries, self.repository, self.moves, self.kept = queries, repository, moves, kept
 
     def windows(self, plan_id: int) -> CheckpointWindows:
-        plan_tasks = PlanTasksCondition(tuple([plan_id])).statement()
-        return self.kept.read("tasks", lambda: self.loaded_windows(plan_id), plan_tasks.sql, plan_tasks.parameters, name="plans.checkpoint_windows")
-
-    def written_windows(self, plan_id: int) -> CheckpointWindows:
-        plan_tasks = PlanTasksCondition(tuple([plan_id])).statement()
-        self.kept.update("tasks", lambda _kept: self.loaded_windows(plan_id), plan_tasks.sql, plan_tasks.parameters, name="plans.checkpoint_windows")
-        return self.windows(plan_id)
+        return self.kept.read_across(PlanWindowTables(plan_id).tables(), lambda: self.loaded_windows(plan_id), name="plans.checkpoint_windows")
 
     def loaded_windows(self, plan_id: int) -> CheckpointWindows:
         phases = tuple(self.queries.query(Phase).filter(plan_id=plan_id).ordered("position").all_rows())

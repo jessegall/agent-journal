@@ -26,7 +26,7 @@ class ProjectRepositories:
             return self.git / "config"
         if not self.git.is_file():
             return None
-        pointed = Path(FileAccess.shared().read(self.git).removeprefix("gitdir:").strip())
+        pointed = (self.git.parent / FileAccess.shared().read(self.git).removeprefix("gitdir:").strip()).resolve()
         common = pointed / "commondir"
         folder = (pointed / FileAccess.shared().read(common).strip()).resolve() if common.is_file() else pointed
         return folder / "config" if (folder / "config").is_file() else None

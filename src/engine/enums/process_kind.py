@@ -6,7 +6,7 @@ from engine.enums.command_category import CommandCategory
 class ProcessKind(StrEnum):
     """What kind of run a process is. Hooks, reading, writing and searching have priority 0: they leave the queue at
     once and never move to the background. A quick kind, such as the journal's own git status, takes no place in the
-    queue and moves to the background only once it runs past its time limit. The rest wait for a place."""
+    queue and is stopped at its time limit like every run. The rest wait for a place."""
 
     HOOK = "hook"
     READ = "read"

@@ -29,6 +29,7 @@ READ_SAMPLE = HookSamples.sample("pre_tool_use", {"name": "Read", "category": "r
 READ_SAMPLE = HookSamples.sample("pre_tool_use", {"name": "Read", "category": ToolType.READ, "files": ["a.py"], "shell": None, "diff": None})
 LISTING_SAMPLE = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.READ, ["build"])).with_fields(event="pre_tool_use")
 JOURNAL_SAMPLE = HookSamples.shell("journal task list", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"], subcommand="task")).with_fields(event="pre_tool_use")
+MESSAGE_SAMPLE = HookSamples.shell("journal message unread", ShellPart("journal", CommandCategory.JOURNAL, ["message", "unread"], subcommand="message")).with_fields(event="pre_tool_use")
 BUILD_SAMPLE = HookSamples.shell("make", ShellPart("make", CommandCategory.BUILD, [])).with_fields(event="pre_tool_use")
 WRITING_LISTING_SAMPLE = HookSamples.shell("cp a b", ShellPart("cp", CommandCategory.EDIT, ["a", "b"], effects=[CommandEffect.WRITES_FILES])).with_fields(event="pre_tool_use")
 EDIT_SAMPLE = HookSamples.sample("pre_tool_use", {"name": "Write", "category": ToolType.NEW_FILE, "files": ["a.py"], "shell": None, "diff": None})
@@ -53,11 +54,12 @@ def test_a_paused_agents_tool_calls_are_refused_until_it_is_resumed(new_story):
     story.expect_hook_allowed("s-1", EDIT_SAMPLE)
 
 
-def test_a_paused_agent_may_read_and_is_not_told_of_the_pause_on_what_it_may_do(new_story):
+def test_a_paused_agent_may_read_and_run_message_commands_and_is_not_told_of_the_pause_on_what_it_may_do(new_story):
     story = new_story(fixture=UserJoined)
     story.container.bind(TerminalTyping, FakeTyping())
     story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
-    for allowed in (READ_SAMPLE, LISTING_SAMPLE, JOURNAL_SAMPLE):
+    story.expect_hook_refusal("s-1", JOURNAL_SAMPLE, "the user paused you")
+    for allowed in (READ_SAMPLE, LISTING_SAMPLE, MESSAGE_SAMPLE):
         story.expect_absent_hook_line("s-1", allowed, "the user paused you")
         story.expect_hook_allowed("s-1", allowed)
     story.expect_hook_refusal("s-1", EDIT_SAMPLE, "the user paused you")

@@ -22,6 +22,7 @@ from suites.coding.modules.workers.support.plan_worker_tasks import PlanWorkerTa
 from suites.coding.modules.workers.support.worker_test_presets import WorkerTestPresets
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
+from core.modules.helpers.support.model_choice import ModelChoice
 
 
 class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
@@ -48,7 +49,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into the worktree")
         parser.add_argument("--program", default="", help="the agent program the worker runs; the dispatching agent's own when not commands")
         parser.add_argument("--tier", type=ModelTier.automatic, choices=[ModelTier.FAST, ModelTier.GENERAL, ModelTier.STRONGEST], default=None)
-        parser.add_argument("--model", default="", help="the model the worker runs on, else the profile's: journal worker models lists them")
+        parser.add_argument("--model", default=None, help="the model it runs on, or default for the profile's own: journal worker models lists them")
         parser.add_argument("--profile", default="", help="the worker profile it starts from, else journal-worker")
         parser.add_argument("--fresh", default="", metavar="REASON", help="start a new worker though a stopped one could take the task, and why")
         parser.add_argument("--name", default="", help="the worker's name on its card")
@@ -65,7 +66,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         commands = WorkerTestCommandEntry.parsed(arguments.test_command)
         if not commands and caller.actor.type is ActorType.AGENT and not self.has_presets(caller):
             raise Refusal("a worker gets the test commands it may run", TEST_COMMAND_EXAMPLE)
-        return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], arguments.model, arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program, sandboxed=not arguments.no_sandbox, test_commands=commands, taken_from=taken_from.id if taken_from is not None else None)
+        return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], ModelChoice.chosen(arguments.model), arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program, sandboxed=not arguments.no_sandbox, test_commands=commands, taken_from=taken_from.id if taken_from is not None else None)
 
     def has_presets(self, caller: Caller) -> bool:
         if caller.environment_id is None:

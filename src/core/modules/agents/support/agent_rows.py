@@ -7,7 +7,6 @@ from engine.errors.refusal import Refusal
 from engine.enums.agent_role import AgentRole
 from engine.scope.environment_scope import EnvironmentScope
 from engine.scope.scopes import Scopes
-from engine.row.row_owner import RowOwner
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.queries.agent_query import AgentQuery
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
@@ -78,16 +77,9 @@ class AgentRows:
     def main_agent(self) -> Agent | None:
         return max(self.running_main_agents(), key=lambda agent: agent.id, default=None)
 
-    def run_owner(self, owner: RowOwner | None) -> Agent | None:
-        """The agent a run belongs to: the agent the work is scoped on, else the running main agent of the work's own
-        environment; work with no environment, such as a person's viewer request before its line opens a scope, has none."""
-        if owner is None:
-            return None
-        if owner.stored_agent_id is not None:
-            return self.find(owner.stored_agent_id)
-        if owner.environment_id is None:
-            return None
-        running = [agent for agent in self.running_main_agents() if agent.environment_id == owner.environment_id]
+    def environment_main_agent(self, environment_id: int) -> Agent | None:
+        """The newest running main agent of that environment, never one of another environment."""
+        running = [agent for agent in self.running_main_agents() if agent.environment_id == environment_id]
         return max(running, key=lambda agent: agent.id, default=None)
 
     def main_agents(self) -> tuple[Agent, ...]:

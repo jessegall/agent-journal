@@ -1,7 +1,7 @@
-from collections.abc import Mapping
 from typing import TypedDict
 
 from core.modules.plans.support.plan_agent_json_record import PlanAgentJsonRecord
+from core.modules.plans.support.plan_phase_json_record import PlanPhaseJsonRecord
 
 
 class PlanOutlineJsonRecord(TypedDict):
@@ -10,5 +10,5 @@ class PlanOutlineJsonRecord(TypedDict):
     plan_id: int
     delegated: bool
     agents: list[PlanAgentJsonRecord]
-    phases: list[Mapping[str, object]]
+    phases: list[PlanPhaseJsonRecord]
     checkpoint_lines: list[str]

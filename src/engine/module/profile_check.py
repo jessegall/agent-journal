@@ -5,6 +5,7 @@ from engine.enums.access import Access
 from engine.module.module import Module
 from engine.module.suite_list import SuiteList
 from engine.profile.agent_profile import AgentProfile
+from engine.profile.profile_bases import ProfileBases
 from engine.profile.profile_name import PROFILE_NAME
 from engine.helper_type.helper_type import HelperType
 
@@ -15,19 +16,22 @@ class ProfileCheck:
     def problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
         types = {declaration.key: declaration for module in modules for declaration in suites.helper_types(module)}
         claimed: dict[str, str] = {}
+        bases = ProfileBases([profile for module in modules for profile in module.profiles])
         problems = [f"{suite.name}: register profiles on the module, not the suite" for module in modules for suite in suites.module_suites(module)
                     if hasattr(suite, "profiles") or hasattr(suite, "profile_types")]
         for module in modules:
             for profile in module.profiles:
-                problems.extend(self.profile_problems(module.name, profile, types, claimed))
+                problems.extend(self.profile_problems(module.name, profile, types, claimed, bases))
         return tuple(problems)
 
     @staticmethod
     def occupant_problem(profile_name: str, type_label: str, start_line: str) -> str:
         return f"profile {profile_name} declares an occupant, and a {type_label} starts through {start_line}, which decides its sessions"
 
-    def profile_problems(self, module: str, profile: AgentProfile, types: dict[str, HelperType], claimed: dict[str, str]) -> list[str]:
+    def profile_problems(self, module: str, profile: AgentProfile, types: dict[str, HelperType], claimed: dict[str, str], bases: ProfileBases) -> list[str]:
         problems: list[str] = []
+        if bases.problem(profile):
+            problems.append(bases.problem(profile))
         if profile.name in claimed:
             problems.append(f"the modules {claimed[profile.name]} and {module} both register the profile {profile.name}")
         claimed[profile.name] = module

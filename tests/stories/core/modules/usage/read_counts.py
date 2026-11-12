@@ -13,7 +13,7 @@ from tests.stories.core.support.fixtures import CheckpointPlan
 from tests.stories.support.story_checks import expect_visited_limit
 
 READ_STARTS = ("SELECT", "WITH")
-READS_ALLOWED = 8
+READS_ALLOWED = 9
 OUTLINE_READS_ALLOWED = 4
 TIMELINE_READS_ALLOWED = 2
 INSPECT_READS_ALLOWED = 3

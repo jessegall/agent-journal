@@ -4,6 +4,7 @@ from dataclasses import dataclass, replace
 
 from engine.types.type_guards import is_list, is_mapping
 from core.modules.plugins.support.plugin_card import PluginCard
+from core.modules.plugins.support.plugin_judge_run import PluginJudgeRun
 
 OLD_TYPE_KEY = "kind"
 
@@ -14,7 +15,7 @@ COMMANDS_KEY = "commands"
 
 @dataclass(frozen=True)
 class PluginAnswer:
-    """What a plugin printed for an event, version 4's line out: allow, refuse with a reason, or tell a line,
+    """What a plugin printed for an event, version 4's line out: allow, refuse with a reason, queue a judge run, or tell a line,
     with the cards it shows, the journal commands it runs, the skills it requires and how long it took in
     milliseconds; an empty output allows.
     """
@@ -27,6 +28,7 @@ class PluginAnswer:
     output: str
     required_skills: tuple[str, ...]
     judged_ms: str = ""
+    run: PluginJudgeRun | None = None
 
     @classmethod
     def parsed(cls, output: str) -> "PluginAnswer":
@@ -41,7 +43,7 @@ class PluginAnswer:
         return cls(str(fields["answer"]) if "answer" in fields else "allow", cls.text(fields, "reason"), cls.text(fields, "tell"),
                    tuple(cls.card(entry) for entry in cards if is_mapping(entry)) if is_list(cards) else (),
                    tuple(str(line) for line in commands) if is_list(commands) else (), last_line,
-                   tuple(str(name) for name in skills) if is_list(skills) else (), cls.text(fields, "judged_ms"))
+                   tuple(str(name) for name in skills) if is_list(skills) else (), cls.text(fields, "judged_ms"), PluginJudgeRun.parsed(fields))
 
     @classmethod
     def entry_type(cls, entry: Mapping[object, object]) -> str:
@@ -67,3 +69,6 @@ class PluginAnswer:
 
     def is_refusal(self) -> bool:
         return self.answer == "refuse"
+
+    def is_queue(self) -> bool:
+        return self.answer == "queue" and self.run is not None

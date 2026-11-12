@@ -66,6 +66,7 @@ from core.modules.helpers.commands.end_agent_lockdown.end_agent_lockdown_handler
 from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.helpers.commands.helper_availability.helper_availability_subcommand import HelperAvailabilitySubcommand
 from core.modules.helpers.rules.helper_report_rule import HelperReportRule
+from core.modules.helpers.rules.start_names_model_rule import StartNamesModelRule
 from core.modules.helpers.rules.unstarted_helper_rule import UnstartedHelperRule
 from core.modules.helpers.support.helper_settings import HELPER_SETTINGS
 from core.modules.helpers.listeners.helper_job_source_listener import HelperJobSourceListener
@@ -92,4 +93,4 @@ class HelpersModule(Module):
     skills = [SkillDeclaration("journal-helpers", "Start a helper for a bounded read, send it more, stop it, and read its report; read it before the first helper command of a session", keywords=["helper start"])]
     subcommands = [ChangeAgentDriverSubcommand, HelperProfileScreenSubcommand, HelperLifetimesSubcommand, GrantHelperSubcommand, RunGrantedCommandSubcommand, ColdSessionsSubcommand, SetUsageLimitSubcommand, AgentMixSubcommand, StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand, MakeProviderOutageSubcommand, EndProviderOutagesSubcommand]
     listeners = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, MessagedHelperListener, HelperEndedListener, HelperJobMarkListener, HelperJobSourceListener, DeletedHelperSourceListener, ProviderOutageMarkListener]
-    driver_rules = [UnstartedHelperRule, HelperReportRule]
+    driver_rules = [UnstartedHelperRule, HelperReportRule, StartNamesModelRule]
