@@ -47,7 +47,7 @@ def silent_story(new_story, seconds: int = HANG_SECONDS + 1) -> Story:
 def test_a_run_silent_for_the_hang_time_holds_the_next_tool_use_and_names_what_to_read(new_story):
     story = silent_story(new_story)
     story.expect_hook_refusal("s-1", EDIT, HELD)
-    story.expect_hook_refusal("s-1", EDIT, "output 1 printed nothing for 301 seconds, processor time not known: read it, or stop it")
+    story.expect_hook_refusal("s-1", EDIT, "output 1 printed nothing for 301 seconds, processor time not known: read it; stop it; a person releases it")
 
 
 def test_the_hold_says_the_processor_time_is_rising_when_it_moved_since_the_run_went_silent(new_story):

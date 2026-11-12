@@ -1,4 +1,8 @@
 import subprocess
+from pathlib import Path
+
+from engine.enums.process_kind import ProcessKind
+from engine.process.door.execution_request import ExecutionRequest
 
 LIMIT_SECONDS = 60
 
@@ -11,6 +15,14 @@ class WorktreeGit:
     def status(self, folder: str) -> str:
         # @sin architecture_workers_git_call_without_time_limit
         return subprocess.run(["git", "-C", folder, "status"], capture_output=True, text=True, check=False).stdout
+
+    def door_status(self, folder: str) -> str:
+        # @sin architecture_workers_git_call_without_time_limit
+        return self.executor.execute(ExecutionRequest(["git", "-C", folder, "status"], Path(folder), ProcessKind.QUICK, LIMIT_SECONDS)).stdout
+
+    def door_tip(self, folder: str, branch: str) -> str:
+        # @righteous architecture_workers_git_call_without_time_limit
+        return self.executor.execute(ExecutionRequest(["git", "-C", folder, "rev-parse", branch], Path(folder), ProcessKind.READ, LIMIT_SECONDS)).stdout
 
     def rebase(self, folder: str, base_branch: str) -> None:
         # @righteous architecture_workers_merge_names_a_literal_branch

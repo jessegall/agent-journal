@@ -31,7 +31,7 @@ def plan(first_closed: bool, second_closed: bool) -> sqlite3.Connection:
 
 
 def open_places(database: sqlite3.Connection) -> list[int]:
-    limit = CheckpointLimit(1).statement()
+    limit = CheckpointLimit().statement()
     return [row[0] for row in database.execute(f"SELECT task_id FROM plan_tasks WHERE plan_id = 1 AND closed_at IS NULL AND {limit.sql} ORDER BY task_id", limit.parameters)]
 
 

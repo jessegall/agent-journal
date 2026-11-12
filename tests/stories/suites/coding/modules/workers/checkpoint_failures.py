@@ -1,5 +1,7 @@
 import pytest
 
+from engine.testing.expectations.expect_reply import expect_reply_allowed
+
 from tests.stories.core.support.agent_labels import agent_number
 
 from core.modules.processes.models.enums.process_state import ProcessState
@@ -174,3 +176,10 @@ def test_a_short_proof_left_on_a_released_worktree_fails_no_later_run_once_a_new
     end_run(worker)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
     story.expect_rows([row["state"] for row in rows(worker, REACHES)] == ["failed", "passed"], detail=str(rows(worker, REACHES)))
+
+
+def test_a_worker_whose_checkpoint_tests_failed_runs_a_test_without_spending_its_count(failed_cart_proof):
+    worker, story = failed_cart_proof, failed_cart_proof.story
+    story.expect_success("setting set journal.suites.coding.workers.worker-phase-test-runs 0 --environment main", actor=story.user)
+    story.expect_rows("Point: fix" in worker.status(), detail=worker.status())
+    expect_reply_allowed(worker.run_test())

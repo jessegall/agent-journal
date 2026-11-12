@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from engine.database.errors.nesting_error import NestingError
 from engine.database.point_tally import PointTally
 from engine.database.statement import Statement
+from engine.errors.read_cut_error import ReadCutError
 from engine.errors.read_limit_error import ReadLimitError
 from engine.journal.journal_home import JournalHome
 from engine.row.row_owner import RowOwner
@@ -32,7 +33,7 @@ class Database:
         self.row_owner: RowOwner | None = None
         self.kept_rows: "KeptRows | None" = None
         self.read_limit_rows: int | None = None
-        self.collected_large_reads: list[ReadLimitError] | None = None
+        self.collected_large_reads: list[ReadLimitError | ReadCutError] | None = None
 
     @property
     def scope_environment_id(self) -> int | None:
@@ -139,12 +140,22 @@ class Database:
     def check_read_limit(self, statement: Statement, count: int) -> None:
         if self.read_limit_rows is None or not statement.is_limited_read:
             return
-        if count <= self.read_limit_rows:
+        allowed = max(self.read_limit_rows, statement.named_limit_rows or 0)
+        if count <= allowed:
             return
-        error = ReadLimitError.loaded(count, self.read_limit_rows, statement.sql)
+        error = ReadLimitError.loaded(count, allowed, statement.sql)
         if self.collected_large_reads is None:
             raise error
         self.collected_large_reads.append(error)
+
+    def report_cut(self, sql: str, limit: int) -> None:
+        """Keeps a report of a read the query builder cut at its limit, once per statement and calling line; a cut
+        never fails a command."""
+        if self.collected_large_reads is None:
+            return
+        report = ReadCutError.cut(limit, sql)
+        if all(str(known) != str(report) for known in self.collected_large_reads):
+            self.collected_large_reads.append(report)
 
     def query_plan(self, statement: Statement) -> tuple[str, ...]:
         return tuple(row[3] for row in self.connection.execute(f"EXPLAIN QUERY PLAN {statement.sql}", statement.parameters))

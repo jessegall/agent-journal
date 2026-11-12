@@ -52,7 +52,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
         is_idle = helper.ended_at is not None and last_job.ended_at is not None
         rotating_profile = self.occupants.profile(helper) if is_idle else None
         if is_idle and rotating_profile is None:
-            self.check_profile_model(helper)
+            self.limits.checked_helper_model(helper)
         if rotating_profile is None:
             self.kept.check_program(helper)
         source_context = replace(context, environment_id=helper.environment_id)
@@ -78,13 +78,6 @@ class SendHelperHandler(Handler[SendHelper, int]):
         self.repository.save(next_job.changed(session_agent_id=parent_id, review_plan_id=command.review_plan_id, source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp, cost_baseline=cost_baseline, new_session=rotating_profile is not None), context)
         self.sources.use_copy(source, source_context)
         return helper.id
-
-    def check_profile_model(self, helper: Agent) -> None:
-        """A new job goes to a stopped helper only on the model its profile chooses."""
-        model = self.profiles.effective(helper.profile).model if helper.profile else ""
-        if model and helper.program_model != model:
-            raise Refusal(f"{AgentLabel.from_agent(helper).text} runs on {helper.program_model}, and profile {helper.profile} chooses {model}",
-                          f"journal helper start {helper.profile} starts one on {model}")
 
     def reviewed(self, helper: Agent, plan_id: int) -> bool:
         return any(job.review_plan_id == plan_id for job in self.jobs.helper_jobs(helper.id))

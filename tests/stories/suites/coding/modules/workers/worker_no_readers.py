@@ -2,13 +2,12 @@ from datetime import timedelta
 
 import pytest
 
-from engine.enums.agent_role import AgentRole
 from engine.enums.command_category import CommandCategory
 from engine.enums.tool_type import ToolType
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
-from core.modules.processes.rules.reader_hint_rule import ReaderHintRule
+from core.modules.processes.rules.read_advice_rule import ReadAdviceRule
 from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
@@ -128,20 +127,20 @@ def test_the_main_agent_is_still_refused_a_raw_test_line(forced):
     forced.expect_hook_refusal(MAIN, HookSamples.tool_use("Bash", ToolType.SHELL, [], None, shell=shell), "alias")
 
 
-def test_a_worker_is_never_refused_or_taught_after_silent_runs(busy_worker):
+def test_a_worker_after_two_silent_runs_is_refused_its_start_like_every_role(busy_worker):
     silent_worker_run(busy_worker, "custom-build run")
     silent_worker_run(busy_worker, "custom-build run")
     sample = HookSamples.shell("custom-build run", ShellPart("custom-build", CommandCategory.BUILD, ["run"]))
-    busy_worker.expect_hook_allowed(WORKER, sample)
-    busy_worker.expect_rows(not any("reader" in line for line in hook_lines(busy_worker, WORKER, sample)))
+    busy_worker.expect_hook_refusal(WORKER, sample, "custom-build run ran silent twice")
 
 
-def test_a_long_worker_run_asks_for_no_title_and_holds_nothing(readers_disabled):
+def test_a_long_worker_run_is_asked_for_a_title_like_a_main_agents_and_asked_for_no_reader(readers_disabled):
     process = worker_run(readers_disabled, "custom-build run", CommandCategory.BUILD)
     readers_disabled.advance(timedelta(seconds=10))
-    readers_disabled.expect_rows(not any(f"output {process.id}" in line for line in hook_lines(readers_disabled, WORKER, HookSamples.prompt("go on"))))
-    expect_unblocked(readers_disabled)
+    lines = hook_lines(readers_disabled, WORKER, HookSamples.prompt("go on"))
+    readers_disabled.expect_rows(any(f"output {process.id} has its raw command as its title" in line for line in lines),
+                                 not readers_disabled.container.get(ReaderRequestQuery).open().filter(creator_id=reader_worker(readers_disabled).id).exists(), detail="\n".join(lines))
 
 
-def test_only_the_main_agent_hears_the_shorter_read_of_a_reader():
-    expect_value(ReaderHintRule.roles, [AgentRole.MAIN])
+def test_every_role_hears_the_shorter_read_of_a_reader():
+    expect_value(ReadAdviceRule.roles, [])

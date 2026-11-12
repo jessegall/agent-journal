@@ -123,6 +123,11 @@ async function askForReader() {
   if (answer?.ok !== false) asked.value = true;
 }
 const canAskForReader = computed(() => !asked.value && !run.value?.reader_requested && !run.value?.reads_progress && !ended.value);
+// a person marks the command of the run as one no reader can read, or lifts that mark; the agent is told, and the card reads again
+async function markRun(subcommand) {
+  const answer = await view.run(["output", subcommand, String(item.value?.target_id)]);
+  if (answer?.ok !== false) load();
+}
 // a run that ends between two reads is read once more, so the card shows its end and not the last percent it drew
 watch(ended, (done) => done && load());
 
@@ -218,6 +223,10 @@ usePoll(load, isRunning, () =>
               @scroll="pages.loadEarlier($event.target)"
               >{{ lines.length ? lines.join("\n") : "No output yet" }}</pre>
             <p v-if="run?.reading_text" class="output-dock-reading" data-output-reading>{{ run.reading_text }}</p>
+            <p v-if="run?.markable" class="output-dock-marks">
+              <button v-if="run.marked_words" type="button" class="output-dock-mark" data-output-mark-readable @click="markRun('readable')">Mark as readable</button>
+              <button v-else type="button" class="output-dock-mark" data-output-mark-unreadable @click="markRun('unreadable')">Mark as not readable</button>
+            </p>
             <template v-if="!lines.length && canAskForReader"
               ><button type="button" class="output-dock-reader" data-output-reader-ask @click="askForReader">
                 Ask the agent to draw a reader
@@ -372,6 +381,22 @@ usePoll(load, isRunning, () =>
   cursor: pointer;
 }
 .output-dock-reader:hover {
+  background: var(--hover);
+}
+.output-dock-marks {
+  margin: 4px 14px;
+}
+.output-dock-mark {
+  padding: 2px 8px;
+  border: 1px solid var(--border-2);
+  border-radius: 6px;
+  background: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.output-dock-mark:hover {
   background: var(--hover);
 }
 .output-dock-loading {

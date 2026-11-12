@@ -124,3 +124,19 @@ def test_the_status_of_a_worker_reads_a_checkpoint_phase_of_many_tasks_without_l
     story.expect_rows(started.code == 0, status.code == 0, "Tasks you may start" in status.output_text, later_task not in startable_ids(worker), faults == [],
                       detail=f"{started.output_text} | {status.output_text} | {faults}")
 
+
+
+def test_a_task_of_the_unit_another_worker_started_after_its_proof_is_listed_refused_and_not_counted_as_staged(two_tasks):
+    story = two_tasks.story
+    prove_task(two_tasks, 1, 1, TEST_LINE)
+    story.expect_success('task release 1 --reason "another worker takes it over" --environment main', actor=story.user)
+    receipts = story.new_row_id('task make "Receipts" --environment main', actor=story.agent)
+    second = two_tasks.added_worker(f"{DISPATCH.removesuffix(' 1')} {receipts}")
+    story.expect_success(f"task assign 1 --to {agent_number(story, two_tasks.worker.id)} --environment main", actor=story.agent)
+    story.expect_success("task start 1", actor=second.worker)
+    status = two_tasks.status()
+    refused = prove_task(two_tasks, 1, 1, TEST_LINE)
+    staged = prove_task(two_tasks, 2, 1, TEST_LINE)
+    story.expect_rows("Tasks someone else holds: 1" in status, "task 1" in status.split("Tasks someone else holds")[1],
+                      refused.code != 0, "task 1 is held by" in refused.output_text,
+                      "staged for task 2" in staged.output_text, detail=f"{status} | {refused.output_text} | {staged.output_text}")

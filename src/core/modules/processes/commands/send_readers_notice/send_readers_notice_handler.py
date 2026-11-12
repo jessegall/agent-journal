@@ -1,37 +1,43 @@
 from engine.command.context import Context
-from collections.abc import Sequence
 from engine.command.handler import Handler
-from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
+from engine.repository.repository import Repository
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from engine.driver.nudger import Nudger
 from core.modules.processes.commands.send_readers_notice.send_readers_notice import SendReadersNotice
-from core.modules.processes.models.reader import Reader
-from core.modules.processes.models.process_part import ProcessPart
-from core.modules.processes.support.reader_rows import ReaderRows
-from core.modules.processes.support.process_nudges import READERS_MISSING_FIELDS
-from core.modules.processes.support.reader_judge import ReaderJudge
-
-SOURCE = "processes.readers-at-start"
+from core.modules.processes.support.process_nudges import READ_ONLY_MISSING_NOTICE, READERS_MISSING_FIELDS, READERS_NEED_REPAIR, STOCK_READER_BEHIND, UNREADABLE_AUDIT
+from core.modules.processes.support.reading.catalogue_audit import AUDIT_SOURCE, REPAIR_AFTER_OUTPUTS, CatalogueAudit
 
 
 class SendReadersNoticeHandler(Handler[SendReadersNotice, None]):
-    """Counts the readers that lack required fields, which reads each reader and its samples, and tells the main
-    agent, without blocking it."""
+    """Tells each main agent, without blocking it, what the reader audit finds: the readers that lack required
+    fields, the readers that picked no line of their last outputs, the commands agents marked unreadable, the commands of read-only helpers that ended
+    without a proper reader, and the stock readers an edit froze that fell behind the shipped ones, said once for each change of the shipped one: the
+    row then keeps the digest of the entry it was told about."""
 
     command = SendReadersNotice
 
-    def __init__(self, reader_rows: ReaderRows, judge: ReaderJudge, queries: Queries, nudger: Nudger) -> None:
-        self.reader_rows, self.judge, self.queries, self.nudger = reader_rows, judge, queries, nudger
+    def __init__(self, audit: CatalogueAudit, queries: Queries, nudger: Nudger, repository: Repository) -> None:
+        self.audit, self.queries, self.nudger, self.repository = audit, queries, nudger, repository
 
     def handle(self, command: SendReadersNotice, context: Context) -> None:
-        readers = self.reader_rows.all()
-        samples = self.judge.reader_samples(readers)
-        count = sum(self.has_missing_fields(reader, samples[reader.id]) for reader in readers)
-        if count:
-            for agent in MainAgentFinder.rows(self.queries):
-                self.nudger.send(agent.id, READERS_MISSING_FIELDS, SOURCE, context, count=count)
-
-    def has_missing_fields(self, reader: Reader, samples: Sequence[ProcessPart]) -> bool:
-        categories = {CommandCategory.CHECK, *(part.category for part in samples)}
-        return any(self.judge.fields_missing(reader, category) for category in categories)
+        fields_missing = self.audit.fields_missing_count()
+        broken = self.audit.readers_needing_repair()
+        behind = self.audit.readers_behind()
+        mains = MainAgentFinder.rows(self.queries)
+        for agent in mains:
+            last_audit_at = self.audit.last_audit_at(agent)
+            missing_readers = self.audit.missing_reader_decisions(last_audit_at, [main.id for main in mains])
+            agent_marks = self.audit.agent_marks_count(last_audit_at)
+            if fields_missing:
+                self.nudger.send(agent.id, READERS_MISSING_FIELDS, AUDIT_SOURCE, context, count=fields_missing)
+            for reader in broken:
+                self.nudger.send(agent.id, READERS_NEED_REPAIR, AUDIT_SOURCE, context, reader=reader.name, count=REPAIR_AFTER_OUTPUTS)
+            if agent_marks:
+                self.nudger.send(agent.id, UNREADABLE_AUDIT, AUDIT_SOURCE, context, count=agent_marks)
+            if missing_readers:
+                self.nudger.send(agent.id, READ_ONLY_MISSING_NOTICE, AUDIT_SOURCE, context, count=missing_readers)
+            for reader, _ in behind:
+                self.nudger.send(agent.id, STOCK_READER_BEHIND, AUDIT_SOURCE, context, reader=reader.name)
+        for reader, digest in behind:
+            self.repository.update(reader, context, shipped_digest=digest)

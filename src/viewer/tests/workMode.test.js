@@ -8,21 +8,28 @@ import {styleDeclarations} from "./support/styleDeclarations.js";
 
 const KEYS = {
     work: {line: "work-settings show", events: ["setting.*"]},
+    "work-screen": {line: "setting-screen show work", events: ["setting.*"]},
+    "tests-screen": {line: "setting-screen show tests", events: ["setting.*"]},
+    "advanced-screen": {line: "setting-screen show advanced", events: ["setting.*"]},
     auto: {line: "setting show journal.suites.coding.auto-mode", events: ["setting.*"]},
     limits: {line: "agent limits", tab: "agents", events: ["agent.*", "setting.*"]},
 };
-const CONTROL_KEYS = ["auto-mode", "main-writes-code", "workers.main-dispatches-workers", "continue-while-delegatable", "workers.merger-on", "main-starts-read-only-helpers", "designer-enabled", "workers.main-agent-may-merge"];
 const KEEP_GOING = "journal.suites.coding.continue-while-delegatable";
 const WRITES = "journal.suites.coding.main-writes-code";
 const SENDS = "journal.suites.coding.workers.main-dispatches-workers";
+const MERGER = "journal.suites.coding.workers.merger-on";
+const MAY_MERGE = "journal.suites.coding.workers.main-agent-may-merge";
 const LIMIT_ON = "journal.core.helpers.context-limit-on";
 const LIMIT_TOKENS = "journal.core.helpers.context-limit-tokens";
 const LIMIT_ACTION = "journal.core.helpers.context-limit-action";
-const WORK = {workflow: "orchestrator", revision: "r1", controls: Object.fromEntries(CONTROL_KEYS.map((key) => [`journal.suites.coding.${key}`, true])),
-    fields: [{key: LIMIT_ON, group: "advanced", title: "Compact agents", description: "", type: "flag", value: false, source: "default"},
-        {key: LIMIT_TOKENS, group: "advanced", title: "Size", description: "", type: "number", value: 400000, source: "default", badge: "Capped amount", choices: Array.from({length: 10}, (_, place) => (place + 1) * 100000)},
-        {key: LIMIT_ACTION, group: "advanced", title: "At the context size", description: "", type: "choice", value: "compact", source: "default", choices: ["compact", "clear"]}],
-    depends: {[KEEP_GOING]: [WRITES], [LIMIT_TOKENS]: [LIMIT_ON], "journal.suites.coding.workers.merger-on": [SENDS], "journal.suites.coding.workers.main-agent-may-merge": [SENDS]}};
+const node = (key, kind, value, extra = {}) => ({key, kind, component: kind === "flag" ? "toggle" : kind, section: "Taking on work", parent: null, title: `Title of ${key}`, description: "", value, default: value, source: "default", choices: [], rule: "", requires: [], read_only: true, ...extra});
+const SCREENS = {
+    work: {screen: "work", revision: "w1", nodes: [node(WRITES, "flag", true), node(KEEP_GOING, "flag", true, {requires: [WRITES]}), node(SENDS, "flag", true), node(MERGER, "flag", true, {requires: [SENDS]}), node(MAY_MERGE, "flag", true, {requires: [SENDS]})]},
+    tests: {screen: "tests", revision: "t1", nodes: [node("journal.suites.coding.tests.example", "number", 3, {rule: JSON.stringify({rule: "number", minimum: 0, integer: true, maximum: null, exclusive: false})})]},
+    advanced: {screen: "advanced", revision: "a1", nodes: [node(LIMIT_ON, "flag", false, {section: "Context size"}),
+        node(LIMIT_TOKENS, "choice", "400000", {section: "Context size", choices: Array.from({length: 10}, (_, place) => String((place + 1) * 100000)), requires: [LIMIT_ON]}),
+        node(LIMIT_ACTION, "choice", "compact", {section: "Context size", choices: ["compact", "clear"]})]},
+};
 
 const mounted = [];
 afterEach(() => mounted.splice(0).forEach(({app, element}) => { app.unmount(); element.remove(); }));
@@ -35,7 +42,7 @@ async function mount() {
         environment: "main",
         read: async (line) => {
             context.reads.push(line);
-            if (line.startsWith("work-settings show")) return {ok: true, value: WORK};
+            if (line.startsWith("setting-screen show")) return {ok: true, value: SCREENS[line.split(" ")[2]]};
             if (line.startsWith("agent limits")) return {ok: true, value: {rows: []}};
             return {ok: true, value: {value: true}};
         },
@@ -65,18 +72,13 @@ test("the top bar keeps only the auto switch and the settings button", async () 
     expect(element.querySelector("[data-merger-toggle]")).toBeNull();
 });
 
-test("the settings button opens the agent settings in a modal, where a preset is chosen", async () => {
-    const {element, runs, opened} = await mount();
+test("the settings button opens the agent settings in a modal", async () => {
+    const {element, opened} = await mount();
     expect(document.querySelector("[data-agent-settings]")).toBeNull();
     element.querySelector("[data-open-agent-settings]").click();
     await settled();
     expect(opened).toEqual([]);
     expect(document.querySelector(".dialog [data-agent-settings], [role=dialog] [data-agent-settings]")).not.toBeNull();
-    const presets = [...document.querySelectorAll("[data-agent-settings] [data-work-flow] [role=radio]")];
-    expect(presets.map((button) => button.textContent.trim())).toEqual(["Builder", "Orchestrator"]);
-    presets[0].click();
-    await settled();
-    expect(runs).toEqual(["work-settings preset builder --revision r1"]);
 });
 
 test("the modal has the tabs of the agent settings", async () => {
@@ -112,7 +114,7 @@ test("a setting shows only while the settings it depends on are on, and shows ag
     const {element} = await mount();
     element.querySelector("[data-open-agent-settings]").click();
     await settled();
-    const control = (key) => document.querySelector(`[data-agent-settings] [data-control="${key}"]`);
+    const control = (key) => document.querySelector(`[data-agent-settings] [data-setting="${key}"]`);
     const toggle = (key) => control(key).querySelector("[role=switch]").click();
     expect(control(KEEP_GOING)).not.toBeNull();
     toggle(WRITES);
@@ -123,27 +125,11 @@ test("a setting shows only while the settings it depends on are on, and shows ag
     expect(control(KEEP_GOING)).not.toBeNull();
     toggle(SENDS);
     await settled();
-    expect(control("journal.suites.coding.workers.merger-on")).toBeNull();
-    expect(control("journal.suites.coding.workers.main-agent-may-merge")).toBeNull();
+    expect(control(MERGER)).toBeNull();
+    expect(control(MAY_MERGE)).toBeNull();
     toggle(SENDS);
     await settled();
-    expect(control("journal.suites.coding.workers.merger-on")).not.toBeNull();
-});
-
-test("the context size is a dropdown in steps of 100k that shows only while its switch is on", async () => {
-    const {element} = await mount();
-    element.querySelector("[data-open-agent-settings]").click();
-    await settled();
-    [...document.querySelectorAll("[data-agent-settings] button")].find((button) => button.textContent.trim().startsWith("Advanced")).click();
-    await settled();
-    expect(document.querySelector(`select[data-field="${LIMIT_TOKENS}"]`)).toBeNull();
-    document.querySelector(`[data-control="${LIMIT_ON}"] [role="switch"], [data-control="${LIMIT_ON}"] button`).click();
-    await settled();
-    const options = [...document.querySelector(`select[data-field="${LIMIT_TOKENS}"]`).options].map((option) => option.textContent);
-    expect(options).toHaveLength(10);
-    expect(options[0]).toBe("100k");
-    expect(options[9]).toBe("1000k");
-    expect(document.querySelector(`[data-field-badge="${LIMIT_TOKENS}"]`).textContent).toBe("Capped amount");
+    expect(control(MERGER)).not.toBeNull();
 });
 
 test("the context limit action is a choice of Compact or Clear, not a number", async () => {
@@ -152,10 +138,10 @@ test("the context limit action is a choice of Compact or Clear, not a number", a
     await settled();
     [...document.querySelectorAll("[data-agent-settings] button")].find((button) => button.textContent.trim().startsWith("Advanced")).click();
     await settled();
-    const select = document.querySelector(`select[data-field="${LIMIT_ACTION}"]`);
+    const select = document.querySelector(`[data-setting="${LIMIT_ACTION}"] select`);
     expect([...select.options].map((option) => option.textContent)).toEqual(["Compact", "Clear"]);
     expect([...select.options].map((option) => option.value)).toEqual(["compact", "clear"]);
-    expect(document.querySelector(`.step[data-field="${LIMIT_ACTION}"]`)).toBeNull();
+    expect(document.querySelector(`[data-setting="${LIMIT_ACTION}"] .step`)).toBeNull();
 });
 
 test("the agent settings dialog has no padding, so its tabs and footer reach its edges and only its settings scroll", async () => {

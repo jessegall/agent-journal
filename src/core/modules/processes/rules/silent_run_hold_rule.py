@@ -3,13 +3,15 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.processes.support.held_runs import HeldRuns
+from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.support.process_nudges import SILENT_RUN_HELD
+from core.modules.processes.support.reading.exit_texts import ExitTexts
 
 
 class SilentRunHoldRule(DriverRule):
     """Holds the tool uses of an agent whose run has printed nothing for the hang time, naming the run and what
-    its processor time does, until the agent reads its output or stops it. Like every block it lets reads and
-    journal commands through."""
+    its processor time does, until the agent reads its output or stops it, or a person releases it; the exits are
+    said in the shared wording. Like every block it lets reads and journal commands through."""
 
     name = "processes.silent-run-hold"
     hook = HookEventName.PRE_TOOL_USE
@@ -25,4 +27,5 @@ class SilentRunHoldRule(DriverRule):
         silent_run = self.held_runs.found(hook.agent_id, hook.timestamp)
         if silent_run is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(SILENT_RUN_HELD.nudge(output=silent_run.process.id, seconds=silent_run.seconds, processor=silent_run.processor))
+        return RuleAnswer.refused(SILENT_RUN_HELD.nudge(output=silent_run.process.id, seconds=silent_run.seconds, processor=silent_run.processor,
+                                                    hint=ExitTexts.sentences(PressureLevel.HOLD.exits)))

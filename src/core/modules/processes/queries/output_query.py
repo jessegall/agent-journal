@@ -6,6 +6,7 @@ from engine.model.tables import Tables
 from engine.query.conditions.greater import Greater
 from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.equal import Equal
+from engine.query.conditions.has_value import HasValue
 from engine.query.conditions.among import Among
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.select import Select
@@ -40,6 +41,9 @@ class OutputQuery(Query[Output]):
 
     def ended(self) -> Self:
         return self.kept().matching(Greater("ended_at", ""))
+
+    def read_with_lines(self) -> Self:
+        return self.ended().matching(HasValue("reader_id")).matching(Greater("line_count", 0))
 
     def unread(self) -> Self:
         return self.kept().matching(IsNull("read_at"))

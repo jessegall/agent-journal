@@ -54,7 +54,8 @@ class UnreadReportsSubcommand(ReadSubcommand[UnreadReports]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, UnreadReports):
-            lines = [f"message:{report.id} from agent:{self.numbers.number(AGENT_MODEL_NAME, report.session_agent_id)}: {report.text.splitlines()[0][:TITLE_CHARACTERS] if report.text else ''}" for report in value.reports]
+            numbers = self.numbers.numbers(AGENT_MODEL_NAME, {report.session_agent_id for report in value.reports})
+            lines = [f"message:{report.id} from agent:{numbers[report.session_agent_id]}: {report.text.splitlines()[0][:TITLE_CHARACTERS] if report.text else ''}" for report in value.reports]
             older = value.total - value.page * SHOWN_REPORTS
             text = "\n".join([*lines, f"{older} older unread reports: --page {value.page + 1}"] if older > 0 else lines)
             output.write(text or "no unread reports", {"rows": [report.id for report in value.reports], "total": value.total})

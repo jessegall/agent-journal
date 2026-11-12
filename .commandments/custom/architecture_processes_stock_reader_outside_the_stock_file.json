@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "StockReader"
+            },
+            {
+                "fileMatches": "(^|/)(core|suites|engine|server)/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/support/stock_reader\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "stock-reader-outside-the-stock-file",
+        "description": "A stock reader is declared away from the one file that lists them.",
+        "rule": "Add a shipped reader to STOCK_READERS in support/stock_reader.py with a recorded sample; nowhere else.",
+        "skill": "processes-architecture"
+    }
+}

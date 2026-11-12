@@ -10,3 +10,6 @@ class RowNumbers:
 
     def environment_number(self, model_name: str, row_id: int, environment_id: int | None) -> int:
         return row_id
+
+    def numbers(self, model_name: str, row_ids: set[int]) -> dict[int, int]:
+        return {row_id: row_id for row_id in row_ids}

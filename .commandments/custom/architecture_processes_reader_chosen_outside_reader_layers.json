@@ -1,0 +1,53 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "sorted",
+                    "sort",
+                    "min",
+                    "max"
+                ]
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "member-access"
+                        },
+                        {
+                            "nameIn": [
+                                "id",
+                                "is_default"
+                            ]
+                        },
+                        {
+                            "of": "receiver",
+                            "nameMatches": "^readers?$"
+                        }
+                    ]
+                }
+            },
+            {
+                "fileMatches": "(^|/)core/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/support/reading/reader_layers\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "reader-chosen-outside-reader-layers",
+        "description": "Readers are put in order by id or by default flag outside ReaderLayers, so selection and drafting can disagree again.",
+        "rule": "Order readers with ReaderLayers.ordered: project, plugin, stock; default first, then the newest.",
+        "skill": "processes-architecture"
+    }
+}

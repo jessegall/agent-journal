@@ -308,6 +308,12 @@
         },
         "parse_error": {
           "type": "string"
+        },
+        "saved_commands_known": {
+          "type": "boolean"
+        },
+        "retry_loop": {
+          "type": "boolean"
         }
       }
     },

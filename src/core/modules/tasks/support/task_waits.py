@@ -7,6 +7,7 @@ from engine.driver.nudger import Nudger
 from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
+from engine.query.kept_row_changes import KeptRowChanges
 from core.modules.assignments.support.assignments import Assignments
 from engine.repository.repository import Repository
 from core.modules.tasks.models.enums.task_state import TaskState
@@ -24,7 +25,7 @@ ENDED_WAITS_REASON = "Every task whose wait just ended is opened; a task many ot
 KEPT_WAITS_REASON = "The open waits are read once and kept on the server, so a listener that ends waits for many targets reads no row per target."
 
 
-class TaskWaits:
+class TaskWaits(KeptRowChanges[TaskWait]):
     """Ends a blocked task's waits, and opens the task when the last of them has ended."""
 
     def __init__(self, queries: Queries, repository: Repository, nudger: Nudger, kept: KeptRows, assignments: Assignments) -> None:
@@ -66,13 +67,10 @@ class TaskWaits:
         return self.kept.read("task_waits", lambda: tuple(self.queries.query(TaskWait).matching(IsNull("ended_at")).oldest().full_table(KEPT_WAITS_REASON).all_rows()),
                               "ended_at IS NULL", name="tasks.pending_waits")
 
-    def remember(self, wait: TaskWait) -> None:
-        self.replace_cached(wait, tuple([wait]) if wait.ended_at is None else ())
+    def kept_rows(self, wait: TaskWait) -> tuple[TaskWait, ...]:
+        return tuple([wait]) if wait.ended_at is None else ()
 
-    def remove(self, wait: TaskWait) -> None:
-        self.replace_cached(wait, ())
-
-    def replace_cached(self, wait: TaskWait, pending: tuple[TaskWait, ...]) -> None:
+    def update_kept(self, wait: TaskWait, pending: tuple[TaskWait, ...]) -> None:
         def with_pending(waits: tuple[TaskWait, ...]) -> tuple[TaskWait, ...]:
             return tuple(sorted([row for row in waits if row.id != wait.id] + list(pending), key=lambda row: row.id))
 

@@ -10,7 +10,8 @@ from suites.coding.modules.workers.models.enums.proof_state import COMMITTED_WOR
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
-from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
+from suites.coding.modules.workers.models.affected_test import AffectedTest
+from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
 
