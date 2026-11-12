@@ -25,10 +25,10 @@ def key_fails(parser: LineParser, key: WindowKey) -> bool:
     argv = words_of(full_line(key))
     try:
         _, command_parser = parser.parser(argv)
-        command_parser.parse_args(argv[2:])
-    except (SystemExit, UsageError):
+    except UsageError:
         return True
-    return False
+    known = set(command_parser._option_string_actions)
+    return any(word.startswith("--") and word not in known for word in argv[2:])
 
 
 def read_fails(parser: LineParser, line: str) -> bool:
