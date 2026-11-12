@@ -47,7 +47,7 @@ class WorkerTestFailures:
         self.repository.save(WorkerTestFailure(worker_id=worker_id, task_id=task_id, source=source, test_name=test_name), context)
 
     def flagged_lines(self, task_ids: Sequence[int]) -> Mapping[int, tuple[str, ...]]:
-        failures = tuple(self.queries.query(WorkerTestFailure).matching(Among("task_id", task_ids)).all_rows())
+        failures = tuple(self.queries.query(WorkerTestFailure).matching(Among("task_id", task_ids)).every_row("every failed test of the tasks is weighed"))
         return {task_id: self.task_lines([row for row in failures if row.task_id == task_id]) for task_id in task_ids}
 
     def task_lines(self, failures: Sequence[WorkerTestFailure]) -> tuple[str, ...]:

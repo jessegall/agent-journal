@@ -19,5 +19,5 @@ class WorkerLogLines:
         proofs = tuple(self.queries.query(Proof).filter(worktree_id=worktree.id).all_rows())
         task_ids = sorted({worktree.task_id, *(proof.task_id for proof in proofs)})
         tasks = tuple(self.queries.query(Task).matching(Among("id", task_ids)).oldest().all_rows())
-        rows = self.queries.query(TaskLog).filter(creator_id=worktree.session_agent_id).matching(Among("task_id", task_ids)).oldest().all_rows()
+        rows = self.queries.query(TaskLog).filter(creator_id=worktree.session_agent_id).matching(Among("task_id", task_ids)).every_row("every log line of the worker's tasks is shown in its logs")
         return WorkerReview(tasks, tuple(rows), self.failures.flagged_lines(task_ids), proofs)
