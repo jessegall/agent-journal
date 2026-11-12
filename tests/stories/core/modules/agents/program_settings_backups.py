@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from core.modules.agents.ticks.program_settings_tick import ProgramSettingsTick
+from core.modules.agents.ticks.program_settings_watch import ProgramSettingsWatch
 from tests.stories.core.support.fixtures import MainEnvironment
 
 COPY_NAME = re.compile(r"^\d{8}T\d{6}Z(-\d+)?-(?P<name>.+)$")
@@ -49,7 +49,7 @@ def test_the_first_start_backs_up_each_person_file_privately_and_leaves_it_as_it
     story = new_story(fixture=MainEnvironment)
     files = written_person_files()
     before = [(path.read_bytes(), path.stat().st_mtime_ns) for path in files]
-    ProgramSettingsTick()(story.container)
+    ProgramSettingsWatch()(story.container)
     made = [(program, path) for program, paths in person_files().items() for path in paths]
     story.expect_rows(all(len(copies(story, program, path.name)) == 1 for program, path in made),
                       all(copies(story, program, path.name)[0].read_bytes() == path.read_bytes() for program, path in made),
@@ -60,7 +60,7 @@ def test_the_first_start_backs_up_each_person_file_privately_and_leaves_it_as_it
 def test_an_unchanged_file_is_not_copied_again(new_story):
     story = new_story(fixture=MainEnvironment)
     written_person_files()
-    ProgramSettingsTick()(story.container)
+    ProgramSettingsWatch()(story.container)
     story.advance(timedelta(minutes=1))
     launch_claude(story)
     story.expect_rows(len(copies(story, "claude", "settings.json")) == 1)
@@ -93,7 +93,7 @@ def test_a_missing_codex_hooks_file_gives_no_copy_and_no_failure_line(new_story)
     story = new_story(fixture=MainEnvironment)
     written_person_files()
     person_files()["codex"][1].unlink()
-    ProgramSettingsTick()(story.container)
+    ProgramSettingsWatch()(story.container)
     story.expect_rows(copies(story, "codex", "hooks.json") == [], len(copies(story, "codex", "config.toml")) == 1, "failed" not in log_text(story))
 
 
@@ -103,7 +103,7 @@ def test_an_unreadable_person_file_is_logged_and_the_journal_still_writes_its_ow
     settings = written_person_files()[0]
     os.chmod(settings, 0)
     try:
-        ProgramSettingsTick()(story.container)
+        ProgramSettingsWatch()(story.container)
     finally:
         os.chmod(settings, 0o600)
     story.expect_rows(f"the backup of {settings} failed: Permission denied" in log_text(story),

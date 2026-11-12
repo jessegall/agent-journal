@@ -1,7 +1,7 @@
 import json
 from datetime import timedelta
 
-from core.modules.agents.ticks.program_settings_tick import ProgramSettingsTick
+from core.modules.agents.ticks.program_settings_watch import ProgramSettingsWatch
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
 from tests.stories.core.support.fixtures import AgentStarted
 
@@ -15,7 +15,7 @@ def test_a_session_started_before_the_switch_keeps_its_hooks_until_it_ends(new_s
     local.parent.mkdir(parents=True, exist_ok=True)
     local.write_text(json.dumps({"hooks": {"PreToolUse": [OLD_JOURNAL_BLOCK, FOREIGN_BLOCK]}}))
     story.advance(timedelta(minutes=1))
-    tick = ProgramSettingsTick()
+    tick = ProgramSettingsWatch()
     tick(story.container)
     kept_while_running = json.loads(local.read_text())["hooks"]["PreToolUse"] == [OLD_JOURNAL_BLOCK, FOREIGN_BLOCK]
     held_mark = "until the sessions started before the switch end" in marks_text(story)

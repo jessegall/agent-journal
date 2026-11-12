@@ -1,6 +1,6 @@
 import json
 
-from core.modules.agents.ticks.program_settings_tick import ProgramSettingsTick
+from core.modules.agents.ticks.program_settings_watch import ProgramSettingsWatch
 from engine.provider.program_hooks import ProgramHooks
 from tests.stories.core.support.fixtures import MainEnvironment
 
@@ -21,7 +21,7 @@ def test_the_first_start_backs_up_the_project_files_and_takes_the_old_journal_en
     ProgramHooks.store(local, {"hooks": {"PreToolUse": [OLD_CLAUDE_ENTRY, FOREIGN_PROMPT]}})
     ProgramHooks.store(codex, {"hooks": {"PreToolUse": [OLD_CODEX_ENTRY, FOREIGN_PROMPT]}})
     originals = {"claude": local.read_bytes(), "codex": codex.read_bytes()}
-    ProgramSettingsTick()(story.container)
+    ProgramSettingsWatch()(story.container)
     backups = story.home.folder / "backups" / "program-settings"
     copies = {program: [copy.read_bytes() for copy in (backups / program).glob(f"*-project-{name}")] for program, name in (("claude", "settings.local.json"), ("codex", "hooks.json"))}
     journal_codex = json.loads((story.home.folder / "programs" / "codex" / "hooks.json").read_text())

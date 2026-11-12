@@ -15,7 +15,7 @@ COPY_MODE = 0o600
 NEWEST_COPIES = 20
 STAMP_FORMAT = "%Y%m%dT%H%M%SZ"
 COPY_NAME = re.compile(r"^(?P<stamp>\d{8}T\d{6}Z)(?:-(?P<number>\d+))?-(?P<name>.+)$")
-REJECTED_MARK = "-rejected-"
+REJECTED_PREFIX = "rejected-"
 PROJECT_PREFIX = "project-"
 LOCK_NAME = ".lock"
 
@@ -46,8 +46,7 @@ class ProgramSettingsBackup:
         folder = self.home.program_settings_backups / program
         if not folder.is_dir():
             return []
-        named = [(match, copy) for copy in folder.iterdir() if REJECTED_MARK not in copy.name
-                 and (match := COPY_NAME.match(copy.name)) is not None and match["name"] == name]
+        named = [(match, copy) for copy in folder.iterdir() if (match := COPY_NAME.match(copy.name)) is not None and match["name"] == name]
         return [copy for match, copy in sorted(named, key=lambda pair: (pair[0]["stamp"], int(pair[0]["number"] or 0)))]
 
     def _copied(self, program: str, path: Path, name: str) -> Path | None:
@@ -69,6 +68,16 @@ class ProgramSettingsBackup:
             copy = self.free_name(folder, name)
             FileAccess.shared().write_whole(copy, data, COPY_MODE)
             self.prune(program, name)
+            return copy
+
+    def rejected(self, program: str, path: Path, data: bytes) -> Path:
+        name = f"{REJECTED_PREFIX}{path.name}"
+        folder = PrivateFolders.made(self.home.program_settings_backups / program)
+        with FileLock.held(folder / LOCK_NAME):
+            copy = self.free_name(folder, name)
+            FileAccess.shared().write_whole(copy, data, COPY_MODE)
+            for stale in self.copies(program, name)[:-NEWEST_COPIES]:
+                stale.unlink(missing_ok=True)
             return copy
 
     def free_name(self, folder: Path, name: str) -> Path:

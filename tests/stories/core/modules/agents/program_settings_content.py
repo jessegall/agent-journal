@@ -3,7 +3,7 @@ import os
 import tomllib
 from pathlib import Path
 
-from core.modules.agents.ticks.program_settings_tick import ProgramSettingsTick
+from core.modules.agents.ticks.program_settings_watch import ProgramSettingsWatch
 from engine.provider.program_hooks import ProgramHooks
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
 from tests.stories.core.support.fixtures import MainEnvironment
@@ -131,7 +131,7 @@ def test_a_broken_person_settings_file_is_shown_in_the_chat_and_carries_nothing(
     story = new_story(fixture=MainEnvironment)
     claude_person_file().parent.mkdir(parents=True, exist_ok=True)
     claude_person_file().write_text('{"env": {"A": "1"}, broken')
-    tick = ProgramSettingsTick()
+    tick = ProgramSettingsWatch()
     tick(story.container)
     tick(story.container)
     story.expect_rows("env" not in claude_settings(story), marks_text(story).count(f"Your settings file {claude_person_file()} could not be read") == 1)

@@ -38,6 +38,7 @@ def test_a_program_no_module_provides_is_refused_naming_it(new_story):
     story = new_story(fixture=MainEnvironment)
     folder = project_folder(story)
     story.expect_refusal(f"program command gemini {folder} --launch launch-1", "gemini")
+    story.expect_refusal(f"program trust gemini {folder}", "gemini")
 
 
 def test_a_new_or_resumed_main_agent_starts_with_the_journals_first_prompt_last(new_story):

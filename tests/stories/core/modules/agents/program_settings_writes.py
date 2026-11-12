@@ -5,7 +5,7 @@ import stat
 import threading
 from pathlib import Path
 
-from core.modules.agents.ticks.program_settings_tick import ProgramSettingsTick
+from core.modules.agents.ticks.program_settings_watch import ProgramSettingsWatch
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.program_settings_sync import ProgramSettingsSync
 from tests.stories.core.modules.helpers.start_helper import LauncherRuns
@@ -34,7 +34,7 @@ def mode_of(path: Path) -> int:
 
 def test_the_server_start_writes_both_programs_files_read_only(new_story):
     story = new_story(fixture=MainEnvironment)
-    ProgramSettingsTick()(story.container)
+    ProgramSettingsWatch()(story.container)
     story.expect_rows(all(path.is_file() and mode_of(path) == 0o444 for path in program_files(story)),
                       all(path.read_text().endswith("\n") for path in program_files(story)))
 
@@ -96,5 +96,5 @@ def test_an_upgrade_from_an_older_journal_writes_the_files_at_once(new_story):
     local.parent.mkdir(parents=True, exist_ok=True)
     local.write_text(json.dumps({"hooks": {"PreToolUse": [OLD_JOURNAL_BLOCK]}}))
     absent_before = not (story.home.folder / "programs").exists()
-    ProgramSettingsTick()(story.container)
+    ProgramSettingsWatch()(story.container)
     story.expect_rows(absent_before, all(path.is_file() for path in program_files(story)))

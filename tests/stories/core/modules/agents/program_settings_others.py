@@ -2,7 +2,7 @@ import json
 import os
 from pathlib import Path
 
-from core.modules.agents.ticks.program_settings_tick import ProgramSettingsTick
+from core.modules.agents.ticks.program_settings_watch import ProgramSettingsWatch
 from engine.journal.journal_home import JournalHome
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.program_settings_writer import ProgramSettingsWriter
@@ -26,7 +26,7 @@ def test_a_clone_and_plain_claude_or_codex_outside_the_journal_see_nothing_of_th
     root = story.home.project_folder
     files = person_files()
     before = [path.read_bytes() for path in files]
-    ProgramSettingsTick()(story.container)
+    ProgramSettingsWatch()(story.container)
     project_files = [root / ".claude" / "settings.local.json", root / ".claude" / "settings.json", root / ".codex" / "hooks.json"]
     story.expect_rows("/.journal" in REPOSITORY_IGNORE.read_text().splitlines(), [path.read_bytes() for path in files] == before,
                       all(not ProgramHooks.partitioned(ProgramHooks.read(path).get("hooks")).journal for path in project_files))

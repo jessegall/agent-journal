@@ -6,3 +6,4 @@ class ProgramSettingsMarkVariant(StrEnum):
 
     UNREADABLE_PERSON_FILE = "unreadable-person-file"
     HELD_PROJECT_HOOKS = "held-project-hooks"
+    PUT_BACK = "put-back"
