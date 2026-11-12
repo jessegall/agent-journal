@@ -251,7 +251,7 @@ from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.request_run_query import RequestRunQuery
 from core.modules.processes.migrations.m068_request_run_age_index import RequestRunAgeIndexMigration
-from core.modules.processes.migrations.m069_request_run_end_index import RequestRunEndIndexMigration
+from core.modules.processes.migrations.m070_request_run_end_index import RequestRunEndIndexMigration
 from core.modules.processes.queries.watch_query import WatchQuery
 from core.modules.processes.models.enums.process_setting import PROCESS_SETTINGS
 from core.modules.processes.seeders.processes_seeder import ProcessesSeeder
