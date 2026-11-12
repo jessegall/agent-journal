@@ -24,8 +24,6 @@ from core.modules.processes.support.reader_request_text import ReaderRequestText
 from core.modules.processes.support.reader_save_attempts import ReaderSaveAttempts
 from core.modules.processes.support.reader_writers import ReaderWriters
 
-OPEN_REQUESTS_REASON = "the main agent is told of every open reader request that needs help or ran out of time"
-
 
 class ReaderRequestBlocks:
     """The blocks of a reader request: the agent that must have the reader is held until the request is completed
@@ -52,7 +50,7 @@ class ReaderRequestBlocks:
             return RuleAnswer.allowed()
         if hook.role != AgentRole.MAIN:
             return RuleAnswer.with_nudges(*(self.request_text.line(request) for request in self.writers.agent_requests(Actor(hook.agent_id, ActorType.AGENT))))
-        waiting = tuple(request for request in self.requests.open().every_row(OPEN_REQUESTS_REASON)
+        waiting = tuple(request for request in self.requests.open_rows()
                         if (self.attempts.needs_help(request) or request.expires_at <= hook.timestamp)
                         if not self.notices.has_recent_notice(hook.agent_id, request.id, hook.timestamp))
         blocks = tuple(self.help_block(hook.agent_id, request) for request in waiting)

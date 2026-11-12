@@ -37,6 +37,9 @@ class MemoryWorktreeGit(WorktreeGit):
     def commit_checkout(self, worktree: Worktree, commit: str) -> str:
         return worktree.folder
 
+    def is_test_checkout_current(self, worktree: Worktree) -> bool:
+        return True
+
     def is_ancestor(self, folder: str, ancestor: str, commit: str) -> bool:
         return True
 
@@ -193,10 +196,11 @@ class MemoryWorktreeGit(WorktreeGit):
         if self.builds.paths().of(change.relative for change in changes.changes if change.status is FileStatus.DELETED):
             raise GitStoryRequired("a story about deleted built files builds its repository with real git")
 
-    def rebuild(self, worktree: Worktree, base_folder: str) -> None:
+    def rebuild(self, worktree: Worktree, base_folder: str) -> bool:
         changed = TreeChanges(self.history.tip(worktree.base_branch).tree, self.history.tip(worktree.branch).tree).names()
         if self.builds.paths().of(changed):
             raise GitStoryRequired("a story about rebuilt web files builds its repository with real git")
+        return False
 
     def restore_stashes(self, worktree: Worktree) -> None:
         return

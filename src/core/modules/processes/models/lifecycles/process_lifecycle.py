@@ -16,3 +16,5 @@ class ProcessLifecycle(Lifecycle):
     fail = Move("fail", OPEN, ProcessState.FAILED)
     stop = Move("stop", OPEN, ProcessState.STOPPED)
     orphan = Move("orphan", OPEN, ProcessState.ORPHANED)
+    journal_merge_finish = Move("journal_merge_finish", OPEN, ProcessState.FINISHED)
+    journal_merge_fail = Move("journal_merge_fail", OPEN, ProcessState.FAILED)

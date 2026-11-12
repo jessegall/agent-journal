@@ -119,7 +119,15 @@ class WorktreeGit:
         return self.git(folder, GIT_LIMIT_SECONDS, "merge-base", "--is-ancestor", ancestor, commit).returncode == 0
 
     def test_checkout(self, worktree: Worktree) -> str:
-        return self.commit_checkout(worktree, self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "HEAD").stdout.strip())
+        return self.commit_checkout(worktree, self.head_commit(worktree.folder))
+
+    def head_commit(self, folder: str) -> str:
+        return self.checked(folder, GIT_LIMIT_SECONDS, "rev-parse", "HEAD").stdout.strip()
+
+    def is_test_checkout_current(self, worktree: Worktree) -> bool:
+        """Whether the worktree's test checkout stands at the worktree's own last commit."""
+        folder = self.test_folder(worktree)
+        return Path(folder, ".git").exists() and self.head_commit(folder) == self.head_commit(worktree.folder)
 
     def commit_checkout(self, worktree: Worktree, commit: str) -> str:
         return self.detached_checkout(worktree.folder, self.test_folder(worktree), commit, self.library_names(worktree))
@@ -279,13 +287,15 @@ class WorktreeGit:
             raise Refusal(f"it deletes {len(kept)} built files under {built.folder(kept[0])} while their sources stay, such as {kept[0]}",
                           AskTopic.TOOL.hint(f"build them again with {' '.join(self.builds.command())}, then commit again"))
 
-    def rebuild(self, worktree: Worktree, base_folder: str) -> None:
+    def rebuild(self, worktree: Worktree, base_folder: str) -> bool:
+        """Builds the built files the branch changed again from its sources and commits them; says whether it built any."""
         changed = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", worktree.base_branch, worktree.branch).stdout.splitlines()
         folders = self.builds.paths().folders(changed)
         if not folders:
-            return
+            return False
         self.build(worktree.folder, base_folder, folders)
         self.commit(worktree, REBUILD_MESSAGE, f"Journal: worker worker-{worktree.session_agent_id}")
+        return True
 
     def build(self, folder: str, base_folder: str, folders: Sequence[str]) -> None:
         """Builds the built files of these folders again from the sources in the folder, with the build command of
