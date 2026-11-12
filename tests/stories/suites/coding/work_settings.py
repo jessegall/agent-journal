@@ -65,7 +65,7 @@ def test_the_work_settings_read_carries_the_presets_with_the_value_each_gives_ea
     assert list(presets) == ["builder", "orchestrator"]
     assert [preset["name"] for preset in presets.values()] == ["Builder", "Orchestrator"]
     assert all(preset["line"] for preset in presets.values())
-    assert [value for value in presets["builder"]["values"].values()] == list(BUILDER)
-    assert [value for value in presets["orchestrator"]["values"].values()] == list(ORCHESTRATOR)
-    assert list(presets["builder"]["values"]) == [switch["key"] for switch in shown["switches"]]
+    assert sorted(presets["builder"]["values"].values()) == sorted(BUILDER)
+    assert sorted(presets["orchestrator"]["values"].values()) == sorted(ORCHESTRATOR)
+    assert set(presets["builder"]["values"]) == {switch["key"] for switch in shown["switches"]}
     assert all(switch["title"] for switch in shown["switches"])

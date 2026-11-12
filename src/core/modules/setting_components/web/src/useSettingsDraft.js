@@ -1,5 +1,5 @@
 import {computed, reactive, ref} from "vue";
-import {sentList} from "./listText.js";
+import {listItems, sentList} from "./listText.js";
 import {numberRuleProblem} from "./numberRule.js";
 
 const BLANK_NUMBER = "A number is missing.";
@@ -11,7 +11,7 @@ const isList = (node) => node.kind === "list" || node.kind === NUMBER_LIST;
 // the value a draft holds for a node: a switch is on or off, a list is the entries, anything else is its text
 function drafted(node) {
     if (node.kind === "flag") return Boolean(node.value);
-    if (isList(node)) return [...(node.value ?? [])];
+    if (isList(node)) return Array.isArray(node.value) ? [...node.value] : listItems(node.value);
     return node.value === null || node.value === undefined ? "" : String(node.value);
 }
 

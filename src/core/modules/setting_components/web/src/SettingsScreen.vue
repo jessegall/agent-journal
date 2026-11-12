@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {sectionKeyOf, sectionsOf} from "./sections.js";
+import {isDrawn, sectionKeyOf, sectionsOf} from "./sections.js";
 import SettingSection from "./SettingSection.vue";
 import SettingsNodeRow from "./SettingsNodeRow.vue";
 
@@ -17,7 +17,7 @@ const props = defineProps({
 
 const keys = computed(() => new Set(props.nodes.map((node) => node.key)));
 const top = (node) => node.parent === null || !keys.value.has(node.parent);
-const sections = computed(() => sectionsOf(props.nodes).map((section) => ({...section, nodes: props.nodes.filter((node) => sectionKeyOf(node.section) === section.key && top(node) && props.draft.visible(node.key))})));
+const sections = computed(() => sectionsOf(props.nodes).map((section) => ({...section, nodes: props.nodes.filter((node) => sectionKeyOf(node.section) === section.key && top(node) && isDrawn(node) && props.draft.visible(node.key))})));
 </script>
 
 <template>

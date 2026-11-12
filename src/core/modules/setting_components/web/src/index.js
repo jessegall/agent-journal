@@ -33,7 +33,7 @@ export {useSettingsDraft} from "./useSettingsDraft.js";
 export {filledPercent, isFull, overPercent} from "./usageFull.js";
 
 export {resolveSettingComponent, settingComponents} from "./registry.js";
-export {componentNameOf, hasComponent, sectionKeyOf, sectionsOf} from "./sections.js";
+export {componentNameOf, hasComponent, isDrawn, sectionKeyOf, sectionsOf} from "./sections.js";
 
 // the pieces around the settings, which no setting names
 export {

@@ -39,7 +39,7 @@ export const SCREENS = () => ({
         node(`${CONTEXT}-on`, "flag", true, {section: "Context size"}),
         node(`${CONTEXT}-tokens`, "number", 400000, {section: "Context size", rule: RULE}),
         node(`${CONTEXT}-kinds`, "list", ["worker:200000"], {section: "Context size", component: "keyed-cap-table"}),
-        node(`${CONTEXT}-profiles`, "list", ["journal-researcher:150000"], {section: "Context size", component: "entry-list"}),
+        node(`${CONTEXT}-profiles`, "list", ["journal-researcher:150000"], {section: "Context size", component: "three-way-cap"}),
     ]},
 });
 

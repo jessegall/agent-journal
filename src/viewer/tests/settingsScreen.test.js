@@ -100,3 +100,10 @@ test("a setting nobody has heard of is drawn with no change to any Vue file", ()
     expect(made.querySelector("input").value).toBe("42");
     expect(screen.element.querySelector("[data-section=invented] h4").textContent).toBe("Invented");
 });
+
+test("a setting that another screen draws with a component of its own is held for the draft and not drawn", () => {
+    const screen = drawn([node("shown", "flag", "toggle", true), node("elsewhere", "list", "three-way-cap", ["a:1"])]);
+    expect(row(screen, "shown")).not.toBeNull();
+    expect(row(screen, "elsewhere")).toBeNull();
+    expect(screen.draft.value("elsewhere")).toEqual(["a:1"]);
+});

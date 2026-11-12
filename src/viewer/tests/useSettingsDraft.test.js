@@ -181,3 +181,13 @@ test("a screen read again with a new revision makes a draft that began from it s
     draft.load([{screen: "helper-type.workers", revision: "h2", nodes: [node("workers", "number", 3, {rule: NUMBER_RULE})]}]);
     expect(draft.stale.value).toBe(true);
 });
+
+test("a list the journal sends as JSON text is held as its entries", async () => {
+    const {draft, run} = drafted();
+    draft.load([{screen: "lists", revision: "l1", nodes: [node("spelled", "list", '["a","b"]'), node("empty", "list", "[]"), node("counted", "number list", "[1,2]")]}]);
+    expect([draft.value("spelled"), draft.value("empty"), draft.value("counted")]).toEqual([["a", "b"], [], [1, 2]]);
+    expect(draft.changes()).toEqual([]);
+    draft.set("spelled", ["a", "b", "c"]);
+    await draft.apply();
+    expect(run.mock.calls.at(-1)[0].at(-1)).toBe('spelled=["a","b","c"]');
+});

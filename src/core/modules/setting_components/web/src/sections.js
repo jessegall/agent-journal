@@ -12,6 +12,9 @@ const DEFAULT_COMPONENTS = Object.freeze({
 });
 
 export const componentNameOf = (node) => node.component || DEFAULT_COMPONENTS[node.kind];
+// settings a screen holds for the draft and another screen draws with a component that needs more than the setting
+export const DRAWN_ELSEWHERE = Object.freeze(["three-way-cap", "per-type-override"]);
+export const isDrawn = (node) => !DRAWN_ELSEWHERE.includes(componentNameOf(node));
 export const hasComponent = (name) => Object.hasOwn(settingComponents, name);
 
 const slug = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

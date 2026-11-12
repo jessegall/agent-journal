@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {componentNameOf, hasComponent} from "./sections.js";
+import {componentNameOf, hasComponent, isDrawn} from "./sections.js";
 import {ruleOf} from "./numberRule.js";
 import {settingComponents} from "./registry.js";
 import SettingNestedGroup from "./SettingNestedGroup.vue";
@@ -20,7 +20,7 @@ const props = defineProps({
 
 const name = computed(() => componentNameOf(props.node));
 const known = computed(() => hasComponent(name.value));
-const children = computed(() => props.nodes.filter((child) => child.parent === props.node.key && props.draft.visible(child.key)));
+const children = computed(() => props.nodes.filter((child) => child.parent === props.node.key && isDrawn(child) && props.draft.visible(child.key)));
 // what a component needs beyond the value, read from the node: the choices of a choice, the least of a number
 const given = computed(() => ({
     ...(props.node.kind === "choice" ? {choices: props.node.choices} : {}),
