@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from textwrap import dedent
 
-from engine.file.file_access import FileAccess
 from engine.types.type_guards import is_mapping
 from core.modules.codex.providers.support.codex_trust import CodexTrust
 
@@ -23,7 +22,7 @@ class CodexJournalConfig:
     """The config.toml the journal writes whole for Codex: bypass, the model providers carried from the person's
     config, the folders Codex trusts and the trusted hashes of the journal's hooks."""
 
-    person_config: Path
+    person_config: bytes
     folders: Sequence[Path]
     hooks_file: Path
     hooks: Mapping[str, list[object]]
@@ -45,10 +44,8 @@ class CodexJournalConfig:
                 for key, digest in CodexTrust.definition_hashes(self.hooks_file, self.hooks).items() if digest is not None]
 
     def person_settings(self) -> dict[str, object]:
-        if not self.person_config.is_file():
-            return {}
         try:
-            return tomllib.loads(FileAccess.shared().read(self.person_config))
+            return tomllib.loads(self.person_config.decode())
         except (tomllib.TOMLDecodeError, UnicodeDecodeError):
             return {}
 

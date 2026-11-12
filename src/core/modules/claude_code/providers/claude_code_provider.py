@@ -25,7 +25,6 @@ from engine.provider.transcript_author import AGENT_AUTHOR, TRANSCRIPT_AUTHORS, 
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.managed_hook import ManagedHook
 from engine.provider.program_settings import ProgramSettings, SettingsFile
-from engine.json.json_settings import JsonSettings
 from engine.provider.program_folders import ProgramFolders
 from engine.provider.program_model import ProgramModel
 from engine.provider.control_choice import ControlChoice
@@ -226,21 +225,21 @@ class ClaudeCodeProvider(Provider):
     def journal_settings(self, home: JournalHome, runner: str, managed: Sequence[ManagedHook], folders: Sequence[Path]) -> ProgramSettings:
         path = home.program_settings_file(self.name)
         root = home.project_folder
-        settings = {**self.carried_settings(), "permissions": BYPASS_PERMISSIONS, **self.hook_settings(runner, root),
+        person_data = self.person_data()
+        person_settings = self.person_settings(person_data.get(self.user_hook_files()[0], b""))
+        carried = {key: person_settings[key] for key in CARRIED_SETTINGS if key in person_settings}
+        settings = {**carried, "permissions": BYPASS_PERMISSIONS, **self.hook_settings(runner, root),
                     "hooks": ProgramHooks.journal(type(self), path).journal_blocks(runner, root, managed)}
         return ProgramSettings(self.name, tuple([SettingsFile(path, json.dumps(settings, indent=2, sort_keys=True) + "\n")]),
-                               person_files=self.user_hook_files())
-
-    def carried_settings(self) -> dict[str, object]:
-        person_settings = self.person_settings(self.user_hook_files()[0])
-        return {key: person_settings[key] for key in CARRIED_SETTINGS if key in person_settings}
+                               person_files=self.user_hook_files(), person_data=person_data)
 
     @staticmethod
-    def person_settings(path: Path) -> dict[str, object]:
+    def person_settings(data: bytes) -> Mapping[str, object]:
         try:
-            return JsonSettings.read(path)
+            parsed: object = json.loads(data or b"{}")
         except (json.JSONDecodeError, UnicodeDecodeError):
             return {}
+        return {str(key): value for key, value in parsed.items()} if is_mapping(parsed) else {}
 
     def hook_trust(self, project: Path) -> HookTrust:
         return HookTrust.READY if ProgramHooks.hooks(type(self), project).is_complete() else HookTrust.UNWRITTEN

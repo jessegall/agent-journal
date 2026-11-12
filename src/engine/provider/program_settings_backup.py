@@ -3,6 +3,7 @@ from pathlib import Path
 
 from engine.enums.log_level import LogLevel
 from engine.file.file_access import FileAccess
+from engine.file.kept_bytes import KeptBytes
 from engine.file.private_folders import PrivateFolders
 from engine.journal.journal_home import JournalHome
 from engine.log.system_log_writer import SystemLogWriter
@@ -25,7 +26,8 @@ class ProgramSettingsBackup:
         self.home, self.log, self.clock = home, log, clock
 
     def backed_up(self, settings: ProgramSettings) -> tuple[Path, ...]:
-        copies = (self.copied(settings.program, path) for path in settings.person_files)
+        copies = (self._stored(settings.program, path.name, settings.person_data[path]) if path in settings.person_data
+                  else self.copied(settings.program, path) for path in settings.person_files)
         return tuple(copy for copy in copies if copy is not None)
 
     def copied(self, program: str, path: Path) -> Path | None:
@@ -50,12 +52,15 @@ class ProgramSettingsBackup:
         if not path.is_file():
             return None
         try:
-            data = FileAccess.shared().binary(path)
+            data = KeptBytes.read(path)
         except OSError as error:
             self.log.write(LogLevel.WARNING, f"the backup of {self.shown(path)} failed: {error.strerror or error}")
             return None
+        return self._stored(program, name, data)
+
+    def _stored(self, program: str, name: str, data: bytes) -> Path | None:
         newest = self.newest(program, name)
-        if newest is not None and FileAccess.shared().binary(newest) == data:
+        if newest is not None and KeptBytes.read(newest) == data:
             return None
         copy = self.free_name(PrivateFolders.made(self.home.program_settings_backups / program), name)
         FileAccess.shared().write_whole(copy, data, COPY_MODE)

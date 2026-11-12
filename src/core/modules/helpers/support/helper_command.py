@@ -3,6 +3,7 @@ from pathlib import Path
 from engine.provider.helper_launch import HelperLaunch
 from engine.provider.launch_command import LaunchCommand
 from engine.provider.providers import Providers
+from engine.provider.program_settings_sync import ProgramSettingsSync
 from engine.provider.resumed_session import ResumedSession
 from engine.provider.session_start import SessionStart
 from core.modules.agents.models.agent import Agent
@@ -25,8 +26,9 @@ class HelperCommand:
     """The command line that starts an agent's program on its job, as its provider writes it, in its folder. A
     session that follows an earlier one of the same agent starts with the line that says what it carries."""
 
-    def __init__(self, providers: Providers, folders: AgentFolders, profiles: ProfileFiles, environments: EnvironmentRows, start_folders: HelperStartFolder, programs: HelperPrograms, session_lines: NewSessionLine) -> None:
-        self.session_lines = session_lines
+    def __init__(self, providers: Providers, folders: AgentFolders, profiles: ProfileFiles, environments: EnvironmentRows, start_folders: HelperStartFolder, programs: HelperPrograms, session_lines: NewSessionLine,
+                 sync: ProgramSettingsSync) -> None:
+        self.session_lines, self.sync = session_lines, sync
         self.providers, self.folders, self.profiles, self.environments = providers, folders, profiles, environments
         self.start_folders, self.programs = start_folders, programs
 
@@ -48,6 +50,7 @@ class HelperCommand:
 
     def launched(self, agent: Agent, session: SessionStart, brief: str) -> LaunchCommand:
         environment = self.environments.find(agent.environment_id)
+        self.sync.prepare(agent.program)
         launch = HelperLaunch(root=Path(environment.folder), folder=self.folders.folder(agent), model=agent.program_model, launch="", session=session,
                               variables={ENVIRONMENT_VARIABLE: environment.name, ACTIVE_VARIABLE: "1"}, brief=brief)
         return self.providers.provider(agent.program).helper_command(launch)

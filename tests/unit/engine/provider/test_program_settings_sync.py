@@ -78,7 +78,7 @@ def test_the_worktree_folders_are_passed_to_the_provider(sync, home):
     (home.worktrees_folder / "development" / "notes.txt").write_text("not a worktree")
     sync.prepare("sample")
     assert stored_settings(home, "sample") == {"runner": f'"{home.hook_runner}"',
-                                               "folders": [str(home.project_folder), *sorted(str(worktree.resolve()) for worktree in worktrees)]}
+                                               "folders": [str(home.project_folder), *(str(worktree) for worktree in sorted(worktree.resolve() for worktree in worktrees))]}
 
 
 def test_prepare_all_writes_both_programs(sync, home):

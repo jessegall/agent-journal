@@ -33,6 +33,7 @@ from engine.provider.transcript_tail import TranscriptTail
 from engine.provider.transcript_entry import TranscriptEntry
 from engine.time.timestamp import Timestamp
 from engine.errors.refusal import Refusal
+from engine.file.kept_bytes import KeptBytes
 
 if TYPE_CHECKING:
     from engine.provider.managed_hook import ManagedHook
@@ -225,3 +226,13 @@ class Provider(ABC):
 
     def journal_settings(self, home: JournalHome, runner: str, managed: Sequence["ManagedHook"], folders: Sequence[Path]) -> ProgramSettings:
         raise NotImplementedError
+
+    def person_data(self) -> dict[Path, bytes]:
+        readable: dict[Path, bytes] = {}
+        for path in self.user_hook_files():
+            try:
+                readable[path] = KeptBytes.read(path)
+            except OSError:
+                continue
+        return readable
+

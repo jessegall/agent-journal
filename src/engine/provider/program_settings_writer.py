@@ -9,6 +9,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from engine.file.file_access import FileAccess
+from engine.file.kept_bytes import KeptBytes
 from engine.file.private_folders import PrivateFolders
 from engine.journal.journal_home import JournalHome
 from engine.provider.program_settings import ProgramSettings, SettingsFile
@@ -74,7 +75,7 @@ class ProgramSettingsWriter:
             return True
         if stat.S_IMODE(file.path.stat().st_mode) != file.mode:
             return True
-        return FileAccess.shared().binary(file.path) != file.data
+        return KeptBytes.read(file.path) != file.data
 
     @staticmethod
     def _link_differs(link: Path, target: Path) -> bool:

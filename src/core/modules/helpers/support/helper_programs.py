@@ -6,7 +6,6 @@ from engine.enums.hook_trust import HookTrust
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.providers import Providers
-from engine.provider.program_settings_sync import ProgramSettingsSync
 from engine.errors.refusal import Refusal
 
 
@@ -16,8 +15,8 @@ class HelperPrograms:
     worktree, and the folder itself is trusted, so no person has to accept either; a program with no hooks
     runs with no rule at all."""
 
-    def __init__(self, home: JournalHome, providers: Providers, managed: ManagedHooks, sync: ProgramSettingsSync) -> None:
-        self.home, self.providers, self.managed, self.sync = home, providers, managed, sync
+    def __init__(self, home: JournalHome, providers: Providers, managed: ManagedHooks) -> None:
+        self.home, self.providers, self.managed = home, providers, managed
 
     def installed(self, program: str) -> None:
         provider = self.providers.provider(program)
@@ -26,7 +25,6 @@ class HelperPrograms:
 
     def checked(self, program: str, folder: Path) -> None:
         self.installed(program)
-        self.sync.prepare(program)
         provider = self.providers.provider(program)
         hooks = ProgramHooks.hooks(type(provider), folder)
         provider.folder_trusted(folder)

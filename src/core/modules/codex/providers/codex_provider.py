@@ -218,10 +218,11 @@ class CodexProvider(Provider):
         person = self.folders.folder(HOME_VARIABLE, ".codex")
         hooks_file = folder / "hooks.json"
         blocks = ProgramHooks.journal(type(self), hooks_file).journal_blocks(runner, home.project_folder, managed)
-        config = CodexJournalConfig(person / "config.toml", folders, hooks_file.resolve(), blocks)
+        person_data = self.person_data()
+        config = CodexJournalConfig(person_data.get(person / "config.toml", b""), folders, hooks_file.resolve(), blocks)
         files = (SettingsFile(folder / "config.toml", config.text()), SettingsFile(hooks_file, json.dumps({"hooks": blocks}, indent=2, sort_keys=True) + "\n"))
         links = {folder / name: person / name for name in PERSON_LINKS}
-        return ProgramSettings(self.name, files, links, self.user_hook_files())
+        return ProgramSettings(self.name, files, links, self.user_hook_files(), person_data)
 
     def user_hook_files(self) -> tuple[Path, ...]:
         folder = self.folders.folder(HOME_VARIABLE, ".codex")

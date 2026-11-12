@@ -1,6 +1,5 @@
-from functools import lru_cache
 from engine.file.file_access import FileAccess
-from engine.file.versions.file_version import FileVersion
+from engine.file.kept_bytes import KeptBytes
 import json
 import re
 import tomllib
@@ -86,12 +85,7 @@ class CodexTrust:
     def read(self) -> str:
         if not self.config_file.is_file():
             return ""
-        return CodexTrust.kept_text(self.config_file, FileAccess.shared().version(self.config_file))
-
-    @staticmethod
-    @lru_cache(maxsize=16)
-    def kept_text(config_file: Path, version: FileVersion) -> str:
-        return FileAccess.shared().read(config_file)
+        return KeptBytes.read(self.config_file).decode()
 
     @staticmethod
     def state_values(text: str) -> Mapping[str, object]:
