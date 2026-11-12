@@ -84,3 +84,22 @@ def test_the_window_lists_more_requests_than_the_read_limit_when_the_log_keeps_t
         log.record("claude", HEADERS, {"firing": firing}, 1, HookAnswer.ALLOWED)
     answer = story.run("developer hook-requests --json", actor=story.user)
     story.expect_rows(answer.code == 0, len(json.loads(answer.output_text)["rows"]) == 60, detail=answer.output_text[:300])
+
+
+def test_stop_and_session_end_requests_stay_beyond_the_size_of_the_log(new_story):
+    story = logging_story(new_story, size=2)
+    log = story.container.get(HookRequestLog)
+    log.record("claude", HEADERS, {"hook_event_name": "Stop"}, 15000, HookAnswer.ALLOWED)
+    log.record("claude", HEADERS, {"hook_event_name": "SessionEnd"}, 1, HookAnswer.ALLOWED)
+    for firing in ("first", "second", "third"):
+        log.record("claude", HEADERS, {"hook_event_name": "PreToolUse", "firing": firing}, 1, HookAnswer.ALLOWED)
+    kept = [row.event for row in log.read()]
+    story.expect_rows(kept == ["PreToolUse", "PreToolUse", "SessionEnd", "Stop"], detail=str(kept))
+
+
+def test_a_retried_stop_shows_its_retry_count_on_its_row(new_story):
+    story = logging_story(new_story)
+    log = story.container.get(HookRequestLog)
+    log.record("claude", {**HEADERS, "X-Journal-Retries": "3"}, {"hook_event_name": "Stop"}, 4000, HookAnswer.ALLOWED)
+    log.record("claude", HEADERS, {"hook_event_name": "Stop"}, 10, HookAnswer.ALLOWED)
+    story.expect_rows([row.retries for row in log.read()] == [0, 3])
