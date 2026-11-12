@@ -1,3 +1,5 @@
+from engine.provider.model_efforts import ModelEfforts
+from core.modules.codex.support.codex_settings import MODEL_EFFORTS
 from engine.provider.context_window import ContextWindow
 from engine.provider.control_choice import ControlChoice
 from engine.provider.control_group import ControlGroup
@@ -85,9 +87,9 @@ class CodexProvider(Provider):
 
     profile_model_setting = "journal.core.profiles.model-codex"
 
-    def __init__(self, folders: ProgramFolders, keys: ServerKeys) -> None:
+    def __init__(self, folders: ProgramFolders, keys: ServerKeys, efforts: ModelEfforts) -> None:
         super().__init__(folders)
-        self.keys = keys
+        self.keys, self.efforts = keys, efforts
         self.rollouts: dict[str, Path] = {}
 
     def readable_folders(self) -> tuple[Path, ...]:
@@ -105,7 +107,8 @@ class CodexProvider(Provider):
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-bypass-approvals-and-sandbox"] if launch.skip_prompts else []
         model = [] if launch.names_flag("-m") or launch.names_flag("--model") else ["-m", launch.model]
-        arguments = [self.executable, "--no-daemon", *model, *skip, *self.journal_instructions(launch.folder), *launch.program_arguments, *launch.session.arguments(self), *launch.prompt_arguments]
+        effort = [] if launch.effort else self.effort_arguments(launch.model)
+        arguments = [self.executable, "--no-daemon", *model, *effort, *skip, *self.journal_instructions(launch.folder), *launch.program_arguments, *launch.session.arguments(self), *launch.prompt_arguments]
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()})
 
     @staticmethod
@@ -117,8 +120,12 @@ class CodexProvider(Provider):
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:
         arguments = [self.executable, "exec", *launch.session.arguments(self), "--json", "--dangerously-bypass-approvals-and-sandbox",
-                     "--dangerously-bypass-hook-trust", "-m", launch.model, launch.brief]
+                     "--dangerously-bypass-hook-trust", "-m", launch.model, *self.effort_arguments(launch.model), launch.brief]
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()})
+
+    def effort_arguments(self, model: str) -> list[str]:
+        effort = self.efforts.effort(MODEL_EFFORTS, model)
+        return [] if effort is None else ["-c", f"model_reasoning_effort={effort}"]
 
     def new_session_arguments(self, session: str) -> Sequence[str]:
         return []

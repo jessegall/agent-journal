@@ -1,3 +1,4 @@
+from core.modules.claude_code.support.claude_code_settings import CLAUDE_CODE_SETTINGS
 from engine.module.module import Module
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from core.modules.claude_code.rules.native_memory_rule import NativeMemoryRule
@@ -14,3 +15,4 @@ class ClaudeCodeModule(Module):
     providers = [ClaudeCodeProvider]
     driver_rules = [NativeMemoryRule]
     nudges = CLAUDE_CODE_NUDGES
+    settings = CLAUDE_CODE_SETTINGS
