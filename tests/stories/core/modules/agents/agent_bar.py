@@ -131,14 +131,22 @@ def test_stopping_an_ended_agent_is_refused(new_story):
     story.expect_refusal(f"agent stop {agent_number(story, story.agent.id)}", "has ended already", actor=story.user)
 
 
-def test_launch_hands_the_launcher_the_program_in_the_environments_folder_under_a_new_agent_row(new_story):
+def launch_settings_handed(story, program: str, request: dict) -> bool:
+    programs = story.home.project_folder / ".journal" / "programs"
+    if program == "codex":
+        return request["variables"]["CODEX_HOME"] == str(programs / "codex")
+    return request["command"][1:5] == ["--settings", str(programs / "claude" / "settings.json"), "--setting-sources", "project"]
+
+
+@pytest.mark.parametrize("program", ["claude", "codex"])
+def test_launch_hands_the_launcher_the_program_in_the_environments_folder_under_a_new_agent_row(new_story, program):
     story = new_story(fixture=UserJoined)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_text("agent launch claude --environment main", "started main agent", actor=story.user)
+    story.expect_text(f"agent launch {program} --environment main", "started main agent", actor=story.user)
     launcher.drain_requests()
     request = launcher.requests[0]
-    story.expect_rows(request["environment"] == "main", request["session"].startswith("launch-"), request["command"][0].endswith("claude"), request["variables"]["JOURNAL_LAUNCH"] == request["session"],
-                      request["command"][1:5] == ["--settings", str(story.home.project_folder / ".journal" / "programs" / "claude" / "settings.json"), "--setting-sources", "project"])
+    story.expect_rows(request["environment"] == "main", request["session"].startswith("launch-"), request["command"][0].endswith(program), request["variables"]["JOURNAL_LAUNCH"] == request["session"],
+                      launch_settings_handed(story, program, request), detail=str(request))
 
 
 def test_launch_with_no_launcher_is_refused_and_keeps_no_row(new_story):

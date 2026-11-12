@@ -2,7 +2,6 @@ from engine.command.context import Context
 from engine.driver.nudger import Nudger
 from engine.event.moved import Moved
 from engine.listener.save_listener import SaveListener
-from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from core.modules.questions.models.lifecycles.question_lifecycle import QuestionLifecycle
@@ -41,13 +40,7 @@ class QuestionAnswerLineListener(SaveListener[Moved[Question]]):
                              reference=f"question:{question.id} message:{question.message_id}")
 
     def has_waking_wait(self, question: Question, context: Context) -> bool:
-        wait_ids = [target.wait_id for target in self.queries.query(WaitTarget).filter(row_table="questions", row_id=question.id).all_rows()]
-        if not wait_ids:
-            return False
-        return any(self.wakes_on_answer(wait, context) for wait in self.queries.query(Wait).matching(Among("id", wait_ids)).all_rows())
-
-    @staticmethod
-    def wakes_on_answer(wait: Wait, context: Context) -> bool:
-        if wait.state is not WaitState.ENDED:
-            return True
-        return wait.outcome != WORK_CONTINUED and wait.ended_at == context.timestamp
+        """Whether a wait on the question is still open, or this answer ended it without the agent working again."""
+        targets = self.queries.query(WaitTarget).filter(row_table="questions", row_id=question.id).select_columns("wait_id")
+        waits = self.queries.query(Wait).where_in("id", targets)
+        return waits.where("state", "!=", WaitState.ENDED).exists() or waits.filter(ended_at=context.timestamp).where("outcome", "!=", WORK_CONTINUED).exists()
