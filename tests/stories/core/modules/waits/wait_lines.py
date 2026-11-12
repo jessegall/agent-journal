@@ -14,7 +14,7 @@ def test_a_wait_of_ten_minutes_tells_the_agent_to_check_on_it(new_story):
     story.expect_absent(f"agent-line list --agent {story.agent.id}", "you have waited", actor=story.agent)
     story.advance(timedelta(minutes=11))
     story.tick("s-1")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "you have waited 11 minutes", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "You have waited 11 min", actor=story.agent)
 
 
 def test_a_wait_that_ends_on_its_task_tells_the_agent_at_its_next_hook(new_story):

@@ -155,12 +155,12 @@ def test_a_closing_line_after_a_reply_stays_out_of_the_chat(reply_story):
 
 def test_a_new_message_line_comes_at_the_next_hook_after_one_went_through_unchecked(server):
     server.expect_locked_hook_answer(hook_body("unchecked-tool"), "the journal let this through unchecked")
-    server.expect_hook_answer("/hook", hook_body("next-tool"), 200, "new message 1")
+    server.expect_hook_answer("/hook", hook_body("next-tool"), 200, "New message 1")
 
 
 def test_a_new_message_line_whose_hook_left_before_the_answer_comes_again_at_the_next_hook(server):
     server.post_hook_disconnect(hook_body("left-tool"))
-    server.expect_hook_line_soon("new message 1", "next-tool")
+    server.expect_hook_line_soon("New message 1", "next-tool")
 
 
 def test_a_lost_hook_answer_retries_its_messages_after_another_writer_releases_the_database(server, monkeypatch):
@@ -181,11 +181,11 @@ def test_a_lost_hook_answer_retries_its_messages_after_another_writer_releases_t
     server.story.expect_rows(reset_attempted.wait(10), detail="the lost hook answer never attempted to reset its deliveries")
     folder = server.story.home.folder / "runtime" / "lost-hook-answers"
     server.story.expect_rows(list(folder.iterdir()), detail="the busy reset left no retry")
-    server.expect_hook_answer("/hook", hook_body("next-after-busy"), 200, "new message 1")
+    server.expect_hook_answer("/hook", hook_body("next-after-busy"), 200, "New message 1")
     server.story.expect_rows(not list(folder.iterdir()))
     refusal, delivered_lines = server.hook_decision(hook_body("already-delivered"), {})
     server.story.expect_rows(refusal == "")
-    server.story.expect_rows("new message 1" not in str(delivered_lines))
+    server.story.expect_rows("New message 1" not in str(delivered_lines))
 
 
 def dropped_answers_folder(story) -> Path:
@@ -198,7 +198,7 @@ def dropped_answers_folder(story) -> Path:
 def test_a_lost_answer_file_that_cannot_be_retried_is_logged_and_removed_and_the_hook_is_answered(server, file_name):
     answers_folder = dropped_answers_folder(server.story)
     (answers_folder / file_name).touch()
-    server.expect_hook_answer("/hook", hook_body(f"after-{file_name}"), 200, "new message 1")
+    server.expect_hook_answer("/hook", hook_body(f"after-{file_name}"), 200, "New message 1")
     server.story.expect_rows(not list(answers_folder.iterdir()), f"lost hook answer {file_name} cannot be retried and is removed" in server.story.system_log_text())
 
 
@@ -218,13 +218,13 @@ def test_a_retry_that_finds_the_database_busy_fails_nothing_and_keeps_its_file(b
 
 
 def test_a_hook_returns_its_connection_with_the_default_busy_timeout(server):
-    server.expect_hook_answer("/hook", hook_body("timeout-restored"), 200, "new message 1")
+    server.expect_hook_answer("/hook", hook_body("timeout-restored"), 200, "New message 1")
     with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1) as database:
         server.story.expect_rows(database.busy_timeout_seconds() == BUSY_TIMEOUT_SECONDS)
 
 
 def test_an_answer_that_arrived_delivers_the_message_once(server):
-    server.expect_hook_answer("/hook", hook_body("first-tool"), 200, "new message 1")
+    server.expect_hook_answer("/hook", hook_body("first-tool"), 200, "New message 1")
     server.expect_hook_answer("/hook", hook_body("second-tool"), 200, '"refusal": ""')
     server.story.expect_text("message show 1", "delivered_at: 2", actor=server.story.user)
 

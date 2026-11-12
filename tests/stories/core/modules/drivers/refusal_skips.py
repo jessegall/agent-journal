@@ -27,7 +27,7 @@ RULE = "processes.failed-full-run"
 GUARD = "tasks.dependencies-closed"
 SKIP = f'refusal skip {RULE} --reason "the failure is fixed" --environment main'
 GUARD_SKIP = f'refusal skip {GUARD} --reason "it does not apply" --environment main'
-REFUSED = "your last full test run failed"
+REFUSED = "Your last full test run failed"
 TRIED = "ran the failed tests by name and they pass"
 FIRINGS = count(1)
 
@@ -108,7 +108,7 @@ def test_a_skip_with_no_reason_is_refused(new_story):
 def test_a_safety_refusal_has_no_skip(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
-    story.expect_hook_refusal(helper.session, HookSamples.tool_use("Edit", ToolType.EDIT, [], None), "reads and searches only")
+    story.expect_hook_refusal(helper.session, HookSamples.tool_use("Edit", ToolType.EDIT, [], None), "This driver only reads and searches")
     story.advance(timedelta(seconds=1))
     story.expect_refusal('refusal skip drivers.access --reason "I must" --environment main', "safety refusal", actor=Actor(helper.id, ActorType.AGENT))
 

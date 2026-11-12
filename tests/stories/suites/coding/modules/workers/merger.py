@@ -203,9 +203,9 @@ def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_s
     merger = Actor(merger_agent(story).id, ActorType.AGENT)
     second_agent = Actor(story.new_row_id(f"agent start s-other claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_success(f'merger advise {agent_number(story, worker.id)} "Rebase on main first"', actor=merger)
-    story.expect_text(f"agent-line list --agent {worker.id}", f"agent:{agent_number(story, merger.id)} reports in message:", actor=worker)
+    story.expect_text(f"agent-line list --agent {worker.id}", f"agent:{agent_number(story, merger.id)} reported in message:", actor=worker)
     story.expect_success(f'message send "Rebased" --to agent:{agent_number(story, merger.id)}', actor=worker)
-    story.expect_text(f"agent-line list --agent {merger.id}", f"agent:{agent_number(story, worker.id)} reports in message:", actor=merger)
+    story.expect_text(f"agent-line list --agent {merger.id}", f"agent:{agent_number(story, worker.id)} reported in message:", actor=merger)
     story.expect_refusal(f'message send "Hello" --to agent:{agent_number(story, second_agent.id)}', "not yours to message", actor=worker)
 
 

@@ -195,7 +195,7 @@ def test_178_a_pass_saves_a_pass_row_and_opens_the_tasks_of_the_later_phase(new_
     story.run("task start 4", actor=story.agent)
     story.expect_success("task show 4", "state: started")
     story.expect_rows([row["phase_id"] for row in rows(story, PASSES)] == [3], rows(story, REACHES)[0]["state"] == "passed", detail=str(rows(story, PASSES)))
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "plan 1: the tests of checkpoint phase Check passed, the phases after it are open: tell the user")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "plan 1: checkpoint phase Check tests passed and later phases are open: tell the user")
     story.expect_text("task-log list --task 2", "tests passed at checkpoint phase 3", actor=story.agent)
 
 
@@ -311,13 +311,13 @@ def test_a_passed_checkpoint_keeps_the_later_phase_closed_until_a_person_approve
     story.expect_success(WAIT_FOR_PERSON, actor=story.user)
     pass_reach(story, 1)
     story.expect_rows(rows(story, PASSES) == [], rows(story, REACHES)[0]["state"] == "passed", detail=str(rows(story, PASSES)))
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "later phases open once a user approves it on the plan card")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "later phases open once a person approves it on the plan card")
     story.expect_text(OUTLINE, "checkpoint of phase 3: tests passed, waits for a user", actor=story.user)
     story.expect_refusal(APPROVE, "only a user approves a checkpoint", actor=story.agent)
     story.expect_success(APPROVE, "checkpoint phase 3 approved", actor=story.user)
     story.expect_text(OUTLINE, "checkpoint of phase 3: passed", actor=story.user)
     story.expect_rows([row["phase_id"] for row in rows(story, PASSES)] == [3], detail=str(rows(story, PASSES)))
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "the phases after it are open: tell the user")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "later phases are open: tell the user")
     story.expect_refusal(APPROVE, "waits for no approval", actor=story.user)
 
 

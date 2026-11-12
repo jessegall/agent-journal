@@ -126,7 +126,7 @@ def test_a_whole_compaction_tells_the_agent_only_to_run_the_overview(compacted):
     story.expect_hook_silent("s-1", SKILL_READ)
     story.expect_hook_refusal("s-1", EDIT, "read the overview first")
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)
-    story.expect_hook_allowed("s-1", EDIT, "new message 1")
+    story.expect_hook_allowed("s-1", EDIT, "New message 1")
 
 
 def test_nothing_is_typed_to_an_agent_that_starts_again_after_a_compaction(compacted):

@@ -27,7 +27,7 @@ EDIT = HookSamples.edit("src/shop.py")
 SKIP_HOLD = HookSamples.shell("journal refusal skip processes.silent-run-hold --reason 'it writes to a file'",
                               ShellPart("journal", CommandCategory.JOURNAL, ["refusal", "skip", "processes.silent-run-hold", "--reason", "it writes to a file"]))
 STOP_OUTPUT = HookSamples.shell("journal output stop 1", ShellPart("journal", CommandCategory.JOURNAL, ["output", "stop", "1"]))
-HELD = "output 1 printed nothing for 301 seconds"
+HELD = "Output 1 printed nothing for 301 seconds"
 
 
 def print_line(story: Story, text: str) -> None:
@@ -47,7 +47,7 @@ def silent_story(new_story, seconds: int = HANG_SECONDS + 1) -> Story:
 def test_a_run_silent_for_the_hang_time_holds_the_next_tool_use_and_names_what_to_read(new_story):
     story = silent_story(new_story)
     story.expect_hook_refusal("s-1", EDIT, HELD)
-    story.expect_hook_refusal("s-1", EDIT, "output 1 printed nothing for 301 seconds, processor time not known: read it; stop it; a user releases it")
+    story.expect_hook_refusal("s-1", EDIT, "Output 1 printed nothing for 301 seconds, processor time not known: read it; stop it; a user releases it")
 
 
 def test_the_hold_says_the_processor_time_is_rising_when_it_moved_since_the_run_went_silent(new_story):

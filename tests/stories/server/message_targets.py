@@ -98,8 +98,8 @@ def test_main_ignores_a_workers_unread_message_and_its_limit(targeted_chat):
     server, cookie, typing = targeted_chat
     story = server.story
     post_target(server, cookie, story.worker, "Check the worker output")
-    expect_absent_reply_refusal(story.hook("s-1", HookSamples.stop()), "message 1 is unread")
-    expect_reply_refusal(story.hook(story.worker_session, HookSamples.stop()), "message 1 is unread")
+    expect_absent_reply_refusal(story.hook("s-1", HookSamples.stop()), "Message 1 is unread")
+    expect_reply_refusal(story.hook(story.worker_session, HookSamples.stop()), "Message 1 is unread")
     story.hook("s-1", LINT)
     story.hook(story.worker_session, LINT)
     story.expect_text("process show 1", "limit_seconds: 15")
@@ -123,7 +123,7 @@ def test_a_worker_reads_only_its_messages(targeted_chat):
     post_target(server, cookie, story.agent, "Read the main message")
     story.expect_text("message unread --environment main", "Read the worker message", actor=story.worker)
     story.expect_absent("message unread --environment main", "Read the main message", actor=story.worker)
-    expect_absent_reply_line(story.hook("s-1", READ), "new message 1")
+    expect_absent_reply_line(story.hook("s-1", READ), "New message 1")
 
 
 def test_a_workers_message_moves_only_its_foreground_run(targeted_chat):
@@ -151,7 +151,7 @@ def test_a_message_without_a_running_target_waits_for_main(new_story):
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         message = server.viewer_line_value(cookie, {"window": "messages.chat", "environment": "main", "line": ["message", "send", "Read after main starts"]})
         expect_value(message["target_agent_id"], None)
-    expect_reply_line(story.hook("s-1", HookSamples.session_start()), "new message 1")
+    expect_reply_line(story.hook("s-1", HookSamples.session_start()), "New message 1")
 
 
 def test_a_read_message_edit_wakes_the_same_worker(targeted_chat):
@@ -164,4 +164,4 @@ def test_a_read_message_edit_wakes_the_same_worker(targeted_chat):
     story.advance(timedelta(seconds=31))
     server.viewer_line_value(cookie, {"window": "messages.chat", "environment": "main", "line": ["message", "edit", "1", "--text", "Worker text after editing"]})
     story.run_listeners()
-    expect_row(typing, typed=[(story.worker.id, "[journal] message:1 updated")])
+    expect_row(typing, typed=[(story.worker.id, "[journal] message:1 was updated: read it again")])

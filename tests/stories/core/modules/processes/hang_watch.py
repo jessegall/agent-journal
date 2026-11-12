@@ -179,7 +179,7 @@ def stuck_line(process_id: int, seconds: int = HALF) -> str:
 
 
 def hung_line(process_id: int) -> str:
-    return f"output {process_id} printed nothing for {HANG_SECONDS} seconds, so it was stopped: its output is kept"
+    return f"output {process_id} printed nothing for {HANG_SECONDS} seconds, and was stopped: its output is kept"
 
 
 def test_a_stuck_test_run_wakes_its_agent_once_at_half_the_hang_time_and_is_stopped_at_the_hang_time(new_story):
@@ -262,7 +262,7 @@ def test_a_run_with_no_known_process_tree_is_never_warned_or_stopped_but_still_t
     watched(story, HANG_SECONDS + 30)
     story.expect_text("process show 1", "state: background", actor=story.agent)
     lines = kept_lines(story)
-    story.expect_rows(STUCK not in lines, "output 1 printed nothing for 30 seconds" in lines, detail=lines)
+    story.expect_rows(STUCK not in lines, "Output 1 printed nothing for 30s" in lines, detail=lines)
 
 
 def test_a_chain_whose_test_part_is_stuck_is_warned_once_for_its_output(new_story):

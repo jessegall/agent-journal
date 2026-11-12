@@ -7,7 +7,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 
 DESIGN = "docs/designs/cart/page.html"
-REFUSED = "reads and searches only"
+REFUSED = "This driver only reads and searches"
 
 
 def design_edit(path: str = DESIGN):

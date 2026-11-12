@@ -37,7 +37,7 @@ class MessageToStoppedAgent(StoryFixture):
         story.hook("s-1", HookSamples.stop())
         story.advance(STEP)
         person_message(story, "Is the cart done?")
-        story.hook("s-1", HookSamples.prompt("[journal] new message 1"))
+        story.hook("s-1", HookSamples.prompt("[journal] New message 1: read it"))
         story.advance(STEP)
 
 

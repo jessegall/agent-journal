@@ -25,7 +25,7 @@ def test_a_silent_command_started_again_and_again_is_told_once_per_run_and_refus
     heard += told(story, MAIN)
     refused = story.hook(MAIN, BUILD_START)
     heard += list(refused.lines)
-    story.expect_rows(sum("alias build-npm printed nothing for 30 seconds" in line for line in heard) == len(runs), "ran silent twice" in refused.refusal,
+    story.expect_rows(sum("alias build-npm printed nothing for 30s" in line for line in heard) == len(runs), "ran silent twice" in refused.refusal,
                       detail="\n".join([*heard, refused.refusal]))
 
 
@@ -35,7 +35,7 @@ def test_a_dot_every_25_seconds_added_to_quiet_the_notice_and_a_program_printing
     blank = moved_run(story, "make blank", CommandCategory.BUILD)
     story.expect_success(f'output title {dotted.id} "Running the jest tests"', actor=story.agent)
     ticks(story, 30, blank, every=10, text="   \n")
-    expect_told(story, MAIN, f"output {dotted.id} printed nothing for 30 seconds, so its output is not streaming: run jest with --verbose")
+    expect_told(story, MAIN, f"output {dotted.id} printed nothing for 30s, so it is not streaming: run jest with --verbose")
     dots = ""
     for elapsed in range(10, 280, 10):
         if elapsed % 25 < 10:
@@ -60,7 +60,7 @@ def test_a_workers_long_silent_build_is_told_and_warned_but_never_asked_the_five
         cadence_tick(story)
         tick_named(story, "output checks")
     lines = told(story, worker.session)
-    story.expect_rows(any(f"output {build.id} printed nothing for 30 seconds" in line for line in lines),
+    story.expect_rows(any(f"output {build.id} printed nothing for 30s" in line for line in lines),
                       any(f"output {build.id} printed nothing for 150 s and uses no processor time" in line for line in lines),
                       not any("still runs after" in line for line in lines), detail="\n".join(lines))
     story.expect_success(f"process show {build.id}", actor=story.agent)

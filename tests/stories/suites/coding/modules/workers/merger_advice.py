@@ -184,7 +184,7 @@ def merged_after_five_asks(five_questions):
 def test_advise_still_reaches_the_worker_as_a_message_from_the_merger(advising):
     advising.advised()
     advising.story.expect_rows([row.text for row in advising.messages()] == [ADVICES[0]], len(advising.merger_message_rows()) == 1, detail=str(advising.messages()))
-    advising.story.expect_text(f"agent-line list --agent {advising.worker.id}", f"agent:{agent_number(advising.story, advising.merger.id)} reports in message:", actor=advising.worker)
+    advising.story.expect_text(f"agent-line list --agent {advising.worker.id}", f"agent:{agent_number(advising.story, advising.merger.id)} reported in message:", actor=advising.worker)
 
 
 def test_a_burst_of_lines_about_one_worker_becomes_one_advice(advising):

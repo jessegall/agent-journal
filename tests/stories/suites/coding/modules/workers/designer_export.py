@@ -9,7 +9,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import r
 SAVE_DESIGNER = 'profile save designer --type helper --access read-only --writable-folders docs/designs --description "Designs a screen" --body "Design in Claude Design and save the page and its picture."'
 START_DESIGNER = 'helper start designer --brief "Design the agent settings page" --environment main'
 DESIGN_FOLDER = "docs/designs/agent-settings"
-REFUSED = "reads and searches only"
+REFUSED = "This driver only reads and searches"
 
 
 def started_designer(story):

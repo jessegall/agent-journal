@@ -28,7 +28,7 @@ def test_a_main_agent_reads_a_workers_report_by_the_workers_number_not_its_row_i
     worker = Actor(started_worker(story, "s-9", "main", story.agent.id), ActorType.AGENT)
     story.container.get(Bus).run(RecordParentReport(worker.id, story.agent.id, "Handed in"), worker, environment_id=1)
     story.run_listeners()
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "worker 2 reports in message:1")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "worker 2 reported in message:1")
     story.expect_absent(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, worker.id)} reports")
 
 

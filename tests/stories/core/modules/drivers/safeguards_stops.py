@@ -41,7 +41,7 @@ class SafeguardsStopped(StoryFixture):
 
 def test_a_turn_ended_by_a_safeguards_error_wakes_its_agent_once_and_tells_nobody(new_story):
     story = new_story(SAMPLES, fixture=SafeguardsStopped)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "your last turn was ended by an API safeguards error")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "An API safeguards error ended your last turn")
     story.expect_rows(len(wake_lines(story)) == 1, chat_notes(story) == [])
 
 

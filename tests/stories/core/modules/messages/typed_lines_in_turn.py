@@ -19,4 +19,4 @@ def test_a_message_for_an_agent_in_a_turn_is_never_typed_however_silent_it_is_bu
     story.tick("s-1")
     story.run_listeners()
     story.expect_rows(typing.typed == [])
-    story.expect_hook_allowed("s-1", HookSamples.edit("cart.py"), "new message 2")
+    story.expect_hook_allowed("s-1", HookSamples.edit("cart.py"), "New message 2")
