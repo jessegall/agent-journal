@@ -5,7 +5,7 @@ from engine.driver.rule_answer import RuleAnswer
 from core.modules.processes.support.held_runs import HeldRuns
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.support.process_nudges import SILENT_RUN_HELD
-from core.modules.processes.support.reading.exit_texts import ExitTexts
+from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
 
 
 class SilentRunHoldRule(DriverRule):

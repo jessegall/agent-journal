@@ -1,3 +1,4 @@
+import shlex
 from dataclasses import replace
 
 from engine.command.bus import Bus
@@ -34,7 +35,7 @@ class RunWorkerTestHandler(Handler[RunWorkerTest, WorkerTestRun]):
         if missing:
             raise Refusal(f"{', '.join(missing)} is missing from your worktree", AskTopic.TOOL.hint("the merger can relink it"))
         test_arguments = tuple(command.test_arguments)
-        WorkerTestArguments.check(test_arguments)
         line = self.names.line(worktree.session_agent_id, command.name, test_arguments)
+        WorkerTestArguments.check(test_arguments, shlex.split(line))
         start = StartProcess.single_part(worktree.session_agent_id, line, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
         return WorkerTestRun(self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=worktree.task_id), context), command.piped)

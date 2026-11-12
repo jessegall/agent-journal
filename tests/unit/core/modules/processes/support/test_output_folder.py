@@ -87,3 +87,11 @@ def test_only_the_bytes_past_an_offset_are_read_across_the_parts_and_the_readers
     assert processes.reader_lines(4) == ["1: one", "3: three"]
     processes.replace_reader_lines(4, ["9: nine"])
     assert processes.reader_lines(4) == ["9: nine"]
+
+
+def test_the_head_of_the_output_reaches_no_further_than_the_characters_asked_for_across_the_parts(tmp_path):
+    processes = folder(tmp_path)
+    processes.write_start(4, "make && echo", ["make", "echo"])
+    processes.write_output(4, 1, "abcdef")
+    processes.write_output(4, 2, "ghijkl")
+    assert (processes.head_output(4, 3), processes.head_output(4, 8), processes.head_output(4, 100)) == ("abc", "abcdefgh", "abcdefghijkl")

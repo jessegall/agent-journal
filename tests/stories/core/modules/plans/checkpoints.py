@@ -295,3 +295,22 @@ def test_190_the_plan_view_gets_a_line_on_how_each_checkpoint_stands_and_on_a_te
         inspected = server.viewer_line_value(cookie, {"window": "plans.plans", "line": ["plan", "inspect", "1"], "environment": "main"})
     lines = inspected["checkpoint_lines"]
     story.expect_rows("checkpoint of phase 3: running" in lines, "checkpoint of phase 5: waits for tasks 4, 5" in lines, "test of phase 1 not run: this phase is not a checkpoint" in lines, detail=str(lines))
+
+
+WAIT_FOR_PERSON = "setting set journal.core.plans.checkpoints.wait-for-person true --environment main"
+APPROVE = "plan approve-checkpoint 1 3 --environment main"
+
+
+def test_a_passed_checkpoint_keeps_the_later_phase_closed_until_a_person_approves_it_when_the_plan_waits_for_the_person(new_story):
+    story = new_story(fixture=ReachedCheckpoint)
+    story.expect_success(WAIT_FOR_PERSON, actor=story.user)
+    pass_reach(story, 1)
+    story.expect_rows(rows(story, PASSES) == [], rows(story, REACHES)[0]["state"] == "passed", detail=str(rows(story, PASSES)))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "stay closed until a person approves it on the plan card")
+    story.expect_text(OUTLINE, "checkpoint of phase 3: tests passed, waits for a person", actor=story.user)
+    story.expect_refusal(APPROVE, "only a person approves a checkpoint", actor=story.agent)
+    story.expect_success(APPROVE, "checkpoint phase 3 approved", actor=story.user)
+    story.expect_text(OUTLINE, "checkpoint of phase 3: passed", actor=story.user)
+    story.expect_rows([row["phase_id"] for row in rows(story, PASSES)] == [3], detail=str(rows(story, PASSES)))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "the phases after it are open: tell the user")
+    story.expect_refusal(APPROVE, "waits for no approval", actor=story.user)

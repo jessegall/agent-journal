@@ -6,7 +6,7 @@ from engine.driver.rule_answer import RuleAnswer
 from core.modules.aliases.support.alias_nudges import COMMAND_TYPE_UNKNOWN
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.processes.models.enums.reading_exit import ReadingExit
-from core.modules.processes.support.reading.exit_texts import ExitTexts
+from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
 
 UNCLASSIFIED_HINT = f"{ExitTexts.sentences((ReadingExit.CLASSIFY,))}, process when no type fits"
 

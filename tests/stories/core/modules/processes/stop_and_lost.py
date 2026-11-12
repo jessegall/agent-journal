@@ -85,6 +85,7 @@ def test_a_pid_gone_to_another_program_is_not_killed(reused_process_pid):
     story.expect_success('process show 1', 'state: orphaned', actor=story.agent)
     story.run_listeners()
     expect_poll_second(second, None)
+    story.expect_success("process-part list --process 1", actor=story.agent)
 
 
 def test_a_run_that_ended_unseen_frees_its_spot_with_no_tick_of_its_agent(new_story):

@@ -24,3 +24,19 @@ def test_a_worktree_with_a_relative_gitdir_reads_the_config_from_beside_its_git_
     elsewhere.mkdir()
     monkeypatch.chdir(elsewhere)
     assert ProjectRepositories(JournalHome(worktree / ".journal")).names() == {"acme/cart"}
+
+
+def remote_names(tmp_path: Path, url: str) -> set[str]:
+    (tmp_path / ".git").mkdir()
+    (tmp_path / ".git" / "config").write_text(f'[remote "origin"]\n\turl = {url}\n')
+    return ProjectRepositories(JournalHome(tmp_path / ".journal")).names()
+
+
+def test_an_ssh_alias_of_github_names_its_repository(tmp_path: Path):
+    assert remote_names(tmp_path, "git@github.com-work:acme/cart.git") == {"acme/cart"}
+
+
+def test_a_host_that_only_starts_with_github_or_holds_it_names_no_repository(tmp_path: Path):
+    (tmp_path / ".git").mkdir()
+    (tmp_path / ".git" / "config").write_text('[remote "one"]\n\turl = https://github.example.com/acme/cart.git\n[remote "two"]\n\turl = https://mygithub.com/acme/cart.git\n')
+    assert ProjectRepositories(JournalHome(tmp_path / ".journal")).names() == set()

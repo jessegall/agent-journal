@@ -6,7 +6,7 @@ from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 
 # github.com itself, or an ssh host alias for it such as github-work or github.com-work
-REMOTE_URL = re.compile(r"github[\w.-]*[:/]([\w.-]+)/([\w.-]+?)(?:\.git)?\s*$", re.MULTILINE)
+REMOTE_URL = re.compile(r"(?<![\w.-])github(?:\.com)?(?:-[\w.-]+)?[:/]([\w.-]+)/([\w.-]+?)(?:\.git)?\s*$", re.MULTILINE)
 SECTION = re.compile(r"^\s*\[([^\]]+)\]\s*$")
 INCLUDE_PATH = re.compile(r"^\s*path\s*=\s*(.+?)\s*$")
 INCLUDE_SECTIONS = ("include", "includeif")

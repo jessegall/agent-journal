@@ -6,9 +6,9 @@ from core.modules.processes.commands.mark_run_unreadable.mark_run_unreadable imp
 from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.unreadable_mark import UnreadableMark
-from core.modules.processes.support.reading.reading_notices import ReadingNotices
+from core.modules.processes.support.reading_notices.reading_notices import ReadingNotices
 from core.modules.processes.support.reading.run_command_words import RunCommandWords
-from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
+from core.modules.processes.support.unreadable.unreadable_marks import UnreadableMarks
 
 SOURCE = "processes.unreadable-by-person"
 

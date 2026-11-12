@@ -224,6 +224,7 @@ def test_a_program_that_has_a_reader_is_not_asked_for_one(program_reader_output)
 def test_a_reader_is_judged_on_a_chain_of_commands_by_the_part_it_reads(chain_reader_output):
     story, process = chain_reader_output
     expect_lines(story, READ_NOTES, "reader deploys picked none")
+    story.expect_text(f"process show {process.id}", "state:", actor=story.agent)
 
 
 def test_a_chains_reader_reads_only_its_part_and_gives_the_card_its_progress(new_story):

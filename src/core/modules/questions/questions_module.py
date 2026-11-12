@@ -14,13 +14,12 @@ from core.modules.questions.commands.question_list.question_list_subcommand impo
 from core.modules.questions.commands.question_show.question_show_subcommand import QuestionShowSubcommand
 from core.modules.questions.support.question_marks import QUESTION_DOCKS, QUESTION_MARKS
 from core.modules.questions.queries.question_query import QuestionQuery
-from core.modules.questions.rules.question_answered_rule import QuestionAnsweredRule
 from core.modules.questions.rules.own_question_tool_rule import OwnQuestionToolRule
-from core.modules.questions.rules.question_closed_rule import QuestionClosedRule
 from core.modules.questions.guards.question_asker_guard import QuestionAskerGuard
 from core.modules.questions.guards.actor_options_guard import ActorOptionsGuard
 from core.modules.questions.listeners.open_questions_dock_listener import OpenQuestionsDockListener
 from core.modules.questions.listeners.question_answered_mark_listener import QuestionAnsweredMarkListener
+from core.modules.questions.listeners.question_answer_line_listener import QuestionAnswerLineListener
 from core.modules.questions.listeners.question_open_mark_listener import QuestionOpenMarkListener
 from core.modules.questions.listeners.question_closed_mark_listener import QuestionClosedMarkListener
 from core.modules.questions.listeners.question_edited_mark_listener import QuestionEditedMarkListener
@@ -60,9 +59,9 @@ class QuestionsModule(Module):
     subcommands = [AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand]
     handlers = [AskQuestionHandler, AnswerQuestionHandler]
     guards = [QuestionAskerGuard, ActorOptionsGuard]
-    driver_rules = [QuestionAnsweredRule, QuestionClosedRule, OwnQuestionToolRule]
+    driver_rules = [OwnQuestionToolRule]
     marks = QUESTION_MARKS
-    listeners = [OpenQuestionsDockListener, QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener]
+    listeners = [OpenQuestionsDockListener, QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener, QuestionAnswerLineListener]
     docks = QUESTION_DOCKS
     windows = [WindowDeclaration("questions.questions", "Questions", "questions.js", WindowLoading.COMPONENT, skeleton=QUESTIONS_QUESTIONS_SKELETON, icon=WindowIcon.QUESTION,
                                  reads=["question list", "question show"],

@@ -47,7 +47,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(^|/)core/modules/processes/support/(process_nudges|reading/reading_notices|cadence/cadence_nudges)\\.py$"
+                "fileMatches": "(^|/)core/modules/processes/support/(process_nudges|reading_notices/reading_notices|cadence/cadence_nudges)\\.py$"
             }
         ]
     },

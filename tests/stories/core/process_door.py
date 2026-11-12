@@ -1,5 +1,6 @@
 import io
 import contextlib
+import sqlite3
 from datetime import timedelta
 
 from engine.enums.process_kind import ProcessKind
@@ -108,6 +109,32 @@ def test_a_failed_environment_in_the_request_log_is_let_go_and_repeats_no_row_of
         with contextlib.suppress(Exception):
             RequestLogImport()(story.container)
     story.expect_rows([row.line for row in runs_of_kind(story, ProcessKind.JOURNAL)] == ["journal task list"], log.taken() == ())
+
+
+def test_a_busy_database_keeps_the_rows_of_an_environment_for_the_next_tick_and_a_bad_entry_alone_is_let_go(new_story, monkeypatch):
+    story = new_story(fixture=BuilderStarted)
+    written = RecordRequestRunsHandler.handle
+    outcomes = {"busy": True}
+
+    def failing(handler, command, context):
+        if outcomes["busy"]:
+            busy = sqlite3.OperationalError("database is locked")
+            busy.sqlite_errorcode = sqlite3.SQLITE_BUSY
+            raise busy
+        if any(entry.line == "journal task bad" for entry in command.entries):
+            raise RuntimeError("this entry fails")
+        return written(handler, command, context)
+
+    monkeypatch.setattr(RecordRequestRunsHandler, "handle", failing)
+    log = story.container.get(RequestLog)
+    for line in ("journal task list", "journal task bad", "journal task show"):
+        log.append(RequestLogEntry(1, None, ProcessKind.JOURNAL, line, 0, story.clock.timestamp().text))
+    RequestLogImport()(story.container)
+    story.expect_rows(len(log.taken()) == 3, runs_of_kind(story, ProcessKind.JOURNAL) == [])
+    outcomes["busy"] = False
+    RequestLogImport()(story.container)
+    RequestLogImport()(story.container)
+    story.expect_rows(sorted(row.line for row in runs_of_kind(story, ProcessKind.JOURNAL)) == ["journal task list", "journal task show"], log.taken() == ())
 
 
 def test_a_request_row_older_than_its_days_is_pruned(new_story):

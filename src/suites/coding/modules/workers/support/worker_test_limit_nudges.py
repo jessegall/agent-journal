@@ -1,6 +1,6 @@
 from engine.driver.nudge_declaration import NudgeDeclaration
 from core.modules.processes.models.enums.reading_exit import ReadingExit
-from core.modules.processes.support.reading.exit_texts import ExitTexts
+from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
 from engine.enums.nudge_type import NudgeType
 from suites.coding.models.enums.ask_topic import AskTopic
 

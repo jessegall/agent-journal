@@ -14,5 +14,6 @@ class ProofTestLine:
         if not line:
             return line
         name, *test_arguments = shlex.split(line)
-        WorkerTestArguments.check(test_arguments)
-        return self.names.line(worker_id, name, test_arguments)
+        resolved = self.names.line(worker_id, name, test_arguments)
+        WorkerTestArguments.check(test_arguments, shlex.split(resolved))
+        return resolved

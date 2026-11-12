@@ -10,7 +10,7 @@ from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
 from core.modules.processes.support.reading.reading_facts import ReadingFacts
-from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
+from core.modules.processes.support.unreadable.unreadable_marks import UnreadableMarks
 from core.modules.processes.support.silent_start_runs import SilentStartRuns
 
 RUNS_COMPARED = 2

@@ -5046,6 +5046,7 @@
       "progress_pattern",
       "proved_on",
       "script",
+      "shipped_digest",
       "step_pattern",
       "subject",
       "summary_pattern",
@@ -5075,6 +5076,7 @@
       "progress_pattern",
       "proved_on",
       "script",
+      "shipped_digest",
       "step_pattern",
       "subject",
       "summary_pattern",
@@ -5104,6 +5106,7 @@
       "progress_pattern",
       "proved_on",
       "script",
+      "shipped_digest",
       "step_pattern",
       "subject",
       "summary_pattern",
@@ -5272,6 +5275,51 @@
       "kind",
       "line",
       "session_agent_id"
+    ]
+  },
+  "core.processes.unreadable_mark.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "lifted_at",
+      "lifter_id",
+      "note",
+      "reason",
+      "words"
+    ]
+  },
+  "core.processes.unreadable_mark.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "lifted_at",
+      "lifter_id",
+      "note",
+      "reason",
+      "words"
+    ]
+  },
+  "core.processes.unreadable_mark.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "lifted_at",
+      "lifter_id",
+      "note",
+      "reason",
+      "words"
     ]
   },
   "core.processes.watch.created": {
