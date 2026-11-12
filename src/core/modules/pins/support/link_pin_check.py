@@ -17,6 +17,7 @@ from engine.time.timestamp import Timestamp
 from engine.types.type_guards import is_list, is_mapping
 from core.modules.pins.commands.make_pin.make_pin import MakePin
 from core.modules.pins.models.pin import Pin
+from core.modules.pins.support.project_repositories import ProjectRepositories
 from core.modules.pins.support.pin_nudges import BANG_BUTTON_REQUEST, LINK_PIN_REQUEST, UNPINNED_CLAIM
 
 FILE_TOOLS = (ToolType.READ, ToolType.SEARCH, ToolType.EDIT, ToolType.NEW_FILE)
@@ -36,8 +37,12 @@ class LinkPinCheck:
     the first link no open pin has is offered, each link on its own count, and a ! command the agent asks the
     user to run is asked to become a button. The link of a closed pin is offered again."""
 
-    def __init__(self, queries: Queries, clock: Clock, kept: KeptRows) -> None:
-        self.queries, self.clock, self.kept = queries, clock, kept
+    def __init__(self, queries: Queries, clock: Clock, kept: KeptRows, repositories: ProjectRepositories) -> None:
+        self.queries, self.clock, self.kept, self.repositories = queries, clock, kept, repositories
+
+    @staticmethod
+    def repository(url: str) -> str:
+        return "/".join(url.split("/")[3:5]).lower()
 
     @staticmethod
     def is_file_read_tool(tool: Tool) -> bool:
@@ -61,7 +66,9 @@ class LinkPinCheck:
         return next((command for command in commands if command not in pinned), None)
 
     def change_request_pins(self, text: str) -> list[MakePin]:
-        links = dict.fromkeys(url.rstrip(".,;:/") for url in LINK.findall(text) if self.is_complete_link(url) and PR_ADDRESS.fullmatch(url.rstrip(".,;:/")))
+        repositories = self.repositories.names()
+        links = dict.fromkeys(url.rstrip(".,;:/") for url in LINK.findall(text) if self.is_complete_link(url) and PR_ADDRESS.fullmatch(url.rstrip(".,;:/"))
+                              and self.repository(url.rstrip(".,;:/")) in repositories)
         pinned = {pin.link for pin in self.queries.query(Pin).matching(Among("link", self.with_trailing_slashes(tuple(links)))).all_rows()}
         return [MakePin(f"Pull request {url.rsplit('/', 1)[-1]}", url, OPEN_LABEL) for url in links if url not in pinned and f"{url}/" not in pinned]
 

@@ -1,8 +1,6 @@
 import sqlite3
 import traceback
 from engine.serving.server_files import ServerFiles
-from engine.enums.process_kind import ProcessKind
-from engine.process.request_records import RequestRecords
 from time import perf_counter
 from collections.abc import Mapping
 
@@ -121,11 +119,7 @@ class HookEndpoint:
             database.set_busy_timeout(max(deadline - perf_counter(), LEAST_BUSY_SECONDS))
             route = container.get(HookRoute)
             self.timing.stamp("route_ready")
-            records = container.get(RequestRecords)
-            row_id = records.begun(ProcessKind.HOOK, f"{event.program} {event.event.value}")
-            reply = route.answer(event)
-            records.ended(row_id, 0)
-            return reply
+            return route.answer(event)
         except sqlite3.OperationalError as error:
             if error.sqlite_errorcode == sqlite3.SQLITE_BUSY:
                 return self.unchecked(sender, error)

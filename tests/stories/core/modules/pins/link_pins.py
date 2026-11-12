@@ -35,8 +35,15 @@ def pin_lines(hook_answer) -> list[str]:
     return [line for line in hook_answer.lines if "pin this link" in line]
 
 
+def with_shop_remote(story):
+    config = story.home.project_folder / ".git" / "config"
+    config.parent.mkdir(parents=True, exist_ok=True)
+    config.write_text('[remote "origin"]\n\turl = git@github.com:shop/cart.git\n')
+    return story
+
+
 def test_a_pull_request_pins_itself_once_and_a_closed_pin_stays_closed(new_story):
-    story = new_story(fixture=UserJoined)
+    story = with_shop_remote(new_story(fixture=UserJoined))
     address = "https://github.com/shop/cart/pull/4"
     expect_absent_pin_lines(story.hook("s-1", shell_call("gh pr create", f"{address}\n")))
     story.expect_text("pin list --environment main", "Pull request 4", address, actor=story.user)
@@ -44,6 +51,8 @@ def test_a_pull_request_pins_itself_once_and_a_closed_pin_stays_closed(new_story
     story.expect_success("pin close 1", actor=story.user)
     story.hook("s-1", shell_call("gh pr view", f"{address}\n"))
     story.expect_absent("pin list --environment main", "Pull request 4", actor=story.user)
+    story.hook("s-1", shell_call("gh search prs cart", "https://github.com/someone/elsewhere/pull/1\n"))
+    story.expect_absent("pin list --environment main", "elsewhere", actor=story.user)
 
 
 def test_a_bare_design_project_link_is_not_pinned(new_story):
@@ -64,7 +73,7 @@ def test_a_helper_report_pins_a_design_only_once_even_after_it_is_closed(new_sto
 
 
 def test_a_helper_tool_output_pins_a_pull_request(new_story):
-    story = new_story(fixture=StartedHelper)
+    story = with_shop_remote(new_story(fixture=StartedHelper))
     address = "https://github.com/shop/cart/pull/23"
     story.hook(helper_agent(story).session, shell_call("gh pr create", address))
     story.expect_text("pin list --environment main", "Pull request 23", address, actor=story.user)

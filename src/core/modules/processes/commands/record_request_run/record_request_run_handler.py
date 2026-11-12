@@ -6,7 +6,7 @@ from core.modules.processes.models.process import Process
 
 
 class RecordRequestRunHandler(Handler[RecordRequestRun, Process]):
-    """Writes the row of a request in one insert: running, in no queue place, with its kind."""
+    """Writes the row of a request in one insert, running or already ended, in no queue place, with its kind."""
 
     command = RecordRequestRun
 
@@ -14,5 +14,10 @@ class RecordRequestRunHandler(Handler[RecordRequestRun, Process]):
         self.repository = repository
 
     def handle(self, command: RecordRequestRun, context: Context) -> Process:
-        return self.repository.save(Process(session_agent_id=command.agent_id, creator_id=context.actor.id, line=command.line, folder="", shell="",
-                                            category=command.kind.category, limit_seconds=0, kind=command.kind.value, started_at=context.timestamp), context)
+        process = Process(session_agent_id=command.agent_id, creator_id=context.actor.id, line=command.line, folder="", shell="",
+                          category=command.kind.category, limit_seconds=0, kind=command.kind.value, started_at=context.timestamp)
+        saved = self.repository.save(process, context)
+        if command.ended_with is None:
+            return saved
+        ended = saved.finish(context.timestamp, context.actor, 0) if command.ended_with == 0 else saved.fail(context.timestamp, context.actor, command.ended_with)
+        return self.repository.save_change(saved, ended, context)

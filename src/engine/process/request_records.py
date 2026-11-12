@@ -1,5 +1,6 @@
 from collections.abc import Callable
 
+from engine.command.context import Context
 from engine.enums.process_kind import ProcessKind
 
 
@@ -11,6 +12,9 @@ class RequestRecords:
         return None
 
     def ended(self, row_id: int | None, exit_code: int) -> None:
+        return None
+
+    def recorded_hook(self, agent_id: int, line: str, exit_code: int, context: Context) -> None:
         return None
 
     def recorded(self, kind: ProcessKind, line: str, answer: Callable[[], int]) -> int:
