@@ -13,8 +13,9 @@ MOST_LISTED_TASKS = 5
 class AvailableWork:
     """Reads the work the main agent can act on under its workflow controls: a task reserved for it always
     reaches it, and with auto mode on it is handed the next eligible task; while it may send workers and a
-    worker can start, open tasks that nobody is assigned can be delegated; with keep going on and no worker
-    able to start, it is handed the oldest of those tasks to work itself; a task it already holds is never
+    worker can start, open tasks that nobody is assigned can be delegated; with keep going on, no worker
+    able to start and the main agent allowed to write code, it is handed the next task in the hand-out order to
+    work itself; a task it already holds is never
     offered again. It also says whether the agent's stop compacts its context, which no unfinished task holds
     back."""
 
@@ -28,8 +29,8 @@ class AvailableWork:
         has_started_task = self.tasks.holder(main_agent_id).started().exists()
         assigned_task = None if has_started_task else self.assigned_task(main_agent_id, controls)
         delegatable = self.delegatable(controls.sends_workers)
-        if assigned_task is None and not has_started_task and not delegatable and controls.continues_work:
-            assigned_task = self.tasks.delegation_candidates().oldest().first()
+        if assigned_task is None and not has_started_task and not delegatable and controls.continues_work and controls.writes_code:
+            assigned_task = self.next_task.following(main_agent_id)
         return AvailableWorkAnswer(assigned_task, delegatable, self.places.free_count() if delegatable else 0)
 
     def is_stop_compacting(self, main_agent_id: int) -> bool:
